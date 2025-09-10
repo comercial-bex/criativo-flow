@@ -3,7 +3,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Plus, FolderOpen, Calendar, User, Clock } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -20,6 +24,11 @@ interface Projeto {
   clientes: {
     nome: string;
   };
+}
+
+interface Cliente {
+  id: string;
+  nome: string;
 }
 
 interface Tarefa {
@@ -48,13 +57,33 @@ const statusTarefas = [
 
 const Projetos = () => {
   const [projetos, setProjetos] = useState<Projeto[]>([]);
+  const [clientes, setClientes] = useState<Cliente[]>([]);
   const [tarefas, setTarefas] = useState<Tarefa[]>([]);
   const [projetoSelecionado, setProjetoSelecionado] = useState<string>('');
   const [loading, setLoading] = useState(true);
+  const [dialogProjetoOpen, setDialogProjetoOpen] = useState(false);
+  const [dialogTarefaOpen, setDialogTarefaOpen] = useState(false);
+  const [formDataProjeto, setFormDataProjeto] = useState({
+    nome: '',
+    descricao: '',
+    cliente_id: '',
+    data_inicio: '',
+    data_fim: '',
+    orcamento: ''
+  });
+  const [formDataTarefa, setFormDataTarefa] = useState({
+    titulo: '',
+    descricao: '',
+    tipo: '',
+    prioridade: 'media',
+    data_prazo: '',
+    tempo_estimado: ''
+  });
   const { toast } = useToast();
 
   useEffect(() => {
     fetchProjetos();
+    fetchClientes();
   }, []);
 
   useEffect(() => {
@@ -106,6 +135,20 @@ const Projetos = () => {
     }
   };
 
+  const fetchClientes = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('clientes')
+        .select('id, nome')
+        .order('nome', { ascending: true });
+
+      if (error) throw error;
+      setClientes(data || []);
+    } catch (error) {
+      console.error('Erro ao carregar clientes:', error);
+    }
+  };
+
   const updateTarefaStatus = async (tarefaId: string, newStatus: string) => {
     try {
       const { error } = await supabase
@@ -145,6 +188,99 @@ const Projetos = () => {
     }
   };
 
+  const handleSubmitProjeto = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    try {
+      const { data, error } = await supabase
+        .from('projetos')
+        .insert({
+          ...formDataProjeto,
+          orcamento: formDataProjeto.orcamento ? parseFloat(formDataProjeto.orcamento) : null
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      toast({
+        title: "Projeto criado com sucesso!",
+        description: "O novo projeto foi adicionado à lista",
+      });
+
+      setDialogProjetoOpen(false);
+      setFormDataProjeto({
+        nome: '',
+        descricao: '',
+        cliente_id: '',
+        data_inicio: '',
+        data_fim: '',
+        orcamento: ''
+      });
+      await fetchProjetos();
+      setProjetoSelecionado(data.id);
+    } catch (error) {
+      console.error('Erro ao criar projeto:', error);
+      toast({
+        title: "Erro ao criar projeto",
+        description: "Não foi possível criar o projeto",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleSubmitTarefa = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!projetoSelecionado) {
+      toast({
+        title: "Erro",
+        description: "Selecione um projeto antes de criar uma tarefa",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    try {
+      const { error } = await supabase
+        .from('tarefas')
+        .insert({
+          titulo: formDataTarefa.titulo,
+          descricao: formDataTarefa.descricao,
+          projeto_id: projetoSelecionado,
+          tipo: formDataTarefa.tipo,
+          prioridade: formDataTarefa.prioridade as 'baixa' | 'media' | 'alta' | 'urgente',
+          data_prazo: formDataTarefa.data_prazo || null,
+          tempo_estimado: formDataTarefa.tempo_estimado ? parseInt(formDataTarefa.tempo_estimado) : null
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Tarefa criada com sucesso!",
+        description: "A nova tarefa foi adicionada ao projeto",
+      });
+
+      setDialogTarefaOpen(false);
+      setFormDataTarefa({
+        titulo: '',
+        descricao: '',
+        tipo: '',
+        prioridade: 'media',
+        data_prazo: '',
+        tempo_estimado: ''
+      });
+      fetchTarefas(projetoSelecionado);
+    } catch (error) {
+      console.error('Erro ao criar tarefa:', error);
+      toast({
+        title: "Erro ao criar tarefa",
+        description: "Não foi possível criar a tarefa",
+        variant: "destructive",
+      });
+    }
+  };
+
   const groupedTarefas = statusTarefas.reduce((acc, status) => {
     acc[status.value] = tarefas.filter(tarefa => tarefa.status === status.value);
     return acc;
@@ -162,11 +298,204 @@ const Projetos = () => {
               Acompanhe o progresso dos projetos e tarefas
             </p>
           </div>
-          
-          <Button>
-            <Plus className="h-4 w-4 mr-2" />
-            Nova Tarefa
-          </Button>
+          <div className="flex items-center space-x-2">
+            <Dialog open={dialogProjetoOpen} onOpenChange={setDialogProjetoOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Novo Projeto
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Criar Novo Projeto</DialogTitle>
+                  <DialogDescription>
+                    Adicione um novo projeto para gerenciar tarefas
+                  </DialogDescription>
+                </DialogHeader>
+                
+                <form onSubmit={handleSubmitProjeto} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="nome">Nome do Projeto *</Label>
+                    <Input
+                      id="nome"
+                      value={formDataProjeto.nome}
+                      onChange={(e) => setFormDataProjeto({...formDataProjeto, nome: e.target.value})}
+                      required
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="cliente_id">Cliente</Label>
+                    <Select
+                      value={formDataProjeto.cliente_id}
+                      onValueChange={(value) => setFormDataProjeto({...formDataProjeto, cliente_id: value})}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione um cliente" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {clientes.map((cliente) => (
+                          <SelectItem key={cliente.id} value={cliente.id}>
+                            {cliente.nome}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="descricao">Descrição</Label>
+                    <Textarea
+                      id="descricao"
+                      value={formDataProjeto.descricao}
+                      onChange={(e) => setFormDataProjeto({...formDataProjeto, descricao: e.target.value})}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="data_inicio">Data Início</Label>
+                      <Input
+                        id="data_inicio"
+                        type="date"
+                        value={formDataProjeto.data_inicio}
+                        onChange={(e) => setFormDataProjeto({...formDataProjeto, data_inicio: e.target.value})}
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="data_fim">Data Fim</Label>
+                      <Input
+                        id="data_fim"
+                        type="date"
+                        value={formDataProjeto.data_fim}
+                        onChange={(e) => setFormDataProjeto({...formDataProjeto, data_fim: e.target.value})}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="orcamento">Orçamento (R$)</Label>
+                    <Input
+                      id="orcamento"
+                      type="number"
+                      step="0.01"
+                      value={formDataProjeto.orcamento}
+                      onChange={(e) => setFormDataProjeto({...formDataProjeto, orcamento: e.target.value})}
+                    />
+                  </div>
+                  
+                  <Button type="submit" className="w-full">
+                    Criar Projeto
+                  </Button>
+                </form>
+              </DialogContent>
+            </Dialog>
+
+            <Dialog open={dialogTarefaOpen} onOpenChange={setDialogTarefaOpen}>
+              <DialogTrigger asChild>
+                <Button disabled={!projetoSelecionado}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Nova Tarefa
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Criar Nova Tarefa</DialogTitle>
+                  <DialogDescription>
+                    Adicione uma nova tarefa ao projeto selecionado
+                  </DialogDescription>
+                </DialogHeader>
+                
+                <form onSubmit={handleSubmitTarefa} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="titulo">Título da Tarefa *</Label>
+                    <Input
+                      id="titulo"
+                      value={formDataTarefa.titulo}
+                      onChange={(e) => setFormDataTarefa({...formDataTarefa, titulo: e.target.value})}
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="tipo">Tipo</Label>
+                    <Select
+                      value={formDataTarefa.tipo}
+                      onValueChange={(value) => setFormDataTarefa({...formDataTarefa, tipo: value})}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione o tipo" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="design">Design</SelectItem>
+                        <SelectItem value="copy">Copy</SelectItem>
+                        <SelectItem value="video">Vídeo</SelectItem>
+                        <SelectItem value="desenvolvimento">Desenvolvimento</SelectItem>
+                        <SelectItem value="planejamento">Planejamento</SelectItem>
+                        <SelectItem value="revisao">Revisão</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="prioridade">Prioridade</Label>
+                    <Select
+                      value={formDataTarefa.prioridade}
+                      onValueChange={(value) => setFormDataTarefa({...formDataTarefa, prioridade: value})}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="baixa">Baixa</SelectItem>
+                        <SelectItem value="media">Média</SelectItem>
+                        <SelectItem value="alta">Alta</SelectItem>
+                        <SelectItem value="urgente">Urgente</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="descricao_tarefa">Descrição</Label>
+                    <Textarea
+                      id="descricao_tarefa"
+                      value={formDataTarefa.descricao}
+                      onChange={(e) => setFormDataTarefa({...formDataTarefa, descricao: e.target.value})}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="data_prazo">Data Prazo</Label>
+                      <Input
+                        id="data_prazo"
+                        type="date"
+                        value={formDataTarefa.data_prazo}
+                        onChange={(e) => setFormDataTarefa({...formDataTarefa, data_prazo: e.target.value})}
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="tempo_estimado">Tempo (horas)</Label>
+                      <Input
+                        id="tempo_estimado"
+                        type="number"
+                        step="0.5"
+                        value={formDataTarefa.tempo_estimado}
+                        onChange={(e) => setFormDataTarefa({...formDataTarefa, tempo_estimado: e.target.value})}
+                      />
+                    </div>
+                  </div>
+                  
+                  <Button type="submit" className="w-full">
+                    Criar Tarefa
+                  </Button>
+                </form>
+              </DialogContent>
+            </Dialog>
+          </div>
         </div>
 
         {/* Seletor de Projeto */}
