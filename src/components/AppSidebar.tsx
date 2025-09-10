@@ -108,7 +108,7 @@ export function AppSidebar() {
               ))}
               
               {/* Financeiro com submenu */}
-              <Collapsible open={isFinanceiroActive} className="group/collapsible">
+              <Collapsible defaultOpen={isFinanceiroActive} className="group/collapsible">
                 <SidebarMenuItem>
                   <CollapsibleTrigger asChild>
                     <SidebarMenuButton
