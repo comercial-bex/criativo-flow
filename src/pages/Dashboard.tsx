@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart3, Users, FolderOpen, Target, Clock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { BuilderComponent } from '@/components/BuilderComponent';
 
 interface DashboardStats {
   totalClientes: number;
@@ -84,6 +85,9 @@ const Dashboard = () => {
 
   return (
     <div className="p-6">
+      {/* Builder.io Layout */}
+      <BuilderComponent model="page" />
+      
       <div className="mb-8">
         <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
         <p className="text-muted-foreground">
