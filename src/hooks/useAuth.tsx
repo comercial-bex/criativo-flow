@@ -51,21 +51,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       email,
       password,
       options: {
-        emailRedirectTo: `${window.location.origin}/`,
         data: {
           nome: nome
         }
       }
     });
-    
-    // Se o cadastro foi bem-sucedido e não há erro, fazer login automaticamente
-    if (!error && data.user && !data.user.email_confirmed_at) {
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-      return { error: signInError };
-    }
     
     return { error };
   };
