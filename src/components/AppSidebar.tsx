@@ -27,24 +27,20 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 // Menu baseado no perfil do usuário
 const getMenuByRole = (role: string | null) => {
   const commonItems = [
-    {
-      title: "Dashboard",
-      url: "/dashboard",
-      icon: BarChart3,
-      roles: ['admin', 'gestor', 'grs', 'atendimento', 'designer', 'filmmaker', 'financeiro']
-    }
+    { title: "Dashboard", url: "/dashboard", icon: BarChart3 },
+    { title: "CRM / Comercial", url: "/crm", icon: Target },
+    { title: "Projetos", url: "/projetos", icon: FolderOpen },
+    { title: "Clientes", url: "/clientes", icon: Users },
   ];
 
   const roleSpecificItems = {
     grs: [
       { title: "Planejamentos", url: "/planejamentos", icon: Calendar },
       { title: "Aprovações Cliente", url: "/aprovacoes", icon: FileText },
-      { title: "Clientes", url: "/clientes", icon: Users },
     ],
     atendimento: [
       { title: "Inbox Revisões", url: "/inbox", icon: Inbox },
       { title: "Timeline Clientes", url: "/timeline", icon: TrendingUp },
-      { title: "Clientes", url: "/clientes", icon: Users },
     ],
     designer: [
       { title: "Quadro Tarefas", url: "/tarefas", icon: Palette },
@@ -57,13 +53,8 @@ const getMenuByRole = (role: string | null) => {
     gestor: [
       { title: "Command Center", url: "/command", icon: BarChart3 },
       { title: "Riscos & Oportunidades", url: "/riscos", icon: TrendingUp },
-      { title: "Clientes", url: "/clientes", icon: Users },
-      { title: "Projetos", url: "/projetos", icon: FolderOpen },
     ],
     admin: [
-      { title: "CRM / Comercial", url: "/crm", icon: Target },
-      { title: "Projetos", url: "/projetos", icon: FolderOpen },
-      { title: "Clientes", url: "/clientes", icon: Users },
       { title: "Configurações", url: "/configuracoes", icon: Settings },
     ],
     financeiro: [
@@ -74,9 +65,9 @@ const getMenuByRole = (role: string | null) => {
       { title: "Aprovações", url: "/cliente-aprovacoes", icon: FileText },
       { title: "Financeiro", url: "/cliente-financeiro", icon: DollarSign },
     ]
-  };
+  } as const;
 
-  if (!role) return commonItems;
+  if (!role) return commonItems; // fallback com navegação global curta
   
   return [
     ...commonItems,
@@ -106,7 +97,7 @@ export function AppSidebar() {
   
   const menuItems = getMenuByRole(role);
   const isFinanceiroActive = location.pathname.startsWith('/financeiro');
-  const showFinanceiro = role === 'admin' || role === 'gestor' || role === 'financeiro';
+  const showFinanceiro = !role || role === 'admin' || role === 'gestor' || role === 'financeiro';
 
   const handleSignOut = async () => {
     await signOut();

@@ -31,13 +31,13 @@ export function useUserRole() {
           .from('user_roles')
           .select('role')
           .eq('user_id', user.id)
-          .single();
+          .maybeSingle();
 
         if (error) {
-          console.error('Erro ao buscar role do usuário:', error);
+          console.warn('Aviso ao buscar role do usuário:', error);
           setRole(null);
         } else {
-          setRole(data?.role as UserRole);
+          setRole((data?.role as UserRole) ?? null);
         }
       } catch (error) {
         console.error('Erro ao buscar role:', error);
