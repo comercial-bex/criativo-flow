@@ -10,6 +10,7 @@ import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import CRM from "./pages/CRM";
 import Projetos from "./pages/Projetos";
+import Clientes from "./pages/Clientes";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -84,7 +85,7 @@ const App = () => (
             <Route path="/clientes" element={
               <ProtectedRoute>
                 <Layout>
-                  <Dashboard />
+                  <Clientes />
                 </Layout>
               </ProtectedRoute>
             } />
