@@ -11,7 +11,13 @@ export function BuilderComponent({ model, content }: BuilderComponentProps) {
 
   useEffect(() => {
     if (!content) {
-      builder.get(model).promise().then(setBuilderContent)
+      builder
+        .get(model, { userAttributes: { url: window.location.pathname } })
+        .promise()
+        .then(setBuilderContent)
+        .catch((err) => {
+          console.error('Builder.io fetch error:', err)
+        })
     }
   }, [model, content])
 
