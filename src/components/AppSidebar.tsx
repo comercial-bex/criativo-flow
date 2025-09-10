@@ -1,6 +1,10 @@
-import { BarChart3, Users, FolderOpen, Target, DollarSign, LogOut, ChevronRight, Tags } from "lucide-react";
+import { 
+  BarChart3, Users, FolderOpen, Target, DollarSign, LogOut, ChevronRight, Tags,
+  Calendar, Inbox, Palette, Video, Settings, FileText, TrendingUp
+} from "lucide-react";
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { useUserRole } from "@/hooks/useUserRole";
 import {
   Sidebar,
   SidebarContent,
@@ -20,28 +24,65 @@ import {
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
-const menuItems = [
-  {
-    title: "Dashboard",
-    url: "/dashboard",
-    icon: BarChart3,
-  },
-  {
-    title: "CRM / Comercial",
-    url: "/crm",
-    icon: Target,
-  },
-  {
-    title: "Projetos",
-    url: "/projetos",
-    icon: FolderOpen,
-  },
-  {
-    title: "Clientes",
-    url: "/clientes",
-    icon: Users,
-  },
-];
+// Menu baseado no perfil do usuário
+const getMenuByRole = (role: string | null) => {
+  const commonItems = [
+    {
+      title: "Dashboard",
+      url: "/dashboard",
+      icon: BarChart3,
+      roles: ['admin', 'gestor', 'grs', 'atendimento', 'designer', 'filmmaker', 'financeiro']
+    }
+  ];
+
+  const roleSpecificItems = {
+    grs: [
+      { title: "Planejamentos", url: "/planejamentos", icon: Calendar },
+      { title: "Aprovações Cliente", url: "/aprovacoes", icon: FileText },
+      { title: "Clientes", url: "/clientes", icon: Users },
+    ],
+    atendimento: [
+      { title: "Inbox Revisões", url: "/inbox", icon: Inbox },
+      { title: "Timeline Clientes", url: "/timeline", icon: TrendingUp },
+      { title: "Clientes", url: "/clientes", icon: Users },
+    ],
+    designer: [
+      { title: "Quadro Tarefas", url: "/tarefas", icon: Palette },
+      { title: "Biblioteca", url: "/biblioteca", icon: FolderOpen },
+    ],
+    filmmaker: [
+      { title: "Pipeline Vídeo", url: "/pipeline", icon: Video },
+      { title: "Agenda Filmagens", url: "/agenda", icon: Calendar },
+    ],
+    gestor: [
+      { title: "Command Center", url: "/command", icon: BarChart3 },
+      { title: "Riscos & Oportunidades", url: "/riscos", icon: TrendingUp },
+      { title: "Clientes", url: "/clientes", icon: Users },
+      { title: "Projetos", url: "/projetos", icon: FolderOpen },
+    ],
+    admin: [
+      { title: "CRM / Comercial", url: "/crm", icon: Target },
+      { title: "Projetos", url: "/projetos", icon: FolderOpen },
+      { title: "Clientes", url: "/clientes", icon: Users },
+      { title: "Configurações", url: "/configuracoes", icon: Settings },
+    ],
+    financeiro: [
+      { title: "Contratos", url: "/contratos", icon: FileText },
+    ],
+    cliente: [
+      { title: "Meu Painel", url: "/cliente-painel", icon: BarChart3 },
+      { title: "Aprovações", url: "/cliente-aprovacoes", icon: FileText },
+      { title: "Financeiro", url: "/cliente-financeiro", icon: DollarSign },
+    ]
+  };
+
+  if (!role) return commonItems;
+  
+  return [
+    ...commonItems,
+    ...(roleSpecificItems[role as keyof typeof roleSpecificItems] || [])
+  ];
+};
 
 const financeiroSubmenu = [
   {
@@ -59,10 +100,13 @@ const financeiroSubmenu = [
 export function AppSidebar() {
   const { state } = useSidebar();
   const { user, signOut } = useAuth();
+  const { role } = useUserRole();
   const navigate = useNavigate();
   const location = useLocation();
   
+  const menuItems = getMenuByRole(role);
   const isFinanceiroActive = location.pathname.startsWith('/financeiro');
+  const showFinanceiro = role === 'admin' || role === 'gestor' || role === 'financeiro';
 
   const handleSignOut = async () => {
     await signOut();
@@ -107,8 +151,9 @@ export function AppSidebar() {
                 </SidebarMenuItem>
               ))}
               
-              {/* Financeiro com submenu */}
-              <Collapsible defaultOpen={isFinanceiroActive} className="group/collapsible">
+              {/* Financeiro com submenu - apenas para roles autorizados */}
+              {showFinanceiro && (
+                <Collapsible defaultOpen={isFinanceiroActive} className="group/collapsible">
                 <SidebarMenuItem>
                   <CollapsibleTrigger asChild>
                     <SidebarMenuButton
@@ -147,7 +192,8 @@ export function AppSidebar() {
                     </SidebarMenuSub>
                   </CollapsibleContent>
                 </SidebarMenuItem>
-              </Collapsible>
+                </Collapsible>
+              )}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

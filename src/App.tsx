@@ -15,6 +15,11 @@ import Financeiro from "./pages/Financeiro";
 import CategoriasFinanceiras from "./pages/CategoriasFinanceiras";
 import NotFound from "./pages/NotFound";
 
+// Páginas específicas por perfil
+import GRSDashboard from "./pages/GRS/Dashboard";
+import AtendimentoInbox from "./pages/Atendimento/Inbox";
+import ClientePainel from "./pages/Cliente/Painel";
+
 const queryClient = new QueryClient();
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -105,6 +110,30 @@ const App = () => (
                 </Layout>
               </ProtectedRoute>
             } />
+            
+            {/* Rotas específicas por perfil */}
+            <Route path="/planejamentos" element={
+              <ProtectedRoute>
+                <Layout>
+                  <GRSDashboard />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/inbox" element={
+              <ProtectedRoute>
+                <Layout>
+                  <AtendimentoInbox />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/cliente-painel" element={
+              <ProtectedRoute>
+                <Layout>
+                  <ClientePainel />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>

@@ -147,6 +147,66 @@ export type Database = {
           },
         ]
       }
+      planejamentos: {
+        Row: {
+          cliente_id: string | null
+          created_at: string
+          data_aprovacao_cliente: string | null
+          data_envio_cliente: string | null
+          descricao: string | null
+          id: string
+          mes_referencia: string
+          observacoes_cliente: string | null
+          responsavel_grs_id: string | null
+          status: Database["public"]["Enums"]["status_padrao"] | null
+          titulo: string
+          updated_at: string
+        }
+        Insert: {
+          cliente_id?: string | null
+          created_at?: string
+          data_aprovacao_cliente?: string | null
+          data_envio_cliente?: string | null
+          descricao?: string | null
+          id?: string
+          mes_referencia: string
+          observacoes_cliente?: string | null
+          responsavel_grs_id?: string | null
+          status?: Database["public"]["Enums"]["status_padrao"] | null
+          titulo: string
+          updated_at?: string
+        }
+        Update: {
+          cliente_id?: string | null
+          created_at?: string
+          data_aprovacao_cliente?: string | null
+          data_envio_cliente?: string | null
+          descricao?: string | null
+          id?: string
+          mes_referencia?: string
+          observacoes_cliente?: string | null
+          responsavel_grs_id?: string | null
+          status?: Database["public"]["Enums"]["status_padrao"] | null
+          titulo?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "planejamentos_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "planejamentos_responsavel_grs_id_fkey"
+            columns: ["responsavel_grs_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -425,6 +485,14 @@ export type Database = {
     }
     Enums: {
       priority_type: "baixa" | "media" | "alta" | "urgente"
+      status_padrao:
+        | "rascunho"
+        | "em_revisao"
+        | "aprovado_cliente"
+        | "em_producao"
+        | "em_aprovacao_final"
+        | "finalizado"
+        | "reprovado"
       status_type: "ativo" | "inativo" | "pendente" | "arquivado"
       user_role:
         | "admin"
@@ -565,6 +633,15 @@ export const Constants = {
   public: {
     Enums: {
       priority_type: ["baixa", "media", "alta", "urgente"],
+      status_padrao: [
+        "rascunho",
+        "em_revisao",
+        "aprovado_cliente",
+        "em_producao",
+        "em_aprovacao_final",
+        "finalizado",
+        "reprovado",
+      ],
       status_type: ["ativo", "inativo", "pendente", "arquivado"],
       user_role: [
         "admin",
