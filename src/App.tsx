@@ -11,6 +11,7 @@ import Dashboard from "./pages/Dashboard";
 import CRM from "./pages/CRM";
 import Projetos from "./pages/Projetos";
 import Clientes from "./pages/Clientes";
+import Financeiro from "./pages/Financeiro";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -92,7 +93,7 @@ const App = () => (
             <Route path="/financeiro" element={
               <ProtectedRoute>
                 <Layout>
-                  <Dashboard />
+                  <Financeiro />
                 </Layout>
               </ProtectedRoute>
             } />
