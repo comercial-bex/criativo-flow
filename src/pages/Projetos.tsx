@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Plus, FolderOpen, Calendar, User, Clock } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { BuilderComponent } from '@/components/BuilderComponent';
 
 interface Projeto {
   id: string;
@@ -290,6 +291,9 @@ const Projetos = () => {
 
   return (
     <div className="p-6">
+      {/* Builder.io Layout */}
+      <BuilderComponent model="page" />
+      
       <div className="mb-8">
         <div className="flex items-center justify-between mb-4">
           <div>
