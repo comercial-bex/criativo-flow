@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
+import { Layout } from "@/components/Layout";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
@@ -61,27 +62,37 @@ const App = () => (
             } />
             <Route path="/dashboard" element={
               <ProtectedRoute>
-                <Dashboard />
+                <Layout>
+                  <Dashboard />
+                </Layout>
               </ProtectedRoute>
             } />
             <Route path="/crm" element={
               <ProtectedRoute>
-                <CRM />
+                <Layout>
+                  <CRM />
+                </Layout>
               </ProtectedRoute>
             } />
             <Route path="/projetos" element={
               <ProtectedRoute>
-                <Projetos />
+                <Layout>
+                  <Projetos />
+                </Layout>
               </ProtectedRoute>
             } />
             <Route path="/clientes" element={
               <ProtectedRoute>
-                <Dashboard />
+                <Layout>
+                  <Dashboard />
+                </Layout>
               </ProtectedRoute>
             } />
             <Route path="/financeiro" element={
               <ProtectedRoute>
-                <Dashboard />
+                <Layout>
+                  <Dashboard />
+                </Layout>
               </ProtectedRoute>
             } />
             <Route path="*" element={<NotFound />} />

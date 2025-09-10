@@ -153,7 +153,7 @@ const Projetos = () => {
   const projetoAtual = projetos.find(p => p.id === projetoSelecionado);
 
   return (
-    <div className="min-h-screen bg-background p-6">
+    <div className="p-6">
       <div className="mb-8">
         <div className="flex items-center justify-between mb-4">
           <div>
