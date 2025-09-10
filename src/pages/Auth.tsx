@@ -54,8 +54,9 @@ const Auth = () => {
     } else {
       toast({
         title: "Conta criada com sucesso!",
-        description: "Verifique seu email para ativar a conta",
+        description: "Bem-vindo ao ERP da Agência de Marketing",
       });
+      navigate('/dashboard');
     }
     setLoading(false);
   };
