@@ -12,6 +12,7 @@ import CRM from "./pages/CRM";
 import Projetos from "./pages/Projetos";
 import Clientes from "./pages/Clientes";
 import Financeiro from "./pages/Financeiro";
+import CategoriasFinanceiras from "./pages/CategoriasFinanceiras";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -94,6 +95,13 @@ const App = () => (
               <ProtectedRoute>
                 <Layout>
                   <Financeiro />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/financeiro/categorias" element={
+              <ProtectedRoute>
+                <Layout>
+                  <CategoriasFinanceiras />
                 </Layout>
               </ProtectedRoute>
             } />

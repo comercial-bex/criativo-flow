@@ -1,5 +1,5 @@
-import { BarChart3, Users, FolderOpen, Target, DollarSign, LogOut } from "lucide-react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { BarChart3, Users, FolderOpen, Target, DollarSign, LogOut, ChevronRight, Tags } from "lucide-react";
+import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import {
   Sidebar,
@@ -11,10 +11,14 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
   SidebarHeader,
   useSidebar,
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 const menuItems = [
   {
@@ -37,10 +41,18 @@ const menuItems = [
     url: "/clientes",
     icon: Users,
   },
+];
+
+const financeiroSubmenu = [
   {
-    title: "Financeiro",
+    title: "Visão Geral",
     url: "/financeiro",
     icon: DollarSign,
+  },
+  {
+    title: "Categorias",
+    url: "/financeiro/categorias",
+    icon: Tags,
   },
 ];
 
@@ -48,6 +60,9 @@ export function AppSidebar() {
   const { state } = useSidebar();
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  
+  const isFinanceiroActive = location.pathname.startsWith('/financeiro');
 
   const handleSignOut = async () => {
     await signOut();
@@ -91,6 +106,48 @@ export function AppSidebar() {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
+              
+              {/* Financeiro com submenu */}
+              <Collapsible open={isFinanceiroActive} className="group/collapsible">
+                <SidebarMenuItem>
+                  <CollapsibleTrigger asChild>
+                    <SidebarMenuButton
+                      className={`${
+                        isFinanceiroActive
+                          ? "bg-primary text-primary-foreground"
+                          : "hover:bg-muted"
+                      }`}
+                    >
+                      <DollarSign className="h-4 w-4" />
+                      <span className="group-data-[collapsible=icon]:hidden">Financeiro</span>
+                      <ChevronRight className="ml-auto h-4 w-4 transition-transform group-data-[state=open]/collapsible:rotate-90 group-data-[collapsible=icon]:hidden" />
+                    </SidebarMenuButton>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <SidebarMenuSub>
+                      {financeiroSubmenu.map((subItem) => (
+                        <SidebarMenuSubItem key={subItem.title}>
+                          <SidebarMenuSubButton asChild>
+                            <NavLink
+                              to={subItem.url}
+                              className={({ isActive }) =>
+                                `flex items-center space-x-2 ${
+                                  isActive
+                                    ? "bg-primary text-primary-foreground"
+                                    : "hover:bg-muted"
+                                }`
+                              }
+                            >
+                              <subItem.icon className="h-4 w-4" />
+                              <span>{subItem.title}</span>
+                            </NavLink>
+                          </SidebarMenuSubButton>
+                        </SidebarMenuSubItem>
+                      ))}
+                    </SidebarMenuSub>
+                  </CollapsibleContent>
+                </SidebarMenuItem>
+              </Collapsible>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

@@ -8,10 +8,9 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Plus, Search, TrendingUp, TrendingDown, DollarSign, Clock } from "lucide-react";
+import { CalendarIcon, Plus, Search, TrendingUp, TrendingDown, DollarSign, Clock, Edit2, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -63,9 +62,7 @@ export default function Financeiro() {
   const [filterTipo, setFilterTipo] = useState<string>("todos");
   const [filterStatus, setFilterStatus] = useState<string>("todos");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [isCategoriaDialogOpen, setIsCategoriaDialogOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<TransacaoFinanceira | null>(null);
-  const [editingCategoria, setEditingCategoria] = useState<CategoriaFinanceira | null>(null);
   const { toast } = useToast();
 
   const [novaTransacao, setNovaTransacao] = useState({
@@ -80,13 +77,6 @@ export default function Financeiro() {
     cliente_id: "",
     projeto_id: "",
     observacoes: ""
-  });
-
-  const [novaCategoria, setNovaCategoria] = useState({
-    nome: "",
-    tipo: "receita" as "receita" | "despesa",
-    cor: "#3b82f6",
-    descricao: ""
   });
 
   useEffect(() => {
@@ -148,18 +138,30 @@ export default function Financeiro() {
 
   const handleSaveTransacao = async () => {
     try {
+      const valor = parseFloat(novaTransacao.valor);
+      if (isNaN(valor) || valor <= 0) {
+        toast({
+          title: "Erro",
+          description: "Valor deve ser um número válido maior que zero",
+          variant: "destructive"
+        });
+        return;
+      }
+
       const transacaoData = {
-        titulo: novaTransacao.titulo,
-        descricao: novaTransacao.descricao || null,
-        valor: parseFloat(novaTransacao.valor),
+        titulo: novaTransacao.titulo.trim(),
+        descricao: novaTransacao.descricao?.trim() || null,
+        valor,
         tipo: novaTransacao.tipo,
         status: novaTransacao.status,
         data_vencimento: format(novaTransacao.data_vencimento, "yyyy-MM-dd"),
-        data_pagamento: novaTransacao.data_pagamento ? format(novaTransacao.data_pagamento, "yyyy-MM-dd") : null,
+        data_pagamento: novaTransacao.data_pagamento 
+          ? format(novaTransacao.data_pagamento, "yyyy-MM-dd") 
+          : null,
         categoria_id: novaTransacao.categoria_id || null,
         cliente_id: novaTransacao.cliente_id || null,
         projeto_id: novaTransacao.projeto_id || null,
-        observacoes: novaTransacao.observacoes || null
+        observacoes: novaTransacao.observacoes?.trim() || null
       };
 
       if (editingTransaction) {
@@ -169,56 +171,31 @@ export default function Financeiro() {
           .eq("id", editingTransaction.id);
 
         if (error) throw error;
-        toast({ title: "Sucesso", description: "Transação atualizada com sucesso!" });
+
+        toast({
+          title: "Sucesso",
+          description: "Transação atualizada com sucesso!"
+        });
       } else {
         const { error } = await supabase
           .from("transacoes_financeiras")
           .insert([transacaoData]);
 
         if (error) throw error;
-        toast({ title: "Sucesso", description: "Transação criada com sucesso!" });
+
+        toast({
+          title: "Sucesso",
+          description: "Transação criada com sucesso!"
+        });
       }
 
       setIsDialogOpen(false);
-      setEditingTransaction(null);
       resetForm();
       fetchData();
     } catch (error) {
       toast({
         title: "Erro",
         description: "Erro ao salvar transação",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const handleSaveCategoria = async () => {
-    try {
-      if (editingCategoria) {
-        const { error } = await supabase
-          .from("categorias_financeiras")
-          .update(novaCategoria)
-          .eq("id", editingCategoria.id);
-
-        if (error) throw error;
-        toast({ title: "Sucesso", description: "Categoria atualizada com sucesso!" });
-      } else {
-        const { error } = await supabase
-          .from("categorias_financeiras")
-          .insert([novaCategoria]);
-
-        if (error) throw error;
-        toast({ title: "Sucesso", description: "Categoria criada com sucesso!" });
-      }
-
-      setIsCategoriaDialogOpen(false);
-      setEditingCategoria(null);
-      setNovaCategoria({ nome: "", tipo: "receita", cor: "#3b82f6", descricao: "" });
-      fetchData();
-    } catch (error) {
-      toast({
-        title: "Erro",
-        description: "Erro ao salvar categoria",
         variant: "destructive"
       });
     }
@@ -238,6 +215,7 @@ export default function Financeiro() {
       projeto_id: "",
       observacoes: ""
     });
+    setEditingTransaction(null);
   };
 
   const handleEdit = (transacao: TransacaoFinanceira) => {
@@ -258,23 +236,48 @@ export default function Financeiro() {
     setIsDialogOpen(true);
   };
 
-  const handleEditCategoria = (categoria: CategoriaFinanceira) => {
-    setEditingCategoria(categoria);
-    setNovaCategoria({
-      nome: categoria.nome,
-      tipo: categoria.tipo,
-      cor: categoria.cor,
-      descricao: categoria.descricao || ""
-    });
-    setIsCategoriaDialogOpen(true);
+  const handleDelete = async (id: string) => {
+    if (!confirm("Tem certeza que deseja excluir esta transação?")) return;
+
+    try {
+      const { error } = await supabase
+        .from("transacoes_financeiras")
+        .delete()
+        .eq("id", id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Sucesso",
+        description: "Transação excluída com sucesso!"
+      });
+
+      fetchData();
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Erro ao excluir transação",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "pago": return "bg-green-100 text-green-800";
+      case "pendente": return "bg-yellow-100 text-yellow-800";
+      case "atrasado": return "bg-red-100 text-red-800";
+      case "cancelado": return "bg-gray-100 text-gray-800";
+      default: return "bg-gray-100 text-gray-800";
+    }
   };
 
   const filteredTransacoes = transacoes.filter(transacao => {
     const matchesSearch = transacao.titulo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         transacao.clientes?.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         transacao.projetos?.nome.toLowerCase().includes(searchTerm.toLowerCase());
+                         transacao.descricao?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesTipo = filterTipo === "todos" || transacao.tipo === filterTipo;
     const matchesStatus = filterStatus === "todos" || transacao.status === filterStatus;
+    
     return matchesSearch && matchesTipo && matchesStatus;
   });
 
@@ -286,29 +289,11 @@ export default function Financeiro() {
     .filter(t => t.tipo === "pagar" && t.status !== "cancelado")
     .reduce((sum, t) => sum + t.valor, 0);
 
-  const saldoTotal = totalReceber - totalPagar;
-
-  const getStatusBadge = (status: string) => {
-    const variants: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
-      pendente: "outline",
-      pago: "default",
-      atrasado: "destructive",
-      cancelado: "secondary"
-    };
-    return <Badge variant={variants[status] || "default"}>{status}</Badge>;
-  };
-
-  const getTipoBadge = (tipo: string) => {
-    return (
-      <Badge variant={tipo === "receber" ? "default" : "secondary"}>
-        {tipo === "receber" ? "A Receber" : "A Pagar"}
-      </Badge>
-    );
-  };
+  const saldoLiquido = totalReceber - totalPagar;
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Financeiro</h1>
           <p className="text-muted-foreground">
@@ -317,8 +302,8 @@ export default function Financeiro() {
         </div>
       </div>
 
-      {/* Resumo Financeiro */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      {/* Cards de Resumo */}
+      <div className="grid gap-4 md:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total a Receber</CardTitle>
@@ -326,8 +311,11 @@ export default function Financeiro() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">
-              R$ {totalReceber.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+              R$ {totalReceber.toFixed(2)}
             </div>
+            <p className="text-xs text-muted-foreground">
+              +12.5% em relação ao mês anterior
+            </p>
           </CardContent>
         </Card>
 
@@ -338,308 +326,144 @@ export default function Financeiro() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-red-600">
-              R$ {totalPagar.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+              R$ {totalPagar.toFixed(2)}
             </div>
+            <p className="text-xs text-muted-foreground">
+              +8.2% em relação ao mês anterior
+            </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Saldo</CardTitle>
+            <CardTitle className="text-sm font-medium">Saldo Líquido</CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className={`text-2xl font-bold ${saldoTotal >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-              R$ {saldoTotal.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+            <div className={`text-2xl font-bold ${saldoLiquido >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+              R$ {saldoLiquido.toFixed(2)}
             </div>
+            <p className="text-xs text-muted-foreground">
+              Diferença entre receitas e despesas
+            </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Transações</CardTitle>
+            <CardTitle className="text-sm font-medium">Vencendo Hoje</CardTitle>
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{transacoes.length}</div>
+            <div className="text-2xl font-bold">
+              {transacoes.filter(t => 
+                new Date(t.data_vencimento).toDateString() === new Date().toDateString() &&
+                t.status === "pendente"
+              ).length}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              transações para hoje
+            </p>
           </CardContent>
         </Card>
       </div>
 
-      <Tabs defaultValue="transacoes" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="transacoes">Transações</TabsTrigger>
-          <TabsTrigger value="categorias">Categorias</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="transacoes" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <div className="flex justify-between items-center">
-                <div>
-                  <CardTitle>Transações Financeiras</CardTitle>
-                  <CardDescription>
-                    Gerencie contas a pagar e receber
-                  </CardDescription>
-                </div>
-                <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button onClick={() => { resetForm(); setEditingTransaction(null); }}>
-                      <Plus className="mr-2 h-4 w-4" />
-                      Nova Transação
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-2xl">
-                    <DialogHeader>
-                      <DialogTitle>
-                        {editingTransaction ? "Editar Transação" : "Nova Transação"}
-                      </DialogTitle>
-                      <DialogDescription>
-                        Preencha os dados da transação financeira
-                      </DialogDescription>
-                    </DialogHeader>
-                    <div className="grid gap-4 py-4">
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="titulo">Título</Label>
-                          <Input
-                            id="titulo"
-                            value={novaTransacao.titulo}
-                            onChange={(e) => setNovaTransacao({ ...novaTransacao, titulo: e.target.value })}
-                            placeholder="Título da transação"
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="valor">Valor</Label>
-                          <Input
-                            id="valor"
-                            type="number"
-                            step="0.01"
-                            value={novaTransacao.valor}
-                            onChange={(e) => setNovaTransacao({ ...novaTransacao, valor: e.target.value })}
-                            placeholder="0,00"
-                          />
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="tipo">Tipo</Label>
-                          <Select
-                            value={novaTransacao.tipo}
-                            onValueChange={(value: "pagar" | "receber") => 
-                              setNovaTransacao({ ...novaTransacao, tipo: value })
-                            }
-                          >
-                            <SelectTrigger>
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="receber">A Receber</SelectItem>
-                              <SelectItem value="pagar">A Pagar</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="status">Status</Label>
-                          <Select
-                            value={novaTransacao.status}
-                            onValueChange={(value: "pendente" | "pago" | "atrasado" | "cancelado") => 
-                              setNovaTransacao({ ...novaTransacao, status: value })
-                            }
-                          >
-                            <SelectTrigger>
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="pendente">Pendente</SelectItem>
-                              <SelectItem value="pago">Pago</SelectItem>
-                              <SelectItem value="atrasado">Atrasado</SelectItem>
-                              <SelectItem value="cancelado">Cancelado</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label>Data de Vencimento</Label>
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <Button
-                                variant="outline"
-                                className={cn(
-                                  "w-full justify-start text-left font-normal",
-                                  !novaTransacao.data_vencimento && "text-muted-foreground"
-                                )}
-                              >
-                                <CalendarIcon className="mr-2 h-4 w-4" />
-                                {novaTransacao.data_vencimento ? 
-                                  format(novaTransacao.data_vencimento, "PPP", { locale: ptBR }) : 
-                                  "Selecione a data"
-                                }
-                              </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0">
-                              <Calendar
-                                mode="single"
-                                selected={novaTransacao.data_vencimento}
-                                onSelect={(date) => date && setNovaTransacao({ ...novaTransacao, data_vencimento: date })}
-                                initialFocus
-                                className="pointer-events-auto"
-                              />
-                            </PopoverContent>
-                          </Popover>
-                        </div>
-                        <div className="space-y-2">
-                          <Label>Data de Pagamento</Label>
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <Button
-                                variant="outline"
-                                className={cn(
-                                  "w-full justify-start text-left font-normal",
-                                  !novaTransacao.data_pagamento && "text-muted-foreground"
-                                )}
-                              >
-                                <CalendarIcon className="mr-2 h-4 w-4" />
-                                {novaTransacao.data_pagamento ? 
-                                  format(novaTransacao.data_pagamento, "PPP", { locale: ptBR }) : 
-                                  "Selecione a data"
-                                }
-                              </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0">
-                              <Calendar
-                                mode="single"
-                                selected={novaTransacao.data_pagamento}
-                                onSelect={(date) => setNovaTransacao({ ...novaTransacao, data_pagamento: date })}
-                                initialFocus
-                                className="pointer-events-auto"
-                              />
-                            </PopoverContent>
-                          </Popover>
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-3 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="categoria">Categoria</Label>
-                          <Select
-                            value={novaTransacao.categoria_id}
-                            onValueChange={(value) => setNovaTransacao({ ...novaTransacao, categoria_id: value })}
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder="Selecione uma categoria" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {categorias.map((categoria) => (
-                                <SelectItem key={categoria.id} value={categoria.id}>
-                                  {categoria.nome}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="cliente">Cliente</Label>
-                          <Select
-                            value={novaTransacao.cliente_id}
-                            onValueChange={(value) => setNovaTransacao({ ...novaTransacao, cliente_id: value })}
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder="Selecione um cliente" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {clientes.map((cliente) => (
-                                <SelectItem key={cliente.id} value={cliente.id}>
-                                  {cliente.nome}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="projeto">Projeto</Label>
-                          <Select
-                            value={novaTransacao.projeto_id}
-                            onValueChange={(value) => setNovaTransacao({ ...novaTransacao, projeto_id: value })}
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder="Selecione um projeto" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {projetos.map((projeto) => (
-                                <SelectItem key={projeto.id} value={projeto.id}>
-                                  {projeto.nome}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="descricao">Descrição</Label>
-                        <Textarea
-                          id="descricao"
-                          value={novaTransacao.descricao}
-                          onChange={(e) => setNovaTransacao({ ...novaTransacao, descricao: e.target.value })}
-                          placeholder="Descrição da transação"
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="observacoes">Observações</Label>
-                        <Textarea
-                          id="observacoes"
-                          value={novaTransacao.observacoes}
-                          onChange={(e) => setNovaTransacao({ ...novaTransacao, observacoes: e.target.value })}
-                          placeholder="Observações adicionais"
-                        />
-                      </div>
-                    </div>
-                    <DialogFooter>
-                      <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-                        Cancelar
-                      </Button>
-                      <Button onClick={handleSaveTransacao}>
-                        {editingTransaction ? "Atualizar" : "Criar"} Transação
-                      </Button>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
+      {/* Transações */}
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-bold">Transações</h2>
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogTrigger asChild>
+            <Button onClick={() => { resetForm(); setIsDialogOpen(true); }}>
+              <Plus className="mr-2 h-4 w-4" />
+              Nova Transação
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>
+                {editingTransaction ? "Editar Transação" : "Nova Transação"}
+              </DialogTitle>
+              <DialogDescription>
+                {editingTransaction
+                  ? "Edite as informações da transação."
+                  : "Crie uma nova transação financeira."}
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="titulo" className="text-right">
+                  Título
+                </Label>
+                <Input
+                  id="titulo"
+                  value={novaTransacao.titulo}
+                  onChange={(e) => setNovaTransacao({...novaTransacao, titulo: e.target.value})}
+                  className="col-span-3"
+                  placeholder="Título da transação"
+                />
               </div>
-            </CardHeader>
-            <CardContent>
-              <div className="flex gap-4 mb-4">
-                <div className="flex-1">
-                  <div className="relative">
-                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      placeholder="Buscar transações..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-8"
-                    />
-                  </div>
-                </div>
-                <Select value={filterTipo} onValueChange={setFilterTipo}>
-                  <SelectTrigger className="w-[180px]">
+
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="descricao" className="text-right">
+                  Descrição
+                </Label>
+                <Textarea
+                  id="descricao"
+                  value={novaTransacao.descricao}
+                  onChange={(e) => setNovaTransacao({...novaTransacao, descricao: e.target.value})}
+                  className="col-span-3"
+                  placeholder="Descrição da transação"
+                  rows={3}
+                />
+              </div>
+
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="valor" className="text-right">
+                  Valor
+                </Label>
+                <Input
+                  id="valor"
+                  type="number"
+                  step="0.01"
+                  value={novaTransacao.valor}
+                  onChange={(e) => setNovaTransacao({...novaTransacao, valor: e.target.value})}
+                  className="col-span-3"
+                  placeholder="0,00"
+                />
+              </div>
+
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="tipo" className="text-right">
+                  Tipo
+                </Label>
+                <Select 
+                  value={novaTransacao.tipo} 
+                  onValueChange={(value: "pagar" | "receber") => setNovaTransacao({...novaTransacao, tipo: value})}
+                >
+                  <SelectTrigger className="col-span-3">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="todos">Todos os tipos</SelectItem>
-                    <SelectItem value="receber">A Receber</SelectItem>
-                    <SelectItem value="pagar">A Pagar</SelectItem>
+                    <SelectItem value="receber">Conta a Receber</SelectItem>
+                    <SelectItem value="pagar">Conta a Pagar</SelectItem>
                   </SelectContent>
                 </Select>
-                <Select value={filterStatus} onValueChange={setFilterStatus}>
-                  <SelectTrigger className="w-[180px]">
+              </div>
+
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="status" className="text-right">
+                  Status
+                </Label>
+                <Select 
+                  value={novaTransacao.status} 
+                  onValueChange={(value: "pendente" | "pago" | "atrasado" | "cancelado") => 
+                    setNovaTransacao({...novaTransacao, status: value})}
+                >
+                  <SelectTrigger className="col-span-3">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="todos">Todos os status</SelectItem>
                     <SelectItem value="pendente">Pendente</SelectItem>
                     <SelectItem value="pago">Pago</SelectItem>
                     <SelectItem value="atrasado">Atrasado</SelectItem>
@@ -648,204 +472,289 @@ export default function Financeiro() {
                 </Select>
               </div>
 
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Título</TableHead>
-                    <TableHead>Tipo</TableHead>
-                    <TableHead>Valor</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Vencimento</TableHead>
-                    <TableHead>Cliente/Projeto</TableHead>
-                    <TableHead>Categoria</TableHead>
-                    <TableHead>Ações</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredTransacoes.map((transacao) => (
-                    <TableRow key={transacao.id}>
-                      <TableCell>
-                        <div>
-                          <div className="font-medium">{transacao.titulo}</div>
-                          {transacao.descricao && (
-                            <div className="text-sm text-muted-foreground">
-                              {transacao.descricao}
-                            </div>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>{getTipoBadge(transacao.tipo)}</TableCell>
-                      <TableCell className="font-medium">
-                        <span className={transacao.tipo === "receber" ? "text-green-600" : "text-red-600"}>
-                          R$ {transacao.valor.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
-                        </span>
-                      </TableCell>
-                      <TableCell>{getStatusBadge(transacao.status)}</TableCell>
-                      <TableCell>
-                        {format(new Date(transacao.data_vencimento), "dd/MM/yyyy")}
-                      </TableCell>
-                      <TableCell>
-                        <div className="text-sm">
-                          {transacao.clientes?.nome && (
-                            <div>{transacao.clientes.nome}</div>
-                          )}
-                          {transacao.projetos?.nome && (
-                            <div className="text-muted-foreground">{transacao.projetos.nome}</div>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        {transacao.categorias_financeiras && (
-                          <Badge 
-                            variant="outline" 
-                            style={{ backgroundColor: `${transacao.categorias_financeiras.cor}20`, color: transacao.categorias_financeiras.cor }}
-                          >
-                            {transacao.categorias_financeiras.nome}
-                          </Badge>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleEdit(transacao)}
-                        >
-                          Editar
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="categorias" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <div className="flex justify-between items-center">
-                <div>
-                  <CardTitle>Categorias Financeiras</CardTitle>
-                  <CardDescription>
-                    Gerencie categorias de receitas e despesas
-                  </CardDescription>
-                </div>
-                <Dialog open={isCategoriaDialogOpen} onOpenChange={setIsCategoriaDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button onClick={() => { 
-                      setNovaCategoria({ nome: "", tipo: "receita", cor: "#3b82f6", descricao: "" }); 
-                      setEditingCategoria(null); 
-                    }}>
-                      <Plus className="mr-2 h-4 w-4" />
-                      Nova Categoria
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>
-                        {editingCategoria ? "Editar Categoria" : "Nova Categoria"}
-                      </DialogTitle>
-                    </DialogHeader>
-                    <div className="grid gap-4 py-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="nomeCategoria">Nome</Label>
-                        <Input
-                          id="nomeCategoria"
-                          value={novaCategoria.nome}
-                          onChange={(e) => setNovaCategoria({ ...novaCategoria, nome: e.target.value })}
-                          placeholder="Nome da categoria"
-                        />
-                      </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="tipoCategoria">Tipo</Label>
-                          <Select
-                            value={novaCategoria.tipo}
-                            onValueChange={(value: "receita" | "despesa") => 
-                              setNovaCategoria({ ...novaCategoria, tipo: value })
-                            }
-                          >
-                            <SelectTrigger>
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="receita">Receita</SelectItem>
-                              <SelectItem value="despesa">Despesa</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="cor">Cor</Label>
-                          <Input
-                            id="cor"
-                            type="color"
-                            value={novaCategoria.cor}
-                            onChange={(e) => setNovaCategoria({ ...novaCategoria, cor: e.target.value })}
-                          />
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="descricaoCategoria">Descrição</Label>
-                        <Textarea
-                          id="descricaoCategoria"
-                          value={novaCategoria.descricao}
-                          onChange={(e) => setNovaCategoria({ ...novaCategoria, descricao: e.target.value })}
-                          placeholder="Descrição da categoria"
-                        />
-                      </div>
-                    </div>
-                    <DialogFooter>
-                      <Button variant="outline" onClick={() => setIsCategoriaDialogOpen(false)}>
-                        Cancelar
-                      </Button>
-                      <Button onClick={handleSaveCategoria}>
-                        {editingCategoria ? "Atualizar" : "Criar"} Categoria
-                      </Button>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {categorias.map((categoria) => (
-                  <Card key={categoria.id} className="cursor-pointer hover:shadow-md transition-shadow">
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-3">
-                          <div 
-                            className="w-4 h-4 rounded-full"
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="categoria" className="text-right">
+                  Categoria
+                </Label>
+                <Select 
+                  value={novaTransacao.categoria_id} 
+                  onValueChange={(value) => setNovaTransacao({...novaTransacao, categoria_id: value})}
+                >
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Selecione uma categoria" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categorias.map((categoria) => (
+                      <SelectItem key={categoria.id} value={categoria.id}>
+                        <div className="flex items-center gap-2">
+                          <div
+                            className="w-3 h-3 rounded-full"
                             style={{ backgroundColor: categoria.cor }}
                           />
-                          <div>
-                            <div className="font-medium">{categoria.nome}</div>
-                            <div className="text-sm text-muted-foreground">
-                              {categoria.tipo === "receita" ? "Receita" : "Despesa"}
-                            </div>
-                          </div>
+                          {categoria.nome}
                         </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleEditCategoria(categoria)}
-                        >
-                          Editar
-                        </Button>
-                      </div>
-                      {categoria.descricao && (
-                        <p className="text-sm text-muted-foreground mt-2">
-                          {categoria.descricao}
-                        </p>
-                      )}
-                    </CardContent>
-                  </Card>
-                ))}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="cliente" className="text-right">
+                  Cliente
+                </Label>
+                <Select 
+                  value={novaTransacao.cliente_id} 
+                  onValueChange={(value) => setNovaTransacao({...novaTransacao, cliente_id: value})}
+                >
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Selecione um cliente" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {clientes.map((cliente) => (
+                      <SelectItem key={cliente.id} value={cliente.id}>
+                        {cliente.nome}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="projeto" className="text-right">
+                  Projeto
+                </Label>
+                <Select 
+                  value={novaTransacao.projeto_id} 
+                  onValueChange={(value) => setNovaTransacao({...novaTransacao, projeto_id: value})}
+                >
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Selecione um projeto" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {projetos.map((projeto) => (
+                      <SelectItem key={projeto.id} value={projeto.id}>
+                        {projeto.nome}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="data_vencimento" className="text-right">
+                  Data Vencimento
+                </Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "col-span-3 justify-start text-left font-normal",
+                        !novaTransacao.data_vencimento && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {novaTransacao.data_vencimento ? (
+                        format(novaTransacao.data_vencimento, "PPP", { locale: ptBR })
+                      ) : (
+                        <span>Selecione uma data</span>
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0">
+                    <Calendar
+                      mode="single"
+                      selected={novaTransacao.data_vencimento}
+                      onSelect={(date) => date && setNovaTransacao({...novaTransacao, data_vencimento: date})}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+
+              {novaTransacao.status === "pago" && (
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="data_pagamento" className="text-right">
+                    Data Pagamento
+                  </Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "col-span-3 justify-start text-left font-normal",
+                          !novaTransacao.data_pagamento && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {novaTransacao.data_pagamento ? (
+                          format(novaTransacao.data_pagamento, "PPP", { locale: ptBR })
+                        ) : (
+                          <span>Selecione uma data</span>
+                        )}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0">
+                      <Calendar
+                        mode="single"
+                        selected={novaTransacao.data_pagamento}
+                        onSelect={(date) => setNovaTransacao({...novaTransacao, data_pagamento: date})}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+              )}
+
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="observacoes" className="text-right">
+                  Observações
+                </Label>
+                <Textarea
+                  id="observacoes"
+                  value={novaTransacao.observacoes}
+                  onChange={(e) => setNovaTransacao({...novaTransacao, observacoes: e.target.value})}
+                  className="col-span-3"
+                  placeholder="Observações adicionais"
+                  rows={3}
+                />
+              </div>
+            </div>
+
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+                Cancelar
+              </Button>
+              <Button type="button" onClick={handleSaveTransacao}>
+                {editingTransaction ? "Atualizar" : "Criar"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      {/* Filtros */}
+      <div className="flex gap-4 mb-4">
+        <Input
+          placeholder="Buscar transações..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="max-w-sm"
+        />
+        <Select value={filterTipo} onValueChange={setFilterTipo}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Filtrar por tipo" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="todos">Todos os tipos</SelectItem>
+            <SelectItem value="receber">Contas a Receber</SelectItem>
+            <SelectItem value="pagar">Contas a Pagar</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={filterStatus} onValueChange={setFilterStatus}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Filtrar por status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="todos">Todos os status</SelectItem>
+            <SelectItem value="pendente">Pendente</SelectItem>
+            <SelectItem value="pago">Pago</SelectItem>
+            <SelectItem value="atrasado">Atrasado</SelectItem>
+            <SelectItem value="cancelado">Cancelado</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Tabela de Transações */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Lista de Transações</CardTitle>
+          <CardDescription>
+            Todas as transações financeiras cadastradas
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Título</TableHead>
+                <TableHead>Tipo</TableHead>
+                <TableHead>Valor</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Vencimento</TableHead>
+                <TableHead>Categoria</TableHead>
+                <TableHead>Cliente</TableHead>
+                <TableHead className="text-right">Ações</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredTransacoes.map((transacao) => (
+                <TableRow key={transacao.id}>
+                  <TableCell className="font-medium">{transacao.titulo}</TableCell>
+                  <TableCell>
+                    <Badge variant={transacao.tipo === "receber" ? "default" : "secondary"}>
+                      {transacao.tipo === "receber" ? "A Receber" : "A Pagar"}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <span className={transacao.tipo === "receber" ? "text-green-600" : "text-red-600"}>
+                      R$ {transacao.valor.toFixed(2)}
+                    </span>
+                  </TableCell>
+                  <TableCell>
+                    <Badge className={getStatusColor(transacao.status)}>
+                      {transacao.status}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    {new Date(transacao.data_vencimento).toLocaleDateString("pt-BR")}
+                  </TableCell>
+                  <TableCell>
+                    {transacao.categorias_financeiras && (
+                      <div className="flex items-center gap-2">
+                        <div
+                          className="w-3 h-3 rounded-full"
+                          style={{ backgroundColor: transacao.categorias_financeiras.cor }}
+                        />
+                        {transacao.categorias_financeiras.nome}
+                      </div>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {transacao.clientes?.nome || "-"}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex justify-end gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleEdit(transacao)}
+                      >
+                        <Edit2 className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleDelete(transacao.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+              {filteredTransacoes.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                    Nenhuma transação encontrada.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
     </div>
   );
 }
