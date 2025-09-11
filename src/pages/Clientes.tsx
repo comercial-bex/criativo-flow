@@ -68,8 +68,8 @@ const Clientes = () => {
 
   const filteredClientes = clientes.filter(cliente =>
     cliente.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    cliente.empresa?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    cliente.email?.toLowerCase().includes(searchTerm.toLowerCase())
+    cliente.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    cliente.cnpj_cpf?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   // Dados simulados para demonstração do layout
@@ -182,7 +182,7 @@ const Clientes = () => {
                   </Avatar>
                   <div>
                     <CardTitle className="text-lg">{cliente.nome}</CardTitle>
-                    <p className="text-sm text-muted-foreground">{cliente.empresa}</p>
+                    <p className="text-sm text-muted-foreground">{'empresa' in cliente ? cliente.empresa : cliente.cnpj_cpf}</p>
                   </div>
                 </div>
                 {'status' in cliente && (
