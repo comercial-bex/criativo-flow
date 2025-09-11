@@ -202,12 +202,14 @@ export default function ClienteProjetos() {
   const [statusFilter, setStatusFilter] = useState<string>("todos");
   const [expandedClients, setExpandedClients] = useState<Set<string>>(new Set());
 
-  const filteredClientes = clientes.filter(cliente => {
-    const matchesSearch = cliente.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         cliente.email.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === "todos" || cliente.status === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
+  const filteredClientes = clientes
+    .filter(cliente => cliente.status === 'ativo') // Apenas clientes ativos têm projetos
+    .filter(cliente => {
+      const matchesSearch = cliente.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           cliente.email.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesStatus = statusFilter === "todos" || cliente.status === statusFilter;
+      return matchesSearch && matchesStatus;
+    });
 
   const toggleClientExpansion = (clienteId: string) => {
     const newExpanded = new Set(expandedClients);
@@ -240,26 +242,23 @@ export default function ClienteProjetos() {
         <Select value={statusFilter} onValueChange={setStatusFilter}>
           <SelectTrigger className="w-full sm:w-48">
             <Filter className="h-4 w-4 mr-2" />
-            <SelectValue placeholder="Status do cliente" />
+            <SelectValue placeholder="Filtrar clientes" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="todos">Todos os Status</SelectItem>
-            <SelectItem value="ativo">Ativo</SelectItem>
-            <SelectItem value="inativo">Inativo</SelectItem>
-            <SelectItem value="prospecto">Prospecto</SelectItem>
+            <SelectItem value="todos">Todos Clientes Ativos</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
-      {/* Resumo Geral */}
+      {/* Resumo Geral - Apenas clientes ativos */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center space-x-2">
               <Users className="h-5 w-5 text-primary" />
               <div>
-                <p className="text-sm font-medium">Total Clientes</p>
-                <p className="text-2xl font-bold">{filteredClientes.length}</p>
+                <p className="text-sm font-medium">Clientes Ativos</p>
+                <p className="text-2xl font-bold">{clientes.filter(c => c.status === 'ativo').length}</p>
               </div>
             </div>
           </CardContent>
@@ -271,7 +270,7 @@ export default function ClienteProjetos() {
               <div>
                 <p className="text-sm font-medium">Total Projetos</p>
                 <p className="text-2xl font-bold">
-                  {filteredClientes.reduce((sum, cliente) => sum + cliente.totalProjetos, 0)}
+                  {clientes.filter(c => c.status === 'ativo').reduce((sum, cliente) => sum + cliente.totalProjetos, 0)}
                 </p>
               </div>
             </div>
@@ -284,7 +283,7 @@ export default function ClienteProjetos() {
               <div>
                 <p className="text-sm font-medium">Projetos Ativos</p>
                 <p className="text-2xl font-bold">
-                  {filteredClientes.reduce((sum, cliente) => sum + cliente.statusCounts.ativo, 0)}
+                  {clientes.filter(c => c.status === 'ativo').reduce((sum, cliente) => sum + cliente.statusCounts.ativo, 0)}
                 </p>
               </div>
             </div>
@@ -297,7 +296,7 @@ export default function ClienteProjetos() {
               <div>
                 <p className="text-sm font-medium">Projetos Concluídos</p>
                 <p className="text-2xl font-bold">
-                  {filteredClientes.reduce((sum, cliente) => sum + cliente.statusCounts.concluido, 0)}
+                  {clientes.filter(c => c.status === 'ativo').reduce((sum, cliente) => sum + cliente.statusCounts.concluido, 0)}
                 </p>
               </div>
             </div>
@@ -430,7 +429,7 @@ export default function ClienteProjetos() {
 
       {filteredClientes.length === 0 && (
         <div className="text-center py-12">
-          <p className="text-muted-foreground">Nenhum cliente encontrado.</p>
+          <p className="text-muted-foreground">Nenhum cliente ativo com projetos encontrado.</p>
         </div>
       )}
     </div>
