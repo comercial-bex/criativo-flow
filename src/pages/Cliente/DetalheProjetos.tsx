@@ -287,6 +287,10 @@ export default function DetalheProjetos() {
   const [cliente, setCliente] = useState<ClienteDetalhes | null>(null);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [realClienteId, setRealClienteId] = useState<string | null>(null);
+
+  const isUuid = (v: string) =>
+    /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/.test(v);
 
   useEffect(() => {
     if (clienteId && mockClienteDetalhes[clienteId]) {
@@ -294,6 +298,37 @@ export default function DetalheProjetos() {
     }
     setLoading(false);
   }, [clienteId]);
+
+  useEffect(() => {
+    const resolveId = async () => {
+      if (!clienteId) return;
+      if (isUuid(clienteId)) {
+        setRealClienteId(clienteId);
+        return;
+      }
+      if (cliente?.email) {
+        const { data } = await supabase
+          .from('clientes')
+          .select('id')
+          .eq('email', cliente.email)
+          .maybeSingle();
+        if (data?.id) {
+          setRealClienteId(data.id);
+          return;
+        }
+      }
+      if (cliente?.nome) {
+        const { data } = await supabase
+          .from('clientes')
+          .select('id')
+          .eq('nome', cliente.nome)
+          .maybeSingle();
+        if (data?.id) setRealClienteId(data.id);
+      }
+    };
+    resolveId();
+  }, [clienteId, cliente?.email]);
+
 
   if (loading) {
     return (
@@ -464,12 +499,17 @@ export default function DetalheProjetos() {
               Crie um novo projeto para {cliente?.nome}
             </DialogDescription>
           </DialogHeader>
-          {clienteId && (
+          {realClienteId ? (
             <ProjetoForm 
-              clienteId={clienteId} 
+              clienteId={realClienteId} 
               onSuccess={() => setDialogOpen(false)} 
             />
+          ) : (
+            <div className="text-sm text-muted-foreground">
+              Não foi possível identificar o cliente no banco. Verifique o cadastro do cliente antes de criar um projeto.
+            </div>
           )}
+
         </DialogContent>
       </Dialog>
     </div>
