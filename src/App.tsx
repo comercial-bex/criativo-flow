@@ -19,6 +19,7 @@ import GRSDashboard from "./pages/GRS/Dashboard";
 import AtendimentoInbox from "./pages/Atendimento/Inbox";
 import ClientePainel from "./pages/Cliente/Painel";
 import ClienteProjetos from "./pages/Cliente/Projetos";
+import DetalheProjetos from "./pages/Cliente/DetalheProjetos";
 import ClienteCadastro from "./pages/Cliente/Cadastro";
 import Configuracoes from "./pages/Configuracoes";
 import Relatorios from "./pages/Relatorios";
@@ -99,6 +100,13 @@ const App = () => (
               <ProtectedRoute>
                 <Layout>
                   <ClienteProjetos />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/clientes/:clienteId/detalhes" element={
+              <ProtectedRoute>
+                <Layout>
+                  <DetalheProjetos />
                 </Layout>
               </ProtectedRoute>
             } />

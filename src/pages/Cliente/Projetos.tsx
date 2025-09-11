@@ -7,9 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Search, Filter, ChevronDown, FolderOpen, Users, BarChart3, Plus, Eye } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Search, Filter, FolderOpen, Users, BarChart3, Plus, Eye } from "lucide-react";
 import { SectionHeader } from "@/components/SectionHeader";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -391,7 +390,6 @@ export default function ClienteProjetos() {
   const [clientes, setClientes] = useState<ClienteComProjetos[]>(mockClientesComProjetos);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("todos");
-  const [expandedClients, setExpandedClients] = useState<Set<string>>(new Set());
   const [dialogOpen, setDialogOpen] = useState(false);
 
   const filteredClientes = clientes
@@ -402,16 +400,6 @@ export default function ClienteProjetos() {
       const matchesStatus = statusFilter === "todos" || cliente.status === statusFilter;
       return matchesSearch && matchesStatus;
     });
-
-  const toggleClientExpansion = (clienteId: string) => {
-    const newExpanded = new Set(expandedClients);
-    if (newExpanded.has(clienteId)) {
-      newExpanded.delete(clienteId);
-    } else {
-      newExpanded.add(clienteId);
-    }
-    setExpandedClients(newExpanded);
-  };
 
   return (
     <div className="space-y-6">
@@ -510,7 +498,6 @@ export default function ClienteProjetos() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-12"></TableHead>
                 <TableHead>Cliente</TableHead>
                 <TableHead className="text-center">Total Projetos</TableHead>
                 <TableHead className="text-center">Ativos</TableHead>
@@ -523,129 +510,52 @@ export default function ClienteProjetos() {
             </TableHeader>
             <TableBody>
               {filteredClientes.map((cliente) => (
-                <>
-                  <TableRow 
-                    key={cliente.id} 
-                    className="cursor-pointer hover:bg-muted/50"
-                    onClick={() => toggleClientExpansion(cliente.id)}
-                  >
-                    <TableCell>
-                      <ChevronDown 
-                        className={`h-4 w-4 transition-transform ${
-                          expandedClients.has(cliente.id) ? 'rotate-180' : ''
-                        }`} 
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <div>
-                        <p className="font-medium">{cliente.nome}</p>
-                        <p className="text-sm text-muted-foreground">{cliente.email}</p>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-center font-medium">{cliente.totalProjetos}</TableCell>
-                    <TableCell className="text-center">
-                      <Badge variant="outline" className="bg-green-50 text-green-700">
-                        {cliente.statusCounts.ativo}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <Badge variant="outline" className="bg-blue-50 text-blue-700">
-                        {cliente.statusCounts.concluido}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <Badge variant="outline" className="bg-yellow-50 text-yellow-700">
-                        {cliente.statusCounts.pendente}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <Badge variant="outline" className="bg-red-50 text-red-700">
-                        {cliente.statusCounts.pausado}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge className={getClienteStatusColor(cliente.status)}>
-                        {cliente.status.charAt(0).toUpperCase() + cliente.status.slice(1)}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 w-8 p-0"
-                        onClick={(e) => {
-                          e.stopPropagation(); // Impede que o clique expanda a linha
-                          console.log('Ver detalhes dos projetos do cliente:', cliente.id);
-                          // Aqui você pode implementar a navegação para detalhes dos projetos do cliente
-                        }}
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                  
-                  {/* Projetos Expandidos */}
-                  {expandedClients.has(cliente.id) && (
-                    <TableRow>
-                      <TableCell colSpan={9} className="p-0">
-                        <div className="bg-muted/30 p-4">
-                          <h4 className="font-medium mb-3">Projetos de {cliente.nome}</h4>
-                          {cliente.projetos.length > 0 ? (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                              {cliente.projetos.map((projeto) => (
-                                <Card key={projeto.id} className="border border-border/50">
-                                  <CardContent className="p-4">
-                                    <div className="space-y-2">
-                                      <div className="flex justify-between items-start">
-                                        <h5 className="font-medium text-sm">{projeto.nome}</h5>
-                                        <div className="flex items-center gap-2">
-                                          <Badge className={getStatusColor(projeto.status)}>
-                                            {getStatusText(projeto.status)}
-                                          </Badge>
-                                          <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            className="h-8 w-8 p-0"
-                                            onClick={() => {
-                                              // Aqui você pode implementar a navegação para detalhes do projeto
-                                              console.log('Ver detalhes do projeto:', projeto.id);
-                                            }}
-                                          >
-                                            <Eye className="h-4 w-4" />
-                                          </Button>
-                                        </div>
-                                      </div>
-                                      <p className="text-xs text-muted-foreground">{projeto.tipo}</p>
-                                      <p className="text-sm font-medium">
-                                        R$ {projeto.valor.toLocaleString('pt-BR')}
-                                      </p>
-                                      <div className="space-y-1">
-                                        <div className="flex justify-between text-xs">
-                                          <span>Progresso</span>
-                                          <span>{projeto.progresso}%</span>
-                                        </div>
-                                        <div className="w-full bg-gray-200 rounded-full h-1.5">
-                                          <div 
-                                            className="bg-primary h-1.5 rounded-full" 
-                                            style={{ width: `${projeto.progresso}%` }}
-                                          ></div>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  </CardContent>
-                                </Card>
-                              ))}
-                            </div>
-                          ) : (
-                            <p className="text-muted-foreground text-sm">
-                              {cliente.status === 'ativo' ? 'Nenhum projeto encontrado para este cliente.' : 'Cliente não ativo - sem projetos.'}
-                            </p>
-                          )}
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </>
+                <TableRow key={cliente.id} className="hover:bg-muted/50">
+                  <TableCell>
+                    <div>
+                      <p className="font-medium">{cliente.nome}</p>
+                      <p className="text-sm text-muted-foreground">{cliente.email}</p>
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-center font-medium">{cliente.totalProjetos}</TableCell>
+                  <TableCell className="text-center">
+                    <Badge variant="outline" className="bg-green-50 text-green-700">
+                      {cliente.statusCounts.ativo}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <Badge variant="outline" className="bg-blue-50 text-blue-700">
+                      {cliente.statusCounts.concluido}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <Badge variant="outline" className="bg-yellow-50 text-yellow-700">
+                      {cliente.statusCounts.pendente}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <Badge variant="outline" className="bg-red-50 text-red-700">
+                      {cliente.statusCounts.pausado}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <Badge className={getClienteStatusColor(cliente.status)}>
+                      {cliente.status.charAt(0).toUpperCase() + cliente.status.slice(1)}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 w-8 p-0"
+                      onClick={() => {
+                        window.open(`/clientes/${cliente.id}/detalhes`, '_blank');
+                      }}
+                    >
+                      <Eye className="h-4 w-4" />
+                    </Button>
+                  </TableCell>
+                </TableRow>
               ))}
             </TableBody>
           </Table>
