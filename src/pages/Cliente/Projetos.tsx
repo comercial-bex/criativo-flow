@@ -118,6 +118,34 @@ const mockClientesComProjetos: ClienteComProjetos[] = [
     nome: "Loja Virtual Plus",
     email: "suporte@lojavirtual.com",
     status: "prospecto",
+    totalProjetos: 0,
+    statusCounts: {
+      ativo: 0,
+      concluido: 0,
+      pendente: 0,
+      pausado: 0
+    },
+    projetos: []
+  },
+  {
+    id: "4",
+    nome: "Empresa Inativa S.A.",
+    email: "contato@empresainativa.com",
+    status: "inativo",
+    totalProjetos: 0,
+    statusCounts: {
+      ativo: 0,
+      concluido: 0,
+      pendente: 0,
+      pausado: 0
+    },
+    projetos: []
+  },
+  {
+    id: "5",
+    nome: "StartupTech Ltda",
+    email: "hello@startuptech.com",
+    status: "ativo",
     totalProjetos: 1,
     statusCounts: {
       ativo: 0,
@@ -128,7 +156,7 @@ const mockClientesComProjetos: ClienteComProjetos[] = [
     projetos: [
       {
         id: "p6",
-        nome: "E-commerce Platform",
+        nome: "MVP Development",
         status: "pausado",
         valor: 35000,
         dataInicio: "2024-02-01",
@@ -351,38 +379,44 @@ export default function ClienteProjetos() {
                       <TableCell colSpan={8} className="p-0">
                         <div className="bg-muted/30 p-4">
                           <h4 className="font-medium mb-3">Projetos de {cliente.nome}</h4>
-                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {cliente.projetos.map((projeto) => (
-                              <Card key={projeto.id} className="border border-border/50">
-                                <CardContent className="p-4">
-                                  <div className="space-y-2">
-                                    <div className="flex justify-between items-start">
-                                      <h5 className="font-medium text-sm">{projeto.nome}</h5>
-                                      <Badge className={getStatusColor(projeto.status)}>
-                                        {getStatusText(projeto.status)}
-                                      </Badge>
-                                    </div>
-                                    <p className="text-xs text-muted-foreground">{projeto.tipo}</p>
-                                    <p className="text-sm font-medium">
-                                      R$ {projeto.valor.toLocaleString('pt-BR')}
-                                    </p>
-                                    <div className="space-y-1">
-                                      <div className="flex justify-between text-xs">
-                                        <span>Progresso</span>
-                                        <span>{projeto.progresso}%</span>
+                          {cliente.projetos.length > 0 ? (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                              {cliente.projetos.map((projeto) => (
+                                <Card key={projeto.id} className="border border-border/50">
+                                  <CardContent className="p-4">
+                                    <div className="space-y-2">
+                                      <div className="flex justify-between items-start">
+                                        <h5 className="font-medium text-sm">{projeto.nome}</h5>
+                                        <Badge className={getStatusColor(projeto.status)}>
+                                          {getStatusText(projeto.status)}
+                                        </Badge>
                                       </div>
-                                      <div className="w-full bg-gray-200 rounded-full h-1.5">
-                                        <div 
-                                          className="bg-primary h-1.5 rounded-full" 
-                                          style={{ width: `${projeto.progresso}%` }}
-                                        ></div>
+                                      <p className="text-xs text-muted-foreground">{projeto.tipo}</p>
+                                      <p className="text-sm font-medium">
+                                        R$ {projeto.valor.toLocaleString('pt-BR')}
+                                      </p>
+                                      <div className="space-y-1">
+                                        <div className="flex justify-between text-xs">
+                                          <span>Progresso</span>
+                                          <span>{projeto.progresso}%</span>
+                                        </div>
+                                        <div className="w-full bg-gray-200 rounded-full h-1.5">
+                                          <div 
+                                            className="bg-primary h-1.5 rounded-full" 
+                                            style={{ width: `${projeto.progresso}%` }}
+                                          ></div>
+                                        </div>
                                       </div>
                                     </div>
-                                  </div>
-                                </CardContent>
-                              </Card>
-                            ))}
-                          </div>
+                                  </CardContent>
+                                </Card>
+                              ))}
+                            </div>
+                          ) : (
+                            <p className="text-muted-foreground text-sm">
+                              {cliente.status === 'ativo' ? 'Nenhum projeto encontrado para este cliente.' : 'Cliente não ativo - sem projetos.'}
+                            </p>
+                          )}
                         </div>
                       </TableCell>
                     </TableRow>
