@@ -39,13 +39,15 @@ import {
   Mail, 
   Building, 
   Users, 
+  User,
   UserPlus, 
   Target, 
   TrendingUp, 
   Calendar,
   Download,
   BarChart3,
-  Activity
+  Activity,
+  DollarSign
  } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -270,69 +272,50 @@ function DraggableCard({ lead, updateLeadStatus }: DraggableCardProps) {
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
+    opacity: isDragging ? 0.5 : 1,
   };
 
   return (
-    <Card 
-      ref={setNodeRef} 
-      style={style} 
-      {...attributes} 
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
       {...listeners}
-      className={`cursor-grab hover:shadow-md transition-all duration-200 border-l-4 border-l-primary/20 ${
-        isDragging ? 'opacity-50 shadow-lg' : ''
-      }`}
+      className="mb-3"
     >
-      <CardHeader className="pb-3">
-        <CardTitle className="text-sm font-medium">{lead.nome}</CardTitle>
-        {lead.empresa && (
-          <CardDescription className="flex items-center text-xs">
-            <Building className="h-3 w-3 mr-1" />
-            {lead.empresa}
-          </CardDescription>
-        )}
-      </CardHeader>
-      <CardContent className="pt-0">
-        <div className="space-y-2 text-xs">
-          {lead.email && (
-            <div className="flex items-center text-muted-foreground">
-              <Mail className="h-3 w-3 mr-1" />
-              {lead.email}
+      <Card className="cursor-grab active:cursor-grabbing hover:shadow-md transition-all duration-200 animate-fade-in">
+        <CardHeader className="pb-3">
+          <div className="flex justify-between items-start">
+            <div>
+              <CardTitle className="text-sm font-medium">{lead.nome}</CardTitle>
+              <p className="text-xs text-muted-foreground mt-1">{lead.empresa}</p>
             </div>
+            <Badge variant="outline" className="text-xs">
+              {lead.origem}
+            </Badge>
+          </div>
+        </CardHeader>
+        <CardContent className="pt-0 space-y-2">
+          <div className="flex items-center text-xs text-muted-foreground">
+            <DollarSign className="h-3 w-3 mr-1" />
+            R$ {(lead.valor_estimado || 0).toLocaleString('pt-BR')}
+          </div>
+          <div className="flex items-center text-xs text-muted-foreground">
+            <User className="h-3 w-3 mr-1" />
+            {lead.email}
+          </div>
+          <div className="flex items-center text-xs text-muted-foreground">
+            <Calendar className="h-3 w-3 mr-1" />
+            {new Date(lead.created_at).toLocaleDateString('pt-BR')}
+          </div>
+          {lead.observacoes && (
+            <p className="text-xs text-muted-foreground mt-2 line-clamp-2">
+              {lead.observacoes}
+            </p>
           )}
-          {lead.telefone && (
-            <div className="flex items-center text-muted-foreground">
-              <Phone className="h-3 w-3 mr-1" />
-              {lead.telefone}
-            </div>
-          )}
-          {lead.valor_estimado && (
-            <div className="font-semibold text-green-600">
-              R$ {lead.valor_estimado.toLocaleString('pt-BR', {
-                minimumFractionDigits: 2
-              })}
-            </div>
-          )}
-        </div>
-        
-        <div className="mt-3">
-          <Select
-            value={lead.status}
-            onValueChange={(value) => updateLeadStatus(lead.id, value)}
-          >
-            <SelectTrigger className="h-8 text-xs">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {statusOptions.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </div>
   );
 }
 
@@ -477,17 +460,14 @@ const CRM = () => {
     const { active, over } = event;
     setActiveId(null);
 
-    if (!over) return;
+    if (!over || active.id === over.id) return;
 
-    const activeId = active.id as string;
-    const overId = over.id as string;
+    const activeLeadId = active.id as string;
+    const newStatus = over.id as string;
 
-    // Se foi solto em uma coluna (container)
-    if (statusOptions.some(status => status.value === overId)) {
-      const lead = leads.find(l => l.id === activeId);
-      if (lead && lead.status !== overId) {
-        await updateLeadStatus(activeId, overId);
-      }
+    // Verificar se foi solto em uma coluna válida
+    if (statusOptions.some(status => status.value === newStatus)) {
+      await updateLeadStatus(activeLeadId, newStatus);
     }
   };
 
@@ -603,46 +583,136 @@ const CRM = () => {
             onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
           >
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-              {statusOptions.map((status) => (
-                <div 
-                  key={status.value} 
-                  className="space-y-4"
-                  data-status={status.value}
-                >
-                  <div className="flex items-center justify-between">
-                    <h4 className="font-medium text-sm">{status.label}</h4>
-                    <Badge variant="secondary" className={status.color}>
-                      {groupedLeads[status.value]?.length || 0}
-                    </Badge>
-                  </div>
-                  
-                  <SortableContext
-                    items={groupedLeads[status.value]?.map(lead => lead.id) || []}
-                    strategy={verticalListSortingStrategy}
-                    id={status.value}
-                  >
-                    <div 
-                      className="space-y-3 min-h-80 p-2 rounded-lg border-2 border-dashed border-muted transition-colors"
-                      data-droppable={status.value}
-                      style={{
-                        backgroundColor: activeId && 
-                          leads.find(l => l.id === activeId)?.status !== status.value 
-                            ? 'rgba(59, 130, 246, 0.05)' 
-                            : 'transparent'
-                      }}
-                    >
-                      {groupedLeads[status.value]?.map((lead) => (
-                        <DraggableCard 
-                          key={lead.id} 
-                          lead={lead} 
-                          updateLeadStatus={updateLeadStatus}
-                        />
-                      ))}
-                    </div>
-                  </SortableContext>
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 min-h-[600px]">
+              {/* Pré-qualificação */}
+              <div className="bg-gray-50 rounded-lg p-4 min-h-[600px] flex flex-col">
+                <div className="flex justify-between items-center mb-4">
+                  <h4 className="font-semibold text-sm text-gray-700">Pré-qualificação</h4>
+                  <Badge variant="secondary" className="text-xs">
+                    {groupedLeads['pre_qualificacao']?.length || 0}
+                  </Badge>
                 </div>
-              ))}
+                
+                <SortableContext
+                  items={groupedLeads['pre_qualificacao']?.map(lead => lead.id) || []}
+                  strategy={verticalListSortingStrategy}
+                  id="pre_qualificacao"
+                >
+                  <div className="flex-1 space-y-2">
+                    {groupedLeads['pre_qualificacao']?.map((lead) => (
+                      <DraggableCard 
+                        key={lead.id} 
+                        lead={lead} 
+                        updateLeadStatus={updateLeadStatus}
+                      />
+                    ))}
+                  </div>
+                </SortableContext>
+              </div>
+
+              {/* Proposta */}
+              <div className="bg-blue-50 rounded-lg p-4 min-h-[600px] flex flex-col">
+                <div className="flex justify-between items-center mb-4">
+                  <h4 className="font-semibold text-sm text-gray-700">Proposta</h4>
+                  <Badge variant="secondary" className="text-xs">
+                    {groupedLeads['proposta']?.length || 0}
+                  </Badge>
+                </div>
+                
+                <SortableContext
+                  items={groupedLeads['proposta']?.map(lead => lead.id) || []}
+                  strategy={verticalListSortingStrategy}
+                  id="proposta"
+                >
+                  <div className="flex-1 space-y-2">
+                    {groupedLeads['proposta']?.map((lead) => (
+                      <DraggableCard 
+                        key={lead.id} 
+                        lead={lead} 
+                        updateLeadStatus={updateLeadStatus}
+                      />
+                    ))}
+                  </div>
+                </SortableContext>
+              </div>
+
+              {/* Negociação */}
+              <div className="bg-yellow-50 rounded-lg p-4 min-h-[600px] flex flex-col">
+                <div className="flex justify-between items-center mb-4">
+                  <h4 className="font-semibold text-sm text-gray-700">Negociação</h4>
+                  <Badge variant="secondary" className="text-xs">
+                    {groupedLeads['negociacao']?.length || 0}
+                  </Badge>
+                </div>
+                
+                <SortableContext
+                  items={groupedLeads['negociacao']?.map(lead => lead.id) || []}
+                  strategy={verticalListSortingStrategy}
+                  id="negociacao"
+                >
+                  <div className="flex-1 space-y-2">
+                    {groupedLeads['negociacao']?.map((lead) => (
+                      <DraggableCard 
+                        key={lead.id} 
+                        lead={lead} 
+                        updateLeadStatus={updateLeadStatus}
+                      />
+                    ))}
+                  </div>
+                </SortableContext>
+              </div>
+
+              {/* Fechado */}
+              <div className="bg-green-50 rounded-lg p-4 min-h-[600px] flex flex-col">
+                <div className="flex justify-between items-center mb-4">
+                  <h4 className="font-semibold text-sm text-gray-700">Fechado</h4>
+                  <Badge variant="secondary" className="text-xs">
+                    {groupedLeads['fechado']?.length || 0}
+                  </Badge>
+                </div>
+                
+                <SortableContext
+                  items={groupedLeads['fechado']?.map(lead => lead.id) || []}
+                  strategy={verticalListSortingStrategy}
+                  id="fechado"
+                >
+                  <div className="flex-1 space-y-2">
+                    {groupedLeads['fechado']?.map((lead) => (
+                      <DraggableCard 
+                        key={lead.id} 
+                        lead={lead} 
+                        updateLeadStatus={updateLeadStatus}
+                      />
+                    ))}
+                  </div>
+                </SortableContext>
+              </div>
+
+              {/* Perdido */}
+              <div className="bg-red-50 rounded-lg p-4 min-h-[600px] flex flex-col">
+                <div className="flex justify-between items-center mb-4">
+                  <h4 className="font-semibold text-sm text-gray-700">Perdido</h4>
+                  <Badge variant="secondary" className="text-xs">
+                    {groupedLeads['perdido']?.length || 0}
+                  </Badge>
+                </div>
+                
+                <SortableContext
+                  items={groupedLeads['perdido']?.map(lead => lead.id) || []}
+                  strategy={verticalListSortingStrategy}
+                  id="perdido"
+                >
+                  <div className="flex-1 space-y-2">
+                    {groupedLeads['perdido']?.map((lead) => (
+                      <DraggableCard 
+                        key={lead.id} 
+                        lead={lead} 
+                        updateLeadStatus={updateLeadStatus}
+                      />
+                    ))}
+                  </div>
+                </SortableContext>
+              </div>
             </div>
             
             <DragOverlay>

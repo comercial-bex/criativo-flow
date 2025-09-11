@@ -29,7 +29,6 @@ const getMenuByRole = (role: string | null) => {
   const commonItems = [
     { title: "Dashboard", url: "/dashboard", icon: BarChart3 },
     { title: "CRM / Comercial", url: "/crm", icon: Target },
-    { title: "Funil de Vendas", url: "/funil-vendas", icon: TrendingUp },
   ];
 
   const roleSpecificItems = {
