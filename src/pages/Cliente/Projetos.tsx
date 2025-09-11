@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -387,6 +388,7 @@ function ProjetoForm({ onSuccess }: { onSuccess: () => void }) {
 }
 
 export default function ClienteProjetos() {
+  const navigate = useNavigate();
   const [clientes, setClientes] = useState<ClienteComProjetos[]>(mockClientesComProjetos);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("todos");
@@ -549,7 +551,7 @@ export default function ClienteProjetos() {
                       size="sm"
                       className="h-8 w-8 p-0"
                       onClick={() => {
-                        window.open(`/clientes/${cliente.id}/detalhes`, '_blank');
+                        navigate(`/clientes/${cliente.id}/detalhes`);
                       }}
                     >
                       <Eye className="h-4 w-4" />
