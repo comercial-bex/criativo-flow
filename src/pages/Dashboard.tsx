@@ -90,12 +90,6 @@ const Dashboard = () => {
       onClick: () => navigate('/crm')
     },
     {
-      title: 'Projetos',
-      description: 'Acompanhe projetos e tarefas em andamento',
-      icon: FolderOpen,
-      onClick: () => navigate('/projetos')
-    },
-    {
       title: 'Clientes',
       description: 'Cadastre e gerencie informações de clientes',
       icon: Users,

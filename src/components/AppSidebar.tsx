@@ -29,7 +29,6 @@ const getMenuByRole = (role: string | null) => {
   const commonItems = [
     { title: "Dashboard", url: "/dashboard", icon: BarChart3 },
     { title: "CRM / Comercial", url: "/crm", icon: Target },
-    { title: "Projetos", url: "/projetos", icon: FolderOpen },
     { title: "Audiovisual", url: "/audiovisual", icon: Video },
   ];
 

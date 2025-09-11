@@ -9,7 +9,6 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import CRM from "./pages/CRM";
-import Projetos from "./pages/Projetos";
 import Clientes from "./pages/Clientes";
 import Financeiro from "./pages/Financeiro";
 import CategoriasFinanceiras from "./pages/CategoriasFinanceiras";
@@ -86,13 +85,6 @@ const App = () => (
               <ProtectedRoute>
                 <Layout>
                   <CRM />
-                </Layout>
-              </ProtectedRoute>
-            } />
-            <Route path="/projetos" element={
-              <ProtectedRoute>
-                <Layout>
-                  <Projetos />
                 </Layout>
               </ProtectedRoute>
             } />
