@@ -1,5 +1,26 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import {
+  DndContext,
+  DragEndEvent,
+  DragOverlay,
+  DragStartEvent,
+  closestCorners,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import {
+  useSortable,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import { SectionHeader } from '@/components/SectionHeader';
 import { StatsGrid } from '@/components/StatsGrid';
 import { QuickActions } from '@/components/QuickActions';
@@ -50,10 +71,96 @@ const statusOptions = [
   { value: 'perdido', label: 'Perdido', color: 'bg-red-100 text-red-800' }
 ];
 
+// Componente para card arrastável
+interface DraggableCardProps {
+  lead: Lead;
+  updateLeadStatus: (leadId: string, newStatus: string) => void;
+}
+
+function DraggableCard({ lead, updateLeadStatus }: DraggableCardProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: lead.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
+  return (
+    <Card 
+      ref={setNodeRef} 
+      style={style} 
+      {...attributes} 
+      {...listeners}
+      className={`cursor-grab hover:shadow-md transition-all duration-200 border-l-4 border-l-primary/20 ${
+        isDragging ? 'opacity-50 shadow-lg' : ''
+      }`}
+    >
+      <CardHeader className="pb-3">
+        <CardTitle className="text-sm font-medium">{lead.nome}</CardTitle>
+        {lead.empresa && (
+          <CardDescription className="flex items-center text-xs">
+            <Building className="h-3 w-3 mr-1" />
+            {lead.empresa}
+          </CardDescription>
+        )}
+      </CardHeader>
+      <CardContent className="pt-0">
+        <div className="space-y-2 text-xs">
+          {lead.email && (
+            <div className="flex items-center text-muted-foreground">
+              <Mail className="h-3 w-3 mr-1" />
+              {lead.email}
+            </div>
+          )}
+          {lead.telefone && (
+            <div className="flex items-center text-muted-foreground">
+              <Phone className="h-3 w-3 mr-1" />
+              {lead.telefone}
+            </div>
+          )}
+          {lead.valor_estimado && (
+            <div className="font-semibold text-green-600">
+              R$ {lead.valor_estimado.toLocaleString('pt-BR', {
+                minimumFractionDigits: 2
+              })}
+            </div>
+          )}
+        </div>
+        
+        <div className="mt-3">
+          <Select
+            value={lead.status}
+            onValueChange={(value) => updateLeadStatus(lead.id, value)}
+          >
+            <SelectTrigger className="h-8 text-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {statusOptions.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 const CRM = () => {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [activeId, setActiveId] = useState<string | null>(null);
   const [stats, setStats] = useState({
     totalLeads: 0,
     newLeads: 0,
@@ -71,6 +178,13 @@ const CRM = () => {
     observacoes: ''
   });
   const { toast } = useToast();
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   useEffect(() => {
     fetchLeads();
@@ -172,6 +286,28 @@ const CRM = () => {
         description: "Não foi possível atualizar o status do lead",
         variant: "destructive",
       });
+    }
+  };
+
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveId(event.active.id as string);
+  };
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+    setActiveId(null);
+
+    if (!over) return;
+
+    const activeId = active.id as string;
+    const overId = over.id as string;
+
+    // Se foi solto em uma coluna (container)
+    if (statusOptions.some(status => status.value === overId)) {
+      const lead = leads.find(l => l.id === activeId);
+      if (lead && lead.status !== overId) {
+        await updateLeadStatus(activeId, overId);
+      }
     }
   };
 
@@ -280,75 +416,63 @@ const CRM = () => {
             <h3 className="text-xl font-semibold">Funil de Vendas</h3>
           </div>
           {/* Kanban Board */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-            {statusOptions.map((status) => (
-              <div key={status.value} className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h4 className="font-medium text-sm">{status.label}</h4>
-                  <Badge variant="secondary" className={status.color}>
-                    {groupedLeads[status.value]?.length || 0}
-                  </Badge>
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCorners}
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+              {statusOptions.map((status) => (
+                <div 
+                  key={status.value} 
+                  className="space-y-4"
+                  data-status={status.value}
+                >
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-medium text-sm">{status.label}</h4>
+                    <Badge variant="secondary" className={status.color}>
+                      {groupedLeads[status.value]?.length || 0}
+                    </Badge>
+                  </div>
+                  
+                  <SortableContext
+                    items={groupedLeads[status.value]?.map(lead => lead.id) || []}
+                    strategy={verticalListSortingStrategy}
+                    id={status.value}
+                  >
+                    <div 
+                      className="space-y-3 min-h-80 p-2 rounded-lg border-2 border-dashed border-muted transition-colors"
+                      data-droppable={status.value}
+                      style={{
+                        backgroundColor: activeId && 
+                          leads.find(l => l.id === activeId)?.status !== status.value 
+                            ? 'rgba(59, 130, 246, 0.05)' 
+                            : 'transparent'
+                      }}
+                    >
+                      {groupedLeads[status.value]?.map((lead) => (
+                        <DraggableCard 
+                          key={lead.id} 
+                          lead={lead} 
+                          updateLeadStatus={updateLeadStatus}
+                        />
+                      ))}
+                    </div>
+                  </SortableContext>
                 </div>
-                
-                <div className="space-y-3 min-h-80">
-                  {groupedLeads[status.value]?.map((lead) => (
-                    <Card key={lead.id} className="cursor-pointer hover:shadow-md transition-all duration-200 border-l-4 border-l-primary/20">
-                      <CardHeader className="pb-3">
-                        <CardTitle className="text-sm font-medium">{lead.nome}</CardTitle>
-                        {lead.empresa && (
-                          <CardDescription className="flex items-center text-xs">
-                            <Building className="h-3 w-3 mr-1" />
-                            {lead.empresa}
-                          </CardDescription>
-                        )}
-                      </CardHeader>
-                      <CardContent className="pt-0">
-                        <div className="space-y-2 text-xs">
-                          {lead.email && (
-                            <div className="flex items-center text-muted-foreground">
-                              <Mail className="h-3 w-3 mr-1" />
-                              {lead.email}
-                            </div>
-                          )}
-                          {lead.telefone && (
-                            <div className="flex items-center text-muted-foreground">
-                              <Phone className="h-3 w-3 mr-1" />
-                              {lead.telefone}
-                            </div>
-                          )}
-                          {lead.valor_estimado && (
-                            <div className="font-semibold text-green-600">
-                              R$ {lead.valor_estimado.toLocaleString('pt-BR', {
-                                minimumFractionDigits: 2
-                              })}
-                            </div>
-                          )}
-                        </div>
-                        
-                        <div className="mt-3">
-                          <Select
-                            value={lead.status}
-                            onValueChange={(value) => updateLeadStatus(lead.id, value)}
-                          >
-                            <SelectTrigger className="h-8 text-xs">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {statusOptions.map((option) => (
-                                <SelectItem key={option.value} value={option.value}>
-                                  {option.label}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+            
+            <DragOverlay>
+              {activeId ? (
+                <DraggableCard 
+                  lead={leads.find(l => l.id === activeId)!} 
+                  updateLeadStatus={updateLeadStatus}
+                />
+              ) : null}
+            </DragOverlay>
+          </DndContext>
         </div>
 
         <div className="space-y-6">
