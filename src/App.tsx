@@ -24,7 +24,7 @@ import ClienteCadastro from "./pages/Cliente/Cadastro";
 import Configuracoes from "./pages/Configuracoes";
 import Relatorios from "./pages/Relatorios";
 
-import AudiovisualVT from "./pages/AudiovisualVT";
+
 import AprovacaoJob from "./pages/AprovacaoJob";
 
 const queryClient = new QueryClient();
@@ -171,13 +171,6 @@ const App = () => (
             </ProtectedRoute>
             } />
             
-            <Route path="/audiovisual" element={
-              <ProtectedRoute>
-                <Layout>
-                  <AudiovisualVT />
-                </Layout>
-              </ProtectedRoute>
-            } />
             <Route path="/aprovacao" element={
               <ProtectedRoute>
                 <Layout>
