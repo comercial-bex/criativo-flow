@@ -594,24 +594,8 @@ const CRM = () => {
         <div className="lg:col-span-2 space-y-6">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-xl font-semibold">Funil de Vendas</h3>
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button className="flex items-center gap-2">
-                  <Plus className="h-4 w-4" />
-                  Novo Projeto
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-2xl">
-                <DialogHeader>
-                  <DialogTitle>Criar Novo Projeto</DialogTitle>
-                  <DialogDescription>
-                    Crie um novo projeto para um cliente fechado
-                  </DialogDescription>
-                </DialogHeader>
-                <ProjetoForm />
-              </DialogContent>
-            </Dialog>
           </div>
+          
           {/* Kanban Board */}
           <DndContext
             sensors={sensors}
