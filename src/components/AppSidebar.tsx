@@ -30,8 +30,6 @@ const getMenuByRole = (role: string | null) => {
     { title: "Dashboard", url: "/dashboard", icon: BarChart3 },
     { title: "CRM / Comercial", url: "/crm", icon: Target },
     { title: "Projetos", url: "/projetos", icon: FolderOpen },
-    { title: "Clientes", url: "/clientes", icon: Users },
-    
     { title: "Audiovisual", url: "/audiovisual", icon: Video },
   ];
 
@@ -90,6 +88,19 @@ const financeiroSubmenu = [
   },
 ];
 
+const clientesSubmenu = [
+  {
+    title: "Projetos",
+    url: "/clientes/projetos",
+    icon: FolderOpen,
+  },
+  {
+    title: "Cadastro",
+    url: "/clientes/cadastro",
+    icon: Users,
+  },
+];
+
 export function AppSidebar() {
   const { state } = useSidebar();
   const { user, signOut } = useAuth();
@@ -99,6 +110,7 @@ export function AppSidebar() {
   
   const menuItems = getMenuByRole(role);
   const isFinanceiroActive = location.pathname.startsWith('/financeiro');
+  const isClientesActive = location.pathname.startsWith('/clientes');
   const showFinanceiro = !role || role === 'admin' || role === 'gestor' || role === 'financeiro';
 
   const handleSignOut = async () => {
@@ -147,6 +159,48 @@ export function AppSidebar() {
                 </SidebarMenuItem>
               ))}
               
+              {/* Clientes com submenu */}
+              <Collapsible defaultOpen={isClientesActive} className="group/collapsible">
+              <SidebarMenuItem>
+                <CollapsibleTrigger asChild>
+                  <SidebarMenuButton
+                    className={`rounded-lg px-3 py-2 text-sidebar-foreground transition-colors ${
+                      isClientesActive
+                        ? "bg-primary text-primary-foreground"
+                        : "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                    }`}
+                  >
+                    <Users className="h-5 w-5" />
+                    <span className="group-data-[collapsible=icon]:hidden font-medium">Clientes</span>
+                    <ChevronRight className="ml-auto h-4 w-4 transition-transform group-data-[state=open]/collapsible:rotate-90 group-data-[collapsible=icon]:hidden text-sidebar-foreground/70" />
+                  </SidebarMenuButton>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <SidebarMenuSub>
+                    {clientesSubmenu.map((subItem) => (
+                      <SidebarMenuSubItem key={subItem.title}>
+                        <SidebarMenuSubButton asChild>
+                          <NavLink
+                            to={subItem.url}
+                            className={({ isActive }) =>
+                              `flex items-center space-x-3 rounded-lg px-3 py-2 ml-4 text-sidebar-foreground/80 transition-colors ${
+                                isActive
+                                  ? "bg-primary/20 text-primary"
+                                  : "hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                              }`
+                            }
+                          >
+                            <subItem.icon className="h-4 w-4" />
+                            <span className="text-sm">{subItem.title}</span>
+                          </NavLink>
+                        </SidebarMenuSubButton>
+                      </SidebarMenuSubItem>
+                    ))}
+                  </SidebarMenuSub>
+                </CollapsibleContent>
+              </SidebarMenuItem>
+              </Collapsible>
+
               {/* Financeiro com submenu - apenas para roles autorizados */}
               {showFinanceiro && (
                 <Collapsible defaultOpen={isFinanceiroActive} className="group/collapsible">
