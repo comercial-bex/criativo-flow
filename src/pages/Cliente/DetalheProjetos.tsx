@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Calendar, DollarSign, Eye } from "lucide-react";
+import { ArrowLeft, Calendar, DollarSign, Eye, Edit } from "lucide-react";
 import { SectionHeader } from "@/components/SectionHeader";
 
 interface Projeto {
@@ -230,6 +230,17 @@ export default function DetalheProjetos() {
                   <Badge className={getStatusColor(projeto.status)}>
                     {getStatusText(projeto.status)}
                   </Badge>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0"
+                    onClick={() => {
+                      console.log('Editar projeto:', projeto.id);
+                      // Implementar modal ou navegação para edição do projeto
+                    }}
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
                   <Button
                     variant="ghost"
                     size="sm"
