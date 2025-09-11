@@ -89,14 +89,14 @@ const financeiroSubmenu = [
 
 const clientesSubmenu = [
   {
-    title: "Projetos",
-    url: "/clientes/projetos",
-    icon: FolderOpen,
-  },
-  {
     title: "Cadastro",
     url: "/clientes/cadastro",
     icon: Users,
+  },
+  {
+    title: "Projetos",
+    url: "/clientes/projetos",
+    icon: FolderOpen,
   },
 ];
 
