@@ -19,6 +19,8 @@ import NotFound from "./pages/NotFound";
 import GRSDashboard from "./pages/GRS/Dashboard";
 import AtendimentoInbox from "./pages/Atendimento/Inbox";
 import ClientePainel from "./pages/Cliente/Painel";
+import Configuracoes from "./pages/Configuracoes";
+import Relatorios from "./pages/Relatorios";
 
 const queryClient = new QueryClient();
 
@@ -133,6 +135,23 @@ const App = () => (
                 </Layout>
               </ProtectedRoute>
             } />
+            
+            {/* Novas rotas */}
+            <Route path="/configuracoes" element={
+              <ProtectedRoute>
+                <Layout>
+                  <Configuracoes />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/relatorios" element={
+              <ProtectedRoute>
+                <Layout>
+                  <Relatorios />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            
             
             <Route path="*" element={<NotFound />} />
           </Routes>
