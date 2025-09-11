@@ -31,7 +31,7 @@ const getMenuByRole = (role: string | null) => {
     { title: "CRM / Comercial", url: "/crm", icon: Target },
     { title: "Projetos", url: "/projetos", icon: FolderOpen },
     { title: "Clientes", url: "/clientes", icon: Users },
-    { title: "Leads", url: "/leads-list", icon: Target },
+    
     { title: "Audiovisual", url: "/audiovisual", icon: Video },
   ];
 

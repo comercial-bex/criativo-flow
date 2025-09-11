@@ -21,7 +21,7 @@ import AtendimentoInbox from "./pages/Atendimento/Inbox";
 import ClientePainel from "./pages/Cliente/Painel";
 import Configuracoes from "./pages/Configuracoes";
 import Relatorios from "./pages/Relatorios";
-import LeadsList from "./pages/LeadsList";
+
 import AudiovisualVT from "./pages/AudiovisualVT";
 import AprovacaoJob from "./pages/AprovacaoJob";
 
@@ -155,14 +155,6 @@ const App = () => (
             </ProtectedRoute>
             } />
             
-            {/* Novas páginas do Figma */}
-            <Route path="/leads-list" element={
-              <ProtectedRoute>
-                <Layout>
-                  <LeadsList />
-                </Layout>
-              </ProtectedRoute>
-            } />
             <Route path="/audiovisual" element={
               <ProtectedRoute>
                 <Layout>
