@@ -23,7 +23,7 @@ import DetalheProjetos from "./pages/Cliente/DetalheProjetos";
 import ClienteCadastro from "./pages/Cliente/Cadastro";
 import Configuracoes from "./pages/Configuracoes";
 import Relatorios from "./pages/Relatorios";
-
+import FunilVendas from "./pages/FunilVendas";
 
 import AprovacaoJob from "./pages/AprovacaoJob";
 
@@ -168,7 +168,14 @@ const App = () => (
                 <Layout>
                   <Relatorios />
                 </Layout>
-            </ProtectedRoute>
+              </ProtectedRoute>
+            } />
+            <Route path="/funil-vendas" element={
+              <ProtectedRoute>
+                <Layout>
+                  <FunilVendas />
+                </Layout>
+              </ProtectedRoute>
             } />
             
             <Route path="/aprovacao" element={
