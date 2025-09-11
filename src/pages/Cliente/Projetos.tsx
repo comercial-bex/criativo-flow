@@ -393,6 +393,35 @@ export default function ClienteProjetos() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("todos");
   const [dialogOpen, setDialogOpen] = useState(false);
+  const { toast } = useToast();
+
+  const isUuid = (v: string) =>
+    /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/.test(v);
+
+  const goToClienteDetalhes = async (cliente: any) => {
+    try {
+      if (isUuid(cliente.id)) {
+        navigate(`/clientes/${cliente.id}/detalhes`);
+        return;
+      }
+      // Tenta resolver pelo email primeiro, depois pelo nome
+      const byEmail = cliente.email
+        ? await supabase.from('clientes').select('id').eq('email', cliente.email).maybeSingle()
+        : { data: null } as any;
+      const resolvedId = byEmail.data?.id
+        ? byEmail.data.id
+        : (await supabase.from('clientes').select('id').eq('nome', cliente.nome).maybeSingle()).data?.id;
+
+      if (resolvedId) {
+        navigate(`/clientes/${resolvedId}/detalhes`);
+      } else {
+        toast({ title: 'Cliente não encontrado', description: 'Não foi possível localizar este cliente no banco.', variant: 'destructive' });
+      }
+    } catch (e) {
+      console.error('Falha ao abrir detalhes do cliente:', e);
+      toast({ title: 'Erro', description: 'Falha ao abrir detalhes do cliente.', variant: 'destructive' });
+    }
+  };
 
   const filteredClientes = clientes
     .filter(cliente => cliente.status === 'ativo') // Apenas clientes ativos têm projetos
@@ -550,9 +579,9 @@ export default function ClienteProjetos() {
                       variant="ghost"
                       size="sm"
                       className="h-8 w-8 p-0"
-                      onClick={() => {
-                        navigate(`/clientes/${cliente.id}/detalhes`);
-                      }}
+                    onClick={() => {
+                      goToClienteDetalhes(cliente);
+                    }}
                     >
                       <Eye className="h-4 w-4" />
                     </Button>

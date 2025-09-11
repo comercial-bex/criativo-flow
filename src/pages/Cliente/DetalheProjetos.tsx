@@ -391,7 +391,7 @@ export default function DetalheProjetos() {
             <div>
               <p className="text-sm font-medium text-muted-foreground">Valor Total</p>
               <p className="text-2xl font-bold">
-                R$ {projetos.reduce((sum, p) => sum + (p.orcamento || 0), 0).toLocaleString('pt-BR')}
+                R$ {projetos.reduce((sum, p) => sum + Number(p.orcamento || 0), 0).toLocaleString('pt-BR')}
               </p>
             </div>
             <div>
@@ -445,7 +445,7 @@ export default function DetalheProjetos() {
               <div className="space-y-2">
                 <div className="flex items-center text-sm text-muted-foreground">
                   <DollarSign className="h-4 w-4 mr-2" />
-                  R$ {(projeto.orcamento || 0).toLocaleString('pt-BR')}
+                  R$ {Number(projeto.orcamento || 0).toLocaleString('pt-BR')}
                 </div>
                 <div className="flex items-center text-sm text-muted-foreground">
                   <Calendar className="h-4 w-4 mr-2" />
