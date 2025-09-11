@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Search, Filter, ChevronDown, FolderOpen, Users, BarChart3, Plus } from "lucide-react";
+import { Search, Filter, ChevronDown, FolderOpen, Users, BarChart3, Plus, Eye } from "lucide-react";
 import { SectionHeader } from "@/components/SectionHeader";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -583,9 +583,22 @@ export default function ClienteProjetos() {
                                     <div className="space-y-2">
                                       <div className="flex justify-between items-start">
                                         <h5 className="font-medium text-sm">{projeto.nome}</h5>
-                                        <Badge className={getStatusColor(projeto.status)}>
-                                          {getStatusText(projeto.status)}
-                                        </Badge>
+                                        <div className="flex items-center gap-2">
+                                          <Badge className={getStatusColor(projeto.status)}>
+                                            {getStatusText(projeto.status)}
+                                          </Badge>
+                                          <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="h-8 w-8 p-0"
+                                            onClick={() => {
+                                              // Aqui você pode implementar a navegação para detalhes do projeto
+                                              console.log('Ver detalhes do projeto:', projeto.id);
+                                            }}
+                                          >
+                                            <Eye className="h-4 w-4" />
+                                          </Button>
+                                        </div>
                                       </div>
                                       <p className="text-xs text-muted-foreground">{projeto.tipo}</p>
                                       <p className="text-sm font-medium">
