@@ -4,6 +4,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from '@/components/ui/carousel';
 import { 
   CheckCircle, 
   X,
@@ -11,7 +18,12 @@ import {
   User,
   Building,
   Clock,
-  Plus
+  Plus,
+  Heart,
+  MessageCircle,
+  Share,
+  Bookmark,
+  MoreHorizontal
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -229,32 +241,159 @@ const AprovacaoJob = () => {
         <div className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Prévia do Criativo</CardTitle>
+              <CardTitle className="text-lg">Prévias do Criativo</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Visualize como o conteúdo aparecerá nas redes sociais
+              </p>
             </CardHeader>
             <CardContent>
-              {/* Mockup do criativo baseado no Figma */}
-              <div className="aspect-square bg-gradient-to-br from-blue-400 to-blue-600 rounded-lg p-6 text-white relative overflow-hidden">
-                <div className="absolute inset-0 bg-blue-500/20"></div>
-                <div className="relative z-10">
-                  <div className="text-xs font-medium mb-2">COMPLASTA</div>
-                  <div className="space-y-2">
-                    <div className="w-full h-2 bg-white/20 rounded"></div>
-                    <div className="w-3/4 h-2 bg-white/20 rounded"></div>
-                    <div className="w-1/2 h-2 bg-white/20 rounded"></div>
-                  </div>
-                  
-                  <div className="absolute bottom-4 right-4">
-                    <div className="flex space-x-1">
-                      <div className="w-2 h-2 bg-white rounded-full"></div>
-                      <div className="w-2 h-2 bg-white rounded-full"></div>
-                      <div className="w-2 h-2 bg-white/50 rounded-full"></div>
+              <Carousel className="w-full">
+                <CarouselContent>
+                  {/* Instagram Preview */}
+                  <CarouselItem>
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <h3 className="font-medium text-sm">Instagram</h3>
+                        <Badge variant="outline" className="text-xs">1080x1350</Badge>
+                      </div>
+                      
+                      {/* Instagram Mockup */}
+                      <div className="bg-black rounded-lg p-1 shadow-lg">
+                        <div className="bg-white rounded-lg overflow-hidden">
+                          {/* Instagram Header */}
+                          <div className="flex items-center justify-between p-3 border-b">
+                            <div className="flex items-center space-x-2">
+                              <div className="w-8 h-8 bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-600 rounded-full p-0.5">
+                                <div className="bg-white rounded-full w-full h-full flex items-center justify-center">
+                                  <span className="text-xs font-bold">LX</span>
+                                </div>
+                              </div>
+                              <span className="text-sm font-semibold">lxsolar</span>
+                            </div>
+                            <MoreHorizontal className="h-4 w-4" />
+                          </div>
+                          
+                          {/* Instagram Image */}
+                          <div className="aspect-[4/5] bg-gradient-to-br from-blue-400 to-blue-600 relative overflow-hidden">
+                            <div className="absolute inset-0 flex items-center justify-center text-white">
+                              <div className="text-center space-y-4 p-6">
+                                <h2 className="text-2xl font-bold">LX SOLAR</h2>
+                                <p className="text-lg">Invista uma vez</p>
+                                <p className="text-lg">Economize sempre</p>
+                                <div className="w-16 h-16 mx-auto bg-yellow-400 rounded-full flex items-center justify-center">
+                                  <span className="text-2xl">☀️</span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          {/* Instagram Actions */}
+                          <div className="p-3 space-y-2">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center space-x-4">
+                                <Heart className="h-6 w-6" />
+                                <MessageCircle className="h-6 w-6" />
+                                <Share className="h-6 w-6" />
+                              </div>
+                              <Bookmark className="h-6 w-6" />
+                            </div>
+                            <p className="text-sm font-semibold">1.234 curtidas</p>
+                            <div className="text-sm">
+                              <span className="font-semibold">lxsolar</span>
+                              <span className="ml-1">
+                                🧒 Seu filho está demorando a falar ou trocar muitos sons na hora de se comunicar?
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              </div>
+                  </CarouselItem>
+                  
+                  {/* Facebook Preview */}
+                  <CarouselItem>
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <h3 className="font-medium text-sm">Facebook</h3>
+                        <Badge variant="outline" className="text-xs">1080x1350</Badge>
+                      </div>
+                      
+                      {/* Facebook Mockup */}
+                      <div className="bg-gray-100 rounded-lg p-1 shadow-lg">
+                        <div className="bg-white rounded-lg overflow-hidden">
+                          {/* Facebook Header */}
+                          <div className="flex items-center space-x-3 p-3 border-b">
+                            <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
+                              <span className="text-white text-sm font-bold">LX</span>
+                            </div>
+                            <div className="flex-1">
+                              <p className="font-semibold text-sm">LX Solar</p>
+                              <p className="text-xs text-gray-500">2h • 🌐</p>
+                            </div>
+                            <MoreHorizontal className="h-4 w-4 text-gray-500" />
+                          </div>
+                          
+                          {/* Facebook Text */}
+                          <div className="p-3">
+                            <p className="text-sm leading-relaxed">
+                              Com o LX SOLAR, você investe uma vez e colhe os benefícios todos os dias! 
+                              Vem conhecer como economizar de verdade. ☀️⚡
+                            </p>
+                          </div>
+                          
+                          {/* Facebook Image */}
+                          <div className="aspect-[4/5] bg-gradient-to-br from-blue-400 to-blue-600 relative">
+                            <div className="absolute inset-0 flex items-center justify-center text-white">
+                              <div className="text-center space-y-4 p-6">
+                                <h2 className="text-2xl font-bold">LX SOLAR</h2>
+                                <p className="text-lg">Energia Solar</p>
+                                <p className="text-lg">para sua casa</p>
+                                <div className="w-16 h-16 mx-auto bg-yellow-400 rounded-full flex items-center justify-center">
+                                  <span className="text-2xl">⚡</span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          {/* Facebook Actions */}
+                          <div className="p-3">
+                            <div className="flex items-center justify-between text-gray-500 text-sm border-t pt-3">
+                              <div className="flex items-center space-x-1">
+                                <span>👍</span>
+                                <span>❤️</span>
+                                <span className="ml-1">126</span>
+                              </div>
+                              <span>15 comentários • 8 compartilhamentos</span>
+                            </div>
+                            
+                            <div className="flex items-center justify-around text-gray-600 text-sm pt-3 border-t mt-3">
+                              <button className="flex items-center space-x-2 py-2">
+                                <span>👍</span>
+                                <span>Curtir</span>
+                              </button>
+                              <button className="flex items-center space-x-2 py-2">
+                                <span>💬</span>
+                                <span>Comentar</span>
+                              </button>
+                              <button className="flex items-center space-x-2 py-2">
+                                <span>↗️</span>
+                                <span>Compartilhar</span>
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </CarouselItem>
+                </CarouselContent>
+                <CarouselPrevious />
+                <CarouselNext />
+              </Carousel>
               
-              <div className="mt-4 text-xs text-muted-foreground text-center">
-                ♡ 9813 | 🔄 ⚲ | ⊆ (/complasta
+              <div className="mt-4 text-center">
+                <p className="text-xs text-muted-foreground">
+                  Use as setas para navegar entre as prévias das redes sociais
+                </p>
               </div>
             </CardContent>
           </Card>
