@@ -1,6 +1,7 @@
 import { 
   BarChart3, Users, FolderOpen, Target, DollarSign, LogOut, ChevronRight, Tags,
-  Calendar, Inbox, Palette, Video, Settings, FileText, TrendingUp
+  Calendar, Inbox, Palette, Video, Settings, FileText, TrendingUp, Building,
+  CheckCircle, UserCheck, Briefcase
 } from "lucide-react";
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -24,52 +25,21 @@ import {
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
-// Menu baseado no perfil do usuário
-const getMenuByRole = (role: string | null) => {
-  const commonItems = [
+const getAllMenuItems = () => {
+  return [
+    // Principais
     { title: "Dashboard", url: "/dashboard", icon: BarChart3 },
     { title: "CRM / Comercial", url: "/crm", icon: Target },
-  ];
-
-  const roleSpecificItems = {
-    grs: [
-      { title: "Planejamentos", url: "/planejamentos", icon: Calendar },
-      { title: "Aprovações Cliente", url: "/aprovacoes", icon: FileText },
-    ],
-    atendimento: [
-      { title: "Inbox Revisões", url: "/inbox", icon: Inbox },
-      { title: "Timeline Clientes", url: "/timeline", icon: TrendingUp },
-    ],
-    designer: [
-      { title: "Quadro Tarefas", url: "/tarefas", icon: Palette },
-      { title: "Biblioteca", url: "/biblioteca", icon: FolderOpen },
-    ],
-    filmmaker: [
-      { title: "Pipeline Vídeo", url: "/pipeline", icon: Video },
-      { title: "Agenda Filmagens", url: "/agenda", icon: Calendar },
-    ],
-    gestor: [
-      { title: "Command Center", url: "/command", icon: BarChart3 },
-      { title: "Riscos & Oportunidades", url: "/riscos", icon: TrendingUp },
-    ],
-    admin: [
-      { title: "Configurações", url: "/configuracoes", icon: Settings },
-    ],
-    financeiro: [
-      { title: "Contratos", url: "/contratos", icon: FileText },
-    ],
-    cliente: [
-      { title: "Meu Painel", url: "/cliente-painel", icon: BarChart3 },
-      { title: "Aprovações", url: "/cliente-aprovacoes", icon: FileText },
-      { title: "Financeiro", url: "/cliente-financeiro", icon: DollarSign },
-    ]
-  } as const;
-
-  if (!role) return commonItems; // fallback com navegação global curta
-  
-  return [
-    ...commonItems,
-    ...(roleSpecificItems[role as keyof typeof roleSpecificItems] || [])
+    
+    // Específicas por perfil (todas visíveis temporariamente)
+    { title: "Planejamentos (GRS)", url: "/planejamentos", icon: Calendar },
+    { title: "Inbox Revisões", url: "/inbox", icon: Inbox },
+    { title: "Aprovações Cliente", url: "/aprovacao", icon: CheckCircle },
+    { title: "Cliente Painel", url: "/cliente-painel", icon: UserCheck },
+    
+    // Configurações e relatórios
+    { title: "Configurações", url: "/configuracoes", icon: Settings },
+    { title: "Relatórios", url: "/relatorios", icon: FileText },
   ];
 };
 
@@ -106,7 +76,7 @@ export function AppSidebar() {
   const navigate = useNavigate();
   const location = useLocation();
   
-  const menuItems = getMenuByRole(role);
+  const menuItems = getAllMenuItems();
   const isFinanceiroActive = location.pathname.startsWith('/financeiro');
   const isClientesActive = location.pathname.startsWith('/clientes');
   const showFinanceiro = !role || role === 'admin' || role === 'gestor' || role === 'financeiro';
