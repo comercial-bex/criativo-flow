@@ -518,6 +518,7 @@ export default function ClienteProjetos() {
                 <TableHead className="text-center">Pendentes</TableHead>
                 <TableHead className="text-center">Pausados</TableHead>
                 <TableHead>Status Cliente</TableHead>
+                <TableHead className="text-center">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -567,12 +568,26 @@ export default function ClienteProjetos() {
                         {cliente.status.charAt(0).toUpperCase() + cliente.status.slice(1)}
                       </Badge>
                     </TableCell>
+                    <TableCell className="text-center">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0"
+                        onClick={(e) => {
+                          e.stopPropagation(); // Impede que o clique expanda a linha
+                          console.log('Ver detalhes dos projetos do cliente:', cliente.id);
+                          // Aqui você pode implementar a navegação para detalhes dos projetos do cliente
+                        }}
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                    </TableCell>
                   </TableRow>
                   
                   {/* Projetos Expandidos */}
                   {expandedClients.has(cliente.id) && (
                     <TableRow>
-                      <TableCell colSpan={8} className="p-0">
+                      <TableCell colSpan={9} className="p-0">
                         <div className="bg-muted/30 p-4">
                           <h4 className="font-medium mb-3">Projetos de {cliente.nome}</h4>
                           {cliente.projetos.length > 0 ? (
