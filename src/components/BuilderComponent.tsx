@@ -1,5 +1,6 @@
-import { BuilderComponent as BuilderReactComponent, builder } from '@builder.io/react'
+import { BuilderComponent as BuilderReactComponent } from '@builder.io/react'
 import { useEffect, useState } from 'react'
+import { builder } from '@/lib/builder'
 
 interface BuilderComponentProps {
   model: string
