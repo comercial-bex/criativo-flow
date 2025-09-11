@@ -284,50 +284,45 @@ function ProjetoForm({ clienteId, onSuccess }: { clienteId: string; onSuccess: (
 export default function DetalheProjetos() {
   const { clienteId } = useParams<{ clienteId: string }>();
   const navigate = useNavigate();
-  const [cliente, setCliente] = useState<ClienteDetalhes | null>(null);
+  const [cliente, setCliente] = useState<any>(null);
+  const [projetos, setProjetos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [realClienteId, setRealClienteId] = useState<string | null>(null);
-
-  const isUuid = (v: string) =>
-    /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/.test(v);
 
   useEffect(() => {
-    if (clienteId && mockClienteDetalhes[clienteId]) {
-      setCliente(mockClienteDetalhes[clienteId]);
-    }
-    setLoading(false);
+    fetchClienteEProjetos();
   }, [clienteId]);
 
-  useEffect(() => {
-    const resolveId = async () => {
-      if (!clienteId) return;
-      if (isUuid(clienteId)) {
-        setRealClienteId(clienteId);
-        return;
-      }
-      if (cliente?.email) {
-        const { data } = await supabase
-          .from('clientes')
-          .select('id')
-          .eq('email', cliente.email)
-          .maybeSingle();
-        if (data?.id) {
-          setRealClienteId(data.id);
-          return;
-        }
-      }
-      if (cliente?.nome) {
-        const { data } = await supabase
-          .from('clientes')
-          .select('id')
-          .eq('nome', cliente.nome)
-          .maybeSingle();
-        if (data?.id) setRealClienteId(data.id);
-      }
-    };
-    resolveId();
-  }, [clienteId, cliente?.email]);
+  const fetchClienteEProjetos = async () => {
+    if (!clienteId) return;
+    
+    try {
+      // Buscar cliente
+      const { data: clienteData, error: clienteError } = await supabase
+        .from('clientes')
+        .select('*')
+        .eq('id', clienteId)
+        .maybeSingle();
+
+      if (clienteError) throw clienteError;
+      
+      // Buscar projetos do cliente
+      const { data: projetosData, error: projetosError } = await supabase
+        .from('projetos')
+        .select('*')
+        .eq('cliente_id', clienteId)
+        .order('created_at', { ascending: false });
+
+      if (projetosError) throw projetosError;
+
+      setCliente(clienteData);
+      setProjetos(projetosData || []);
+    } catch (error) {
+      console.error('Erro ao carregar dados:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
 
   if (loading) {
@@ -372,8 +367,8 @@ export default function DetalheProjetos() {
           Voltar
         </Button>
         <SectionHeader
-          title={`Projetos de ${cliente.nome}`}
-          description={`Visualize todos os projetos do cliente ${cliente.email}`}
+          title={`Projetos de ${cliente?.nome || 'Cliente'}`}
+          description={`Visualize todos os projetos do cliente ${cliente?.email || ''}`}
           action={{
             label: "Novo Projeto",
             onClick: () => setDialogOpen(true),
@@ -391,18 +386,18 @@ export default function DetalheProjetos() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <p className="text-sm font-medium text-muted-foreground">Total de Projetos</p>
-              <p className="text-2xl font-bold">{cliente.projetos.length}</p>
+              <p className="text-2xl font-bold">{projetos.length}</p>
             </div>
             <div>
               <p className="text-sm font-medium text-muted-foreground">Valor Total</p>
               <p className="text-2xl font-bold">
-                R$ {cliente.projetos.reduce((sum, p) => sum + p.valor, 0).toLocaleString('pt-BR')}
+                R$ {projetos.reduce((sum, p) => sum + (p.orcamento || 0), 0).toLocaleString('pt-BR')}
               </p>
             </div>
             <div>
               <p className="text-sm font-medium text-muted-foreground">Projetos Ativos</p>
               <p className="text-2xl font-bold">
-                {cliente.projetos.filter(p => p.status === 'ativo').length}
+                {projetos.filter(p => p.status === 'ativo').length}
               </p>
             </div>
           </div>
@@ -411,13 +406,13 @@ export default function DetalheProjetos() {
 
       {/* Lista de Projetos */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {cliente.projetos.map((projeto) => (
+        {projetos.map((projeto) => (
           <Card key={projeto.id} className="hover:shadow-lg transition-shadow">
             <CardHeader>
               <div className="flex justify-between items-start">
                 <div>
                   <CardTitle className="text-lg">{projeto.nome}</CardTitle>
-                  <p className="text-sm text-muted-foreground mt-1">{projeto.tipo}</p>
+                  <p className="text-sm text-muted-foreground mt-1">{projeto.tipo || 'Desenvolvimento'}</p>
                 </div>
                 <div className="flex items-center gap-2">
                   <Badge className={getStatusColor(projeto.status)}>
@@ -429,7 +424,6 @@ export default function DetalheProjetos() {
                     className="h-8 w-8 p-0"
                     onClick={() => {
                       console.log('Editar projeto:', projeto.id);
-                      // Implementar modal ou navegação para edição do projeto
                     }}
                   >
                     <Edit className="h-4 w-4" />
@@ -440,7 +434,6 @@ export default function DetalheProjetos() {
                     className="h-8 w-8 p-0"
                     onClick={() => {
                       console.log('Ver detalhes do projeto:', projeto.id);
-                      // Implementar navegação para detalhes específicos do projeto
                     }}
                   >
                     <Eye className="h-4 w-4" />
@@ -452,39 +445,25 @@ export default function DetalheProjetos() {
               <div className="space-y-2">
                 <div className="flex items-center text-sm text-muted-foreground">
                   <DollarSign className="h-4 w-4 mr-2" />
-                  R$ {projeto.valor.toLocaleString('pt-BR')}
+                  R$ {(projeto.orcamento || 0).toLocaleString('pt-BR')}
                 </div>
                 <div className="flex items-center text-sm text-muted-foreground">
                   <Calendar className="h-4 w-4 mr-2" />
-                  Início: {new Date(projeto.dataInicio).toLocaleDateString('pt-BR')}
+                  Início: {projeto.data_inicio ? new Date(projeto.data_inicio).toLocaleDateString('pt-BR') : 'Não definido'}
                 </div>
-                {projeto.dataFim && (
+                {projeto.data_fim && (
                   <div className="flex items-center text-sm text-muted-foreground">
                     <Calendar className="h-4 w-4 mr-2" />
-                    Fim: {new Date(projeto.dataFim).toLocaleDateString('pt-BR')}
+                    Fim: {new Date(projeto.data_fim).toLocaleDateString('pt-BR')}
                   </div>
                 )}
-              </div>
-
-              {/* Barra de Progresso */}
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span>Progresso</span>
-                  <span>{projeto.progresso}%</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div 
-                    className="bg-primary h-2 rounded-full" 
-                    style={{ width: `${projeto.progresso}%` }}
-                  ></div>
-                </div>
               </div>
             </CardContent>
           </Card>
         ))}
       </div>
 
-      {cliente.projetos.length === 0 && (
+      {projetos.length === 0 && (
         <div className="text-center py-12">
           <p className="text-muted-foreground">Nenhum projeto encontrado para este cliente.</p>
         </div>
@@ -499,14 +478,17 @@ export default function DetalheProjetos() {
               Crie um novo projeto para {cliente?.nome}
             </DialogDescription>
           </DialogHeader>
-          {realClienteId ? (
+          {clienteId ? (
             <ProjetoForm 
-              clienteId={realClienteId} 
-              onSuccess={() => setDialogOpen(false)} 
+              clienteId={clienteId} 
+              onSuccess={() => {
+                setDialogOpen(false);
+                fetchClienteEProjetos();
+              }} 
             />
           ) : (
             <div className="text-sm text-muted-foreground">
-              Não foi possível identificar o cliente no banco. Verifique o cadastro do cliente antes de criar um projeto.
+              Cliente não encontrado.
             </div>
           )}
 
