@@ -46,8 +46,188 @@ import {
   Download,
   BarChart3,
   Activity
-} from 'lucide-react';
+ } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+
+// Componente de formulário para novo projeto
+function ProjetoForm() {
+  const [formData, setFormData] = useState({
+    nome: '',
+    descricao: '',
+    cliente_id: '',
+    valor: '',
+    data_inicio: '',
+    data_fim: '',
+    tipo: 'desenvolvimento'
+  });
+  const [clientes, setClientes] = useState<any[]>([]);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    fetchClientes();
+  }, []);
+
+  const fetchClientes = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('clientes')
+        .select('id, nome, status')
+        .eq('status', 'ativo')
+        .order('nome');
+
+      if (error) throw error;
+      setClientes(data || []);
+    } catch (error) {
+      console.error('Erro ao carregar clientes:', error);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    try {
+      const { error } = await supabase
+        .from('projetos')
+        .insert({
+          nome: formData.nome,
+          descricao: formData.descricao,
+          cliente_id: formData.cliente_id,
+          orcamento: formData.valor ? parseFloat(formData.valor) : null,
+          data_inicio: formData.data_inicio || null,
+          data_fim: formData.data_fim || null,
+          status: 'ativo'
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Projeto criado com sucesso!",
+        description: "O novo projeto foi adicionado ao sistema",
+      });
+
+      setFormData({
+        nome: '',
+        descricao: '',
+        cliente_id: '',
+        valor: '',
+        data_inicio: '',
+        data_fim: '',
+        tipo: 'desenvolvimento'
+      });
+    } catch (error) {
+      console.error('Erro ao criar projeto:', error);
+      toast({
+        title: "Erro ao criar projeto",
+        description: "Não foi possível criar o projeto",
+        variant: "destructive",
+      });
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="nome">Nome do Projeto</Label>
+          <Input
+            id="nome"
+            value={formData.nome}
+            onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
+            placeholder="Ex: Website Institucional"
+            required
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="cliente">Cliente</Label>
+          <Select 
+            value={formData.cliente_id} 
+            onValueChange={(value) => setFormData({ ...formData, cliente_id: value })}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Selecione um cliente" />
+            </SelectTrigger>
+            <SelectContent>
+              {clientes.map((cliente) => (
+                <SelectItem key={cliente.id} value={cliente.id}>
+                  {cliente.nome}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="valor">Valor do Projeto (R$)</Label>
+          <Input
+            id="valor"
+            type="number"
+            step="0.01"
+            value={formData.valor}
+            onChange={(e) => setFormData({ ...formData, valor: e.target.value })}
+            placeholder="0,00"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="tipo">Tipo de Projeto</Label>
+          <Select 
+            value={formData.tipo} 
+            onValueChange={(value) => setFormData({ ...formData, tipo: value })}
+          >
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="desenvolvimento">Desenvolvimento</SelectItem>
+              <SelectItem value="design">Design</SelectItem>
+              <SelectItem value="marketing">Marketing</SelectItem>
+              <SelectItem value="branding">Branding</SelectItem>
+              <SelectItem value="consultoria">Consultoria</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="data_inicio">Data de Início</Label>
+          <Input
+            id="data_inicio"
+            type="date"
+            value={formData.data_inicio}
+            onChange={(e) => setFormData({ ...formData, data_inicio: e.target.value })}
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="data_fim">Data de Término</Label>
+          <Input
+            id="data_fim"
+            type="date"
+            value={formData.data_fim}
+            onChange={(e) => setFormData({ ...formData, data_fim: e.target.value })}
+          />
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="descricao">Descrição do Projeto</Label>
+        <Textarea
+          id="descricao"
+          value={formData.descricao}
+          onChange={(e) => setFormData({ ...formData, descricao: e.target.value })}
+          placeholder="Descreva o escopo e objetivos do projeto..."
+          rows={3}
+        />
+      </div>
+
+      <div className="flex gap-2 pt-4">
+        <Button type="submit" className="flex-1">
+          Criar Projeto
+        </Button>
+      </div>
+    </form>
+  );
+}
 
 interface Lead {
   id: string;
@@ -414,6 +594,23 @@ const CRM = () => {
         <div className="lg:col-span-2 space-y-6">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-xl font-semibold">Funil de Vendas</h3>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button className="flex items-center gap-2">
+                  <Plus className="h-4 w-4" />
+                  Novo Projeto
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-2xl">
+                <DialogHeader>
+                  <DialogTitle>Criar Novo Projeto</DialogTitle>
+                  <DialogDescription>
+                    Crie um novo projeto para um cliente fechado
+                  </DialogDescription>
+                </DialogHeader>
+                <ProjetoForm />
+              </DialogContent>
+            </Dialog>
           </div>
           {/* Kanban Board */}
           <DndContext
