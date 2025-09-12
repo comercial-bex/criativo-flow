@@ -165,11 +165,11 @@ export function SwotAnalysisIA({ clienteId, clienteNome }: SwotAnalysisIAProps) 
       {swotData ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Forças */}
-          <Card className="border-green-300 bg-green-100 dark:bg-green-950 dark:border-green-700">
+          <Card className="border border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-950/50">
             <CardHeader className="pb-3">
               <div className="flex items-center gap-2">
-                <TrendingUp className="h-5 w-5 text-green-700 dark:text-green-400" />
-                <CardTitle className="text-green-800 dark:text-green-300">Forças</CardTitle>
+                <TrendingUp className="h-5 w-5 text-green-600 dark:text-green-400" />
+                <CardTitle className="text-green-800 dark:text-green-200">Forças</CardTitle>
               </div>
             </CardHeader>
             <CardContent>
@@ -189,11 +189,11 @@ export function SwotAnalysisIA({ clienteId, clienteNome }: SwotAnalysisIAProps) 
           </Card>
 
           {/* Oportunidades */}
-          <Card className="border-blue-300 bg-blue-100 dark:bg-blue-950 dark:border-blue-700">
+          <Card className="border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/50">
             <CardHeader className="pb-3">
               <div className="flex items-center gap-2">
-                <Target className="h-5 w-5 text-blue-700 dark:text-blue-400" />
-                <CardTitle className="text-blue-800 dark:text-blue-300">Oportunidades</CardTitle>
+                <Target className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                <CardTitle className="text-blue-800 dark:text-blue-200">Oportunidades</CardTitle>
               </div>
             </CardHeader>
             <CardContent>
@@ -213,11 +213,11 @@ export function SwotAnalysisIA({ clienteId, clienteNome }: SwotAnalysisIAProps) 
           </Card>
 
           {/* Fraquezas */}
-          <Card className="border-orange-300 bg-orange-100 dark:bg-orange-950 dark:border-orange-700">
+          <Card className="border border-orange-200 dark:border-orange-800 bg-orange-50 dark:bg-orange-950/50">
             <CardHeader className="pb-3">
               <div className="flex items-center gap-2">
-                <AlertTriangle className="h-5 w-5 text-orange-700 dark:text-orange-400" />
-                <CardTitle className="text-orange-800 dark:text-orange-300">Fraquezas</CardTitle>
+                <AlertTriangle className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+                <CardTitle className="text-orange-800 dark:text-orange-200">Fraquezas</CardTitle>
               </div>
             </CardHeader>
             <CardContent>
@@ -237,11 +237,11 @@ export function SwotAnalysisIA({ clienteId, clienteNome }: SwotAnalysisIAProps) 
           </Card>
 
           {/* Ameaças */}
-          <Card className="border-red-300 bg-red-100 dark:bg-red-950 dark:border-red-700">
+          <Card className="border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950/50">
             <CardHeader className="pb-3">
               <div className="flex items-center gap-2">
-                <AlertTriangle className="h-5 w-5 text-red-700 dark:text-red-400" />
-                <CardTitle className="text-red-800 dark:text-red-300">Ameaças</CardTitle>
+                <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400" />
+                <CardTitle className="text-red-800 dark:text-red-200">Ameaças</CardTitle>
               </div>
             </CardHeader>
             <CardContent>
@@ -271,21 +271,21 @@ export function SwotAnalysisIA({ clienteId, clienteNome }: SwotAnalysisIAProps) 
                 baseada nos dados de onboarding do cliente.
               </p>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
-                <div className="flex flex-col items-center gap-2 p-3 bg-green-100 dark:bg-green-900 rounded-lg border border-green-300 dark:border-green-700">
-                  <TrendingUp className="h-6 w-6 text-green-700 dark:text-green-400" />
-                  <span className="font-medium text-green-800 dark:text-green-300">Forças</span>
+                <div className="flex flex-col items-center gap-2 p-3 bg-green-50 dark:bg-green-950/50 rounded-lg border border-green-200 dark:border-green-800">
+                  <TrendingUp className="h-6 w-6 text-green-600 dark:text-green-400" />
+                  <span className="font-medium text-green-800 dark:text-green-200">Forças</span>
                 </div>
-                <div className="flex flex-col items-center gap-2 p-3 bg-blue-100 dark:bg-blue-900 rounded-lg border border-blue-300 dark:border-blue-700">
-                  <Target className="h-6 w-6 text-blue-700 dark:text-blue-400" />
-                  <span className="font-medium text-blue-800 dark:text-blue-300">Oportunidades</span>
+                <div className="flex flex-col items-center gap-2 p-3 bg-blue-50 dark:bg-blue-950/50 rounded-lg border border-blue-200 dark:border-blue-800">
+                  <Target className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                  <span className="font-medium text-blue-800 dark:text-blue-200">Oportunidades</span>
                 </div>
-                <div className="flex flex-col items-center gap-2 p-3 bg-orange-100 dark:bg-orange-900 rounded-lg border border-orange-300 dark:border-orange-700">
-                  <AlertTriangle className="h-6 w-6 text-orange-700 dark:text-orange-400" />
-                  <span className="font-medium text-orange-800 dark:text-orange-300">Fraquezas</span>
+                <div className="flex flex-col items-center gap-2 p-3 bg-orange-50 dark:bg-orange-950/50 rounded-lg border border-orange-200 dark:border-orange-800">
+                  <AlertTriangle className="h-6 w-6 text-orange-600 dark:text-orange-400" />
+                  <span className="font-medium text-orange-800 dark:text-orange-200">Fraquezas</span>
                 </div>
-                <div className="flex flex-col items-center gap-2 p-3 bg-red-100 dark:bg-red-900 rounded-lg border border-red-300 dark:border-red-700">
-                  <AlertTriangle className="h-6 w-6 text-red-700 dark:text-red-400" />
-                  <span className="font-medium text-red-800 dark:text-red-300">Ameaças</span>
+                <div className="flex flex-col items-center gap-2 p-3 bg-red-50 dark:bg-red-950/50 rounded-lg border border-red-200 dark:border-red-800">
+                  <AlertTriangle className="h-6 w-6 text-red-600 dark:text-red-400" />
+                  <span className="font-medium text-red-800 dark:text-red-200">Ameaças</span>
                 </div>
               </div>
             </div>
