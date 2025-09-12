@@ -137,6 +137,13 @@ export function OnboardingForm({ isOpen, onClose, cliente }: OnboardingFormProps
 
   const [loading, setLoading] = useState(false);
 
+  // Carregar dados automaticamente se for Tech Solutions Ltda
+  useEffect(() => {
+    if (cliente.nome === 'Tech Solutions Ltda') {
+      carregarDadosSimulados();
+    }
+  }, [cliente.nome]);
+
   // Carregar dados simulados da Tech Solutions Ltda
   const carregarDadosSimulados = async () => {
     setLoading(true);
