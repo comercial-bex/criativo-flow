@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { SidebarTrigger } from "@/components/ui/sidebar";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 export function GlobalHeader() {
   const { user, signOut } = useAuth();
@@ -49,6 +50,9 @@ export function GlobalHeader() {
         <Button variant="ghost" size="sm">
           <HelpCircle className="h-5 w-5" />
         </Button>
+
+        {/* Toggle de Tema */}
+        <ThemeToggle />
 
         {/* Perfil */}
         <DropdownMenu>
