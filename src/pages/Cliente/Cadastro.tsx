@@ -86,7 +86,7 @@ export default function ClienteCadastro() {
     endereco: "",
     status: "prospecto",
     tipo: "pessoa_juridica",
-    assinatura_id: "",
+    assinatura_id: "none",
     observacoes: ""
   });
 
@@ -127,7 +127,7 @@ export default function ClienteCadastro() {
       endereco: "",
       status: "prospecto",
       tipo: "pessoa_juridica",
-      assinatura_id: "",
+      assinatura_id: "none",
       observacoes: ""
     });
     setEditingClient(null);
@@ -164,7 +164,7 @@ export default function ClienteCadastro() {
   };
 
   const getAssinaturaNome = (assinaturaId?: string) => {
-    if (!assinaturaId) return 'Sem assinatura';
+    if (!assinaturaId || assinaturaId === 'none') return 'Sem assinatura';
     const assinatura = assinaturas.find(a => a.id === assinaturaId);
     return assinatura ? `${assinatura.nome} (R$ ${assinatura.preco})` : 'Assinatura não encontrada';
   };
@@ -281,14 +281,14 @@ export default function ClienteCadastro() {
                 <div className="space-y-2">
                   <Label htmlFor="assinatura">Plano de Assinatura</Label>
                   <Select 
-                    value={formData.assinatura_id || ""} 
-                    onValueChange={(value) => setFormData({ ...formData, assinatura_id: value || undefined })}
+                    value={formData.assinatura_id || "none"} 
+                    onValueChange={(value) => setFormData({ ...formData, assinatura_id: value === "none" ? undefined : value })}
                   >
                     <SelectTrigger className="bg-background">
                       <SelectValue placeholder="Selecione um plano" />
                     </SelectTrigger>
                     <SelectContent className="bg-background border border-border shadow-lg z-50">
-                      <SelectItem value="">Sem assinatura</SelectItem>
+                      <SelectItem value="none">Sem assinatura</SelectItem>
                       {assinaturas.map((assinatura) => (
                         <SelectItem key={assinatura.id} value={assinatura.id}>
                           {assinatura.nome} - R$ {assinatura.preco.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
@@ -349,7 +349,7 @@ export default function ClienteCadastro() {
                     {cliente.telefone} • {cliente.cnpj_cpf}
                   </p>
                   <p className="text-sm text-muted-foreground">{cliente.endereco}</p>
-                  {cliente.assinatura_id && (
+                  {cliente.assinatura_id && cliente.assinatura_id !== 'none' && (
                     <p className="text-sm font-medium text-primary">
                       {getAssinaturaNome(cliente.assinatura_id)}
                     </p>
