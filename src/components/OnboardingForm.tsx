@@ -224,56 +224,78 @@ export function OnboardingForm({ isOpen, onClose, clienteId, cliente }: Onboardi
       // Mapear dados do formulário para o formato do banco
       const onboardingData = {
         cliente_id: clienteId,
-        nome_empresa: formData.nomeEmpresa,
-        segmento_atuacao: formData.segmentoAtuacao,
-        produtos_servicos: formData.produtosServicos,
-        tempo_mercado: formData.tempoMercado,
-        localizacao: formData.localizacao,
-        estrutura_atual: formData.estruturaAtual,
-        canais_contato: formData.canaisContato,
-        concorrentes_diretos: formData.concorrentesDiretos,
-        diferenciais: formData.diferenciais,
-        fatores_crise: formData.fatoresCrise,
-        area_atendimento: formData.areaAtendimento,
-        tipos_clientes: formData.tiposClientes,
-        publico_alvo: formData.publicoAlvo,
-        publico_alvo_outros: formData.publicoAlvoOutros,
-        dores_problemas: formData.doresProblemas,
-        valorizado: formData.valorizado,
-        como_encontram: formData.comoEncontram,
-        frequencia_compra: formData.frequenciaCompra,
-        ticket_medio: formData.ticketMedio,
-        forma_aquisicao: formData.formaAquisicao,
-        presenca_digital: formData.presencaDigital,
-        presenca_digital_outros: formData.presencaDigitalOutros,
-        frequencia_postagens: formData.frequenciaPostagens,
-        tipos_conteudo: formData.tiposConteudo,
-        midia_paga: formData.midiaPaga,
-        feiras_eventos: formData.feirasEventos,
-        materiais_impressos: formData.materiaisImpressos,
-        midia_tradicional: formData.midiaTradicional,
-        objetivos_digitais: formData.objetivosDigitais,
-        objetivos_offline: formData.objetivosOffline,
-        onde_6_meses: formData.onde6Meses,
-        resultados_esperados: formData.resultadosEsperados,
-        equipe_vendas_externa: formData.equipeVendasExterna,
-        canais_atendimento_ativos: formData.canaisAtendimentoAtivos,
-        relacionamento_clientes: formData.relacionamentoClientes,
-        historia_marca: formData.historiaMarca,
-        valores_principais: formData.valoresPrincipais,
-        tom_voz: formData.tomVoz,
-        como_lembrada: formData.comoLembrada
+        nome_empresa: formData.nomeEmpresa || '',
+        segmento_atuacao: formData.segmentoAtuacao || '',
+        produtos_servicos: formData.produtosServicos || '',
+        tempo_mercado: formData.tempoMercado || '',
+        localizacao: formData.localizacao || '',
+        estrutura_atual: formData.estruturaAtual || '',
+        canais_contato: formData.canaisContato || '',
+        concorrentes_diretos: formData.concorrentesDiretos || '',
+        diferenciais: formData.diferenciais || '',
+        fatores_crise: formData.fatoresCrise || '',
+        area_atendimento: formData.areaAtendimento || '',
+        tipos_clientes: formData.tiposClientes || '',
+        publico_alvo: formData.publicoAlvo || [],
+        publico_alvo_outros: formData.publicoAlvoOutros || '',
+        dores_problemas: formData.doresProblemas || '',
+        valorizado: formData.valorizado || '',
+        como_encontram: formData.comoEncontram || [],
+        frequencia_compra: formData.frequenciaCompra || '',
+        ticket_medio: formData.ticketMedio || '',
+        forma_aquisicao: formData.formaAquisicao || [],
+        presenca_digital: formData.presencaDigital || [],
+        presenca_digital_outros: formData.presencaDigitalOutros || '',
+        frequencia_postagens: formData.frequenciaPostagens || '',
+        tipos_conteudo: formData.tiposConteudo || [],
+        midia_paga: formData.midiaPaga || '',
+        feiras_eventos: formData.feirasEventos || '',
+        materiais_impressos: formData.materiaisImpressos || [],
+        midia_tradicional: formData.midiaTradicional || [],
+        objetivos_digitais: formData.objetivosDigitais || '',
+        objetivos_offline: formData.objetivosOffline || '',
+        onde_6_meses: formData.onde6Meses || '',
+        resultados_esperados: formData.resultadosEsperados || [],
+        equipe_vendas_externa: formData.equipeVendasExterna || '',
+        canais_atendimento_ativos: formData.canaisAtendimentoAtivos || '',
+        relacionamento_clientes: formData.relacionamentoClientes || [],
+        historia_marca: formData.historiaMarca || '',
+        valores_principais: formData.valoresPrincipais || '',
+        tom_voz: formData.tomVoz || [],
+        como_lembrada: formData.comoLembrada || ''
       };
 
-      // Usar upsert para inserir ou atualizar
-      const { error } = await supabase
-        .from('cliente_onboarding')
-        .upsert(onboardingData, {
-          onConflict: 'cliente_id'
-        });
+      console.log('Dados para salvar:', onboardingData);
 
-      if (error) {
-        console.error('Erro ao salvar onboarding:', error);
+      // Verificar se já existe registro
+      const { data: existingData, error: checkError } = await supabase
+        .from('cliente_onboarding')
+        .select('id')
+        .eq('cliente_id', clienteId)
+        .maybeSingle();
+
+      if (checkError && checkError.code !== 'PGRST116') {
+        console.error('Erro ao verificar onboarding existente:', checkError);
+        toast.error('Erro ao verificar dados existentes');
+        return;
+      }
+
+      let result;
+      if (existingData) {
+        // Atualizar registro existente
+        result = await supabase
+          .from('cliente_onboarding')
+          .update(onboardingData)
+          .eq('cliente_id', clienteId);
+      } else {
+        // Inserir novo registro
+        result = await supabase
+          .from('cliente_onboarding')
+          .insert([onboardingData]);
+      }
+
+      if (result.error) {
+        console.error('Erro ao salvar onboarding:', result.error);
         toast.error('Erro ao salvar dados do onboarding');
         return;
       }
