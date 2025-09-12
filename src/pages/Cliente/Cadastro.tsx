@@ -164,7 +164,7 @@ export default function ClienteCadastro() {
   };
 
   const getAssinaturaNome = (assinaturaId?: string) => {
-    if (!assinaturaId || assinaturaId === 'none') return 'Sem assinatura';
+    if (!assinaturaId || assinaturaId === 'none') return 'Avulsa';
     const assinatura = assinaturas.find(a => a.id === assinaturaId);
     return assinatura ? `${assinatura.nome} (R$ ${assinatura.preco})` : 'Assinatura não encontrada';
   };
@@ -288,7 +288,7 @@ export default function ClienteCadastro() {
                       <SelectValue placeholder="Selecione um plano" />
                     </SelectTrigger>
                     <SelectContent className="bg-background border border-border shadow-lg z-50">
-                      <SelectItem value="none">Sem assinatura</SelectItem>
+                      <SelectItem value="none">Avulsa</SelectItem>
                       {assinaturas.map((assinatura) => (
                         <SelectItem key={assinatura.id} value={assinatura.id}>
                           {assinatura.nome}
