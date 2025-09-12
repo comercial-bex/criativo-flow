@@ -65,11 +65,6 @@ interface OnboardingData {
   materiaisImpressos: string[];
   midiaTradicional: string[];
   
-  // 7. Matriz F.O.F.A
-  forcas: string;
-  fraquezas: string;
-  oportunidades: string;
-  ameacas: string;
   
   // 8. Objetivos
   objetivosDigitais: string;
@@ -119,10 +114,6 @@ export function OnboardingForm({ isOpen, onClose, cliente }: OnboardingFormProps
     feirasEventos: "",
     materiaisImpressos: [],
     midiaTradicional: [],
-    forcas: "",
-    fraquezas: "",
-    oportunidades: "",
-    ameacas: "",
     objetivosDigitais: "",
     objetivosOffline: "",
     onde6Meses: "",
@@ -204,10 +195,6 @@ export function OnboardingForm({ isOpen, onClose, cliente }: OnboardingFormProps
         feirasEventos: onboardingData.feiras_eventos || '',
         materiaisImpressos: onboardingData.materiais_impressos || [],
         midiaTradicional: onboardingData.midia_tradicional || [],
-        forcas: onboardingData.forcas || '',
-        fraquezas: onboardingData.fraquezas || '',
-        oportunidades: onboardingData.oportunidades || '',
-        ameacas: onboardingData.ameacas || '',
         objetivosDigitais: onboardingData.objetivos_digitais || '',
         objetivosOffline: onboardingData.objetivos_offline || '',
         onde6Meses: onboardingData.onde_6_meses || '',
@@ -740,96 +727,7 @@ export function OnboardingForm({ isOpen, onClose, cliente }: OnboardingFormProps
               </CardContent>
             </Card>
 
-            {/* 10. Matriz F.O.F.A */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">10. Matriz F.O.F.A (Autoavaliação)</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 gap-4 h-96">
-                  {/* Quadrante Superior Esquerdo - Forças */}
-                  <div className="border-2 border-green-200 rounded-lg p-4 bg-green-50">
-                    <Label className="text-green-800 font-semibold text-center block mb-3">
-                      FORÇAS
-                    </Label>
-                    <Label className="text-xs text-green-600 block mb-2">
-                      (O que a empresa faz bem)
-                    </Label>
-                    <Textarea
-                      value={formData.forcas}
-                      onChange={(e) => setFormData({...formData, forcas: e.target.value})}
-                      className="h-32 border-green-300 focus:border-green-500 bg-white"
-                      placeholder="Liste os pontos fortes da empresa..."
-                    />
-                  </div>
-
-                  {/* Quadrante Superior Direito - Oportunidades */}
-                  <div className="border-2 border-blue-200 rounded-lg p-4 bg-blue-50">
-                    <Label className="text-blue-800 font-semibold text-center block mb-3">
-                      OPORTUNIDADES
-                    </Label>
-                    <Label className="text-xs text-blue-600 block mb-2">
-                      (Mercado, tendências, expansão)
-                    </Label>
-                    <Textarea
-                      value={formData.oportunidades}
-                      onChange={(e) => setFormData({...formData, oportunidades: e.target.value})}
-                      className="h-32 border-blue-300 focus:border-blue-500 bg-white"
-                      placeholder="Identifique as oportunidades de mercado..."
-                    />
-                  </div>
-
-                  {/* Quadrante Inferior Esquerdo - Fraquezas */}
-                  <div className="border-2 border-red-200 rounded-lg p-4 bg-red-50">
-                    <Label className="text-red-800 font-semibold text-center block mb-3">
-                      FRAQUEZAS
-                    </Label>
-                    <Label className="text-xs text-red-600 block mb-2">
-                      (O que precisa melhorar)
-                    </Label>
-                    <Textarea
-                      value={formData.fraquezas}
-                      onChange={(e) => setFormData({...formData, fraquezas: e.target.value})}
-                      className="h-32 border-red-300 focus:border-red-500 bg-white"
-                      placeholder="Liste os pontos que precisam melhorar..."
-                    />
-                  </div>
-
-                  {/* Quadrante Inferior Direito - Ameaças */}
-                  <div className="border-2 border-orange-200 rounded-lg p-4 bg-orange-50">
-                    <Label className="text-orange-800 font-semibold text-center block mb-3">
-                      AMEAÇAS
-                    </Label>
-                    <Label className="text-xs text-orange-600 block mb-2">
-                      (Concorrência, economia, fatores externos)
-                    </Label>
-                    <Textarea
-                      value={formData.ameacas}
-                      onChange={(e) => setFormData({...formData, ameacas: e.target.value})}
-                      className="h-32 border-orange-300 focus:border-orange-500 bg-white"
-                      placeholder="Identifique as ameaças externas..."
-                    />
-                  </div>
-                </div>
-                
-                {/* Eixos do plano cartesiano */}
-                <div className="mt-4 text-center">
-                  <div className="flex justify-between items-center text-sm text-muted-foreground">
-                    <span className="bg-red-100 px-2 py-1 rounded">INTERNO (Controle da empresa)</span>
-                    <span className="bg-blue-100 px-2 py-1 rounded">EXTERNO (Ambiente de mercado)</span>
-                  </div>
-                  <div className="flex justify-center mt-2">
-                    <div className="flex flex-col items-center text-sm text-muted-foreground">
-                      <span className="bg-green-100 px-2 py-1 rounded mb-1">POSITIVO</span>
-                      <div className="w-px h-8 bg-gray-300"></div>
-                      <span className="bg-orange-100 px-2 py-1 rounded mt-1">NEGATIVO</span>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Análise SWOT com IA */}
+            {/* 10. Matriz F.O.F.A com IA */}
             <SwotAnalysisIA 
               clienteId="550e8400-e29b-41d4-a716-446655440001" 
               clienteNome="Tech Solutions Ltda" 
