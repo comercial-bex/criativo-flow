@@ -346,14 +346,14 @@ export default function ClienteCadastro() {
                 <div className="space-y-2">
                   <Label htmlFor="assinatura">Plano de Assinatura</Label>
                   <Select 
-                    value={formData.assinatura_id || ''} 
-                    onValueChange={(value) => setFormData({ ...formData, assinatura_id: value })}
+                    value={formData.assinatura_id || 'none'} 
+                    onValueChange={(value) => setFormData({ ...formData, assinatura_id: value === 'none' ? '' : value })}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Selecione um plano" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Sem assinatura</SelectItem>
+                      <SelectItem value="none">Sem assinatura</SelectItem>
                       {assinaturas.map((assinatura) => (
                         <SelectItem key={assinatura.id} value={assinatura.id}>
                           {assinatura.nome} - R$ {assinatura.preco.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
