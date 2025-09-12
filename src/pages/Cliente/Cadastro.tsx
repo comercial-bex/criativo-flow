@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { OnboardingForm } from "@/components/OnboardingForm";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -77,6 +78,8 @@ export default function ClienteCadastro() {
   const [assinaturas] = useState<Assinatura[]>(mockAssinaturas);
   const [searchTerm, setSearchTerm] = useState("");
   const [showForm, setShowForm] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [selectedCliente, setSelectedCliente] = useState<Cliente | null>(null);
   const [editingClient, setEditingClient] = useState<Cliente | null>(null);
   const [formData, setFormData] = useState<Partial<Cliente>>({
     nome: "",
@@ -146,8 +149,8 @@ export default function ClienteCadastro() {
   };
 
   const handleOnboarding = (cliente: Cliente) => {
-    toast.success(`Iniciando onboarding para ${cliente.nome}`);
-    // Aqui você pode adicionar a lógica de onboarding
+    setSelectedCliente(cliente);
+    setShowOnboarding(true);
   };
 
   const getStatusColor = (status: string) => {
@@ -398,6 +401,18 @@ export default function ClienteCadastro() {
         <div className="text-center py-12">
           <p className="text-muted-foreground">Nenhum cliente encontrado.</p>
         </div>
+      )}
+
+      {/* Modal de Onboarding */}
+      {selectedCliente && (
+        <OnboardingForm
+          isOpen={showOnboarding}
+          onClose={() => {
+            setShowOnboarding(false);
+            setSelectedCliente(null);
+          }}
+          clienteNome={selectedCliente.nome}
+        />
       )}
     </div>
   );
