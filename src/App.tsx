@@ -22,6 +22,7 @@ import ClientePainel from "./pages/Cliente/Painel";
 import ClienteProjetos from "./pages/Cliente/Projetos";
 import DetalheProjetos from "./pages/Cliente/DetalheProjetos";
 import ClienteCadastro from "./pages/Cliente/Cadastro";
+import ClienteEditar from "./pages/Cliente/Editar";
 import Configuracoes from "./pages/Configuracoes";
 import Relatorios from "./pages/Relatorios";
 import Planos from "./pages/Planos";
@@ -121,6 +122,13 @@ const App = () => (
               <ProtectedRoute>
                 <Layout>
                   <ClienteCadastro />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/clientes/:clienteId/editar" element={
+              <ProtectedRoute>
+                <Layout>
+                  <ClienteEditar />
                 </Layout>
               </ProtectedRoute>
             } />

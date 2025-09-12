@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { OnboardingForm } from "@/components/OnboardingForm";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -54,13 +55,13 @@ const mockAssinaturas: Assinatura[] = [
 // Dados mockados removidos - agora carregamos do Supabase
 
 export default function ClienteCadastro() {
+  const navigate = useNavigate();
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [assinaturas] = useState<Assinatura[]>(mockAssinaturas);
   const [searchTerm, setSearchTerm] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [selectedCliente, setSelectedCliente] = useState<Cliente | null>(null);
-  const [editingClient, setEditingClient] = useState<Cliente | null>(null);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<Partial<Cliente>>({
     nome: "",
@@ -122,34 +123,18 @@ export default function ClienteCadastro() {
         assinatura_id: (formData.assinatura_id && formData.assinatura_id !== 'none') ? formData.assinatura_id : null
       };
 
-      if (editingClient) {
-        // Atualizar cliente existente
-        const { error } = await supabase
-          .from('clientes')
-          .update(clienteData)
-          .eq('id', editingClient.id);
+      // Criar novo cliente
+      const { error } = await supabase
+        .from('clientes')
+        .insert([clienteData]);
 
-        if (error) {
-          console.error('Erro ao atualizar cliente:', error);
-          toast.error('Erro ao atualizar cliente');
-          return;
-        }
-
-        toast.success("Cliente atualizado com sucesso!");
-      } else {
-        // Criar novo cliente
-        const { error } = await supabase
-          .from('clientes')
-          .insert([clienteData]);
-
-        if (error) {
-          console.error('Erro ao criar cliente:', error);
-          toast.error('Erro ao criar cliente');
-          return;
-        }
-
-        toast.success("Cliente cadastrado com sucesso!");
+      if (error) {
+        console.error('Erro ao criar cliente:', error);
+        toast.error('Erro ao criar cliente');
+        return;
       }
+
+      toast.success("Cliente cadastrado com sucesso!");
 
       // Recarregar lista de clientes
       await fetchClientes();
@@ -172,14 +157,11 @@ export default function ClienteCadastro() {
       status: "ativo",
       assinatura_id: ""
     });
-    setEditingClient(null);
     setShowForm(false);
   };
 
   const handleEdit = (cliente: Cliente) => {
-    setFormData(cliente);
-    setEditingClient(cliente);
-    setShowForm(true);
+    navigate(`/clientes/${cliente.id}/editar`);
   };
 
   const handleDelete = async (id: string) => {
@@ -279,9 +261,7 @@ export default function ClienteCadastro() {
       {showForm && (
         <Card>
           <CardHeader>
-            <CardTitle>
-              {editingClient ? "Editar Cliente" : "Cadastrar Novo Cliente"}
-            </CardTitle>
+            <CardTitle>Cadastrar Novo Cliente</CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -378,7 +358,7 @@ export default function ClienteCadastro() {
 
               <div className="flex gap-2 pt-4">
                 <Button type="submit" disabled={loading}>
-                  {loading ? "Salvando..." : editingClient ? "Atualizar" : "Cadastrar"}
+                  {loading ? "Salvando..." : "Cadastrar"}
                 </Button>
                 <Button type="button" variant="outline" onClick={resetForm}>
                   Cancelar
