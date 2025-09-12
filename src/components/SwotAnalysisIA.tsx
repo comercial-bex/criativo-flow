@@ -9,9 +9,15 @@ import { supabase } from '@/integrations/supabase/client';
 interface SwotAnalysisIAProps {
   clienteId: string;
   clienteNome: string;
+  onSwotDataUpdate?: (swotData: {
+    forcas: string;
+    fraquezas: string;
+    oportunidades: string;
+    ameacas: string;
+  }) => void;
 }
 
-export function SwotAnalysisIA({ clienteId, clienteNome }: SwotAnalysisIAProps) {
+export function SwotAnalysisIA({ clienteId, clienteNome, onSwotDataUpdate }: SwotAnalysisIAProps) {
   const [analysis, setAnalysis] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
@@ -30,6 +36,18 @@ export function SwotAnalysisIA({ clienteId, clienteNome }: SwotAnalysisIAProps) 
 
       if (data.success) {
         setAnalysis(data.analysis);
+        
+        // Extrair e passar dados SWOT para o formulário pai
+        const swotData = extractSwotData(data.analysis);
+        if (onSwotDataUpdate) {
+          onSwotDataUpdate({
+            forcas: swotData.forcas.join('\n'),
+            fraquezas: swotData.fraquezas.join('\n'),
+            oportunidades: swotData.oportunidades.join('\n'),
+            ameacas: swotData.ameacas.join('\n')
+          });
+        }
+        
         toast({
           title: "Análise SWOT concluída",
           description: "A IA analisou os dados de onboarding e gerou insights estratégicos.",

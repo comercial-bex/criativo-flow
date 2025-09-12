@@ -83,6 +83,12 @@ interface OnboardingData {
   valoresPrincipais: string;
   tomVoz: string[];
   comoLembrada: string;
+  
+  // 7. Matriz SWOT
+  forcas: string;
+  fraquezas: string;
+  oportunidades: string;
+  ameacas: string;
 }
 
 export function OnboardingForm({ isOpen, onClose, clienteId, cliente }: OnboardingFormProps) {
@@ -125,7 +131,11 @@ export function OnboardingForm({ isOpen, onClose, clienteId, cliente }: Onboardi
     historiaMarca: "",
     valoresPrincipais: "",
     tomVoz: [],
-    comoLembrada: ""
+    comoLembrada: "",
+    forcas: "",
+    fraquezas: "",
+    oportunidades: "",
+    ameacas: ""
   });
 
   const [loading, setLoading] = useState(false);
@@ -194,7 +204,11 @@ export function OnboardingForm({ isOpen, onClose, clienteId, cliente }: Onboardi
           historiaMarca: onboardingData.historia_marca || '',
           valoresPrincipais: onboardingData.valores_principais || '',
           tomVoz: onboardingData.tom_voz || [],
-          comoLembrada: onboardingData.como_lembrada || ''
+          comoLembrada: onboardingData.como_lembrada || '',
+          forcas: onboardingData.forcas || '',
+          fraquezas: onboardingData.fraquezas || '',
+          oportunidades: onboardingData.oportunidades || '',
+          ameacas: onboardingData.ameacas || ''
         });
       }
     } catch (error) {
@@ -262,7 +276,11 @@ export function OnboardingForm({ isOpen, onClose, clienteId, cliente }: Onboardi
         historia_marca: formData.historiaMarca || '',
         valores_principais: formData.valoresPrincipais || '',
         tom_voz: formData.tomVoz || [],
-        como_lembrada: formData.comoLembrada || ''
+        como_lembrada: formData.comoLembrada || '',
+        forcas: formData.forcas || '',
+        fraquezas: formData.fraquezas || '',
+        oportunidades: formData.oportunidades || '',
+        ameacas: formData.ameacas || ''
       };
 
       console.log('Dados para salvar:', onboardingData);
@@ -790,7 +808,16 @@ export function OnboardingForm({ isOpen, onClose, clienteId, cliente }: Onboardi
             {/* 10. Matriz F.O.F.A com IA */}
             <SwotAnalysisIA 
               clienteId={clienteId} 
-              clienteNome={formData.nomeEmpresa} 
+              clienteNome={formData.nomeEmpresa}
+              onSwotDataUpdate={(swotData) => {
+                setFormData(prev => ({
+                  ...prev,
+                  forcas: swotData.forcas,
+                  fraquezas: swotData.fraquezas,
+                  oportunidades: swotData.oportunidades,
+                  ameacas: swotData.ameacas
+                }));
+              }}
             />
 
             <Separator />
