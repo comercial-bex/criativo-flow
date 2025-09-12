@@ -486,10 +486,149 @@ export function OnboardingForm({ isOpen, onClose, cliente }: OnboardingFormProps
               </CardContent>
             </Card>
 
-            {/* 7. Matriz F.O.F.A */}
+            {/* 7. Objetivos (Plano de Ação 6 meses) */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">7. Matriz F.O.F.A (Autoavaliação)</CardTitle>
+                <CardTitle className="text-lg">7. Objetivos (Plano de Ação 6 meses)</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Objetivos digitais (curto prazo)</Label>
+                  <Textarea
+                    value={formData.objetivosDigitais}
+                    onChange={(e) => setFormData({...formData, objetivosDigitais: e.target.value})}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Objetivos offline (curto prazo)</Label>
+                  <Textarea
+                    value={formData.objetivosOffline}
+                    onChange={(e) => setFormData({...formData, objetivosOffline: e.target.value})}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Onde a empresa deseja estar em 6 meses?</Label>
+                  <Textarea
+                    value={formData.onde6Meses}
+                    onChange={(e) => setFormData({...formData, onde6Meses: e.target.value})}
+                  />
+                </div>
+                <div className="space-y-3">
+                  <Label>Quais resultados espera com as campanhas de marketing?</Label>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {["Aumento de clientes", "Fortalecimento da marca", "Aumento de faturamento", "Expansão de mercado"].map((resultado) => (
+                      <div key={resultado} className="flex items-center space-x-2">
+                        <Checkbox
+                          checked={formData.resultadosEsperados.includes(resultado)}
+                          onCheckedChange={() => handleCheckboxChange("resultadosEsperados", resultado)}
+                        />
+                        <Label>{resultado}</Label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* 8. Estrutura Comercial */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">8. Estrutura Comercial</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-3">
+                  <Label>Possui equipe de vendas externa?</Label>
+                  <div className="flex gap-4">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        checked={formData.equipeVendasExterna === "Sim"}
+                        onCheckedChange={() => setFormData({...formData, equipeVendasExterna: "Sim"})}
+                      />
+                      <Label>Sim</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        checked={formData.equipeVendasExterna === "Não"}
+                        onCheckedChange={() => setFormData({...formData, equipeVendasExterna: "Não"})}
+                      />
+                      <Label>Não</Label>
+                    </div>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>Canais de atendimento mais ativos</Label>
+                  <Textarea
+                    value={formData.canaisAtendimentoAtivos}
+                    onChange={(e) => setFormData({...formData, canaisAtendimentoAtivos: e.target.value})}
+                  />
+                </div>
+                <div className="space-y-3">
+                  <Label>Relacionamento com clientes é feito por:</Label>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    {["WhatsApp", "Telefone", "E-mail", "Redes sociais"].map((canal) => (
+                      <div key={canal} className="flex items-center space-x-2">
+                        <Checkbox
+                          checked={formData.relacionamentoClientes.includes(canal)}
+                          onCheckedChange={() => handleCheckboxChange("relacionamentoClientes", canal)}
+                        />
+                        <Label>{canal}</Label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* 9. Plano de Comunicação (Baseado em Storytelling) */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">9. Plano de Comunicação (Baseado em Storytelling)</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label>História da marca</Label>
+                  <Textarea
+                    value={formData.historiaMarca}
+                    onChange={(e) => setFormData({...formData, historiaMarca: e.target.value})}
+                    rows={4}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Valores principais</Label>
+                  <Textarea
+                    value={formData.valoresPrincipais}
+                    onChange={(e) => setFormData({...formData, valoresPrincipais: e.target.value})}
+                  />
+                </div>
+                <div className="space-y-3">
+                  <Label>Tom de voz desejado na comunicação:</Label>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    {["Técnico", "Educativo", "Inspirador", "Institucional"].map((tom) => (
+                      <div key={tom} className="flex items-center space-x-2">
+                        <Checkbox
+                          checked={formData.tomVoz.includes(tom)}
+                          onCheckedChange={() => handleCheckboxChange("tomVoz", tom)}
+                        />
+                        <Label>{tom}</Label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>Como gostaria que sua marca fosse lembrada pelos clientes em 6 meses?</Label>
+                  <Textarea
+                    value={formData.comoLembrada}
+                    onChange={(e) => setFormData({...formData, comoLembrada: e.target.value})}
+                    rows={3}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* 10. Matriz F.O.F.A */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">10. Matriz F.O.F.A (Autoavaliação)</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 gap-4 h-96">
@@ -571,145 +710,6 @@ export function OnboardingForm({ isOpen, onClose, cliente }: OnboardingFormProps
                       <span className="bg-orange-100 px-2 py-1 rounded mt-1">NEGATIVO</span>
                     </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* 8. Objetivos */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">8. Objetivos (Plano de Ação 6 meses)</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label>Objetivos digitais (curto prazo)</Label>
-                  <Textarea
-                    value={formData.objetivosDigitais}
-                    onChange={(e) => setFormData({...formData, objetivosDigitais: e.target.value})}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Objetivos offline (curto prazo)</Label>
-                  <Textarea
-                    value={formData.objetivosOffline}
-                    onChange={(e) => setFormData({...formData, objetivosOffline: e.target.value})}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Onde a empresa deseja estar em 6 meses?</Label>
-                  <Textarea
-                    value={formData.onde6Meses}
-                    onChange={(e) => setFormData({...formData, onde6Meses: e.target.value})}
-                  />
-                </div>
-                <div className="space-y-3">
-                  <Label>Quais resultados espera com as campanhas de marketing?</Label>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {["Aumento de clientes", "Fortalecimento da marca", "Aumento de faturamento", "Expansão de mercado"].map((resultado) => (
-                      <div key={resultado} className="flex items-center space-x-2">
-                        <Checkbox
-                          checked={formData.resultadosEsperados.includes(resultado)}
-                          onCheckedChange={() => handleCheckboxChange("resultadosEsperados", resultado)}
-                        />
-                        <Label>{resultado}</Label>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* 9. Estrutura Comercial */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">9. Estrutura Comercial</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-3">
-                  <Label>Possui equipe de vendas externa?</Label>
-                  <div className="flex gap-4">
-                    <div className="flex items-center space-x-2">
-                      <Checkbox
-                        checked={formData.equipeVendasExterna === "Sim"}
-                        onCheckedChange={() => setFormData({...formData, equipeVendasExterna: "Sim"})}
-                      />
-                      <Label>Sim</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Checkbox
-                        checked={formData.equipeVendasExterna === "Não"}
-                        onCheckedChange={() => setFormData({...formData, equipeVendasExterna: "Não"})}
-                      />
-                      <Label>Não</Label>
-                    </div>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label>Canais de atendimento mais ativos</Label>
-                  <Textarea
-                    value={formData.canaisAtendimentoAtivos}
-                    onChange={(e) => setFormData({...formData, canaisAtendimentoAtivos: e.target.value})}
-                  />
-                </div>
-                <div className="space-y-3">
-                  <Label>Relacionamento com clientes é feito por:</Label>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    {["WhatsApp", "Telefone", "E-mail", "Redes sociais"].map((canal) => (
-                      <div key={canal} className="flex items-center space-x-2">
-                        <Checkbox
-                          checked={formData.relacionamentoClientes.includes(canal)}
-                          onCheckedChange={() => handleCheckboxChange("relacionamentoClientes", canal)}
-                        />
-                        <Label>{canal}</Label>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* 10. Plano de Comunicação */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">10. Plano de Comunicação (Baseado em Storytelling)</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label>História da marca</Label>
-                  <Textarea
-                    value={formData.historiaMarca}
-                    onChange={(e) => setFormData({...formData, historiaMarca: e.target.value})}
-                    rows={4}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Valores principais</Label>
-                  <Textarea
-                    value={formData.valoresPrincipais}
-                    onChange={(e) => setFormData({...formData, valoresPrincipais: e.target.value})}
-                  />
-                </div>
-                <div className="space-y-3">
-                  <Label>Tom de voz desejado na comunicação:</Label>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    {["Técnico", "Educativo", "Inspirador", "Institucional"].map((tom) => (
-                      <div key={tom} className="flex items-center space-x-2">
-                        <Checkbox
-                          checked={formData.tomVoz.includes(tom)}
-                          onCheckedChange={() => handleCheckboxChange("tomVoz", tom)}
-                        />
-                        <Label>{tom}</Label>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label>Como gostaria que sua marca fosse lembrada pelos clientes em 6 meses?</Label>
-                  <Textarea
-                    value={formData.comoLembrada}
-                    onChange={(e) => setFormData({...formData, comoLembrada: e.target.value})}
-                    rows={3}
-                  />
                 </div>
               </CardContent>
             </Card>
