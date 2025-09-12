@@ -21,6 +21,7 @@ interface Cliente {
   endereco: string;
   status: 'ativo' | 'inativo' | 'pendente' | 'arquivado';
   responsavel_id?: string;
+  assinatura_id?: string;
   created_at?: string;
   updated_at?: string;
 }
@@ -67,7 +68,8 @@ export default function ClienteCadastro() {
     telefone: "",
     cnpj_cpf: "",
     endereco: "",
-    status: "ativo"
+    status: "ativo",
+    assinatura_id: ""
   });
 
   // Carregar clientes do Supabase
@@ -116,7 +118,8 @@ export default function ClienteCadastro() {
         telefone: formData.telefone || null,
         cnpj_cpf: formData.cnpj_cpf || null,
         endereco: formData.endereco || null,
-        status: formData.status!
+        status: formData.status!,
+        assinatura_id: formData.assinatura_id || null
       };
 
       if (editingClient) {
@@ -166,7 +169,8 @@ export default function ClienteCadastro() {
       telefone: "",
       cnpj_cpf: "",
       endereco: "",
-      status: "ativo"
+      status: "ativo",
+      assinatura_id: ""
     });
     setEditingClient(null);
     setShowForm(false);
@@ -207,6 +211,10 @@ export default function ClienteCadastro() {
   };
 
   const handleOnboarding = (cliente: Cliente) => {
+    if (!clienteTemAssinatura(cliente)) {
+      toast.error('Cliente precisa ter uma assinatura (90º, 180º ou 360º) para acessar o onboarding');
+      return;
+    }
     setSelectedCliente(cliente);
     setShowOnboarding(true);
   };
@@ -229,6 +237,16 @@ export default function ClienteCadastro() {
       case 'arquivado': return 'Arquivado';
       default: return status;
     }
+  };
+
+  const getAssinaturaNome = (assinaturaId?: string) => {
+    if (!assinaturaId) return 'Sem assinatura';
+    const assinatura = assinaturas.find(a => a.id === assinaturaId);
+    return assinatura ? assinatura.nome : 'Plano não encontrado';
+  };
+
+  const clienteTemAssinatura = (cliente: Cliente) => {
+    return cliente.assinatura_id && ['1', '2', '3'].includes(cliente.assinatura_id);
   };
 
 
@@ -325,6 +343,26 @@ export default function ClienteCadastro() {
                   </Select>
                 </div>
 
+                <div className="space-y-2">
+                  <Label htmlFor="assinatura">Plano de Assinatura</Label>
+                  <Select 
+                    value={formData.assinatura_id || ''} 
+                    onValueChange={(value) => setFormData({ ...formData, assinatura_id: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione um plano" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">Sem assinatura</SelectItem>
+                      {assinaturas.map((assinatura) => (
+                        <SelectItem key={assinatura.id} value={assinatura.id}>
+                          {assinatura.nome} - R$ {assinatura.preco.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
               </div>
 
               <div className="space-y-2">
@@ -368,12 +406,17 @@ export default function ClienteCadastro() {
                     {cliente.telefone} • {cliente.cnpj_cpf}
                   </p>
                   <p className="text-sm text-muted-foreground">{cliente.endereco}</p>
+                  <p className="text-sm text-muted-foreground">
+                    <strong>Plano:</strong> {getAssinaturaNome(cliente.assinatura_id)}
+                  </p>
                 </div>
                 <div className="flex gap-2">
                   <Button
-                    variant="default"
+                    variant={clienteTemAssinatura(cliente) ? "default" : "secondary"}
                     size="sm"
                     onClick={() => handleOnboarding(cliente)}
+                    disabled={!clienteTemAssinatura(cliente)}
+                    title={!clienteTemAssinatura(cliente) ? 'Cliente precisa ter uma assinatura (90º, 180º ou 360º) para acessar o onboarding' : ''}
                   >
                     <Users className="h-4 w-4 mr-1" />
                     Onboarding

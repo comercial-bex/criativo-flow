@@ -204,6 +204,7 @@ export type Database = {
       }
       clientes: {
         Row: {
+          assinatura_id: string | null
           cnpj_cpf: string | null
           created_at: string | null
           email: string | null
@@ -216,6 +217,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          assinatura_id?: string | null
           cnpj_cpf?: string | null
           created_at?: string | null
           email?: string | null
@@ -228,6 +230,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          assinatura_id?: string | null
           cnpj_cpf?: string | null
           created_at?: string | null
           email?: string | null
