@@ -44,6 +44,164 @@ export type Database = {
         }
         Relationships: []
       }
+      cliente_onboarding: {
+        Row: {
+          ameacas: string | null
+          area_atendimento: string | null
+          canais_atendimento_ativos: string | null
+          canais_contato: string | null
+          cliente_id: string
+          como_encontram: string[] | null
+          como_lembrada: string | null
+          concorrentes_diretos: string | null
+          created_at: string
+          diferenciais: string | null
+          dores_problemas: string | null
+          equipe_vendas_externa: string | null
+          estrutura_atual: string | null
+          fatores_crise: string | null
+          feiras_eventos: string | null
+          forcas: string | null
+          forma_aquisicao: string[] | null
+          fraquezas: string | null
+          frequencia_compra: string | null
+          frequencia_postagens: string | null
+          historia_marca: string | null
+          id: string
+          localizacao: string | null
+          materiais_impressos: string[] | null
+          midia_paga: string | null
+          midia_tradicional: string[] | null
+          nome_empresa: string
+          objetivos_digitais: string | null
+          objetivos_offline: string | null
+          onde_6_meses: string | null
+          oportunidades: string | null
+          presenca_digital: string[] | null
+          presenca_digital_outros: string | null
+          produtos_servicos: string | null
+          publico_alvo: string[] | null
+          publico_alvo_outros: string | null
+          relacionamento_clientes: string[] | null
+          resultados_esperados: string[] | null
+          segmento_atuacao: string | null
+          tempo_mercado: string | null
+          ticket_medio: string | null
+          tipos_clientes: string | null
+          tipos_conteudo: string[] | null
+          tom_voz: string[] | null
+          updated_at: string
+          valores_principais: string | null
+          valorizado: string | null
+        }
+        Insert: {
+          ameacas?: string | null
+          area_atendimento?: string | null
+          canais_atendimento_ativos?: string | null
+          canais_contato?: string | null
+          cliente_id: string
+          como_encontram?: string[] | null
+          como_lembrada?: string | null
+          concorrentes_diretos?: string | null
+          created_at?: string
+          diferenciais?: string | null
+          dores_problemas?: string | null
+          equipe_vendas_externa?: string | null
+          estrutura_atual?: string | null
+          fatores_crise?: string | null
+          feiras_eventos?: string | null
+          forcas?: string | null
+          forma_aquisicao?: string[] | null
+          fraquezas?: string | null
+          frequencia_compra?: string | null
+          frequencia_postagens?: string | null
+          historia_marca?: string | null
+          id?: string
+          localizacao?: string | null
+          materiais_impressos?: string[] | null
+          midia_paga?: string | null
+          midia_tradicional?: string[] | null
+          nome_empresa: string
+          objetivos_digitais?: string | null
+          objetivos_offline?: string | null
+          onde_6_meses?: string | null
+          oportunidades?: string | null
+          presenca_digital?: string[] | null
+          presenca_digital_outros?: string | null
+          produtos_servicos?: string | null
+          publico_alvo?: string[] | null
+          publico_alvo_outros?: string | null
+          relacionamento_clientes?: string[] | null
+          resultados_esperados?: string[] | null
+          segmento_atuacao?: string | null
+          tempo_mercado?: string | null
+          ticket_medio?: string | null
+          tipos_clientes?: string | null
+          tipos_conteudo?: string[] | null
+          tom_voz?: string[] | null
+          updated_at?: string
+          valores_principais?: string | null
+          valorizado?: string | null
+        }
+        Update: {
+          ameacas?: string | null
+          area_atendimento?: string | null
+          canais_atendimento_ativos?: string | null
+          canais_contato?: string | null
+          cliente_id?: string
+          como_encontram?: string[] | null
+          como_lembrada?: string | null
+          concorrentes_diretos?: string | null
+          created_at?: string
+          diferenciais?: string | null
+          dores_problemas?: string | null
+          equipe_vendas_externa?: string | null
+          estrutura_atual?: string | null
+          fatores_crise?: string | null
+          feiras_eventos?: string | null
+          forcas?: string | null
+          forma_aquisicao?: string[] | null
+          fraquezas?: string | null
+          frequencia_compra?: string | null
+          frequencia_postagens?: string | null
+          historia_marca?: string | null
+          id?: string
+          localizacao?: string | null
+          materiais_impressos?: string[] | null
+          midia_paga?: string | null
+          midia_tradicional?: string[] | null
+          nome_empresa?: string
+          objetivos_digitais?: string | null
+          objetivos_offline?: string | null
+          onde_6_meses?: string | null
+          oportunidades?: string | null
+          presenca_digital?: string[] | null
+          presenca_digital_outros?: string | null
+          produtos_servicos?: string | null
+          publico_alvo?: string[] | null
+          publico_alvo_outros?: string | null
+          relacionamento_clientes?: string[] | null
+          resultados_esperados?: string[] | null
+          segmento_atuacao?: string | null
+          tempo_mercado?: string | null
+          ticket_medio?: string | null
+          tipos_clientes?: string | null
+          tipos_conteudo?: string[] | null
+          tom_voz?: string[] | null
+          updated_at?: string
+          valores_principais?: string | null
+          valorizado?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_cliente"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clientes: {
         Row: {
           cnpj_cpf: string | null
