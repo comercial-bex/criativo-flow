@@ -32,20 +32,20 @@ interface Assinatura {
   preco: number;
 }
 
-// Mock de assinaturas disponíveis
+// Mock de assinaturas disponíveis - usando UUIDs válidos
 const mockAssinaturas: Assinatura[] = [
   {
-    id: '1',
+    id: '550e8400-e29b-41d4-a716-446655440001',
     nome: 'Plano 90º',
     preco: 997
   },
   {
-    id: '2',
+    id: '550e8400-e29b-41d4-a716-446655440002',
     nome: 'Plano 180º',
     preco: 1497
   },
   {
-    id: '3',
+    id: '550e8400-e29b-41d4-a716-446655440003',
     nome: 'Plano 360º',
     preco: 2197
   }
@@ -119,7 +119,7 @@ export default function ClienteCadastro() {
         cnpj_cpf: formData.cnpj_cpf || null,
         endereco: formData.endereco || null,
         status: formData.status!,
-        assinatura_id: formData.assinatura_id || null
+        assinatura_id: (formData.assinatura_id && formData.assinatura_id !== 'none') ? formData.assinatura_id : null
       };
 
       if (editingClient) {
@@ -246,7 +246,8 @@ export default function ClienteCadastro() {
   };
 
   const clienteTemAssinatura = (cliente: Cliente) => {
-    return cliente.assinatura_id && ['1', '2', '3'].includes(cliente.assinatura_id);
+    const validAssinaturaIds = ['550e8400-e29b-41d4-a716-446655440001', '550e8400-e29b-41d4-a716-446655440002', '550e8400-e29b-41d4-a716-446655440003'];
+    return cliente.assinatura_id && validAssinaturaIds.includes(cliente.assinatura_id);
   };
 
 
