@@ -16,6 +16,7 @@ import { SwotAnalysisIA } from "@/components/SwotAnalysisIA";
 interface OnboardingFormProps {
   isOpen: boolean;
   onClose: () => void;
+  clienteId: string;
   cliente: {
     nome: string;
     email: string;
@@ -84,7 +85,7 @@ interface OnboardingData {
   comoLembrada: string;
 }
 
-export function OnboardingForm({ isOpen, onClose, cliente }: OnboardingFormProps) {
+export function OnboardingForm({ isOpen, onClose, clienteId, cliente }: OnboardingFormProps) {
   const [formData, setFormData] = useState<OnboardingData>({
     nomeEmpresa: cliente.nome,
     segmentoAtuacao: "",
@@ -129,93 +130,81 @@ export function OnboardingForm({ isOpen, onClose, cliente }: OnboardingFormProps
 
   const [loading, setLoading] = useState(false);
 
-  // Carregar dados automaticamente se for Tech Solutions Ltda
+  // Carregar dados existentes do onboarding
   useEffect(() => {
-    if (cliente.nome === 'Tech Solutions Ltda') {
-      carregarDadosSimulados();
+    if (clienteId && isOpen) {
+      carregarDadosOnboarding();
     }
-  }, [cliente.nome]);
+  }, [clienteId, isOpen]);
 
-  // Carregar dados simulados da Tech Solutions Ltda
-  const carregarDadosSimulados = async () => {
+  // Carregar dados do onboarding existente
+  const carregarDadosOnboarding = async () => {
     setLoading(true);
     try {
-      // Primeiro buscar o cliente Tech Solutions Ltda (pega o primeiro se houver duplicatas)
-      const { data: clienteData, error: clienteError } = await supabase
-        .from('clientes')
-        .select('id')
-        .eq('nome', 'Tech Solutions Ltda')
-        .limit(1)
-        .single();
-
-      if (clienteError || !clienteData) {
-        toast.error('Dados simulados não encontrados');
-        return;
-      }
-
-      // Buscar dados de onboarding
-      const { data: onboardingData, error: onboardingError } = await supabase
+      const { data: onboardingData, error } = await supabase
         .from('cliente_onboarding')
         .select('*')
-        .eq('cliente_id', clienteData.id)
+        .eq('cliente_id', clienteId)
         .maybeSingle();
 
-      if (onboardingError || !onboardingData) {
-        toast.error('Dados de onboarding não encontrados');
+      if (error && error.code !== 'PGRST116') {
+        console.error('Erro ao carregar dados de onboarding:', error);
+        toast.error('Erro ao carregar dados do onboarding');
         return;
       }
 
-      // Mapear dados do banco para o formulário
-      setFormData({
-        nomeEmpresa: onboardingData.nome_empresa || '',
-        segmentoAtuacao: onboardingData.segmento_atuacao || '',
-        produtosServicos: onboardingData.produtos_servicos || '',
-        tempoMercado: onboardingData.tempo_mercado || '',
-        localizacao: onboardingData.localizacao || '',
-        estruturaAtual: onboardingData.estrutura_atual || '',
-        canaisContato: onboardingData.canais_contato || '',
-        concorrentesDiretos: onboardingData.concorrentes_diretos || '',
-        diferenciais: onboardingData.diferenciais || '',
-        fatoresCrise: onboardingData.fatores_crise || '',
-        areaAtendimento: onboardingData.area_atendimento || '',
-        tiposClientes: onboardingData.tipos_clientes || '',
-        publicoAlvo: onboardingData.publico_alvo || [],
-        publicoAlvoOutros: onboardingData.publico_alvo_outros || '',
-        doresProblemas: onboardingData.dores_problemas || '',
-        valorizado: onboardingData.valorizado || '',
-        comoEncontram: onboardingData.como_encontram || [],
-        frequenciaCompra: onboardingData.frequencia_compra || '',
-        ticketMedio: onboardingData.ticket_medio || '',
-        formaAquisicao: onboardingData.forma_aquisicao || [],
-        presencaDigital: onboardingData.presenca_digital || [],
-        presencaDigitalOutros: onboardingData.presenca_digital_outros || '',
-        frequenciaPostagens: onboardingData.frequencia_postagens || '',
-        tiposConteudo: onboardingData.tipos_conteudo || [],
-        midiaPaga: onboardingData.midia_paga || '',
-        feirasEventos: onboardingData.feiras_eventos || '',
-        materiaisImpressos: onboardingData.materiais_impressos || [],
-        midiaTradicional: onboardingData.midia_tradicional || [],
-        objetivosDigitais: onboardingData.objetivos_digitais || '',
-        objetivosOffline: onboardingData.objetivos_offline || '',
-        onde6Meses: onboardingData.onde_6_meses || '',
-        resultadosEsperados: onboardingData.resultados_esperados || [],
-        equipeVendasExterna: onboardingData.equipe_vendas_externa || '',
-        canaisAtendimentoAtivos: onboardingData.canais_atendimento_ativos || '',
-        relacionamentoClientes: onboardingData.relacionamento_clientes || [],
-        historiaMarca: onboardingData.historia_marca || '',
-        valoresPrincipais: onboardingData.valores_principais || '',
-        tomVoz: onboardingData.tom_voz || [],
-        comoLembrada: onboardingData.como_lembrada || ''
-      });
-
-      toast.success('Dados simulados carregados com sucesso!');
+      if (onboardingData) {
+        // Mapear dados do banco para o formulário
+        setFormData({
+          nomeEmpresa: onboardingData.nome_empresa || cliente.nome,
+          segmentoAtuacao: onboardingData.segmento_atuacao || '',
+          produtosServicos: onboardingData.produtos_servicos || '',
+          tempoMercado: onboardingData.tempo_mercado || '',
+          localizacao: onboardingData.localizacao || '',
+          estruturaAtual: onboardingData.estrutura_atual || '',
+          canaisContato: onboardingData.canais_contato || '',
+          concorrentesDiretos: onboardingData.concorrentes_diretos || '',
+          diferenciais: onboardingData.diferenciais || '',
+          fatoresCrise: onboardingData.fatores_crise || '',
+          areaAtendimento: onboardingData.area_atendimento || '',
+          tiposClientes: onboardingData.tipos_clientes || '',
+          publicoAlvo: onboardingData.publico_alvo || [],
+          publicoAlvoOutros: onboardingData.publico_alvo_outros || '',
+          doresProblemas: onboardingData.dores_problemas || '',
+          valorizado: onboardingData.valorizado || '',
+          comoEncontram: onboardingData.como_encontram || [],
+          frequenciaCompra: onboardingData.frequencia_compra || '',
+          ticketMedio: onboardingData.ticket_medio || '',
+          formaAquisicao: onboardingData.forma_aquisicao || [],
+          presencaDigital: onboardingData.presenca_digital || [],
+          presencaDigitalOutros: onboardingData.presenca_digital_outros || '',
+          frequenciaPostagens: onboardingData.frequencia_postagens || '',
+          tiposConteudo: onboardingData.tipos_conteudo || [],
+          midiaPaga: onboardingData.midia_paga || '',
+          feirasEventos: onboardingData.feiras_eventos || '',
+          materiaisImpressos: onboardingData.materiais_impressos || [],
+          midiaTradicional: onboardingData.midia_tradicional || [],
+          objetivosDigitais: onboardingData.objetivos_digitais || '',
+          objetivosOffline: onboardingData.objetivos_offline || '',
+          onde6Meses: onboardingData.onde_6_meses || '',
+          resultadosEsperados: onboardingData.resultados_esperados || [],
+          equipeVendasExterna: onboardingData.equipe_vendas_externa || '',
+          canaisAtendimentoAtivos: onboardingData.canais_atendimento_ativos || '',
+          relacionamentoClientes: onboardingData.relacionamento_clientes || [],
+          historiaMarca: onboardingData.historia_marca || '',
+          valoresPrincipais: onboardingData.valores_principais || '',
+          tomVoz: onboardingData.tom_voz || [],
+          comoLembrada: onboardingData.como_lembrada || ''
+        });
+      }
     } catch (error) {
-      console.error('Erro ao carregar dados simulados:', error);
-      toast.error('Erro ao carregar dados simulados');
+      console.error('Erro ao carregar dados de onboarding:', error);
+      toast.error('Erro ao carregar dados do onboarding');
     } finally {
       setLoading(false);
     }
   };
+
 
   const handleCheckboxChange = (field: keyof OnboardingData, value: string) => {
     setFormData(prev => {
@@ -227,10 +216,76 @@ export function OnboardingForm({ isOpen, onClose, cliente }: OnboardingFormProps
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast.success(`Onboarding de ${cliente.nome} salvo com sucesso!`);
-    onClose();
+    setLoading(true);
+
+    try {
+      // Mapear dados do formulário para o formato do banco
+      const onboardingData = {
+        cliente_id: clienteId,
+        nome_empresa: formData.nomeEmpresa,
+        segmento_atuacao: formData.segmentoAtuacao,
+        produtos_servicos: formData.produtosServicos,
+        tempo_mercado: formData.tempoMercado,
+        localizacao: formData.localizacao,
+        estrutura_atual: formData.estruturaAtual,
+        canais_contato: formData.canaisContato,
+        concorrentes_diretos: formData.concorrentesDiretos,
+        diferenciais: formData.diferenciais,
+        fatores_crise: formData.fatoresCrise,
+        area_atendimento: formData.areaAtendimento,
+        tipos_clientes: formData.tiposClientes,
+        publico_alvo: formData.publicoAlvo,
+        publico_alvo_outros: formData.publicoAlvoOutros,
+        dores_problemas: formData.doresProblemas,
+        valorizado: formData.valorizado,
+        como_encontram: formData.comoEncontram,
+        frequencia_compra: formData.frequenciaCompra,
+        ticket_medio: formData.ticketMedio,
+        forma_aquisicao: formData.formaAquisicao,
+        presenca_digital: formData.presencaDigital,
+        presenca_digital_outros: formData.presencaDigitalOutros,
+        frequencia_postagens: formData.frequenciaPostagens,
+        tipos_conteudo: formData.tiposConteudo,
+        midia_paga: formData.midiaPaga,
+        feiras_eventos: formData.feirasEventos,
+        materiais_impressos: formData.materiaisImpressos,
+        midia_tradicional: formData.midiaTradicional,
+        objetivos_digitais: formData.objetivosDigitais,
+        objetivos_offline: formData.objetivosOffline,
+        onde_6_meses: formData.onde6Meses,
+        resultados_esperados: formData.resultadosEsperados,
+        equipe_vendas_externa: formData.equipeVendasExterna,
+        canais_atendimento_ativos: formData.canaisAtendimentoAtivos,
+        relacionamento_clientes: formData.relacionamentoClientes,
+        historia_marca: formData.historiaMarca,
+        valores_principais: formData.valoresPrincipais,
+        tom_voz: formData.tomVoz,
+        como_lembrada: formData.comoLembrada
+      };
+
+      // Usar upsert para inserir ou atualizar
+      const { error } = await supabase
+        .from('cliente_onboarding')
+        .upsert(onboardingData, {
+          onConflict: 'cliente_id'
+        });
+
+      if (error) {
+        console.error('Erro ao salvar onboarding:', error);
+        toast.error('Erro ao salvar dados do onboarding');
+        return;
+      }
+
+      toast.success(`Onboarding de ${cliente.nome} salvo com sucesso!`);
+      onClose();
+    } catch (error) {
+      console.error('Erro ao salvar onboarding:', error);
+      toast.error('Erro ao salvar dados do onboarding');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -239,23 +294,6 @@ export function OnboardingForm({ isOpen, onClose, cliente }: OnboardingFormProps
         <DialogHeader>
           <div className="flex items-center justify-between">
             <DialogTitle>Formulário de Onboarding - {cliente.nome}</DialogTitle>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={carregarDadosSimulados}
-              disabled={loading}
-              className="gap-2"
-            >
-              {loading ? (
-                <>Carregando...</>
-              ) : (
-                <>
-                  <Download className="h-4 w-4" />
-                  Carregar Dados Simulados
-                </>
-              )}
-            </Button>
           </div>
         </DialogHeader>
         

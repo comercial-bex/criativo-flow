@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { OnboardingForm } from "@/components/OnboardingForm";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { SectionHeader } from "@/components/SectionHeader";
 import { Plus, Search, Edit, Trash2, Users } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Cliente {
   id: string;
@@ -18,10 +19,10 @@ interface Cliente {
   telefone: string;
   cnpj_cpf: string;
   endereco: string;
-  status: 'ativo' | 'inativo' | 'prospecto';
-  tipo: 'pessoa_fisica' | 'pessoa_juridica';
-  assinatura_id?: string;
-  observacoes?: string;
+  status: 'ativo' | 'inativo' | 'pendente' | 'arquivado';
+  responsavel_id?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 interface Assinatura {
@@ -49,49 +50,53 @@ const mockAssinaturas: Assinatura[] = [
   }
 ];
 
-const mockClientes: Cliente[] = [
-  {
-    id: "1",
-    nome: "Tech Solutions Ltda",
-    email: "contato@techsolutions.com",
-    telefone: "(11) 99999-9999",
-    cnpj_cpf: "12.345.678/0001-90",
-    endereco: "São Paulo, SP",
-    status: "ativo",
-    tipo: "pessoa_juridica",
-    assinatura_id: "2"
-  },
-  {
-    id: "2",
-    nome: "João Silva",
-    email: "joao.silva@email.com",
-    telefone: "(11) 88888-8888",
-    cnpj_cpf: "123.456.789-00",
-    endereco: "Rio de Janeiro, RJ",
-    status: "prospecto",
-    tipo: "pessoa_fisica"
-  }
-];
+// Dados mockados removidos - agora carregamos do Supabase
 
 export default function ClienteCadastro() {
-  const [clientes, setClientes] = useState<Cliente[]>(mockClientes);
+  const [clientes, setClientes] = useState<Cliente[]>([]);
   const [assinaturas] = useState<Assinatura[]>(mockAssinaturas);
   const [searchTerm, setSearchTerm] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [selectedCliente, setSelectedCliente] = useState<Cliente | null>(null);
   const [editingClient, setEditingClient] = useState<Cliente | null>(null);
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<Partial<Cliente>>({
     nome: "",
     email: "",
     telefone: "",
     cnpj_cpf: "",
     endereco: "",
-    status: "prospecto",
-    tipo: "pessoa_juridica",
-    assinatura_id: "none",
-    observacoes: ""
+    status: "ativo"
   });
+
+  // Carregar clientes do Supabase
+  useEffect(() => {
+    fetchClientes();
+  }, []);
+
+  const fetchClientes = async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('clientes')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Erro ao buscar clientes:', error);
+        toast.error('Erro ao carregar clientes');
+        return;
+      }
+
+      setClientes(data || []);
+    } catch (error) {
+      console.error('Erro ao buscar clientes:', error);
+      toast.error('Erro ao carregar clientes');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const filteredClientes = clientes.filter(cliente =>
     cliente.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -99,26 +104,59 @@ export default function ClienteCadastro() {
     cliente.cnpj_cpf.includes(searchTerm)
   );
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (editingClient) {
-      setClientes(clientes.map(cliente => 
-        cliente.id === editingClient.id 
-          ? { ...cliente, ...formData }
-          : cliente
-      ));
-      toast.success("Cliente atualizado com sucesso!");
-    } else {
-      const newCliente: Cliente = {
-        ...formData as Cliente,
-        id: Date.now().toString()
-      };
-      setClientes([...clientes, newCliente]);
-      toast.success("Cliente cadastrado com sucesso!");
-    }
+    setLoading(true);
 
-    resetForm();
+    try {
+      // Preparar dados para o banco
+      const clienteData = {
+        nome: formData.nome!,
+        email: formData.email!,
+        telefone: formData.telefone || null,
+        cnpj_cpf: formData.cnpj_cpf || null,
+        endereco: formData.endereco || null,
+        status: formData.status!
+      };
+
+      if (editingClient) {
+        // Atualizar cliente existente
+        const { error } = await supabase
+          .from('clientes')
+          .update(clienteData)
+          .eq('id', editingClient.id);
+
+        if (error) {
+          console.error('Erro ao atualizar cliente:', error);
+          toast.error('Erro ao atualizar cliente');
+          return;
+        }
+
+        toast.success("Cliente atualizado com sucesso!");
+      } else {
+        // Criar novo cliente
+        const { error } = await supabase
+          .from('clientes')
+          .insert([clienteData]);
+
+        if (error) {
+          console.error('Erro ao criar cliente:', error);
+          toast.error('Erro ao criar cliente');
+          return;
+        }
+
+        toast.success("Cliente cadastrado com sucesso!");
+      }
+
+      // Recarregar lista de clientes
+      await fetchClientes();
+      resetForm();
+    } catch (error) {
+      console.error('Erro ao salvar cliente:', error);
+      toast.error('Erro ao salvar cliente');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const resetForm = () => {
@@ -128,10 +166,7 @@ export default function ClienteCadastro() {
       telefone: "",
       cnpj_cpf: "",
       endereco: "",
-      status: "prospecto",
-      tipo: "pessoa_juridica",
-      assinatura_id: "none",
-      observacoes: ""
+      status: "ativo"
     });
     setEditingClient(null);
     setShowForm(false);
@@ -143,9 +178,32 @@ export default function ClienteCadastro() {
     setShowForm(true);
   };
 
-  const handleDelete = (id: string) => {
-    setClientes(clientes.filter(cliente => cliente.id !== id));
-    toast.success("Cliente removido com sucesso!");
+  const handleDelete = async (id: string) => {
+    if (!confirm('Tem certeza que deseja excluir este cliente?')) {
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from('clientes')
+        .delete()
+        .eq('id', id);
+
+      if (error) {
+        console.error('Erro ao excluir cliente:', error);
+        toast.error('Erro ao excluir cliente');
+        return;
+      }
+
+      toast.success("Cliente removido com sucesso!");
+      await fetchClientes();
+    } catch (error) {
+      console.error('Erro ao excluir cliente:', error);
+      toast.error('Erro ao excluir cliente');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleOnboarding = (cliente: Cliente) => {
@@ -157,7 +215,8 @@ export default function ClienteCadastro() {
     switch (status) {
       case 'ativo': return 'bg-green-100 text-green-800';
       case 'inativo': return 'bg-red-100 text-red-800';
-      case 'prospecto': return 'bg-yellow-100 text-yellow-800';
+      case 'pendente': return 'bg-yellow-100 text-yellow-800';
+      case 'arquivado': return 'bg-gray-100 text-gray-800';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
@@ -166,16 +225,12 @@ export default function ClienteCadastro() {
     switch (status) {
       case 'ativo': return 'Ativo';
       case 'inativo': return 'Inativo';
-      case 'prospecto': return 'Prospecto';
+      case 'pendente': return 'Pendente';
+      case 'arquivado': return 'Arquivado';
       default: return status;
     }
   };
 
-  const getAssinaturaNome = (assinaturaId?: string) => {
-    if (!assinaturaId || assinaturaId === 'none') return 'Avulsa';
-    const assinatura = assinaturas.find(a => a.id === assinaturaId);
-    return assinatura ? `${assinatura.nome} (R$ ${assinatura.preco})` : 'Assinatura não encontrada';
-  };
 
   return (
     <div className="space-y-6">
@@ -222,21 +277,6 @@ export default function ClienteCadastro() {
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="tipo">Tipo</Label>
-                  <Select 
-                    value={formData.tipo} 
-                    onValueChange={(value) => setFormData({ ...formData, tipo: value as 'pessoa_fisica' | 'pessoa_juridica' })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="pessoa_fisica">Pessoa Física</SelectItem>
-                      <SelectItem value="pessoa_juridica">Pessoa Jurídica</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="email">E-mail</Label>
@@ -259,9 +299,7 @@ export default function ClienteCadastro() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="cnpj_cpf">
-                    {formData.tipo === 'pessoa_juridica' ? 'CNPJ' : 'CPF'}
-                  </Label>
+                  <Label htmlFor="cnpj_cpf">CNPJ/CPF</Label>
                   <Input
                     id="cnpj_cpf"
                     value={formData.cnpj_cpf}
@@ -273,7 +311,7 @@ export default function ClienteCadastro() {
                   <Label htmlFor="status">Status</Label>
                   <Select 
                     value={formData.status} 
-                    onValueChange={(value) => setFormData({ ...formData, status: value as 'ativo' | 'inativo' | 'prospecto' })}
+                    onValueChange={(value) => setFormData({ ...formData, status: value as 'ativo' | 'inativo' | 'pendente' | 'arquivado' })}
                   >
                     <SelectTrigger>
                       <SelectValue />
@@ -281,30 +319,12 @@ export default function ClienteCadastro() {
                     <SelectContent>
                       <SelectItem value="ativo">Ativo</SelectItem>
                       <SelectItem value="inativo">Inativo</SelectItem>
-                      <SelectItem value="prospecto">Prospecto</SelectItem>
+                      <SelectItem value="pendente">Pendente</SelectItem>
+                      <SelectItem value="arquivado">Arquivado</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="assinatura">Plano de Assinatura</Label>
-                  <Select 
-                    value={formData.assinatura_id || "none"} 
-                    onValueChange={(value) => setFormData({ ...formData, assinatura_id: value === "none" ? undefined : value })}
-                  >
-                    <SelectTrigger className="bg-background">
-                      <SelectValue placeholder="Selecione um plano" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-background border border-border shadow-lg z-50">
-                      <SelectItem value="none">Avulsa</SelectItem>
-                      {assinaturas.map((assinatura) => (
-                        <SelectItem key={assinatura.id} value={assinatura.id}>
-                          {assinatura.nome}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
               </div>
 
               <div className="space-y-2">
@@ -316,19 +336,10 @@ export default function ClienteCadastro() {
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="observacoes">Observações</Label>
-                <Textarea
-                  id="observacoes"
-                  value={formData.observacoes}
-                  onChange={(e) => setFormData({ ...formData, observacoes: e.target.value })}
-                  rows={3}
-                />
-              </div>
 
               <div className="flex gap-2 pt-4">
-                <Button type="submit">
-                  {editingClient ? "Atualizar" : "Cadastrar"}
+                <Button type="submit" disabled={loading}>
+                  {loading ? "Salvando..." : editingClient ? "Atualizar" : "Cadastrar"}
                 </Button>
                 <Button type="button" variant="outline" onClick={resetForm}>
                   Cancelar
@@ -357,23 +368,16 @@ export default function ClienteCadastro() {
                     {cliente.telefone} • {cliente.cnpj_cpf}
                   </p>
                   <p className="text-sm text-muted-foreground">{cliente.endereco}</p>
-                  {cliente.assinatura_id && cliente.assinatura_id !== 'none' && (
-                    <p className="text-sm font-medium text-primary">
-                      {getAssinaturaNome(cliente.assinatura_id)}
-                    </p>
-                  )}
                 </div>
                 <div className="flex gap-2">
-                  {cliente.assinatura_id && cliente.assinatura_id !== 'none' && (
-                    <Button
-                      variant="default"
-                      size="sm"
-                      onClick={() => handleOnboarding(cliente)}
-                    >
-                      <Users className="h-4 w-4 mr-1" />
-                      Onboarding
-                    </Button>
-                  )}
+                  <Button
+                    variant="default"
+                    size="sm"
+                    onClick={() => handleOnboarding(cliente)}
+                  >
+                    <Users className="h-4 w-4 mr-1" />
+                    Onboarding
+                  </Button>
                   <Button
                     variant="outline"
                     size="sm"
@@ -411,6 +415,7 @@ export default function ClienteCadastro() {
             setShowOnboarding(false);
             setSelectedCliente(null);
           }}
+          clienteId={selectedCliente.id}
           cliente={{
             nome: selectedCliente.nome,
             email: selectedCliente.email,
