@@ -1,159 +1,356 @@
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { SectionHeader } from "@/components/SectionHeader";
-import { Check, Star, Zap, Target } from "lucide-react";
+import { DataTable } from "@/components/DataTable";
+import { Badge } from "@/components/ui/badge";
+import { Plus, Edit, Trash2, Save, X } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
-const planos = [
+interface Assinatura {
+  id: string;
+  nome: string;
+  preco: number;
+  periodo: string;
+  posts_mensais: number;
+  reels_suporte: number;
+  anuncios_facebook: number;
+  anuncios_google: number;
+  recursos: string[];
+  status: 'ativo' | 'inativo';
+  created_at: string;
+}
+
+const mockAssinaturas: Assinatura[] = [
   {
-    id: "90",
-    nome: "Plano 90º",
-    destaque: false,
-    icon: Target,
-    descricao: "Ideal para começar sua presença digital",
-    preco: "R$ 997",
-    periodo: "/mês",
+    id: '1',
+    nome: 'Plano 90º',
+    preco: 997,
+    periodo: 'mensal',
+    posts_mensais: 12,
+    reels_suporte: 3,
+    anuncios_facebook: 4,
+    anuncios_google: 1,
     recursos: [
-      "12 Posts mensais (Feed/Story)",
-      "Criação de Layout Peças OFF",
-      "Elaboração da Linha Editorial",
-      "3 Suporte e Gravação de Reels",
-      "Gerenciador de Conteúdos",
-      "Tráfego Pago - Meta & Google: até 4 anúncios simultâneos no Facebook + 1 no Google Ads"
-    ]
+      'Criação de Layout Peças OFF',
+      'Elaboração da Linha Editorial',
+      'Gerenciador de Conteúdos'
+    ],
+    status: 'ativo',
+    created_at: '2024-01-15'
   },
   {
-    id: "180",
-    nome: "Plano 180º",
-    destaque: true,
-    icon: Star,
-    descricao: "Mais completo para empresas em crescimento",
-    preco: "R$ 1.497",
-    periodo: "/mês",
+    id: '2',
+    nome: 'Plano 180º',
+    preco: 1497,
+    periodo: 'mensal',
+    posts_mensais: 16,
+    reels_suporte: 6,
+    anuncios_facebook: 10,
+    anuncios_google: 3,
     recursos: [
-      "16 Posts mensais (Feed/Story)",
-      "Criação de Layout Peças OFF",
-      "Elaboração da Linha Editorial",
-      "6 Suporte e Gravação de Reels",
-      "Gerenciador de Conteúdos",
-      "Suporte Full & Gestão de Crises",
-      "Tráfego Pago - Meta & Google: até 10 anúncios simultâneos no Facebook + 3 no Google Ads",
-      "Estratégias de Captação de Leads (Landing Page)"
-    ]
+      'Criação de Layout Peças OFF',
+      'Elaboração da Linha Editorial',
+      'Gerenciador de Conteúdos',
+      'Suporte Full & Gestão de Crises',
+      'Estratégias de Captação de Leads (Landing Page)'
+    ],
+    status: 'ativo',
+    created_at: '2024-01-15'
   },
   {
-    id: "360",
-    nome: "Plano 360º",
-    destaque: false,
-    icon: Zap,
-    descricao: "Solução completa para máximo crescimento",
-    preco: "R$ 2.197",
-    periodo: "/mês",
+    id: '3',
+    nome: 'Plano 360º',
+    preco: 2197,
+    periodo: 'mensal',
+    posts_mensais: 24,
+    reels_suporte: 8,
+    anuncios_facebook: 15,
+    anuncios_google: 5,
     recursos: [
-      "24 Posts mensais (Feed/Story)",
-      "Criação de Layout Peças OFF",
-      "Elaboração da Linha Editorial",
-      "8 Suporte e Gravação de Reels",
-      "Gerenciador de Conteúdos",
-      "Suporte Full & Gestão de Crises",
-      "Tráfego Pago - Meta & Google: até 15 anúncios simultâneos no Facebook + 5 no Google Ads",
-      "Estratégias de Captação de Leads (Landing Page)",
-      "Consultoria em Branding"
-    ]
+      'Criação de Layout Peças OFF',
+      'Elaboração da Linha Editorial',
+      'Gerenciador de Conteúdos',
+      'Suporte Full & Gestão de Crises',
+      'Estratégias de Captação de Leads (Landing Page)',
+      'Consultoria em Branding'
+    ],
+    status: 'ativo',
+    created_at: '2024-01-15'
   }
 ];
 
 export default function Planos() {
+  const [assinaturas, setAssinaturas] = useState<Assinatura[]>(mockAssinaturas);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingAssinatura, setEditingAssinatura] = useState<Assinatura | null>(null);
+  const [formData, setFormData] = useState({
+    nome: '',
+    preco: '',
+    periodo: 'mensal',
+    posts_mensais: '',
+    reels_suporte: '',
+    anuncios_facebook: '',
+    anuncios_google: '',
+    recursos: '',
+    status: 'ativo' as 'ativo' | 'inativo'
+  });
+
+  const resetForm = () => {
+    setFormData({
+      nome: '',
+      preco: '',
+      periodo: 'mensal',
+      posts_mensais: '',
+      reels_suporte: '',
+      anuncios_facebook: '',
+      anuncios_google: '',
+      recursos: '',
+      status: 'ativo'
+    });
+    setEditingAssinatura(null);
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    const assinaturaData: Assinatura = {
+      id: editingAssinatura?.id || Date.now().toString(),
+      nome: formData.nome,
+      preco: parseFloat(formData.preco),
+      periodo: formData.periodo,
+      posts_mensais: parseInt(formData.posts_mensais),
+      reels_suporte: parseInt(formData.reels_suporte),
+      anuncios_facebook: parseInt(formData.anuncios_facebook),
+      anuncios_google: parseInt(formData.anuncios_google),
+      recursos: formData.recursos.split('\n').filter(r => r.trim()),
+      status: formData.status,
+      created_at: editingAssinatura?.created_at || new Date().toISOString().split('T')[0]
+    };
+
+    if (editingAssinatura) {
+      setAssinaturas(prev => prev.map(a => a.id === editingAssinatura.id ? assinaturaData : a));
+    } else {
+      setAssinaturas(prev => [...prev, assinaturaData]);
+    }
+
+    setIsDialogOpen(false);
+    resetForm();
+  };
+
+  const handleEdit = (assinatura: Assinatura) => {
+    setEditingAssinatura(assinatura);
+    setFormData({
+      nome: assinatura.nome,
+      preco: assinatura.preco.toString(),
+      periodo: assinatura.periodo,
+      posts_mensais: assinatura.posts_mensais.toString(),
+      reels_suporte: assinatura.reels_suporte.toString(),
+      anuncios_facebook: assinatura.anuncios_facebook.toString(),
+      anuncios_google: assinatura.anuncios_google.toString(),
+      recursos: assinatura.recursos.join('\n'),
+      status: assinatura.status
+    });
+    setIsDialogOpen(true);
+  };
+
+  const handleDelete = (id: string) => {
+    setAssinaturas(prev => prev.filter(a => a.id !== id));
+  };
+
+  const columns = [
+    {
+      key: "nome",
+      label: "Nome do Plano",
+    },
+    {
+      key: "preco",
+      label: "Preço",
+      render: (value: number) => `R$ ${value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
+    },
+    {
+      key: "posts_mensais",
+      label: "Posts/Mês",
+    },
+    {
+      key: "reels_suporte",
+      label: "Reels",
+    },
+    {
+      key: "anuncios_facebook",
+      label: "Facebook Ads",
+    },
+    {
+      key: "anuncios_google",
+      label: "Google Ads",
+    },
+    {
+      key: "status",
+      label: "Status",
+      render: (value: string) => (
+        <Badge variant={value === 'ativo' ? 'default' : 'secondary'}>
+          {value}
+        </Badge>
+      ),
+    },
+  ];
+
+  const actions = [
+    {
+      label: "Editar",
+      onClick: (row: Assinatura) => handleEdit(row),
+      variant: 'outline' as const
+    },
+    {
+      label: "Excluir",
+      onClick: (row: Assinatura) => handleDelete(row.id),
+      variant: 'destructive' as const
+    }
+  ];
+
   return (
     <div className="space-y-6">
       <SectionHeader
-        title="Planos de Assinatura"
-        description="Escolha o plano ideal para o crescimento digital do seu negócio"
+        title="Gerenciar Assinaturas"
+        description="Cadastre e gerencie os planos de assinatura disponíveis para seus clientes"
       />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {planos.map((plano) => {
-          const IconComponent = plano.icon;
-          return (
-            <Card
-              key={plano.id}
-              className={`relative transition-all duration-300 hover:shadow-lg ${
-                plano.destaque
-                  ? "border-primary shadow-md scale-105"
-                  : "hover:border-primary/50"
-              }`}
-            >
-              {plano.destaque && (
-                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                  <Badge className="bg-primary text-primary-foreground px-4 py-1">
-                    Mais Popular
-                  </Badge>
-                </div>
-              )}
-
-              <CardHeader className="text-center pb-4">
-                <div className="flex justify-center mb-4">
-                  <div className={`p-3 rounded-full ${
-                    plano.destaque 
-                      ? "bg-primary/10 text-primary" 
-                      : "bg-muted text-muted-foreground"
-                  }`}>
-                    <IconComponent className="w-8 h-8" />
-                  </div>
-                </div>
-                <CardTitle className="text-2xl font-bold">{plano.nome}</CardTitle>
-                <CardDescription className="text-sm">
-                  {plano.descricao}
-                </CardDescription>
-                <div className="flex items-end justify-center mt-4">
-                  <span className="text-4xl font-bold text-foreground">
-                    {plano.preco}
-                  </span>
-                  <span className="text-muted-foreground ml-1">
-                    {plano.periodo}
-                  </span>
-                </div>
-              </CardHeader>
-
-              <CardContent className="space-y-3">
-                {plano.recursos.map((recurso, index) => (
-                  <div key={index} className="flex items-start gap-3">
-                    <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                    <span className="text-sm text-muted-foreground leading-relaxed">
-                      {recurso}
-                    </span>
-                  </div>
-                ))}
-              </CardContent>
-
-              <CardFooter className="pt-6">
-                <Button
-                  className={`w-full ${
-                    plano.destaque
-                      ? "bg-primary hover:bg-primary/90"
-                      : "variant-outline"
-                  }`}
-                  variant={plano.destaque ? "default" : "outline"}
-                >
-                  Escolher {plano.nome}
-                </Button>
-              </CardFooter>
-            </Card>
-          );
-        })}
-      </div>
-
-      <div className="mt-12 text-center">
-        <div className="bg-muted/30 rounded-lg p-6">
-          <h3 className="text-lg font-semibold mb-2">Precisa de algo personalizado?</h3>
-          <p className="text-muted-foreground mb-4">
-            Entre em contato conosco para criar um plano sob medida para suas necessidades específicas.
-          </p>
-          <Button variant="outline">
-            Falar com Consultor
-          </Button>
+      <div className="flex justify-between items-center">
+        <div className="text-sm text-muted-foreground">
+          Total de {assinaturas.length} planos cadastrados
         </div>
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogTrigger asChild>
+            <Button onClick={() => { resetForm(); setIsDialogOpen(true); }}>
+              <Plus className="h-4 w-4 mr-2" />
+              Nova Assinatura
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>
+                {editingAssinatura ? 'Editar' : 'Cadastrar'} Assinatura
+              </DialogTitle>
+            </DialogHeader>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="nome">Nome do Plano</Label>
+                  <Input
+                    id="nome"
+                    value={formData.nome}
+                    onChange={(e) => setFormData(prev => ({ ...prev, nome: e.target.value }))}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="preco">Preço (R$)</Label>
+                  <Input
+                    id="preco"
+                    type="number"
+                    step="0.01"
+                    value={formData.preco}
+                    onChange={(e) => setFormData(prev => ({ ...prev, preco: e.target.value }))}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="posts_mensais">Posts Mensais</Label>
+                  <Input
+                    id="posts_mensais"
+                    type="number"
+                    value={formData.posts_mensais}
+                    onChange={(e) => setFormData(prev => ({ ...prev, posts_mensais: e.target.value }))}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="reels_suporte">Suporte de Reels</Label>
+                  <Input
+                    id="reels_suporte"
+                    type="number"
+                    value={formData.reels_suporte}
+                    onChange={(e) => setFormData(prev => ({ ...prev, reels_suporte: e.target.value }))}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="anuncios_facebook">Anúncios Facebook</Label>
+                  <Input
+                    id="anuncios_facebook"
+                    type="number"
+                    value={formData.anuncios_facebook}
+                    onChange={(e) => setFormData(prev => ({ ...prev, anuncios_facebook: e.target.value }))}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="anuncios_google">Anúncios Google</Label>
+                  <Input
+                    id="anuncios_google"
+                    type="number"
+                    value={formData.anuncios_google}
+                    onChange={(e) => setFormData(prev => ({ ...prev, anuncios_google: e.target.value }))}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="recursos">Recursos Inclusos (um por linha)</Label>
+                <Textarea
+                  id="recursos"
+                  value={formData.recursos}
+                  onChange={(e) => setFormData(prev => ({ ...prev, recursos: e.target.value }))}
+                  placeholder="Criação de Layout Peças OFF&#10;Elaboração da Linha Editorial&#10;Gerenciador de Conteúdos"
+                  className="min-h-[120px]"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsDialogOpen(false)}
+                >
+                  <X className="h-4 w-4 mr-2" />
+                  Cancelar
+                </Button>
+                <Button type="submit">
+                  <Save className="h-4 w-4 mr-2" />
+                  {editingAssinatura ? 'Atualizar' : 'Cadastrar'}
+                </Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Planos Cadastrados</CardTitle>
+          <CardDescription>
+            Visualize e gerencie todos os planos de assinatura
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <DataTable 
+            columns={columns} 
+            data={assinaturas} 
+            actions={actions}
+            emptyMessage="Nenhuma assinatura cadastrada"
+          />
+        </CardContent>
+      </Card>
     </div>
   );
 }
