@@ -1,7 +1,7 @@
 import { 
   BarChart3, Users, FolderOpen, Target, DollarSign, LogOut, ChevronRight, Tags,
   Calendar, Inbox, Palette, Video, Settings, FileText, TrendingUp, Building,
-  CheckCircle, UserCheck, Briefcase
+  CheckCircle, UserCheck, Briefcase, Star
 } from "lucide-react";
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -40,6 +40,7 @@ const getAllMenuItems = () => {
     // Configurações e relatórios
     { title: "Configurações", url: "/configuracoes", icon: Settings },
     { title: "Relatórios", url: "/relatorios", icon: FileText },
+    { title: "Planos", url: "/planos", icon: Star },
   ];
 };
 
