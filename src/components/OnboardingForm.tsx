@@ -148,12 +148,13 @@ export function OnboardingForm({ isOpen, onClose, cliente }: OnboardingFormProps
   const carregarDadosSimulados = async () => {
     setLoading(true);
     try {
-      // Primeiro buscar o cliente Tech Solutions Ltda
+      // Primeiro buscar o cliente Tech Solutions Ltda (pega o primeiro se houver duplicatas)
       const { data: clienteData, error: clienteError } = await supabase
         .from('clientes')
         .select('id')
         .eq('nome', 'Tech Solutions Ltda')
-        .maybeSingle();
+        .limit(1)
+        .single();
 
       if (clienteError || !clienteData) {
         toast.error('Dados simulados não encontrados');
