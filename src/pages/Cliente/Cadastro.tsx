@@ -291,7 +291,7 @@ export default function ClienteCadastro() {
                       <SelectItem value="none">Sem assinatura</SelectItem>
                       {assinaturas.map((assinatura) => (
                         <SelectItem key={assinatura.id} value={assinatura.id}>
-                          {assinatura.nome} - R$ {assinatura.preco.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                          {assinatura.nome}
                         </SelectItem>
                       ))}
                     </SelectContent>
