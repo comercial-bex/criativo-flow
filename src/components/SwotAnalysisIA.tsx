@@ -165,11 +165,11 @@ export function SwotAnalysisIA({ clienteId, clienteNome }: SwotAnalysisIAProps) 
       {swotData ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Forças */}
-          <Card className="border-green-200 bg-green-50/50">
+          <Card className="border-green-300 bg-green-100 dark:bg-green-950 dark:border-green-700">
             <CardHeader className="pb-3">
               <div className="flex items-center gap-2">
-                <TrendingUp className="h-5 w-5 text-green-600" />
-                <CardTitle className="text-green-700">Forças</CardTitle>
+                <TrendingUp className="h-5 w-5 text-green-700 dark:text-green-400" />
+                <CardTitle className="text-green-800 dark:text-green-300">Forças</CardTitle>
               </div>
             </CardHeader>
             <CardContent>
@@ -177,23 +177,23 @@ export function SwotAnalysisIA({ clienteId, clienteNome }: SwotAnalysisIAProps) 
                 {swotData.forcas.length > 0 ? (
                   swotData.forcas.map((item, index) => (
                     <li key={index} className="flex items-start gap-2 text-sm">
-                      <div className="w-2 h-2 rounded-full bg-green-500 mt-2 flex-shrink-0" />
-                      <span>{item}</span>
+                      <div className="w-2 h-2 rounded-full bg-green-600 dark:bg-green-400 mt-2 flex-shrink-0" />
+                      <span className="text-green-800 dark:text-green-200">{item}</span>
                     </li>
                   ))
                 ) : (
-                  <li className="text-sm text-muted-foreground italic">Execute a análise IA para ver as forças</li>
+                  <li className="text-sm text-green-600 dark:text-green-400 italic">Execute a análise IA para ver as forças</li>
                 )}
               </ul>
             </CardContent>
           </Card>
 
           {/* Oportunidades */}
-          <Card className="border-blue-200 bg-blue-50/50">
+          <Card className="border-blue-300 bg-blue-100 dark:bg-blue-950 dark:border-blue-700">
             <CardHeader className="pb-3">
               <div className="flex items-center gap-2">
-                <Target className="h-5 w-5 text-blue-600" />
-                <CardTitle className="text-blue-700">Oportunidades</CardTitle>
+                <Target className="h-5 w-5 text-blue-700 dark:text-blue-400" />
+                <CardTitle className="text-blue-800 dark:text-blue-300">Oportunidades</CardTitle>
               </div>
             </CardHeader>
             <CardContent>
@@ -201,23 +201,23 @@ export function SwotAnalysisIA({ clienteId, clienteNome }: SwotAnalysisIAProps) 
                 {swotData.oportunidades.length > 0 ? (
                   swotData.oportunidades.map((item, index) => (
                     <li key={index} className="flex items-start gap-2 text-sm">
-                      <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 flex-shrink-0" />
-                      <span>{item}</span>
+                      <div className="w-2 h-2 rounded-full bg-blue-600 dark:bg-blue-400 mt-2 flex-shrink-0" />
+                      <span className="text-blue-800 dark:text-blue-200">{item}</span>
                     </li>
                   ))
                 ) : (
-                  <li className="text-sm text-muted-foreground italic">Execute a análise IA para ver as oportunidades</li>
+                  <li className="text-sm text-blue-600 dark:text-blue-400 italic">Execute a análise IA para ver as oportunidades</li>
                 )}
               </ul>
             </CardContent>
           </Card>
 
           {/* Fraquezas */}
-          <Card className="border-orange-200 bg-orange-50/50">
+          <Card className="border-orange-300 bg-orange-100 dark:bg-orange-950 dark:border-orange-700">
             <CardHeader className="pb-3">
               <div className="flex items-center gap-2">
-                <AlertTriangle className="h-5 w-5 text-orange-600" />
-                <CardTitle className="text-orange-700">Fraquezas</CardTitle>
+                <AlertTriangle className="h-5 w-5 text-orange-700 dark:text-orange-400" />
+                <CardTitle className="text-orange-800 dark:text-orange-300">Fraquezas</CardTitle>
               </div>
             </CardHeader>
             <CardContent>
@@ -225,23 +225,23 @@ export function SwotAnalysisIA({ clienteId, clienteNome }: SwotAnalysisIAProps) 
                 {swotData.fraquezas.length > 0 ? (
                   swotData.fraquezas.map((item, index) => (
                     <li key={index} className="flex items-start gap-2 text-sm">
-                      <div className="w-2 h-2 rounded-full bg-orange-500 mt-2 flex-shrink-0" />
-                      <span>{item}</span>
+                      <div className="w-2 h-2 rounded-full bg-orange-600 dark:bg-orange-400 mt-2 flex-shrink-0" />
+                      <span className="text-orange-800 dark:text-orange-200">{item}</span>
                     </li>
                   ))
                 ) : (
-                  <li className="text-sm text-muted-foreground italic">Execute a análise IA para ver as fraquezas</li>
+                  <li className="text-sm text-orange-600 dark:text-orange-400 italic">Execute a análise IA para ver as fraquezas</li>
                 )}
               </ul>
             </CardContent>
           </Card>
 
           {/* Ameaças */}
-          <Card className="border-red-200 bg-red-50/50">
+          <Card className="border-red-300 bg-red-100 dark:bg-red-950 dark:border-red-700">
             <CardHeader className="pb-3">
               <div className="flex items-center gap-2">
-                <AlertTriangle className="h-5 w-5 text-red-600" />
-                <CardTitle className="text-red-700">Ameaças</CardTitle>
+                <AlertTriangle className="h-5 w-5 text-red-700 dark:text-red-400" />
+                <CardTitle className="text-red-800 dark:text-red-300">Ameaças</CardTitle>
               </div>
             </CardHeader>
             <CardContent>
@@ -249,12 +249,12 @@ export function SwotAnalysisIA({ clienteId, clienteNome }: SwotAnalysisIAProps) 
                 {swotData.ameacas.length > 0 ? (
                   swotData.ameacas.map((item, index) => (
                     <li key={index} className="flex items-start gap-2 text-sm">
-                      <div className="w-2 h-2 rounded-full bg-red-500 mt-2 flex-shrink-0" />
-                      <span>{item}</span>
+                      <div className="w-2 h-2 rounded-full bg-red-600 dark:bg-red-400 mt-2 flex-shrink-0" />
+                      <span className="text-red-800 dark:text-red-200">{item}</span>
                     </li>
                   ))
                 ) : (
-                  <li className="text-sm text-muted-foreground italic">Execute a análise IA para ver as ameaças</li>
+                  <li className="text-sm text-red-600 dark:text-red-400 italic">Execute a análise IA para ver as ameaças</li>
                 )}
               </ul>
             </CardContent>
@@ -271,21 +271,21 @@ export function SwotAnalysisIA({ clienteId, clienteNome }: SwotAnalysisIAProps) 
                 baseada nos dados de onboarding do cliente.
               </p>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
-                <div className="flex flex-col items-center gap-2 p-3 bg-green-50 rounded-lg">
-                  <TrendingUp className="h-6 w-6 text-green-600" />
-                  <span className="font-medium text-green-700">Forças</span>
+                <div className="flex flex-col items-center gap-2 p-3 bg-green-100 dark:bg-green-900 rounded-lg border border-green-300 dark:border-green-700">
+                  <TrendingUp className="h-6 w-6 text-green-700 dark:text-green-400" />
+                  <span className="font-medium text-green-800 dark:text-green-300">Forças</span>
                 </div>
-                <div className="flex flex-col items-center gap-2 p-3 bg-blue-50 rounded-lg">
-                  <Target className="h-6 w-6 text-blue-600" />
-                  <span className="font-medium text-blue-700">Oportunidades</span>
+                <div className="flex flex-col items-center gap-2 p-3 bg-blue-100 dark:bg-blue-900 rounded-lg border border-blue-300 dark:border-blue-700">
+                  <Target className="h-6 w-6 text-blue-700 dark:text-blue-400" />
+                  <span className="font-medium text-blue-800 dark:text-blue-300">Oportunidades</span>
                 </div>
-                <div className="flex flex-col items-center gap-2 p-3 bg-orange-50 rounded-lg">
-                  <AlertTriangle className="h-6 w-6 text-orange-600" />
-                  <span className="font-medium text-orange-700">Fraquezas</span>
+                <div className="flex flex-col items-center gap-2 p-3 bg-orange-100 dark:bg-orange-900 rounded-lg border border-orange-300 dark:border-orange-700">
+                  <AlertTriangle className="h-6 w-6 text-orange-700 dark:text-orange-400" />
+                  <span className="font-medium text-orange-800 dark:text-orange-300">Fraquezas</span>
                 </div>
-                <div className="flex flex-col items-center gap-2 p-3 bg-red-50 rounded-lg">
-                  <AlertTriangle className="h-6 w-6 text-red-600" />
-                  <span className="font-medium text-red-700">Ameaças</span>
+                <div className="flex flex-col items-center gap-2 p-3 bg-red-100 dark:bg-red-900 rounded-lg border border-red-300 dark:border-red-700">
+                  <AlertTriangle className="h-6 w-6 text-red-700 dark:text-red-400" />
+                  <span className="font-medium text-red-800 dark:text-red-300">Ameaças</span>
                 </div>
               </div>
             </div>
