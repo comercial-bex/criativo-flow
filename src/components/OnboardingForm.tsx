@@ -11,6 +11,7 @@ import { Separator } from "@/components/ui/separator";
 import { Save, X, Download } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { SwotAnalysisIA } from "@/components/SwotAnalysisIA";
 
 interface OnboardingFormProps {
   isOpen: boolean;
@@ -827,6 +828,12 @@ export function OnboardingForm({ isOpen, onClose, cliente }: OnboardingFormProps
                 </div>
               </CardContent>
             </Card>
+
+            {/* Análise SWOT com IA */}
+            <SwotAnalysisIA 
+              clienteId="550e8400-e29b-41d4-a716-446655440001" 
+              clienteNome="Tech Solutions Ltda" 
+            />
 
             <Separator />
             
