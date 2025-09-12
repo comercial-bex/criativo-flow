@@ -809,6 +809,10 @@ export function OnboardingForm({ isOpen, onClose, clienteId, cliente }: Onboardi
             <SwotAnalysisIA 
               clienteId={clienteId} 
               clienteNome={formData.nomeEmpresa}
+              initialForcas={formData.forcas}
+              initialFraquezas={formData.fraquezas}
+              initialOportunidades={formData.oportunidades}
+              initialAmeacas={formData.ameacas}
               onSwotDataUpdate={(swotData) => {
                 setFormData(prev => ({
                   ...prev,

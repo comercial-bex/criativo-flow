@@ -15,9 +15,21 @@ interface SwotAnalysisIAProps {
     oportunidades: string;
     ameacas: string;
   }) => void;
+  initialForcas?: string;
+  initialFraquezas?: string;
+  initialOportunidades?: string;
+  initialAmeacas?: string;
 }
 
-export function SwotAnalysisIA({ clienteId, clienteNome, onSwotDataUpdate }: SwotAnalysisIAProps) {
+export function SwotAnalysisIA({ 
+  clienteId, 
+  clienteNome, 
+  onSwotDataUpdate,
+  initialForcas,
+  initialFraquezas,
+  initialOportunidades,
+  initialAmeacas
+}: SwotAnalysisIAProps) {
   const [analysis, setAnalysis] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
@@ -141,10 +153,62 @@ export function SwotAnalysisIA({ clienteId, clienteNome, onSwotDataUpdate }: Swo
     return swotData;
   };
 
-  // Matriz SWOT deve vir vazia para novos onboardings
-  // A análise só será gerada quando o usuário clicar no botão "Analisar com IA"
+  // Carregar dados iniciais se existirem
+  useEffect(() => {
+    if (initialForcas || initialFraquezas || initialOportunidades || initialAmeacas) {
+      // Reconstruir análise textual a partir dos dados salvos
+      const savedAnalysis = buildAnalysisFromSavedData({
+        forcas: initialForcas || '',
+        fraquezas: initialFraquezas || '',
+        oportunidades: initialOportunidades || '',
+        ameacas: initialAmeacas || ''
+      });
+      setAnalysis(savedAnalysis);
+    }
+  }, [initialForcas, initialFraquezas, initialOportunidades, initialAmeacas]);
+
+  // Função para reconstruir análise a partir dos dados salvos
+  const buildAnalysisFromSavedData = (savedData: {
+    forcas: string;
+    fraquezas: string;
+    oportunidades: string;
+    ameacas: string;
+  }) => {
+    const sections = [];
+    
+    if (savedData.forcas) {
+      sections.push("**FORÇAS:**");
+      savedData.forcas.split('\n').forEach(item => {
+        if (item.trim()) sections.push(`- ${item.trim()}`);
+      });
+    }
+    
+    if (savedData.oportunidades) {
+      sections.push("\n**OPORTUNIDADES:**");
+      savedData.oportunidades.split('\n').forEach(item => {
+        if (item.trim()) sections.push(`- ${item.trim()}`);
+      });
+    }
+    
+    if (savedData.fraquezas) {
+      sections.push("\n**FRAQUEZAS:**");
+      savedData.fraquezas.split('\n').forEach(item => {
+        if (item.trim()) sections.push(`- ${item.trim()}`);
+      });
+    }
+    
+    if (savedData.ameacas) {
+      sections.push("\n**AMEAÇAS:**");
+      savedData.ameacas.split('\n').forEach(item => {
+        if (item.trim()) sections.push(`- ${item.trim()}`);
+      });
+    }
+    
+    return sections.length > 0 ? sections.join('\n') : null;
+  };
 
   const swotData = analysis ? extractSwotData(analysis) : null;
+  const hasInitialData = !!(initialForcas || initialFraquezas || initialOportunidades || initialAmeacas);
 
   return (
     <div className="w-full space-y-6">
@@ -160,18 +224,26 @@ export function SwotAnalysisIA({ clienteId, clienteNome, onSwotDataUpdate }: Swo
                 GPT-4.1
               </Badge>
             </div>
-            <Button 
-              onClick={analyzeSwot} 
-              disabled={loading}
-              className="gap-2"
-            >
-              {loading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Brain className="h-4 w-4" />
+            <div className="flex items-center gap-2">
+              {hasInitialData && (
+                <Badge variant="outline" className="text-green-600 border-green-600">
+                  Análise Salva
+                </Badge>
               )}
-              {loading ? 'Analisando...' : 'Analisar com IA'}
-            </Button>
+              <Button 
+                onClick={analyzeSwot} 
+                disabled={loading}
+                className="gap-2"
+                variant={hasInitialData ? "outline" : "default"}
+              >
+                {loading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Brain className="h-4 w-4" />
+                )}
+                {loading ? 'Analisando...' : hasInitialData ? 'Nova Análise IA' : 'Analisar com IA'}
+              </Button>
+            </div>
           </div>
           <CardDescription>
             Análise inteligente da matriz SWOT baseada nos dados de onboarding de {clienteNome}
