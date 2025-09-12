@@ -789,8 +789,8 @@ export function OnboardingForm({ isOpen, onClose, clienteId, cliente }: Onboardi
 
             {/* 10. Matriz F.O.F.A com IA */}
             <SwotAnalysisIA 
-              clienteId="550e8400-e29b-41d4-a716-446655440001" 
-              clienteNome="Tech Solutions Ltda" 
+              clienteId={clienteId} 
+              clienteNome={formData.nomeEmpresa} 
             />
 
             <Separator />

@@ -123,56 +123,8 @@ export function SwotAnalysisIA({ clienteId, clienteNome }: SwotAnalysisIAProps) 
     return swotData;
   };
 
-  // Carregar análise automática para Tech Solutions Ltda
-  useEffect(() => {
-    if (clienteNome === 'Tech Solutions Ltda' && !analysis) {
-      // Simular análise baseada nos dados reais do onboarding
-      const simulatedAnalysis = `
-**ANÁLISE SWOT - TECH SOLUTIONS LTDA**
-
-**FORÇAS:**
-- Equipe técnica altamente qualificada com 45 profissionais
-- Metodologia ágil proprietária comprovada no mercado
-- Relacionamento sólido com clientes existentes
-- Infraestrutura tecnológica robusta
-- Expertise em integração de sistemas legados
-- Atendimento 24/7 diferenciado
-- Equipe certificada em tecnologias de ponta
-
-**OPORTUNIDADES:**
-- Crescimento acelerado do mercado de transformação digital
-- Parcerias estratégicas com grandes consultorias
-- Expansão para mercado internacional
-- Novos nichos como agronegócio digital
-- Demanda crescente por integração de sistemas
-- Necessidade de modernização de empresas tradicionais
-
-**FRAQUEZAS:**
-- Dependência de poucos clientes grandes
-- Marca pouco conhecida no mercado nacional
-- Processo de vendas longo (ciclo extenso)
-- Alta rotatividade de desenvolvedores juniores
-- Concentração geográfica no Sudeste
-- Capacidade limitada para escalar rapidamente
-
-**AMEAÇAS:**
-- Entrada de players internacionais no mercado
-- Mudanças tecnológicas rápidas e disruptivas
-- Crise econômica afetando investimentos em TI
-- Regulamentações mais rígidas (LGPD e similares)
-- Concorrência desleal de preços
-- Escassez de mão de obra qualificada no mercado
-
-**RECOMENDAÇÕES ESTRATÉGICAS:**
-1. Diversificar base de clientes para reduzir dependência
-2. Investir em marketing digital para aumentar reconhecimento da marca
-3. Implementar programa de retenção para desenvolvedores juniores
-4. Acelerar expansão geográfica conforme planejado
-5. Desenvolver parcerias para ampliar capacidade de atendimento
-`;
-      setAnalysis(simulatedAnalysis);
-    }
-  }, [clienteNome, analysis]);
+  // Matriz SWOT deve vir vazia para novos onboardings
+  // A análise só será gerada quando o usuário clicar no botão "Analisar com IA"
 
   const swotData = analysis ? extractSwotData(analysis) : null;
 
