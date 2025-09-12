@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { SectionHeader } from "@/components/SectionHeader";
-import { Plus, Search, Edit, Trash2 } from "lucide-react";
+import { Plus, Search, Edit, Trash2, Users } from "lucide-react";
 
 interface Cliente {
   id: string;
@@ -143,6 +143,11 @@ export default function ClienteCadastro() {
   const handleDelete = (id: string) => {
     setClientes(clientes.filter(cliente => cliente.id !== id));
     toast.success("Cliente removido com sucesso!");
+  };
+
+  const handleOnboarding = (cliente: Cliente) => {
+    toast.success(`Iniciando onboarding para ${cliente.nome}`);
+    // Aqui você pode adicionar a lógica de onboarding
   };
 
   const getStatusColor = (status: string) => {
@@ -356,6 +361,16 @@ export default function ClienteCadastro() {
                   )}
                 </div>
                 <div className="flex gap-2">
+                  {cliente.assinatura_id && cliente.assinatura_id !== 'none' && (
+                    <Button
+                      variant="default"
+                      size="sm"
+                      onClick={() => handleOnboarding(cliente)}
+                    >
+                      <Users className="h-4 w-4 mr-1" />
+                      Onboarding
+                    </Button>
+                  )}
                   <Button
                     variant="outline"
                     size="sm"
