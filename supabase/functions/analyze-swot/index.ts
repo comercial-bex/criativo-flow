@@ -48,7 +48,7 @@ serve(async (req) => {
     // Buscar dados básicos do cliente
     const { data: clienteData, error: clienteError } = await supabase
       .from('clientes')
-      .select('nome, segmento_atuacao')
+      .select('nome')
       .eq('id', clienteId)
       .single();
 
@@ -126,8 +126,7 @@ Responda em português, de forma estruturada e profissional, com análise aprofu
             content: prompt
           }
         ],
-        max_tokens: 2000,
-        temperature: 0.7
+        max_completion_tokens: 2000
       }),
     });
 
