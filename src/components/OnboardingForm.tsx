@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,8 +8,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { Save, X } from "lucide-react";
+import { Save, X, Download } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 interface OnboardingFormProps {
   isOpen: boolean;
@@ -134,6 +135,92 @@ export function OnboardingForm({ isOpen, onClose, cliente }: OnboardingFormProps
     comoLembrada: ""
   });
 
+  const [loading, setLoading] = useState(false);
+
+  // Carregar dados simulados da Tech Solutions Ltda
+  const carregarDadosSimulados = async () => {
+    setLoading(true);
+    try {
+      // Primeiro buscar o cliente Tech Solutions Ltda
+      const { data: clienteData, error: clienteError } = await supabase
+        .from('clientes')
+        .select('id')
+        .eq('nome', 'Tech Solutions Ltda')
+        .maybeSingle();
+
+      if (clienteError || !clienteData) {
+        toast.error('Dados simulados não encontrados');
+        return;
+      }
+
+      // Buscar dados de onboarding
+      const { data: onboardingData, error: onboardingError } = await supabase
+        .from('cliente_onboarding')
+        .select('*')
+        .eq('cliente_id', clienteData.id)
+        .maybeSingle();
+
+      if (onboardingError || !onboardingData) {
+        toast.error('Dados de onboarding não encontrados');
+        return;
+      }
+
+      // Mapear dados do banco para o formulário
+      setFormData({
+        nomeEmpresa: onboardingData.nome_empresa || '',
+        segmentoAtuacao: onboardingData.segmento_atuacao || '',
+        produtosServicos: onboardingData.produtos_servicos || '',
+        tempoMercado: onboardingData.tempo_mercado || '',
+        localizacao: onboardingData.localizacao || '',
+        estruturaAtual: onboardingData.estrutura_atual || '',
+        canaisContato: onboardingData.canais_contato || '',
+        concorrentesDiretos: onboardingData.concorrentes_diretos || '',
+        diferenciais: onboardingData.diferenciais || '',
+        fatoresCrise: onboardingData.fatores_crise || '',
+        areaAtendimento: onboardingData.area_atendimento || '',
+        tiposClientes: onboardingData.tipos_clientes || '',
+        publicoAlvo: onboardingData.publico_alvo || [],
+        publicoAlvoOutros: onboardingData.publico_alvo_outros || '',
+        doresProblemas: onboardingData.dores_problemas || '',
+        valorizado: onboardingData.valorizado || '',
+        comoEncontram: onboardingData.como_encontram || [],
+        frequenciaCompra: onboardingData.frequencia_compra || '',
+        ticketMedio: onboardingData.ticket_medio || '',
+        formaAquisicao: onboardingData.forma_aquisicao || [],
+        presencaDigital: onboardingData.presenca_digital || [],
+        presencaDigitalOutros: onboardingData.presenca_digital_outros || '',
+        frequenciaPostagens: onboardingData.frequencia_postagens || '',
+        tiposConteudo: onboardingData.tipos_conteudo || [],
+        midiaPaga: onboardingData.midia_paga || '',
+        feirasEventos: onboardingData.feiras_eventos || '',
+        materiaisImpressos: onboardingData.materiais_impressos || [],
+        midiaTradicional: onboardingData.midia_tradicional || [],
+        forcas: onboardingData.forcas || '',
+        fraquezas: onboardingData.fraquezas || '',
+        oportunidades: onboardingData.oportunidades || '',
+        ameacas: onboardingData.ameacas || '',
+        objetivosDigitais: onboardingData.objetivos_digitais || '',
+        objetivosOffline: onboardingData.objetivos_offline || '',
+        onde6Meses: onboardingData.onde_6_meses || '',
+        resultadosEsperados: onboardingData.resultados_esperados || [],
+        equipeVendasExterna: onboardingData.equipe_vendas_externa || '',
+        canaisAtendimentoAtivos: onboardingData.canais_atendimento_ativos || '',
+        relacionamentoClientes: onboardingData.relacionamento_clientes || [],
+        historiaMarca: onboardingData.historia_marca || '',
+        valoresPrincipais: onboardingData.valores_principais || '',
+        tomVoz: onboardingData.tom_voz || [],
+        comoLembrada: onboardingData.como_lembrada || ''
+      });
+
+      toast.success('Dados simulados carregados com sucesso!');
+    } catch (error) {
+      console.error('Erro ao carregar dados simulados:', error);
+      toast.error('Erro ao carregar dados simulados');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleCheckboxChange = (field: keyof OnboardingData, value: string) => {
     setFormData(prev => {
       const currentArray = prev[field] as string[];
@@ -154,7 +241,26 @@ export function OnboardingForm({ isOpen, onClose, cliente }: OnboardingFormProps
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh]">
         <DialogHeader>
-          <DialogTitle>Formulário de Onboarding - {cliente.nome}</DialogTitle>
+          <div className="flex items-center justify-between">
+            <DialogTitle>Formulário de Onboarding - {cliente.nome}</DialogTitle>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={carregarDadosSimulados}
+              disabled={loading}
+              className="gap-2"
+            >
+              {loading ? (
+                <>Carregando...</>
+              ) : (
+                <>
+                  <Download className="h-4 w-4" />
+                  Carregar Dados Simulados
+                </>
+              )}
+            </Button>
+          </div>
         </DialogHeader>
         
         <ScrollArea className="h-[calc(90vh-120px)] pr-4">
