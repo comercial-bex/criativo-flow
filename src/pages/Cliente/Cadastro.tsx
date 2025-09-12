@@ -19,8 +19,34 @@ interface Cliente {
   endereco: string;
   status: 'ativo' | 'inativo' | 'prospecto';
   tipo: 'pessoa_fisica' | 'pessoa_juridica';
+  assinatura_id?: string;
   observacoes?: string;
 }
+
+interface Assinatura {
+  id: string;
+  nome: string;
+  preco: number;
+}
+
+// Mock de assinaturas disponíveis
+const mockAssinaturas: Assinatura[] = [
+  {
+    id: '1',
+    nome: 'Plano 90º',
+    preco: 997
+  },
+  {
+    id: '2',
+    nome: 'Plano 180º',
+    preco: 1497
+  },
+  {
+    id: '3',
+    nome: 'Plano 360º',
+    preco: 2197
+  }
+];
 
 const mockClientes: Cliente[] = [
   {
@@ -31,7 +57,8 @@ const mockClientes: Cliente[] = [
     cnpj_cpf: "12.345.678/0001-90",
     endereco: "São Paulo, SP",
     status: "ativo",
-    tipo: "pessoa_juridica"
+    tipo: "pessoa_juridica",
+    assinatura_id: "2"
   },
   {
     id: "2",
@@ -47,6 +74,7 @@ const mockClientes: Cliente[] = [
 
 export default function ClienteCadastro() {
   const [clientes, setClientes] = useState<Cliente[]>(mockClientes);
+  const [assinaturas] = useState<Assinatura[]>(mockAssinaturas);
   const [searchTerm, setSearchTerm] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [editingClient, setEditingClient] = useState<Cliente | null>(null);
@@ -58,6 +86,7 @@ export default function ClienteCadastro() {
     endereco: "",
     status: "prospecto",
     tipo: "pessoa_juridica",
+    assinatura_id: "",
     observacoes: ""
   });
 
@@ -98,6 +127,7 @@ export default function ClienteCadastro() {
       endereco: "",
       status: "prospecto",
       tipo: "pessoa_juridica",
+      assinatura_id: "",
       observacoes: ""
     });
     setEditingClient(null);
@@ -131,6 +161,12 @@ export default function ClienteCadastro() {
       case 'prospecto': return 'Prospecto';
       default: return status;
     }
+  };
+
+  const getAssinaturaNome = (assinaturaId?: string) => {
+    if (!assinaturaId) return 'Sem assinatura';
+    const assinatura = assinaturas.find(a => a.id === assinaturaId);
+    return assinatura ? `${assinatura.nome} (R$ ${assinatura.preco})` : 'Assinatura não encontrada';
   };
 
   return (
@@ -241,6 +277,26 @@ export default function ClienteCadastro() {
                     </SelectContent>
                   </Select>
                 </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="assinatura">Plano de Assinatura</Label>
+                  <Select 
+                    value={formData.assinatura_id || ""} 
+                    onValueChange={(value) => setFormData({ ...formData, assinatura_id: value || undefined })}
+                  >
+                    <SelectTrigger className="bg-background">
+                      <SelectValue placeholder="Selecione um plano" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-background border border-border shadow-lg z-50">
+                      <SelectItem value="">Sem assinatura</SelectItem>
+                      {assinaturas.map((assinatura) => (
+                        <SelectItem key={assinatura.id} value={assinatura.id}>
+                          {assinatura.nome} - R$ {assinatura.preco.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
 
               <div className="space-y-2">
@@ -293,6 +349,11 @@ export default function ClienteCadastro() {
                     {cliente.telefone} • {cliente.cnpj_cpf}
                   </p>
                   <p className="text-sm text-muted-foreground">{cliente.endereco}</p>
+                  {cliente.assinatura_id && (
+                    <p className="text-sm font-medium text-primary">
+                      {getAssinaturaNome(cliente.assinatura_id)}
+                    </p>
+                  )}
                 </div>
                 <div className="flex gap-2">
                   <Button
