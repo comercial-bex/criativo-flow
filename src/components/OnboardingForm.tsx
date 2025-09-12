@@ -14,7 +14,12 @@ import { toast } from "sonner";
 interface OnboardingFormProps {
   isOpen: boolean;
   onClose: () => void;
-  clienteNome: string;
+  cliente: {
+    nome: string;
+    email: string;
+    telefone: string;
+    endereco: string;
+  };
 }
 
 interface OnboardingData {
@@ -82,9 +87,9 @@ interface OnboardingData {
   comoLembrada: string;
 }
 
-export function OnboardingForm({ isOpen, onClose, clienteNome }: OnboardingFormProps) {
+export function OnboardingForm({ isOpen, onClose, cliente }: OnboardingFormProps) {
   const [formData, setFormData] = useState<OnboardingData>({
-    nomeEmpresa: "",
+    nomeEmpresa: cliente.nome,
     segmentoAtuacao: "",
     produtosServicos: "",
     tempoMercado: "",
@@ -141,7 +146,7 @@ export function OnboardingForm({ isOpen, onClose, clienteNome }: OnboardingFormP
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    toast.success(`Onboarding de ${clienteNome} salvo com sucesso!`);
+    toast.success(`Onboarding de ${cliente.nome} salvo com sucesso!`);
     onClose();
   };
 
@@ -149,7 +154,7 @@ export function OnboardingForm({ isOpen, onClose, clienteNome }: OnboardingFormP
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh]">
         <DialogHeader>
-          <DialogTitle>Formulário de Onboarding - {clienteNome}</DialogTitle>
+          <DialogTitle>Formulário de Onboarding - {cliente.nome}</DialogTitle>
         </DialogHeader>
         
         <ScrollArea className="h-[calc(90vh-120px)] pr-4">
@@ -167,6 +172,8 @@ export function OnboardingForm({ isOpen, onClose, clienteNome }: OnboardingFormP
                     <Input
                       value={formData.nomeEmpresa}
                       onChange={(e) => setFormData({...formData, nomeEmpresa: e.target.value})}
+                      className="bg-muted"
+                      readOnly
                     />
                   </div>
                   <div className="space-y-2">

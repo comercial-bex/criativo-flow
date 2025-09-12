@@ -411,7 +411,12 @@ export default function ClienteCadastro() {
             setShowOnboarding(false);
             setSelectedCliente(null);
           }}
-          clienteNome={selectedCliente.nome}
+          cliente={{
+            nome: selectedCliente.nome,
+            email: selectedCliente.email,
+            telefone: selectedCliente.telefone,
+            endereco: selectedCliente.endereco
+          }}
         />
       )}
     </div>
