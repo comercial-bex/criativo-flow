@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ArrowLeft, Calendar, DollarSign, Eye, Edit, Plus } from "lucide-react";
 import { SectionHeader } from "@/components/SectionHeader";
+import { PlanejamentoProjeto } from "@/components/PlanejamentoProjeto";
 
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -405,6 +406,17 @@ export default function DetalheProjetos() {
         </CardContent>
       </Card>
 
+
+      
+      {/* Planejamento do Projeto */}
+      {clienteId && (
+        <PlanejamentoProjeto
+          projetoId={projetos[0]?.id || ''}
+          clienteId={clienteId}
+          clienteNome={cliente?.nome || ''}
+          assinaturaId={cliente?.assinatura_id}
+        />
+      )}
 
       {/* Lista de Projetos */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
