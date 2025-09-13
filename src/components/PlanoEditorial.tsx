@@ -140,10 +140,22 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
           especialistas_selecionados: data.especialistas_selecionados || []
         });
         
-        // Carregar componentes selecionados se existirem
-        if (data.frameworks_selecionados) {
-          setComponentesSelecionados(data.frameworks_selecionados || []);
+        // Carregar componentes selecionados se existirem (novo formato)
+        if (data.frameworks_selecionados && Array.isArray(data.frameworks_selecionados)) {
+          // Verificar se é o novo formato (componentes individuais) ou antigo (frameworks completos)
+          const primeiroItem = data.frameworks_selecionados[0];
+          if (primeiroItem && primeiroItem.includes(':')) {
+            // Novo formato: "HESEC: Histórias"
+            setComponentesSelecionados(data.frameworks_selecionados);
+          } else {
+            // Formato antigo: ["HESEC", "HERO"] - limpar
+            setComponentesSelecionados([]);
+          }
+        } else {
+          setComponentesSelecionados([]);
         }
+      } else {
+        setComponentesSelecionados([]);
       }
     } catch (error) {
       console.error('Erro ao buscar conteúdo editorial:', error);
@@ -279,7 +291,7 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
       });
       
       setComponentesSelecionados([]);
-
+      
       toast.success('Análise resetada com sucesso!');
     } catch (error) {
       console.error('Erro ao resetar análise:', error);
@@ -628,9 +640,11 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
                   </div>
                 ))}
                 
-                {componentesSelecionados.length > 0 && (
+                {componentesSelecionados && componentesSelecionados.length > 0 && (
                   <div className="mt-6 p-4 bg-primary/5 rounded-lg border border-primary/20">
-                    <h5 className="font-medium text-sm mb-2 text-primary">Componentes Selecionados:</h5>
+                    <h5 className="font-medium text-sm mb-2 text-primary">
+                      Componentes Selecionados ({componentesSelecionados.length}):
+                    </h5>
                     <div className="flex flex-wrap gap-2">
                       {componentesSelecionados.map((componente) => (
                         <Badge key={componente} variant="secondary" className="text-xs">
