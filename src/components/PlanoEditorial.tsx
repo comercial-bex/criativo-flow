@@ -345,6 +345,51 @@ Formate a resposta em JSON com esta estrutura:
           <div className="space-y-6">
             <Card>
               <CardHeader>
+                <CardTitle>Especialistas para Geração de Conteúdo</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                  {[
+                    { id: 'copy', label: 'Copywriter' },
+                    { id: 'design', label: 'Designer' },
+                    { id: 'gestor_redes', label: 'Gestor de Redes' },
+                    { id: 'gerente_marketing', label: 'Gerente de Marketing' },
+                    { id: 'analista_dados', label: 'Analista de Dados' },
+                    { id: 'influencer', label: 'Influencer' }
+                  ].map((especialista) => (
+                    <Button
+                      key={especialista.id}
+                      variant={especialistaSelecionado === especialista.id ? 'default' : 'outline'}
+                      className={`text-xs ${
+                        especialistaSelecionado === especialista.id 
+                          ? 'bg-purple-500 hover:bg-purple-600 text-white' 
+                          : ''
+                      }`}
+                      onClick={() => setEspecialistaSelecionado(especialista.id)}
+                    >
+                      {especialista.label}
+                    </Button>
+                  ))}
+                </div>
+                {especialistaSelecionado && (
+                  <div className="p-3 bg-muted rounded-lg">
+                    <p className="text-sm text-muted-foreground">
+                      <strong>Especialista selecionado:</strong> {
+                        especialistaSelecionado === 'copy' ? 'Copywriter especialista em textos persuasivos' :
+                        especialistaSelecionado === 'design' ? 'Designer gráfico especialista em visual impactante' :
+                        especialistaSelecionado === 'gestor_redes' ? 'Gestor de redes sociais com estratégias eficazes' :
+                        especialistaSelecionado === 'gerente_marketing' ? 'Gerente de marketing digital estratégico' :
+                        especialistaSelecionado === 'analista_dados' ? 'Analista de dados especializado em métricas' :
+                        'Influencer digital especialista em conteúdo autêntico'
+                      }
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
                 <CardTitle>Posicionamento nas Redes Sociais</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -374,52 +419,6 @@ Formate a resposta em JSON com esta estrutura:
                   placeholder="Defina o posicionamento da marca nas redes sociais..."
                   className="min-h-[100px]"
                 />
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Especialistas para Geração de Conteúdo</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                  {[
-                    { id: 'copy', label: 'Copywriter', icon: '✍️' },
-                    { id: 'design', label: 'Designer', icon: '🎨' },
-                    { id: 'gestor_redes', label: 'Gestor de Redes', icon: '📱' },
-                    { id: 'gerente_marketing', label: 'Gerente de Marketing', icon: '📊' },
-                    { id: 'analista_dados', label: 'Analista de Dados', icon: '📈' },
-                    { id: 'influencer', label: 'Influencer', icon: '⭐' }
-                  ].map((especialista) => (
-                    <Button
-                      key={especialista.id}
-                      variant={especialistaSelecionado === especialista.id ? 'default' : 'outline'}
-                      className={`text-xs flex items-center gap-2 ${
-                        especialistaSelecionado === especialista.id 
-                          ? 'bg-purple-500 hover:bg-purple-600 text-white' 
-                          : ''
-                      }`}
-                      onClick={() => setEspecialistaSelecionado(especialista.id)}
-                    >
-                      <span>{especialista.icon}</span>
-                      {especialista.label}
-                    </Button>
-                  ))}
-                </div>
-                {especialistaSelecionado && (
-                  <div className="p-3 bg-muted rounded-lg">
-                    <p className="text-sm text-muted-foreground">
-                      <strong>Especialista selecionado:</strong> {
-                        especialistaSelecionado === 'copy' ? 'Copywriter especialista em textos persuasivos' :
-                        especialistaSelecionado === 'design' ? 'Designer gráfico especialista em visual impactante' :
-                        especialistaSelecionado === 'gestor_redes' ? 'Gestor de redes sociais com estratégias eficazes' :
-                        especialistaSelecionado === 'gerente_marketing' ? 'Gerente de marketing digital estratégico' :
-                        especialistaSelecionado === 'analista_dados' ? 'Analista de dados especializado em métricas' :
-                        'Influencer digital especialista em conteúdo autêntico'
-                      }
-                    </p>
-                  </div>
-                )}
               </CardContent>
             </Card>
 
