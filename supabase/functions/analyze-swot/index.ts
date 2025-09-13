@@ -56,101 +56,125 @@ serve(async (req) => {
       throw new Error('Cliente não encontrado');
     }
 
-    // Preparar prompt para análise da matriz SWOT
+    // Preparar prompt ULTRA PROFUNDO para análise da matriz SWOT
     const prompt = `
-Como consultor estratégico sênior especializado em crescimento empresarial e marketing digital, conduza uma análise SWOT PROFUNDA e CRÍTICA para "${clienteData.nome}".
+MISSÃO: Você é um consultor estratégico de marketing digital SÊNIOR com 20+ anos transformando empresas através de insights penetrantes que 95% dos consultores não conseguem enxergar.
 
-CONTEXTO EMPRESARIAL COMPLETO:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-PERFIL DA EMPRESA:
-• Nome: ${onboardingData.nome_empresa}
+EMPRESA ANALISADA: "${clienteData.nome}"
+
+═══════════════════════════════════════════════════════════════════════════════
+📊 DADOS EMPRESARIAIS COMPLETOS
+═══════════════════════════════════════════════════════════════════════════════
+
+🏢 PERFIL ORGANIZACIONAL:
+• Empresa: ${onboardingData.nome_empresa}
 • Segmento: ${onboardingData.segmento_atuacao}
 • Produtos/Serviços: ${onboardingData.produtos_servicos}
 • Tempo no Mercado: ${onboardingData.tempo_mercado}
 • Localização: ${onboardingData.localizacao}
-• Estrutura Atual: ${onboardingData.estrutura_atual}
+• Estrutura: ${onboardingData.estrutura_atual}
 
-ANÁLISE COMPETITIVA:
+💰 INTELIGÊNCIA COMERCIAL:
+• Público-Alvo: ${onboardingData.publico_alvo?.join(', ')}
+• Dores Específicas: ${onboardingData.dores_problemas}
+• Fatores de Valor: ${onboardingData.valorizado}
+• Ticket Médio: ${onboardingData.ticket_medio}
+• Ciclo de Compra: ${onboardingData.frequencia_compra}
+• Canais de Descoberta: ${onboardingData.como_encontram?.join(', ')}
+• Métodos de Aquisição: ${onboardingData.forma_aquisicao?.join(', ')}
+
+🏆 POSICIONAMENTO COMPETITIVO:
 • Concorrentes Diretos: ${onboardingData.concorrentes_diretos}
 • Diferenciais Declarados: ${onboardingData.diferenciais}
+• História da Marca: ${onboardingData.historia_marca}
+• Valores Fundamentais: ${onboardingData.valores_principais}
+• Identidade Desejada: ${onboardingData.como_lembrada}
 
-INTELIGÊNCIA DO CLIENTE:
-• Público-Alvo: ${onboardingData.publico_alvo?.join(', ')}
-• Dores/Problemas: ${onboardingData.dores_problemas}
-• O que Valorizam: ${onboardingData.valorizado}
-• Ticket Médio: ${onboardingData.ticket_medio}
-• Frequência de Compra: ${onboardingData.frequencia_compra}
-• Como Encontram a Empresa: ${onboardingData.como_encontram?.join(', ')}
-• Formas de Aquisição: ${onboardingData.forma_aquisicao?.join(', ')}
-
-PRESENÇA E ESTRATÉGIA DIGITAL:
-• Canais Digitais Ativos: ${onboardingData.presenca_digital?.join(', ')}
-• Tipos de Conteúdo: ${onboardingData.tipos_conteudo?.join(', ')}
-• Frequência de Postagens: ${onboardingData.frequencia_postagens}
-• Mídia Paga: ${onboardingData.midia_paga}
+🌐 ECOSSISTEMA DIGITAL:
+• Presença Ativa: ${onboardingData.presenca_digital?.join(', ')}
+• Conteúdo Atual: ${onboardingData.tipos_conteudo?.join(', ')}
+• Frequência: ${onboardingData.frequencia_postagens}
+• Investimento Pago: ${onboardingData.midia_paga}
+• Tom Comunicacional: ${onboardingData.tom_voz?.join(', ')}
 • Objetivos Digitais: ${onboardingData.objetivos_digitais}
 
-RELACIONAMENTO E ATENDIMENTO:
+🎯 RELACIONAMENTO & OPERAÇÕES:
 • Tipos de Relacionamento: ${onboardingData.relacionamento_clientes?.join(', ')}
-• Canais de Atendimento: ${onboardingData.canais_atendimento_ativos}
-• Equipe de Vendas Externa: ${onboardingData.equipe_vendas_externa}
+• Canais Atendimento: ${onboardingData.canais_atendimento_ativos}
+• Force de Vendas: ${onboardingData.equipe_vendas_externa}
 
-IDENTIDADE E POSICIONAMENTO:
-• História da Marca: ${onboardingData.historia_marca}
-• Valores Principais: ${onboardingData.valores_principais}
-• Tom de Voz: ${onboardingData.tom_voz?.join(', ')}
-• Como Quer Ser Lembrada: ${onboardingData.como_lembrada}
-
-VISÃO E EXPECTATIVAS:
-• Objetivos 6 meses: ${onboardingData.onde_6_meses}
+🚀 VISÃO ESTRATÉGICA:
+• Projeção 6 meses: ${onboardingData.onde_6_meses}
 • Resultados Esperados: ${onboardingData.resultados_esperados?.join(', ')}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+• Objetivos Offline: ${onboardingData.objetivos_offline}
 
-INSTRUÇÕES PARA ANÁLISE CRÍTICA E PROFUNDA:
+═══════════════════════════════════════════════════════════════════════════════
+🧠 METODOLOGIA DE ANÁLISE PENETRANTE
+═══════════════════════════════════════════════════════════════════════════════
 
-1. ANÁLISE CRÍTICA DOS GAPS INVISÍVEIS:
-   - Identifique contradições entre o que declaram e o que realmente fazem
-   - Detecte oportunidades que eles NÃO estão vendo no próprio negócio
-   - Aponte blind spots estratégicos baseados nos dados fornecidos
+DETECTE O INVISÍVEL:
+1. CONTRADIÇÕES FATAIS: O que declaram vs. o que realmente fazem - identifique gaps críticos
+2. OPORTUNIDADES CEGAS: Vantagens competitivas que eles possuem mas não exploram
+3. LACUNAS ESTRATÉGICAS: Conexões óbvias entre dados que eles não fizeram
+4. BLIND SPOTS COMPETITIVOS: Vulnerabilidades que concorrentes podem explorar
+5. ALAVANCAS OCULTAS: Recursos subutilizados que podem gerar crescimento exponencial
 
-2. INSIGHTS DE CRESCIMENTO EXPONENCIAL:
-   - Conecte pontos que eles não conectaram entre público-alvo e estratégia digital
-   - Identifique alavancas de crescimento escondidas nos próprios dados
-   - Sugira estratégias de monetização que estão sendo ignoradas
+FOQUE NO CRESCIMENTO:
+• MONETIZAÇÃO IMEDIATA: O que pode gerar receita em 30 dias
+• SCALING ORGÂNICO: Como multiplicar seguidores sem investimento adicional  
+• LEAD ACQUISITION: Estratégias específicas baseadas no perfil real do público
+• DIFERENCIAÇÃO COMPETITIVA: Posicionamento único baseado em dados reais
 
-3. ANÁLISE COMPETITIVA PROFUNDA:
-   - Baseado no segmento e concorrentes, identifique movimentos estratégicos necessários
-   - Detecte vulnerabilidades competitivas e como explorá-las
-   - Identifique tendências do setor que podem ser antecipadas
+═══════════════════════════════════════════════════════════════════════════════
+📋 FORMATO DE RESPOSTA OBRIGATÓRIO
+═══════════════════════════════════════════════════════════════════════════════
 
-RESPONDA NO FORMATO ESTRUTURADO:
+🎯 FORÇAS (Assets Estratégicos Subutilizados):
+[FORÇA COMERCIAL]: [Vantagem específica + como monetizar imediatamente]
+[FORÇA OPERACIONAL]: [Eficiência única + como acelerar conversão]
+[FORÇA DE MARCA]: [Diferencial real + como explorar para aquisição]
+[FORÇA DIGITAL]: [Capacidade online + estratégia de amplificação]
 
-🎯 FORÇAS (Assets Estratégicos):
-- [FORÇA COMERCIAL]: Identifique vantagens competitivas específicas que podem ser MONETIZADAS imediatamente
-- [FORÇA OPERACIONAL]: Detecte eficiências ou processos únicos que aceleram vendas/conversão  
-- [FORÇA DE MARCA]: Aponte elementos de diferenciação que estão sendo SUBUTILIZADOS para aquisição
+🚀 OPORTUNIDADES (Territórios Virgens):
+[NICHO OCULTO]: [Segmento específico ignorado + estratégia de captura]
+[GAP COMPETITIVO]: [Falha dos concorrentes + como explorar]
+[TREND EMERGENTE]: [Tendência do setor + como se posicionar primeiro]
+[SINERGIA INEXPLORADA]: [Conexão entre recursos + estratégia de ativação]
 
-🚀 OPORTUNIDADES (Territórios Inexplorados):
-- [NICHO OCULTO]: Identifique segmentos específicos do público que estão sendo ignorados mas têm alto potencial
-- [ESTRATÉGIA DIGITAL]: Detecte tactics de conteúdo/engajamento baseadas nas dores reais do público
-- [PARCERIA ESTRATÉGICA]: Sugira colaborações específicas considerando localização/segmento/objetivos
+⚠️ FRAQUEZAS (Gargalos Críticos Invisíveis):
+[GARGALO DE RECEITA]: [Limitação específica + impacto no faturamento]
+[FALHA DIGITAL]: [Gap na presença online + perda de oportunidades]
+[INCONSISTÊNCIA]: [Contradição entre declarado e executado]
+[LIMITAÇÃO OPERACIONAL]: [Processo que impede escala + solução]
 
-⚠️ FRAQUEZAS (Gargalos Críticos):
-- [GARGALO DE VENDAS]: Identifique limitações específicas que impedem escalonamento de receita
-- [GAP DIGITAL]: Detecte falhas na presença digital que limitam aquisição orgânica de seguidores
-- [LIMITAÇÃO OPERACIONAL]: Aponte processos internos que impedem crescimento sustentável
+🚨 AMEAÇAS (Riscos Estratégicos Reais):
+[RISCO COMPETITIVO]: [Movimento provável da concorrência + contramedida]
+[VULNERABILIDADE DIGITAL]: [Fraqueza online + como concorrentes podem explorar]
+[MUDANÇA DE MERCADO]: [Tendência que pode obsolescer o modelo atual]
+[DEPENDÊNCIA CRÍTICA]: [Ponto único de falha + estratégia de mitigação]
 
-🚨 AMEAÇAS (Riscos Estratégicos):
-- [RISCO COMPETITIVO]: Analise movimentos prováveis da concorrência que podem impactar market share
-- [RISCO DE MERCADO]: Identifique mudanças no comportamento do consumidor que podem afetar o modelo de negócio
-- [RISCO DIGITAL]: Detecte vulnerabilidades na estratégia digital que podem comprometer aquisição futura
+💡 INSIGHTS PENETRANTES (O Que Eles Não Veem):
+[CONEXÃO OCULTA]: [Padrão não identificado nos dados + oportunidade]
+[ALAVANCA ESCONDIDA]: [Recurso subutilizado + potencial de crescimento]
+[ESTRATÉGIA REVERSA]: [Abordagem contraintuitiva baseada nos dados]
 
-💡 ESTRATÉGIAS PRIORITÁRIAS (Plano de Ação):
-- [AÇÃO IMEDIATA]: Movimento específico para impacto em vendas nos próximos 30 dias
-- [TÁTICA DE CRESCIMENTO]: Estratégia concreta para multiplicar seguidores no nicho identificado
-- [DIFERENCIAÇÃO COMPETITIVA]: Posicionamento único baseado nos insights descobertos
+🎯 PLANO DE AÇÃO IMEDIATO (30-60-90 dias):
+[30 DIAS]: [Ação específica para impacto imediato em vendas/seguidores]
+[60 DIAS]: [Estratégia de médio prazo para diferenciação]
+[90 DIAS]: [Movimento estratégico para dominação do nicho]
 
-SEJA BRUTALMENTE ESPECÍFICO. Use os dados reais fornecidos. Identifique o que eles NÃO estão vendo. Forneça insights acionáveis que gerem crescimento mensurável.
+═══════════════════════════════════════════════════════════════════════════════
+
+DIRETRIZES CRÍTICAS:
+✓ Use APENAS dados reais fornecidos - não invente informações
+✓ Seja BRUTALMENTE específico e acionável
+✓ Identifique contradições entre intenção e execução
+✓ Detecte oportunidades que 95% dos consultores perdem
+✓ Foque em crescimento mensurável: seguidores, leads, vendas
+✓ Conecte pontos que eles não conectaram
+✓ Forneça insights que gerem resultados imediatos
+
+ANÁLISE DEVE SER: Profunda • Crítica • Acionável • Baseada em dados • Focada em crescimento
 `;
 
     // Chamar OpenAI

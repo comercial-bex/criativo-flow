@@ -93,44 +93,58 @@ export function SwotAnalysisIA({
         analise_estrategica: analiseTexto,
         objetivos: {
           objetivos_gerados: objetivos,
-          data_geracao: new Date().toISOString()
+          data_geracao: new Date().toISOString(),
+          versao: 'nova_analise'
         }
       };
 
-      // Primeiro, verificar se já existe um registro
-      const { data: existingData } = await supabase
+      console.log('Tentando salvar análise SWOT:', dadosParaSalvar);
+
+      // Primeiro, tentar buscar registro existente sem usar .single() que pode gerar erro
+      const { data: existingData, error: searchError } = await supabase
         .from('cliente_objetivos')
         .select('id')
         .eq('cliente_id', clienteId)
-        .single();
+        .limit(1);
+
+      if (searchError) {
+        console.error('Erro ao buscar registro existente:', searchError);
+      }
 
       let result;
-      if (existingData) {
+      if (existingData && existingData.length > 0) {
         // Atualizar registro existente
+        console.log('Atualizando registro existente:', existingData[0].id);
         result = await supabase
           .from('cliente_objetivos')
           .update(dadosParaSalvar)
-          .eq('cliente_id', clienteId);
+          .eq('cliente_id', clienteId)
+          .select();
       } else {
         // Inserir novo registro
+        console.log('Inserindo novo registro para cliente:', clienteId);
         result = await supabase
           .from('cliente_objetivos')
-          .insert(dadosParaSalvar);
+          .insert(dadosParaSalvar)
+          .select();
       }
 
-      if (result.error) throw result.error;
+      if (result.error) {
+        console.error('Erro no Supabase:', result.error);
+        throw result.error;
+      }
 
-      console.log('Análise SWOT salva no banco:', dadosParaSalvar);
+      console.log('Análise SWOT salva com sucesso:', result.data);
       
       toast({
-        title: "Análise salva com sucesso",
-        description: "Os dados da análise SWOT foram salvos no banco de dados.",
+        title: "✅ Análise salva com sucesso",
+        description: "A nova análise SWOT foi salva no banco de dados.",
       });
     } catch (error) {
       console.error('Erro ao salvar análise SWOT:', error);
       toast({
-        title: "Erro ao salvar análise",
-        description: "A análise foi gerada mas houve erro ao salvar no banco.",
+        title: "❌ Erro ao salvar análise",
+        description: `Erro: ${error instanceof Error ? error.message : 'Erro desconhecido'}`,
         variant: "destructive",
       });
     }
