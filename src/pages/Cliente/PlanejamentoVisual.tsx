@@ -83,7 +83,7 @@ export default function PlanejamentoVisual() {
           .from('posts_planejamento')
           .select('*')
           .eq('planejamento_id', planejamentoData.id)
-          .order('data_publicacao');
+          .order('data_postagem');
 
         if (postsError) throw postsError;
         setPosts(postsData || []);
@@ -245,7 +245,11 @@ export default function PlanejamentoVisual() {
       <div className="p-6">
         <div className="text-center">
           <h2 className="text-xl font-semibold mb-2">Planejamento não encontrado</h2>
-          <p className="text-muted-foreground mb-4">É necessário criar um planejamento antes de acessar a visualização detalhada.</p>
+          <p className="text-muted-foreground mb-4">
+            É necessário criar um planejamento antes de acessar a visualização detalhada.
+            <br />
+            Volte para a página do projeto e clique em "Criar Novo Plano".
+          </p>
           <Button onClick={() => navigate(`/clientes/${clienteId}/projetos/${projetoId}`)}>
             <ArrowLeft className="h-4 w-4 mr-2" />
             Voltar para o Projeto
