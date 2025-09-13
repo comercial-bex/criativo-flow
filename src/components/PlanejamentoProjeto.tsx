@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Calendar, FileText, Target, Clock, Users, BarChart, Send, CheckCircle, AlertCircle, Edit, Eye } from 'lucide-react';
+import { Calendar, FileText, Target, Clock, Users, BarChart, Send, CheckCircle, AlertCircle, Edit, Eye, Sparkles, TrendingUp, Award, Zap } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -240,14 +240,14 @@ export function PlanejamentoProjeto({ projetoId, clienteId, clienteNome, assinat
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'rascunho': return 'bg-gray-100 text-gray-800';
-      case 'em_revisao': return 'bg-blue-100 text-blue-800';
-      case 'aprovado_cliente': return 'bg-green-100 text-green-800';
-      case 'em_producao': return 'bg-yellow-100 text-yellow-800';
-      case 'em_aprovacao_final': return 'bg-purple-100 text-purple-800';
-      case 'finalizado': return 'bg-green-100 text-green-800';
-      case 'reprovado': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'rascunho': return 'bg-gray-100 text-gray-800 border-gray-200';
+      case 'em_revisao': return 'bg-blue-100 text-blue-800 border-blue-200';
+      case 'aprovado_cliente': return 'bg-green-100 text-green-800 border-green-200';
+      case 'em_producao': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      case 'em_aprovacao_final': return 'bg-purple-100 text-purple-800 border-purple-200';
+      case 'finalizado': return 'bg-green-100 text-green-800 border-green-200';
+      case 'reprovado': return 'bg-red-100 text-red-800 border-red-200';
+      default: return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
 
@@ -401,9 +401,35 @@ ${objetivosEscolhidos.includes('reconhecimento_marca') ? `🏆 RECONHECIMENTO DE
 • Alcance e impressões dos posts estratégicos`;
   };
 
+  const PlanningSection = ({ title, content, icon, gradient }: { title: string; content: string; icon: React.ReactNode; gradient: string }) => (
+    <div className={`p-6 rounded-xl border border-primary/10 ${gradient}`}>
+      <div className="flex items-center gap-3 mb-4">
+        <div className="p-2 rounded-full bg-white/10 backdrop-blur-sm">
+          {icon}
+        </div>
+        <h4 className="font-bold text-lg text-white">{title}</h4>
+      </div>
+      <div className="space-y-2">
+        {content.split('\n').map((line, index) => {
+          if (line.trim().startsWith('•')) {
+            return (
+              <div key={index} className="flex items-start gap-3 ml-4">
+                <div className="w-2 h-2 rounded-full bg-white/60 mt-2 flex-shrink-0"></div>
+                <p className="text-sm text-white/90 leading-relaxed">{line.replace('•', '').trim()}</p>
+              </div>
+            );
+          }
+          return line.trim() ? (
+            <p key={index} className="text-sm text-white/90 leading-relaxed ml-4">{line}</p>
+          ) : null;
+        })}
+      </div>
+    </div>
+  );
+
   if (loading) {
     return (
-      <Card>
+      <Card className="backdrop-blur-sm bg-card/95 border-primary/10 shadow-lg">
         <CardContent className="p-6">
           <div className="animate-pulse space-y-4">
             <div className="h-4 bg-muted rounded w-1/4"></div>
@@ -420,17 +446,20 @@ ${objetivosEscolhidos.includes('reconhecimento_marca') ? `🏆 RECONHECIMENTO DE
         <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-full bg-gradient-to-r from-primary/10 to-primary/5">
-                <Target className="h-5 w-5 text-primary" />
+              <div className="p-3 rounded-full bg-gradient-to-r from-primary to-primary/80 shadow-lg">
+                <Target className="h-6 w-6 text-white" />
               </div>
               <div>
-                <CardTitle className="text-xl">Planejamento Estratégico</CardTitle>
-                <CardDescription className="mt-1">
-                  Baseado na assinatura e objetivos de {clienteNome}
+                <CardTitle className="text-2xl bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                  Planejamento Estratégico
+                </CardTitle>
+                <CardDescription className="mt-1 text-base">
+                  Baseado na assinatura e objetivos de <span className="font-semibold text-primary">{clienteNome}</span>
                 </CardDescription>
               </div>
               {planoConfig && (
-                <Badge className="bg-gradient-to-r from-primary to-primary/80 text-primary-foreground px-3 py-1 shadow-lg">
+                <Badge className="bg-gradient-to-r from-primary to-primary/80 text-white px-4 py-2 text-sm shadow-lg">
+                  <Sparkles className="h-4 w-4 mr-2" />
                   {planoConfig.nome}
                 </Badge>
               )}
@@ -438,8 +467,9 @@ ${objetivosEscolhidos.includes('reconhecimento_marca') ? `🏆 RECONHECIMENTO DE
             {!planejamento && planoConfig && objetivos && (
               <Button 
                 onClick={() => setDialogOpen(true)} 
-                className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+                className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 px-6 py-3"
               >
+                <Zap className="h-5 w-5 mr-2" />
                 ✨ Criar Planejamento
               </Button>
             )}
@@ -447,194 +477,358 @@ ${objetivosEscolhidos.includes('reconhecimento_marca') ? `🏆 RECONHECIMENTO DE
         </CardHeader>
         
         {planejamento ? (
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                {getStatusIcon(planejamento.status)}
-                <Badge className={getStatusColor(planejamento.status)}>
-                  {getStatusText(planejamento.status)}
-                </Badge>
-              </div>
-              <div className="flex gap-2">
-                {planejamento.status === 'rascunho' && (
-                  <Button onClick={enviarParaCliente} size="sm">
-                    <Send className="h-4 w-4 mr-2" />
-                    Enviar para Cliente
+          <CardContent className="p-0">
+            {/* Status e Ações */}
+            <div className="p-6 border-b border-primary/10 bg-gradient-to-r from-muted/30 to-transparent">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 rounded-full bg-gradient-to-r from-primary/10 to-primary/5">
+                    {getStatusIcon(planejamento.status)}
+                  </div>
+                  <div>
+                    <Badge className={`${getStatusColor(planejamento.status)} px-4 py-2 font-medium shadow-lg border`}>
+                      {getStatusText(planejamento.status)}
+                    </Badge>
+                    {planejamento.data_envio_cliente && (
+                      <p className="text-sm text-muted-foreground mt-2 flex items-center gap-2">
+                        <Calendar className="h-4 w-4" />
+                        Enviado em {new Date(planejamento.data_envio_cliente).toLocaleDateString('pt-BR')}
+                      </p>
+                    )}
+                  </div>
+                </div>
+                <div className="flex gap-3">
+                  {planejamento.status === 'rascunho' && (
+                    <Button 
+                      onClick={enviarParaCliente} 
+                      className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 shadow-lg hover:shadow-xl transition-all duration-300"
+                    >
+                      <Send className="h-4 w-4 mr-2" />
+                      Enviar para Cliente
+                    </Button>
+                  )}
+                  <Button 
+                    variant="outline" 
+                    onClick={() => navigate(`/clientes/${clienteId}/projetos/${projetoId}/planejamento`)}
+                    className="border-primary/20 hover:bg-primary/5 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+                  >
+                    <Eye className="h-4 w-4 mr-2" />
+                    Entrar no Plano
                   </Button>
+                </div>
+              </div>
+            </div>
+
+            {/* Conteúdo do Planejamento */}
+            <div className="p-8">
+              <div className="space-y-8">
+                {/* Título do Planejamento */}
+                <div className="bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-8 rounded-2xl border border-primary/20 shadow-lg">
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="p-3 rounded-full bg-gradient-to-r from-primary to-primary/80 shadow-lg">
+                      <Target className="h-6 w-6 text-white" />
+                    </div>
+                    <h3 className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                      {planejamento.titulo}
+                    </h3>
+                  </div>
+                  <p className="text-muted-foreground leading-relaxed">
+                    Baseado nos objetivos definidos no onboarding do cliente
+                  </p>
+                </div>
+
+                {/* Renderização Visual Aprimorada do Planejamento */}
+                {planejamento.descricao && (
+                  <div className="space-y-6">
+                    {planejamento.descricao.split('═══════════════════════════════════════════════════════════════').map((section, index) => {
+                      if (index === 0) {
+                        // Seção de introdução
+                        const lines = section.trim().split('\n');
+                        return (
+                          <div key={index} className="bg-gradient-to-br from-slate-800 to-slate-900 p-8 rounded-2xl text-white shadow-2xl">
+                            <div className="flex items-center gap-4 mb-6">
+                              <span className="text-4xl">🎯</span>
+                              <h4 className="text-2xl font-bold">{lines[0]?.replace('🎯 ', '')}</h4>
+                            </div>
+                            <p className="text-slate-200 text-lg leading-relaxed">
+                              {lines.slice(1).join(' ')}
+                            </p>
+                          </div>
+                        );
+                      }
+
+                      // Processar outras seções
+                      const content = section.trim();
+                      if (!content) return null;
+
+                      const lines = content.split('\n').filter(line => line.trim());
+                      const sections = [];
+                      let currentSectionContent = [];
+                      let currentTitle = '';
+
+                      lines.forEach(line => {
+                        const trimmedLine = line.trim();
+                        
+                        if (trimmedLine.includes('📊 DISTRIBUIÇÃO ESTRATÉGICA')) {
+                          if (currentTitle) sections.push({ title: currentTitle, content: currentSectionContent.join('\n') });
+                          currentTitle = 'Distribuição Estratégica de Conteúdo';
+                          currentSectionContent = [];
+                        } else if (trimmedLine.includes('📅 CRONOGRAMA SEMANAL')) {
+                          if (currentTitle) sections.push({ title: currentTitle, content: currentSectionContent.join('\n') });
+                          currentTitle = 'Cronograma Semanal';
+                          currentSectionContent = [];
+                        } else if (trimmedLine.includes('🎨 TIPOS DE CONTEÚDO')) {
+                          if (currentTitle) sections.push({ title: currentTitle, content: currentSectionContent.join('\n') });
+                          currentTitle = 'Tipos de Conteúdo por Objetivo';
+                          currentSectionContent = [];
+                        } else if (trimmedLine.includes('📋 ENTREGÁVEIS')) {
+                          if (currentTitle) sections.push({ title: currentTitle, content: currentSectionContent.join('\n') });
+                          currentTitle = 'Entregáveis do Planejamento';
+                          currentSectionContent = [];
+                        } else if (trimmedLine.includes('⏰ CRONOGRAMA DE ENTREGA')) {
+                          if (currentTitle) sections.push({ title: currentTitle, content: currentSectionContent.join('\n') });
+                          currentTitle = 'Cronograma de Entrega';
+                          currentSectionContent = [];
+                        } else if (trimmedLine.includes('💡 MÉTRICAS DE SUCESSO')) {
+                          if (currentTitle) sections.push({ title: currentTitle, content: currentSectionContent.join('\n') });
+                          currentTitle = 'Métricas de Sucesso';
+                          currentSectionContent = [];
+                        } else {
+                          currentSectionContent.push(line);
+                        }
+                      });
+
+                      if (currentTitle) sections.push({ title: currentTitle, content: currentSectionContent.join('\n') });
+
+                      return (
+                        <div key={index} className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                          {sections.map((sec, secIndex) => {
+                            const gradients = [
+                              'bg-gradient-to-br from-blue-600 to-blue-700',
+                              'bg-gradient-to-br from-purple-600 to-purple-700',
+                              'bg-gradient-to-br from-green-600 to-green-700',
+                              'bg-gradient-to-br from-orange-600 to-orange-700',
+                              'bg-gradient-to-br from-pink-600 to-pink-700',
+                              'bg-gradient-to-br from-indigo-600 to-indigo-700'
+                            ];
+                            
+                            const icons = [
+                              <BarChart className="h-6 w-6" />,
+                              <Calendar className="h-6 w-6" />,
+                              <Target className="h-6 w-6" />,
+                              <FileText className="h-6 w-6" />,
+                              <Clock className="h-6 w-6" />,
+                              <TrendingUp className="h-6 w-6" />
+                            ];
+
+                            return (
+                              <PlanningSection
+                                key={secIndex}
+                                title={sec.title}
+                                content={sec.content}
+                                icon={icons[secIndex % icons.length]}
+                                gradient={gradients[secIndex % gradients.length]}
+                              />
+                            );
+                          })}
+                        </div>
+                      );
+                    })}
+                  </div>
                 )}
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => navigate(`/clientes/${clienteId}/projetos/${projetoId}/planejamento`)}
-                >
-                  <Eye className="h-4 w-4 mr-2" />
-                  Entrar no Plano
-                </Button>
+
+                {/* Observações do Cliente */}
+                {planejamento.observacoes_cliente && (
+                  <div className="bg-gradient-to-r from-orange-50 to-orange-100/50 dark:from-orange-950/30 dark:to-orange-900/20 p-8 rounded-2xl border border-orange-200/50 dark:border-orange-800/30 shadow-lg">
+                    <div className="flex items-center gap-4 mb-4">
+                      <div className="p-3 rounded-full bg-gradient-to-r from-orange-500 to-orange-600 shadow-lg">
+                        <AlertCircle className="h-6 w-6 text-white" />
+                      </div>
+                      <h4 className="text-xl font-bold text-orange-800 dark:text-orange-200">Observações do Cliente</h4>
+                    </div>
+                    <p className="text-orange-700 dark:text-orange-300 leading-relaxed">
+                      {planejamento.observacoes_cliente}
+                    </p>
+                  </div>
+                )}
+
+                {/* Data de Aprovação */}
+                {planejamento.data_aprovacao_cliente && (
+                  <div className="bg-gradient-to-r from-green-50 to-green-100/50 dark:from-green-950/30 dark:to-green-900/20 p-8 rounded-2xl border border-green-200/50 dark:border-green-800/30 shadow-lg">
+                    <div className="flex items-center gap-4">
+                      <div className="p-3 rounded-full bg-gradient-to-r from-green-500 to-green-600 shadow-lg">
+                        <CheckCircle className="h-6 w-6 text-white" />
+                      </div>
+                      <div>
+                        <h4 className="text-xl font-bold text-green-800 dark:text-green-200">Planejamento Aprovado</h4>
+                        <p className="text-green-700 dark:text-green-300">
+                          Aprovado em {new Date(planejamento.data_aprovacao_cliente).toLocaleDateString('pt-BR')}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
-
-            <div>
-              <h4 className="font-semibold mb-2">{planejamento.titulo}</h4>
-              <div className="text-sm text-muted-foreground whitespace-pre-wrap">
-                {planejamento.descricao}
-              </div>
-            </div>
-
-            {planejamento.data_envio_cliente && (
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Calendar className="h-4 w-4" />
-                Enviado em: {new Date(planejamento.data_envio_cliente).toLocaleDateString('pt-BR')}
-              </div>
-            )}
-
-            {planejamento.data_aprovacao_cliente && (
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <CheckCircle className="h-4 w-4" />
-                Aprovado em: {new Date(planejamento.data_aprovacao_cliente).toLocaleDateString('pt-BR')}
-              </div>
-            )}
-
-            {planejamento.observacoes_cliente && (
-              <div className="p-3 bg-muted rounded-lg">
-                <p className="text-sm font-medium mb-1">Observações do Cliente:</p>
-                <p className="text-sm text-muted-foreground">{planejamento.observacoes_cliente}</p>
-              </div>
-            )}
           </CardContent>
         ) : (
-          <CardContent>
-            {planoConfig && objetivos ? (
-              <div className="text-center py-8">
-                <Target className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-semibold mb-2">Nenhum planejamento criado</h3>
-                <p className="text-muted-foreground mb-4">
-                  Crie um planejamento estratégico baseado na assinatura {planoConfig.nome} e objetivos do cliente
-                </p>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                  <div className="text-sm">
-                    <h4 className="font-semibold mb-2">Assinatura {planoConfig.nome}</h4>
-                    <p>• {planoConfig.posts_mes} posts no feed por mês</p>
-                    <p>• {planoConfig.stories} stories por mês</p>
-                    <p>• {planoConfig.reels} reels por mês</p>
-                  </div>
-                  <div className="text-sm">
-                    <h4 className="font-semibold mb-2">Objetivos Definidos</h4>
-                    {objetivos?.objetivos?.objetivos_selecionados?.map((obj: string, index: number) => (
-                      <p key={index}>• {obj.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}</p>
-                    )) || <p className="text-muted-foreground">Nenhum objetivo definido</p>}
-                  </div>
+          <CardContent className="p-8">
+            {/* Estado vazio com design melhorado */}
+            <div className="text-center py-16">
+              <div className="relative mb-8">
+                <div className="w-32 h-32 mx-auto rounded-full bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center mb-8 shadow-lg">
+                  <Target className="h-16 w-16 text-primary/60" />
                 </div>
+                <div className="absolute inset-0 rounded-full bg-gradient-to-br from-primary/5 to-transparent animate-pulse"></div>
               </div>
-            ) : (
-              <div className="text-center py-8">
-                <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-semibold mb-2">Pré-requisitos necessários</h3>
-                <div className="space-y-2 text-muted-foreground">
-                  {!planoConfig && <p>• Cliente precisa ter assinatura válida (90º, 180º ou 360º)</p>}
-                  {!objetivos && <p>• Cliente precisa ter objetivos definidos no onboarding</p>}
-                </div>
-              </div>
-            )}
+              
+              <h3 className="text-2xl font-bold mb-4 bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                Nenhum planejamento criado
+              </h3>
+              <p className="text-muted-foreground max-w-md mx-auto mb-8 text-lg leading-relaxed">
+                {!planoConfig ? (
+                  "Cliente precisa ter uma assinatura válida para criar planejamento estratégico."
+                ) : !objetivos ? (
+                  "Complete o onboarding do cliente definindo os objetivos antes de criar o planejamento."
+                ) : (
+                  "Crie um planejamento estratégico baseado na assinatura e objetivos do cliente."
+                )}
+              </p>
+              
+              {planoConfig && objetivos && (
+                <Button 
+                  onClick={() => setDialogOpen(true)}
+                  className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 px-8 py-4 text-lg"
+                >
+                  <Zap className="h-5 w-5 mr-2" />
+                  ✨ Criar Planejamento Estratégico
+                </Button>
+              )}
+            </div>
           </CardContent>
         )}
       </Card>
 
-      {/* Dialog para confirmar criação */}
+      {/* Seção de Objetivos do Cliente */}
+      {objetivos && (
+        <Card className="backdrop-blur-sm bg-card/95 border-primary/10 shadow-lg hover:shadow-xl transition-all duration-300">
+          <CardHeader className="bg-gradient-to-r from-blue-500/5 to-transparent">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-3 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 shadow-lg">
+                  <Award className="h-6 w-6 text-white" />
+                </div>
+                <div>
+                  <CardTitle className="text-2xl bg-gradient-to-r from-blue-600 to-blue-500 bg-clip-text text-transparent">
+                    Objetivos do Cliente
+                  </CardTitle>
+                  <CardDescription className="mt-1 text-base">
+                    Definidos durante o onboarding estratégico
+                  </CardDescription>
+                </div>
+              </div>
+              <Button
+                variant="outline"
+                onClick={() => setEditandoObjetivos(!editandoObjetivos)}
+                className="border-blue-200 hover:bg-blue-50 dark:border-blue-800 dark:hover:bg-blue-950 shadow-lg hover:shadow-xl transition-all duration-300"
+              >
+                <Edit className="h-4 w-4 mr-2" />
+                {editandoObjetivos ? 'Cancelar' : 'Editar'}
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent className="pt-6">
+            {editandoObjetivos ? (
+              <div className="space-y-6">
+                <div>
+                  <Label className="text-sm font-semibold mb-3 block">Objetivos Digitais (separados por vírgula)</Label>
+                  <Textarea
+                    value={objetivosEditaveis.join(', ')}
+                    onChange={(e) => setObjetivosEditaveis(e.target.value.split(',').map(obj => obj.trim()))}
+                    placeholder="Ex: reconhecimento_marca, crescimento_seguidores, aquisicao_leads"
+                    className="min-h-[120px] border-blue-200 focus:border-blue-500 dark:border-blue-800"
+                  />
+                </div>
+                <div className="flex gap-3">
+                  <Button 
+                    onClick={salvarObjetivos}
+                    className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 shadow-lg hover:shadow-xl transition-all duration-300"
+                  >
+                    <CheckCircle className="h-4 w-4 mr-2" />
+                    Salvar Objetivos
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setEditandoObjetivos(false)}
+                    className="shadow-lg hover:shadow-xl transition-all duration-300"
+                  >
+                    Cancelar
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {objetivosEditaveis.map((objetivo, index) => (
+                  <div 
+                    key={index} 
+                    className="group p-6 rounded-xl bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-950/30 dark:to-blue-900/20 border border-blue-200/50 dark:border-blue-800/30 hover:shadow-lg transition-all duration-300 hover:scale-105"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="p-3 rounded-full bg-gradient-to-r from-blue-500/10 to-blue-600/10 group-hover:from-blue-500/20 group-hover:to-blue-600/20 transition-all duration-300">
+                        <Target className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                      </div>
+                      <span className="font-semibold text-blue-800 dark:text-blue-200 capitalize">
+                        {objetivo.replace('_', ' ')}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Dialog para criar planejamento */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Criar Planejamento</DialogTitle>
-            <DialogDescription>
-              Criar planejamento estratégico baseado na assinatura {planoConfig?.nome} e objetivos para {clienteNome}
+        <DialogContent className="max-w-2xl bg-gradient-to-br from-background to-muted/30 border-primary/20">
+          <DialogHeader className="text-center pb-6">
+            <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+              ✨ Criar Planejamento Estratégico
+            </DialogTitle>
+            <DialogDescription className="text-muted-foreground">
+              {planoConfig ? `Baseado no ${planoConfig.nome} e objetivos do cliente` : 'Configure os parâmetros do planejamento'}
             </DialogDescription>
           </DialogHeader>
           
-          <div className="space-y-4">
+          <div className="space-y-6">
+            <div className="bg-gradient-to-r from-primary/5 to-transparent p-6 rounded-lg border border-primary/10">
+              <p className="text-sm text-muted-foreground">
+                O planejamento será criado automaticamente baseado na assinatura <strong>{planoConfig?.nome}</strong> e 
+                nos objetivos definidos durante o onboarding do cliente.
+              </p>
+            </div>
+            
             <div className="space-y-2">
-              <Label htmlFor="mes_referencia">Mês de Referência</Label>
+              <Label className="text-sm font-semibold text-foreground">Mês de Referência</Label>
               <Input
-                id="mes_referencia"
                 type="month"
                 value={formData.mes_referencia}
-                onChange={(e) => setFormData({ ...formData, mes_referencia: e.target.value })}
+                onChange={(e) => setFormData({...formData, mes_referencia: e.target.value})}
+                className="border-primary/20 focus:border-primary transition-colors"
               />
             </div>
 
-            {planoConfig && objetivos && (
-              <div className="space-y-4">
-                <div className="p-4 bg-muted rounded-lg">
-                  <h4 className="font-semibold mb-2">Configuração da Assinatura</h4>
-                  <div className="space-y-1 text-sm">
-                    <p>• {planoConfig.posts_mes} posts no feed</p>
-                    <p>• {planoConfig.stories} stories</p>
-                    <p>• {planoConfig.reels} reels</p>
-                  </div>
-                </div>
-                
-                <div className="p-4 bg-blue-50 rounded-lg">
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="font-semibold">Objetivos do Cliente</h4>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => {
-                        if (editandoObjetivos) {
-                          salvarObjetivos();
-                        } else {
-                          setEditandoObjetivos(true);
-                        }
-                      }}
-                    >
-                      <Edit className="h-4 w-4 mr-2" />
-                      {editandoObjetivos ? 'Salvar' : 'Editar'}
-                    </Button>
-                  </div>
-                  
-                  {editandoObjetivos ? (
-                    <div className="space-y-2">
-                      <div className="grid grid-cols-1 gap-2">
-                        {['reconhecimento_marca', 'crescimento_seguidores', 'aquisicao_leads'].map((objetivo) => (
-                          <label key={objetivo} className="flex items-center space-x-2">
-                            <input
-                              type="checkbox"
-                              checked={objetivosEditaveis.includes(objetivo)}
-                              onChange={(e) => {
-                                if (e.target.checked) {
-                                  setObjetivosEditaveis([...objetivosEditaveis, objetivo]);
-                                } else {
-                                  setObjetivosEditaveis(objetivosEditaveis.filter(o => o !== objetivo));
-                                }
-                              }}
-                              className="rounded border-gray-300"
-                            />
-                            <span className="text-sm">
-                              {objetivo.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                            </span>
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="space-y-1 text-sm">
-                      {objetivos?.objetivos_digitais ? (
-                        objetivos.objetivos_digitais.split(',').map((obj: string, index: number) => (
-                          <p key={index}>• {obj.trim().replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}</p>
-                        ))
-                      ) : (
-                        <p className="text-muted-foreground">Nenhum objetivo definido ainda.</p>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            <div className="flex gap-2 pt-4">
-              <Button onClick={criarPlanejamento} className="flex-1">
-                Criar Planejamento
-              </Button>
+            <div className="flex justify-end gap-3 pt-6 border-t border-primary/10">
               <Button variant="outline" onClick={() => setDialogOpen(false)}>
                 Cancelar
+              </Button>
+              <Button 
+                onClick={criarPlanejamento}
+                className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+              >
+                <Sparkles className="h-4 w-4 mr-2" />
+                Criar Planejamento
               </Button>
             </div>
           </div>
