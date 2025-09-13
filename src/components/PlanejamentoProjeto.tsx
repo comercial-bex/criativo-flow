@@ -402,25 +402,25 @@ ${objetivosEscolhidos.includes('reconhecimento_marca') ? `🏆 RECONHECIMENTO DE
   };
 
   const PlanningSection = ({ title, content, icon, gradient }: { title: string; content: string; icon: React.ReactNode; gradient: string }) => (
-    <div className={`p-6 rounded-xl border border-primary/10 ${gradient}`}>
+    <div className="backdrop-blur-sm bg-card/95 border border-primary/10 shadow-lg hover:shadow-xl transition-all duration-300 p-6 rounded-xl">
       <div className="flex items-center gap-3 mb-4">
-        <div className="p-2 rounded-full bg-white/10 backdrop-blur-sm">
+        <div className="p-2 rounded-full bg-gradient-to-r from-primary/10 to-primary/5">
           {icon}
         </div>
-        <h4 className="font-bold text-lg text-white">{title}</h4>
+        <h4 className="font-bold text-lg text-foreground">{title}</h4>
       </div>
       <div className="space-y-2">
         {content.split('\n').map((line, index) => {
           if (line.trim().startsWith('•')) {
             return (
               <div key={index} className="flex items-start gap-3 ml-4">
-                <div className="w-2 h-2 rounded-full bg-white/60 mt-2 flex-shrink-0"></div>
-                <p className="text-sm text-white/90 leading-relaxed">{line.replace('•', '').trim()}</p>
+                <div className="w-2 h-2 rounded-full bg-primary/60 mt-2 flex-shrink-0"></div>
+                <p className="text-sm text-muted-foreground leading-relaxed">{line.replace('•', '').trim()}</p>
               </div>
             );
           }
           return line.trim() ? (
-            <p key={index} className="text-sm text-white/90 leading-relaxed ml-4">{line}</p>
+            <p key={index} className="text-sm text-muted-foreground leading-relaxed ml-4">{line}</p>
           ) : null;
         })}
       </div>
@@ -545,12 +545,16 @@ ${objetivosEscolhidos.includes('reconhecimento_marca') ? `🏆 RECONHECIMENTO DE
                         // Seção de introdução
                         const lines = section.trim().split('\n');
                         return (
-                          <div key={index} className="bg-gradient-to-br from-slate-800 to-slate-900 p-8 rounded-2xl text-white shadow-2xl">
+                          <div key={index} className="backdrop-blur-sm bg-gradient-to-br from-card to-muted/20 p-8 rounded-2xl border border-primary/10 shadow-lg">
                             <div className="flex items-center gap-4 mb-6">
-                              <span className="text-4xl">🎯</span>
-                              <h4 className="text-2xl font-bold">{lines[0]?.replace('🎯 ', '')}</h4>
+                              <div className="p-3 rounded-full bg-gradient-to-r from-primary/10 to-primary/5">
+                                <span className="text-3xl">🎯</span>
+                              </div>
+                              <h4 className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                                {lines[0]?.replace('🎯 ', '')}
+                              </h4>
                             </div>
-                            <p className="text-slate-200 text-lg leading-relaxed">
+                            <p className="text-muted-foreground text-lg leading-relaxed">
                               {lines.slice(1).join(' ')}
                             </p>
                           </div>
@@ -603,22 +607,13 @@ ${objetivosEscolhidos.includes('reconhecimento_marca') ? `🏆 RECONHECIMENTO DE
                       return (
                         <div key={index} className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                           {sections.map((sec, secIndex) => {
-                            const gradients = [
-                              'bg-gradient-to-br from-blue-600 to-blue-700',
-                              'bg-gradient-to-br from-purple-600 to-purple-700',
-                              'bg-gradient-to-br from-green-600 to-green-700',
-                              'bg-gradient-to-br from-orange-600 to-orange-700',
-                              'bg-gradient-to-br from-pink-600 to-pink-700',
-                              'bg-gradient-to-br from-indigo-600 to-indigo-700'
-                            ];
-                            
                             const icons = [
-                              <BarChart className="h-6 w-6" />,
-                              <Calendar className="h-6 w-6" />,
-                              <Target className="h-6 w-6" />,
-                              <FileText className="h-6 w-6" />,
-                              <Clock className="h-6 w-6" />,
-                              <TrendingUp className="h-6 w-6" />
+                              <BarChart className="h-5 w-5 text-primary" />,
+                              <Calendar className="h-5 w-5 text-primary" />,
+                              <Target className="h-5 w-5 text-primary" />,
+                              <FileText className="h-5 w-5 text-primary" />,
+                              <Clock className="h-5 w-5 text-primary" />,
+                              <TrendingUp className="h-5 w-5 text-primary" />
                             ];
 
                             return (
@@ -627,7 +622,7 @@ ${objetivosEscolhidos.includes('reconhecimento_marca') ? `🏆 RECONHECIMENTO DE
                                 title={sec.title}
                                 content={sec.content}
                                 icon={icons[secIndex % icons.length]}
-                                gradient={gradients[secIndex % gradients.length]}
+                                gradient=""
                               />
                             );
                           })}
