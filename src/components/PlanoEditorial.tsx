@@ -19,7 +19,9 @@ import {
   Briefcase,
   MapPin,
   Heart,
-  Zap
+  Zap,
+  Loader2,
+  Save
 } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { supabase } from "@/integrations/supabase/client";
@@ -62,11 +64,16 @@ export function PlanoEditorial({ planejamento, clienteId, posts, setPosts, onPre
   const [especialistasSelecionados, setEspecialistasSelecionados] = useState<string[]>([]);
   const [frameworksSelecionados, setFrameworksSelecionados] = useState<string[]>([]);
   const [analiseCompleta, setAnaliseCompleta] = useState(false);
+  const [clienteAssinatura, setClienteAssinatura] = useState<any>(null);
+  const [postsGerados, setPostsGerados] = useState<any[]>([]);
+  const [gerandoConteudo, setGerandoConteudo] = useState(false);
+  const [salvandoPosts, setSalvandoPosts] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
     fetchConteudoEditorial();
-  }, [planejamento.id]);
+    fetchClienteAssinatura();
+  }, [planejamento.id, clienteId]);
 
   const fetchConteudoEditorial = async () => {
     try {
@@ -94,6 +101,215 @@ export function PlanoEditorial({ planejamento, clienteId, posts, setPosts, onPre
     } catch (error) {
       console.error('Erro ao buscar conteúdo editorial:', error);
       setLoading(false);
+    }
+  };
+
+  const fetchClienteAssinatura = async () => {
+    try {
+      // Primeiro buscar a assinatura_id do cliente
+      const { data: clienteData } = await supabase
+        .from('clientes')
+        .select('assinatura_id')
+        .eq('id', clienteId)
+        .single();
+
+      if (!clienteData?.assinatura_id) {
+        setClienteAssinatura(null);
+        return;
+      }
+
+      // Buscar detalhes da assinatura (mock data baseado nos planos)
+      const planosMock = [
+        {
+          id: '550e8400-e29b-41d4-a716-446655440001',
+          nome: 'Plano 90º',
+          posts_mensais: 12,
+          reels_suporte: 3
+        },
+        {
+          id: '550e8400-e29b-41d4-a716-446655440002',
+          nome: 'Plano 180º',
+          posts_mensais: 16,
+          reels_suporte: 6
+        },
+        {
+          id: '550e8400-e29b-41d4-a716-446655440003',
+          nome: 'Plano 360º',
+          posts_mensais: 24,
+          reels_suporte: 8
+        }
+      ];
+
+      const assinatura = planosMock.find(p => p.id === clienteData.assinatura_id);
+      setClienteAssinatura(assinatura || null);
+    } catch (error) {
+      console.error('Erro ao buscar assinatura do cliente:', error);
+    }
+  };
+
+  const gerarCronogramaPostagens = (quantidadePosts: number, mesReferencia: Date) => {
+    const primeiroDia = startOfMonth(mesReferencia);
+    const ultimoDia = endOfMonth(mesReferencia);
+    const diasDoMes = eachDayOfInterval({ start: primeiroDia, end: ultimoDia });
+
+    // Filtrar apenas segundas, quartas e sextas
+    const diasDisponiveis = diasDoMes.filter(dia => {
+      const diaSemana = dia.getDay();
+      return diaSemana === 1 || diaSemana === 3 || diaSemana === 5; // 1=segunda, 3=quarta, 5=sexta
+    });
+
+    // Distribuir posts nos dias disponíveis
+    const cronograma = [];
+    for (let i = 0; i < quantidadePosts && i < diasDisponiveis.length; i++) {
+      cronograma.push(diasDisponiveis[i]);
+    }
+
+    return cronograma;
+  };
+
+  const gerarConteudoEditorial = async () => {
+    if (!clienteAssinatura) {
+      toast({
+        title: "Erro",
+        description: "Cliente não possui assinatura ativa",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setGerandoConteudo(true);
+
+    try {
+      const cronograma = gerarCronogramaPostagens(clienteAssinatura.posts_mensais, currentDate);
+      
+      const frameworksTexto = frameworksSelecionados.length > 0 
+        ? `Frameworks selecionados: ${frameworksSelecionados.join(', ')}`
+        : '';
+      
+      const especialistasTexto = especialistasSelecionados.length > 0
+        ? `Especialistas envolvidos: ${especialistasSelecionados.join(', ')}`
+        : '';
+
+      const prompt = `
+        Gere ${clienteAssinatura.posts_mensais} posts para redes sociais seguindo estas diretrizes:
+        - Plano: ${clienteAssinatura.nome}
+        - ${frameworksTexto}
+        - ${especialistasTexto}
+        - Missão da empresa: ${conteudoEditorial.missao || 'Não definida'}
+        - Posicionamento: ${conteudoEditorial.posicionamento || 'Não definido'}
+        - Persona: ${conteudoEditorial.persona || 'Não definida'}
+        
+        Para cada post, inclua:
+        - Título atrativo
+        - Legenda com até 160 caracteres
+        - Até 12 hashtags relevantes
+        - Tipo de criativo (texto, imagem, vídeo, carrossel)
+        - Formato (post, reel, story)
+        - Objetivo (engajamento, educação, conversão, humanização, entretenimento)
+        
+        Formate a resposta em JSON com esta estrutura:
+        {
+          "posts": [
+            {
+              "titulo": "string",
+              "legenda": "string (max 160 chars)",
+              "hashtags": ["array", "de", "hashtags"],
+              "tipo_criativo": "string",
+              "formato_postagem": "string",
+              "objetivo_postagem": "string"
+            }
+          ]
+        }
+      `;
+
+      const { data, error } = await supabase.functions.invoke('generate-content-with-ai', {
+        body: { prompt }
+      });
+
+      if (error) throw error;
+
+      let conteudoGerado;
+      if (typeof data === 'string') {
+        conteudoGerado = JSON.parse(data);
+      } else {
+        conteudoGerado = data;
+      }
+
+      // Adicionar datas aos posts
+      const postsComDatas = conteudoGerado.posts.map((post: any, index: number) => ({
+        ...post,
+        data_postagem: cronograma[index] ? format(cronograma[index], 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd'),
+        planejamento_id: planejamento.id
+      }));
+
+      setPostsGerados(postsComDatas);
+
+      toast({
+        title: "Sucesso",
+        description: `${postsComDatas.length} posts gerados com sucesso!`,
+      });
+
+    } catch (error) {
+      console.error('Erro ao gerar conteúdo:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao gerar conteúdo editorial",
+        variant: "destructive",
+      });
+    } finally {
+      setGerandoConteudo(false);
+    }
+  };
+
+  const salvarPostsCalendario = async () => {
+    if (postsGerados.length === 0) return;
+
+    setSalvandoPosts(true);
+
+    try {
+      // Remover posts existentes do planejamento para este mês
+      const primeiroDiaDoMes = format(startOfMonth(currentDate), 'yyyy-MM-dd');
+      const ultimoDiaDoMes = format(endOfMonth(currentDate), 'yyyy-MM-dd');
+
+      await supabase
+        .from('posts_planejamento')
+        .delete()
+        .eq('planejamento_id', planejamento.id)
+        .gte('data_postagem', primeiroDiaDoMes)
+        .lte('data_postagem', ultimoDiaDoMes);
+
+      // Inserir novos posts
+      const { error } = await supabase
+        .from('posts_planejamento')
+        .insert(postsGerados);
+
+      if (error) throw error;
+
+      // Atualizar lista de posts no componente pai
+      const { data: newPosts } = await supabase
+        .from('posts_planejamento')
+        .select('*')
+        .eq('planejamento_id', planejamento.id)
+        .order('data_postagem', { ascending: true });
+
+      if (newPosts) {
+        setPosts(newPosts);
+      }
+
+      toast({
+        title: "Sucesso",
+        description: "Posts salvos no calendário editorial!",
+      });
+
+    } catch (error) {
+      console.error('Erro ao salvar posts:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao salvar posts no calendário",
+        variant: "destructive",
+      });
+    } finally {
+      setSalvandoPosts(false);
     }
   };
 
@@ -1223,41 +1439,126 @@ Use um tom profissional e inclua detalhes específicos do contexto do cliente.
           <div className="space-y-6">
             <Card>
               <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle>Geração de Conteúdo Editorial</CardTitle>
-                  <Button
-                    onClick={generateConteudoWithIA}
-                    disabled={generating || (especialistasSelecionados.length === 0 && frameworksSelecionados.length === 0)}
-                    className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
-                  >
-                    <Wand2 className="h-4 w-4 mr-2" />
-                    {generating ? 'Gerando...' : 'Gerar com IA'}
-                  </Button>
-                </div>
+                <CardTitle>Geração de Conteúdo Editorial</CardTitle>
+                <CardDescription>
+                  Gere conteúdo personalizado baseado na assinatura do cliente e estratégias definidas
+                </CardDescription>
               </CardHeader>
-              <CardContent>
-                {conteudoEditorial.conteudo_gerado ? (
+              <CardContent className="space-y-6">
+                {/* Informações da Assinatura */}
+                <div className="bg-muted/50 p-4 rounded-lg">
+                  <h4 className="font-medium mb-2">Informações da Assinatura</h4>
+                  {clienteAssinatura ? (
+                    <div className="grid grid-cols-3 gap-4 text-sm">
+                      <div>
+                        <span className="text-muted-foreground">Plano:</span>
+                        <p className="font-medium">{clienteAssinatura.nome}</p>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Posts Mensais:</span>
+                        <p className="font-medium">{clienteAssinatura.posts_mensais}</p>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Cronograma:</span>
+                        <p className="font-medium">Segunda, Quarta e Sexta</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-muted-foreground">Cliente não possui assinatura ativa</p>
+                  )}
+                </div>
+
+                {/* Geração de Conteúdo */}
+                {clienteAssinatura && (
                   <div className="space-y-4">
-                    <Badge className="bg-green-100 text-green-800">
-                      Conteúdo gerado com sucesso!
-                    </Badge>
-                    <p className="text-sm text-muted-foreground">
-                      O conteúdo foi gerado e as tarefas foram criadas automaticamente no calendário.
-                    </p>
-                  </div>
-                ) : (
-                  <div className="text-center py-8">
-                    <Wand2 className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                    <p className="text-muted-foreground">
-                      {especialistasSelecionados.length === 0 && frameworksSelecionados.length === 0
-                        ? 'Selecione especialistas e frameworks na aba Posicionamento e clique em "Gerar com IA" para criar o planejamento de conteúdo.'
-                        : 'Clique em "Gerar com IA" para criar automaticamente o planejamento de conteúdo baseado nas informações do cliente.'
-                      }
-                    </p>
+                    <div className="flex justify-between items-center">
+                      <h4 className="font-medium">Posts do Mês</h4>
+                      <Button
+                        onClick={gerarConteudoEditorial}
+                        disabled={gerandoConteudo}
+                        className="gap-2"
+                      >
+                        {gerandoConteudo ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Wand2 className="h-4 w-4" />
+                        )}
+                        {gerandoConteudo ? 'Gerando...' : 'Gerar Conteúdo'}
+                      </Button>
+                    </div>
+
+                    {postsGerados.length > 0 && (
+                      <div className="space-y-4">
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-muted-foreground">
+                            {postsGerados.length} posts gerados
+                          </span>
+                          <Button
+                            onClick={salvarPostsCalendario}
+                            disabled={salvandoPosts}
+                            variant="outline"
+                            size="sm"
+                          >
+                            {salvandoPosts ? (
+                              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                            ) : (
+                              <Save className="h-4 w-4 mr-2" />
+                            )}
+                            Salvar no Calendário
+                          </Button>
+                        </div>
+
+                        <div className="grid gap-4">
+                          {postsGerados.map((post, index) => (
+                            <Card key={index} className="p-4">
+                              <div className="space-y-3">
+                                <div className="flex justify-between items-start">
+                                  <div>
+                                    <h5 className="font-medium">{post.titulo}</h5>
+                                    <p className="text-sm text-muted-foreground">
+                                      {post.data_postagem} • {post.formato_postagem} • {post.tipo_criativo}
+                                    </p>
+                                  </div>
+                                  <Badge variant="outline">{post.objetivo_postagem}</Badge>
+                                </div>
+                                
+                                <div className="bg-muted/30 p-3 rounded-md">
+                                  <p className="text-sm font-medium mb-1">Legenda:</p>
+                                  <p className="text-sm">{post.legenda}</p>
+                                  <p className="text-xs text-muted-foreground mt-1">
+                                    {post.legenda?.length || 0}/160 caracteres
+                                  </p>
+                                </div>
+
+                                {post.hashtags && post.hashtags.length > 0 && (
+                                  <div>
+                                    <p className="text-sm font-medium mb-1">Hashtags:</p>
+                                    <div className="flex flex-wrap gap-1">
+                                      {post.hashtags.map((tag: string, tagIndex: number) => (
+                                        <Badge key={tagIndex} variant="secondary" className="text-xs">
+                                          {tag}
+                                        </Badge>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            </Card>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {postsGerados.length === 0 && !gerandoConteudo && (
+                      <div className="text-center py-8 text-muted-foreground">
+                        <Calendar className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                        <p>Clique em "Gerar Conteúdo" para criar os posts do mês</p>
+                      </div>
+                    )}
                   </div>
                 )}
               </CardContent>
-            </Card>
+             </Card>
 
             {/* Calendário Editorial - apenas na aba Conteúdo */}
             <Card>
