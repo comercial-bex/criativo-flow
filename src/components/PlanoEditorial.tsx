@@ -50,7 +50,7 @@ export function PlanoEditorial({ planejamento, clienteId, posts, setPosts, onPre
   const [generating, setGenerating] = useState(false);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [viewType, setViewType] = useState<'editorial' | 'tarefas'>('editorial');
-  const [especialistaSelecionado, setEspecialistaSelecionado] = useState<string>('');
+  const [especialistasSelecionados, setEspecialistasSelecionados] = useState<string[]>([]);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -88,8 +88,8 @@ export function PlanoEditorial({ planejamento, clienteId, posts, setPosts, onPre
     }
   };
 
-  const getPromptEspecialista = (especialista: string) => {
-    const especialistas = {
+  const getPromptEspecialista = (especialistasSelecionados: string[]) => {
+    const especialistasMap = {
       'copy': 'Atue como um copywriter especialista em redes sociais, renomado por criar textos persuasivos e envolventes que convertem audiência em clientes. Você é famoso por criar copy que gera alto engajamento e conversões.',
       'design': 'Atue como um designer gráfico especialista em redes sociais, reconhecido mundialmente por criar designs visuais impactantes e inovadores que capturam a atenção e transmitem mensagens de forma clara e criativa.',
       'gestor_redes': 'Atue como um gestor de redes sociais experiente, conhecido por desenvolver estratégias digitais eficazes que constroem comunidades engajadas e geram resultados mensuráveis para marcas.',
@@ -98,7 +98,18 @@ export function PlanoEditorial({ planejamento, clienteId, posts, setPosts, onPre
       'influencer': 'Atue como um influencer digital bem-sucedido, especialista em criar conteúdo autêntico que ressoa com audiências e constrói relacionamentos genuínos com seguidores.'
     };
     
-    return especialistas[especialista as keyof typeof especialistas] || 'Atue como um especialista em redes sociais renomado mundialmente por criar conteúdo altamente criativo e único para redes sociais, que despertam a curiosidade e geram um alto engajamento no público-alvo.';
+    
+    if (especialistasSelecionados.length === 0) {
+      return 'Atue como um especialista em redes sociais renomado mundialmente por criar conteúdo altamente criativo e único para redes sociais, que despertam a curiosidade e geram um alto engajamento no público-alvo.';
+    }
+    
+    const prompts = especialistasSelecionados.map(especialista => 
+      especialistasMap[especialista as keyof typeof especialistasMap] || ''
+    ).filter(Boolean);
+    
+    return prompts.length > 1 
+      ? `Atue como uma equipe de especialistas que combina as seguintes expertises: ${prompts.join(' + ')}`
+      : prompts[0] || 'Atue como um especialista em redes sociais renomado mundialmente por criar conteúdo altamente criativo e único para redes sociais, que despertam a curiosidade e geram um alto engajamento no público-alvo.';
   };
 
   const generateConteudoWithIA = async () => {
@@ -126,7 +137,7 @@ export function PlanoEditorial({ planejamento, clienteId, posts, setPosts, onPre
         .single();
 
       // Preparar o prompt para IA
-      const promptEspecialista = getPromptEspecialista(especialistaSelecionado);
+      const promptEspecialista = getPromptEspecialista(especialistasSelecionados);
       const prompt = `
 PASSO A PASSO DE MONTAR O PLANEJAMENTO DE ASSESSORIA
 
@@ -359,28 +370,40 @@ Formate a resposta em JSON com esta estrutura:
                   ].map((especialista) => (
                     <Button
                       key={especialista.id}
-                      variant={especialistaSelecionado === especialista.id ? 'default' : 'outline'}
+                      variant={especialistasSelecionados.includes(especialista.id) ? 'default' : 'outline'}
                       className={`text-xs ${
-                        especialistaSelecionado === especialista.id 
+                        especialistasSelecionados.includes(especialista.id) 
                           ? 'bg-purple-500 hover:bg-purple-600 text-white' 
                           : ''
                       }`}
-                      onClick={() => setEspecialistaSelecionado(especialista.id)}
+                      onClick={() => {
+                        const isSelected = especialistasSelecionados.includes(especialista.id);
+                        if (isSelected) {
+                          setEspecialistasSelecionados(prev => prev.filter(id => id !== especialista.id));
+                        } else {
+                          setEspecialistasSelecionados(prev => [...prev, especialista.id]);
+                        }
+                      }}
                     >
                       {especialista.label}
                     </Button>
                   ))}
                 </div>
-                {especialistaSelecionado && (
+                {especialistasSelecionados.length > 0 && (
                   <div className="p-3 bg-muted rounded-lg">
                     <p className="text-sm text-muted-foreground">
-                      <strong>Especialista selecionado:</strong> {
-                        especialistaSelecionado === 'copy' ? 'Copywriter especialista em textos persuasivos' :
-                        especialistaSelecionado === 'design' ? 'Designer gráfico especialista em visual impactante' :
-                        especialistaSelecionado === 'gestor_redes' ? 'Gestor de redes sociais com estratégias eficazes' :
-                        especialistaSelecionado === 'gerente_marketing' ? 'Gerente de marketing digital estratégico' :
-                        especialistaSelecionado === 'analista_dados' ? 'Analista de dados especializado em métricas' :
-                        'Influencer digital especialista em conteúdo autêntico'
+                      <strong>Especialistas selecionados:</strong> {
+                        especialistasSelecionados.map(especialista => {
+                          const labels = {
+                            'copy': 'Copywriter',
+                            'design': 'Designer',
+                            'gestor_redes': 'Gestor de Redes',
+                            'gerente_marketing': 'Gerente de Marketing',
+                            'analista_dados': 'Analista de Dados',
+                            'influencer': 'Influencer'
+                          };
+                          return labels[especialista as keyof typeof labels];
+                        }).join(', ')
                       }
                     </p>
                   </div>
@@ -446,7 +469,7 @@ Formate a resposta em JSON com esta estrutura:
                 <CardTitle>Geração de Conteúdo Editorial</CardTitle>
                 <Button
                   onClick={generateConteudoWithIA}
-                  disabled={generating || !especialistaSelecionado}
+                  disabled={generating || especialistasSelecionados.length === 0}
                   className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
                 >
                   <Wand2 className="h-4 w-4 mr-2" />
@@ -468,7 +491,7 @@ Formate a resposta em JSON com esta estrutura:
                 <div className="text-center py-8">
                   <Wand2 className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                   <p className="text-muted-foreground">
-                    {!especialistaSelecionado 
+                    {especialistasSelecionados.length === 0 
                       ? 'Selecione um especialista na aba Posicionamento e clique em "Gerar com IA" para criar o planejamento de conteúdo.'
                       : 'Clique em "Gerar com IA" para criar automaticamente o planejamento de conteúdo baseado nas informações do cliente.'
                     }
