@@ -383,21 +383,147 @@ export function SwotAnalysisIA({
         </Card>
       )}
 
-      {/* Análise Completa */}
+      {/* Análise Estratégica Completa - Visualização Profunda */}
       {analysis && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Lightbulb className="h-5 w-5 text-primary" />
-              Análise Estratégica Completa
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="prose prose-sm max-w-none">
-              {formatAnalysis(analysis)}
-            </div>
-          </CardContent>
-        </Card>
+        <div className="space-y-6">
+          {/* Header da Análise Estratégica */}
+          <Card className="border-2 border-primary/20 bg-gradient-to-r from-primary/5 to-primary/10">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-primary/10">
+                    <Lightbulb className="h-6 w-6 text-primary" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-xl">Análise Estratégica Profunda</CardTitle>
+                    <CardDescription className="text-sm">
+                      Insights focados em crescimento e resultados para {clienteNome}
+                    </CardDescription>
+                  </div>
+                </div>
+                <Badge variant="outline" className="bg-primary/10 border-primary/30">
+                  <TrendingUp className="h-3 w-3 mr-1" />
+                  Foco em ROI
+                </Badge>
+              </div>
+            </CardHeader>
+          </Card>
+
+          {/* Estratégias Prioritárias - Destaque Principal */}
+          {(() => {
+            const strategiesMatch = analysis.match(/ESTRATÉGIAS PRIORITÁRIAS:([\s\S]*?)(?=\n\n|$)/);
+            const strategies = strategiesMatch ? strategiesMatch[1].trim().split('\n').filter(line => line.trim().startsWith('-')).map(line => line.replace(/^-\s*/, '')) : [];
+            
+            return strategies.length > 0 && (
+              <Card className="border-2 border-green-200 dark:border-green-800 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/50 dark:to-emerald-950/30">
+                <CardHeader>
+                  <div className="flex items-center gap-2">
+                    <Target className="h-5 w-5 text-green-600 dark:text-green-400" />
+                    <CardTitle className="text-green-800 dark:text-green-200">Estratégias Prioritárias para Crescimento</CardTitle>
+                  </div>
+                  <CardDescription className="text-green-700 dark:text-green-300">
+                    Ações imediatas para maximizar vendas e aquisição de clientes
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid gap-4">
+                    {strategies.map((strategy, index) => (
+                      <div key={index} className="flex items-start gap-3 p-4 bg-white/50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-700">
+                        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-green-600 dark:bg-green-500 text-white text-sm font-bold flex-shrink-0">
+                          {index + 1}
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-sm font-medium text-green-900 dark:text-green-100 leading-relaxed">
+                            {strategy}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })()}
+
+          {/* Matrix de Crescimento Visual */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Oportunidades de Crescimento */}
+            <Card className="border-2 border-blue-200 dark:border-blue-800">
+              <CardHeader className="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-950/50 dark:to-cyan-950/30">
+                <div className="flex items-center gap-2">
+                  <TrendingUp className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                  <CardTitle className="text-blue-800 dark:text-blue-200">Oportunidades de Crescimento</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent className="pt-4">
+                {swotData?.oportunidades.length > 0 ? (
+                  <div className="space-y-3">
+                    {swotData.oportunidades.map((oportunidade, index) => (
+                      <div key={index} className="flex items-start gap-3 p-3 bg-blue-50 dark:bg-blue-950/30 rounded-lg">
+                        <div className="w-2 h-2 rounded-full bg-blue-600 dark:bg-blue-400 mt-2 flex-shrink-0" />
+                        <div>
+                          <p className="text-sm text-blue-900 dark:text-blue-100 font-medium leading-relaxed">
+                            {oportunidade}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-blue-600 dark:text-blue-400 italic">Aguardando análise...</p>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Pontos de Melhoria Críticos */}
+            <Card className="border-2 border-orange-200 dark:border-orange-800">
+              <CardHeader className="bg-gradient-to-r from-orange-50 to-yellow-50 dark:from-orange-950/50 dark:to-yellow-950/30">
+                <div className="flex items-center gap-2">
+                  <AlertTriangle className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+                  <CardTitle className="text-orange-800 dark:text-orange-200">Pontos de Melhoria Críticos</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent className="pt-4">
+                {swotData?.fraquezas.length > 0 ? (
+                  <div className="space-y-3">
+                    {swotData.fraquezas.map((fraqueza, index) => (
+                      <div key={index} className="flex items-start gap-3 p-3 bg-orange-50 dark:bg-orange-950/30 rounded-lg">
+                        <div className="w-2 h-2 rounded-full bg-orange-600 dark:bg-orange-400 mt-2 flex-shrink-0" />
+                        <div>
+                          <p className="text-sm text-orange-900 dark:text-orange-100 font-medium leading-relaxed">
+                            {fraqueza}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-orange-600 dark:text-orange-400 italic">Aguardando análise...</p>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Análise Textual Completa - Formatada */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Lightbulb className="h-5 w-5 text-primary" />
+                Relatório Completo da Análise
+              </CardTitle>
+              <CardDescription>
+                Análise detalhada baseada nos dados de onboarding
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="prose prose-sm max-w-none dark:prose-invert">
+                <div className="bg-muted/30 p-4 rounded-lg border-l-4 border-primary">
+                  {formatAnalysis(analysis)}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       )}
     </div>
   );
