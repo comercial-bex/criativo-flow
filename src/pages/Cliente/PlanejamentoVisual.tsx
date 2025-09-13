@@ -11,6 +11,7 @@ import { ArrowLeft, Calendar, Plus, Settings, Image, Instagram, Facebook, Loader
 import { SectionHeader } from "@/components/SectionHeader";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { InstagramPreview } from "@/components/InstagramPreview";
 
 interface Planejamento {
   id: string;
@@ -30,6 +31,7 @@ interface Post {
   planejamento_id: string;
   created_at?: string;
   updated_at?: string;
+  descricao?: string;
 }
 
 interface ClienteData {
@@ -59,6 +61,8 @@ export default function PlanejamentoVisual() {
     formato_postagem: '',
     objetivo_postagem: ''
   });
+  const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+  const [showInstagramPreview, setShowInstagramPreview] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -549,6 +553,10 @@ export default function PlanejamentoVisual() {
                             size="sm" 
                             variant="ghost" 
                             className="hover:bg-primary/10 hover:text-primary transition-colors h-8 w-8 p-0"
+                            onClick={() => {
+                              setSelectedPost(post);
+                              setShowInstagramPreview(true);
+                            }}
                           >
                             <Eye className="h-3 w-3" />
                           </Button>
@@ -561,6 +569,13 @@ export default function PlanejamentoVisual() {
             )}
           </CardContent>
         </Card>
+
+        {/* Instagram Preview Modal */}
+        <InstagramPreview
+          isOpen={showInstagramPreview}
+          onClose={() => setShowInstagramPreview(false)}
+          post={selectedPost}
+        />
       </div>
     </div>
   );
