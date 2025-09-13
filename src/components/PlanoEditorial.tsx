@@ -1,35 +1,19 @@
-import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Calendar, 
-  Target, 
-  Users, 
-  FileText, 
-  Wand2, 
-  Clock,
-  ChevronLeft,
-  ChevronRight,
-  Eye,
-  UserCircle,
-  User,
-  Briefcase,
-  Loader2,
-  Save
-} from "lucide-react";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Calendar, ChevronLeft, ChevronRight, Loader2, Users, Target, BookOpen } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, addMonths, subMonths } from "date-fns";
-import { ptBR } from "date-fns/locale";
+import { toast } from "sonner";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface PlanoEditorialProps {
   planejamento: {
     id: string;
     titulo: string;
+    cliente_id: string;
   };
   clienteId: string;
   posts: any[];
@@ -43,180 +27,254 @@ interface ConteudoEditorial {
   missao?: string;
   posicionamento?: string;
   persona?: string;
-  conteudo_gerado?: string;
   frameworks_selecionados?: string[];
   especialistas_selecionados?: string[];
-  created_at?: string;
-  updated_at?: string;
+  conteudo_gerado?: string;
 }
 
-export function PlanoEditorial({ planejamento, clienteId, posts, setPosts, onPreviewPost }: PlanoEditorialProps) {
-  const [conteudoEditorial, setConteudoEditorial] = useState<ConteudoEditorial>({
-    planejamento_id: planejamento.id
+const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
+  planejamento,
+  clienteId,
+  posts,
+  setPosts,
+  onPreviewPost
+}) => {
+  const [conteudo, setConteudo] = useState<ConteudoEditorial>({
+    planejamento_id: planejamento.id,
+    frameworks_selecionados: [],
+    especialistas_selecionados: []
   });
+  
   const [loading, setLoading] = useState(true);
-  const [generating, setGenerating] = useState(false);
+  const [gerando, setGerando] = useState(false);
+  const [salvando, setSalvando] = useState(false);
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [viewType, setViewType] = useState<'editorial' | 'tarefas'>('editorial');
-  const [especialistasSelecionados, setEspecialistasSelecionados] = useState<string[]>([]);
-  const [frameworksSelecionados, setFrameworksSelecionados] = useState<string[]>([]);
-  const [analiseCompleta, setAnaliseCompleta] = useState(false);
   const [clienteAssinatura, setClienteAssinatura] = useState<any>(null);
   const [postsGerados, setPostsGerados] = useState<any[]>([]);
-  const [gerandoConteudo, setGerandoConteudo] = useState(false);
-  const [salvandoPosts, setSalvandoPosts] = useState(false);
-  const { toast } = useToast();
+
+  const especialistas = [
+    "Kotler", "Ries", "Trout", "Godin", "Cialdini", "Heath"
+  ];
+
+  const frameworks = [
+    { nome: "HESEC", descricao: "Histórias, Emoções, Soluções, Educação, Conexão" },
+    { nome: "HERO", descricao: "Herói, Empoderamento, Razão, Outcome" },
+    { nome: "PEACE", descricao: "Problema, Empatia, Autoridade, Credibilidade, Evidência" }
+  ];
 
   useEffect(() => {
     fetchConteudoEditorial();
     fetchClienteAssinatura();
-  }, [planejamento.id, clienteId]);
+  }, [planejamento.id]);
 
   const fetchConteudoEditorial = async () => {
     try {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('conteudo_editorial')
         .select('*')
         .eq('planejamento_id', planejamento.id)
-        .single();
+        .maybeSingle();
+
+      if (error && error.code !== 'PGRST116') {
+        console.error('Erro ao buscar conteúdo editorial:', error);
+        return;
+      }
 
       if (data) {
-        setConteudoEditorial(data);
-        // Carregar frameworks e especialistas salvos
-        if (data.frameworks_selecionados) {
-          setFrameworksSelecionados(data.frameworks_selecionados);
-        }
-        if (data.especialistas_selecionados) {
-          setEspecialistasSelecionados(data.especialistas_selecionados);
-        }
-        // Se tem frameworks salvos, considera análise completa
-        if (data.frameworks_selecionados && data.frameworks_selecionados.length > 0) {
-          setAnaliseCompleta(true);
-        }
+        setConteudo({
+          ...data,
+          frameworks_selecionados: data.frameworks_selecionados || [],
+          especialistas_selecionados: data.especialistas_selecionados || []
+        });
       }
-      setLoading(false);
     } catch (error) {
       console.error('Erro ao buscar conteúdo editorial:', error);
+    } finally {
       setLoading(false);
     }
   };
 
   const fetchClienteAssinatura = async () => {
     try {
-      // Primeiro buscar a assinatura_id do cliente
-      const { data: clienteData } = await supabase
+      const { data: cliente, error } = await supabase
         .from('clientes')
         .select('assinatura_id')
         .eq('id', clienteId)
         .single();
 
-      if (!clienteData?.assinatura_id) {
-        setClienteAssinatura(null);
+      if (error) {
+        console.error('Erro ao buscar assinatura do cliente:', error);
         return;
       }
 
-      // Buscar detalhes da assinatura (mock data baseado nos planos)
-      const planosMock = [
-        {
-          id: '550e8400-e29b-41d4-a716-446655440001',
-          nome: 'Plano 90º',
-          posts_mensais: 12,
-          reels_suporte: 3
-        },
-        {
-          id: '550e8400-e29b-41d4-a716-446655440002',
-          nome: 'Plano 180º',
-          posts_mensais: 16,
-          reels_suporte: 6
-        },
-        {
-          id: '550e8400-e29b-41d4-a716-446655440003',
-          nome: 'Plano 360º',
-          posts_mensais: 24,
-          reels_suporte: 8
-        }
-      ];
+      // Mock data para diferentes tipos de assinatura
+      const mockPlanos = {
+        'starter': { nome: 'Starter', posts_mes: 12, formatos: ['post', 'stories'] },
+        'professional': { nome: 'Professional', posts_mes: 20, formatos: ['post', 'stories', 'reels'] },
+        'enterprise': { nome: 'Enterprise', posts_mes: 30, formatos: ['post', 'stories', 'reels', 'carousel'] }
+      };
 
-      const assinatura = planosMock.find(p => p.id === clienteData.assinatura_id);
-      setClienteAssinatura(assinatura || null);
+      const assinaturaType = cliente.assinatura_id?.includes('starter') ? 'starter' :
+                           cliente.assinatura_id?.includes('professional') ? 'professional' : 'enterprise';
+      
+      setClienteAssinatura(mockPlanos[assinaturaType]);
     } catch (error) {
-      console.error('Erro ao buscar assinatura do cliente:', error);
+      console.error('Erro ao buscar dados do cliente:', error);
     }
   };
 
-  const gerarCronogramaPostagens = (quantidadePosts: number, mesReferencia: Date) => {
-    const primeiroDia = startOfMonth(mesReferencia);
-    const ultimoDia = endOfMonth(mesReferencia);
-    const diasDoMes = eachDayOfInterval({ start: primeiroDia, end: ultimoDia });
+  const saveField = async (field: keyof ConteudoEditorial, value: any) => {
+    setSalvando(true);
+    try {
+      const updateData = { [field]: value };
+      
+      if (conteudo.id) {
+        const { error } = await supabase
+          .from('conteudo_editorial')
+          .update(updateData)
+          .eq('id', conteudo.id);
 
-    // Filtrar apenas segundas, quartas e sextas
-    const diasDisponiveis = diasDoMes.filter(dia => {
-      const diaSemana = dia.getDay();
-      return diaSemana === 1 || diaSemana === 3 || diaSemana === 5; // 1=segunda, 3=quarta, 5=sexta
-    });
+        if (error) throw error;
+      } else {
+        const { data, error } = await supabase
+          .from('conteudo_editorial')
+          .insert({
+            planejamento_id: planejamento.id,
+            ...updateData
+          })
+          .select()
+          .single();
 
-    // Distribuir posts nos dias disponíveis
-    const cronograma = [];
-    for (let i = 0; i < quantidadePosts && i < diasDisponiveis.length; i++) {
-      cronograma.push(diasDisponiveis[i]);
+        if (error) throw error;
+        setConteudo(prev => ({ ...prev, id: data.id }));
+      }
+
+      setConteudo(prev => ({ ...prev, [field]: value }));
+      toast.success('Salvo com sucesso!');
+    } catch (error) {
+      console.error('Erro ao salvar:', error);
+      toast.error('Erro ao salvar. Tente novamente.');
+    } finally {
+      setSalvando(false);
     }
+  };
 
+  const saveAllSelections = async () => {
+    setSalvando(true);
+    try {
+      const updateData = {
+        frameworks_selecionados: conteudo.frameworks_selecionados,
+        especialistas_selecionados: conteudo.especialistas_selecionados,
+        missao: conteudo.missao,
+        posicionamento: conteudo.posicionamento,
+        persona: conteudo.persona
+      };
+
+      if (conteudo.id) {
+        const { error } = await supabase
+          .from('conteudo_editorial')
+          .update(updateData)
+          .eq('id', conteudo.id);
+
+        if (error) throw error;
+      } else {
+        const { data, error } = await supabase
+          .from('conteudo_editorial')
+          .insert({
+            planejamento_id: planejamento.id,
+            ...updateData
+          })
+          .select()
+          .single();
+
+        if (error) throw error;
+        setConteudo(prev => ({ ...prev, id: data.id }));
+      }
+
+      toast.success('Análise salva com sucesso!');
+    } catch (error) {
+      console.error('Erro ao salvar análise:', error);
+      toast.error('Erro ao salvar análise. Tente novamente.');
+    } finally {
+      setSalvando(false);
+    }
+  };
+
+  const resetAllSelections = async () => {
+    try {
+      if (conteudo.id) {
+        const { error } = await supabase
+          .from('conteudo_editorial')
+          .delete()
+          .eq('id', conteudo.id);
+
+        if (error) throw error;
+      }
+
+      setConteudo({
+        planejamento_id: planejamento.id,
+        frameworks_selecionados: [],
+        especialistas_selecionados: [],
+        missao: '',
+        posicionamento: '',
+        persona: ''
+      });
+
+      toast.success('Análise resetada com sucesso!');
+    } catch (error) {
+      console.error('Erro ao resetar análise:', error);
+      toast.error('Erro ao resetar análise. Tente novamente.');
+    }
+  };
+
+  const gerarCronogramaPostagens = (mes: number, ano: number) => {
+    const cronograma: Date[] = [];
+    const diasSemana = [1, 3, 5]; // Segunda, Quarta, Sexta
+    
+    const ultimoDiaDoMes = new Date(ano, mes + 1, 0).getDate();
+    
+    for (let dia = 1; dia <= ultimoDiaDoMes; dia++) {
+      const data = new Date(ano, mes, dia);
+      if (diasSemana.includes(data.getDay())) {
+        cronograma.push(data);
+      }
+    }
+    
     return cronograma;
   };
 
   const gerarConteudoEditorial = async () => {
     if (!clienteAssinatura) {
-      toast({
-        title: "Erro",
-        description: "Cliente não possui assinatura ativa",
-        variant: "destructive",
-      });
+      toast.error('Dados da assinatura não encontrados');
       return;
     }
 
-    setGerandoConteudo(true);
+    if (!conteudo.missao || !conteudo.posicionamento) {
+      toast.error('Missão e posicionamento são obrigatórios para gerar conteúdo');
+      return;
+    }
 
+    setGerando(true);
     try {
-      const cronograma = gerarCronogramaPostagens(clienteAssinatura.posts_mensais, currentDate);
-      
-      const frameworksTexto = frameworksSelecionados.length > 0 
-        ? `Frameworks selecionados: ${frameworksSelecionados.join(', ')}`
-        : '';
-      
-      const especialistasTexto = especialistasSelecionados.length > 0
-        ? `Especialistas envolvidos: ${especialistasSelecionados.join(', ')}`
-        : '';
+      const cronograma = gerarCronogramaPostagens(currentDate.getMonth(), currentDate.getFullYear());
+      const quantidadePosts = Math.min(cronograma.length, clienteAssinatura.posts_mes);
 
       const prompt = `
-        Gere ${clienteAssinatura.posts_mensais} posts para redes sociais seguindo estas diretrizes:
-        - Plano: ${clienteAssinatura.nome}
-        - ${frameworksTexto}
-        - ${especialistasTexto}
-        - Missão da empresa: ${conteudoEditorial.missao || 'Não definida'}
-        - Posicionamento: ${conteudoEditorial.posicionamento || 'Não definido'}
-        - Persona: ${conteudoEditorial.persona || 'Não definida'}
+        Baseado na missão "${conteudo.missao}" e posicionamento "${conteudo.posicionamento}" da empresa,
+        gere ${quantidadePosts} posts para redes sociais seguindo estas diretrizes:
         
-        Para cada post, inclua:
-        - Título atrativo
-        - Legenda com até 160 caracteres
-        - Até 12 hashtags relevantes
-        - Tipo de criativo (texto, imagem, vídeo, carrossel)
-        - Formato (post, reel, story)
-        - Objetivo (engajamento, educação, conversão, humanização, entretenimento)
+        - Frameworks selecionados: ${conteudo.frameworks_selecionados?.join(', ')}
+        - Especialistas de referência: ${conteudo.especialistas_selecionados?.join(', ')}
+        - Formatos disponíveis: ${clienteAssinatura.formatos.join(', ')}
+        - Persona: ${conteudo.persona || 'Não definida'}
         
-        Formate a resposta em JSON com esta estrutura:
-        {
-          "posts": [
-            {
-              "titulo": "string",
-              "legenda": "string (max 160 chars)",
-              "hashtags": ["array", "de", "hashtags"],
-              "tipo_criativo": "string",
-              "formato_postagem": "string",
-              "objetivo_postagem": "string"
-            }
-          ]
-        }
+        Para cada post, retorne um JSON com:
+        - titulo: título atrativo (máximo 50 caracteres)
+        - objetivo_postagem: objetivo específico do post
+        - tipo_criativo: tipo de conteúdo visual necessário
+        - formato_postagem: formato escolhido dentre os disponíveis
+        
+        Retorne apenas o array JSON sem explicações adicionais.
       `;
 
       const { data, error } = await supabase.functions.invoke('generate-content-with-ai', {
@@ -225,1070 +283,417 @@ export function PlanoEditorial({ planejamento, clienteId, posts, setPosts, onPre
 
       if (error) throw error;
 
-      let conteudoGerado;
-      if (typeof data === 'string') {
-        conteudoGerado = JSON.parse(data);
-      } else {
-        conteudoGerado = data;
+      let postsData;
+      try {
+        postsData = JSON.parse(data.content);
+      } catch (e) {
+        console.error('Erro ao fazer parse do JSON:', e);
+        toast.error('Erro no formato da resposta da IA');
+        return;
       }
 
-      // Adicionar datas aos posts
-      const postsComDatas = conteudoGerado.posts.map((post: any, index: number) => ({
+      const postsComData = postsData.slice(0, quantidadePosts).map((post: any, index: number) => ({
         ...post,
-        data_postagem: cronograma[index] ? format(cronograma[index], 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd'),
-        planejamento_id: planejamento.id
+        data_postagem: cronograma[index].toISOString().split('T')[0]
       }));
 
-      setPostsGerados(postsComDatas);
-
-      toast({
-        title: "Sucesso",
-        description: `${postsComDatas.length} posts gerados com sucesso!`,
-      });
+      setPostsGerados(postsComData);
+      await salvarPostsCalendario(postsComData);
 
     } catch (error) {
       console.error('Erro ao gerar conteúdo:', error);
-      toast({
-        title: "Erro",
-        description: "Erro ao gerar conteúdo editorial",
-        variant: "destructive",
-      });
+      toast.error('Erro ao gerar conteúdo. Tente novamente.');
     } finally {
-      setGerandoConteudo(false);
+      setGerando(false);
     }
   };
 
-  const salvarPostsCalendario = async () => {
-    if (postsGerados.length === 0) return;
-
-    setSalvandoPosts(true);
-
+  const salvarPostsCalendario = async (novosPost: any[]) => {
     try {
-      // Remover posts existentes do planejamento para este mês
-      const primeiroDiaDoMes = format(startOfMonth(currentDate), 'yyyy-MM-dd');
-      const ultimoDiaDoMes = format(endOfMonth(currentDate), 'yyyy-MM-dd');
-
-      await supabase
+      // Deletar posts existentes do mês atual
+      const { error: deleteError } = await supabase
         .from('posts_planejamento')
         .delete()
         .eq('planejamento_id', planejamento.id)
-        .gte('data_postagem', primeiroDiaDoMes)
-        .lte('data_postagem', ultimoDiaDoMes);
+        .gte('data_postagem', `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-01`)
+        .lt('data_postagem', `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 2).padStart(2, '0')}-01`);
+
+      if (deleteError) throw deleteError;
 
       // Inserir novos posts
-      const { error } = await supabase
+      const postsParaInserir = novosPost.map(post => ({
+        planejamento_id: planejamento.id,
+        titulo: post.titulo,
+        objetivo_postagem: post.objetivo_postagem,
+        tipo_criativo: post.tipo_criativo,
+        formato_postagem: post.formato_postagem,
+        data_postagem: post.data_postagem
+      }));
+
+      const { data, error } = await supabase
         .from('posts_planejamento')
-        .insert(postsGerados);
+        .insert(postsParaInserir)
+        .select();
 
       if (error) throw error;
 
-      // Atualizar lista de posts no componente pai
-      const { data: newPosts } = await supabase
-        .from('posts_planejamento')
-        .select('*')
-        .eq('planejamento_id', planejamento.id)
-        .order('data_postagem', { ascending: true });
-
-      if (newPosts) {
-        setPosts(newPosts);
-      }
-
-      toast({
-        title: "Sucesso",
-        description: "Posts salvos no calendário editorial!",
-      });
-
+      setPosts([...posts.filter(p => !novosPost.find(np => np.data_postagem === p.data_postagem)), ...data]);
+      toast.success('Posts salvos no calendário!');
     } catch (error) {
       console.error('Erro ao salvar posts:', error);
-      toast({
-        title: "Erro",
-        description: "Erro ao salvar posts no calendário",
-        variant: "destructive",
-      });
-    } finally {
-      setSalvandoPosts(false);
+      toast.error('Erro ao salvar posts no calendário');
     }
   };
 
-  const saveField = async (field: keyof ConteudoEditorial, value: string) => {
-    try {
-      // Salvar no banco de dados
-      const { data: existingContent } = await supabase
-        .from('conteudo_editorial')
-        .select('id')
-        .eq('planejamento_id', planejamento.id)
-        .single();
+  const toggleEspecialista = (especialista: string) => {
+    const atual = conteudo.especialistas_selecionados || [];
+    const novaSelecao = atual.includes(especialista)
+      ? atual.filter(e => e !== especialista)
+      : [...atual, especialista];
+    
+    setConteudo(prev => ({ ...prev, especialistas_selecionados: novaSelecao }));
+  };
 
-      if (existingContent) {
-        // Atualizar conteúdo existente
-        await supabase
-          .from('conteudo_editorial')
-          .update({ [field]: value })
-          .eq('id', existingContent.id);
+  const toggleFramework = (framework: string) => {
+    const atual = conteudo.frameworks_selecionados || [];
+    const novaSelecao = atual.includes(framework)
+      ? atual.filter(f => f !== framework)
+      : [...atual, framework];
+    
+    setConteudo(prev => ({ ...prev, frameworks_selecionados: novaSelecao }));
+  };
+
+  const navigateMonth = (direction: 'prev' | 'next') => {
+    setCurrentDate(prev => {
+      const newDate = new Date(prev);
+      if (direction === 'prev') {
+        newDate.setMonth(prev.getMonth() - 1);
       } else {
-        // Criar novo conteúdo
-        await supabase
-          .from('conteudo_editorial')
-          .insert({
-            planejamento_id: planejamento.id,
-            [field]: value
-          });
+        newDate.setMonth(prev.getMonth() + 1);
       }
-      
-      const updatedContent = { ...conteudoEditorial, [field]: value };
-      setConteudoEditorial(updatedContent);
-      
-      toast({
-        title: "Sucesso",
-        description: `${field === 'missao' ? 'Missão' : field === 'posicionamento' ? 'Posicionamento' : 'Campo'} salvo com sucesso!`,
-      });
-    } catch (error) {
-      console.error('Erro ao salvar:', error);
-      toast({
-        title: "Erro",
-        description: "Erro ao salvar informação.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const saveAllSelections = async () => {
-    try {
-      // Salvar frameworks e especialistas selecionados
-      const { data: existingContent } = await supabase
-        .from('conteudo_editorial')
-        .select('id')
-        .eq('planejamento_id', planejamento.id)
-        .maybeSingle();
-
-      const updateData = {
-        frameworks_selecionados: frameworksSelecionados,
-        especialistas_selecionados: especialistasSelecionados,
-        missao: conteudoEditorial.missao,
-        posicionamento: conteudoEditorial.posicionamento,
-        persona: conteudoEditorial.persona
-      };
-
-      if (existingContent) {
-        // Atualizar conteúdo existente
-        await supabase
-          .from('conteudo_editorial')
-          .update(updateData)
-          .eq('id', existingContent.id);
-      } else {
-        // Criar novo conteúdo
-        await supabase
-          .from('conteudo_editorial')
-          .insert({
-            planejamento_id: planejamento.id,
-            ...updateData
-          });
-      }
-
-      setAnaliseCompleta(true);
-      
-      toast({
-        title: "Sucesso",
-        description: "Todas as seleções foram salvas com sucesso!",
-      });
-    } catch (error) {
-      console.error('Erro ao salvar seleções:', error);
-      toast({
-        title: "Erro",
-        description: "Erro ao salvar as seleções.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const resetAllSelections = () => {
-    setFrameworksSelecionados([]);
-    setEspecialistasSelecionados([]);
-    setAnaliseCompleta(false);
-    setConteudoEditorial(prev => ({
-      ...prev,
-      missao: '',
-      posicionamento: '',
-      persona: ''
-    }));
-    toast({
-      title: "Nova Análise",
-      description: "Todas as seleções foram resetadas. Você pode fazer uma nova análise.",
+      return newDate;
     });
   };
 
   const getDaysInMonth = () => {
-    const start = startOfMonth(currentDate);
-    const end = endOfMonth(currentDate);
-    return eachDayOfInterval({ start, end });
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const daysInMonth = lastDay.getDate();
+    const startingDayOfWeek = firstDay.getDay();
+
+    const days = [];
+    
+    // Adicionar dias vazios do início
+    for (let i = 0; i < startingDayOfWeek; i++) {
+      days.push(null);
+    }
+    
+    // Adicionar dias do mês
+    for (let day = 1; day <= daysInMonth; day++) {
+      days.push(day);
+    }
+    
+    return days;
   };
 
-  const getPostsForDay = (day: Date) => {
-    return posts.filter(post => 
-      isSameDay(new Date(post.data_postagem), day)
-    );
+  const getPostsForDay = (day: number) => {
+    if (!day) return [];
+    const dateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    return posts.filter(post => post.data_postagem === dateStr);
   };
 
   const getFormatIcon = (formato: string) => {
     switch (formato) {
-      case 'story': return '📸';
-      case 'reel': return '🎬';
-      case 'carrossel': return '🎠';
-      default: return '📱';
+      case 'post': return '📝';
+      case 'stories': return '📱';
+      case 'reels': return '🎬';
+      case 'carousel': return '📸';
+      default: return '📝';
     }
   };
 
-  const navigateMonth = (direction: 'prev' | 'next') => {
-    setCurrentDate(direction === 'prev' ? subMonths(currentDate, 1) : addMonths(currentDate, 1));
+  const hasCompleteAnalysis = () => {
+    return conteudo.missao && 
+           conteudo.posicionamento && 
+           (conteudo.frameworks_selecionados?.length || 0) > 0 && 
+           (conteudo.especialistas_selecionados?.length || 0) > 0;
   };
 
   if (loading) {
-    return <div className="animate-pulse space-y-6">
-      <div className="h-32 bg-muted rounded-lg"></div>
-    </div>;
+    return (
+      <div className="flex items-center justify-center p-8">
+        <Loader2 className="h-6 w-6 animate-spin" />
+        <span className="ml-2">Carregando...</span>
+      </div>
+    );
   }
 
   return (
-    <TooltipProvider>
-      <div className="space-y-6">
-        <Tabs defaultValue="missao" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 bg-muted/50">
-            <TabsTrigger value="missao">
-              <Target className="h-4 w-4 mr-2" />
-              Missão
-            </TabsTrigger>
-            <TabsTrigger value="posicionamento">
-              <Users className="h-4 w-4 mr-2" />
-              Posicionamento
-            </TabsTrigger>
-            <TabsTrigger value="conteudo">
-              <FileText className="h-4 w-4 mr-2" />
-              Conteúdo Editorial
-            </TabsTrigger>
-          </TabsList>
+    <div className="space-y-6">
+      <Tabs defaultValue="missao" className="w-full">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="missao" className="flex items-center gap-2">
+            <Target className="h-4 w-4" />
+            Missão
+          </TabsTrigger>
+          <TabsTrigger value="posicionamento" className="flex items-center gap-2">
+            <Users className="h-4 w-4" />
+            Posicionamento
+          </TabsTrigger>
+          <TabsTrigger value="conteudo" className="flex items-center gap-2">
+            <BookOpen className="h-4 w-4" />
+            Conteúdo Editorial
+          </TabsTrigger>
+        </TabsList>
 
-          <TabsContent value="missao" className="space-y-6">
-            <div className="text-center space-y-4">
-              <div className="mx-auto w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                <Target className="h-8 w-8 text-white" />
+        <TabsContent value="missao" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Missão da Empresa</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Textarea
+                placeholder="Descreva a missão da empresa..."
+                value={conteudo.missao || ''}
+                onChange={(e) => setConteudo(prev => ({ ...prev, missao: e.target.value }))}
+                rows={4}
+              />
+              <Button 
+                onClick={() => saveField('missao', conteudo.missao)}
+                disabled={salvando}
+              >
+                {salvando ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                Salvar Missão
+              </Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="posicionamento" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Posicionamento da Marca</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Textarea
+                placeholder="Descreva o posicionamento da marca..."
+                value={conteudo.posicionamento || ''}
+                onChange={(e) => setConteudo(prev => ({ ...prev, posicionamento: e.target.value }))}
+                rows={4}
+              />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Especialistas de Referência</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                {especialistas.map((especialista) => (
+                  <Button
+                    key={especialista}
+                    variant={conteudo.especialistas_selecionados?.includes(especialista) ? "default" : "outline"}
+                    onClick={() => toggleEspecialista(especialista)}
+                    className="h-auto py-2"
+                  >
+                    {especialista}
+                  </Button>
+                ))}
               </div>
-              <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                Missão da Empresa
-              </h2>
-              <p className="text-muted-foreground max-w-2xl mx-auto">
-                Defina claramente a missão da empresa para orientar toda a estratégia de conteúdo
-              </p>
-            </div>
+            </CardContent>
+          </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Target className="h-5 w-5" />
-                  Declaração de Missão
-                </CardTitle>
-                <CardDescription>
-                  Digite ou gere automaticamente a missão da empresa
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <Textarea
-                  placeholder="Ex: Nossa missão é democratizar o acesso a tecidos de qualidade, oferecendo variedade, preço justo e atendimento personalizado que inspire criatividade e impulsione negócios no setor têxtil do Amapá..."
-                  value={conteudoEditorial.missao || ''}
-                  onChange={(e) => setConteudoEditorial(prev => ({ ...prev, missao: e.target.value }))}
-                  className="min-h-[120px] resize-none"
-                />
-                
-                <div className="flex gap-2">
-                  <Button
-                    onClick={async () => {
-                      setGenerating(true);
-                      try {
-                        await new Promise(resolve => setTimeout(resolve, 2000));
-                        
-                        const missaoGerada = `Conectar pessoas às suas criações através de tecidos de qualidade excepcional, oferecendo variedade, inovação e atendimento personalizado que inspira criatividade e impulsiona o crescimento de negócios no setor têxtil, fortalecendo a economia local do Amapá.`;
-                        
-                        setConteudoEditorial(prev => ({ ...prev, missao: missaoGerada }));
-                        
-                        toast({
-                          title: "Sucesso",
-                          description: "Missão gerada com base nas informações da empresa!",
-                        });
-
-                      } catch (error) {
-                        console.error('Erro ao gerar missão:', error);
-                        toast({
-                          title: "Erro",
-                          description: "Erro ao gerar missão com IA.",
-                          variant: "destructive",
-                        });
-                      } finally {
-                        setGenerating(false);
-                      }
-                    }}
-                    disabled={generating}
-                    variant="outline"
-                    className="flex-1"
-                  >
-                    <Wand2 className="h-4 w-4 mr-2" />
-                    {generating ? 'Gerando...' : 'Gerar Missão com IA'}
-                  </Button>
-                  
-                  <Button
-                    onClick={() => saveField('missao', conteudoEditorial.missao || '')}
-                    disabled={!conteudoEditorial.missao}
-                    variant="default"
-                    className="px-8"
-                  >
-                    Salvar
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="posicionamento" className="space-y-6">
-            <div className="text-center space-y-4">
-              <div className="mx-auto w-16 h-16 bg-gradient-to-br from-green-500 to-blue-600 rounded-full flex items-center justify-center">
-                <Users className="h-8 w-8 text-white" />
-              </div>
-              <h2 className="text-3xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
-                Posicionamento de Marca
-              </h2>
-              <p className="text-muted-foreground max-w-2xl mx-auto">
-                Defina como sua marca se posiciona no mercado e se diferencia da concorrência
-              </p>
-            </div>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Users className="h-5 w-5" />
-                  Estratégia de Posicionamento
-                </CardTitle>
-                <CardDescription>
-                  Digite ou gere automaticamente o posicionamento da marca
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <Textarea
-                  placeholder="Ex: A Rocha Tecidos se posiciona como a referência em tecidos exclusivos no Amapá, combinando tradição familiar com inovação, oferecendo tapeçaria personalizada e atendimento humanizado que transforma ideias em realidade..."
-                  value={conteudoEditorial.posicionamento || ''}
-                  onChange={(e) => setConteudoEditorial(prev => ({ ...prev, posicionamento: e.target.value }))}
-                  className="min-h-[120px] resize-none"
-                />
-                
-                <div className="flex gap-2">
-                  <Button
-                    onClick={async () => {
-                      setGenerating(true);
-                      try {
-                        await new Promise(resolve => setTimeout(resolve, 2000));
-                        
-                        const posicionamentoGerado = `A Rocha Tecidos se posiciona como a loja de tecidos mais completa e confiável do Amapá, diferenciando-se pela expertise em tapeçaria exclusiva, variedade de produtos de qualidade e relacionamento próximo com o cliente. Nossa proposta única combina tradição de 19 anos no mercado com inovação constante, oferecendo desde tecidos básicos até peças exclusivas personalizadas, sempre com preço justo e atendimento humanizado que vai além da venda.`;
-                        
-                        setConteudoEditorial(prev => ({ ...prev, posicionamento: posicionamentoGerado }));
-                        
-                        toast({
-                          title: "Sucesso",
-                          description: "Posicionamento gerado com base nas informações da empresa!",
-                        });
-
-                      } catch (error) {
-                        console.error('Erro ao gerar posicionamento:', error);
-                        toast({
-                          title: "Erro",
-                          description: "Erro ao gerar posicionamento com IA.",
-                          variant: "destructive",
-                        });
-                      } finally {
-                        setGenerating(false);
-                      }
-                    }}
-                    disabled={generating}
-                    variant="outline"
-                    className="flex-1"
-                  >
-                    <Wand2 className="h-4 w-4 mr-2" />
-                    {generating ? 'Gerando...' : 'Gerar Posicionamento com IA'}
-                  </Button>
-                  
-                  <Button
-                    onClick={() => saveField('posicionamento', conteudoEditorial.posicionamento || '')}
-                    disabled={!conteudoEditorial.posicionamento?.trim()}
-                    className="px-8"
-                  >
-                    Salvar
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-
-            <div className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Especialistas para Geração de Conteúdo</CardTitle>
-                  <CardDescription>
-                    Selecione os especialistas que trabalharão no projeto
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                    {[
-                      { id: 'copy', label: 'Copywriter' },
-                      { id: 'design', label: 'Designer' },
-                      { id: 'gestor_redes', label: 'Gestor de Redes' },
-                      { id: 'gerente_marketing', label: 'Gerente de Marketing' },
-                      { id: 'analista_dados', label: 'Analista de Dados' },
-                      { id: 'influencer', label: 'Influencer' }
-                    ].map((especialista) => (
-                      <Button
-                        key={especialista.id}
-                        variant={especialistasSelecionados.includes(especialista.id) ? 'default' : 'outline'}
-                        className={`text-xs ${
-                          especialistasSelecionados.includes(especialista.id) 
-                            ? 'bg-primary hover:bg-primary/90 text-primary-foreground border-primary' 
-                            : ''
-                        }`}
-                        onClick={() => {
-                          const isSelected = especialistasSelecionados.includes(especialista.id);
-                          if (isSelected) {
-                            setEspecialistasSelecionados(prev => prev.filter(id => id !== especialista.id));
-                          } else {
-                            setEspecialistasSelecionados(prev => [...prev, especialista.id]);
-                          }
-                        }}
-                        disabled={analiseCompleta}
-                      >
-                        {especialista.label}
-                      </Button>
-                    ))}
-                  </div>
-                  {especialistasSelecionados.length > 0 && (
-                    <div className="p-3 bg-muted rounded-lg">
-                      <p className="text-sm text-muted-foreground">
-                        <strong>Especialistas selecionados:</strong> {
-                          especialistasSelecionados.map(especialista => {
-                            const labels = {
-                              'copy': 'Copywriter',
-                              'design': 'Designer',
-                              'gestor_redes': 'Gestor de Redes',
-                              'gerente_marketing': 'Gerente de Marketing',
-                              'analista_dados': 'Analista de Dados',
-                              'influencer': 'Influencer'
-                            };
-                            return labels[especialista as keyof typeof labels];
-                          }).join(', ')
-                        }
-                      </p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Frameworks de Posicionamento</CardTitle>
-                  <CardDescription>
-                    Selecione os frameworks que melhor se adequam ao perfil do cliente
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  {/* Framework HESEC */}
-                  <div>
-                    <h4 className="font-medium mb-2">HESEC (Humanizar, Educar, Resolver, Entreter, Converter)</h4>
-                    <div className="grid grid-cols-5 gap-2">
-                      {[
-                        { id: 'humanizar', label: 'Humanizar', tooltip: 'Criar conexão emocional com a audiência, mostrando o lado humano da marca' },
-                        { id: 'educar', label: 'Educar', tooltip: 'Compartilhar conhecimento e informações valiosas para o público' },
-                        { id: 'resolver', label: 'Resolver', tooltip: 'Oferecer soluções práticas para problemas do público-alvo' },
-                        { id: 'entreter', label: 'Entreter', tooltip: 'Criar conteúdo divertido e envolvente que gera engajamento' },
-                        { id: 'converter', label: 'Converter', tooltip: 'Transformar audiência em clientes através de calls-to-action efetivos' }
-                      ].map((item) => (
-                        <Tooltip key={item.id}>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant={frameworksSelecionados.includes(item.id) ? 'default' : 'outline'}
-                              className={`text-xs ${
-                                frameworksSelecionados.includes(item.id) 
-                                  ? 'bg-primary hover:bg-primary/90 text-primary-foreground border-primary' 
-                                  : ''
-                              }`}
-                              onClick={() => {
-                                if (!analiseCompleta) {
-                                  const isSelected = frameworksSelecionados.includes(item.id);
-                                  if (isSelected) {
-                                    setFrameworksSelecionados(prev => prev.filter(id => id !== item.id));
-                                  } else {
-                                    setFrameworksSelecionados(prev => [...prev, item.id]);
-                                  }
-                                }
-                              }}
-                              disabled={analiseCompleta}
-                            >
-                              {item.label}
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p className="max-w-xs">{item.tooltip}</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Framework HERO */}
-                  <div>
-                    <h4 className="font-medium mb-2">HERO (Humano, Emoção, Notável, Oferta)</h4>
-                    <div className="grid grid-cols-4 gap-2">
-                      {[
-                        { id: 'humano', label: 'Humano', tooltip: 'Mostrar o lado humano da marca, criando proximidade e autenticidade' },
-                        { id: 'emocao', label: 'Emoção', tooltip: 'Despertar sentimentos e conexões emocionais que marcam o público' },
-                        { id: 'notavel', label: 'Notável', tooltip: 'Criar conteúdo que se destaca, é memorável e gera impacto' },
-                        { id: 'oferta', label: 'Oferta', tooltip: 'Apresentar produtos/serviços de forma atrativa e persuasiva' }
-                      ].map((item) => (
-                        <Tooltip key={item.id}>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant={frameworksSelecionados.includes(item.id) ? 'default' : 'outline'}
-                              className={`text-xs ${
-                                frameworksSelecionados.includes(item.id) 
-                                  ? 'bg-primary hover:bg-primary/90 text-primary-foreground border-primary' 
-                                  : ''
-                              }`}
-                              onClick={() => {
-                                if (!analiseCompleta) {
-                                  const isSelected = frameworksSelecionados.includes(item.id);
-                                  if (isSelected) {
-                                    setFrameworksSelecionados(prev => prev.filter(id => id !== item.id));
-                                  } else {
-                                    setFrameworksSelecionados(prev => [...prev, item.id]);
-                                  }
-                                }
-                              }}
-                              disabled={analiseCompleta}
-                            >
-                              {item.label}
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p className="max-w-xs">{item.tooltip}</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Framework PEACE */}
-                  <div>
-                    <h4 className="font-medium mb-2">PEACE (Planejar, Engajar, Amplificar, Converter, Avaliar)</h4>
-                    <div className="grid grid-cols-5 gap-2">
-                      {[
-                        { id: 'planejar', label: 'Planejar', tooltip: 'Desenvolver estratégias e cronogramas para o conteúdo de forma organizada' },
-                        { id: 'engajar', label: 'Engajar', tooltip: 'Interagir e criar relacionamento genuíno com a audiência' },
-                        { id: 'amplificar', label: 'Amplificar', tooltip: 'Expandir o alcance e visibilidade do conteúdo nas redes sociais' },
-                        { id: 'converter_peace', label: 'Converter', tooltip: 'Transformar engajamento em resultados mensuráveis e vendas' },
-                        { id: 'avaliar', label: 'Avaliar', tooltip: 'Medir e analisar performance para otimizar continuamente a estratégia' }
-                      ].map((item) => (
-                        <Tooltip key={item.id}>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant={frameworksSelecionados.includes(item.id) ? 'default' : 'outline'}
-                              className={`text-xs ${
-                                frameworksSelecionados.includes(item.id) 
-                                  ? 'bg-primary hover:bg-primary/90 text-primary-foreground border-primary' 
-                                  : ''
-                              }`}
-                              onClick={() => {
-                                if (!analiseCompleta) {
-                                  const isSelected = frameworksSelecionados.includes(item.id);
-                                  if (isSelected) {
-                                    setFrameworksSelecionados(prev => prev.filter(id => id !== item.id));
-                                  } else {
-                                    setFrameworksSelecionados(prev => [...prev, item.id]);
-                                  }
-                                }
-                              }}
-                              disabled={analiseCompleta}
-                            >
-                              {item.label}
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p className="max-w-xs">{item.tooltip}</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Resumo das seleções */}
-                  {frameworksSelecionados.length > 0 && (
-                    <div className="p-3 bg-muted rounded-lg">
-                      <p className="text-sm text-muted-foreground">
-                        <strong>Frameworks selecionados:</strong> {
-                          frameworksSelecionados.map(framework => {
-                            const labels = {
-                              'humanizar': 'Humanizar',
-                              'educar': 'Educar', 
-                              'resolver': 'Resolver',
-                              'entreter': 'Entreter',
-                              'converter': 'Converter',
-                              'humano': 'Humano',
-                              'emocao': 'Emoção',
-                              'notavel': 'Notável',
-                              'oferta': 'Oferta',
-                              'planejar': 'Planejar',
-                              'engajar': 'Engajar',
-                              'amplificar': 'Amplificar',
-                              'converter_peace': 'Converter (PEACE)',
-                              'avaliar': 'Avaliar'
-                            };
-                            return labels[framework as keyof typeof labels];
-                          }).join(', ')
-                        }
-                      </p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Users className="h-5 w-5" />
-                    Definição de Personas
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="bg-muted/50 p-4 rounded-lg">
-                    <p className="text-sm text-muted-foreground mb-4">
-                      Gere personas detalhadas baseadas nas informações coletadas nos quadros anteriores:
-                      especialistas selecionados, frameworks de posicionamento, missão e dados do onboarding.
-                    </p>
-                    <Button 
-                      onClick={async () => {
-                        try {
-                          setGenerating(true);
-                          
-                          // Simular geração de personas (substitua por chamada real à IA quando disponível)
-                          await new Promise(resolve => setTimeout(resolve, 3000));
-                          
-                          const personasGeradas = `
-🎯 PERSONA 1:
-Maria Silva, 35 anos, Empresária do setor de decoração e design. Maria é uma profissional determinada que busca tecidos de qualidade para seus projetos comerciais e residenciais. Ela valoriza a variedade de opções, a qualidade dos materiais e o atendimento especializado. Suas principais dores são a dificuldade em encontrar tecidos exclusivos e a necessidade de prazos de entrega confiáveis para atender seus clientes.
-
-🎯 PERSONA 2:
-João Costa, 42 anos, Proprietário de uma pequena confecção. João trabalha há 15 anos no ramo têxtil e procura fornecedores confiáveis que ofereçam bom custo-benefício e variedade de tecidos básicos para produção em massa. Ele valoriza relacionamentos duradouros com fornecedores, preços justos e facilidade de pagamento. Sua principal dor é equilibrar qualidade e preço para manter a competitividade.
-
-🎯 PERSONA 3:
-Ana Paula Santos, 28 anos, Designer de moda independente e artesã. Ana Paula é criativa e busca tecidos diferenciados para suas criações autorais. Ela valoriza tecidos únicos, sustentabilidade e atendimento personalizado que a ajude a encontrar exatamente o que precisa. Suas dores incluem encontrar tecidos que se destaquem no mercado e conseguir pequenas quantidades para testes.
-                          `;
-
-                          setConteudoEditorial(prev => ({
-                            ...prev,
-                            persona: personasGeradas
-                          }));
-
-                          // Salvar no banco
-                          await saveField('persona', personasGeradas);
-
-                          toast({
-                            title: "Sucesso",
-                            description: "3 personas foram geradas com base nas informações coletadas!",
-                          });
-
-                        } catch (error) {
-                          console.error('Erro ao gerar personas:', error);
-                          toast({
-                            title: "Erro",
-                            description: "Erro ao gerar personas.",
-                            variant: "destructive",
-                          });
-                        } finally {
-                          setGenerating(false);
-                        }
-                      }}
-                      disabled={generating}
-                      className="w-full"
-                      size="lg"
-                    >
-                      <Wand2 className="h-4 w-4 mr-2" />
-                      {generating ? 'Gerando 3 Personas...' : 'Gerar 3 Personas com base nas informações'}
-                    </Button>
-                  </div>
-
-                  {conteudoEditorial.persona && (
-                    <div className="space-y-6">
-                      <div className="flex items-center gap-2 text-lg font-semibold text-primary mb-6">
-                        <Users className="h-5 w-5" />
-                        Personas Definidas
-                      </div>
-                      
-                      <div className="space-y-6">
-                        {(() => {
-                          const personasText = conteudoEditorial.persona;
-                          
-                          // Dividir o texto em 3 partes principais
-                          let personas = [];
-                          
-                          // Primeiro, tentar encontrar o padrão 🎯 PERSONA
-                          if (personasText.includes('🎯 PERSONA')) {
-                            // Dividir pelo marcador e limpar
-                            const parts = personasText.split(/🎯 PERSONA \d+/);
-                            // Remover primeira parte vazia se houver
-                            if (parts[0].trim() === '') parts.shift();
-                            
-                            // Mapear cada parte para incluir o título
-                            personas = parts.map((part, index) => {
-                              const cleanPart = part.replace(/^[\s\-:]+/, '').trim();
-                              return {
-                                title: `PERSONA ${index + 1}`,
-                                content: cleanPart
-                              };
-                            });
-                          }
-                          
-                          // Se não conseguiu encontrar o padrão, criar 3 personas manualmente
-                          if (personas.length === 0) {
-                            const sentences = personasText.split(/[.!?]+/).filter(s => s.trim());
-                            const third = Math.ceil(sentences.length / 3);
-                            
-                            personas = [
-                              {
-                                title: 'PERSONA 1',
-                                content: sentences.slice(0, third).join('. ').trim()
-                              },
-                              {
-                                title: 'PERSONA 2', 
-                                content: sentences.slice(third, third * 2).join('. ').trim()
-                              },
-                              {
-                                title: 'PERSONA 3',
-                                content: sentences.slice(third * 2).join('. ').trim()
-                              }
-                            ];
-                          }
-                          
-                          // Garantir que temos exatamente 3 personas
-                          while (personas.length < 3) {
-                            personas.push({
-                              title: `PERSONA ${personas.length + 1}`,
-                              content: `Descrição da persona ${personas.length + 1} será gerada.`
-                            });
-                          }
-                          
-                          // Limitar a 3 personas
-                          personas = personas.slice(0, 3);
-                          
-                          return personas.map((personaObj, index) => {
-                            // Extrair informações da persona
-                            const title = personaObj.title;
-                            const content = personaObj.content;
-                            
-                            // Extrair nome do conteúdo se possível
-                            const firstLine = content.split('\n')[0] || content.substring(0, 100);
-                            const nameMatch = firstLine.match(/^([A-Za-zÀ-ÿ\s]+?)(?:,|\s*-|\s*\d+)/);
-                            const name = nameMatch ? nameMatch[1].trim() : title;
-                            
-                            // Extrair idade se houver
-                            const ageMatch = content.match(/(\d+)\s*anos?/i);
-                            const age = ageMatch ? ageMatch[1] : '';
-                            
-                            // Extrair profissão
-                            const professionMatch = content.match(/([A-Za-zÀ-ÿ\s,]+?)(?:\.|,|é|atua|trabalha)/);
-                            const profession = professionMatch ? professionMatch[1].trim() : '';
-                            
-                            // Ícones diferentes para cada persona
-                            const icons = [UserCircle, User, Briefcase];
-                            const IconComponent = icons[index] || UserCircle;
-                            
-                            return (
-                              <Card key={index} className="border border-border bg-card">
-                                <CardHeader className="border-b border-border bg-muted/30">
-                                  <div className="flex items-center gap-4">
-                                    <div className="w-16 h-16 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center">
-                                      <IconComponent className="h-8 w-8 text-primary" />
-                                    </div>
-                                    <div className="flex-1">
-                                      <div className="flex items-center gap-3 mb-2">
-                                        <h3 className="text-xl font-semibold text-foreground">
-                                          {name || `Persona ${index + 1}`}
-                                        </h3>
-                                        {age && (
-                                          <Badge variant="secondary" className="text-sm">
-                                            {age} anos
-                                          </Badge>
-                                        )}
-                                      </div>
-                                      {profession && (
-                                        <p className="text-muted-foreground font-medium">{profession}</p>
-                                      )}
-                                    </div>
-                                    <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold">
-                                      {index + 1}
-                                    </div>
-                                  </div>
-                                </CardHeader>
-                                <CardContent className="pt-6">
-                                  <div className="prose prose-sm max-w-none">
-                                    <p className="text-muted-foreground leading-relaxed">
-                                      {content}
-                                    </p>
-                                  </div>
-                                </CardContent>
-                              </Card>
-                            );
-                          });
-                        })()}
-                      </div>
-                    </div>
-                  )}
-
-                  {!conteudoEditorial.persona && (
-                    <div className="text-center py-12 text-muted-foreground">
-                      <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                      <h3 className="text-lg font-medium mb-2">Personas não definidas</h3>
-                      <p className="text-sm">Clique no botão acima para gerar as personas</p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* Botões de Ação no final da página */}
-              <div className="flex justify-between items-center pt-6 border-t border-border">
-                {analiseCompleta && (
-                  <Button
-                    onClick={resetAllSelections}
-                    variant="outline"
-                    size="lg"
-                    className="px-8"
-                  >
-                    <Wand2 className="h-4 w-4 mr-2" />
-                    Fazer Nova Análise
-                  </Button>
-                )}
-                
-                <div className="flex-1" />
-                
-                <Button
-                  onClick={saveAllSelections}
-                  disabled={frameworksSelecionados.length === 0 && especialistasSelecionados.length === 0}
-                  size="lg"
-                  className="px-8"
-                >
-                  Salvar Seleções
-                </Button>
-              </div>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="conteudo" className="mt-6">
-            <div className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Geração de Conteúdo Editorial</CardTitle>
-                  <CardDescription>
-                    Gere conteúdo personalizado baseado na assinatura do cliente e estratégias definidas
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  {/* Informações da Assinatura */}
-                  <div className="bg-muted/50 p-4 rounded-lg">
-                    <h4 className="font-medium mb-2">Informações da Assinatura</h4>
-                    {clienteAssinatura ? (
-                      <div className="grid grid-cols-3 gap-4 text-sm">
-                        <div>
-                          <span className="text-muted-foreground">Plano:</span>
-                          <p className="font-medium">{clienteAssinatura.nome}</p>
-                        </div>
-                        <div>
-                          <span className="text-muted-foreground">Posts Mensais:</span>
-                          <p className="font-medium">{clienteAssinatura.posts_mensais}</p>
-                        </div>
-                        <div>
-                          <span className="text-muted-foreground">Cronograma:</span>
-                          <p className="font-medium">Segunda, Quarta e Sexta</p>
-                        </div>
-                      </div>
-                    ) : (
-                      <p className="text-muted-foreground">Cliente não possui assinatura ativa</p>
-                    )}
-                  </div>
-
-                  {/* Geração de Conteúdo */}
-                  {clienteAssinatura && (
-                    <div className="space-y-4">
-                      <div className="flex justify-between items-center">
-                        <h4 className="font-medium">Posts do Mês</h4>
+          <Card>
+            <CardHeader>
+              <CardTitle>Frameworks de Conteúdo</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <TooltipProvider>
+                <div className="grid gap-3">
+                  {frameworks.map((framework) => (
+                    <Tooltip key={framework.nome}>
+                      <TooltipTrigger asChild>
                         <Button
-                          onClick={gerarConteudoEditorial}
-                          disabled={gerandoConteudo}
-                          className="gap-2"
+                          variant={conteudo.frameworks_selecionados?.includes(framework.nome) ? "default" : "outline"}
+                          onClick={() => toggleFramework(framework.nome)}
+                          className="h-auto py-3 text-left justify-start"
                         >
-                          {gerandoConteudo ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : (
-                            <Wand2 className="h-4 w-4" />
-                          )}
-                          {gerandoConteudo ? 'Gerando...' : 'Gerar Conteúdo'}
+                          <div>
+                            <div className="font-semibold">{framework.nome}</div>
+                            <div className="text-sm opacity-70">{framework.descricao}</div>
+                          </div>
                         </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p className="max-w-xs">{framework.descricao}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  ))}
+                </div>
+              </TooltipProvider>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Persona</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Textarea
+                placeholder="Descreva a persona do público-alvo..."
+                value={conteudo.persona || ''}
+                onChange={(e) => setConteudo(prev => ({ ...prev, persona: e.target.value }))}
+                rows={4}
+              />
+            </CardContent>
+          </Card>
+
+          <div className="flex gap-2">
+            <Button 
+              onClick={saveAllSelections}
+              disabled={salvando}
+            >
+              {salvando ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+              Salvar Análise
+            </Button>
+            
+            {hasCompleteAnalysis() && (
+              <Button 
+                variant="outline"
+                onClick={resetAllSelections}
+              >
+                Fazer Nova Análise
+              </Button>
+            )}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="conteudo" className="space-y-4">
+          {clienteAssinatura && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Plano de Assinatura</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center gap-4">
+                  <Badge variant="secondary">{clienteAssinatura.nome}</Badge>
+                  <span className="text-sm text-muted-foreground">
+                    {clienteAssinatura.posts_mes} posts/mês
+                  </span>
+                  <span className="text-sm text-muted-foreground">
+                    Formatos: {clienteAssinatura.formatos.join(', ')}
+                  </span>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Geração de Conteúdo</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Button 
+                onClick={gerarConteudoEditorial}
+                disabled={gerando || !hasCompleteAnalysis()}
+                className="w-full"
+              >
+                {gerando ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                Gerar Conteúdo Editorial
+              </Button>
+              
+              {!hasCompleteAnalysis() && (
+                <p className="text-sm text-muted-foreground">
+                  Complete a missão, posicionamento e seleções para gerar conteúdo.
+                </p>
+              )}
+            </CardContent>
+          </Card>
+
+          {postsGerados.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Posts Gerados</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {postsGerados.map((post, index) => (
+                    <div key={index} className="p-3 border rounded-lg">
+                      <div className="flex justify-between items-start mb-2">
+                        <h4 className="font-medium">{post.titulo}</h4>
+                        <Badge variant="outline">{post.formato_postagem}</Badge>
                       </div>
+                      <p className="text-sm text-muted-foreground mb-1">{post.objetivo_postagem}</p>
+                      <p className="text-sm">{post.tipo_criativo}</p>
+                      <p className="text-xs text-muted-foreground">Data: {post.data_postagem}</p>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
-                      {postsGerados.length > 0 && (
-                        <div className="space-y-4">
-                          <div className="flex justify-between items-center">
-                            <span className="text-sm text-muted-foreground">
-                              {postsGerados.length} posts gerados
-                            </span>
-                            <Button
-                              onClick={salvarPostsCalendario}
-                              disabled={salvandoPosts}
-                              variant="outline"
-                              size="sm"
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <span>Calendário Editorial</span>
+                <div className="flex items-center gap-2">
+                  <Button variant="outline" size="sm" onClick={() => navigateMonth('prev')}>
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  <span className="text-sm font-medium">
+                    {currentDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}
+                  </span>
+                  <Button variant="outline" size="sm" onClick={() => navigateMonth('next')}>
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-7 gap-1 mb-4">
+                {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map(day => (
+                  <div key={day} className="p-2 text-center text-sm font-medium">
+                    {day}
+                  </div>
+                ))}
+              </div>
+              <div className="grid grid-cols-7 gap-1">
+                {getDaysInMonth().map((day, index) => {
+                  const dayPosts = day ? getPostsForDay(day) : [];
+                  return (
+                    <div
+                      key={index}
+                      className={`min-h-[60px] p-1 border rounded ${day ? 'bg-background' : 'bg-muted'}`}
+                    >
+                      {day && (
+                        <>
+                          <div className="text-sm font-medium mb-1">{day}</div>
+                          {dayPosts.map((post, postIndex) => (
+                            <div
+                              key={postIndex}
+                              className="text-xs p-1 bg-primary/10 rounded cursor-pointer hover:bg-primary/20"
+                              onClick={() => onPreviewPost(post)}
                             >
-                              {salvandoPosts ? (
-                                <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                              ) : (
-                                <Save className="h-4 w-4 mr-2" />
-                              )}
-                              Salvar no Calendário
-                            </Button>
-                          </div>
-
-                          <div className="grid gap-4">
-                            {postsGerados.map((post, index) => (
-                              <Card key={index} className="p-4">
-                                <div className="space-y-3">
-                                  <div className="flex justify-between items-start">
-                                    <div>
-                                      <h5 className="font-medium">{post.titulo}</h5>
-                                      <p className="text-sm text-muted-foreground">
-                                        {post.data_postagem} • {post.formato_postagem} • {post.tipo_criativo}
-                                      </p>
-                                    </div>
-                                    <Badge variant="outline">{post.objetivo_postagem}</Badge>
-                                  </div>
-                                  
-                                  <div className="bg-muted/30 p-3 rounded-md">
-                                    <p className="text-sm font-medium mb-1">Legenda:</p>
-                                    <p className="text-sm">{post.legenda}</p>
-                                    <p className="text-xs text-muted-foreground mt-1">
-                                      {post.legenda?.length || 0}/160 caracteres
-                                    </p>
-                                  </div>
-
-                                  {post.hashtags && post.hashtags.length > 0 && (
-                                    <div>
-                                      <p className="text-sm font-medium mb-1">Hashtags:</p>
-                                      <div className="flex flex-wrap gap-1">
-                                        {post.hashtags.map((tag: string, tagIndex: number) => (
-                                          <Badge key={tagIndex} variant="secondary" className="text-xs">
-                                            {tag}
-                                          </Badge>
-                                        ))}
-                                      </div>
-                                    </div>
-                                  )}
-                                </div>
-                              </Card>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {postsGerados.length === 0 && !gerandoConteudo && (
-                        <div className="text-center py-8 text-muted-foreground">
-                          <Calendar className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                          <p>Clique em "Gerar Conteúdo" para criar os posts do mês</p>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* Calendário Editorial - apenas na aba Conteúdo */}
-              <Card>
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="flex items-center gap-2">
-                      <Calendar className="h-5 w-5" />
-                      Calendário Editorial
-                    </CardTitle>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant={viewType === 'editorial' ? 'default' : 'outline'}
-                        size="sm"
-                        onClick={() => setViewType('editorial')}
-                      >
-                        Editorial
-                      </Button>
-                      <Button
-                        variant={viewType === 'tarefas' ? 'default' : 'outline'}
-                        size="sm"
-                        onClick={() => setViewType('tarefas')}
-                      >
-                        Tarefas
-                      </Button>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {/* Navegação do mês */}
-                    <div className="flex items-center justify-between">
-                      <Button variant="outline" size="sm" onClick={() => navigateMonth('prev')}>
-                        <ChevronLeft className="h-4 w-4" />
-                      </Button>
-                      <h3 className="text-lg font-semibold">
-                        {format(currentDate, 'MMMM yyyy', { locale: ptBR })}
-                      </h3>
-                      <Button variant="outline" size="sm" onClick={() => navigateMonth('next')}>
-                        <ChevronRight className="h-4 w-4" />
-                      </Button>
-                    </div>
-
-                    {/* Calendário */}
-                    <div className="grid grid-cols-7 gap-2">
-                      {/* Headers dos dias */}
-                      {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map((day) => (
-                        <div key={day} className="p-2 text-center text-sm font-medium text-muted-foreground">
-                          {day}
-                        </div>
-                      ))}
-
-                      {/* Dias do mês */}
-                      {getDaysInMonth().map((day) => {
-                        const postsForDay = getPostsForDay(day);
-                        
-                        return (
-                          <div key={day.toString()} className="p-2 min-h-[80px] border rounded-lg hover:bg-muted/50">
-                            <div className="text-sm font-medium mb-1">
-                              {format(day, 'd')}
+                              <span className="mr-1">{getFormatIcon(post.formato_postagem)}</span>
+                              {post.titulo.length > 10 ? `${post.titulo.substring(0, 10)}...` : post.titulo}
                             </div>
-                            
-                            {postsForDay.map((post) => (
-                              <div
-                                key={post.id}
-                                className="mb-1 p-1 text-xs rounded bg-primary/10 text-primary cursor-pointer hover:bg-primary/20 flex items-center gap-1"
-                                onClick={() => onPreviewPost(post)}
-                              >
-                                <Eye className="h-3 w-3" />
-                                <span className="mr-1">{getFormatIcon(post.formato_postagem)}</span>
-                                <span className="truncate">{post.titulo}</span>
-                              </div>
-                            ))}
-                          </div>
-                        );
-                      })}
+                          ))}
+                        </>
+                      )}
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-        </Tabs>
-      </div>
-    </TooltipProvider>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+    </div>
   );
-}
+};
+
+export default PlanoEditorial;

@@ -11,12 +11,13 @@ import { InstagramPreview } from "@/components/InstagramPreview";
 import { VisaoGeral } from "@/components/VisaoGeral";
 import { DetalhesPlano } from "@/components/DetalhesPlano";
 import { TarefasKanban } from "@/components/TarefasKanban";
-import { PlanoEditorial } from "@/components/PlanoEditorial";
+import PlanoEditorial from "@/components/PlanoEditorial";
 
 interface Planejamento {
   id: string;
   titulo: string;
   status: string;
+  cliente_id: string;
   descricao?: string;
   data_envio_cliente?: string;
   data_aprovacao_cliente?: string;
