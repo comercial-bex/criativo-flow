@@ -728,60 +728,89 @@ Use um tom profissional e inclua detalhes específicos do contexto do cliente.
                     </div>
                     
                     <div className="space-y-6">
-                      {conteudoEditorial.persona.split('🎯 PERSONA').filter(Boolean).map((persona, index) => {
-                        // Extrair informações da persona
-                        const lines = persona.trim().split('\n').filter(line => line.trim());
-                        const titleLine = lines[0]?.replace(/^\d+\s*-\s*/, '') || `PERSONA ${index + 1}`;
-                        const content = lines.slice(1).join(' ').trim();
+                      {(() => {
+                        // Separar as personas de forma mais robusta
+                        const personasText = conteudoEditorial.persona;
+                        let personas = [];
                         
-                        // Extrair nome e idade
-                        const nameMatch = titleLine.match(/([A-Za-zÀ-ÿ\s]+)\s*(?:,|\s*-)\s*(\d+)/);
-                        const name = nameMatch ? nameMatch[1].trim() : titleLine;
-                        const age = nameMatch ? nameMatch[2] : '';
+                        // Tentar separar por 🎯 PERSONA primeiro
+                        if (personasText.includes('🎯 PERSONA')) {
+                          personas = personasText.split('🎯 PERSONA').filter(p => p.trim());
+                        } 
+                        // Se não encontrar, tentar por PERSONA
+                        else if (personasText.includes('PERSONA')) {
+                          personas = personasText.split(/PERSONA\s*\d+/).filter(p => p.trim());
+                        }
+                        // Se ainda não encontrar, dividir manualmente
+                        else {
+                          personas = [personasText]; // Mostrar tudo como uma persona
+                        }
                         
-                        // Extrair profissão (geralmente está no início do conteúdo)
-                        const professionMatch = content.match(/([A-Za-zÀ-ÿ\s,]+?)(?:\.|\.|é|atua|trabalha)/);
-                        const profession = professionMatch ? professionMatch[1].trim() : '';
-                        
-                        // Ícones diferentes para cada persona
-                        const icons = [UserCircle, User, Briefcase];
-                        const IconComponent = icons[index] || UserCircle;
-                        
-                        return (
-                          <Card key={index} className="border border-border">
-                            <CardHeader className="border-b border-border bg-muted/30">
-                              <div className="flex items-center gap-4">
-                                <div className="w-16 h-16 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center">
-                                  <IconComponent className="h-8 w-8 text-primary" />
-                                </div>
-                                <div className="flex-1">
-                                  <div className="flex items-center gap-3 mb-2">
-                                    <h3 className="text-xl font-semibold text-foreground">{name}</h3>
-                                    {age && (
-                                      <Badge variant="secondary" className="text-sm">
-                                        {age} anos
-                                      </Badge>
+                        return personas.map((persona, index) => {
+                          // Extrair informações da persona
+                          const lines = persona.trim().split('\n').filter(line => line.trim());
+                          
+                          // Pegar primeira linha como título/nome
+                          let titleLine = lines[0] || `PERSONA ${index + 1}`;
+                          titleLine = titleLine.replace(/^\d+\s*-\s*/, '').replace(/^-\s*/, '').trim();
+                          
+                          // Resto como conteúdo
+                          const content = lines.slice(1).join(' ').trim() || lines[0] || '';
+                          
+                          // Extrair nome (primeiras palavras antes de vírgula ou idade)
+                          const nameMatch = titleLine.match(/^([A-Za-zÀ-ÿ\s]+?)(?:,|\s*-|\s*\d+)/);
+                          const name = nameMatch ? nameMatch[1].trim() : titleLine.split(',')[0].split('-')[0].trim();
+                          
+                          // Extrair idade se houver
+                          const ageMatch = titleLine.match(/(\d+)\s*anos?/i);
+                          const age = ageMatch ? ageMatch[1] : '';
+                          
+                          // Extrair profissão das primeiras palavras do conteúdo
+                          const professionMatch = content.match(/^([^.!?]+?)(?:\.|,|é|atua|trabalha)/);
+                          const profession = professionMatch ? professionMatch[1].trim() : '';
+                          
+                          // Ícones diferentes para cada persona
+                          const icons = [UserCircle, User, Briefcase];
+                          const IconComponent = icons[index] || UserCircle;
+                          
+                          return (
+                            <Card key={index} className="border border-border bg-card">
+                              <CardHeader className="border-b border-border bg-muted/30">
+                                <div className="flex items-center gap-4">
+                                  <div className="w-16 h-16 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center">
+                                    <IconComponent className="h-8 w-8 text-primary" />
+                                  </div>
+                                  <div className="flex-1">
+                                    <div className="flex items-center gap-3 mb-2">
+                                      <h3 className="text-xl font-semibold text-foreground">
+                                        {name || `Persona ${index + 1}`}
+                                      </h3>
+                                      {age && (
+                                        <Badge variant="secondary" className="text-sm">
+                                          {age} anos
+                                        </Badge>
+                                      )}
+                                    </div>
+                                    {profession && (
+                                      <p className="text-muted-foreground font-medium">{profession}</p>
                                     )}
                                   </div>
-                                  {profession && (
-                                    <p className="text-muted-foreground font-medium">{profession}</p>
-                                  )}
+                                  <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold">
+                                    {index + 1}
+                                  </div>
                                 </div>
-                                <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold">
-                                  {index + 1}
+                              </CardHeader>
+                              <CardContent className="pt-6">
+                                <div className="prose prose-sm max-w-none">
+                                  <p className="text-muted-foreground leading-relaxed">
+                                    {content}
+                                  </p>
                                 </div>
-                              </div>
-                            </CardHeader>
-                            <CardContent className="pt-6">
-                              <div className="prose prose-sm max-w-none">
-                                <p className="text-muted-foreground leading-relaxed">
-                                  {content}
-                                </p>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        );
-                      })}
+                              </CardContent>
+                            </Card>
+                          );
+                        });
+                      })()}
                     </div>
                   </div>
                 )}
