@@ -53,6 +53,7 @@ const PLANOS_CONFIG = {
 
 export function PlanejamentoProjeto({ projetoId, clienteId, clienteNome, assinaturaId }: PlanejamentoProjetoProps) {
   const [planejamento, setPlanejamento] = useState<PlanejamentoData | null>(null);
+  const [objetivos, setObjetivos] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [formData, setFormData] = useState<PlanejamentoData>({
@@ -67,8 +68,27 @@ export function PlanejamentoProjeto({ projetoId, clienteId, clienteNome, assinat
   const planoConfig = assinaturaId ? PLANOS_CONFIG[assinaturaId] : null;
 
   useEffect(() => {
+    fetchObjetivos();
     fetchPlanejamento();
   }, [projetoId]);
+
+  const fetchObjetivos = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('cliente_objetivos')
+        .select('*')
+        .eq('cliente_id', clienteId)
+        .maybeSingle();
+
+      if (error && error.code !== 'PGRST116') throw error;
+      
+      if (data) {
+        setObjetivos(data);
+      }
+    } catch (error) {
+      console.error('Erro ao buscar objetivos:', error);
+    }
+  };
 
   const fetchPlanejamento = async () => {
     try {
@@ -101,35 +121,22 @@ export function PlanejamentoProjeto({ projetoId, clienteId, clienteNome, assinat
       return;
     }
 
+    if (!objetivos) {
+      toast({
+        title: "Erro", 
+        description: "Cliente precisa ter objetivos definidos para criar planejamento",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
+      // Distribuir conteúdos baseado nos objetivos
+      const distribuicaoConteudo = calcularDistribuicaoConteudo(planoConfig, objetivos);
+      
       const planejamentoBase = {
         titulo: `Planejamento ${planoConfig.nome} - ${new Date(formData.mes_referencia).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}`,
-        descricao: `Planejamento mensal baseado na assinatura ${planoConfig.nome}:
-
-📅 CRONOGRAMA MENSAL
-• ${planoConfig.posts_mes} Posts no Feed
-• ${planoConfig.stories} Stories
-• ${planoConfig.reels} Reels
-
-🎯 DISTRIBUIÇÃO SEMANAL
-• Feed: ${Math.ceil(planoConfig.posts_mes / 4)} posts por semana
-• Stories: ${Math.ceil(planoConfig.stories / 4)} stories por semana  
-• Reels: ${Math.ceil(planoConfig.reels / 4)} reels por semana
-
-📋 ENTREGÁVEIS
-• Calendário editorial detalhado
-• Cronograma de publicações
-• Relatório de performance mensal
-• Reunião de alinhamento estratégico
-
-💡 OBJETIVOS
-• Aumentar engajamento orgânico
-• Fortalecer presença digital
-• Gerar leads qualificados
-• Construir autoridade no segmento
-
-⏰ PRAZO DE ENTREGA
-Planejamento será entregue até o dia 25 do mês anterior para aprovação.`,
+        descricao: gerarDescricaoPlanejamento(planoConfig, objetivos, distribuicaoConteudo),
         mes_referencia: formData.mes_referencia,
         status: 'rascunho' as const,
         cliente_id: clienteId
@@ -233,6 +240,130 @@ Planejamento será entregue até o dia 25 do mês anterior para aprovação.`,
     }
   };
 
+  // Função para calcular distribuição de conteúdo baseado nos objetivos
+  const calcularDistribuicaoConteudo = (plano: any, objetivosData: any) => {
+    const objetivosEscolhidos = objetivosData?.objetivos?.objetivos_selecionados || [];
+    
+    // Distribuição base por objetivo
+    let distribuicao = {
+      reconhecimento_marca: 0,
+      crescimento_seguidores: 0,
+      aquisicao_leads: 0
+    };
+
+    // Calcular percentual baseado nos objetivos selecionados
+    if (objetivosEscolhidos.includes('reconhecimento_marca')) {
+      distribuicao.reconhecimento_marca = 40;
+    }
+    if (objetivosEscolhidos.includes('crescimento_seguidores')) {
+      distribuicao.crescimento_seguidores = 35;
+    }
+    if (objetivosEscolhidos.includes('aquisicao_leads')) {
+      distribuicao.aquisicao_leads = 25;
+    }
+
+    // Normalizar para 100% se múltiplos objetivos
+    const total = Object.values(distribuicao).reduce((a, b) => a + b, 0);
+    if (total > 0) {
+      Object.keys(distribuicao).forEach(key => {
+        distribuicao[key] = Math.round((distribuicao[key] / total) * 100);
+      });
+    }
+
+    // Aplicar aos números do plano
+    return {
+      posts_reconhecimento: Math.round((plano.posts_mes * distribuicao.reconhecimento_marca) / 100),
+      posts_crescimento: Math.round((plano.posts_mes * distribuicao.crescimento_seguidores) / 100),
+      posts_leads: Math.round((plano.posts_mes * distribuicao.aquisicao_leads) / 100),
+      stories_reconhecimento: Math.round((plano.stories * distribuicao.reconhecimento_marca) / 100),
+      stories_crescimento: Math.round((plano.stories * distribuicao.crescimento_seguidores) / 100),
+      stories_leads: Math.round((plano.stories * distribuicao.aquisicao_leads) / 100),
+      reels_reconhecimento: Math.round((plano.reels * distribuicao.reconhecimento_marca) / 100),
+      reels_crescimento: Math.round((plano.reels * distribuicao.crescimento_seguidores) / 100),
+      reels_leads: Math.round((plano.reels * distribuicao.aquisicao_leads) / 100),
+      percentuais: distribuicao
+    };
+  };
+
+  // Função para gerar descrição detalhada do planejamento
+  const gerarDescricaoPlanejamento = (plano: any, objetivosData: any, distribuicao: any) => {
+    const objetivosEscolhidos = objetivosData?.objetivos?.objetivos_selecionados || [];
+    
+    return `🎯 PLANEJAMENTO ESTRATÉGICO ${plano.nome.toUpperCase()}
+Baseado nos objetivos definidos no onboarding do cliente
+
+═══════════════════════════════════════════════════════════════
+
+📊 DISTRIBUIÇÃO ESTRATÉGICA DE CONTEÚDO
+
+${objetivosEscolhidos.includes('reconhecimento_marca') ? `🏆 RECONHECIMENTO DE MARCA (${distribuicao.percentuais.reconhecimento_marca}%)
+• ${distribuicao.posts_reconhecimento} Posts no Feed - Storytelling e valores da marca
+• ${distribuicao.stories_reconhecimento} Stories - Bastidores e cultura empresarial  
+• ${distribuicao.reels_reconhecimento} Reels - Apresentação da empresa e diferenciação
+
+` : ''}${objetivosEscolhidos.includes('crescimento_seguidores') ? `📈 CRESCIMENTO DE SEGUIDORES (${distribuicao.percentuais.crescimento_seguidores}%)
+• ${distribuicao.posts_crescimento} Posts no Feed - Conteúdo viral e engajamento
+• ${distribuicao.stories_crescimento} Stories - Interação e pesquisas  
+• ${distribuicao.reels_crescimento} Reels - Tendências e conteúdo viral
+
+` : ''}${objetivosEscolhidos.includes('aquisicao_leads') ? `🎯 AQUISIÇÃO DE LEADS (${distribuicao.percentuais.aquisicao_leads}%)
+• ${distribuicao.posts_leads} Posts no Feed - Conteúdo educativo e CTA
+• ${distribuicao.stories_leads} Stories - Direcionamento para WhatsApp/site
+• ${distribuicao.reels_leads} Reels - Demonstrações e cases de sucesso
+
+` : ''}═══════════════════════════════════════════════════════════════
+
+📅 CRONOGRAMA SEMANAL
+Semana 1: Estabelecer presença e reconhecimento
+Semana 2: Foco em crescimento e engajamento  
+Semana 3: Intensificar geração de leads
+Semana 4: Consolidar resultados e análise
+
+🎨 TIPOS DE CONTEÚDO POR OBJETIVO
+
+${objetivosEscolhidos.includes('reconhecimento_marca') ? `🏆 RECONHECIMENTO DE MARCA:
+• História da empresa e fundadores
+• Valores e missão da marca
+• Diferenciação competitiva
+• Depoimentos de colaboradores
+• Conquistas e certificações
+
+` : ''}${objetivosEscolhidos.includes('crescimento_seguidores') ? `📈 CRESCIMENTO DE SEGUIDORES:
+• Conteúdo viral do nicho
+• Trends adaptadas ao segmento
+• Enquetes e interações
+• Sorteios e parcerias
+• Conteúdo entertaining
+
+` : ''}${objetivosEscolhidos.includes('aquisicao_leads') ? `🎯 AQUISIÇÃO DE LEADS:
+• Dicas e tutoriais do segmento
+• Cases de sucesso reais
+• Demonstrações de produtos/serviços
+• Conteúdo educativo premium
+• CTAs estratégicos para conversão
+
+` : ''}📋 ENTREGÁVEIS DO PLANEJAMENTO
+• Calendário editorial detalhado com 30 dias
+• Copy completa para cada postagem
+• Artes e designs personalizados
+• Cronograma de publicação otimizado
+• Hashtags estratégicas por post
+• Relatório de performance mensal
+• Reunião de alinhamento e ajustes
+
+⏰ CRONOGRAMA DE ENTREGA
+• Planejamento: até dia 25 do mês anterior
+• Aprovação do cliente: até dia 30
+• Produção: primeiros 5 dias do mês
+• Publicações: conforme cronograma aprovado
+
+💡 MÉTRICAS DE SUCESSO
+• Taxa de engajamento por tipo de conteúdo
+• Crescimento de seguidores vs. meta mensal
+• Leads gerados por campanha
+• Alcance e impressões dos posts estratégicos`;
+  };
+
   if (loading) {
     return (
       <Card>
@@ -258,14 +389,14 @@ Planejamento será entregue até o dia 25 do mês anterior para aprovação.`,
                 <Badge variant="outline">{planoConfig.nome}</Badge>
               )}
             </div>
-            {!planejamento && planoConfig && (
+            {!planejamento && planoConfig && objetivos && (
               <Button onClick={() => setDialogOpen(true)} size="sm">
                 Criar Planejamento
               </Button>
             )}
           </div>
           <CardDescription>
-            Planejamento baseado na assinatura do cliente para {clienteNome}
+            Planejamento estratégico baseado na assinatura e objetivos de {clienteNome}
           </CardDescription>
         </CardHeader>
         
@@ -316,26 +447,36 @@ Planejamento será entregue até o dia 25 do mês anterior para aprovação.`,
           </CardContent>
         ) : (
           <CardContent>
-            {planoConfig ? (
+            {planoConfig && objetivos ? (
               <div className="text-center py-8">
                 <Target className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                 <h3 className="text-lg font-semibold mb-2">Nenhum planejamento criado</h3>
                 <p className="text-muted-foreground mb-4">
-                  Crie um planejamento baseado na assinatura {planoConfig.nome} do cliente
+                  Crie um planejamento estratégico baseado na assinatura {planoConfig.nome} e objetivos do cliente
                 </p>
-                <div className="text-sm text-muted-foreground">
-                  <p>• {planoConfig.posts_mes} posts no feed por mês</p>
-                  <p>• {planoConfig.stories} stories por mês</p>
-                  <p>• {planoConfig.reels} reels por mês</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                  <div className="text-sm">
+                    <h4 className="font-semibold mb-2">Assinatura {planoConfig.nome}</h4>
+                    <p>• {planoConfig.posts_mes} posts no feed por mês</p>
+                    <p>• {planoConfig.stories} stories por mês</p>
+                    <p>• {planoConfig.reels} reels por mês</p>
+                  </div>
+                  <div className="text-sm">
+                    <h4 className="font-semibold mb-2">Objetivos Definidos</h4>
+                    {objetivos?.objetivos?.objetivos_selecionados?.map((obj: string, index: number) => (
+                      <p key={index}>• {obj.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}</p>
+                    )) || <p className="text-muted-foreground">Nenhum objetivo definido</p>}
+                  </div>
                 </div>
               </div>
             ) : (
               <div className="text-center py-8">
                 <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-semibold mb-2">Assinatura necessária</h3>
-                <p className="text-muted-foreground">
-                  O cliente precisa ter uma assinatura válida (90º, 180º ou 360º) para criar planejamentos
-                </p>
+                <h3 className="text-lg font-semibold mb-2">Pré-requisitos necessários</h3>
+                <div className="space-y-2 text-muted-foreground">
+                  {!planoConfig && <p>• Cliente precisa ter assinatura válida (90º, 180º ou 360º)</p>}
+                  {!objetivos && <p>• Cliente precisa ter objetivos definidos no onboarding</p>}
+                </div>
               </div>
             )}
           </CardContent>
@@ -348,7 +489,7 @@ Planejamento será entregue até o dia 25 do mês anterior para aprovação.`,
           <DialogHeader>
             <DialogTitle>Criar Planejamento</DialogTitle>
             <DialogDescription>
-              Criar planejamento baseado na assinatura {planoConfig?.nome} para {clienteNome}
+              Criar planejamento estratégico baseado na assinatura {planoConfig?.nome} e objetivos para {clienteNome}
             </DialogDescription>
           </DialogHeader>
           
@@ -363,13 +504,24 @@ Planejamento será entregue até o dia 25 do mês anterior para aprovação.`,
               />
             </div>
 
-            {planoConfig && (
-              <div className="p-4 bg-muted rounded-lg">
-                <h4 className="font-semibold mb-2">Configuração da Assinatura</h4>
-                <div className="space-y-1 text-sm">
-                  <p>• {planoConfig.posts_mes} posts no feed</p>
-                  <p>• {planoConfig.stories} stories</p>
-                  <p>• {planoConfig.reels} reels</p>
+            {planoConfig && objetivos && (
+              <div className="space-y-4">
+                <div className="p-4 bg-muted rounded-lg">
+                  <h4 className="font-semibold mb-2">Configuração da Assinatura</h4>
+                  <div className="space-y-1 text-sm">
+                    <p>• {planoConfig.posts_mes} posts no feed</p>
+                    <p>• {planoConfig.stories} stories</p>
+                    <p>• {planoConfig.reels} reels</p>
+                  </div>
+                </div>
+                
+                <div className="p-4 bg-blue-50 rounded-lg">
+                  <h4 className="font-semibold mb-2">Objetivos do Cliente</h4>
+                  <div className="space-y-1 text-sm">
+                    {objetivos?.objetivos?.objetivos_selecionados?.map((obj: string, index: number) => (
+                      <p key={index}>• {obj.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}</p>
+                    )) || <p className="text-muted-foreground">Objetivos não definidos</p>}
+                  </div>
                 </div>
               </div>
             )}
