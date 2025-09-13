@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Calendar, FileText, Target, Clock, Users, BarChart, Send, CheckCircle, AlertCircle } from 'lucide-react';
+import { Calendar, FileText, Target, Clock, Users, BarChart, Send, CheckCircle, AlertCircle, Edit } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -516,11 +516,34 @@ ${objetivosEscolhidos.includes('reconhecimento_marca') ? `🏆 RECONHECIMENTO DE
                 </div>
                 
                 <div className="p-4 bg-blue-50 rounded-lg">
-                  <h4 className="font-semibold mb-2">Objetivos do Cliente</h4>
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="font-semibold">Objetivos do Cliente</h4>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => window.open(`/clientes/${clienteId}/onboarding`, '_blank')}
+                    >
+                      <Edit className="h-4 w-4 mr-2" />
+                      Editar Objetivos
+                    </Button>
+                  </div>
                   <div className="space-y-1 text-sm">
-                    {objetivos?.objetivos?.objetivos_selecionados?.map((obj: string, index: number) => (
-                      <p key={index}>• {obj.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}</p>
-                    )) || <p className="text-muted-foreground">Objetivos não definidos</p>}
+                    {objetivos?.objetivos?.objetivos_selecionados?.length > 0 ? (
+                      objetivos.objetivos.objetivos_selecionados.map((obj: string, index: number) => (
+                        <p key={index}>• {obj.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}</p>
+                      ))
+                    ) : (
+                      <div className="text-muted-foreground">
+                        <p>Nenhum objetivo definido ainda.</p>
+                        <Button 
+                          variant="link" 
+                          className="p-0 h-auto text-blue-600"
+                          onClick={() => window.open(`/clientes/${clienteId}/onboarding`, '_blank')}
+                        >
+                          Clique aqui para definir objetivos no onboarding
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
