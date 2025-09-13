@@ -587,34 +587,42 @@ Formate a resposta em JSON com esta estrutura:
 
             <Card>
               <CardHeader>
-                <CardTitle>Definição de Personas</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  <Users className="h-5 w-5" />
+                  Definição de Personas
+                </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <Button 
-                  onClick={async () => {
-                    try {
-                      setGenerating(true);
-                      
-                      // Buscar dados do cliente para contexto
-                      const { data: onboardingData } = await supabase
-                        .from('cliente_onboarding')
-                        .select('*')
-                        .eq('cliente_id', clienteId)
-                        .single();
+              <CardContent className="space-y-6">
+                <div className="bg-muted/50 p-4 rounded-lg">
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Gere personas detalhadas baseadas nas informações coletadas nos quadros anteriores:
+                    especialistas selecionados, frameworks de posicionamento, missão e dados do onboarding.
+                  </p>
+                  <Button 
+                    onClick={async () => {
+                      try {
+                        setGenerating(true);
+                        
+                        // Buscar dados do cliente para contexto
+                        const { data: onboardingData } = await supabase
+                          .from('cliente_onboarding')
+                          .select('*')
+                          .eq('cliente_id', clienteId)
+                          .single();
 
-                      const { data: clienteData } = await supabase
-                        .from('clientes')
-                        .select('nome')
-                        .eq('id', clienteId)
-                        .single();
+                        const { data: clienteData } = await supabase
+                          .from('clientes')
+                          .select('nome')
+                          .eq('id', clienteId)
+                          .single();
 
-                      // Buscar objetivos estratégicos do cliente
-                      const { data: objetivosData } = await supabase
-                        .from('cliente_objetivos')
-                        .select('*')
-                        .eq('cliente_id', clienteId);
+                        // Buscar objetivos estratégicos do cliente
+                        const { data: objetivosData } = await supabase
+                          .from('cliente_objetivos')
+                          .select('*')
+                          .eq('cliente_id', clienteId);
 
-                      const prompt = `
+                        const prompt = `
 Com base nas seguintes informações da empresa, crie 3 personas detalhadas e distintas:
 
 INFORMAÇÕES DA MARCA:
@@ -648,67 +656,89 @@ Crie 3 personas distintas em formato de texto corrido, cada uma com no máximo 2
 As 3 personas devem representar diferentes segmentos do público-alvo da empresa, cobrindo variações em idade, poder aquisitivo, comportamento de compra, etc.
 
 Formate a resposta assim:
---- PERSONA 1 ---
+🎯 PERSONA 1 - [NOME]
 [descrição da persona 1]
 
---- PERSONA 2 ---
+🎯 PERSONA 2 - [NOME]  
 [descrição da persona 2]
 
---- PERSONA 3 ---
+🎯 PERSONA 3 - [NOME]
 [descrição da persona 3]
 
 Use um tom profissional mas acessível.
-                      `;
+                        `;
 
-                      const { data, error } = await supabase.functions.invoke('generate-content-with-ai', {
-                        body: { prompt }
-                      });
+                        const { data, error } = await supabase.functions.invoke('generate-content-with-ai', {
+                          body: { prompt }
+                        });
 
-                      if (error) throw error;
+                        if (error) throw error;
 
-                      // Extrair o texto das personas - pode vir como string ou dentro de um objeto
-                      let personasText = '';
-                      if (typeof data === 'string') {
-                        personasText = data;
-                      } else if (data && typeof data === 'object') {
-                        // Se vier como objeto JSON, tentar acessar propriedades comuns
-                        personasText = data.generatedText || data.content || data.text || JSON.stringify(data, null, 2);
-                      } else {
-                        personasText = 'Erro ao processar as personas geradas.';
+                        // Extrair o texto das personas - pode vir como string ou dentro de um objeto
+                        let personasText = '';
+                        if (typeof data === 'string') {
+                          personasText = data;
+                        } else if (data && typeof data === 'object') {
+                          // Se vier como objeto JSON, tentar acessar propriedades comuns
+                          personasText = data.generatedText || data.content || data.text || JSON.stringify(data, null, 2);
+                        } else {
+                          personasText = 'Erro ao processar as personas geradas.';
+                        }
+
+                        setConteudoEditorial(prev => ({...prev, persona: personasText}));
+                        await saveField('persona', personasText);
+                        
+                        toast({
+                          title: "Sucesso",
+                          description: "3 personas geradas com base nas informações dos quadros anteriores!",
+                        });
+
+                      } catch (error) {
+                        console.error('Erro ao gerar personas:', error);
+                        toast({
+                          title: "Erro",
+                          description: "Erro ao gerar personas com IA.",
+                          variant: "destructive",
+                        });
+                      } finally {
+                        setGenerating(false);
                       }
+                    }}
+                    disabled={generating}
+                    className="w-full"
+                    size="lg"
+                  >
+                    <Wand2 className="h-4 w-4 mr-2" />
+                    {generating ? 'Gerando 3 Personas...' : 'Gerar 3 Personas com base nas informações'}
+                  </Button>
+                </div>
 
-                      setConteudoEditorial(prev => ({...prev, persona: personasText}));
-                      await saveField('persona', personasText);
-                      
-                      toast({
-                        title: "Sucesso",
-                        description: "3 personas geradas com base nas informações dos quadros anteriores!",
-                      });
+                {conteudoEditorial.persona && (
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2 text-sm font-medium text-primary">
+                      <Users className="h-4 w-4" />
+                      Personas Geradas
+                    </div>
+                    <div className="bg-background border rounded-lg p-6">
+                      <div className="whitespace-pre-wrap text-sm leading-relaxed">
+                        {conteudoEditorial.persona}
+                      </div>
+                    </div>
+                  </div>
+                )}
 
-                    } catch (error) {
-                      console.error('Erro ao gerar personas:', error);
-                      toast({
-                        title: "Erro",
-                        description: "Erro ao gerar personas com IA.",
-                        variant: "destructive",
-                      });
-                    } finally {
-                      setGenerating(false);
-                    }
-                  }}
-                  disabled={generating}
-                  className="w-full"
-                >
-                  <Wand2 className="h-4 w-4 mr-2" />
-                  {generating ? 'Gerando 3 Personas...' : 'Gerar 3 Personas com base nas informações'}
-                </Button>
-                <Textarea
-                  value={conteudoEditorial.persona || ''}
-                  onChange={(e) => setConteudoEditorial({...conteudoEditorial, persona: e.target.value})}
-                  onBlur={() => conteudoEditorial.persona && saveField('persona', conteudoEditorial.persona)}
-                  placeholder="Aqui serão exibidas as 3 personas geradas com base no onboarding e configurações anteriores..."
-                  className="min-h-[300px]"
-                />
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">
+                    Editar ou Personalizar Personas
+                  </label>
+                  <Textarea
+                    value={conteudoEditorial.persona || ''}
+                    onChange={(e) => setConteudoEditorial({...conteudoEditorial, persona: e.target.value})}
+                    onBlur={() => conteudoEditorial.persona && saveField('persona', conteudoEditorial.persona)}
+                    placeholder="Aqui serão exibidas as 3 personas geradas ou você pode editar manualmente..."
+                    className="min-h-[200px] font-mono text-sm"
+                  />
+                </div>
               </CardContent>
             </Card>
           </div>
