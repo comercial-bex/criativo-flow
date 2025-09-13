@@ -400,6 +400,11 @@ export default function ClienteProjetos() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const { toast } = useToast();
 
+  
+  // Utility function to check if string is a valid UUID
+  const isUuid = (v: string) =>
+    /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/.test(v);
+
   // Carregar dados reais do Supabase
   useEffect(() => {
     fetchClientesComProjetos();
@@ -474,8 +479,6 @@ export default function ClienteProjetos() {
       setLoading(false);
     }
   };
-  const isUuid = (v: string) =>
-    /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/.test(v);
 
   const goToClienteDetalhes = async (cliente: any) => {
     try {
