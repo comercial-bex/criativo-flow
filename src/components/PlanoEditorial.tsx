@@ -155,6 +155,71 @@ export function PlanoEditorial({ planejamento, clienteId, posts, setPosts, onPre
     }
   };
 
+  const saveAllSelections = async () => {
+    try {
+      // Salvar frameworks e especialistas selecionados
+      const { data: existingContent } = await supabase
+        .from('conteudo_editorial')
+        .select('id')
+        .eq('planejamento_id', planejamento.id)
+        .maybeSingle();
+
+      const updateData = {
+        frameworks_selecionados: frameworksSelecionados,
+        especialistas_selecionados: especialistasSelecionados,
+        missao: conteudoEditorial.missao,
+        posicionamento: conteudoEditorial.posicionamento,
+        persona: conteudoEditorial.persona
+      };
+
+      if (existingContent) {
+        // Atualizar conteúdo existente
+        await supabase
+          .from('conteudo_editorial')
+          .update(updateData)
+          .eq('id', existingContent.id);
+      } else {
+        // Criar novo conteúdo
+        await supabase
+          .from('conteudo_editorial')
+          .insert({
+            planejamento_id: planejamento.id,
+            ...updateData
+          });
+      }
+
+      setAnaliseCompleta(true);
+      
+      toast({
+        title: "Sucesso",
+        description: "Todas as seleções foram salvas com sucesso!",
+      });
+    } catch (error) {
+      console.error('Erro ao salvar seleções:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao salvar as seleções.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const resetAllSelections = () => {
+    setFrameworksSelecionados([]);
+    setEspecialistasSelecionados([]);
+    setAnaliseCompleta(false);
+    setConteudoEditorial(prev => ({
+      ...prev,
+      missao: '',
+      posicionamento: '',
+      persona: ''
+    }));
+    toast({
+      title: "Nova Análise",
+      description: "Todas as seleções foram resetadas. Você pode fazer uma nova análise.",
+    });
+  };
+
   const getPromptEspecialista = (especialistasSelecionados: string[]) => {
     const especialistasMap = {
       'copy': 'Atue como um copywriter especialista em redes sociais, renomado por criar textos persuasivos e envolventes que convertem audiência em clientes. Você é famoso por criar copy que gera alto engajamento e conversões.',
@@ -638,27 +703,9 @@ Formate a resposta em JSON com esta estrutura:
                     <CardDescription>
                       Selecione os frameworks que melhor se adequam ao perfil do cliente
                     </CardDescription>
-                  </div>
-                  {analiseCompleta && (
-                    <Button
-                      onClick={() => {
-                        setFrameworksSelecionados([]);
-                        setEspecialistasSelecionados([]);
-                        setAnaliseCompleta(false);
-                        toast({
-                          title: "Nova Análise",
-                          description: "Seleções resetadas. Escolha novos frameworks e especialistas.",
-                        });
-                      }}
-                      variant="outline"
-                      size="sm"
-                    >
-                      <Wand2 className="h-4 w-4 mr-2" />
-                      Fazer Nova Análise
-                    </Button>
-                  )}
-                </div>
-              </CardHeader>
+                   </div>
+                 </div>
+               </CardHeader>
               <CardContent className="space-y-6">
                 {/* Framework HESEC */}
                 <div>
@@ -1143,6 +1190,32 @@ Use um tom profissional e inclua detalhes específicos do contexto do cliente.
                 )}
               </CardContent>
             </Card>
+
+            {/* Botões de Ação no final da página */}
+            <div className="flex justify-between items-center pt-6 border-t border-border">
+              {analiseCompleta && (
+                <Button
+                  onClick={resetAllSelections}
+                  variant="outline"
+                  size="lg"
+                  className="px-8"
+                >
+                  <Wand2 className="h-4 w-4 mr-2" />
+                  Fazer Nova Análise
+                </Button>
+              )}
+              
+              <div className="flex-1" />
+              
+              <Button
+                onClick={saveAllSelections}
+                disabled={frameworksSelecionados.length === 0 && especialistasSelecionados.length === 0}
+                size="lg"
+                className="px-8"
+              >
+                Salvar Seleções
+              </Button>
+            </div>
           </div>
         </TabsContent>
 
