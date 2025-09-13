@@ -24,6 +24,7 @@ interface Post {
   titulo: string;
   data_postagem: string;
   tipo_criativo: string;
+  formato_postagem: string;
   objetivo_postagem: string;
   anexo_url?: string;
   planejamento_id: string;
@@ -55,6 +56,7 @@ export default function PlanejamentoVisual() {
     titulo: '',
     data_postagem: '',
     tipo_criativo: '',
+    formato_postagem: '',
     objetivo_postagem: ''
   });
 
@@ -173,7 +175,7 @@ export default function PlanejamentoVisual() {
   };
 
   const createPost = async () => {
-    if (!planejamento || !newPost.titulo || !newPost.data_postagem) {
+    if (!planejamento || !newPost.titulo || !newPost.data_postagem || !newPost.tipo_criativo || !newPost.formato_postagem) {
       toast({
         title: "Erro",
         description: "Preencha todos os campos obrigatórios.",
@@ -196,6 +198,7 @@ export default function PlanejamentoVisual() {
           titulo: newPost.titulo,
           data_postagem: newPost.data_postagem,
           tipo_criativo: newPost.tipo_criativo,
+          formato_postagem: newPost.formato_postagem,
           objetivo_postagem: newPost.objetivo_postagem,
           anexo_url: imageUrl
         })
@@ -209,6 +212,7 @@ export default function PlanejamentoVisual() {
         titulo: '',
         data_postagem: '',
         tipo_criativo: '',
+        formato_postagem: '',
         objetivo_postagem: ''
       });
 
@@ -369,31 +373,46 @@ export default function PlanejamentoVisual() {
                         <SelectTrigger className="border-primary/20 focus:border-primary transition-colors">
                           <SelectValue placeholder="Selecione o tipo..." />
                         </SelectTrigger>
-                        <SelectContent className="bg-background border-primary/20">
-                          <SelectItem value="imagem" className="hover:bg-primary/5">📱 Imagem</SelectItem>
+                        <SelectContent className="bg-background border-primary/20 z-50">
+                          <SelectItem value="imagem" className="hover:bg-primary/5">🖼️ Imagem</SelectItem>
                           <SelectItem value="video" className="hover:bg-primary/5">🎬 Vídeo</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
 
                     <div className="space-y-2">
-                      <label className="text-sm font-semibold text-foreground">Objetivo da Postagem</label>
-                      <Select value={newPost.objetivo_postagem} onValueChange={(value) => setNewPost({...newPost, objetivo_postagem: value})}>
+                      <label className="text-sm font-semibold text-foreground">Formato da Postagem</label>
+                      <Select value={newPost.formato_postagem} onValueChange={(value) => setNewPost({...newPost, formato_postagem: value})}>
                         <SelectTrigger className="border-primary/20 focus:border-primary transition-colors">
-                          <SelectValue placeholder="Selecione o objetivo..." />
+                          <SelectValue placeholder="Selecione o formato..." />
                         </SelectTrigger>
-                        <SelectContent className="bg-background border-primary/20">
-                          {objetivos.map((obj, index) => (
-                            <SelectItem key={index} value={obj.tipo} className="hover:bg-primary/5">
-                              🎯 {obj.tipo.replace('_', ' ').toUpperCase()}
-                            </SelectItem>
-                          ))}
-                          <SelectItem value="reconhecimento_marca" className="hover:bg-primary/5">🏆 Reconhecimento de Marca</SelectItem>
-                          <SelectItem value="crescimento_seguidores" className="hover:bg-primary/5">📈 Crescimento de Seguidores</SelectItem>
-                          <SelectItem value="aquisicao_leads" className="hover:bg-primary/5">🎯 Aquisição de Leads</SelectItem>
+                        <SelectContent className="bg-background border-primary/20 z-50">
+                          <SelectItem value="post" className="hover:bg-primary/5">📱 Post</SelectItem>
+                          <SelectItem value="story" className="hover:bg-primary/5">📸 Story</SelectItem>
+                          <SelectItem value="carrossel" className="hover:bg-primary/5">🎠 Carrossel</SelectItem>
+                          <SelectItem value="reel" className="hover:bg-primary/5">🎬 Reel</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-semibold text-foreground">Objetivo da Postagem</label>
+                    <Select value={newPost.objetivo_postagem} onValueChange={(value) => setNewPost({...newPost, objetivo_postagem: value})}>
+                      <SelectTrigger className="border-primary/20 focus:border-primary transition-colors">
+                        <SelectValue placeholder="Selecione o objetivo..." />
+                      </SelectTrigger>
+                      <SelectContent className="bg-background border-primary/20 z-50">
+                        {objetivos.map((obj, index) => (
+                          <SelectItem key={index} value={obj.tipo} className="hover:bg-primary/5">
+                            🎯 {obj.tipo.replace('_', ' ').toUpperCase()}
+                          </SelectItem>
+                        ))}
+                        <SelectItem value="reconhecimento_marca" className="hover:bg-primary/5">🏆 Reconhecimento de Marca</SelectItem>
+                        <SelectItem value="crescimento_seguidores" className="hover:bg-primary/5">📈 Crescimento de Seguidores</SelectItem>
+                        <SelectItem value="aquisicao_leads" className="hover:bg-primary/5">🎯 Aquisição de Leads</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   <div className="flex justify-end gap-3 pt-6 border-t border-primary/10">
@@ -463,15 +482,28 @@ export default function PlanejamentoVisual() {
                     <CardContent className="p-5">
                       <div className="space-y-3">
                         <div className="flex items-center justify-between">
-                          <Badge 
-                            variant="outline" 
-                            className="text-xs font-medium bg-primary/5 border-primary/20 text-primary"
-                          >
-                            {post.tipo_criativo === 'imagem' && '📱'}
-                            {post.tipo_criativo === 'video' && '🎬'}
-                            {' '}
-                            {post.tipo_criativo.toUpperCase()}
-                          </Badge>
+                          <div className="flex items-center gap-2">
+                            <Badge 
+                              variant="outline" 
+                              className="text-xs font-medium bg-primary/5 border-primary/20 text-primary"
+                            >
+                              {post.formato_postagem === 'post' && '📱'}
+                              {post.formato_postagem === 'story' && '📸'}
+                              {post.formato_postagem === 'reel' && '🎬'}
+                              {post.formato_postagem === 'carrossel' && '🎠'}
+                              {' '}
+                              {post.formato_postagem.toUpperCase()}
+                            </Badge>
+                            <Badge 
+                              variant="secondary" 
+                              className="text-xs bg-muted/50"
+                            >
+                              {post.tipo_criativo === 'imagem' && '🖼️'}
+                              {post.tipo_criativo === 'video' && '🎬'}
+                              {' '}
+                              {post.tipo_criativo}
+                            </Badge>
+                          </div>
                           <span className="text-xs text-muted-foreground font-medium">
                             {new Date(post.data_postagem).toLocaleDateString('pt-BR')}
                           </span>

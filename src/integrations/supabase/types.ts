@@ -406,6 +406,7 @@ export type Database = {
           anexo_url: string | null
           created_at: string
           data_postagem: string
+          formato_postagem: string
           id: string
           objetivo_postagem: string
           planejamento_id: string
@@ -417,6 +418,7 @@ export type Database = {
           anexo_url?: string | null
           created_at?: string
           data_postagem: string
+          formato_postagem?: string
           id?: string
           objetivo_postagem: string
           planejamento_id: string
@@ -428,6 +430,7 @@ export type Database = {
           anexo_url?: string | null
           created_at?: string
           data_postagem?: string
+          formato_postagem?: string
           id?: string
           objetivo_postagem?: string
           planejamento_id?: string
