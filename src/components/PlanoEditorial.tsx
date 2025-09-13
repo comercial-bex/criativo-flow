@@ -379,40 +379,9 @@ Formate a resposta em JSON com esta estrutura:
 
             <Card>
               <CardHeader>
-                <CardTitle>Definição de Persona</CardTitle>
+                <CardTitle>Especialistas para Geração de Conteúdo</CardTitle>
               </CardHeader>
-              <CardContent>
-                <Textarea
-                  value={conteudoEditorial.persona || ''}
-                  onChange={(e) => setConteudoEditorial({...conteudoEditorial, persona: e.target.value})}
-                  onBlur={() => conteudoEditorial.persona && saveField('persona', conteudoEditorial.persona)}
-                  placeholder="Descreva as personas do cliente com base no onboarding..."
-                  className="min-h-[150px]"
-                />
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="conteudo" className="mt-6">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle>Geração de Conteúdo Editorial</CardTitle>
-                <Button
-                  onClick={generateConteudoWithIA}
-                  disabled={generating || !especialistaSelecionado}
-                  className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
-                >
-                  <Wand2 className="h-4 w-4 mr-2" />
-                  {generating ? 'Gerando...' : 'Gerar com IA'}
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {/* Quadro de Especialistas */}
-              <div className="space-y-4">
-                <h4 className="text-sm font-medium">Escolha o Especialista para Gerar o Conteúdo:</h4>
+              <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                   {[
                     { id: 'copy', label: 'Copywriter', icon: '✍️' },
@@ -451,8 +420,42 @@ Formate a resposta em JSON com esta estrutura:
                     </p>
                   </div>
                 )}
-              </div>
+              </CardContent>
+            </Card>
 
+            <Card>
+              <CardHeader>
+                <CardTitle>Definição de Persona</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Textarea
+                  value={conteudoEditorial.persona || ''}
+                  onChange={(e) => setConteudoEditorial({...conteudoEditorial, persona: e.target.value})}
+                  onBlur={() => conteudoEditorial.persona && saveField('persona', conteudoEditorial.persona)}
+                  placeholder="Descreva as personas do cliente com base no onboarding..."
+                  className="min-h-[150px]"
+                />
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="conteudo" className="mt-6">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle>Geração de Conteúdo Editorial</CardTitle>
+                <Button
+                  onClick={generateConteudoWithIA}
+                  disabled={generating || !especialistaSelecionado}
+                  className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+                >
+                  <Wand2 className="h-4 w-4 mr-2" />
+                  {generating ? 'Gerando...' : 'Gerar com IA'}
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
               {conteudoEditorial.conteudo_gerado ? (
                 <div className="space-y-4">
                   <Badge className="bg-green-100 text-green-800">
@@ -467,7 +470,7 @@ Formate a resposta em JSON com esta estrutura:
                   <Wand2 className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                   <p className="text-muted-foreground">
                     {!especialistaSelecionado 
-                      ? 'Selecione um especialista e clique em "Gerar com IA" para criar o planejamento de conteúdo.'
+                      ? 'Selecione um especialista na aba Posicionamento e clique em "Gerar com IA" para criar o planejamento de conteúdo.'
                       : 'Clique em "Gerar com IA" para criar automaticamente o planejamento de conteúdo baseado nas informações do cliente.'
                     }
                   </p>
