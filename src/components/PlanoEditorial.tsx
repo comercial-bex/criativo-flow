@@ -79,14 +79,14 @@ export function PlanoEditorial({ planejamento, clienteId, posts, setPosts, onPre
       if (data) {
         setConteudoEditorial(data);
         // Carregar frameworks e especialistas salvos
-        if (data.frameworks_selecionados) {
-          setFrameworksSelecionados(data.frameworks_selecionados);
+        if ((data as any).frameworks_selecionados) {
+          setFrameworksSelecionados((data as any).frameworks_selecionados);
         }
-        if (data.especialistas_selecionados) {
-          setEspecialistasSelecionados(data.especialistas_selecionados);
+        if ((data as any).especialistas_selecionados) {
+          setEspecialistasSelecionados((data as any).especialistas_selecionados);
         }
         // Se tem frameworks salvos, considera análise completa
-        if (data.frameworks_selecionados && data.frameworks_selecionados.length > 0) {
+        if ((data as any).frameworks_selecionados && (data as any).frameworks_selecionados.length > 0) {
           setAnaliseCompleta(true);
         }
       }

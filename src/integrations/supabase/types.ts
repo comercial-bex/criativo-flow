@@ -289,6 +289,8 @@ export type Database = {
         Row: {
           conteudo_gerado: string | null
           created_at: string
+          especialistas_selecionados: string[] | null
+          frameworks_selecionados: string[] | null
           id: string
           missao: string | null
           persona: string | null
@@ -299,6 +301,8 @@ export type Database = {
         Insert: {
           conteudo_gerado?: string | null
           created_at?: string
+          especialistas_selecionados?: string[] | null
+          frameworks_selecionados?: string[] | null
           id?: string
           missao?: string | null
           persona?: string | null
@@ -309,6 +313,8 @@ export type Database = {
         Update: {
           conteudo_gerado?: string | null
           created_at?: string
+          especialistas_selecionados?: string[] | null
+          frameworks_selecionados?: string[] | null
           id?: string
           missao?: string | null
           persona?: string | null
