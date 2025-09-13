@@ -51,6 +51,7 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
   const [currentDate, setCurrentDate] = useState(new Date());
   const [clienteAssinatura, setClienteAssinatura] = useState<any>(null);
   const [postsGerados, setPostsGerados] = useState<any[]>([]);
+  const [componentesSelecionados, setComponentesSelecionados] = useState<string[]>([]);
 
   const especialistas = [
     { 
@@ -80,9 +81,38 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
   ];
 
   const frameworks = [
-    { nome: "HESEC", descricao: "Histórias, Emoções, Soluções, Educação, Conexão" },
-    { nome: "HERO", descricao: "Herói, Empoderamento, Razão, Outcome" },
-    { nome: "PEACE", descricao: "Problema, Empatia, Autoridade, Credibilidade, Evidência" }
+    { 
+      nome: "HESEC", 
+      descricao: "Framework focado em conexão emocional e educação",
+      componentes: [
+        { nome: "Histórias", descricao: "Narrativas que conectam com o público" },
+        { nome: "Emoções", descricao: "Apelos emocionais que geram identificação" },
+        { nome: "Soluções", descricao: "Apresentação de soluções práticas" },
+        { nome: "Educação", descricao: "Conteúdo educativo e informativo" },
+        { nome: "Conexão", descricao: "Construção de relacionamento com a audiência" }
+      ]
+    },
+    { 
+      nome: "HERO", 
+      descricao: "Framework focado em empoderamento e resultados",
+      componentes: [
+        { nome: "Herói", descricao: "Posicionamento do cliente como protagonista" },
+        { nome: "Empoderamento", descricao: "Fortalecimento e capacitação do público" },
+        { nome: "Razão", descricao: "Argumentos lógicos e racionais" },
+        { nome: "Outcome", descricao: "Resultados e benefícios tangíveis" }
+      ]
+    },
+    { 
+      nome: "PEACE", 
+      descricao: "Framework focado em credibilidade e autoridade",
+      componentes: [
+        { nome: "Problema", descricao: "Identificação de dores e desafios" },
+        { nome: "Empatia", descricao: "Demonstração de compreensão" },
+        { nome: "Autoridade", descricao: "Estabelecimento de expertise" },
+        { nome: "Credibilidade", descricao: "Construção de confiança" },
+        { nome: "Evidência", descricao: "Provas e testemunhos" }
+      ]
+    }
   ];
 
   useEffect(() => {
@@ -109,6 +139,11 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
           frameworks_selecionados: data.frameworks_selecionados || [],
           especialistas_selecionados: data.especialistas_selecionados || []
         });
+        
+        // Carregar componentes selecionados se existirem
+        if (data.frameworks_selecionados) {
+          setComponentesSelecionados(data.frameworks_selecionados || []);
+        }
       }
     } catch (error) {
       console.error('Erro ao buscar conteúdo editorial:', error);
@@ -186,7 +221,7 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
     setSalvando(true);
     try {
       const updateData = {
-        frameworks_selecionados: conteudo.frameworks_selecionados,
+        frameworks_selecionados: componentesSelecionados,
         especialistas_selecionados: conteudo.especialistas_selecionados,
         missao: conteudo.missao,
         posicionamento: conteudo.posicionamento,
@@ -242,6 +277,8 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
         posicionamento: '',
         persona: ''
       });
+      
+      setComponentesSelecionados([]);
 
       toast.success('Análise resetada com sucesso!');
     } catch (error) {
@@ -286,7 +323,7 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
         Baseado na missão "${conteudo.missao}" e posicionamento "${conteudo.posicionamento}" da empresa,
         gere ${quantidadePosts} posts para redes sociais seguindo estas diretrizes:
         
-        - Frameworks selecionados: ${conteudo.frameworks_selecionados?.join(', ')}
+        - Componentes selecionados: ${componentesSelecionados?.join(', ')}
         - Especialistas de referência: ${conteudo.especialistas_selecionados?.join(', ')}
         - Formatos disponíveis: ${clienteAssinatura.formatos.join(', ')}
         - Persona: ${conteudo.persona || 'Não definida'}
@@ -377,6 +414,15 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
     setConteudo(prev => ({ ...prev, especialistas_selecionados: novaSelecao }));
   };
 
+  const toggleComponenteFramework = (componente: string) => {
+    const atual = componentesSelecionados || [];
+    const novaSelecao = atual.includes(componente)
+      ? atual.filter(c => c !== componente)
+      : [...atual, componente];
+    
+    setComponentesSelecionados(novaSelecao);
+  };
+
   const toggleFramework = (framework: string) => {
     const atual = conteudo.frameworks_selecionados || [];
     const novaSelecao = atual.includes(framework)
@@ -440,7 +486,7 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
   const hasCompleteAnalysis = () => {
     return conteudo.missao && 
            conteudo.posicionamento && 
-           (conteudo.frameworks_selecionados?.length || 0) > 0 && 
+           componentesSelecionados.length > 0 && 
            (conteudo.especialistas_selecionados?.length || 0) > 0;
   };
 
@@ -541,25 +587,43 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
             </CardHeader>
             <CardContent>
               <TooltipProvider>
-                <div className="grid gap-3">
+                <div className="space-y-6">
                   {frameworks.map((framework) => (
-                    <Tooltip key={framework.nome}>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant={conteudo.frameworks_selecionados?.includes(framework.nome) ? "default" : "outline"}
-                          onClick={() => toggleFramework(framework.nome)}
-                          className="h-auto py-3 text-left justify-start"
-                        >
-                          <div>
-                            <div className="font-semibold">{framework.nome}</div>
-                            <div className="text-sm opacity-70">{framework.descricao}</div>
-                          </div>
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p className="max-w-xs">{framework.descricao}</p>
-                      </TooltipContent>
-                    </Tooltip>
+                    <div key={framework.nome} className="space-y-3">
+                      <div className="flex items-center gap-2">
+                        <h4 className="font-semibold text-lg">{framework.nome}</h4>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                              ?
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p className="max-w-xs">{framework.descricao}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </div>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 pl-4">
+                        {framework.componentes.map((componente) => (
+                          <Tooltip key={`${framework.nome}-${componente.nome}`}>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant={componentesSelecionados.includes(`${framework.nome}: ${componente.nome}`) ? "default" : "outline"}
+                                onClick={() => toggleComponenteFramework(`${framework.nome}: ${componente.nome}`)}
+                                className="h-auto py-2 text-left justify-start"
+                                size="sm"
+                              >
+                                {componente.nome}
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p className="max-w-xs">{componente.descricao}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        ))}
+                      </div>
+                    </div>
                   ))}
                 </div>
               </TooltipProvider>
