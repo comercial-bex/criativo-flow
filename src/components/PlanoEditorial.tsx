@@ -644,7 +644,7 @@ FRAMEWORKS SELECIONADOS: ${frameworksSelecionados.join(', ')}
 MISSÃO ATUAL: ${conteudoEditorial.missao || ''}
 POSICIONAMENTO ATUAL: ${conteudoEditorial.posicionamento || ''}
 
-Crie 3 personas distintas em formato de texto corrido, cada uma com no máximo 200 palavras. Para cada persona inclua:
+Crie 3 personas distintas em formato de texto corrido, cada uma com no máximo 180 palavras. Para cada persona inclua:
 
 1. Nome fictício e idade aproximada
 2. Profissão e contexto socioeconômico
@@ -655,15 +655,15 @@ Crie 3 personas distintas em formato de texto corrido, cada uma com no máximo 2
 
 As 3 personas devem representar diferentes segmentos do público-alvo da empresa, cobrindo variações em idade, poder aquisitivo, comportamento de compra, etc.
 
-Formate a resposta assim:
-🎯 PERSONA 1 - [NOME]
-[descrição da persona 1]
+Formate a resposta exatamente assim:
+🎯 PERSONA 1 - [NOME E IDADE]
+[descrição completa da persona 1]
 
-🎯 PERSONA 2 - [NOME]  
-[descrição da persona 2]
+🎯 PERSONA 2 - [NOME E IDADE]  
+[descrição completa da persona 2]
 
-🎯 PERSONA 3 - [NOME]
-[descrição da persona 3]
+🎯 PERSONA 3 - [NOME E IDADE]
+[descrição completa da persona 3]
 
 Use um tom profissional mas acessível.
                         `;
@@ -715,30 +715,46 @@ Use um tom profissional mas acessível.
 
                 {conteudoEditorial.persona && (
                   <div className="space-y-4">
-                    <div className="flex items-center gap-2 text-sm font-medium text-primary">
-                      <Users className="h-4 w-4" />
+                    <div className="flex items-center gap-2 text-lg font-semibold text-primary">
+                      <Users className="h-5 w-5" />
                       Personas Geradas
                     </div>
-                    <div className="bg-background border rounded-lg p-6">
-                      <div className="whitespace-pre-wrap text-sm leading-relaxed">
-                        {conteudoEditorial.persona}
-                      </div>
+                    
+                    <div className="grid gap-4">
+                      {conteudoEditorial.persona.split('🎯 PERSONA').filter(Boolean).map((persona, index) => {
+                        // Separar título e conteúdo
+                        const lines = persona.trim().split('\n');
+                        const title = lines[0]?.replace(/^\d+\s*-\s*/, '') || `PERSONA ${index + 1}`;
+                        const content = lines.slice(1).join('\n').trim();
+                        
+                        return (
+                          <Card key={index} className="border-l-4 border-l-primary/30">
+                            <CardHeader className="pb-3">
+                              <CardTitle className="text-base flex items-center gap-2">
+                                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                                  <span className="text-sm font-bold text-primary">{index + 1}</span>
+                                </div>
+                                {title}
+                              </CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                              <p className="text-sm leading-relaxed text-muted-foreground">
+                                {content}
+                              </p>
+                            </CardContent>
+                          </Card>
+                        );
+                      })}
                     </div>
                   </div>
                 )}
 
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">
-                    Editar ou Personalizar Personas
-                  </label>
-                  <Textarea
-                    value={conteudoEditorial.persona || ''}
-                    onChange={(e) => setConteudoEditorial({...conteudoEditorial, persona: e.target.value})}
-                    onBlur={() => conteudoEditorial.persona && saveField('persona', conteudoEditorial.persona)}
-                    placeholder="Aqui serão exibidas as 3 personas geradas ou você pode editar manualmente..."
-                    className="min-h-[200px] font-mono text-sm"
-                  />
-                </div>
+                {!conteudoEditorial.persona && (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Users className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                    <p>Clique no botão acima para gerar as personas</p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
