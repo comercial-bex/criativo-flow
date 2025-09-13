@@ -264,7 +264,7 @@ export function TarefasKanban({ planejamento, clienteId, projetoId }: TarefasKan
           projeto_id: projetoId,
           titulo: novaTarefa.titulo,
           descricao: novaTarefa.descricao || null,
-          prioridade: novaTarefa.prioridade,
+          prioridade: novaTarefa.prioridade as 'alta' | 'media' | 'baixa',
           data_prazo: novaTarefa.data_prazo || null,
           responsavel_id: novaTarefa.responsavel_id || null,
           tipo: novaTarefa.tipo,

@@ -285,6 +285,39 @@ export type Database = {
           },
         ]
       }
+      conteudo_editorial: {
+        Row: {
+          conteudo_gerado: string | null
+          created_at: string
+          id: string
+          missao: string | null
+          persona: string | null
+          planejamento_id: string
+          posicionamento: string | null
+          updated_at: string
+        }
+        Insert: {
+          conteudo_gerado?: string | null
+          created_at?: string
+          id?: string
+          missao?: string | null
+          persona?: string | null
+          planejamento_id: string
+          posicionamento?: string | null
+          updated_at?: string
+        }
+        Update: {
+          conteudo_gerado?: string | null
+          created_at?: string
+          id?: string
+          missao?: string | null
+          persona?: string | null
+          planejamento_id?: string
+          posicionamento?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       leads: {
         Row: {
           cargo: string | null
@@ -715,6 +748,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      generate_content_with_openai: {
+        Args: { prompt_text: string }
+        Returns: string
+      }
       get_user_role: {
         Args: { user_uuid: string }
         Returns: Database["public"]["Enums"]["user_role"]

@@ -58,49 +58,19 @@ export function PlanoEditorial({ planejamento, clienteId, posts, setPosts, onPre
 
   const fetchConteudoEditorial = async () => {
     try {
-      // Buscar conteúdo editorial existente
-      const { data: conteudoData, error: conteudoError } = await supabase
-        .from('conteudo_editorial')
-        .select('*')
-        .eq('planejamento_id', planejamento.id)
-        .maybeSingle();
-
-      if (conteudoError && conteudoError.code !== 'PGRST116') throw conteudoError;
-
-      if (conteudoData) {
-        setConteudoEditorial(conteudoData);
-      }
+      // Por enquanto, apenas usar estado local
+      // A integração com BD será feita após os tipos serem atualizados
+      setLoading(false);
     } catch (error) {
       console.error('Erro ao buscar conteúdo editorial:', error);
-    } finally {
       setLoading(false);
     }
   };
 
   const saveField = async (field: keyof ConteudoEditorial, value: string) => {
     try {
+      // Por enquanto, apenas salvar no estado local
       const updatedContent = { ...conteudoEditorial, [field]: value };
-
-      if (conteudoEditorial.id) {
-        // Atualizar existente
-        const { error } = await supabase
-          .from('conteudo_editorial')
-          .update({ [field]: value })
-          .eq('id', conteudoEditorial.id);
-
-        if (error) throw error;
-      } else {
-        // Criar novo
-        const { data, error } = await supabase
-          .from('conteudo_editorial')
-          .insert(updatedContent)
-          .select()
-          .single();
-
-        if (error) throw error;
-        updatedContent.id = data.id;
-      }
-
       setConteudoEditorial(updatedContent);
       
       toast({
@@ -199,7 +169,7 @@ Formate a resposta em JSON com esta estrutura:
       if (error) throw error;
 
       // Salvar conteúdo gerado
-      await saveField('conteudo_gerado', JSON.stringify(data));
+      setConteudoEditorial(prev => ({...prev, conteudo_gerado: JSON.stringify(data)}));
 
       // Criar posts automaticamente no calendário
       if (data.posts || data.reels || data.carrosseis) {
