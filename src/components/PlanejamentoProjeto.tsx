@@ -124,11 +124,14 @@ export function PlanejamentoProjeto({ projetoId, clienteId, clienteNome, assinat
 
   const fetchPlanejamento = async () => {
     try {
+      // Convert YYYY-MM to YYYY-MM-01 for proper date format
+      const mesReferenciaDate = `${formData.mes_referencia}-01`;
+      
       const { data, error } = await supabase
         .from('planejamentos')
         .select('*')
         .eq('cliente_id', clienteId)
-        .eq('mes_referencia', formData.mes_referencia)
+        .eq('mes_referencia', mesReferenciaDate)
         .maybeSingle();
 
       if (error && error.code !== 'PGRST116') throw error;
