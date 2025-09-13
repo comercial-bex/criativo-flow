@@ -58,8 +58,7 @@ serve(async (req) => {
 
     // Preparar prompt para análise da matriz SWOT
     const prompt = `
-Você é um consultor especialista em análise estratégica e marketing digital. 
-Analise os dados de onboarding da empresa "${clienteData.nome}" e forneça uma análise detalhada da matriz SWOT (Forças, Oportunidades, Fraquezas, Ameaças).
+Analise os dados de onboarding de "${clienteData.nome}" e identifique os pontos cruciais para cada quadrante da matriz SWOT.
 
 DADOS DA EMPRESA:
 Nome: ${onboardingData.nome_empresa}
@@ -86,25 +85,44 @@ Presença Digital: ${onboardingData.presenca_digital?.join(', ')}
 Mídia Paga: ${onboardingData.midia_paga}
 Tipos de Conteúdo: ${onboardingData.tipos_conteudo?.join(', ')}
 
-MATRIZ SWOT ATUAL:
-FORÇAS: ${onboardingData.forcas}
-FRAQUEZAS: ${onboardingData.fraquezas}
-OPORTUNIDADES: ${onboardingData.oportunidades}
-AMEAÇAS: ${onboardingData.ameacas}
-
 OBJETIVOS:
 Digitais: ${onboardingData.objetivos_digitais}
 Offline: ${onboardingData.objetivos_offline}
 Visão 6 meses: ${onboardingData.onde_6_meses}
 
-TAREFA:
-1. Analise criticamente a matriz SWOT atual fornecida
-2. Identifique pontos que podem estar sendo subestimados ou superestimados
-3. Sugira melhorias e complementos para cada quadrante
-4. Forneça insights estratégicos baseados nos dados
-5. Proponha ações específicas para maximizar forças e oportunidades, e minimizar fraquezas e ameaças
+RESPONDA APENAS com os pontos cruciais organizados assim:
 
-Responda em português, de forma estruturada e profissional, com análise aprofundada e recomendações práticas.
+FORÇAS:
+- [ponto objetivo baseado nos dados]
+- [ponto objetivo baseado nos dados]
+- [ponto objetivo baseado nos dados]
+
+OPORTUNIDADES:
+- [ponto objetivo baseado nos dados]
+- [ponto objetivo baseado nos dados]
+- [ponto objetivo baseado nos dados]
+
+FRAQUEZAS:
+- [ponto objetivo baseado nos dados]
+- [ponto objetivo baseado nos dados]
+- [ponto objetivo baseado nos dados]
+
+AMEAÇAS:
+- [ponto objetivo baseado nos dados]
+- [ponto objetivo baseado nos dados]
+- [ponto objetivo baseado nos dados]
+
+INSIGHTS ESTRATÉGICOS:
+- [insight crucial para o negócio]
+- [insight crucial para o negócio]
+- [insight crucial para o negócio]
+
+AÇÕES PRIORITÁRIAS:
+- [ação específica e prática]
+- [ação específica e prática]
+- [ação específica e prática]
+
+Seja direto, objetivo e foque apenas nos pontos cruciais identificados nos dados fornecidos.
 `;
 
     // Chamar OpenAI
