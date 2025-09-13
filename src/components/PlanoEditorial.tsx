@@ -666,8 +666,19 @@ Use um tom profissional mas acessível.
 
                       if (error) throw error;
 
-                      setConteudoEditorial(prev => ({...prev, persona: data}));
-                      await saveField('persona', data);
+                      // Extrair o texto das personas - pode vir como string ou dentro de um objeto
+                      let personasText = '';
+                      if (typeof data === 'string') {
+                        personasText = data;
+                      } else if (data && typeof data === 'object') {
+                        // Se vier como objeto JSON, tentar acessar propriedades comuns
+                        personasText = data.generatedText || data.content || data.text || JSON.stringify(data, null, 2);
+                      } else {
+                        personasText = 'Erro ao processar as personas geradas.';
+                      }
+
+                      setConteudoEditorial(prev => ({...prev, persona: personasText}));
+                      await saveField('persona', personasText);
                       
                       toast({
                         title: "Sucesso",
