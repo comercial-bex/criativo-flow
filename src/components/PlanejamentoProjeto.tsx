@@ -56,6 +56,8 @@ export function PlanejamentoProjeto({ projetoId, clienteId, clienteNome, assinat
   const [objetivos, setObjetivos] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [editandoObjetivos, setEditandoObjetivos] = useState(false);
+  const [objetivosEditaveis, setObjetivosEditaveis] = useState<string[]>([]);
   const [formData, setFormData] = useState<PlanejamentoData>({
     titulo: '',
     descricao: '',
@@ -75,7 +77,7 @@ export function PlanejamentoProjeto({ projetoId, clienteId, clienteNome, assinat
   const fetchObjetivos = async () => {
     try {
       const { data, error } = await supabase
-        .from('cliente_objetivos')
+        .from('cliente_onboarding')
         .select('*')
         .eq('cliente_id', clienteId)
         .maybeSingle();
@@ -84,9 +86,39 @@ export function PlanejamentoProjeto({ projetoId, clienteId, clienteNome, assinat
       
       if (data) {
         setObjetivos(data);
+        setObjetivosEditaveis(data?.objetivos_digitais?.split(',') || []);
       }
     } catch (error) {
       console.error('Erro ao buscar objetivos:', error);
+    }
+  };
+
+  const salvarObjetivos = async () => {
+    try {
+      const { error } = await supabase
+        .from('cliente_onboarding')
+        .update({
+          objetivos_digitais: objetivosEditaveis.join(','),
+          updated_at: new Date().toISOString()
+        })
+        .eq('cliente_id', clienteId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Objetivos atualizados",
+        description: "Os objetivos do cliente foram salvos com sucesso",
+      });
+
+      await fetchObjetivos();
+      setEditandoObjetivos(false);
+    } catch (error) {
+      console.error('Erro ao salvar objetivos:', error);
+      toast({
+        title: "Erro ao salvar objetivos",
+        description: "Não foi possível salvar os objetivos",
+        variant: "destructive",
+      });
     }
   };
 
@@ -521,30 +553,54 @@ ${objetivosEscolhidos.includes('reconhecimento_marca') ? `🏆 RECONHECIMENTO DE
                     <Button 
                       variant="outline" 
                       size="sm"
-                      onClick={() => window.open(`/clientes/${clienteId}/onboarding`, '_blank')}
+                      onClick={() => {
+                        if (editandoObjetivos) {
+                          salvarObjetivos();
+                        } else {
+                          setEditandoObjetivos(true);
+                        }
+                      }}
                     >
                       <Edit className="h-4 w-4 mr-2" />
-                      Editar Objetivos
+                      {editandoObjetivos ? 'Salvar' : 'Editar'}
                     </Button>
                   </div>
-                  <div className="space-y-1 text-sm">
-                    {objetivos?.objetivos?.objetivos_selecionados?.length > 0 ? (
-                      objetivos.objetivos.objetivos_selecionados.map((obj: string, index: number) => (
-                        <p key={index}>• {obj.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}</p>
-                      ))
-                    ) : (
-                      <div className="text-muted-foreground">
-                        <p>Nenhum objetivo definido ainda.</p>
-                        <Button 
-                          variant="link" 
-                          className="p-0 h-auto text-blue-600"
-                          onClick={() => window.open(`/clientes/${clienteId}/onboarding`, '_blank')}
-                        >
-                          Clique aqui para definir objetivos no onboarding
-                        </Button>
+                  
+                  {editandoObjetivos ? (
+                    <div className="space-y-2">
+                      <div className="grid grid-cols-1 gap-2">
+                        {['reconhecimento_marca', 'crescimento_seguidores', 'aquisicao_leads'].map((objetivo) => (
+                          <label key={objetivo} className="flex items-center space-x-2">
+                            <input
+                              type="checkbox"
+                              checked={objetivosEditaveis.includes(objetivo)}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setObjetivosEditaveis([...objetivosEditaveis, objetivo]);
+                                } else {
+                                  setObjetivosEditaveis(objetivosEditaveis.filter(o => o !== objetivo));
+                                }
+                              }}
+                              className="rounded border-gray-300"
+                            />
+                            <span className="text-sm">
+                              {objetivo.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                            </span>
+                          </label>
+                        ))}
                       </div>
-                    )}
-                  </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-1 text-sm">
+                      {objetivos?.objetivos_digitais ? (
+                        objetivos.objetivos_digitais.split(',').map((obj: string, index: number) => (
+                          <p key={index}>• {obj.trim().replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}</p>
+                        ))
+                      ) : (
+                        <p className="text-muted-foreground">Nenhum objetivo definido ainda.</p>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             )}
