@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, ChevronLeft, ChevronRight, Loader2, Users, Target, BookOpen, Sparkles } from "lucide-react";
+import { Calendar, ChevronLeft, ChevronRight, Loader2, Users, Target, BookOpen, Sparkles, Save } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -49,6 +49,9 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
   const [loading, setLoading] = useState(true);
   const [gerando, setGerando] = useState(false);
   const [salvando, setSalvando] = useState(false);
+  const [salvandoPosicionamento, setSalvandoPosicionamento] = useState(false);
+  const [salvandoEspecialistas, setSalvandoEspecialistas] = useState(false);
+  const [salvandoFrameworks, setSalvandoFrameworks] = useState(false);
   const [gerandoPosicionamento, setGerandoPosicionamento] = useState(false);
   const [gerandoPersonas, setGerandoPersonas] = useState(false);
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -479,6 +482,40 @@ IMPORTANTE: Retorne APENAS o JSON válido, sem texto adicional.
     }
   };
 
+  const salvarPosicionamento = async () => {
+    if (!conteudo.posicionamento?.trim()) {
+      toast.error('Digite o posicionamento antes de salvar');
+      return;
+    }
+    await saveField('posicionamento', conteudo.posicionamento);
+  };
+
+  const salvarEspecialistas = async () => {
+    if (!conteudo.especialistas_selecionados?.length) {
+      toast.error('Selecione pelo menos um especialista antes de salvar');
+      return;
+    }
+    setSalvandoEspecialistas(true);
+    try {
+      await saveField('especialistas_selecionados', conteudo.especialistas_selecionados);
+    } finally {
+      setSalvandoEspecialistas(false);
+    }
+  };
+
+  const salvarFrameworks = async () => {
+    if (!componentesSelecionados?.length) {
+      toast.error('Selecione pelo menos um framework antes de salvar');
+      return;
+    }
+    setSalvandoFrameworks(true);
+    try {
+      await saveField('frameworks_selecionados', componentesSelecionados);
+    } finally {
+      setSalvandoFrameworks(false);
+    }
+  };
+
   const saveAllSelections = async () => {
     setSalvando(true);
     try {
@@ -811,25 +848,40 @@ IMPORTANTE: Retorne APENAS o JSON válido, sem texto adicional.
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="posicionamento">Posicionamento da Marca</Label>
-                  <Button 
-                    onClick={gerarPosicionamentoComIA}
-                    disabled={gerandoPosicionamento}
-                    variant="outline"
-                    size="sm"
-                    className="gap-2"
-                  >
-                    {gerandoPosicionamento ? (
-                      <>
-                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                        Gerando...
-                      </>
-                    ) : (
-                      <>
-                        <Sparkles className="h-4 w-4" />
-                        Gerar com IA
-                      </>
-                    )}
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button 
+                      onClick={gerarPosicionamentoComIA}
+                      disabled={gerandoPosicionamento}
+                      variant="outline"
+                      size="sm"
+                      className="gap-2"
+                    >
+                      {gerandoPosicionamento ? (
+                        <>
+                          <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                          Gerando...
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="h-4 w-4" />
+                          Gerar com IA
+                        </>
+                      )}
+                    </Button>
+                    <Button 
+                      onClick={salvarPosicionamento}
+                      disabled={salvandoPosicionamento || !conteudo.posicionamento?.trim()}
+                      size="sm"
+                      className="gap-2"
+                    >
+                      {salvandoPosicionamento ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Save className="h-4 w-4" />
+                      )}
+                      Salvar
+                    </Button>
+                  </div>
                 </div>
                 <Textarea
                   id="posicionamento"
@@ -851,7 +903,7 @@ IMPORTANTE: Retorne APENAS o JSON válido, sem texto adicional.
             <CardHeader>
               <CardTitle>Especialistas de Referência</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-4">
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                 {especialistas.map((especialista) => (
                   <Tooltip key={especialista.nome}>
@@ -869,6 +921,22 @@ IMPORTANTE: Retorne APENAS o JSON válido, sem texto adicional.
                     </TooltipContent>
                   </Tooltip>
                 ))}
+              </div>
+              
+              <div className="flex justify-end">
+                <Button 
+                  onClick={salvarEspecialistas}
+                  disabled={salvandoEspecialistas || !conteudo.especialistas_selecionados?.length}
+                  size="sm"
+                  className="gap-2"
+                >
+                  {salvandoEspecialistas ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Save className="h-4 w-4" />
+                  )}
+                  Salvar Especialistas
+                </Button>
               </div>
             </CardContent>
           </Card>
@@ -934,6 +1002,22 @@ IMPORTANTE: Retorne APENAS o JSON válido, sem texto adicional.
                     </div>
                   </div>
                 )}
+
+                <div className="flex justify-end pt-4">
+                  <Button 
+                    onClick={salvarFrameworks}
+                    disabled={salvandoFrameworks || !componentesSelecionados?.length}
+                    size="sm"
+                    className="gap-2"
+                  >
+                    {salvandoFrameworks ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Save className="h-4 w-4" />
+                    )}
+                    Salvar Frameworks
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>
