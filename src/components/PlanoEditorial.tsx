@@ -303,16 +303,33 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
         throw new Error(response.error.message);
       }
 
+      console.log('Resposta da API:', response);
+      
       if (response.data) {
-        // Parse da resposta JSON retornada pela edge function
-        const missaoGerada = typeof response.data === 'string' ? JSON.parse(response.data) : response.data;
+        let missaoGerada;
         
-        if (missaoGerada && missaoGerada.trim().length >= 20) {
-          setConteudo(prev => ({ ...prev, missao: missaoGerada.trim() }));
-          toast.success('Missão gerada com sucesso!');
-        } else {
-          throw new Error('Missão gerada muito curta ou inválida');
+        try {
+          // A edge function retorna o texto diretamente em JSON.stringify()
+          if (typeof response.data === 'string') {
+            missaoGerada = JSON.parse(response.data);
+          } else {
+            missaoGerada = response.data;
+          }
+          
+          console.log('Missão gerada:', missaoGerada);
+          
+          if (missaoGerada && typeof missaoGerada === 'string' && missaoGerada.trim().length > 0) {
+            setConteudo(prev => ({ ...prev, missao: missaoGerada.trim() }));
+            toast.success('Missão gerada com sucesso!');
+          } else {
+            throw new Error('Missão gerada inválida');
+          }
+        } catch (parseError) {
+          console.error('Erro ao fazer parse da resposta:', parseError, response.data);
+          throw new Error('Erro ao processar resposta da IA');
         }
+      } else {
+        throw new Error('Nenhum dado retornado pela IA');
       }
     } catch (error) {
       console.error('Erro ao gerar missão:', error);
