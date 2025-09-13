@@ -730,59 +730,75 @@ Use um tom profissional e inclua detalhes específicos do contexto do cliente.
                     <div className="space-y-6">
                       {(() => {
                         const personasText = conteudoEditorial.persona;
-                        console.log('Texto original das personas:', personasText);
                         
-                        // Encontrar todas as personas usando regex
-                        const personaMatches = personasText.match(/🎯 PERSONA \d+[^🎯]*/g) || [];
-                        console.log('Personas encontradas:', personaMatches);
+                        // Dividir o texto em 3 partes principais
+                        let personas = [];
                         
-                        // Se não encontrou com regex, tentar split simples
-                        let personas = personaMatches.length > 0 ? personaMatches : [];
-                        
-                        if (personas.length === 0) {
-                          // Tentar dividir manualmente
+                        // Primeiro, tentar encontrar o padrão 🎯 PERSONA
+                        if (personasText.includes('🎯 PERSONA')) {
+                          // Dividir pelo marcador e limpar
                           const parts = personasText.split(/🎯 PERSONA \d+/);
-                          personas = parts.filter(p => p.trim()).map((p, i) => `🎯 PERSONA ${i + 1}${p}`);
+                          // Remover primeira parte vazia se houver
+                          if (parts[0].trim() === '') parts.shift();
+                          
+                          // Mapear cada parte para incluir o título
+                          personas = parts.map((part, index) => {
+                            const cleanPart = part.replace(/^[\s\-]+/, '').trim();
+                            return {
+                              title: `PERSONA ${index + 1}`,
+                              content: cleanPart
+                            };
+                          });
                         }
                         
-                        // Garantir exatamente 3 personas
+                        // Se não conseguiu encontrar o padrão, criar 3 personas manualmente
                         if (personas.length === 0) {
-                          personas = ['🎯 PERSONA 1 - ' + personasText];
+                          const sentences = personasText.split(/[.!?]+/).filter(s => s.trim());
+                          const third = Math.ceil(sentences.length / 3);
+                          
+                          personas = [
+                            {
+                              title: 'PERSONA 1',
+                              content: sentences.slice(0, third).join('. ').trim()
+                            },
+                            {
+                              title: 'PERSONA 2', 
+                              content: sentences.slice(third, third * 2).join('. ').trim()
+                            },
+                            {
+                              title: 'PERSONA 3',
+                              content: sentences.slice(third * 2).join('. ').trim()
+                            }
+                          ];
                         }
                         
-                        personas = personas.slice(0, 3);
-                        console.log('Personas finais:', personas);
+                        // Garantir que temos exatamente 3 personas
+                        while (personas.length < 3) {
+                          personas.push({
+                            title: `PERSONA ${personas.length + 1}`,
+                            content: `Descrição da persona ${personas.length + 1} será gerada.`
+                          });
+                        }
                         
-                        return personas.map((persona, index) => {
-                          // Debug para verificar o conteúdo
-                          console.log(`Persona ${index + 1}:`, persona);
-                          
+                        // Limitar a 3 personas
+                        personas = personas.slice(0, 3);
+                        
+                        return personas.map((personaObj, index) => {
                           // Extrair informações da persona
-                          const lines = persona.trim().split('\n').filter(line => line.trim());
+                          const title = personaObj.title;
+                          const content = personaObj.content;
                           
-                          // Pegar primeira linha como título/nome
-                          let titleLine = lines[0] || `PERSONA ${index + 1}`;
-                          titleLine = titleLine.replace(/^\d+\s*-\s*/, '').replace(/^-\s*/, '').trim();
-                          
-                          // Resto como conteúdo
-                          const content = lines.slice(1).join(' ').trim() || persona.trim();
-                          
-                          // Extrair nome (primeiras palavras antes de vírgula ou idade)
-                          let name = titleLine;
-                          const nameMatch = titleLine.match(/^([A-Za-zÀ-ÿ\s]+?)(?:,|\s*-|\s*\d+)/);
-                          if (nameMatch && nameMatch[1].trim()) {
-                            name = nameMatch[1].trim();
-                          } else {
-                            // Se não conseguir extrair, usar um nome padrão
-                            name = `Persona ${index + 1}`;
-                          }
+                          // Extrair nome do conteúdo se possível
+                          const firstLine = content.split('\n')[0] || content.substring(0, 100);
+                          const nameMatch = firstLine.match(/^([A-Za-zÀ-ÿ\s]+?)(?:,|\s*-|\s*\d+)/);
+                          const name = nameMatch ? nameMatch[1].trim() : title;
                           
                           // Extrair idade se houver
-                          const ageMatch = titleLine.match(/(\d+)\s*anos?/i);
+                          const ageMatch = content.match(/(\d+)\s*anos?/i);
                           const age = ageMatch ? ageMatch[1] : '';
                           
-                          // Extrair profissão das primeiras palavras do conteúdo
-                          const professionMatch = content.match(/^([^.!?]+?)(?:\.|,|é|atua|trabalha)/);
+                          // Extrair profissão
+                          const professionMatch = content.match(/([A-Za-zÀ-ÿ\s,]+?)(?:\.|,|é|atua|trabalha)/);
                           const profession = professionMatch ? professionMatch[1].trim() : '';
                           
                           // Ícones diferentes para cada persona
