@@ -269,7 +269,11 @@ function ProjetoForm({ onSuccess }: { onSuccess: () => void }) {
         tipo: 'desenvolvimento'
       });
       
+      // Recarregar dados após criar projeto
       onSuccess();
+      setTimeout(() => {
+        window.location.reload(); // Força atualização da página
+      }, 1000);
     } catch (error) {
       console.error('Erro ao criar projeto:', error);
       toast({
@@ -389,12 +393,87 @@ function ProjetoForm({ onSuccess }: { onSuccess: () => void }) {
 
 export default function ClienteProjetos() {
   const navigate = useNavigate();
-  const [clientes, setClientes] = useState<ClienteComProjetos[]>(mockClientesComProjetos);
+  const [clientes, setClientes] = useState<ClienteComProjetos[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("todos");
   const [dialogOpen, setDialogOpen] = useState(false);
   const { toast } = useToast();
 
+  // Carregar dados reais do Supabase
+  useEffect(() => {
+    fetchClientesComProjetos();
+  }, []);
+
+  const fetchClientesComProjetos = async () => {
+    setLoading(true);
+    try {
+      // Buscar clientes com seus projetos
+      const { data: clientesData, error: clientesError } = await supabase
+        .from('clientes')
+        .select(`
+          id,
+          nome,
+          email,
+          status,
+          projetos (
+            id,
+            nome,
+            status,
+            orcamento,
+            data_inicio,
+            data_fim,
+            descricao
+          )
+        `)
+        .order('nome');
+
+      if (clientesError) throw clientesError;
+
+      // Transformar dados para o formato esperado
+      const clientesFormatados: ClienteComProjetos[] = (clientesData || []).map(cliente => {
+        const projetos = (cliente.projetos || []).map(projeto => ({
+          id: projeto.id,
+          nome: projeto.nome,
+          status: projeto.status as 'ativo' | 'concluido' | 'pendente' | 'pausado',
+          valor: projeto.orcamento || 0,
+          dataInicio: projeto.data_inicio || '',
+          dataFim: projeto.data_fim || '',
+          progresso: projeto.status === 'ativo' ? 50 : 
+                    projeto.status === 'pendente' ? 0 : 25,
+          tipo: 'Geral'
+        }));
+
+        const statusCounts = {
+          ativo: projetos.filter(p => p.status === 'ativo').length,
+          concluido: projetos.filter(p => p.status === 'concluido').length,
+          pendente: projetos.filter(p => p.status === 'pendente').length,
+          pausado: projetos.filter(p => p.status === 'pausado').length,
+        };
+
+        return {
+          id: cliente.id,
+          nome: cliente.nome,
+          email: cliente.email || '',
+          status: cliente.status as 'ativo' | 'inativo' | 'prospecto',
+          projetos,
+          totalProjetos: projetos.length,
+          statusCounts
+        };
+      });
+
+      setClientes(clientesFormatados);
+    } catch (error) {
+      console.error('Erro ao carregar clientes e projetos:', error);
+      toast({
+        title: "Erro ao carregar dados",
+        description: "Não foi possível carregar os clientes e projetos",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
   const isUuid = (v: string) =>
     /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/.test(v);
 
@@ -608,7 +687,10 @@ export default function ClienteProjetos() {
               Crie um novo projeto para um cliente ativo
             </DialogDescription>
           </DialogHeader>
-          <ProjetoForm onSuccess={() => setDialogOpen(false)} />
+          <ProjetoForm onSuccess={() => {
+            setDialogOpen(false);
+            fetchClientesComProjetos(); // Recarregar dados
+          }} />
         </DialogContent>
       </Dialog>
     </div>
