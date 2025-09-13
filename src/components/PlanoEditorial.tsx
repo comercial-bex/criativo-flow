@@ -53,7 +53,7 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
   const [postsGerados, setPostsGerados] = useState<any[]>([]);
 
   const especialistas = [
-    "Kotler", "Ries", "Trout", "Godin", "Cialdini", "Heath"
+    "Philip Kotler", "Al Ries", "Jack Trout", "Seth Godin", "Robert Cialdini", "Chip Heath"
   ];
 
   const frameworks = [
