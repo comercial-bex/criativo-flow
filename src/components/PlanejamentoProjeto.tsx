@@ -172,7 +172,7 @@ export function PlanejamentoProjeto({ projetoId, clienteId, clienteNome, assinat
       const planejamentoBase = {
         titulo: `Planejamento ${planoConfig.nome} - ${new Date(formData.mes_referencia).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}`,
         descricao: gerarDescricaoPlanejamento(planoConfig, objetivos, distribuicaoConteudo),
-        mes_referencia: formData.mes_referencia,
+        mes_referencia: `${formData.mes_referencia}-01`, // Convert YYYY-MM to YYYY-MM-01
         status: 'rascunho' as const,
         cliente_id: clienteId
       };
