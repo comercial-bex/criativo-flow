@@ -50,6 +50,7 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
   const [gerando, setGerando] = useState(false);
   const [salvando, setSalvando] = useState(false);
   const [gerandoPosicionamento, setGerandoPosicionamento] = useState(false);
+  const [gerandoPersonas, setGerandoPersonas] = useState(false);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [clienteAssinatura, setClienteAssinatura] = useState<any>(null);
   const [postsGerados, setPostsGerados] = useState<any[]>([]);
@@ -215,6 +216,38 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
     }
   };
 
+  // Buscar dados dos objetivos e análise SWOT
+  const buscarDadosObjetivos = async () => {
+    if (!clienteId) return null;
+
+    try {
+      const { data, error } = await supabase
+        .from('cliente_objetivos')
+        .select('*')
+        .eq('cliente_id', clienteId)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Erro ao buscar dados dos objetivos:', error);
+        return null;
+      }
+
+      return data;
+    } catch (error) {
+      console.error('Erro ao buscar dados dos objetivos:', error);
+      return null;
+    }
+  };
+
+  // Validar se há dados suficientes para gerar personas
+  const validarDadosCompletos = (onboarding: any, objetivos: any, posicionamento: string) => {
+    if (!onboarding || !objetivos) return false;
+    if (!posicionamento || posicionamento.trim().length < 50) return false;
+    if (!onboarding.publico_alvo || onboarding.publico_alvo.length === 0) return false;
+    if (!onboarding.dores_problemas || onboarding.dores_problemas.trim().length < 10) return false;
+    return true;
+  };
+
   const gerarPosicionamentoComIA = async () => {
     setGerandoPosicionamento(true);
 
@@ -298,6 +331,115 @@ Responda com um texto corrido, bem estruturado e com no máximo 700 palavras.
       toast.error('Erro ao gerar posicionamento. Tente novamente.');
     } finally {
       setGerandoPosicionamento(false);
+    }
+  };
+
+  // Gerar 3 personas com IA baseado no onboarding, objetivos, posicionamento e frameworks
+  const gerarPersonasComIA = async () => {
+    setGerandoPersonas(true);
+
+    try {
+      const dadosOnboarding = await buscarDadosOnboarding();
+      const dadosObjetivos = await buscarDadosObjetivos();
+      
+      if (!validarDadosCompletos(dadosOnboarding, dadosObjetivos, conteudo.posicionamento)) {
+        toast.error('Para gerar personas é necessário ter onboarding completo, objetivos definidos e posicionamento de marca preenchido.');
+        return;
+      }
+
+      // Construir prompt estruturado para gerar 3 personas
+      const frameworksTexto = componentesSelecionados.map((comp: any) => `${comp.nome}: ${comp.descricao}`).join('\n');
+      const especialistasTexto = conteudo.especialistas_selecionados?.map((esp: any) => `${esp.nome}: ${esp.descricao}`).join('\n') || '';
+
+      const prompt = `
+Baseando-se nas informações completas abaixo, gere 3 PERSONAS DISTINTAS para estratégia de marketing digital. Formate a resposta em JSON válido com a estrutura especificada.
+
+**INFORMAÇÕES DA EMPRESA:**
+- Nome: ${dadosOnboarding.nome_empresa}
+- Segmento: ${dadosOnboarding.segmento_atuacao}
+- Produtos/Serviços: ${dadosOnboarding.produtos_servicos}
+- Posicionamento: ${conteudo.posicionamento}
+
+**PÚBLICO-ALVO:**
+- Tipos: ${dadosOnboarding.publico_alvo?.join(', ')}
+- Dores/Problemas: ${dadosOnboarding.dores_problemas}
+- O que valorizam: ${dadosOnboarding.valorizado}
+- Como encontram a empresa: ${dadosOnboarding.como_encontram?.join(', ')}
+- Frequência de compra: ${dadosOnboarding.frequencia_compra}
+
+**ANÁLISE SWOT:**
+- Forças: ${(dadosObjetivos.analise_swot as any)?.forcas || dadosOnboarding.forcas}
+- Fraquezas: ${(dadosObjetivos.analise_swot as any)?.fraquezas || dadosOnboarding.fraquezas}
+- Oportunidades: ${(dadosObjetivos.analise_swot as any)?.oportunidades || dadosOnboarding.oportunidades}
+- Ameaças: ${(dadosObjetivos.analise_swot as any)?.ameacas || dadosOnboarding.ameacas}
+
+**OBJETIVOS ESTRATÉGICOS:**
+${JSON.stringify(dadosObjetivos.objetivos, null, 2)}
+
+**FRAMEWORKS DE CONTEÚDO SELECIONADOS:**
+${frameworksTexto}
+
+**ESPECIALISTAS SELECIONADOS:**
+${especialistasTexto}
+
+Gere 3 personas bem distintas que representem diferentes segmentos do público-alvo. Cada persona deve ser única e abordar diferentes aspectos do mercado.
+
+Formate a resposta em JSON válido com esta estrutura EXATA:
+{
+  "personas": [
+    {
+      "nome": "Nome da Persona",
+      "idade": "Faixa etária",
+      "profissao": "Profissão/Cargo",
+      "resumo": "Breve resumo em 2-3 linhas",
+      "dores": ["dor 1", "dor 2", "dor 3"],
+      "motivacoes": ["motivação 1", "motivação 2", "motivação 3"],
+      "canais_preferidos": ["canal 1", "canal 2", "canal 3"],
+      "comportamento_compra": "Como toma decisões de compra",
+      "objecoes": ["objeção 1", "objeção 2"],
+      "como_ajudar": "Como a empresa pode ajudar esta persona"
+    }
+  ]
+}
+
+IMPORTANTE: Retorne APENAS o JSON válido, sem texto adicional.
+`;
+
+      const { data: response, error } = await supabase.functions.invoke('generate-content-with-ai', {
+        body: { prompt }
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      let personasGeradas;
+      try {
+        personasGeradas = typeof response === 'string' ? JSON.parse(response) : response;
+      } catch (parseError) {
+        console.error('Erro ao parsear resposta da IA:', parseError);
+        throw new Error('Resposta da IA não está em formato JSON válido');
+      }
+
+      // Validar estrutura das personas
+      if (!personasGeradas.personas || !Array.isArray(personasGeradas.personas) || personasGeradas.personas.length !== 3) {
+        throw new Error('IA não gerou 3 personas válidas');
+      }
+
+      // Salvar automaticamente como JSON
+      await saveField('persona', JSON.stringify(personasGeradas));
+      
+      setConteudo(prev => ({
+        ...prev,
+        persona: JSON.stringify(personasGeradas)
+      }));
+
+      toast.success('3 Personas geradas e salvas com sucesso!');
+    } catch (error) {
+      console.error('Erro ao gerar personas:', error);
+      toast.error('Erro ao gerar personas. Tente novamente.');
+    } finally {
+      setGerandoPersonas(false);
     }
   };
 
@@ -798,15 +940,120 @@ Responda com um texto corrido, bem estruturado e com no máximo 700 palavras.
 
           <Card>
             <CardHeader>
-              <CardTitle>Persona</CardTitle>
+              <CardTitle>Personas do Cliente</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <Textarea
-                placeholder="Descreva a persona do público-alvo..."
-                value={conteudo.persona || ''}
-                onChange={(e) => setConteudo(prev => ({ ...prev, persona: e.target.value }))}
-                rows={4}
-              />
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label>3 Personas Estratégicas</Label>
+                  <Button 
+                    onClick={gerarPersonasComIA}
+                    disabled={gerandoPersonas}
+                    variant="outline"
+                    size="sm"
+                    className="gap-2"
+                  >
+                    {gerandoPersonas ? (
+                      <>
+                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                        Gerando...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="h-4 w-4" />
+                        Gerar 3 Personas com IA
+                      </>
+                    )}
+                  </Button>
+                </div>
+
+                {/* Exibir personas geradas */}
+                {conteudo.persona && (() => {
+                  try {
+                    const personasData = JSON.parse(conteudo.persona);
+                    if (personasData.personas && Array.isArray(personasData.personas)) {
+                      return (
+                        <div className="grid gap-4 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
+                          {personasData.personas.map((persona: any, index: number) => (
+                            <Card key={index} className="p-4">
+                              <div className="space-y-3">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                                    <span className="text-sm font-semibold text-primary">
+                                      {index + 1}
+                                    </span>
+                                  </div>
+                                  <div>
+                                    <h4 className="font-semibold text-sm">{persona.nome}</h4>
+                                    <p className="text-xs text-muted-foreground">
+                                      {persona.idade} • {persona.profissao}
+                                    </p>
+                                  </div>
+                                </div>
+                                
+                                <p className="text-xs text-muted-foreground leading-relaxed">
+                                  {persona.resumo}
+                                </p>
+                                
+                                <div className="space-y-2 text-xs">
+                                  <div>
+                                    <span className="font-medium text-red-600">Dores:</span>
+                                    <p className="text-muted-foreground mt-1">
+                                      {persona.dores?.join(', ') || 'Não definido'}
+                                    </p>
+                                  </div>
+                                  
+                                  <div>
+                                    <span className="font-medium text-green-600">Motivações:</span>
+                                    <p className="text-muted-foreground mt-1">
+                                      {persona.motivacoes?.join(', ') || 'Não definido'}
+                                    </p>
+                                  </div>
+                                  
+                                  <div>
+                                    <span className="font-medium text-blue-600">Canais:</span>
+                                    <p className="text-muted-foreground mt-1">
+                                      {persona.canais_preferidos?.join(', ') || 'Não definido'}
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+                            </Card>
+                          ))}
+                        </div>
+                      );
+                    }
+                  } catch (error) {
+                    console.error('Erro ao parsear personas:', error);
+                  }
+                  return null;
+                })()}
+
+                {/* Fallback para edição manual */}
+                <div className="space-y-2">
+                  <Label htmlFor="persona-manual">Edição Manual (JSON ou Texto)</Label>
+                  <Textarea
+                    id="persona-manual"
+                    placeholder="Cole aqui o JSON das personas ou descreva as personas manualmente..."
+                    value={conteudo.persona || ''}
+                    onChange={(e) => setConteudo(prev => ({ ...prev, persona: e.target.value }))}
+                    rows={4}
+                    disabled={gerandoPersonas}
+                  />
+                  <Button 
+                    onClick={() => saveField('persona', conteudo.persona)}
+                    disabled={salvando}
+                    size="sm"
+                  >
+                    {salvando ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                    Salvar Personas
+                  </Button>
+                </div>
+                
+                <p className="text-xs text-muted-foreground">
+                  A IA irá gerar 3 personas distintas baseadas no onboarding, objetivos, posicionamento e frameworks selecionados.
+                </p>
+              </div>
             </CardContent>
           </Card>
 
