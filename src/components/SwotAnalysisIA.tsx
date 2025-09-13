@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Brain, TrendingUp, AlertTriangle, Target, Lightbulb } from 'lucide-react';
+import { Loader2, Brain, TrendingUp, AlertTriangle, Target, Lightbulb, Users, Award, Zap, BarChart3, CheckCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -151,6 +151,89 @@ export function SwotAnalysisIA({
     });
 
     return swotData;
+  };
+
+  // Função para extrair e gerar objetivos baseados na análise SWOT
+  const generateClientObjectives = (analysisText: string) => {
+    const objectives = {
+      crescimento_digital: [] as string[],
+      fortalecimento_marca: [] as string[],
+      aquisicao_leads: [] as string[],
+      otimizacao_vendas: [] as string[]
+    };
+
+    // Extrair estratégias prioritárias
+    const strategiesMatch = analysisText.match(/ESTRATÉGIAS PRIORITÁRIAS:([\s\S]*?)(?=\n\n|$)/);
+    const strategies = strategiesMatch ? strategiesMatch[1].trim().split('\n').filter(line => line.trim().startsWith('-')).map(line => line.replace(/^-\s*/, '')) : [];
+
+    // Extrair oportunidades
+    const opportunitiesMatch = analysisText.match(/OPORTUNIDADES:([\s\S]*?)(?=FRAQUEZAS:|AMEAÇAS:|ESTRATÉGIAS|$)/);
+    const opportunities = opportunitiesMatch ? opportunitiesMatch[1].trim().split('\n').filter(line => line.trim().startsWith('-')).map(line => line.replace(/^-\s*/, '')) : [];
+
+    // Extrair forças
+    const strengthsMatch = analysisText.match(/FORÇAS:([\s\S]*?)(?=OPORTUNIDADES:|FRAQUEZAS:|$)/);
+    const strengths = strengthsMatch ? strengthsMatch[1].trim().split('\n').filter(line => line.trim().startsWith('-')).map(line => line.replace(/^-\s*/, '')) : [];
+
+    // Gerar objetivos baseados nas estratégias e insights
+    strategies.forEach(strategy => {
+      const lowerStrategy = strategy.toLowerCase();
+      
+      if (lowerStrategy.includes('seguidor') || lowerStrategy.includes('engajamento') || lowerStrategy.includes('redes sociais') || lowerStrategy.includes('conteúdo')) {
+        objectives.crescimento_digital.push(`Aumentar seguidores: ${strategy}`);
+      }
+      
+      if (lowerStrategy.includes('marca') || lowerStrategy.includes('posicionamento') || lowerStrategy.includes('diferenciação')) {
+        objectives.fortalecimento_marca.push(`Fortalecer marca: ${strategy}`);
+      }
+      
+      if (lowerStrategy.includes('lead') || lowerStrategy.includes('aquisição') || lowerStrategy.includes('conversão') || lowerStrategy.includes('captar')) {
+        objectives.aquisicao_leads.push(`Gerar leads: ${strategy}`);
+      }
+      
+      if (lowerStrategy.includes('venda') || lowerStrategy.includes('vendas') || lowerStrategy.includes('receita') || lowerStrategy.includes('ticket')) {
+        objectives.otimizacao_vendas.push(`Otimizar vendas: ${strategy}`);
+      }
+    });
+
+    // Adicionar objetivos baseados em oportunidades
+    opportunities.forEach(opportunity => {
+      const lowerOpp = opportunity.toLowerCase();
+      
+      if (lowerOpp.includes('nicho') || lowerOpp.includes('público') || lowerOpp.includes('audiência')) {
+        objectives.crescimento_digital.push(`Explorar nicho: ${opportunity}`);
+      }
+      
+      if (lowerOpp.includes('parceria') || lowerOpp.includes('colaboração')) {
+        objectives.fortalecimento_marca.push(`Desenvolver parcerias: ${opportunity}`);
+      }
+      
+      if (lowerOpp.includes('digital') || lowerOpp.includes('online') || lowerOpp.includes('conteúdo')) {
+        objectives.aquisicao_leads.push(`Estratégia digital: ${opportunity}`);
+      }
+    });
+
+    // Se não houver objetivos suficientes, gerar alguns padrão baseados nos pontos fortes
+    if (objectives.crescimento_digital.length === 0) {
+      objectives.crescimento_digital.push("Desenvolver estratégia de conteúdo para redes sociais");
+      objectives.crescimento_digital.push("Implementar campanhas de engajamento orgânico");
+    }
+    
+    if (objectives.fortalecimento_marca.length === 0) {
+      objectives.fortalecimento_marca.push("Definir posicionamento único da marca");
+      objectives.fortalecimento_marca.push("Criar identidade visual consistente");
+    }
+    
+    if (objectives.aquisicao_leads.length === 0) {
+      objectives.aquisicao_leads.push("Desenvolver funil de captação de leads");
+      objectives.aquisicao_leads.push("Criar landing pages otimizadas");
+    }
+    
+    if (objectives.otimizacao_vendas.length === 0) {
+      objectives.otimizacao_vendas.push("Otimizar processo de vendas");
+      objectives.otimizacao_vendas.push("Implementar CRM para gestão de leads");
+    }
+
+    return objectives;
   };
 
   // Carregar dados iniciais se existirem
@@ -523,6 +606,128 @@ export function SwotAnalysisIA({
               </div>
             </CardContent>
           </Card>
+
+          {/* Objetivos do Cliente - Baseados na Análise SWOT */}
+          {(() => {
+            const clientObjectives = generateClientObjectives(analysis);
+            
+            return (
+              <Card className="border-2 border-purple-200 dark:border-purple-800">
+                <CardHeader className="bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-950/50 dark:to-indigo-950/30">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/50">
+                        <Target className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+                      </div>
+                      <div>
+                        <CardTitle className="text-purple-800 dark:text-purple-200">Objetivos Estratégicos do Cliente</CardTitle>
+                        <CardDescription className="text-purple-700 dark:text-purple-300">
+                          Metas específicas baseadas na análise SWOT de {clienteNome}
+                        </CardDescription>
+                      </div>
+                    </div>
+                    <Badge variant="outline" className="bg-purple-100 dark:bg-purple-900/50 border-purple-300 dark:border-purple-700">
+                      <CheckCircle className="h-3 w-3 mr-1" />
+                      Baseado em IA
+                    </Badge>
+                  </div>
+                </CardHeader>
+                <CardContent className="pt-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Crescimento Digital */}
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2 mb-3">
+                        <Users className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                        <h3 className="font-semibold text-blue-800 dark:text-blue-200">Crescimento Digital</h3>
+                      </div>
+                      <div className="space-y-2">
+                        {clientObjectives.crescimento_digital.slice(0, 3).map((objective, index) => (
+                          <div key={index} className="flex items-start gap-2 p-3 bg-blue-50 dark:bg-blue-950/30 rounded-lg">
+                            <div className="w-2 h-2 rounded-full bg-blue-600 dark:bg-blue-400 mt-2 flex-shrink-0" />
+                            <p className="text-sm text-blue-900 dark:text-blue-100 leading-relaxed">{objective}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Fortalecimento da Marca */}
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2 mb-3">
+                        <Award className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                        <h3 className="font-semibold text-purple-800 dark:text-purple-200">Fortalecimento da Marca</h3>
+                      </div>
+                      <div className="space-y-2">
+                        {clientObjectives.fortalecimento_marca.slice(0, 3).map((objective, index) => (
+                          <div key={index} className="flex items-start gap-2 p-3 bg-purple-50 dark:bg-purple-950/30 rounded-lg">
+                            <div className="w-2 h-2 rounded-full bg-purple-600 dark:bg-purple-400 mt-2 flex-shrink-0" />
+                            <p className="text-sm text-purple-900 dark:text-purple-100 leading-relaxed">{objective}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Aquisição de Leads */}
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2 mb-3">
+                        <Zap className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+                        <h3 className="font-semibold text-orange-800 dark:text-orange-200">Aquisição de Leads</h3>
+                      </div>
+                      <div className="space-y-2">
+                        {clientObjectives.aquisicao_leads.slice(0, 3).map((objective, index) => (
+                          <div key={index} className="flex items-start gap-2 p-3 bg-orange-50 dark:bg-orange-950/30 rounded-lg">
+                            <div className="w-2 h-2 rounded-full bg-orange-600 dark:bg-orange-400 mt-2 flex-shrink-0" />
+                            <p className="text-sm text-orange-900 dark:text-orange-100 leading-relaxed">{objective}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Otimização de Vendas */}
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2 mb-3">
+                        <BarChart3 className="h-5 w-5 text-green-600 dark:text-green-400" />
+                        <h3 className="font-semibold text-green-800 dark:text-green-200">Otimização de Vendas</h3>
+                      </div>
+                      <div className="space-y-2">
+                        {clientObjectives.otimizacao_vendas.slice(0, 3).map((objective, index) => (
+                          <div key={index} className="flex items-start gap-2 p-3 bg-green-50 dark:bg-green-950/30 rounded-lg">
+                            <div className="w-2 h-2 rounded-full bg-green-600 dark:bg-green-400 mt-2 flex-shrink-0" />
+                            <p className="text-sm text-green-900 dark:text-green-100 leading-relaxed">{objective}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Resumo de Ações Prioritárias */}
+                  <div className="mt-6 pt-6 border-t border-purple-200 dark:border-purple-800">
+                    <h4 className="font-semibold text-purple-800 dark:text-purple-200 mb-3 flex items-center gap-2">
+                      <Target className="h-4 w-4" />
+                      Próximos Passos Recomendados
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div className="flex items-center gap-2 p-2 bg-purple-50 dark:bg-purple-950/20 rounded-lg">
+                        <CheckCircle className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                        <span className="text-sm text-purple-800 dark:text-purple-200">Definir métricas de acompanhamento</span>
+                      </div>
+                      <div className="flex items-center gap-2 p-2 bg-purple-50 dark:bg-purple-950/20 rounded-lg">
+                        <CheckCircle className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                        <span className="text-sm text-purple-800 dark:text-purple-200">Criar cronograma de implementação</span>
+                      </div>
+                      <div className="flex items-center gap-2 p-2 bg-purple-50 dark:bg-purple-950/20 rounded-lg">
+                        <CheckCircle className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                        <span className="text-sm text-purple-800 dark:text-purple-200">Alocar recursos necessários</span>
+                      </div>
+                      <div className="flex items-center gap-2 p-2 bg-purple-50 dark:bg-purple-950/20 rounded-lg">
+                        <CheckCircle className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                        <span className="text-sm text-purple-800 dark:text-purple-200">Estabelecer indicadores de sucesso</span>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })()}
         </div>
       )}
     </div>
