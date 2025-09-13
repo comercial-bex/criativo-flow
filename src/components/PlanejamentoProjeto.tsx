@@ -415,26 +415,35 @@ ${objetivosEscolhidos.includes('reconhecimento_marca') ? `🏆 RECONHECIMENTO DE
   }
 
   return (
-    <div className="space-y-4">
-      <Card>
-        <CardHeader>
+    <div className="space-y-6">
+      <Card className="backdrop-blur-sm bg-card/95 border-primary/10 shadow-lg hover:shadow-xl transition-all duration-300">
+        <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Target className="h-5 w-5 text-primary" />
-              <CardTitle>Planejamento do Projeto</CardTitle>
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-full bg-gradient-to-r from-primary/10 to-primary/5">
+                <Target className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <CardTitle className="text-xl">Planejamento Estratégico</CardTitle>
+                <CardDescription className="mt-1">
+                  Baseado na assinatura e objetivos de {clienteNome}
+                </CardDescription>
+              </div>
               {planoConfig && (
-                <Badge variant="outline">{planoConfig.nome}</Badge>
+                <Badge className="bg-gradient-to-r from-primary to-primary/80 text-primary-foreground px-3 py-1 shadow-lg">
+                  {planoConfig.nome}
+                </Badge>
               )}
             </div>
             {!planejamento && planoConfig && objetivos && (
-              <Button onClick={() => setDialogOpen(true)} size="sm">
-                Criar Planejamento
+              <Button 
+                onClick={() => setDialogOpen(true)} 
+                className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+              >
+                ✨ Criar Planejamento
               </Button>
             )}
           </div>
-          <CardDescription>
-            Planejamento estratégico baseado na assinatura e objetivos de {clienteNome}
-          </CardDescription>
         </CardHeader>
         
         {planejamento ? (

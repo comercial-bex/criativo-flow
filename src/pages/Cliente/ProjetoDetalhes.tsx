@@ -121,90 +121,111 @@ export default function ProjetoDetalhes() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center gap-4">
-        <Button 
-          variant="outline" 
-          size="sm"
-          onClick={() => navigate(`/clientes/${clienteId}/detalhes`)}
-        >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Voltar
-        </Button>
-        <SectionHeader
-          title={projeto.nome}
-          description={`Projeto de ${cliente.nome}`}
-        />
-      </div>
-
-      {/* Informações do Projeto */}
-      <Card>
-        <CardHeader>
-          <div className="flex justify-between items-start">
-            <CardTitle>Detalhes do Projeto</CardTitle>
-            <Badge className={getStatusColor(projeto.status)}>
-              {getStatusText(projeto.status)}
-            </Badge>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30">
+      <div className="container mx-auto px-6 py-8 space-y-8">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => navigate(`/clientes/${clienteId}/detalhes`)}
+              className="hover:scale-105 transition-transform"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Voltar
+            </Button>
             <div>
-              <p className="text-sm font-medium text-muted-foreground">Cliente</p>
-              <div className="flex items-center mt-1">
-                <User className="h-4 w-4 mr-2 text-muted-foreground" />
-                <p className="font-medium">{cliente.nome}</p>
-              </div>
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+                {projeto.nome}
+              </h1>
+              <p className="text-muted-foreground mt-1">
+                Projeto de {cliente.nome}
+              </p>
             </div>
-            
-            {projeto.orcamento && (
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Orçamento</p>
-                <div className="flex items-center mt-1">
-                  <DollarSign className="h-4 w-4 mr-2 text-muted-foreground" />
-                  <p className="font-medium">R$ {Number(projeto.orcamento).toLocaleString('pt-BR')}</p>
-                </div>
-              </div>
-            )}
-            
-            {projeto.data_inicio && (
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Data de Início</p>
-                <div className="flex items-center mt-1">
-                  <Calendar className="h-4 w-4 mr-2 text-muted-foreground" />
-                  <p className="font-medium">{new Date(projeto.data_inicio).toLocaleDateString('pt-BR')}</p>
-                </div>
-              </div>
-            )}
-            
-            {projeto.data_fim && (
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Data de Término</p>
-                <div className="flex items-center mt-1">
-                  <Calendar className="h-4 w-4 mr-2 text-muted-foreground" />
-                  <p className="font-medium">{new Date(projeto.data_fim).toLocaleDateString('pt-BR')}</p>
-                </div>
-              </div>
-            )}
           </div>
           
-          {projeto.descricao && (
-            <div className="mt-6">
-              <p className="text-sm font-medium text-muted-foreground mb-2">Descrição</p>
-              <p className="text-sm">{projeto.descricao}</p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+          <Badge className={`${getStatusColor(projeto.status)} px-4 py-2 font-medium shadow-lg`}>
+            {getStatusText(projeto.status)}
+          </Badge>
+        </div>
 
-      {/* Planejamento do Projeto */}
-      <PlanejamentoProjeto
-        projetoId={projeto.id}
-        clienteId={cliente.id}
-        clienteNome={cliente.nome}
-        assinaturaId={cliente.assinatura_id}
-      />
+        {/* Informações do Projeto */}
+        <Card className="backdrop-blur-sm bg-card/95 border-primary/10 shadow-lg hover:shadow-xl transition-all duration-300">
+          <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent">
+            <CardTitle className="flex items-center gap-3 text-xl">
+              <div className="p-2 rounded-full bg-primary/10">
+                <User className="h-5 w-5 text-primary" />
+              </div>
+              Detalhes do Projeto
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="group">
+                <p className="text-sm font-semibold text-muted-foreground mb-2">Cliente</p>
+                <div className="flex items-center p-3 rounded-lg bg-gradient-to-r from-muted/30 to-transparent group-hover:from-primary/5 transition-all duration-300">
+                  <div className="p-2 rounded-full bg-primary/10 mr-3">
+                    <User className="h-4 w-4 text-primary" />
+                  </div>
+                  <p className="font-medium">{cliente.nome}</p>
+                </div>
+              </div>
+              
+              {projeto.orcamento && (
+                <div className="group">
+                  <p className="text-sm font-semibold text-muted-foreground mb-2">Orçamento</p>
+                  <div className="flex items-center p-3 rounded-lg bg-gradient-to-r from-muted/30 to-transparent group-hover:from-primary/5 transition-all duration-300">
+                    <div className="p-2 rounded-full bg-green-500/10 mr-3">
+                      <DollarSign className="h-4 w-4 text-green-600" />
+                    </div>
+                    <p className="font-medium">R$ {Number(projeto.orcamento).toLocaleString('pt-BR')}</p>
+                  </div>
+                </div>
+              )}
+              
+              {projeto.data_inicio && (
+                <div className="group">
+                  <p className="text-sm font-semibold text-muted-foreground mb-2">Data de Início</p>
+                  <div className="flex items-center p-3 rounded-lg bg-gradient-to-r from-muted/30 to-transparent group-hover:from-primary/5 transition-all duration-300">
+                    <div className="p-2 rounded-full bg-blue-500/10 mr-3">
+                      <Calendar className="h-4 w-4 text-blue-600" />
+                    </div>
+                    <p className="font-medium">{new Date(projeto.data_inicio).toLocaleDateString('pt-BR')}</p>
+                  </div>
+                </div>
+              )}
+              
+              {projeto.data_fim && (
+                <div className="group">
+                  <p className="text-sm font-semibold text-muted-foreground mb-2">Data de Término</p>
+                  <div className="flex items-center p-3 rounded-lg bg-gradient-to-r from-muted/30 to-transparent group-hover:from-primary/5 transition-all duration-300">
+                    <div className="p-2 rounded-full bg-orange-500/10 mr-3">
+                      <Calendar className="h-4 w-4 text-orange-600" />
+                    </div>
+                    <p className="font-medium">{new Date(projeto.data_fim).toLocaleDateString('pt-BR')}</p>
+                  </div>
+                </div>
+              )}
+            </div>
+            
+            {projeto.descricao && (
+              <div className="mt-8 p-6 rounded-lg bg-gradient-to-r from-muted/20 to-transparent border border-primary/10">
+                <p className="text-sm font-semibold text-muted-foreground mb-3">Descrição do Projeto</p>
+                <p className="text-sm leading-relaxed">{projeto.descricao}</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Planejamento do Projeto */}
+        <PlanejamentoProjeto
+          projetoId={projeto.id}
+          clienteId={cliente.id}
+          clienteNome={cliente.nome}
+          assinaturaId={cliente.assinatura_id}
+        />
+      </div>
     </div>
   );
 }
