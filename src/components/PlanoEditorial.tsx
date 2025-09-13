@@ -587,7 +587,7 @@ Formate a resposta em JSON com esta estrutura:
 
             <Card>
               <CardHeader>
-                <CardTitle>Definição de Persona</CardTitle>
+                <CardTitle>Definição de Personas</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <Button 
@@ -615,7 +615,7 @@ Formate a resposta em JSON com esta estrutura:
                         .eq('cliente_id', clienteId);
 
                       const prompt = `
-Com base nas seguintes informações da empresa, crie uma persona detalhada:
+Com base nas seguintes informações da empresa, crie 3 personas detalhadas e distintas:
 
 INFORMAÇÕES DA MARCA:
 - Nome da empresa: ${clienteData?.nome || 'Empresa'}
@@ -636,13 +636,26 @@ FRAMEWORKS SELECIONADOS: ${frameworksSelecionados.join(', ')}
 MISSÃO ATUAL: ${conteudoEditorial.missao || ''}
 POSICIONAMENTO ATUAL: ${conteudoEditorial.posicionamento || ''}
 
-Crie uma persona detalhada em formato de texto corrido (máximo 300 palavras) que inclua:
+Crie 3 personas distintas em formato de texto corrido, cada uma com no máximo 200 palavras. Para cada persona inclua:
+
 1. Nome fictício e idade aproximada
 2. Profissão e contexto socioeconômico
 3. Principais dores e necessidades
 4. Comportamento digital e preferências de consumo
 5. Motivações e objetivos
 6. Como a marca pode atender suas necessidades
+
+As 3 personas devem representar diferentes segmentos do público-alvo da empresa, cobrindo variações em idade, poder aquisitivo, comportamento de compra, etc.
+
+Formate a resposta assim:
+--- PERSONA 1 ---
+[descrição da persona 1]
+
+--- PERSONA 2 ---
+[descrição da persona 2]
+
+--- PERSONA 3 ---
+[descrição da persona 3]
 
 Use um tom profissional mas acessível.
                       `;
@@ -658,14 +671,14 @@ Use um tom profissional mas acessível.
                       
                       toast({
                         title: "Sucesso",
-                        description: "Persona gerada com base nas informações dos quadros anteriores!",
+                        description: "3 personas geradas com base nas informações dos quadros anteriores!",
                       });
 
                     } catch (error) {
-                      console.error('Erro ao gerar persona:', error);
+                      console.error('Erro ao gerar personas:', error);
                       toast({
                         title: "Erro",
-                        description: "Erro ao gerar persona com IA.",
+                        description: "Erro ao gerar personas com IA.",
                         variant: "destructive",
                       });
                     } finally {
@@ -676,14 +689,14 @@ Use um tom profissional mas acessível.
                   className="w-full"
                 >
                   <Wand2 className="h-4 w-4 mr-2" />
-                  {generating ? 'Gerando Persona...' : 'Gerar Persona com base nas informações'}
+                  {generating ? 'Gerando 3 Personas...' : 'Gerar 3 Personas com base nas informações'}
                 </Button>
                 <Textarea
                   value={conteudoEditorial.persona || ''}
                   onChange={(e) => setConteudoEditorial({...conteudoEditorial, persona: e.target.value})}
                   onBlur={() => conteudoEditorial.persona && saveField('persona', conteudoEditorial.persona)}
-                  placeholder="Descreva as personas do cliente com base no onboarding..."
-                  className="min-h-[150px]"
+                  placeholder="Aqui serão exibidas as 3 personas geradas com base no onboarding e configurações anteriores..."
+                  className="min-h-[300px]"
                 />
               </CardContent>
             </Card>
