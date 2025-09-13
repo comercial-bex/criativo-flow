@@ -370,10 +370,8 @@ export default function PlanejamentoVisual() {
                           <SelectValue placeholder="Selecione o tipo..." />
                         </SelectTrigger>
                         <SelectContent className="bg-background border-primary/20">
-                          <SelectItem value="post" className="hover:bg-primary/5">📱 Post</SelectItem>
-                          <SelectItem value="story" className="hover:bg-primary/5">📸 Story</SelectItem>
-                          <SelectItem value="reel" className="hover:bg-primary/5">🎬 Reel</SelectItem>
-                          <SelectItem value="carrossel" className="hover:bg-primary/5">🎠 Carrossel</SelectItem>
+                          <SelectItem value="imagem" className="hover:bg-primary/5">📱 Imagem</SelectItem>
+                          <SelectItem value="video" className="hover:bg-primary/5">🎬 Vídeo</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -469,10 +467,8 @@ export default function PlanejamentoVisual() {
                             variant="outline" 
                             className="text-xs font-medium bg-primary/5 border-primary/20 text-primary"
                           >
-                            {post.tipo_criativo === 'post' && '📱'}
-                            {post.tipo_criativo === 'story' && '📸'}
-                            {post.tipo_criativo === 'reel' && '🎬'}
-                            {post.tipo_criativo === 'carrossel' && '🎠'}
+                            {post.tipo_criativo === 'imagem' && '📱'}
+                            {post.tipo_criativo === 'video' && '🎬'}
                             {' '}
                             {post.tipo_criativo.toUpperCase()}
                           </Badge>

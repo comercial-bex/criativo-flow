@@ -26,12 +26,12 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-image-1',
+        model: 'dall-e-3',
         prompt: `${prompt}. Style: ${style}. High quality, professional, social media ready.`,
         n: 1,
         size: size,
-        quality: 'high',
-        output_format: 'png'
+        quality: 'standard',
+        style: 'vivid'
       }),
     });
 
