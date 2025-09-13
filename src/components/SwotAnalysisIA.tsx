@@ -151,44 +151,44 @@ export function SwotAnalysisIA({
   };
 
   const formatAnalysis = (text: string) => {
-    // Divide o texto em seções baseadas em títulos ou quebras de linha
+    // Divide o texto em seções de forma mais limpa
     const sections = text.split('\n').filter(line => line.trim());
     
     return sections.map((section, index) => {
       const trimmedSection = section.trim();
       
-      // Detecta títulos (linhas que começam com número, maiúscula ou contêm palavras-chave)
-      const isTitle = /^(\d+\.|[A-Z][A-Z\s]+:|\*\*[^*]+\*\*|#{1,3}\s|FORÇAS|FRAQUEZAS|OPORTUNIDADES|AMEAÇAS|ANÁLISE|RECOMENDAÇÕES|INSIGHTS)/.test(trimmedSection);
+      // Detecta títulos principais (FORÇAS, OPORTUNIDADES, etc.)
+      const isMainTitle = /^(FORÇAS|OPORTUNIDADES|FRAQUEZAS|AMEAÇAS|RECOMENDAÇÕES)$/i.test(trimmedSection);
       
-      if (isTitle) {
+      if (isMainTitle) {
         return (
-          <h3 key={index} className="font-semibold text-lg text-primary mt-4 mb-2">
-            {trimmedSection.replace(/^\*\*|\*\*$/g, '').replace(/^#{1,3}\s/, '')}
+          <h3 key={index} className="font-bold text-xl text-primary mt-6 mb-3 uppercase">
+            {trimmedSection}
           </h3>
         );
       }
       
-      // Detecta listas (linhas que começam com -, *, ou números)
-      const isList = /^[\-\*\•]\s/.test(trimmedSection);
+      // Detecta subtítulos
+      const isSubTitle = /^[A-Z][^.!?]*:?\s*$/.test(trimmedSection) && trimmedSection.length < 80;
       
-      if (isList) {
+      if (isSubTitle && !trimmedSection.includes('.')) {
         return (
-          <li key={index} className="ml-4 mb-1 text-muted-foreground">
-            {trimmedSection.replace(/^[\-\*\•]\s/, '')}
-          </li>
+          <h4 key={index} className="font-semibold text-lg text-secondary-foreground mt-4 mb-2">
+            {trimmedSection}
+          </h4>
         );
       }
       
-      // Texto normal
+      // Texto normal em parágrafos
       return (
-        <p key={index} className="mb-3 text-muted-foreground leading-relaxed">
+        <p key={index} className="mb-3 text-muted-foreground leading-relaxed text-justify">
           {trimmedSection}
         </p>
       );
     });
   };
 
-  // Função para extrair dados SWOT da análise
+  // Função para extrair dados SWOT da análise mais limpa
   const extractSwotData = (analysisText: string) => {
     const swotData = {
       forcas: [],
@@ -203,20 +203,29 @@ export function SwotAnalysisIA({
     let currentSection = '';
 
     sections.forEach(line => {
-      const lowerLine = line.toLowerCase().trim();
+      const trimmedLine = line.trim();
+      const lowerLine = trimmedLine.toLowerCase();
       
-      if (lowerLine.includes('forças') || lowerLine.includes('strengths')) {
+      // Detectar seções principais
+      if (lowerLine === 'forças' || lowerLine.includes('forças')) {
         currentSection = 'forcas';
-      } else if (lowerLine.includes('oportunidades') || lowerLine.includes('opportunities')) {
+      } else if (lowerLine === 'oportunidades' || lowerLine.includes('oportunidades')) {
         currentSection = 'oportunidades';
-      } else if (lowerLine.includes('fraquezas') || lowerLine.includes('weaknesses')) {
+      } else if (lowerLine === 'fraquezas' || lowerLine.includes('fraquezas')) {
         currentSection = 'fraquezas';
-      } else if (lowerLine.includes('ameaças') || lowerLine.includes('threats')) {
+      } else if (lowerLine === 'ameaças' || lowerLine.includes('ameaças')) {
         currentSection = 'ameacas';
-      } else if (line.trim().startsWith('-') || line.trim().startsWith('•')) {
-        const item = line.trim().replace(/^[-•]\s*/, '');
-        if (item && currentSection && swotData[currentSection]) {
-          swotData[currentSection].push(item);
+      } else if (lowerLine.includes('recomendações') || lowerLine.includes('estratégicas')) {
+        currentSection = ''; // Parar de capturar
+      } else if (trimmedLine && currentSection && swotData[currentSection] !== undefined) {
+        // Capturar o conteúdo limpo, removendo marcadores se houver
+        const cleanItem = trimmedLine
+          .replace(/^[-•*]\s*/, '') // Remove marcadores de lista
+          .replace(/^\d+\.\s*/, '') // Remove numeração
+          .trim();
+        
+        if (cleanItem && cleanItem.length > 10) { // Apenas itens com conteúdo substancial
+          swotData[currentSection].push(cleanItem);
         }
       }
     });

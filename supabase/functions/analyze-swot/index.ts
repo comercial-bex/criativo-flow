@@ -56,125 +56,63 @@ serve(async (req) => {
       throw new Error('Cliente não encontrado');
     }
 
-    // Preparar prompt ULTRA PROFUNDO para análise da matriz SWOT
+    // Preparar prompt contextualizado para análise da matriz SWOT
     const prompt = `
-MISSÃO: Você é um consultor estratégico de marketing digital SÊNIOR com 20+ anos transformando empresas através de insights penetrantes que 95% dos consultores não conseguem enxergar.
+Você é um consultor estratégico especializado em marketing digital e crescimento empresarial. Analise a empresa "${clienteData.nome}" e forneça uma análise SWOT prática e direcionada.
 
-EMPRESA ANALISADA: "${clienteData.nome}"
+CONTEXTO DA EMPRESA:
+Empresa: ${onboardingData.nome_empresa}
+Segmento: ${onboardingData.segmento_atuacao}
+Localização: ${onboardingData.localizacao}
+Tempo no mercado: ${onboardingData.tempo_mercado}
+Produtos/Serviços: ${onboardingData.produtos_servicos}
 
-═══════════════════════════════════════════════════════════════════════════════
-📊 DADOS EMPRESARIAIS COMPLETOS
-═══════════════════════════════════════════════════════════════════════════════
+PÚBLICO E MERCADO:
+Público-alvo: ${onboardingData.publico_alvo?.join(', ')}
+Principais dores: ${onboardingData.dores_problemas}
+O que valorizam: ${onboardingData.valorizado}
+Ticket médio: ${onboardingData.ticket_medio}
+Como encontram a empresa: ${onboardingData.como_encontram?.join(', ')}
 
-🏢 PERFIL ORGANIZACIONAL:
-• Empresa: ${onboardingData.nome_empresa}
-• Segmento: ${onboardingData.segmento_atuacao}
-• Produtos/Serviços: ${onboardingData.produtos_servicos}
-• Tempo no Mercado: ${onboardingData.tempo_mercado}
-• Localização: ${onboardingData.localizacao}
-• Estrutura: ${onboardingData.estrutura_atual}
+PRESENÇA DIGITAL ATUAL:
+Canais ativos: ${onboardingData.presenca_digital?.join(', ')}
+Tipos de conteúdo: ${onboardingData.tipos_conteudo?.join(', ')}
+Frequência de posts: ${onboardingData.frequencia_postagens}
+Objetivos digitais: ${onboardingData.objetivos_digitais}
 
-💰 INTELIGÊNCIA COMERCIAL:
-• Público-Alvo: ${onboardingData.publico_alvo?.join(', ')}
-• Dores Específicas: ${onboardingData.dores_problemas}
-• Fatores de Valor: ${onboardingData.valorizado}
-• Ticket Médio: ${onboardingData.ticket_medio}
-• Ciclo de Compra: ${onboardingData.frequencia_compra}
-• Canais de Descoberta: ${onboardingData.como_encontram?.join(', ')}
-• Métodos de Aquisição: ${onboardingData.forma_aquisicao?.join(', ')}
+COMPETIÇÃO E DIFERENCIAÇÃO:
+Concorrentes: ${onboardingData.concorrentes_diretos}
+Diferenciais: ${onboardingData.diferenciais}
+Como quer ser lembrada: ${onboardingData.como_lembrada}
 
-🏆 POSICIONAMENTO COMPETITIVO:
-• Concorrentes Diretos: ${onboardingData.concorrentes_diretos}
-• Diferenciais Declarados: ${onboardingData.diferenciais}
-• História da Marca: ${onboardingData.historia_marca}
-• Valores Fundamentais: ${onboardingData.valores_principais}
-• Identidade Desejada: ${onboardingData.como_lembrada}
+OBJETIVOS E VISÃO:
+Onde quer estar em 6 meses: ${onboardingData.onde_6_meses}
+Resultados esperados: ${onboardingData.resultados_esperados?.join(', ')}
 
-🌐 ECOSSISTEMA DIGITAL:
-• Presença Ativa: ${onboardingData.presenca_digital?.join(', ')}
-• Conteúdo Atual: ${onboardingData.tipos_conteudo?.join(', ')}
-• Frequência: ${onboardingData.frequencia_postagens}
-• Investimento Pago: ${onboardingData.midia_paga}
-• Tom Comunicacional: ${onboardingData.tom_voz?.join(', ')}
-• Objetivos Digitais: ${onboardingData.objetivos_digitais}
+INSTRUÇÕES:
+1. Considere a realidade do mercado local de ${onboardingData.localizacao}
+2. Baseie-se no perfil real do público-alvo mencionado
+3. Seja específico sobre o segmento ${onboardingData.segmento_atuacao}
+4. Foque em ações práticas e viáveis
+5. Use linguagem natural e profissional
+6. Não use emojis, marcadores técnicos ou formatação excessiva
 
-🎯 RELACIONAMENTO & OPERAÇÕES:
-• Tipos de Relacionamento: ${onboardingData.relacionamento_clientes?.join(', ')}
-• Canais Atendimento: ${onboardingData.canais_atendimento_ativos}
-• Force de Vendas: ${onboardingData.equipe_vendas_externa}
+Formate a resposta assim:
 
-🚀 VISÃO ESTRATÉGICA:
-• Projeção 6 meses: ${onboardingData.onde_6_meses}
-• Resultados Esperados: ${onboardingData.resultados_esperados?.join(', ')}
-• Objetivos Offline: ${onboardingData.objetivos_offline}
+FORÇAS
+Liste 3-4 pontos fortes específicos da empresa baseados nos dados reais fornecidos. Considere vantagens competitivas, recursos disponíveis e diferenciações genuínas.
 
-═══════════════════════════════════════════════════════════════════════════════
-🧠 METODOLOGIA DE ANÁLISE PENETRANTE
-═══════════════════════════════════════════════════════════════════════════════
+OPORTUNIDADES  
+Identifique 3-4 oportunidades reais de mercado considerando a localização, público-alvo e segmento. Foque em tendências locais e necessidades não atendidas do público específico.
 
-DETECTE O INVISÍVEL:
-1. CONTRADIÇÕES FATAIS: O que declaram vs. o que realmente fazem - identifique gaps críticos
-2. OPORTUNIDADES CEGAS: Vantagens competitivas que eles possuem mas não exploram
-3. LACUNAS ESTRATÉGICAS: Conexões óbvias entre dados que eles não fizeram
-4. BLIND SPOTS COMPETITIVOS: Vulnerabilidades que concorrentes podem explorar
-5. ALAVANCAS OCULTAS: Recursos subutilizados que podem gerar crescimento exponencial
+FRAQUEZAS
+Aponte 3-4 limitações ou gaps que impedem o crescimento, baseados nos dados fornecidos. Seja direto sobre gargalos operacionais, digitais ou de posicionamento.
 
-FOQUE NO CRESCIMENTO:
-• MONETIZAÇÃO IMEDIATA: O que pode gerar receita em 30 dias
-• SCALING ORGÂNICO: Como multiplicar seguidores sem investimento adicional  
-• LEAD ACQUISITION: Estratégias específicas baseadas no perfil real do público
-• DIFERENCIAÇÃO COMPETITIVA: Posicionamento único baseado em dados reais
+AMEAÇAS
+Liste 3-4 riscos reais do mercado local e segmento. Considere concorrência, mudanças no comportamento do consumidor local e vulnerabilidades específicas.
 
-═══════════════════════════════════════════════════════════════════════════════
-📋 FORMATO DE RESPOSTA OBRIGATÓRIO
-═══════════════════════════════════════════════════════════════════════════════
-
-🎯 FORÇAS (Assets Estratégicos Subutilizados):
-[FORÇA COMERCIAL]: [Vantagem específica + como monetizar imediatamente]
-[FORÇA OPERACIONAL]: [Eficiência única + como acelerar conversão]
-[FORÇA DE MARCA]: [Diferencial real + como explorar para aquisição]
-[FORÇA DIGITAL]: [Capacidade online + estratégia de amplificação]
-
-🚀 OPORTUNIDADES (Territórios Virgens):
-[NICHO OCULTO]: [Segmento específico ignorado + estratégia de captura]
-[GAP COMPETITIVO]: [Falha dos concorrentes + como explorar]
-[TREND EMERGENTE]: [Tendência do setor + como se posicionar primeiro]
-[SINERGIA INEXPLORADA]: [Conexão entre recursos + estratégia de ativação]
-
-⚠️ FRAQUEZAS (Gargalos Críticos Invisíveis):
-[GARGALO DE RECEITA]: [Limitação específica + impacto no faturamento]
-[FALHA DIGITAL]: [Gap na presença online + perda de oportunidades]
-[INCONSISTÊNCIA]: [Contradição entre declarado e executado]
-[LIMITAÇÃO OPERACIONAL]: [Processo que impede escala + solução]
-
-🚨 AMEAÇAS (Riscos Estratégicos Reais):
-[RISCO COMPETITIVO]: [Movimento provável da concorrência + contramedida]
-[VULNERABILIDADE DIGITAL]: [Fraqueza online + como concorrentes podem explorar]
-[MUDANÇA DE MERCADO]: [Tendência que pode obsolescer o modelo atual]
-[DEPENDÊNCIA CRÍTICA]: [Ponto único de falha + estratégia de mitigação]
-
-💡 INSIGHTS PENETRANTES (O Que Eles Não Veem):
-[CONEXÃO OCULTA]: [Padrão não identificado nos dados + oportunidade]
-[ALAVANCA ESCONDIDA]: [Recurso subutilizado + potencial de crescimento]
-[ESTRATÉGIA REVERSA]: [Abordagem contraintuitiva baseada nos dados]
-
-🎯 PLANO DE AÇÃO IMEDIATO (30-60-90 dias):
-[30 DIAS]: [Ação específica para impacto imediato em vendas/seguidores]
-[60 DIAS]: [Estratégia de médio prazo para diferenciação]
-[90 DIAS]: [Movimento estratégico para dominação do nicho]
-
-═══════════════════════════════════════════════════════════════════════════════
-
-DIRETRIZES CRÍTICAS:
-✓ Use APENAS dados reais fornecidos - não invente informações
-✓ Seja BRUTALMENTE específico e acionável
-✓ Identifique contradições entre intenção e execução
-✓ Detecte oportunidades que 95% dos consultores perdem
-✓ Foque em crescimento mensurável: seguidores, leads, vendas
-✓ Conecte pontos que eles não conectaram
-✓ Forneça insights que gerem resultados imediatos
-
-ANÁLISE DEVE SER: Profunda • Crítica • Acionável • Baseada em dados • Focada em crescimento
+RECOMENDAÇÕES ESTRATÉGICAS
+Forneça 2-3 ações prioritárias específicas para os próximos 90 dias, considerando o contexto real da empresa e mercado local.
 `;
 
     // Chamar OpenAI
@@ -189,7 +127,7 @@ ANÁLISE DEVE SER: Profunda • Crítica • Acionável • Baseada em dados •
         messages: [
           {
             role: 'system',
-            content: 'Você é McKenzie + BCG + Deloitte condensados em uma IA. 20+ anos transformando empresas. Especialista em crescimento exponencial, marketing digital estratégico e monetização. Você vê padrões invisíveis, identifica oportunidades ocultas e gera insights que aumentam receita. Seja direto, crítico e baseado em dados reais.'
+            content: 'Você é um consultor estratégico experiente especializado em marketing digital. Forneça análises práticas, diretas e baseadas na realidade do mercado brasileiro. Use linguagem profissional e natural, sem emojis ou formatação excessiva.'
           },
           {
             role: 'user',
