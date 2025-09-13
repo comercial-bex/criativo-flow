@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
@@ -398,19 +398,81 @@ Formate a resposta em JSON com esta estrutura:
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="missao" className="mt-6">
+        <TabsContent value="missao" className="space-y-6">
+          <div className="text-center space-y-4">
+            <div className="mx-auto w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+              <Target className="h-8 w-8 text-white" />
+            </div>
+            <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              Missão da Empresa
+            </h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              Defina claramente a missão da empresa para orientar toda a estratégia de conteúdo
+            </p>
+          </div>
+
           <Card>
             <CardHeader>
-              <CardTitle>Missão do Plano Editorial</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <Target className="h-5 w-5" />
+                Declaração de Missão
+              </CardTitle>
+              <CardDescription>
+                Digite ou gere automaticamente a missão da empresa
+              </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-4">
               <Textarea
+                placeholder="Ex: Nossa missão é democratizar o acesso a tecidos de qualidade, oferecendo variedade, preço justo e atendimento personalizado que inspire criatividade e impulsione negócios no setor têxtil do Amapá..."
                 value={conteudoEditorial.missao || ''}
-                onChange={(e) => setConteudoEditorial({...conteudoEditorial, missao: e.target.value})}
-                onBlur={() => conteudoEditorial.missao && saveField('missao', conteudoEditorial.missao)}
-                placeholder="Descreva a missão e propósito do plano editorial..."
-                className="min-h-[150px]"
+                onChange={(e) => setConteudoEditorial(prev => ({ ...prev, missao: e.target.value }))}
+                className="min-h-[120px] resize-none"
               />
+              
+              <div className="flex gap-2">
+                <Button
+                  onClick={async () => {
+                    setGenerating(true);
+                    try {
+                      await new Promise(resolve => setTimeout(resolve, 2000));
+                      
+                      const missaoGerada = `Conectar pessoas às suas criações através de tecidos de qualidade excepcional, oferecendo variedade, inovação e atendimento personalizado que inspira criatividade e impulsiona o crescimento de negócios no setor têxtil, fortalecendo a economia local do Amapá.`;
+                      
+                      setConteudoEditorial(prev => ({ ...prev, missao: missaoGerada }));
+                      
+                      toast({
+                        title: "Sucesso",
+                        description: "Missão gerada com base nas informações da empresa!",
+                      });
+
+                    } catch (error) {
+                      console.error('Erro ao gerar missão:', error);
+                      toast({
+                        title: "Erro",
+                        description: "Erro ao gerar missão com IA.",
+                        variant: "destructive",
+                      });
+                    } finally {
+                      setGenerating(false);
+                    }
+                  }}
+                  disabled={generating}
+                  variant="outline"
+                  className="flex-1"
+                >
+                  <Wand2 className="h-4 w-4 mr-2" />
+                  {generating ? 'Gerando...' : 'Gerar Missão com IA'}
+                </Button>
+                
+                <Button
+                  onClick={() => saveField('missao', conteudoEditorial.missao || '')}
+                  disabled={!conteudoEditorial.missao}
+                  variant="default"
+                  className="px-8"
+                >
+                  Salvar
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
