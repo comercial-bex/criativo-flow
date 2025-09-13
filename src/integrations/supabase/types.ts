@@ -401,6 +401,50 @@ export type Database = {
           },
         ]
       }
+      posts_planejamento: {
+        Row: {
+          anexo_url: string | null
+          created_at: string
+          data_postagem: string
+          id: string
+          objetivo_postagem: string
+          planejamento_id: string
+          tipo_criativo: string
+          titulo: string
+          updated_at: string
+        }
+        Insert: {
+          anexo_url?: string | null
+          created_at?: string
+          data_postagem: string
+          id?: string
+          objetivo_postagem: string
+          planejamento_id: string
+          tipo_criativo: string
+          titulo: string
+          updated_at?: string
+        }
+        Update: {
+          anexo_url?: string | null
+          created_at?: string
+          data_postagem?: string
+          id?: string
+          objetivo_postagem?: string
+          planejamento_id?: string
+          tipo_criativo?: string
+          titulo?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "posts_planejamento_planejamento_id_fkey"
+            columns: ["planejamento_id"]
+            isOneToOne: false
+            referencedRelation: "planejamentos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from "react-router-dom";
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -6,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Calendar, FileText, Target, Clock, Users, BarChart, Send, CheckCircle, AlertCircle, Edit } from 'lucide-react';
+import { Calendar, FileText, Target, Clock, Users, BarChart, Send, CheckCircle, AlertCircle, Edit, Eye } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -52,6 +53,7 @@ const PLANOS_CONFIG = {
 };
 
 export function PlanejamentoProjeto({ projetoId, clienteId, clienteNome, assinaturaId }: PlanejamentoProjetoProps) {
+  const navigate = useNavigate();
   const [planejamento, setPlanejamento] = useState<PlanejamentoData | null>(null);
   const [objetivos, setObjetivos] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -444,12 +446,22 @@ ${objetivosEscolhidos.includes('reconhecimento_marca') ? `🏆 RECONHECIMENTO DE
                   {getStatusText(planejamento.status)}
                 </Badge>
               </div>
-              {planejamento.status === 'rascunho' && (
-                <Button onClick={enviarParaCliente} size="sm">
-                  <Send className="h-4 w-4 mr-2" />
-                  Enviar para Cliente
+              <div className="flex gap-2">
+                {planejamento.status === 'rascunho' && (
+                  <Button onClick={enviarParaCliente} size="sm">
+                    <Send className="h-4 w-4 mr-2" />
+                    Enviar para Cliente
+                  </Button>
+                )}
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => navigate(`/clientes/${clienteId}/projetos/${projetoId}/planejamento`)}
+                >
+                  <Eye className="h-4 w-4 mr-2" />
+                  Entrar no Plano
                 </Button>
-              )}
+              </div>
             </div>
 
             <div>
