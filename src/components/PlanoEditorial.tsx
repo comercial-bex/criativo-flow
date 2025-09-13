@@ -52,6 +52,7 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
   const [salvandoPosicionamento, setSalvandoPosicionamento] = useState(false);
   const [salvandoEspecialistas, setSalvandoEspecialistas] = useState(false);
   const [salvandoFrameworks, setSalvandoFrameworks] = useState(false);
+  const [salvandoPersonas, setSalvandoPersonas] = useState(false);
   const [gerandoPosicionamento, setGerandoPosicionamento] = useState(false);
   const [gerandoPersonas, setGerandoPersonas] = useState(false);
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -513,6 +514,29 @@ IMPORTANTE: Retorne APENAS o JSON válido, sem texto adicional.
       await saveField('frameworks_selecionados', componentesSelecionados);
     } finally {
       setSalvandoFrameworks(false);
+    }
+  };
+
+  const salvarPersonas = async () => {
+    if (!planejamento?.id) {
+      toast.error('Erro: Planejamento não encontrado');
+      return;
+    }
+
+    if (!conteudo.persona || conteudo.persona.trim() === '') {
+      toast.error('As personas não podem estar vazias');
+      return;
+    }
+
+    setSalvandoPersonas(true);
+    try {
+      await saveField('persona', conteudo.persona);
+      toast.success('Personas salvas com sucesso!');
+    } catch (error) {
+      console.error('Erro ao salvar personas:', error);
+      toast.error('Erro ao salvar personas');
+    } finally {
+      setSalvandoPersonas(false);
     }
   };
 
@@ -1124,12 +1148,21 @@ IMPORTANTE: Retorne APENAS o JSON válido, sem texto adicional.
                     rows={4}
                     disabled={gerandoPersonas}
                   />
+                </div>
+                
+                {/* Botão de salvar no final da seção */}
+                <div className="flex justify-end">
                   <Button 
-                    onClick={() => saveField('persona', conteudo.persona)}
-                    disabled={salvando}
+                    onClick={salvarPersonas}
+                    disabled={salvandoPersonas || !conteudo.persona?.trim()}
                     size="sm"
+                    className="gap-2"
                   >
-                    {salvando ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                    {salvandoPersonas ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Save className="h-4 w-4" />
+                    )}
                     Salvar Personas
                   </Button>
                 </div>
