@@ -13,7 +13,13 @@ import {
   Clock,
   ChevronLeft,
   ChevronRight,
-  Eye
+  Eye,
+  UserCircle,
+  User,
+  Briefcase,
+  MapPin,
+  Heart,
+  Zap
 } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { supabase } from "@/integrations/supabase/client";
@@ -644,28 +650,29 @@ FRAMEWORKS SELECIONADOS: ${frameworksSelecionados.join(', ')}
 MISSÃO ATUAL: ${conteudoEditorial.missao || ''}
 POSICIONAMENTO ATUAL: ${conteudoEditorial.posicionamento || ''}
 
-Crie 3 personas distintas em formato de texto corrido, cada uma com no máximo 180 palavras. Para cada persona inclua:
+Crie 3 personas distintas e bem detalhadas. Para cada persona inclua:
 
-1. Nome fictício e idade aproximada
-2. Profissão e contexto socioeconômico
-3. Principais dores e necessidades
+1. Nome fictício e idade
+2. Profissão e contexto socioeconômico detalhado
+3. Principais dores e necessidades específicas
 4. Comportamento digital e preferências de consumo
-5. Motivações e objetivos
+5. Motivações e objetivos pessoais/profissionais
 6. Como a marca pode atender suas necessidades
 
 As 3 personas devem representar diferentes segmentos do público-alvo da empresa, cobrindo variações em idade, poder aquisitivo, comportamento de compra, etc.
 
-Formate a resposta exatamente assim:
-🎯 PERSONA 1 - [NOME E IDADE]
-[descrição completa da persona 1]
+Formate a resposta exatamente assim (cada persona com no máximo 160 palavras):
 
-🎯 PERSONA 2 - [NOME E IDADE]  
-[descrição completa da persona 2]
+🎯 PERSONA 1 - [NOME COMPLETO], [IDADE] anos
+[PROFISSÃO]. [Descrição detalhada da persona incluindo características demográficas, comportamentais, dores, necessidades, hábitos digitais, motivações e como a marca pode ajudá-la. Use palavras-chave relevantes como Instagram, WhatsApp, qualidade, preço, exclusividade, confiança, tecidos, tapeçaria, confecção, Macapá, etc.]
 
-🎯 PERSONA 3 - [NOME E IDADE]
-[descrição completa da persona 3]
+🎯 PERSONA 2 - [NOME COMPLETO], [IDADE] anos
+[PROFISSÃO]. [Descrição detalhada da persona 2 com perfil diferente da primeira]
 
-Use um tom profissional mas acessível.
+🎯 PERSONA 3 - [NOME COMPLETO], [IDADE] anos
+[PROFISSÃO]. [Descrição detalhada da persona 3 com perfil diferente das anteriores]
+
+Use um tom profissional e inclua detalhes específicos do contexto do cliente.
                         `;
 
                         const { data, error } = await supabase.functions.invoke('generate-content-with-ai', {
@@ -714,33 +721,98 @@ Use um tom profissional mas acessível.
                 </div>
 
                 {conteudoEditorial.persona && (
-                  <div className="space-y-4">
+                  <div className="space-y-6">
                     <div className="flex items-center gap-2 text-lg font-semibold text-primary">
                       <Users className="h-5 w-5" />
                       Personas Geradas
                     </div>
                     
-                    <div className="grid gap-4">
+                    <div className="grid gap-6">
                       {conteudoEditorial.persona.split('🎯 PERSONA').filter(Boolean).map((persona, index) => {
-                        // Separar título e conteúdo
-                        const lines = persona.trim().split('\n');
-                        const title = lines[0]?.replace(/^\d+\s*-\s*/, '') || `PERSONA ${index + 1}`;
-                        const content = lines.slice(1).join('\n').trim();
+                        // Extrair informações da persona
+                        const lines = persona.trim().split('\n').filter(line => line.trim());
+                        const titleLine = lines[0]?.replace(/^\d+\s*-\s*/, '') || `PERSONA ${index + 1}`;
+                        const content = lines.slice(1).join(' ').trim();
+                        
+                        // Extrair nome e idade
+                        const nameMatch = titleLine.match(/([A-Za-zÀ-ÿ\s]+)\s*(?:,|\s*-)\s*(\d+)/);
+                        const name = nameMatch ? nameMatch[1].trim() : titleLine;
+                        const age = nameMatch ? nameMatch[2] : '';
+                        
+                        // Extrair profissão (geralmente está no início do conteúdo)
+                        const professionMatch = content.match(/([A-Za-zÀ-ÿ\s,]+?)(?:,|\.|é|atua|trabalha)/);
+                        const profession = professionMatch ? professionMatch[1].trim() : '';
+                        
+                        // Ícones diferentes para cada persona
+                        const icons = [UserCircle, User, Users];
+                        const IconComponent = icons[index] || UserCircle;
+                        
+                        // Cores diferentes para cada persona
+                        const colors = ['blue', 'green', 'purple'];
+                        const color = colors[index] || 'blue';
+                        
+                        // Destacar palavras-chave importantes
+                        const highlightText = (text: string) => {
+                          const keywords = [
+                            'Instagram', 'Facebook', 'WhatsApp', 'digital', 'online', 'redes sociais',
+                            'qualidade', 'preço', 'exclusividade', 'confiança', 'praticidade',
+                            'tecidos', 'tapeçaria', 'confecção', 'costura', 'estilista', 'designer',
+                            'Macapá', 'local', 'regional', 'cliente', 'parceria'
+                          ];
+                          
+                          let highlightedText = text;
+                          keywords.forEach(keyword => {
+                            const regex = new RegExp(`(${keyword})`, 'gi');
+                            highlightedText = highlightedText.replace(regex, `**$1**`);
+                          });
+                          
+                          return highlightedText.split('**').map((part, i) => 
+                            i % 2 === 1 ? (
+                              <Badge key={i} variant="secondary" className="mx-1 text-xs">
+                                {part}
+                              </Badge>
+                            ) : part
+                          );
+                        };
                         
                         return (
-                          <Card key={index} className="border-l-4 border-l-primary/30">
-                            <CardHeader className="pb-3">
-                              <CardTitle className="text-base flex items-center gap-2">
-                                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                                  <span className="text-sm font-bold text-primary">{index + 1}</span>
+                          <Card key={index} className={`relative overflow-hidden border-l-4 border-l-${color}-500 bg-gradient-to-r from-${color}-50/50 to-transparent`}>
+                            <CardHeader className="pb-4">
+                              <div className="flex items-start gap-4">
+                                <div className={`w-16 h-16 rounded-full bg-${color}-100 flex items-center justify-center flex-shrink-0`}>
+                                  <IconComponent className={`h-8 w-8 text-${color}-600`} />
                                 </div>
-                                {title}
-                              </CardTitle>
+                                <div className="flex-1 space-y-2">
+                                  <div className="flex items-center gap-2 flex-wrap">
+                                    <h3 className="text-xl font-bold text-gray-900">{name}</h3>
+                                    {age && (
+                                      <Badge variant="outline" className="text-sm">
+                                        {age} anos
+                                      </Badge>
+                                    )}
+                                  </div>
+                                  {profession && (
+                                    <div className="flex items-center gap-2">
+                                      <Briefcase className="h-4 w-4 text-gray-500" />
+                                      <span className="font-medium text-gray-700">{profession}</span>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
                             </CardHeader>
                             <CardContent>
-                              <p className="text-sm leading-relaxed text-muted-foreground">
-                                {content}
-                              </p>
+                              <div className="space-y-3">
+                                <div className="text-sm leading-relaxed text-gray-600">
+                                  {highlightText(content)}
+                                </div>
+                                
+                                <div className="flex items-center gap-2 pt-2 border-t border-gray-100">
+                                  <Heart className="h-4 w-4 text-red-500" />
+                                  <span className="text-xs font-medium text-gray-500">
+                                    Persona {index + 1} | Público-alvo estratégico
+                                  </span>
+                                </div>
+                              </div>
                             </CardContent>
                           </Card>
                         );
@@ -750,9 +822,15 @@ Use um tom profissional mas acessível.
                 )}
 
                 {!conteudoEditorial.persona && (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <Users className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                    <p>Clique no botão acima para gerar as personas</p>
+                  <div className="text-center py-12 text-muted-foreground">
+                    <div className="relative">
+                      <Users className="h-16 w-16 mx-auto mb-4 opacity-20" />
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <Zap className="h-6 w-6 text-primary animate-pulse" />
+                      </div>
+                    </div>
+                    <h3 className="text-lg font-medium mb-2">Personas não geradas</h3>
+                    <p className="text-sm">Clique no botão acima para gerar as 3 personas estratégicas</p>
                   </div>
                 )}
               </CardContent>
