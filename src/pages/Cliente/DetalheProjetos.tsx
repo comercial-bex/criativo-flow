@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ArrowLeft, Calendar, DollarSign, Eye, Edit, Plus } from "lucide-react";
 import { SectionHeader } from "@/components/SectionHeader";
-import { PlanejamentoProjeto } from "@/components/PlanejamentoProjeto";
+
 
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -436,9 +436,8 @@ export default function DetalheProjetos() {
                     variant="ghost"
                     size="sm"
                     className="h-8 w-8 p-0"
-                    onClick={() => {
-                      console.log('Ver detalhes do projeto:', projeto.id);
-                    }}
+                    onClick={() => navigate(`/clientes/${clienteId}/projetos/${projeto.id}`)}
+                    title="Ver detalhes e planejamento do projeto"
                   >
                     <Eye className="h-4 w-4" />
                   </Button>
@@ -462,16 +461,6 @@ export default function DetalheProjetos() {
                   </div>
                 )}
               </div>
-              
-              {/* Planejamento dentro de cada projeto */}
-              {clienteId && (
-                <PlanejamentoProjeto
-                  projetoId={projeto.id}
-                  clienteId={clienteId}
-                  clienteNome={cliente?.nome || ''}
-                  assinaturaId={cliente?.assinatura_id}
-                />
-              )}
             </CardContent>
           </Card>
         ))}

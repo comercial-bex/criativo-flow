@@ -21,6 +21,7 @@ import AtendimentoInbox from "./pages/Atendimento/Inbox";
 import ClientePainel from "./pages/Cliente/Painel";
 import ClienteProjetos from "./pages/Cliente/Projetos";
 import DetalheProjetos from "./pages/Cliente/DetalheProjetos";
+import ProjetoDetalhes from "./pages/Cliente/ProjetoDetalhes";
 import ClienteCadastro from "./pages/Cliente/Cadastro";
 import ClienteEditar from "./pages/Cliente/Editar";
 import Configuracoes from "./pages/Configuracoes";
@@ -115,6 +116,13 @@ const App = () => (
               <ProtectedRoute>
                 <Layout>
                   <DetalheProjetos />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/clientes/:clienteId/projetos/:projetoId" element={
+              <ProtectedRoute>
+                <Layout>
+                  <ProjetoDetalhes />
                 </Layout>
               </ProtectedRoute>
             } />
