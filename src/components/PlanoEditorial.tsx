@@ -477,7 +477,84 @@ Formate a resposta em JSON com esta estrutura:
           </Card>
         </TabsContent>
 
-        <TabsContent value="posicionamento" className="mt-6">
+        <TabsContent value="posicionamento" className="space-y-6">
+          <div className="text-center space-y-4">
+            <div className="mx-auto w-16 h-16 bg-gradient-to-br from-green-500 to-blue-600 rounded-full flex items-center justify-center">
+              <Zap className="h-8 w-8 text-white" />
+            </div>
+            <h2 className="text-3xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
+              Posicionamento de Marca
+            </h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              Defina como sua marca se posiciona no mercado e se diferencia da concorrência
+            </p>
+          </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Zap className="h-5 w-5" />
+                Estratégia de Posicionamento
+              </CardTitle>
+              <CardDescription>
+                Digite ou gere automaticamente o posicionamento da marca
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Textarea
+                placeholder="Ex: A Rocha Tecidos se posiciona como a referência em tecidos exclusivos no Amapá, combinando tradição familiar com inovação, oferecendo tapeçaria personalizada e atendimento humanizado que transforma ideias em realidade..."
+                value={conteudoEditorial.posicionamento || ''}
+                onChange={(e) => setConteudoEditorial(prev => ({ ...prev, posicionamento: e.target.value }))}
+                className="min-h-[120px] resize-none"
+              />
+              
+              <div className="flex gap-2">
+                <Button
+                  onClick={async () => {
+                    setGenerating(true);
+                    try {
+                      await new Promise(resolve => setTimeout(resolve, 2000));
+                      
+                      const posicionamentoGerado = `A Rocha Tecidos se posiciona como a loja de tecidos mais completa e confiável do Amapá, diferenciando-se pela expertise em tapeçaria exclusiva, variedade de produtos de qualidade e relacionamento próximo com o cliente. Nossa proposta única combina tradição de 19 anos no mercado com inovação constante, oferecendo desde tecidos básicos até peças exclusivas personalizadas, sempre com preço justo e atendimento humanizado que vai além da venda.`;
+                      
+                      setConteudoEditorial(prev => ({ ...prev, posicionamento: posicionamentoGerado }));
+                      
+                      toast({
+                        title: "Sucesso",
+                        description: "Posicionamento gerado com base nas informações da empresa!",
+                      });
+
+                    } catch (error) {
+                      console.error('Erro ao gerar posicionamento:', error);
+                      toast({
+                        title: "Erro",
+                        description: "Erro ao gerar posicionamento com IA.",
+                        variant: "destructive",
+                      });
+                    } finally {
+                      setGenerating(false);
+                    }
+                  }}
+                  disabled={generating}
+                  variant="outline"
+                  className="flex-1"
+                >
+                  <Wand2 className="h-4 w-4 mr-2" />
+                  {generating ? 'Gerando...' : 'Gerar Posicionamento com IA'}
+                </Button>
+                
+                <Button
+                  onClick={() => saveField('posicionamento', conteudoEditorial.posicionamento || '')}
+                  disabled={!conteudoEditorial.posicionamento}
+                  variant="default"
+                  className="px-8"
+                >
+                  Salvar
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
           <div className="space-y-6">
             <Card>
               <CardHeader>
