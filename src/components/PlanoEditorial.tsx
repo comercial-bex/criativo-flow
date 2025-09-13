@@ -4,7 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, ChevronLeft, ChevronRight, Loader2, Users, Target, BookOpen } from "lucide-react";
+import { Calendar, ChevronLeft, ChevronRight, Loader2, Users, Target, BookOpen, Sparkles } from "lucide-react";
+import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -48,6 +49,7 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
   const [loading, setLoading] = useState(true);
   const [gerando, setGerando] = useState(false);
   const [salvando, setSalvando] = useState(false);
+  const [gerandoPosicionamento, setGerandoPosicionamento] = useState(false);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [clienteAssinatura, setClienteAssinatura] = useState<any>(null);
   const [postsGerados, setPostsGerados] = useState<any[]>([]);
@@ -190,6 +192,112 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
       setClienteAssinatura(mockPlanos[assinaturaType]);
     } catch (error) {
       console.error('Erro ao buscar dados do cliente:', error);
+    }
+  };
+
+  const buscarDadosOnboarding = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('cliente_onboarding')
+        .select('*')
+        .eq('cliente_id', clienteId)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Erro ao buscar dados do onboarding:', error);
+        return null;
+      }
+
+      return data;
+    } catch (error) {
+      console.error('Erro ao buscar dados do onboarding:', error);
+      return null;
+    }
+  };
+
+  const gerarPosicionamentoComIA = async () => {
+    setGerandoPosicionamento(true);
+
+    try {
+      const dadosOnboarding = await buscarDadosOnboarding();
+      
+      if (!dadosOnboarding) {
+        toast.error('Não foram encontrados dados de onboarding para este cliente. Complete o onboarding primeiro.');
+        return;
+      }
+
+      // Construir prompt estruturado
+      const prompt = `
+Baseando-se nas informações de onboarding abaixo, gere um POSICIONAMENTO DE MARCA estratégico e bem estruturado para a empresa. O posicionamento deve ter no máximo 700 palavras e abordar como a empresa quer ser percebida no mercado.
+
+**INFORMAÇÕES DA EMPRESA:**
+- Nome: ${dadosOnboarding.nome_empresa || 'Não informado'}
+- Segmento: ${dadosOnboarding.segmento_atuacao || 'Não informado'}
+- Produtos/Serviços: ${dadosOnboarding.produtos_servicos || 'Não informado'}
+- Tempo no mercado: ${dadosOnboarding.tempo_mercado || 'Não informado'}
+- Localização: ${dadosOnboarding.localizacao || 'Não informado'}
+
+**PÚBLICO-ALVO E MERCADO:**
+- Público-alvo: ${dadosOnboarding.publico_alvo?.join(', ') || 'Não informado'}
+- Tipos de clientes: ${dadosOnboarding.tipos_clientes || 'Não informado'}
+- Dores/Problemas dos clientes: ${dadosOnboarding.dores_problemas || 'Não informado'}
+- O que valorizam: ${dadosOnboarding.valorizado || 'Não informado'}
+
+**DIFERENCIAIS COMPETITIVOS:**
+- Principais diferenciais: ${dadosOnboarding.diferenciais || 'Não informado'}
+- Concorrentes diretos: ${dadosOnboarding.concorrentes_diretos || 'Não informado'}
+
+**IDENTIDADE DA MARCA:**
+- História da marca: ${dadosOnboarding.historia_marca || 'Não informado'}
+- Valores principais: ${dadosOnboarding.valores_principais || 'Não informado'}
+- Tom de voz: ${dadosOnboarding.tom_voz?.join(', ') || 'Não informado'}
+- Como quer ser lembrada: ${dadosOnboarding.como_lembrada || 'Não informado'}
+
+**ANÁLISE SWOT:**
+- Forças: ${dadosOnboarding.forcas || 'Não informado'}
+- Fraquezas: ${dadosOnboarding.fraquezas || 'Não informado'}
+- Oportunidades: ${dadosOnboarding.oportunidades || 'Não informado'}
+- Ameaças: ${dadosOnboarding.ameacas || 'Não informado'}
+
+**OBJETIVOS:**
+- Objetivos digitais: ${dadosOnboarding.objetivos_digitais || 'Não informado'}
+- Onde quer estar em 6 meses: ${dadosOnboarding.onde_6_meses || 'Não informado'}
+- Resultados esperados: ${dadosOnboarding.resultados_esperados?.join(', ') || 'Não informado'}
+
+Com base nessas informações, elabore um posicionamento de marca que:
+1. Defina claramente como a empresa quer ser percebida
+2. Destaque seus diferenciais únicos
+3. Conecte com as necessidades do público-alvo
+4. Seja consistente com os valores e história da marca
+5. Seja aplicável nas estratégias de comunicação
+
+Responda com um texto corrido, bem estruturado e com no máximo 700 palavras.
+`;
+
+      const { data: response, error } = await supabase.functions.invoke('generate-content-with-ai', {
+        body: { prompt }
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      const posicionamentoGerado = typeof response === 'string' ? response : response.toString();
+      
+      // Salvar automaticamente
+      await saveField('posicionamento', posicionamentoGerado);
+      
+      setConteudo(prev => ({
+        ...prev,
+        posicionamento: posicionamentoGerado
+      }));
+
+      toast.success('Posicionamento gerado e salvo com sucesso!');
+    } catch (error) {
+      console.error('Erro ao gerar posicionamento:', error);
+      toast.error('Erro ao gerar posicionamento. Tente novamente.');
+    } finally {
+      setGerandoPosicionamento(false);
     }
   };
 
@@ -558,12 +666,42 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
               <CardTitle>Posicionamento da Marca</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <Textarea
-                placeholder="Descreva o posicionamento da marca..."
-                value={conteudo.posicionamento || ''}
-                onChange={(e) => setConteudo(prev => ({ ...prev, posicionamento: e.target.value }))}
-                rows={4}
-              />
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="posicionamento">Posicionamento da Marca</Label>
+                  <Button 
+                    onClick={gerarPosicionamentoComIA}
+                    disabled={gerandoPosicionamento}
+                    variant="outline"
+                    size="sm"
+                    className="gap-2"
+                  >
+                    {gerandoPosicionamento ? (
+                      <>
+                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                        Gerando...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="h-4 w-4" />
+                        Gerar com IA
+                      </>
+                    )}
+                  </Button>
+                </div>
+                <Textarea
+                  id="posicionamento"
+                  placeholder="Descreva o posicionamento da marca ou use a IA para gerar automaticamente..."
+                  value={conteudo.posicionamento || ''}
+                  onChange={(e) => setConteudo(prev => ({ ...prev, posicionamento: e.target.value }))}
+                  rows={6}
+                  disabled={gerandoPosicionamento}
+                  onBlur={() => saveField('posicionamento', conteudo.posicionamento)}
+                />
+                <p className="text-xs text-muted-foreground">
+                  A IA irá gerar o posicionamento baseado nos dados de onboarding do cliente. Máximo 700 palavras.
+                </p>
+              </div>
             </CardContent>
           </Card>
 
