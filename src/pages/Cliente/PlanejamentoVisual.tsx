@@ -7,11 +7,12 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { ArrowLeft, Calendar, Plus, Settings, Image, Instagram, Facebook, Loader2, Wand2, Eye } from "lucide-react";
+import { ArrowLeft, Calendar, Plus, Settings, Image, Instagram, Facebook, Loader2, Wand2, Eye, CalendarDays } from "lucide-react";
 import { SectionHeader } from "@/components/SectionHeader";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { InstagramPreview } from "@/components/InstagramPreview";
+import { CalendarioEditorial } from "@/components/CalendarioEditorial";
 
 interface Planejamento {
   id: string;
@@ -63,6 +64,7 @@ export default function PlanejamentoVisual() {
   });
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [showInstagramPreview, setShowInstagramPreview] = useState(false);
+  const [showCalendarioEditorial, setShowCalendarioEditorial] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -316,6 +318,15 @@ export default function PlanejamentoVisual() {
           </div>
           
           <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowCalendarioEditorial(true)}
+              className="hover:scale-105 transition-transform"
+            >
+              <CalendarDays className="h-4 w-4 mr-2" />
+              Calendário Editorial
+            </Button>
             <Badge className={`${getStatusColor(planejamento.status)} px-3 py-1 font-medium`}>
               {getStatusText(planejamento.status)}
             </Badge>
@@ -575,6 +586,18 @@ export default function PlanejamentoVisual() {
           isOpen={showInstagramPreview}
           onClose={() => setShowInstagramPreview(false)}
           post={selectedPost}
+        />
+
+        {/* Calendário Editorial Modal */}
+        <CalendarioEditorial
+          isOpen={showCalendarioEditorial}
+          onClose={() => setShowCalendarioEditorial(false)}
+          posts={posts}
+          onPostClick={(post) => {
+            setSelectedPost(post);
+            setShowCalendarioEditorial(false);
+            setShowInstagramPreview(true);
+          }}
         />
       </div>
     </div>
