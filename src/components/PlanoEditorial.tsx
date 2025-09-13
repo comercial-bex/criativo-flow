@@ -51,6 +51,7 @@ export function PlanoEditorial({ planejamento, clienteId, posts, setPosts, onPre
   const [currentDate, setCurrentDate] = useState(new Date());
   const [viewType, setViewType] = useState<'editorial' | 'tarefas'>('editorial');
   const [especialistasSelecionados, setEspecialistasSelecionados] = useState<string[]>([]);
+  const [frameworksSelecionados, setFrameworksSelecionados] = useState<string[]>([]);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -136,6 +137,12 @@ export function PlanoEditorial({ planejamento, clienteId, posts, setPosts, onPre
         .eq('id', planejamento.id)
         .single();
 
+      // Buscar objetivos estratégicos do cliente
+      const { data: objetivosData } = await supabase
+        .from('cliente_objetivos')
+        .select('*')
+        .eq('cliente_id', clienteId);
+
       // Preparar o prompt para IA
       const promptEspecialista = getPromptEspecialista(especialistasSelecionados);
       const prompt = `
@@ -150,8 +157,11 @@ INFORMAÇÕES DA MARCA:
 - Tempo no mercado: ${onboardingData?.tempo_mercado || 'Não informado'}
 - Localização: ${onboardingData?.localizacao || 'Não informado'}
 - Público-alvo: ${onboardingData?.publico_alvo?.join(', ') || 'Não informado'}
+- Objetivos Estratégicos: ${objetivosData?.map(obj => obj.objetivos).join(', ') || 'Não informado'}
 
 DETALHES COMPLEMENTARES: ${planejamentoData?.descricao || ''}
+
+FRAMEWORKS SELECIONADOS: ${frameworksSelecionados.join(', ')}
 
 MISSÃO ATUAL: ${conteudoEditorial.missao || ''}
 
@@ -413,33 +423,143 @@ Formate a resposta em JSON com esta estrutura:
 
             <Card>
               <CardHeader>
-                <CardTitle>Posicionamento nas Redes Sociais</CardTitle>
+                <CardTitle>Frameworks de Posicionamento</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-5 gap-2">
-                  {['Humanizar', 'Educar', 'Resolver', 'Entreter', 'Converter'].map((tipo) => (
-                    <Button
-                      key={tipo}
-                      variant="outline"
-                      className="text-xs"
-                      onClick={() => {
-                        const current = conteudoEditorial.posicionamento || '';
-                        const newValue = current.includes(tipo) 
-                          ? current.replace(tipo, '').replace(/,\s*,/g, ',').trim()
-                          : current ? `${current}, ${tipo}` : tipo;
-                        setConteudoEditorial({...conteudoEditorial, posicionamento: newValue});
-                        saveField('posicionamento', newValue);
-                      }}
-                    >
-                      {tipo}
-                    </Button>
-                  ))}
+              <CardContent className="space-y-6">
+                {/* Framework HESEC */}
+                <div>
+                  <h4 className="font-medium mb-2">HESEC (Humanizar, Educar, Resolver, Entreter, Converter)</h4>
+                  <div className="grid grid-cols-5 gap-2">
+                    {[
+                      { id: 'humanizar', label: 'Humanizar' },
+                      { id: 'educar', label: 'Educar' },
+                      { id: 'resolver', label: 'Resolver' },
+                      { id: 'entreter', label: 'Entreter' },
+                      { id: 'converter', label: 'Converter' }
+                    ].map((item) => (
+                      <Button
+                        key={item.id}
+                        variant={frameworksSelecionados.includes(item.id) ? 'default' : 'outline'}
+                        className={`text-xs ${
+                          frameworksSelecionados.includes(item.id) 
+                            ? 'bg-primary hover:bg-primary/90 text-primary-foreground border-primary' 
+                            : ''
+                        }`}
+                        onClick={() => {
+                          const isSelected = frameworksSelecionados.includes(item.id);
+                          if (isSelected) {
+                            setFrameworksSelecionados(prev => prev.filter(id => id !== item.id));
+                          } else {
+                            setFrameworksSelecionados(prev => [...prev, item.id]);
+                          }
+                        }}
+                      >
+                        {item.label}
+                      </Button>
+                    ))}
+                  </div>
                 </div>
+
+                {/* Framework HERO */}
+                <div>
+                  <h4 className="font-medium mb-2">HERO (Humano, Emoção, Notável, Oferta)</h4>
+                  <div className="grid grid-cols-4 gap-2">
+                    {[
+                      { id: 'humano', label: 'Humano' },
+                      { id: 'emocao', label: 'Emoção' },
+                      { id: 'notavel', label: 'Notável' },
+                      { id: 'oferta', label: 'Oferta' }
+                    ].map((item) => (
+                      <Button
+                        key={item.id}
+                        variant={frameworksSelecionados.includes(item.id) ? 'default' : 'outline'}
+                        className={`text-xs ${
+                          frameworksSelecionados.includes(item.id) 
+                            ? 'bg-primary hover:bg-primary/90 text-primary-foreground border-primary' 
+                            : ''
+                        }`}
+                        onClick={() => {
+                          const isSelected = frameworksSelecionados.includes(item.id);
+                          if (isSelected) {
+                            setFrameworksSelecionados(prev => prev.filter(id => id !== item.id));
+                          } else {
+                            setFrameworksSelecionados(prev => [...prev, item.id]);
+                          }
+                        }}
+                      >
+                        {item.label}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Framework PEACE */}
+                <div>
+                  <h4 className="font-medium mb-2">PEACE (Planejar, Engajar, Amplificar, Converter, Avaliar)</h4>
+                  <div className="grid grid-cols-5 gap-2">
+                    {[
+                      { id: 'planejar', label: 'Planejar' },
+                      { id: 'engajar', label: 'Engajar' },
+                      { id: 'amplificar', label: 'Amplificar' },
+                      { id: 'converter_peace', label: 'Converter' },
+                      { id: 'avaliar', label: 'Avaliar' }
+                    ].map((item) => (
+                      <Button
+                        key={item.id}
+                        variant={frameworksSelecionados.includes(item.id) ? 'default' : 'outline'}
+                        className={`text-xs ${
+                          frameworksSelecionados.includes(item.id) 
+                            ? 'bg-primary hover:bg-primary/90 text-primary-foreground border-primary' 
+                            : ''
+                        }`}
+                        onClick={() => {
+                          const isSelected = frameworksSelecionados.includes(item.id);
+                          if (isSelected) {
+                            setFrameworksSelecionados(prev => prev.filter(id => id !== item.id));
+                          } else {
+                            setFrameworksSelecionados(prev => [...prev, item.id]);
+                          }
+                        }}
+                      >
+                        {item.label}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+
+                {frameworksSelecionados.length > 0 && (
+                  <div className="p-3 bg-muted rounded-lg">
+                    <p className="text-sm text-muted-foreground">
+                      <strong>Frameworks selecionados:</strong> {
+                        frameworksSelecionados.map(framework => {
+                          const labels = {
+                            'humanizar': 'Humanizar',
+                            'educar': 'Educar',
+                            'resolver': 'Resolver',
+                            'entreter': 'Entreter',
+                            'converter': 'Converter',
+                            'humano': 'Humano',
+                            'emocao': 'Emoção',
+                            'notavel': 'Notável',
+                            'oferta': 'Oferta',
+                            'planejar': 'Planejar',
+                            'engajar': 'Engajar',
+                            'amplificar': 'Amplificar',
+                            'converter_peace': 'Converter (PEACE)',
+                            'avaliar': 'Avaliar'
+                          };
+                          return labels[framework as keyof typeof labels];
+                        }).join(', ')
+                      }
+                    </p>
+                  </div>
+                )}
+
                 <Textarea
                   value={conteudoEditorial.posicionamento || ''}
                   onChange={(e) => setConteudoEditorial({...conteudoEditorial, posicionamento: e.target.value})}
                   onBlur={() => conteudoEditorial.posicionamento && saveField('posicionamento', conteudoEditorial.posicionamento)}
-                  placeholder="Defina o posicionamento da marca nas redes sociais..."
+                  placeholder="Defina o posicionamento da marca nas redes sociais baseado nos frameworks selecionados..."
                   className="min-h-[100px]"
                 />
               </CardContent>
@@ -469,7 +589,7 @@ Formate a resposta em JSON com esta estrutura:
                 <CardTitle>Geração de Conteúdo Editorial</CardTitle>
                 <Button
                   onClick={generateConteudoWithIA}
-                  disabled={generating || especialistasSelecionados.length === 0}
+                  disabled={generating || (especialistasSelecionados.length === 0 && frameworksSelecionados.length === 0)}
                   className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
                 >
                   <Wand2 className="h-4 w-4 mr-2" />
@@ -491,8 +611,8 @@ Formate a resposta em JSON com esta estrutura:
                 <div className="text-center py-8">
                   <Wand2 className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                   <p className="text-muted-foreground">
-                    {especialistasSelecionados.length === 0 
-                      ? 'Selecione um especialista na aba Posicionamento e clique em "Gerar com IA" para criar o planejamento de conteúdo.'
+                    {especialistasSelecionados.length === 0 && frameworksSelecionados.length === 0
+                      ? 'Selecione especialistas e frameworks na aba Posicionamento e clique em "Gerar com IA" para criar o planejamento de conteúdo.'
                       : 'Clique em "Gerar com IA" para criar automaticamente o planejamento de conteúdo baseado nas informações do cliente.'
                     }
                   </p>
