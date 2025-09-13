@@ -53,7 +53,30 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
   const [postsGerados, setPostsGerados] = useState<any[]>([]);
 
   const especialistas = [
-    "Philip Kotler", "Al Ries", "Jack Trout", "Seth Godin", "Robert Cialdini", "Chip Heath"
+    { 
+      nome: "Philip Kotler", 
+      descricao: "Pai do marketing moderno, criador dos conceitos fundamentais do marketing mix e segmentação de mercado"
+    },
+    { 
+      nome: "Al Ries", 
+      descricao: "Especialista em posicionamento de marca e estratégia competitiva, co-autor de 'Posicionamento'"
+    },
+    { 
+      nome: "Jack Trout", 
+      descricao: "Criador do conceito de posicionamento, focado em diferenciação e guerra competitiva"
+    },
+    { 
+      nome: "Seth Godin", 
+      descricao: "Especialista em marketing digital, storytelling e marketing de permissão"
+    },
+    { 
+      nome: "Robert Cialdini", 
+      descricao: "Especialista em psicologia da persuasão e influência, autor de 'As Armas da Persuasão'"
+    },
+    { 
+      nome: "Chip Heath", 
+      descricao: "Especialista em comunicação eficaz e ideias que 'grudam', co-autor de 'Made to Stick'"
+    }
   ];
 
   const frameworks = [
@@ -345,11 +368,11 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
     }
   };
 
-  const toggleEspecialista = (especialista: string) => {
+  const toggleEspecialista = (especialista: { nome: string; descricao: string }) => {
     const atual = conteudo.especialistas_selecionados || [];
-    const novaSelecao = atual.includes(especialista)
-      ? atual.filter(e => e !== especialista)
-      : [...atual, especialista];
+    const novaSelecao = atual.includes(especialista.nome)
+      ? atual.filter(e => e !== especialista.nome)
+      : [...atual, especialista.nome];
     
     setConteudo(prev => ({ ...prev, especialistas_selecionados: novaSelecao }));
   };
@@ -493,14 +516,20 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                 {especialistas.map((especialista) => (
-                  <Button
-                    key={especialista}
-                    variant={conteudo.especialistas_selecionados?.includes(especialista) ? "default" : "outline"}
-                    onClick={() => toggleEspecialista(especialista)}
-                    className="h-auto py-2"
-                  >
-                    {especialista}
-                  </Button>
+                  <Tooltip key={especialista.nome}>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant={conteudo.especialistas_selecionados?.includes(especialista.nome) ? "default" : "outline"}
+                        onClick={() => toggleEspecialista(especialista)}
+                        className="h-auto py-2"
+                      >
+                        {especialista.nome}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="max-w-xs">
+                      <p>{especialista.descricao}</p>
+                    </TooltipContent>
+                  </Tooltip>
                 ))}
               </div>
             </CardContent>
