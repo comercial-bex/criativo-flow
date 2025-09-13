@@ -729,31 +729,29 @@ Use um tom profissional e inclua detalhes específicos do contexto do cliente.
                     
                     <div className="space-y-6">
                       {(() => {
-                        // Separar as personas de forma mais robusta
                         const personasText = conteudoEditorial.persona;
-                        let personas = [];
+                        console.log('Texto original das personas:', personasText);
                         
-                        // Tentar separar por 🎯 PERSONA primeiro
-                        if (personasText.includes('🎯 PERSONA')) {
-                          personas = personasText.split('🎯 PERSONA')
-                            .filter(p => p.trim()) // Remove elementos vazios
-                            .map(p => p.trim());   // Remove espaços extras
-                        } 
-                        // Se não encontrar, tentar por PERSONA
-                        else if (personasText.includes('PERSONA')) {
-                          personas = personasText.split(/PERSONA\s*\d+/)
-                            .filter(p => p.trim())
-                            .map(p => p.trim());
-                        }
-                        // Se ainda não encontrar, tentar dividir por quebras de linha duplas
-                        else {
-                          personas = personasText.split(/\n\s*\n/)
-                            .filter(p => p.trim())
-                            .map(p => p.trim());
+                        // Encontrar todas as personas usando regex
+                        const personaMatches = personasText.match(/🎯 PERSONA \d+[^🎯]*/g) || [];
+                        console.log('Personas encontradas:', personaMatches);
+                        
+                        // Se não encontrou com regex, tentar split simples
+                        let personas = personaMatches.length > 0 ? personaMatches : [];
+                        
+                        if (personas.length === 0) {
+                          // Tentar dividir manualmente
+                          const parts = personasText.split(/🎯 PERSONA \d+/);
+                          personas = parts.filter(p => p.trim()).map((p, i) => `🎯 PERSONA ${i + 1}${p}`);
                         }
                         
-                        // Garantir que temos no máximo 3 personas
+                        // Garantir exatamente 3 personas
+                        if (personas.length === 0) {
+                          personas = ['🎯 PERSONA 1 - ' + personasText];
+                        }
+                        
                         personas = personas.slice(0, 3);
+                        console.log('Personas finais:', personas);
                         
                         return personas.map((persona, index) => {
                           // Debug para verificar o conteúdo
