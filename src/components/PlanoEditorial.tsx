@@ -589,7 +589,95 @@ Formate a resposta em JSON com esta estrutura:
               <CardHeader>
                 <CardTitle>Definição de Persona</CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="space-y-4">
+                <Button 
+                  onClick={async () => {
+                    try {
+                      setGenerating(true);
+                      
+                      // Buscar dados do cliente para contexto
+                      const { data: onboardingData } = await supabase
+                        .from('cliente_onboarding')
+                        .select('*')
+                        .eq('cliente_id', clienteId)
+                        .single();
+
+                      const { data: clienteData } = await supabase
+                        .from('clientes')
+                        .select('nome')
+                        .eq('id', clienteId)
+                        .single();
+
+                      // Buscar objetivos estratégicos do cliente
+                      const { data: objetivosData } = await supabase
+                        .from('cliente_objetivos')
+                        .select('*')
+                        .eq('cliente_id', clienteId);
+
+                      const prompt = `
+Com base nas seguintes informações da empresa, crie uma persona detalhada:
+
+INFORMAÇÕES DA MARCA:
+- Nome da empresa: ${clienteData?.nome || 'Empresa'}
+- Segmento: ${onboardingData?.segmento_atuacao || 'Não informado'}
+- Produtos/Serviços: ${onboardingData?.produtos_servicos || 'Não informado'}
+- Público-alvo: ${onboardingData?.publico_alvo?.join(', ') || 'Não informado'}
+- Tipos de clientes: ${onboardingData?.tipos_clientes || 'Não informado'}
+- Dores e problemas: ${onboardingData?.dores_problemas || 'Não informado'}
+- O que é valorizado: ${onboardingData?.valorizado || 'Não informado'}
+- Como encontram a empresa: ${onboardingData?.como_encontram?.join(', ') || 'Não informado'}
+- Frequência de compra: ${onboardingData?.frequencia_compra || 'Não informado'}
+- Ticket médio: ${onboardingData?.ticket_medio || 'Não informado'}
+- Área de atendimento: ${onboardingData?.area_atendimento || 'Não informado'}
+- Objetivos Estratégicos: ${objetivosData?.map(obj => obj.objetivos).join(', ') || 'Não informado'}
+
+ESPECIALISTAS SELECIONADOS: ${especialistasSelecionados.join(', ')}
+FRAMEWORKS SELECIONADOS: ${frameworksSelecionados.join(', ')}
+MISSÃO ATUAL: ${conteudoEditorial.missao || ''}
+POSICIONAMENTO ATUAL: ${conteudoEditorial.posicionamento || ''}
+
+Crie uma persona detalhada em formato de texto corrido (máximo 300 palavras) que inclua:
+1. Nome fictício e idade aproximada
+2. Profissão e contexto socioeconômico
+3. Principais dores e necessidades
+4. Comportamento digital e preferências de consumo
+5. Motivações e objetivos
+6. Como a marca pode atender suas necessidades
+
+Use um tom profissional mas acessível.
+                      `;
+
+                      const { data, error } = await supabase.functions.invoke('generate-content-with-ai', {
+                        body: { prompt }
+                      });
+
+                      if (error) throw error;
+
+                      setConteudoEditorial(prev => ({...prev, persona: data}));
+                      await saveField('persona', data);
+                      
+                      toast({
+                        title: "Sucesso",
+                        description: "Persona gerada com base nas informações dos quadros anteriores!",
+                      });
+
+                    } catch (error) {
+                      console.error('Erro ao gerar persona:', error);
+                      toast({
+                        title: "Erro",
+                        description: "Erro ao gerar persona com IA.",
+                        variant: "destructive",
+                      });
+                    } finally {
+                      setGenerating(false);
+                    }
+                  }}
+                  disabled={generating}
+                  className="w-full"
+                >
+                  <Wand2 className="h-4 w-4 mr-2" />
+                  {generating ? 'Gerando Persona...' : 'Gerar Persona com base nas informações'}
+                </Button>
                 <Textarea
                   value={conteudoEditorial.persona || ''}
                   onChange={(e) => setConteudoEditorial({...conteudoEditorial, persona: e.target.value})}
