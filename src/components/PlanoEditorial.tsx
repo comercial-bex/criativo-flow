@@ -925,6 +925,7 @@ Use um tom profissional e inclua detalhes específicos do contexto do cliente.
                   </div>
                 </div>
               </CardHeader>
+              <CardContent>
                 <div className="space-y-4">
                   {/* Navegação do mês */}
                   <div className="flex items-center justify-between">
@@ -979,7 +980,7 @@ Use um tom profissional e inclua detalhes específicos do contexto do cliente.
           </div>
         </TabsContent>
       </Tabs>
-    </div>
-  </TooltipProvider>
-  );
+     </div>
+   </TooltipProvider>
+ )
 }
