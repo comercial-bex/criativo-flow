@@ -735,18 +735,30 @@ Use um tom profissional e inclua detalhes específicos do contexto do cliente.
                         
                         // Tentar separar por 🎯 PERSONA primeiro
                         if (personasText.includes('🎯 PERSONA')) {
-                          personas = personasText.split('🎯 PERSONA').filter(p => p.trim());
+                          personas = personasText.split('🎯 PERSONA')
+                            .filter(p => p.trim()) // Remove elementos vazios
+                            .map(p => p.trim());   // Remove espaços extras
                         } 
                         // Se não encontrar, tentar por PERSONA
                         else if (personasText.includes('PERSONA')) {
-                          personas = personasText.split(/PERSONA\s*\d+/).filter(p => p.trim());
+                          personas = personasText.split(/PERSONA\s*\d+/)
+                            .filter(p => p.trim())
+                            .map(p => p.trim());
                         }
-                        // Se ainda não encontrar, dividir manualmente
+                        // Se ainda não encontrar, tentar dividir por quebras de linha duplas
                         else {
-                          personas = [personasText]; // Mostrar tudo como uma persona
+                          personas = personasText.split(/\n\s*\n/)
+                            .filter(p => p.trim())
+                            .map(p => p.trim());
                         }
                         
+                        // Garantir que temos no máximo 3 personas
+                        personas = personas.slice(0, 3);
+                        
                         return personas.map((persona, index) => {
+                          // Debug para verificar o conteúdo
+                          console.log(`Persona ${index + 1}:`, persona);
+                          
                           // Extrair informações da persona
                           const lines = persona.trim().split('\n').filter(line => line.trim());
                           
@@ -755,11 +767,17 @@ Use um tom profissional e inclua detalhes específicos do contexto do cliente.
                           titleLine = titleLine.replace(/^\d+\s*-\s*/, '').replace(/^-\s*/, '').trim();
                           
                           // Resto como conteúdo
-                          const content = lines.slice(1).join(' ').trim() || lines[0] || '';
+                          const content = lines.slice(1).join(' ').trim() || persona.trim();
                           
                           // Extrair nome (primeiras palavras antes de vírgula ou idade)
+                          let name = titleLine;
                           const nameMatch = titleLine.match(/^([A-Za-zÀ-ÿ\s]+?)(?:,|\s*-|\s*\d+)/);
-                          const name = nameMatch ? nameMatch[1].trim() : titleLine.split(',')[0].split('-')[0].trim();
+                          if (nameMatch && nameMatch[1].trim()) {
+                            name = nameMatch[1].trim();
+                          } else {
+                            // Se não conseguir extrair, usar um nome padrão
+                            name = `Persona ${index + 1}`;
+                          }
                           
                           // Extrair idade se houver
                           const ageMatch = titleLine.match(/(\d+)\s*anos?/i);
