@@ -260,144 +260,164 @@ export default function PlanejamentoVisual() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={() => navigate(`/clientes/${clienteId}/projetos/${projetoId}`)}
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Voltar
-          </Button>
-          <SectionHeader
-            title="Planejamento Visual"
-            description={`Visualização detalhada: ${planejamento.titulo}`}
-          />
-        </div>
-        
-        <div className="flex gap-2">
-          <Badge className={getStatusColor(planejamento.status)}>
-            {getStatusText(planejamento.status)}
-          </Badge>
-        </div>
-      </div>
-
-      {/* Planejamento Detalhado */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Calendar className="h-5 w-5" />
-            {planejamento.titulo}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {planejamento.descricao && (
-            <div className="whitespace-pre-wrap text-sm space-y-4">
-              {planejamento.descricao}
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30">
+      <div className="container mx-auto px-6 py-8 space-y-8">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => navigate(`/clientes/${clienteId}/projetos/${projetoId}`)}
+              className="hover:scale-105 transition-transform"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Voltar
+            </Button>
+            <div>
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+                Planejamento Visual
+              </h1>
+              <p className="text-muted-foreground mt-1">
+                {planejamento.titulo}
+              </p>
             </div>
-          )}
-        </CardContent>
-      </Card>
+          </div>
+          
+          <div className="flex gap-2">
+            <Badge className={`${getStatusColor(planejamento.status)} px-3 py-1 font-medium`}>
+              {getStatusText(planejamento.status)}
+            </Badge>
+          </div>
+        </div>
 
-
-      {/* Gerenciamento de Posts */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
-              <Instagram className="h-5 w-5" />
-              Posts do Planejamento ({posts.length})
+        {/* Planejamento Detalhado */}
+        <Card className="backdrop-blur-sm bg-card/95 border-primary/10 shadow-lg hover:shadow-xl transition-all duration-300">
+          <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent">
+            <CardTitle className="flex items-center gap-3 text-xl">
+              <div className="p-2 rounded-full bg-primary/10">
+                <Calendar className="h-5 w-5 text-primary" />
+              </div>
+              {planejamento.titulo}
             </CardTitle>
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Novo Post
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-2xl">
-                <DialogHeader>
-                  <DialogTitle>Criar Novo Post</DialogTitle>
+          </CardHeader>
+          <CardContent className="pt-6">
+            {planejamento.descricao && (
+              <div className="whitespace-pre-wrap text-sm space-y-4 leading-relaxed">
+                {planejamento.descricao}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+
+        {/* Gerenciamento de Posts */}
+        <Card className="backdrop-blur-sm bg-card/95 border-primary/10 shadow-lg hover:shadow-xl transition-all duration-300">
+          <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent">
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-3 text-xl">
+                <div className="p-2 rounded-full bg-gradient-to-r from-pink-500/10 to-purple-500/10">
+                  <Instagram className="h-5 w-5 text-pink-500" />
+                </div>
+                Posts do Planejamento 
+                <Badge variant="secondary" className="ml-2 px-2 py-1 text-xs">
+                  {posts.length}
+                </Badge>
+              </CardTitle>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Novo Post
+                  </Button>
+                </DialogTrigger>
+              <DialogContent className="max-w-2xl bg-gradient-to-br from-background to-muted/30 border-primary/20">
+                <DialogHeader className="text-center pb-6">
+                  <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+                    ✨ Criar Novo Post
+                  </DialogTitle>
+                  <p className="text-muted-foreground text-sm">
+                    Crie um post incrível com imagem gerada por IA
+                  </p>
                 </DialogHeader>
-                <div className="space-y-4">
+                <div className="space-y-6">
                   <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-sm font-medium">Título do Post</label>
+                    <div className="space-y-2">
+                      <label className="text-sm font-semibold text-foreground">Título do Post</label>
                       <Input
                         value={newPost.titulo}
                         onChange={(e) => setNewPost({...newPost, titulo: e.target.value})}
-                        placeholder="Digite o título..."
+                        placeholder="Digite um título criativo..."
+                        className="border-primary/20 focus:border-primary transition-colors"
                       />
                     </div>
-                    <div>
-                      <label className="text-sm font-medium">Data de Postagem</label>
+                    <div className="space-y-2">
+                      <label className="text-sm font-semibold text-foreground">Data de Postagem</label>
                       <Input
                         type="date"
                         value={newPost.data_postagem}
                         onChange={(e) => setNewPost({...newPost, data_postagem: e.target.value})}
+                        className="border-primary/20 focus:border-primary transition-colors"
                       />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-sm font-medium">Tipo Criativo</label>
+                    <div className="space-y-2">
+                      <label className="text-sm font-semibold text-foreground">Tipo Criativo</label>
                       <Select value={newPost.tipo_criativo} onValueChange={(value) => setNewPost({...newPost, tipo_criativo: value})}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecione..." />
+                        <SelectTrigger className="border-primary/20 focus:border-primary transition-colors">
+                          <SelectValue placeholder="Selecione o tipo..." />
                         </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="post">Post</SelectItem>
-                          <SelectItem value="story">Story</SelectItem>
-                          <SelectItem value="reel">Reel</SelectItem>
-                          <SelectItem value="carrossel">Carrossel</SelectItem>
+                        <SelectContent className="bg-background border-primary/20">
+                          <SelectItem value="post" className="hover:bg-primary/5">📱 Post</SelectItem>
+                          <SelectItem value="story" className="hover:bg-primary/5">📸 Story</SelectItem>
+                          <SelectItem value="reel" className="hover:bg-primary/5">🎬 Reel</SelectItem>
+                          <SelectItem value="carrossel" className="hover:bg-primary/5">🎠 Carrossel</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
 
-                    <div>
-                      <label className="text-sm font-medium">Objetivo da Postagem</label>
+                    <div className="space-y-2">
+                      <label className="text-sm font-semibold text-foreground">Objetivo da Postagem</label>
                       <Select value={newPost.objetivo_postagem} onValueChange={(value) => setNewPost({...newPost, objetivo_postagem: value})}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecione..." />
+                        <SelectTrigger className="border-primary/20 focus:border-primary transition-colors">
+                          <SelectValue placeholder="Selecione o objetivo..." />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="bg-background border-primary/20">
                           {objetivos.map((obj, index) => (
-                            <SelectItem key={index} value={obj.tipo}>
-                              {obj.tipo.replace('_', ' ').toUpperCase()}
+                            <SelectItem key={index} value={obj.tipo} className="hover:bg-primary/5">
+                              🎯 {obj.tipo.replace('_', ' ').toUpperCase()}
                             </SelectItem>
                           ))}
-                          <SelectItem value="reconhecimento_marca">Reconhecimento de Marca</SelectItem>
-                          <SelectItem value="crescimento_seguidores">Crescimento de Seguidores</SelectItem>
-                          <SelectItem value="aquisicao_leads">Aquisição de Leads</SelectItem>
+                          <SelectItem value="reconhecimento_marca" className="hover:bg-primary/5">🏆 Reconhecimento de Marca</SelectItem>
+                          <SelectItem value="crescimento_seguidores" className="hover:bg-primary/5">📈 Crescimento de Seguidores</SelectItem>
+                          <SelectItem value="aquisicao_leads" className="hover:bg-primary/5">🎯 Aquisição de Leads</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                   </div>
 
-                  <div className="flex justify-end gap-2 pt-4">
+                  <div className="flex justify-end gap-3 pt-6 border-t border-primary/10">
                     <Button 
                       onClick={createPost} 
                       disabled={isCreatingPost || generatingImage}
-                      className="min-w-[140px]"
+                      className="min-w-[160px] bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
                     >
                       {isCreatingPost ? (
                         <>
                           <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                          Criando...
+                          Criando Post...
                         </>
                       ) : generatingImage ? (
                         <>
-                          <Wand2 className="h-4 w-4 mr-2 animate-pulse" />
-                          Gerando Imagem...
+                          <Wand2 className="h-4 w-4 mr-2 animate-pulse text-yellow-400" />
+                          Gerando Imagem IA...
                         </>
                       ) : (
                         <>
                           <Plus className="h-4 w-4 mr-2" />
-                          Criar Post
+                          ✨ Criar Post
                         </>
                       )}
                     </Button>
@@ -407,60 +427,86 @@ export default function PlanejamentoVisual() {
             </Dialog>
           </div>
         </CardHeader>
-        <CardContent>
-          {posts.length === 0 ? (
-            <div className="text-center py-12">
-              <Instagram className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <h3 className="font-medium mb-2">Nenhum post criado ainda</h3>
-              <p className="text-sm text-muted-foreground">
-                Clique em "Novo Post" para começar a criar conteúdo para as redes sociais.
-              </p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {posts.map((post) => (
-                <Card key={post.id} className="overflow-hidden">
-                  {post.anexo_url && (
-                    <div className="aspect-square relative">
-                      <img 
-                        src={post.anexo_url} 
-                        alt={post.titulo}
-                        className="w-full h-full object-cover"
-                      />
-                      <div className="absolute top-2 right-2">
-                        <Badge variant="secondary" className="bg-background/80">
-                          <Image className="h-3 w-3" />
-                        </Badge>
+          <CardContent className="pt-6">
+            {posts.length === 0 ? (
+              <div className="text-center py-16 bg-gradient-to-br from-muted/30 to-transparent rounded-lg border border-dashed border-primary/20">
+                <div className="p-4 rounded-full bg-gradient-to-r from-pink-500/10 to-purple-500/10 w-24 h-24 mx-auto mb-6 flex items-center justify-center">
+                  <Instagram className="h-12 w-12 text-pink-500" />
+                </div>
+                <h3 className="font-semibold text-lg mb-2 text-foreground">Nenhum post criado ainda</h3>
+                <p className="text-sm text-muted-foreground max-w-md mx-auto leading-relaxed">
+                  Clique em "Novo Post" para começar a criar conteúdo incrível para as redes sociais com imagens geradas por IA.
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {posts.map((post, index) => (
+                  <Card 
+                    key={post.id} 
+                    className="group overflow-hidden bg-gradient-to-br from-card to-card/80 border-primary/10 shadow-lg hover:shadow-2xl transition-all duration-500 hover:scale-[1.02] animate-fade-in"
+                    style={{ animationDelay: `${index * 100}ms` }}
+                  >
+                    {post.anexo_url && (
+                      <div className="aspect-square relative overflow-hidden">
+                        <img 
+                          src={post.anexo_url} 
+                          alt={post.titulo}
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                        <div className="absolute top-3 right-3">
+                          <Badge className="bg-background/90 text-foreground border-primary/20 shadow-lg">
+                            <Image className="h-3 w-3 mr-1" />
+                            IA
+                          </Badge>
+                        </div>
                       </div>
-                    </div>
-                  )}
-                  <CardContent className="p-4">
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <Badge variant="outline" className="text-xs">
-                          {post.tipo_criativo.toUpperCase()}
-                        </Badge>
-                        <span className="text-xs text-muted-foreground">
-                          {new Date(post.data_postagem).toLocaleDateString('pt-BR')}
-                        </span>
+                    )}
+                    <CardContent className="p-5">
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <Badge 
+                            variant="outline" 
+                            className="text-xs font-medium bg-primary/5 border-primary/20 text-primary"
+                          >
+                            {post.tipo_criativo === 'post' && '📱'}
+                            {post.tipo_criativo === 'story' && '📸'}
+                            {post.tipo_criativo === 'reel' && '🎬'}
+                            {post.tipo_criativo === 'carrossel' && '🎠'}
+                            {' '}
+                            {post.tipo_criativo.toUpperCase()}
+                          </Badge>
+                          <span className="text-xs text-muted-foreground font-medium">
+                            {new Date(post.data_postagem).toLocaleDateString('pt-BR')}
+                          </span>
+                        </div>
+                        <h4 className="font-semibold text-sm line-clamp-2 leading-relaxed group-hover:text-primary transition-colors">
+                          {post.titulo}
+                        </h4>
+                        <div className="flex items-center justify-between pt-2 border-t border-primary/5">
+                          <Badge 
+                            variant="secondary" 
+                            className="text-xs bg-muted/50 hover:bg-primary/10 transition-colors"
+                          >
+                            🎯 {post.objetivo_postagem.replace('_', ' ')}
+                          </Badge>
+                          <Button 
+                            size="sm" 
+                            variant="ghost" 
+                            className="hover:bg-primary/10 hover:text-primary transition-colors h-8 w-8 p-0"
+                          >
+                            <Eye className="h-3 w-3" />
+                          </Button>
+                        </div>
                       </div>
-                      <h4 className="font-medium text-sm line-clamp-2">{post.titulo}</h4>
-                      <div className="flex items-center justify-between">
-                        <Badge variant="secondary" className="text-xs">
-                          {post.objetivo_postagem.replace('_', ' ')}
-                        </Badge>
-                        <Button size="sm" variant="ghost">
-                          <Eye className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
