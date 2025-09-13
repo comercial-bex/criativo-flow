@@ -722,12 +722,12 @@ Use um tom profissional e inclua detalhes específicos do contexto do cliente.
 
                 {conteudoEditorial.persona && (
                   <div className="space-y-6">
-                    <div className="flex items-center gap-2 text-lg font-semibold text-primary">
+                    <div className="flex items-center gap-2 text-lg font-semibold text-primary mb-6">
                       <Users className="h-5 w-5" />
                       Personas Geradas
                     </div>
                     
-                    <div className="grid gap-6">
+                    <div className="space-y-8">
                       {conteudoEditorial.persona.split('🎯 PERSONA').filter(Boolean).map((persona, index) => {
                         // Extrair informações da persona
                         const lines = persona.trim().split('\n').filter(line => line.trim());
@@ -740,7 +740,7 @@ Use um tom profissional e inclua detalhes específicos do contexto do cliente.
                         const age = nameMatch ? nameMatch[2] : '';
                         
                         // Extrair profissão (geralmente está no início do conteúdo)
-                        const professionMatch = content.match(/([A-Za-zÀ-ÿ\s,]+?)(?:,|\.|é|atua|trabalha)/);
+                        const professionMatch = content.match(/([A-Za-zÀ-ÿ\s,]+?)(?:\.|\.|é|atua|trabalha)/);
                         const profession = professionMatch ? professionMatch[1].trim() : '';
                         
                         // Ícones diferentes para cada persona
@@ -748,8 +748,12 @@ Use um tom profissional e inclua detalhes específicos do contexto do cliente.
                         const IconComponent = icons[index] || UserCircle;
                         
                         // Cores diferentes para cada persona
-                        const colors = ['blue', 'green', 'purple'];
-                        const color = colors[index] || 'blue';
+                        const colorClasses = [
+                          { bg: 'bg-blue-50', border: 'border-blue-200', icon: 'text-blue-600', accent: 'bg-blue-100', text: 'text-blue-900' },
+                          { bg: 'bg-green-50', border: 'border-green-200', icon: 'text-green-600', accent: 'bg-green-100', text: 'text-green-900' },
+                          { bg: 'bg-purple-50', border: 'border-purple-200', icon: 'text-purple-600', accent: 'bg-purple-100', text: 'text-purple-900' }
+                        ];
+                        const color = colorClasses[index] || colorClasses[0];
                         
                         // Destacar palavras-chave importantes
                         const highlightText = (text: string) => {
@@ -776,41 +780,52 @@ Use um tom profissional e inclua detalhes específicos do contexto do cliente.
                         };
                         
                         return (
-                          <Card key={index} className={`relative overflow-hidden border-l-4 border-l-${color}-500 bg-gradient-to-r from-${color}-50/50 to-transparent`}>
-                            <CardHeader className="pb-4">
-                              <div className="flex items-start gap-4">
-                                <div className={`w-16 h-16 rounded-full bg-${color}-100 flex items-center justify-center flex-shrink-0`}>
-                                  <IconComponent className={`h-8 w-8 text-${color}-600`} />
+                          <Card key={index} className={`${color.bg} ${color.border} border-2 shadow-lg hover:shadow-xl transition-shadow duration-300`}>
+                            <CardHeader className={`${color.accent} border-b-2 ${color.border} pb-6`}>
+                              <div className="flex items-center gap-4">
+                                <div className={`w-20 h-20 rounded-full bg-white border-3 ${color.border} flex items-center justify-center shadow-md`}>
+                                  <IconComponent className={`h-10 w-10 ${color.icon}`} />
                                 </div>
-                                <div className="flex-1 space-y-2">
-                                  <div className="flex items-center gap-2 flex-wrap">
-                                    <h3 className="text-xl font-bold text-gray-900">{name}</h3>
+                                <div className="flex-1 space-y-3">
+                                  <div>
+                                    <h3 className={`text-2xl font-bold ${color.text}`}>{name}</h3>
                                     {age && (
-                                      <Badge variant="outline" className="text-sm">
+                                      <Badge variant="outline" className="mt-1 text-sm font-medium">
                                         {age} anos
                                       </Badge>
                                     )}
                                   </div>
                                   {profession && (
                                     <div className="flex items-center gap-2">
-                                      <Briefcase className="h-4 w-4 text-gray-500" />
-                                      <span className="font-medium text-gray-700">{profession}</span>
+                                      <Briefcase className={`h-5 w-5 ${color.icon}`} />
+                                      <span className={`font-semibold text-lg ${color.text}`}>{profession}</span>
                                     </div>
                                   )}
                                 </div>
+                                <div className={`w-12 h-12 rounded-full ${color.accent} flex items-center justify-center`}>
+                                  <span className={`text-xl font-bold ${color.icon}`}>{index + 1}</span>
+                                </div>
                               </div>
                             </CardHeader>
-                            <CardContent>
-                              <div className="space-y-3">
-                                <div className="text-sm leading-relaxed text-gray-600">
+                            <CardContent className="pt-6 pb-6">
+                              <div className="space-y-4">
+                                <div className="text-base leading-relaxed text-gray-700 bg-white p-4 rounded-lg border border-gray-200">
                                   {highlightText(content)}
                                 </div>
                                 
-                                <div className="flex items-center gap-2 pt-2 border-t border-gray-100">
-                                  <Heart className="h-4 w-4 text-red-500" />
-                                  <span className="text-xs font-medium text-gray-500">
-                                    Persona {index + 1} | Público-alvo estratégico
-                                  </span>
+                                <div className="flex items-center justify-between pt-4 border-t border-gray-200">
+                                  <div className="flex items-center gap-2">
+                                    <Heart className="h-4 w-4 text-red-500" />
+                                    <span className="text-sm font-medium text-gray-600">
+                                      Persona Estratégica {index + 1}
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <Target className="h-4 w-4 text-green-500" />
+                                    <span className="text-sm font-medium text-gray-600">
+                                      Público-alvo
+                                    </span>
+                                  </div>
                                 </div>
                               </div>
                             </CardContent>
@@ -822,15 +837,15 @@ Use um tom profissional e inclua detalhes específicos do contexto do cliente.
                 )}
 
                 {!conteudoEditorial.persona && (
-                  <div className="text-center py-12 text-muted-foreground">
+                  <div className="text-center py-16 text-muted-foreground bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
                     <div className="relative">
-                      <Users className="h-16 w-16 mx-auto mb-4 opacity-20" />
+                      <Users className="h-20 w-20 mx-auto mb-4 opacity-20" />
                       <div className="absolute inset-0 flex items-center justify-center">
-                        <Zap className="h-6 w-6 text-primary animate-pulse" />
+                        <Zap className="h-8 w-8 text-primary animate-pulse" />
                       </div>
                     </div>
-                    <h3 className="text-lg font-medium mb-2">Personas não geradas</h3>
-                    <p className="text-sm">Clique no botão acima para gerar as 3 personas estratégicas</p>
+                    <h3 className="text-xl font-semibold mb-2 text-gray-700">Personas não geradas</h3>
+                    <p className="text-base text-gray-600">Clique no botão acima para gerar as 3 personas estratégicas</p>
                   </div>
                 )}
               </CardContent>
