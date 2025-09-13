@@ -67,8 +67,15 @@ export function PlanoEditorial({ planejamento, clienteId, posts, setPosts, onPre
 
   const fetchConteudoEditorial = async () => {
     try {
-      // Por enquanto, apenas usar estado local
-      // A integração com BD será feita após os tipos serem atualizados
+      const { data } = await supabase
+        .from('conteudo_editorial')
+        .select('*')
+        .eq('planejamento_id', planejamento.id)
+        .single();
+
+      if (data) {
+        setConteudoEditorial(data);
+      }
       setLoading(false);
     } catch (error) {
       console.error('Erro ao buscar conteúdo editorial:', error);
@@ -78,13 +85,51 @@ export function PlanoEditorial({ planejamento, clienteId, posts, setPosts, onPre
 
   const saveField = async (field: keyof ConteudoEditorial, value: string) => {
     try {
-      // Por enquanto, apenas salvar no estado local
+      // Buscar informações do cliente e plano
+      const { data: clienteData } = await supabase
+        .from('clientes')
+        .select('assinatura_id')
+        .eq('id', clienteId)
+        .single();
+
+      if (!clienteData?.assinatura_id) {
+        toast({
+          title: "Erro",
+          description: "Cliente não possui plano ativo.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Salvar no banco de dados
+      const { data: existingContent } = await supabase
+        .from('conteudo_editorial')
+        .select('id')
+        .eq('planejamento_id', planejamento.id)
+        .single();
+
+      if (existingContent) {
+        // Atualizar conteúdo existente
+        await supabase
+          .from('conteudo_editorial')
+          .update({ [field]: value })
+          .eq('id', existingContent.id);
+      } else {
+        // Criar novo conteúdo
+        await supabase
+          .from('conteudo_editorial')
+          .insert({
+            planejamento_id: planejamento.id,
+            [field]: value
+          });
+      }
+      
       const updatedContent = { ...conteudoEditorial, [field]: value };
       setConteudoEditorial(updatedContent);
       
       toast({
         title: "Sucesso",
-        description: "Informação salva com sucesso!",
+        description: `${field === 'missao' ? 'Missão' : 'Posicionamento'} salvo com sucesso!`,
       });
     } catch (error) {
       console.error('Erro ao salvar:', error);
