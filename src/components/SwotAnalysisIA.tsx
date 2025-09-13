@@ -49,8 +49,14 @@ export function SwotAnalysisIA({
       if (data.success) {
         setAnalysis(data.analysis);
         
-        // Extrair e passar dados SWOT para o formulário pai
+        // Extrair dados SWOT e salvar no banco
         const swotData = extractSwotData(data.analysis);
+        const objetivosGerados = generateClientObjectives(swotData);
+
+        // Salvar no banco de dados
+        await salvarAnaliseSwot(swotData, data.analysis, objetivosGerados);
+        
+        // Passar dados para o componente pai
         if (onSwotDataUpdate) {
           onSwotDataUpdate({
             forcas: swotData.forcas.join('\n'),
@@ -76,6 +82,37 @@ export function SwotAnalysisIA({
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const salvarAnaliseSwot = async (swotData: any, analiseTexto: string, objetivos: any) => {
+    try {
+      const dadosParaSalvar = {
+        cliente_id: clienteId,
+        analise_swot: swotData,
+        analise_estrategica: analiseTexto,
+        objetivos: {
+          objetivos_gerados: objetivos,
+          data_geracao: new Date().toISOString()
+        }
+      };
+
+      const { error } = await supabase
+        .from('cliente_objetivos')
+        .upsert(dadosParaSalvar, { 
+          onConflict: 'cliente_id'
+        });
+
+      if (error) throw error;
+
+      console.log('Análise SWOT salva no banco:', dadosParaSalvar);
+    } catch (error) {
+      console.error('Erro ao salvar análise SWOT:', error);
+      toast({
+        title: "Erro ao salvar análise",
+        description: "A análise foi gerada mas houve erro ao salvar no banco.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -154,7 +191,7 @@ export function SwotAnalysisIA({
   };
 
   // Função para extrair e gerar objetivos baseados na análise SWOT
-  const generateClientObjectives = (analysisText: string) => {
+  const generateClientObjectives = (swotData: any) => {
     const objectives = {
       crescimento_digital: [] as string[],
       fortalecimento_marca: [] as string[],
@@ -162,17 +199,10 @@ export function SwotAnalysisIA({
       otimizacao_vendas: [] as string[]
     };
 
-    // Extrair estratégias prioritárias
-    const strategiesMatch = analysisText.match(/ESTRATÉGIAS PRIORITÁRIAS:([\s\S]*?)(?=\n\n|$)/);
-    const strategies = strategiesMatch ? strategiesMatch[1].trim().split('\n').filter(line => line.trim().startsWith('-')).map(line => line.replace(/^-\s*/, '')) : [];
-
-    // Extrair oportunidades
-    const opportunitiesMatch = analysisText.match(/OPORTUNIDADES:([\s\S]*?)(?=FRAQUEZAS:|AMEAÇAS:|ESTRATÉGIAS|$)/);
-    const opportunities = opportunitiesMatch ? opportunitiesMatch[1].trim().split('\n').filter(line => line.trim().startsWith('-')).map(line => line.replace(/^-\s*/, '')) : [];
-
-    // Extrair forças
-    const strengthsMatch = analysisText.match(/FORÇAS:([\s\S]*?)(?=OPORTUNIDADES:|FRAQUEZAS:|$)/);
-    const strengths = strengthsMatch ? strengthsMatch[1].trim().split('\n').filter(line => line.trim().startsWith('-')).map(line => line.replace(/^-\s*/, '')) : [];
+    // Usar dados SWOT para gerar objetivos
+    const strengths = swotData.forcas || [];
+    const opportunities = swotData.oportunidades || [];
+    const strategies = [...strengths, ...opportunities];
 
     // Gerar objetivos baseados nas estratégias e insights
     strategies.forEach(strategy => {

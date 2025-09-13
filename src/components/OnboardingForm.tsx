@@ -12,6 +12,7 @@ import { Save, X, Download } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { SwotAnalysisIA } from "@/components/SwotAnalysisIA";
+import { ObjetivosAssinatura } from "@/components/ObjetivosAssinatura";
 
 interface OnboardingFormProps {
   isOpen: boolean;

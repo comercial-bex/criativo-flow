@@ -44,10 +44,41 @@ export type Database = {
         }
         Relationships: []
       }
+      cliente_objetivos: {
+        Row: {
+          analise_estrategica: string | null
+          analise_swot: Json | null
+          cliente_id: string
+          created_at: string
+          id: string
+          objetivos: Json
+          updated_at: string
+        }
+        Insert: {
+          analise_estrategica?: string | null
+          analise_swot?: Json | null
+          cliente_id: string
+          created_at?: string
+          id?: string
+          objetivos?: Json
+          updated_at?: string
+        }
+        Update: {
+          analise_estrategica?: string | null
+          analise_swot?: Json | null
+          cliente_id?: string
+          created_at?: string
+          id?: string
+          objetivos?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
       cliente_onboarding: {
         Row: {
           ameacas: string | null
           area_atendimento: string | null
+          assinatura_id: string | null
           canais_atendimento_ativos: string | null
           canais_contato: string | null
           cliente_id: string
@@ -97,6 +128,7 @@ export type Database = {
         Insert: {
           ameacas?: string | null
           area_atendimento?: string | null
+          assinatura_id?: string | null
           canais_atendimento_ativos?: string | null
           canais_contato?: string | null
           cliente_id: string
@@ -146,6 +178,7 @@ export type Database = {
         Update: {
           ameacas?: string | null
           area_atendimento?: string | null
+          assinatura_id?: string | null
           canais_atendimento_ativos?: string | null
           canais_contato?: string | null
           cliente_id?: string
