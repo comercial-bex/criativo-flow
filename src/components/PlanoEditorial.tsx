@@ -290,7 +290,7 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
         1. Defina claramente o propósito da empresa
         2. Seja inspiradora e motivadora
         3. Reflita os valores e diferenciais
-        4. Tenha entre 50-100 palavras
+        4. Tenha máximo 70 palavras
         5. Seja focada no impacto que a empresa gera
         
         Responda apenas com o texto da missão, sem títulos ou formatações extras.`;
@@ -303,9 +303,16 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
         throw new Error(response.error.message);
       }
 
-      if (response.data?.content) {
-        setConteudo(prev => ({ ...prev, missao: response.data.content }));
-        toast.success('Missão gerada com sucesso!');
+      if (response.data) {
+        // Parse da resposta JSON retornada pela edge function
+        const missaoGerada = typeof response.data === 'string' ? JSON.parse(response.data) : response.data;
+        
+        if (missaoGerada && missaoGerada.trim().length >= 20) {
+          setConteudo(prev => ({ ...prev, missao: missaoGerada.trim() }));
+          toast.success('Missão gerada com sucesso!');
+        } else {
+          throw new Error('Missão gerada muito curta ou inválida');
+        }
       }
     } catch (error) {
       console.error('Erro ao gerar missão:', error);
