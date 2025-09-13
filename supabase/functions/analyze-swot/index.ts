@@ -58,71 +58,77 @@ serve(async (req) => {
 
     // Preparar prompt para análise da matriz SWOT
     const prompt = `
-Analise os dados de onboarding de "${clienteData.nome}" e identifique os pontos cruciais para cada quadrante da matriz SWOT.
+Analise estrategicamente os dados de onboarding de "${clienteData.nome}" identificando insights específicos para CRESCIMENTO, VENDAS e AQUISIÇÃO DE SEGUIDORES que podem estar fora da visão atual da empresa.
 
-DADOS DA EMPRESA:
+DADOS DO ONBOARDING:
 Nome: ${onboardingData.nome_empresa}
 Segmento: ${onboardingData.segmento_atuacao}
 Produtos/Serviços: ${onboardingData.produtos_servicos}
 Tempo de Mercado: ${onboardingData.tempo_mercado}
 Localização: ${onboardingData.localizacao}
 Estrutura: ${onboardingData.estrutura_atual}
-
-DIAGNÓSTICO DE MERCADO:
 Concorrentes: ${onboardingData.concorrentes_diretos}
 Diferenciais: ${onboardingData.diferenciais}
-Fatores de Crise: ${onboardingData.fatores_crise}
-Área de Atendimento: ${onboardingData.area_atendimento}
-
-PÚBLICO-ALVO E COMPORTAMENTO:
 Público-alvo: ${onboardingData.publico_alvo?.join(', ')}
-Dores/Problemas: ${onboardingData.dores_problemas}
-O que valorizam: ${onboardingData.valorizado}
+Dores dos Clientes: ${onboardingData.dores_problemas}
+O que Valorizam: ${onboardingData.valorizado}
 Ticket Médio: ${onboardingData.ticket_medio}
-
-MARKETING ATUAL:
+Frequência de Compra: ${onboardingData.frequencia_compra}
 Presença Digital: ${onboardingData.presenca_digital?.join(', ')}
-Mídia Paga: ${onboardingData.midia_paga}
 Tipos de Conteúdo: ${onboardingData.tipos_conteudo?.join(', ')}
-
-OBJETIVOS:
-Digitais: ${onboardingData.objetivos_digitais}
-Offline: ${onboardingData.objetivos_offline}
+Objetivos Digitais: ${onboardingData.objetivos_digitais}
 Visão 6 meses: ${onboardingData.onde_6_meses}
 
-RESPONDA APENAS com os pontos cruciais organizados assim:
+IDENTIFIQUE PONTOS ESPECÍFICOS QUE RESPONDAM:
 
 FORÇAS:
-- [ponto objetivo baseado nos dados]
-- [ponto objetivo baseado nos dados]
-- [ponto objetivo baseado nos dados]
+- Quais vantagens competitivas únicas podem ser melhor exploradas para vendas?
+- Que aspectos da estrutura/experiência podem acelerar aquisição de clientes?
+- Quais diferenciais estão sendo subutilizados para conversão?
 
 OPORTUNIDADES:
-- [ponto objetivo baseado nos dados]
-- [ponto objetivo baseado nos dados]
-- [ponto objetivo baseado nos dados]
+- Que nichos de mercado específicos estão sendo perdidos baseado no público-alvo atual?
+- Quais estratégias de conteúdo podem multiplicar o engajamento com base nas dores identificadas?
+- Que parcerias estratégicas fazem sentido considerando o segmento e localização?
 
 FRAQUEZAS:
-- [ponto objetivo baseado nos dados]
-- [ponto objetivo baseado nos dados]
-- [ponto objetivo baseado nos dados]
+- Quais gargalos operacionais estão limitando o crescimento de vendas?
+- Que aspectos da presença digital estão impedindo a aquisição de novos seguidores?
+- Quais processos internos precisam ser otimizados para escalar?
 
 AMEAÇAS:
-- [ponto objetivo baseado nos dados]
-- [ponto objetivo baseado nos dados]
-- [ponto objetivo baseado nos dados]
+- Que movimentos dos concorrentes podem impactar a base de clientes atual?
+- Quais mudanças de mercado podem afetar o ticket médio e frequência de compra?
+- Que riscos digitais podem comprometer a aquisição de novos públicos?
 
-INSIGHTS ESTRATÉGICOS:
-- [insight crucial para o negócio]
-- [insight crucial para o negócio]
-- [insight crucial para o negócio]
+RESPONDA APENAS:
 
-AÇÕES PRIORITÁRIAS:
-- [ação específica e prática]
-- [ação específica e prática]
-- [ação específica e prática]
+FORÇAS:
+- [insight específico para vendas/crescimento]
+- [vantagem competitiva subutilizada]
+- [força estrutural para escalar]
 
-Seja direto, objetivo e foque apenas nos pontos cruciais identificados nos dados fornecidos.
+OPORTUNIDADES:
+- [nicho específico não explorado]
+- [estratégia de conteúdo para engajamento]
+- [parceria estratégica concreta]
+
+FRAQUEZAS:
+- [gargalo operacional específico]
+- [limitação digital para aquisição]
+- [processo interno que impede escala]
+
+AMEAÇAS:
+- [movimento competitivo iminente]
+- [risco de mercado específico]
+- [ameaça digital concreta]
+
+ESTRATÉGIAS PRIORITÁRIAS:
+- [ação específica para aumentar vendas baseada nos dados]
+- [tática concreta para aquisição de seguidores no nicho identificado]
+- [movimento estratégico para diferenciação competitiva]
+
+Seja específico, baseado nos dados reais fornecidos, e foque em insights que a empresa pode não estar vendo.
 `;
 
     // Chamar OpenAI
