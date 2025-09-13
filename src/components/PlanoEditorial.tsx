@@ -633,7 +633,32 @@ Formate a resposta em JSON com esta estrutura:
 
             <Card>
               <CardHeader>
-                <CardTitle>Frameworks de Posicionamento</CardTitle>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle>Frameworks de Posicionamento</CardTitle>
+                    <CardDescription>
+                      Selecione os frameworks que melhor se adequam ao perfil do cliente
+                    </CardDescription>
+                  </div>
+                  {analiseCompleta && (
+                    <Button
+                      onClick={() => {
+                        setFrameworksSelecionados([]);
+                        setEspecialistasSelecionados([]);
+                        setAnaliseCompleta(false);
+                        toast({
+                          title: "Nova Análise",
+                          description: "Seleções resetadas. Escolha novos frameworks e especialistas.",
+                        });
+                      }}
+                      variant="outline"
+                      size="sm"
+                    >
+                      <Wand2 className="h-4 w-4 mr-2" />
+                      Fazer Nova Análise
+                    </Button>
+                  )}
+                </div>
               </CardHeader>
               <CardContent className="space-y-6">
                 {/* Framework HESEC */}
@@ -657,13 +682,16 @@ Formate a resposta em JSON com esta estrutura:
                                 : ''
                             }`}
                             onClick={() => {
-                              const isSelected = frameworksSelecionados.includes(item.id);
-                              if (isSelected) {
-                                setFrameworksSelecionados(prev => prev.filter(id => id !== item.id));
-                              } else {
-                                setFrameworksSelecionados(prev => [...prev, item.id]);
+                              if (!analiseCompleta) {
+                                const isSelected = frameworksSelecionados.includes(item.id);
+                                if (isSelected) {
+                                  setFrameworksSelecionados(prev => prev.filter(id => id !== item.id));
+                                } else {
+                                  setFrameworksSelecionados(prev => [...prev, item.id]);
+                                }
                               }
                             }}
+                            disabled={analiseCompleta}
                           >
                             {item.label}
                           </Button>
@@ -696,13 +724,16 @@ Formate a resposta em JSON com esta estrutura:
                                 : ''
                             }`}
                             onClick={() => {
-                              const isSelected = frameworksSelecionados.includes(item.id);
-                              if (isSelected) {
-                                setFrameworksSelecionados(prev => prev.filter(id => id !== item.id));
-                              } else {
-                                setFrameworksSelecionados(prev => [...prev, item.id]);
+                              if (!analiseCompleta) {
+                                const isSelected = frameworksSelecionados.includes(item.id);
+                                if (isSelected) {
+                                  setFrameworksSelecionados(prev => prev.filter(id => id !== item.id));
+                                } else {
+                                  setFrameworksSelecionados(prev => [...prev, item.id]);
+                                }
                               }
                             }}
+                            disabled={analiseCompleta}
                           >
                             {item.label}
                           </Button>
@@ -736,13 +767,16 @@ Formate a resposta em JSON com esta estrutura:
                                 : ''
                             }`}
                             onClick={() => {
-                              const isSelected = frameworksSelecionados.includes(item.id);
-                              if (isSelected) {
-                                setFrameworksSelecionados(prev => prev.filter(id => id !== item.id));
-                              } else {
-                                setFrameworksSelecionados(prev => [...prev, item.id]);
+                              if (!analiseCompleta) {
+                                const isSelected = frameworksSelecionados.includes(item.id);
+                                if (isSelected) {
+                                  setFrameworksSelecionados(prev => prev.filter(id => id !== item.id));
+                                } else {
+                                  setFrameworksSelecionados(prev => [...prev, item.id]);
+                                }
                               }
                             }}
+                            disabled={analiseCompleta}
                           >
                             {item.label}
                           </Button>
@@ -781,6 +815,58 @@ Formate a resposta em JSON com esta estrutura:
                       }
                     </p>
                   </div>
+                )}
+
+                {/* Botão Salvar Análise */}
+                {frameworksSelecionados.length > 0 && !analiseCompleta && (
+                  <Button
+                    onClick={async () => {
+                      try {
+                        // Salvar frameworks no banco
+                        const { data: existingContent } = await supabase
+                          .from('conteudo_editorial')
+                          .select('id')
+                          .eq('planejamento_id', planejamento.id)
+                          .single();
+
+                        if (existingContent) {
+                          await supabase
+                            .from('conteudo_editorial')
+                            .update({ 
+                              frameworks_selecionados: frameworksSelecionados,
+                              especialistas_selecionados: especialistasSelecionados
+                            })
+                            .eq('id', existingContent.id);
+                        } else {
+                          await supabase
+                            .from('conteudo_editorial')
+                            .insert({
+                              planejamento_id: planejamento.id,
+                              frameworks_selecionados: frameworksSelecionados,
+                              especialistas_selecionados: especialistasSelecionados
+                            });
+                        }
+
+                        setAnaliseCompleta(true);
+                        
+                        toast({
+                          title: "Sucesso",
+                          description: "Análise de frameworks salva com sucesso!",
+                        });
+                      } catch (error) {
+                        console.error('Erro ao salvar análise:', error);
+                        toast({
+                          title: "Erro",
+                          description: "Erro ao salvar análise.",
+                          variant: "destructive",
+                        });
+                      }
+                    }}
+                    className="w-full"
+                    variant="default"
+                  >
+                    Salvar Análise de Frameworks
+                  </Button>
                 )}
 
                 <Textarea
