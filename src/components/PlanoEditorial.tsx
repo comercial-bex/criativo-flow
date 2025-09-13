@@ -45,6 +45,8 @@ interface ConteudoEditorial {
   posicionamento?: string;
   persona?: string;
   conteudo_gerado?: string;
+  frameworks_selecionados?: string[];
+  especialistas_selecionados?: string[];
   created_at?: string;
   updated_at?: string;
 }
@@ -59,6 +61,7 @@ export function PlanoEditorial({ planejamento, clienteId, posts, setPosts, onPre
   const [viewType, setViewType] = useState<'editorial' | 'tarefas'>('editorial');
   const [especialistasSelecionados, setEspecialistasSelecionados] = useState<string[]>([]);
   const [frameworksSelecionados, setFrameworksSelecionados] = useState<string[]>([]);
+  const [analiseCompleta, setAnaliseCompleta] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -75,6 +78,17 @@ export function PlanoEditorial({ planejamento, clienteId, posts, setPosts, onPre
 
       if (data) {
         setConteudoEditorial(data);
+        // Carregar frameworks e especialistas salvos
+        if (data.frameworks_selecionados) {
+          setFrameworksSelecionados(data.frameworks_selecionados);
+        }
+        if (data.especialistas_selecionados) {
+          setEspecialistasSelecionados(data.especialistas_selecionados);
+        }
+        // Se tem frameworks salvos, considera análise completa
+        if (data.frameworks_selecionados && data.frameworks_selecionados.length > 0) {
+          setAnaliseCompleta(true);
+        }
       }
       setLoading(false);
     } catch (error) {
@@ -559,6 +573,9 @@ Formate a resposta em JSON com esta estrutura:
             <Card>
               <CardHeader>
                 <CardTitle>Especialistas para Geração de Conteúdo</CardTitle>
+                <CardDescription>
+                  Selecione os especialistas que trabalharão no projeto
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
@@ -586,6 +603,7 @@ Formate a resposta em JSON com esta estrutura:
                           setEspecialistasSelecionados(prev => [...prev, especialista.id]);
                         }
                       }}
+                      disabled={analiseCompleta}
                     >
                       {especialista.label}
                     </Button>
