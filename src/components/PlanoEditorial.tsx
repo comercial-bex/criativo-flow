@@ -294,7 +294,7 @@ Formate a resposta em JSON com esta estrutura:
   return (
     <div className="space-y-6">
       <Tabs defaultValue="missao" className="w-full">
-        <TabsList className="grid w-full grid-cols-4 bg-muted/50">
+        <TabsList className="grid w-full grid-cols-3 bg-muted/50">
           <TabsTrigger value="missao">
             <Target className="h-4 w-4 mr-2" />
             Missão
@@ -302,10 +302,6 @@ Formate a resposta em JSON com esta estrutura:
           <TabsTrigger value="posicionamento">
             <Users className="h-4 w-4 mr-2" />
             Posicionamento
-          </TabsTrigger>
-          <TabsTrigger value="persona">
-            <Users className="h-4 w-4 mr-2" />
-            Persona
           </TabsTrigger>
           <TabsTrigger value="conteudo">
             <FileText className="h-4 w-4 mr-2" />
@@ -331,56 +327,56 @@ Formate a resposta em JSON com esta estrutura:
         </TabsContent>
 
         <TabsContent value="posicionamento" className="mt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Posicionamento nas Redes Sociais</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-5 gap-2">
-                {['Humanizar', 'Educar', 'Resolver', 'Entreter', 'Converter'].map((tipo) => (
-                  <Button
-                    key={tipo}
-                    variant="outline"
-                    className="text-xs"
-                    onClick={() => {
-                      const current = conteudoEditorial.posicionamento || '';
-                      const newValue = current.includes(tipo) 
-                        ? current.replace(tipo, '').replace(/,\s*,/g, ',').trim()
-                        : current ? `${current}, ${tipo}` : tipo;
-                      setConteudoEditorial({...conteudoEditorial, posicionamento: newValue});
-                      saveField('posicionamento', newValue);
-                    }}
-                  >
-                    {tipo}
-                  </Button>
-                ))}
-              </div>
-              <Textarea
-                value={conteudoEditorial.posicionamento || ''}
-                onChange={(e) => setConteudoEditorial({...conteudoEditorial, posicionamento: e.target.value})}
-                onBlur={() => conteudoEditorial.posicionamento && saveField('posicionamento', conteudoEditorial.posicionamento)}
-                placeholder="Defina o posicionamento da marca nas redes sociais..."
-                className="min-h-[100px]"
-              />
-            </CardContent>
-          </Card>
-        </TabsContent>
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Posicionamento nas Redes Sociais</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-5 gap-2">
+                  {['Humanizar', 'Educar', 'Resolver', 'Entreter', 'Converter'].map((tipo) => (
+                    <Button
+                      key={tipo}
+                      variant="outline"
+                      className="text-xs"
+                      onClick={() => {
+                        const current = conteudoEditorial.posicionamento || '';
+                        const newValue = current.includes(tipo) 
+                          ? current.replace(tipo, '').replace(/,\s*,/g, ',').trim()
+                          : current ? `${current}, ${tipo}` : tipo;
+                        setConteudoEditorial({...conteudoEditorial, posicionamento: newValue});
+                        saveField('posicionamento', newValue);
+                      }}
+                    >
+                      {tipo}
+                    </Button>
+                  ))}
+                </div>
+                <Textarea
+                  value={conteudoEditorial.posicionamento || ''}
+                  onChange={(e) => setConteudoEditorial({...conteudoEditorial, posicionamento: e.target.value})}
+                  onBlur={() => conteudoEditorial.posicionamento && saveField('posicionamento', conteudoEditorial.posicionamento)}
+                  placeholder="Defina o posicionamento da marca nas redes sociais..."
+                  className="min-h-[100px]"
+                />
+              </CardContent>
+            </Card>
 
-        <TabsContent value="persona" className="mt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Definição de Persona</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Textarea
-                value={conteudoEditorial.persona || ''}
-                onChange={(e) => setConteudoEditorial({...conteudoEditorial, persona: e.target.value})}
-                onBlur={() => conteudoEditorial.persona && saveField('persona', conteudoEditorial.persona)}
-                placeholder="Descreva as personas do cliente com base no onboarding..."
-                className="min-h-[150px]"
-              />
-            </CardContent>
-          </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle>Definição de Persona</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Textarea
+                  value={conteudoEditorial.persona || ''}
+                  onChange={(e) => setConteudoEditorial({...conteudoEditorial, persona: e.target.value})}
+                  onBlur={() => conteudoEditorial.persona && saveField('persona', conteudoEditorial.persona)}
+                  placeholder="Descreva as personas do cliente com base no onboarding..."
+                  className="min-h-[150px]"
+                />
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
 
         <TabsContent value="conteudo" className="mt-6">
