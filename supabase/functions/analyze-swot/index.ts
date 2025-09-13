@@ -58,77 +58,99 @@ serve(async (req) => {
 
     // Preparar prompt para análise da matriz SWOT
     const prompt = `
-Analise estrategicamente os dados de onboarding de "${clienteData.nome}" identificando insights específicos para CRESCIMENTO, VENDAS e AQUISIÇÃO DE SEGUIDORES que podem estar fora da visão atual da empresa.
+Como consultor estratégico sênior especializado em crescimento empresarial e marketing digital, conduza uma análise SWOT PROFUNDA e CRÍTICA para "${clienteData.nome}".
 
-DADOS DO ONBOARDING:
-Nome: ${onboardingData.nome_empresa}
-Segmento: ${onboardingData.segmento_atuacao}
-Produtos/Serviços: ${onboardingData.produtos_servicos}
-Tempo de Mercado: ${onboardingData.tempo_mercado}
-Localização: ${onboardingData.localizacao}
-Estrutura: ${onboardingData.estrutura_atual}
-Concorrentes: ${onboardingData.concorrentes_diretos}
-Diferenciais: ${onboardingData.diferenciais}
-Público-alvo: ${onboardingData.publico_alvo?.join(', ')}
-Dores dos Clientes: ${onboardingData.dores_problemas}
-O que Valorizam: ${onboardingData.valorizado}
-Ticket Médio: ${onboardingData.ticket_medio}
-Frequência de Compra: ${onboardingData.frequencia_compra}
-Presença Digital: ${onboardingData.presenca_digital?.join(', ')}
-Tipos de Conteúdo: ${onboardingData.tipos_conteudo?.join(', ')}
-Objetivos Digitais: ${onboardingData.objetivos_digitais}
-Visão 6 meses: ${onboardingData.onde_6_meses}
+CONTEXTO EMPRESARIAL COMPLETO:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PERFIL DA EMPRESA:
+• Nome: ${onboardingData.nome_empresa}
+• Segmento: ${onboardingData.segmento_atuacao}
+• Produtos/Serviços: ${onboardingData.produtos_servicos}
+• Tempo no Mercado: ${onboardingData.tempo_mercado}
+• Localização: ${onboardingData.localizacao}
+• Estrutura Atual: ${onboardingData.estrutura_atual}
 
-IDENTIFIQUE PONTOS ESPECÍFICOS QUE RESPONDAM:
+ANÁLISE COMPETITIVA:
+• Concorrentes Diretos: ${onboardingData.concorrentes_diretos}
+• Diferenciais Declarados: ${onboardingData.diferenciais}
 
-FORÇAS:
-- Quais vantagens competitivas únicas podem ser melhor exploradas para vendas?
-- Que aspectos da estrutura/experiência podem acelerar aquisição de clientes?
-- Quais diferenciais estão sendo subutilizados para conversão?
+INTELIGÊNCIA DO CLIENTE:
+• Público-Alvo: ${onboardingData.publico_alvo?.join(', ')}
+• Dores/Problemas: ${onboardingData.dores_problemas}
+• O que Valorizam: ${onboardingData.valorizado}
+• Ticket Médio: ${onboardingData.ticket_medio}
+• Frequência de Compra: ${onboardingData.frequencia_compra}
+• Como Encontram a Empresa: ${onboardingData.como_encontram?.join(', ')}
+• Formas de Aquisição: ${onboardingData.forma_aquisicao?.join(', ')}
 
-OPORTUNIDADES:
-- Que nichos de mercado específicos estão sendo perdidos baseado no público-alvo atual?
-- Quais estratégias de conteúdo podem multiplicar o engajamento com base nas dores identificadas?
-- Que parcerias estratégicas fazem sentido considerando o segmento e localização?
+PRESENÇA E ESTRATÉGIA DIGITAL:
+• Canais Digitais Ativos: ${onboardingData.presenca_digital?.join(', ')}
+• Tipos de Conteúdo: ${onboardingData.tipos_conteudo?.join(', ')}
+• Frequência de Postagens: ${onboardingData.frequencia_postagens}
+• Mídia Paga: ${onboardingData.midia_paga}
+• Objetivos Digitais: ${onboardingData.objetivos_digitais}
 
-FRAQUEZAS:
-- Quais gargalos operacionais estão limitando o crescimento de vendas?
-- Que aspectos da presença digital estão impedindo a aquisição de novos seguidores?
-- Quais processos internos precisam ser otimizados para escalar?
+RELACIONAMENTO E ATENDIMENTO:
+• Tipos de Relacionamento: ${onboardingData.relacionamento_clientes?.join(', ')}
+• Canais de Atendimento: ${onboardingData.canais_atendimento_ativos}
+• Equipe de Vendas Externa: ${onboardingData.equipe_vendas_externa}
 
-AMEAÇAS:
-- Que movimentos dos concorrentes podem impactar a base de clientes atual?
-- Quais mudanças de mercado podem afetar o ticket médio e frequência de compra?
-- Que riscos digitais podem comprometer a aquisição de novos públicos?
+IDENTIDADE E POSICIONAMENTO:
+• História da Marca: ${onboardingData.historia_marca}
+• Valores Principais: ${onboardingData.valores_principais}
+• Tom de Voz: ${onboardingData.tom_voz?.join(', ')}
+• Como Quer Ser Lembrada: ${onboardingData.como_lembrada}
 
-RESPONDA APENAS:
+VISÃO E EXPECTATIVAS:
+• Objetivos 6 meses: ${onboardingData.onde_6_meses}
+• Resultados Esperados: ${onboardingData.resultados_esperados?.join(', ')}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-FORÇAS:
-- [insight específico para vendas/crescimento]
-- [vantagem competitiva subutilizada]
-- [força estrutural para escalar]
+INSTRUÇÕES PARA ANÁLISE CRÍTICA E PROFUNDA:
 
-OPORTUNIDADES:
-- [nicho específico não explorado]
-- [estratégia de conteúdo para engajamento]
-- [parceria estratégica concreta]
+1. ANÁLISE CRÍTICA DOS GAPS INVISÍVEIS:
+   - Identifique contradições entre o que declaram e o que realmente fazem
+   - Detecte oportunidades que eles NÃO estão vendo no próprio negócio
+   - Aponte blind spots estratégicos baseados nos dados fornecidos
 
-FRAQUEZAS:
-- [gargalo operacional específico]
-- [limitação digital para aquisição]
-- [processo interno que impede escala]
+2. INSIGHTS DE CRESCIMENTO EXPONENCIAL:
+   - Conecte pontos que eles não conectaram entre público-alvo e estratégia digital
+   - Identifique alavancas de crescimento escondidas nos próprios dados
+   - Sugira estratégias de monetização que estão sendo ignoradas
 
-AMEAÇAS:
-- [movimento competitivo iminente]
-- [risco de mercado específico]
-- [ameaça digital concreta]
+3. ANÁLISE COMPETITIVA PROFUNDA:
+   - Baseado no segmento e concorrentes, identifique movimentos estratégicos necessários
+   - Detecte vulnerabilidades competitivas e como explorá-las
+   - Identifique tendências do setor que podem ser antecipadas
 
-ESTRATÉGIAS PRIORITÁRIAS:
-- [ação específica para aumentar vendas baseada nos dados]
-- [tática concreta para aquisição de seguidores no nicho identificado]
-- [movimento estratégico para diferenciação competitiva]
+RESPONDA NO FORMATO ESTRUTURADO:
 
-Seja específico, baseado nos dados reais fornecidos, e foque em insights que a empresa pode não estar vendo.
+🎯 FORÇAS (Assets Estratégicos):
+- [FORÇA COMERCIAL]: Identifique vantagens competitivas específicas que podem ser MONETIZADAS imediatamente
+- [FORÇA OPERACIONAL]: Detecte eficiências ou processos únicos que aceleram vendas/conversão  
+- [FORÇA DE MARCA]: Aponte elementos de diferenciação que estão sendo SUBUTILIZADOS para aquisição
+
+🚀 OPORTUNIDADES (Territórios Inexplorados):
+- [NICHO OCULTO]: Identifique segmentos específicos do público que estão sendo ignorados mas têm alto potencial
+- [ESTRATÉGIA DIGITAL]: Detecte tactics de conteúdo/engajamento baseadas nas dores reais do público
+- [PARCERIA ESTRATÉGICA]: Sugira colaborações específicas considerando localização/segmento/objetivos
+
+⚠️ FRAQUEZAS (Gargalos Críticos):
+- [GARGALO DE VENDAS]: Identifique limitações específicas que impedem escalonamento de receita
+- [GAP DIGITAL]: Detecte falhas na presença digital que limitam aquisição orgânica de seguidores
+- [LIMITAÇÃO OPERACIONAL]: Aponte processos internos que impedem crescimento sustentável
+
+🚨 AMEAÇAS (Riscos Estratégicos):
+- [RISCO COMPETITIVO]: Analise movimentos prováveis da concorrência que podem impactar market share
+- [RISCO DE MERCADO]: Identifique mudanças no comportamento do consumidor que podem afetar o modelo de negócio
+- [RISCO DIGITAL]: Detecte vulnerabilidades na estratégia digital que podem comprometer aquisição futura
+
+💡 ESTRATÉGIAS PRIORITÁRIAS (Plano de Ação):
+- [AÇÃO IMEDIATA]: Movimento específico para impacto em vendas nos próximos 30 dias
+- [TÁTICA DE CRESCIMENTO]: Estratégia concreta para multiplicar seguidores no nicho identificado
+- [DIFERENCIAÇÃO COMPETITIVA]: Posicionamento único baseado nos insights descobertos
+
+SEJA BRUTALMENTE ESPECÍFICO. Use os dados reais fornecidos. Identifique o que eles NÃO estão vendo. Forneça insights acionáveis que gerem crescimento mensurável.
 `;
 
     // Chamar OpenAI
@@ -143,7 +165,7 @@ Seja específico, baseado nos dados reais fornecidos, e foque em insights que a 
         messages: [
           {
             role: 'system',
-            content: 'Você é um consultor estratégico especialista em análise SWOT e marketing digital com mais de 15 anos de experiência. Forneça análises detalhadas, insights valiosos e recomendações práticas.'
+            content: 'Você é McKenzie + BCG + Deloitte condensados em uma IA. 20+ anos transformando empresas. Especialista em crescimento exponencial, marketing digital estratégico e monetização. Você vê padrões invisíveis, identifica oportunidades ocultas e gera insights que aumentam receita. Seja direto, crítico e baseado em dados reais.'
           },
           {
             role: 'user',

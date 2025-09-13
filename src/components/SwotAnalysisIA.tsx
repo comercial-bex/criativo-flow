@@ -97,15 +97,35 @@ export function SwotAnalysisIA({
         }
       };
 
-      const { error } = await supabase
+      // Primeiro, verificar se já existe um registro
+      const { data: existingData } = await supabase
         .from('cliente_objetivos')
-        .upsert(dadosParaSalvar, { 
-          onConflict: 'cliente_id'
-        });
+        .select('id')
+        .eq('cliente_id', clienteId)
+        .single();
 
-      if (error) throw error;
+      let result;
+      if (existingData) {
+        // Atualizar registro existente
+        result = await supabase
+          .from('cliente_objetivos')
+          .update(dadosParaSalvar)
+          .eq('cliente_id', clienteId);
+      } else {
+        // Inserir novo registro
+        result = await supabase
+          .from('cliente_objetivos')
+          .insert(dadosParaSalvar);
+      }
+
+      if (result.error) throw result.error;
 
       console.log('Análise SWOT salva no banco:', dadosParaSalvar);
+      
+      toast({
+        title: "Análise salva com sucesso",
+        description: "Os dados da análise SWOT foram salvos no banco de dados.",
+      });
     } catch (error) {
       console.error('Erro ao salvar análise SWOT:', error);
       toast({
