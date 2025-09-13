@@ -152,11 +152,34 @@ export default function PlanejamentoVisual() {
     }
   };
 
-  const generateImage = async (prompt: string) => {
+  const generateImage = async (prompt: string, formato: string) => {
     try {
       setGeneratingImage(true);
+      
+      // Definir tamanhos baseados no formato da postagem do Instagram
+      let size = '1024x1024'; // padrão
+      
+      switch (formato) {
+        case 'post':
+          size = '1080x1080'; // Post quadrado do Instagram
+          break;
+        case 'story':
+          size = '1080x1920'; // Story do Instagram (9:16)
+          break;
+        case 'carrossel':
+          size = '1080x1080'; // Carrossel quadrado do Instagram
+          break;
+        case 'reel':
+          size = '1080x1920'; // Reel do Instagram (9:16)
+          break;
+      }
+      
       const { data, error } = await supabase.functions.invoke('generate-post-image', {
-        body: { prompt, style: 'modern social media post', size: '1024x1024' }
+        body: { 
+          prompt: `${prompt}. Professional Instagram ${formato}, modern design, high quality, optimized for ${formato}`, 
+          style: `modern Instagram ${formato}`, 
+          size: size 
+        }
       });
 
       if (error) throw error;
@@ -187,9 +210,9 @@ export default function PlanejamentoVisual() {
     try {
       setIsCreatingPost(true);
 
-      // Gerar imagem automaticamente baseada no título
-      const imagePrompt = `${newPost.titulo}. Professional social media post, modern design, high quality`;
-      const imageUrl = await generateImage(imagePrompt);
+      // Gerar imagem automaticamente baseada no título e formato
+      const imagePrompt = `${newPost.titulo}. Professional Instagram ${newPost.formato_postagem}, modern design, high quality`;
+      const imageUrl = await generateImage(imagePrompt, newPost.formato_postagem);
 
       const { data, error } = await supabase
         .from('posts_planejamento')
@@ -464,7 +487,11 @@ export default function PlanejamentoVisual() {
                     style={{ animationDelay: `${index * 100}ms` }}
                   >
                     {post.anexo_url && (
-                      <div className="aspect-square relative overflow-hidden">
+                      <div className={`relative overflow-hidden ${
+                        post.formato_postagem === 'story' || post.formato_postagem === 'reel' 
+                          ? 'aspect-[9/16]' 
+                          : 'aspect-square'
+                      }`}>
                         <img 
                           src={post.anexo_url} 
                           alt={post.titulo}

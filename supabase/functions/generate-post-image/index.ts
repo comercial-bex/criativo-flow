@@ -27,9 +27,9 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         model: 'dall-e-3',
-        prompt: `${prompt}. Style: ${style}. High quality, professional, social media ready.`,
+        prompt: `${prompt}. Style: ${style}. High quality, professional, Instagram ready.`,
         n: 1,
-        size: size,
+        size: size === '1080x1920' ? '1024x1792' : (size === '1080x1080' ? '1024x1024' : '1024x1024'), // DALL-E 3 suporta apenas certas dimensões
         quality: 'standard',
         style: 'vivid'
       }),
