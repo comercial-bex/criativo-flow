@@ -559,8 +559,7 @@ Formate a resposta em JSON com esta estrutura:
                 
                 <Button
                   onClick={() => saveField('posicionamento', conteudoEditorial.posicionamento || '')}
-                  disabled={!conteudoEditorial.posicionamento}
-                  variant="default"
+                  disabled={!conteudoEditorial.posicionamento?.trim()}
                   className="px-8"
                 >
                   Salvar
