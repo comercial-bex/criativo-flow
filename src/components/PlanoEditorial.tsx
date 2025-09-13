@@ -583,50 +583,64 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
 
           <Card>
             <CardHeader>
-              <CardTitle>Frameworks de Conteúdo</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <BookOpen className="h-5 w-5" />
+                Frameworks de Conteúdo
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <TooltipProvider>
-                <div className="space-y-6">
-                  {frameworks.map((framework) => (
-                    <div key={framework.nome} className="space-y-3">
-                      <div className="flex items-center gap-2">
-                        <h4 className="font-semibold text-lg">{framework.nome}</h4>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-                              ?
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p className="max-w-xs">{framework.descricao}</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </div>
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 pl-4">
-                        {framework.componentes.map((componente) => (
-                          <Tooltip key={`${framework.nome}-${componente.nome}`}>
+              <div className="space-y-6">
+                {frameworks.map((framework) => (
+                  <div key={framework.nome} className="space-y-3">
+                    <div className="border-l-4 border-primary pl-4">
+                      <h4 className="font-semibold text-lg text-primary">{framework.nome}</h4>
+                      <p className="text-sm text-muted-foreground">{framework.descricao}</p>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 ml-4">
+                      {framework.componentes.map((componente) => (
+                        <TooltipProvider key={`${framework.nome}-${componente.nome}`}>
+                          <Tooltip>
                             <TooltipTrigger asChild>
                               <Button
                                 variant={componentesSelecionados.includes(`${framework.nome}: ${componente.nome}`) ? "default" : "outline"}
                                 onClick={() => toggleComponenteFramework(`${framework.nome}: ${componente.nome}`)}
-                                className="h-auto py-2 text-left justify-start"
+                                className="h-auto py-3 px-4 text-left justify-start transition-all hover:scale-105"
                                 size="sm"
                               >
-                                {componente.nome}
+                                <div className="flex flex-col items-start">
+                                  <span className="font-medium">{componente.nome}</span>
+                                  <span className="text-xs opacity-70 text-left">{componente.descricao}</span>
+                                </div>
                               </Button>
                             </TooltipTrigger>
-                            <TooltipContent>
-                              <p className="max-w-xs">{componente.descricao}</p>
+                            <TooltipContent side="top" className="max-w-xs">
+                              <p><strong>{componente.nome}:</strong> {componente.descricao}</p>
                             </TooltipContent>
                           </Tooltip>
-                        ))}
-                      </div>
+                        </TooltipProvider>
+                      ))}
                     </div>
-                  ))}
-                </div>
-              </TooltipProvider>
+                    
+                    {framework.nome !== frameworks[frameworks.length - 1].nome && (
+                      <div className="border-b border-border/50 mt-4"></div>
+                    )}
+                  </div>
+                ))}
+                
+                {componentesSelecionados.length > 0 && (
+                  <div className="mt-6 p-4 bg-primary/5 rounded-lg border border-primary/20">
+                    <h5 className="font-medium text-sm mb-2 text-primary">Componentes Selecionados:</h5>
+                    <div className="flex flex-wrap gap-2">
+                      {componentesSelecionados.map((componente) => (
+                        <Badge key={componente} variant="secondary" className="text-xs">
+                          {componente}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
             </CardContent>
           </Card>
 
