@@ -50,6 +50,7 @@ export function PlanoEditorial({ planejamento, clienteId, posts, setPosts, onPre
   const [generating, setGenerating] = useState(false);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [viewType, setViewType] = useState<'editorial' | 'tarefas'>('editorial');
+  const [especialistaSelecionado, setEspecialistaSelecionado] = useState<string>('');
   const { toast } = useToast();
 
   useEffect(() => {
@@ -87,6 +88,19 @@ export function PlanoEditorial({ planejamento, clienteId, posts, setPosts, onPre
     }
   };
 
+  const getPromptEspecialista = (especialista: string) => {
+    const especialistas = {
+      'copy': 'Atue como um copywriter especialista em redes sociais, renomado por criar textos persuasivos e envolventes que convertem audiência em clientes. Você é famoso por criar copy que gera alto engajamento e conversões.',
+      'design': 'Atue como um designer gráfico especialista em redes sociais, reconhecido mundialmente por criar designs visuais impactantes e inovadores que capturam a atenção e transmitem mensagens de forma clara e criativa.',
+      'gestor_redes': 'Atue como um gestor de redes sociais experiente, conhecido por desenvolver estratégias digitais eficazes que constroem comunidades engajadas e geram resultados mensuráveis para marcas.',
+      'gerente_marketing': 'Atue como um gerente de marketing digital estratégico, especialista em campanhas integradas que maximizam ROI e posicionam marcas como líderes em seus mercados.',
+      'analista_dados': 'Atue como um analista de dados especializado em social media, expert em transformar métricas em insights acionáveis que otimizam performance e crescimento orgânico.',
+      'influencer': 'Atue como um influencer digital bem-sucedido, especialista em criar conteúdo autêntico que ressoa com audiências e constrói relacionamentos genuínos com seguidores.'
+    };
+    
+    return especialistas[especialista as keyof typeof especialistas] || 'Atue como um especialista em redes sociais renomado mundialmente por criar conteúdo altamente criativo e único para redes sociais, que despertam a curiosidade e geram um alto engajamento no público-alvo.';
+  };
+
   const generateConteudoWithIA = async () => {
     try {
       setGenerating(true);
@@ -112,10 +126,11 @@ export function PlanoEditorial({ planejamento, clienteId, posts, setPosts, onPre
         .single();
 
       // Preparar o prompt para IA
+      const promptEspecialista = getPromptEspecialista(especialistaSelecionado);
       const prompt = `
 PASSO A PASSO DE MONTAR O PLANEJAMENTO DE ASSESSORIA
 
-ESPECIALIZAÇÃO: Atue como um social media renomado e famoso mundialmente por criar conteúdo altamente criativos e únicos para redes sociais, que despertam a curiosidade e geram um alto engajamento no público-alvo.
+ESPECIALIZAÇÃO: ${promptEspecialista}
 
 INFORMAÇÕES DA MARCA:
 - Nome da empresa: ${clienteData?.nome || 'Empresa'}
@@ -386,7 +401,7 @@ Formate a resposta em JSON com esta estrutura:
                 <CardTitle>Geração de Conteúdo Editorial</CardTitle>
                 <Button
                   onClick={generateConteudoWithIA}
-                  disabled={generating}
+                  disabled={generating || !especialistaSelecionado}
                   className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
                 >
                   <Wand2 className="h-4 w-4 mr-2" />
@@ -394,7 +409,50 @@ Formate a resposta em JSON com esta estrutura:
                 </Button>
               </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-6">
+              {/* Quadro de Especialistas */}
+              <div className="space-y-4">
+                <h4 className="text-sm font-medium">Escolha o Especialista para Gerar o Conteúdo:</h4>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                  {[
+                    { id: 'copy', label: 'Copywriter', icon: '✍️' },
+                    { id: 'design', label: 'Designer', icon: '🎨' },
+                    { id: 'gestor_redes', label: 'Gestor de Redes', icon: '📱' },
+                    { id: 'gerente_marketing', label: 'Gerente de Marketing', icon: '📊' },
+                    { id: 'analista_dados', label: 'Analista de Dados', icon: '📈' },
+                    { id: 'influencer', label: 'Influencer', icon: '⭐' }
+                  ].map((especialista) => (
+                    <Button
+                      key={especialista.id}
+                      variant={especialistaSelecionado === especialista.id ? 'default' : 'outline'}
+                      className={`text-xs flex items-center gap-2 ${
+                        especialistaSelecionado === especialista.id 
+                          ? 'bg-purple-500 hover:bg-purple-600 text-white' 
+                          : ''
+                      }`}
+                      onClick={() => setEspecialistaSelecionado(especialista.id)}
+                    >
+                      <span>{especialista.icon}</span>
+                      {especialista.label}
+                    </Button>
+                  ))}
+                </div>
+                {especialistaSelecionado && (
+                  <div className="p-3 bg-muted rounded-lg">
+                    <p className="text-sm text-muted-foreground">
+                      <strong>Especialista selecionado:</strong> {
+                        especialistaSelecionado === 'copy' ? 'Copywriter especialista em textos persuasivos' :
+                        especialistaSelecionado === 'design' ? 'Designer gráfico especialista em visual impactante' :
+                        especialistaSelecionado === 'gestor_redes' ? 'Gestor de redes sociais com estratégias eficazes' :
+                        especialistaSelecionado === 'gerente_marketing' ? 'Gerente de marketing digital estratégico' :
+                        especialistaSelecionado === 'analista_dados' ? 'Analista de dados especializado em métricas' :
+                        'Influencer digital especialista em conteúdo autêntico'
+                      }
+                    </p>
+                  </div>
+                )}
+              </div>
+
               {conteudoEditorial.conteudo_gerado ? (
                 <div className="space-y-4">
                   <Badge className="bg-green-100 text-green-800">
@@ -408,7 +466,10 @@ Formate a resposta em JSON com esta estrutura:
                 <div className="text-center py-8">
                   <Wand2 className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                   <p className="text-muted-foreground">
-                    Clique em "Gerar com IA" para criar automaticamente o planejamento de conteúdo baseado nas informações do cliente.
+                    {!especialistaSelecionado 
+                      ? 'Selecione um especialista e clique em "Gerar com IA" para criar o planejamento de conteúdo.'
+                      : 'Clique em "Gerar com IA" para criar automaticamente o planejamento de conteúdo baseado nas informações do cliente.'
+                    }
                   </p>
                 </div>
               )}
