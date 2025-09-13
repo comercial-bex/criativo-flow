@@ -373,7 +373,7 @@ Formate a resposta em JSON com esta estrutura:
                       variant={especialistasSelecionados.includes(especialista.id) ? 'default' : 'outline'}
                       className={`text-xs ${
                         especialistasSelecionados.includes(especialista.id) 
-                          ? 'bg-green-500 hover:bg-green-600 text-white border-green-500' 
+                          ? 'bg-primary hover:bg-primary/90 text-primary-foreground border-primary' 
                           : ''
                       }`}
                       onClick={() => {
