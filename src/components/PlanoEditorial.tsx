@@ -15,6 +15,7 @@ import {
   ChevronRight,
   Eye
 } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, addMonths, subMonths } from "date-fns";
@@ -328,7 +329,8 @@ Formate a resposta em JSON com esta estrutura:
   }
 
   return (
-    <div className="space-y-6">
+    <TooltipProvider>
+      <div className="space-y-6">
       <Tabs defaultValue="missao" className="w-full">
         <TabsList className="grid w-full grid-cols-3 bg-muted/50">
           <TabsTrigger value="missao">
@@ -431,31 +433,37 @@ Formate a resposta em JSON com esta estrutura:
                   <h4 className="font-medium mb-2">HESEC (Humanizar, Educar, Resolver, Entreter, Converter)</h4>
                   <div className="grid grid-cols-5 gap-2">
                     {[
-                      { id: 'humanizar', label: 'Humanizar' },
-                      { id: 'educar', label: 'Educar' },
-                      { id: 'resolver', label: 'Resolver' },
-                      { id: 'entreter', label: 'Entreter' },
-                      { id: 'converter', label: 'Converter' }
+                      { id: 'humanizar', label: 'Humanizar', tooltip: 'Criar conexão emocional com a audiência, mostrando o lado humano da marca' },
+                      { id: 'educar', label: 'Educar', tooltip: 'Compartilhar conhecimento e informações valiosas para o público' },
+                      { id: 'resolver', label: 'Resolver', tooltip: 'Oferecer soluções práticas para problemas do público-alvo' },
+                      { id: 'entreter', label: 'Entreter', tooltip: 'Criar conteúdo divertido e envolvente que gera engajamento' },
+                      { id: 'converter', label: 'Converter', tooltip: 'Transformar audiência em clientes através de calls-to-action efetivos' }
                     ].map((item) => (
-                      <Button
-                        key={item.id}
-                        variant={frameworksSelecionados.includes(item.id) ? 'default' : 'outline'}
-                        className={`text-xs ${
-                          frameworksSelecionados.includes(item.id) 
-                            ? 'bg-primary hover:bg-primary/90 text-primary-foreground border-primary' 
-                            : ''
-                        }`}
-                        onClick={() => {
-                          const isSelected = frameworksSelecionados.includes(item.id);
-                          if (isSelected) {
-                            setFrameworksSelecionados(prev => prev.filter(id => id !== item.id));
-                          } else {
-                            setFrameworksSelecionados(prev => [...prev, item.id]);
-                          }
-                        }}
-                      >
-                        {item.label}
-                      </Button>
+                      <Tooltip key={item.id}>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant={frameworksSelecionados.includes(item.id) ? 'default' : 'outline'}
+                            className={`text-xs ${
+                              frameworksSelecionados.includes(item.id) 
+                                ? 'bg-primary hover:bg-primary/90 text-primary-foreground border-primary' 
+                                : ''
+                            }`}
+                            onClick={() => {
+                              const isSelected = frameworksSelecionados.includes(item.id);
+                              if (isSelected) {
+                                setFrameworksSelecionados(prev => prev.filter(id => id !== item.id));
+                              } else {
+                                setFrameworksSelecionados(prev => [...prev, item.id]);
+                              }
+                            }}
+                          >
+                            {item.label}
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p className="max-w-xs">{item.tooltip}</p>
+                        </TooltipContent>
+                      </Tooltip>
                     ))}
                   </div>
                 </div>
@@ -465,30 +473,36 @@ Formate a resposta em JSON com esta estrutura:
                   <h4 className="font-medium mb-2">HERO (Humano, Emoção, Notável, Oferta)</h4>
                   <div className="grid grid-cols-4 gap-2">
                     {[
-                      { id: 'humano', label: 'Humano' },
-                      { id: 'emocao', label: 'Emoção' },
-                      { id: 'notavel', label: 'Notável' },
-                      { id: 'oferta', label: 'Oferta' }
+                      { id: 'humano', label: 'Humano', tooltip: 'Mostrar o lado humano da marca, criando proximidade e autenticidade' },
+                      { id: 'emocao', label: 'Emoção', tooltip: 'Despertar sentimentos e conexões emocionais que marcam o público' },
+                      { id: 'notavel', label: 'Notável', tooltip: 'Criar conteúdo que se destaca, é memorável e gera impacto' },
+                      { id: 'oferta', label: 'Oferta', tooltip: 'Apresentar produtos/serviços de forma atrativa e persuasiva' }
                     ].map((item) => (
-                      <Button
-                        key={item.id}
-                        variant={frameworksSelecionados.includes(item.id) ? 'default' : 'outline'}
-                        className={`text-xs ${
-                          frameworksSelecionados.includes(item.id) 
-                            ? 'bg-primary hover:bg-primary/90 text-primary-foreground border-primary' 
-                            : ''
-                        }`}
-                        onClick={() => {
-                          const isSelected = frameworksSelecionados.includes(item.id);
-                          if (isSelected) {
-                            setFrameworksSelecionados(prev => prev.filter(id => id !== item.id));
-                          } else {
-                            setFrameworksSelecionados(prev => [...prev, item.id]);
-                          }
-                        }}
-                      >
-                        {item.label}
-                      </Button>
+                      <Tooltip key={item.id}>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant={frameworksSelecionados.includes(item.id) ? 'default' : 'outline'}
+                            className={`text-xs ${
+                              frameworksSelecionados.includes(item.id) 
+                                ? 'bg-primary hover:bg-primary/90 text-primary-foreground border-primary' 
+                                : ''
+                            }`}
+                            onClick={() => {
+                              const isSelected = frameworksSelecionados.includes(item.id);
+                              if (isSelected) {
+                                setFrameworksSelecionados(prev => prev.filter(id => id !== item.id));
+                              } else {
+                                setFrameworksSelecionados(prev => [...prev, item.id]);
+                              }
+                            }}
+                          >
+                            {item.label}
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p className="max-w-xs">{item.tooltip}</p>
+                        </TooltipContent>
+                      </Tooltip>
                     ))}
                   </div>
                 </div>
@@ -498,31 +512,37 @@ Formate a resposta em JSON com esta estrutura:
                   <h4 className="font-medium mb-2">PEACE (Planejar, Engajar, Amplificar, Converter, Avaliar)</h4>
                   <div className="grid grid-cols-5 gap-2">
                     {[
-                      { id: 'planejar', label: 'Planejar' },
-                      { id: 'engajar', label: 'Engajar' },
-                      { id: 'amplificar', label: 'Amplificar' },
-                      { id: 'converter_peace', label: 'Converter' },
-                      { id: 'avaliar', label: 'Avaliar' }
+                      { id: 'planejar', label: 'Planejar', tooltip: 'Desenvolver estratégias e cronogramas para o conteúdo de forma organizada' },
+                      { id: 'engajar', label: 'Engajar', tooltip: 'Interagir e criar relacionamento genuíno com a audiência' },
+                      { id: 'amplificar', label: 'Amplificar', tooltip: 'Expandir o alcance e visibilidade do conteúdo nas redes sociais' },
+                      { id: 'converter_peace', label: 'Converter', tooltip: 'Transformar engajamento em resultados mensuráveis e vendas' },
+                      { id: 'avaliar', label: 'Avaliar', tooltip: 'Medir e analisar performance para otimizar continuamente a estratégia' }
                     ].map((item) => (
-                      <Button
-                        key={item.id}
-                        variant={frameworksSelecionados.includes(item.id) ? 'default' : 'outline'}
-                        className={`text-xs ${
-                          frameworksSelecionados.includes(item.id) 
-                            ? 'bg-primary hover:bg-primary/90 text-primary-foreground border-primary' 
-                            : ''
-                        }`}
-                        onClick={() => {
-                          const isSelected = frameworksSelecionados.includes(item.id);
-                          if (isSelected) {
-                            setFrameworksSelecionados(prev => prev.filter(id => id !== item.id));
-                          } else {
-                            setFrameworksSelecionados(prev => [...prev, item.id]);
-                          }
-                        }}
-                      >
-                        {item.label}
-                      </Button>
+                      <Tooltip key={item.id}>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant={frameworksSelecionados.includes(item.id) ? 'default' : 'outline'}
+                            className={`text-xs ${
+                              frameworksSelecionados.includes(item.id) 
+                                ? 'bg-primary hover:bg-primary/90 text-primary-foreground border-primary' 
+                                : ''
+                            }`}
+                            onClick={() => {
+                              const isSelected = frameworksSelecionados.includes(item.id);
+                              if (isSelected) {
+                                setFrameworksSelecionados(prev => prev.filter(id => id !== item.id));
+                              } else {
+                                setFrameworksSelecionados(prev => [...prev, item.id]);
+                              }
+                            }}
+                          >
+                            {item.label}
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p className="max-w-xs">{item.tooltip}</p>
+                        </TooltipContent>
+                      </Tooltip>
                     ))}
                   </div>
                 </div>
@@ -704,6 +724,7 @@ Formate a resposta em JSON com esta estrutura:
           </div>
         </CardContent>
       </Card>
-    </div>
+      </div>
+    </TooltipProvider>
   );
 }
