@@ -53,12 +53,16 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
   const [salvandoEspecialistas, setSalvandoEspecialistas] = useState(false);
   const [salvandoFrameworks, setSalvandoFrameworks] = useState(false);
   const [salvandoPersonas, setSalvandoPersonas] = useState(false);
+  const [salvandoMissao, setSalvandoMissao] = useState(false);
+  const [gerandoMissao, setGerandoMissao] = useState(false);
   const [gerandoPosicionamento, setGerandoPosicionamento] = useState(false);
   const [gerandoPersonas, setGerandoPersonas] = useState(false);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [clienteAssinatura, setClienteAssinatura] = useState<any>(null);
   const [postsGerados, setPostsGerados] = useState<any[]>([]);
   const [componentesSelecionados, setComponentesSelecionados] = useState<string[]>([]);
+  const [dadosOnboarding, setDadosOnboarding] = useState<any>(null);
+  const [dadosObjetivos, setDadosObjetivos] = useState<any>(null);
 
   const especialistas = [
     { 
@@ -125,6 +129,8 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
   useEffect(() => {
     fetchConteudoEditorial();
     fetchClienteAssinatura();
+    buscarDadosOnboarding().then(setDadosOnboarding);
+    buscarDadosObjetivos().then(setDadosObjetivos);
   }, [planejamento.id]);
 
   const fetchConteudoEditorial = async () => {
@@ -243,13 +249,70 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
     }
   };
 
-  // Validar se há dados suficientes para gerar personas
-  const validarDadosCompletos = (onboarding: any, objetivos: any, posicionamento: string) => {
-    if (!onboarding || !objetivos) return false;
-    if (!posicionamento || posicionamento.trim().length < 50) return false;
-    if (!onboarding.publico_alvo || onboarding.publico_alvo.length === 0) return false;
-    if (!onboarding.dores_problemas || onboarding.dores_problemas.trim().length < 10) return false;
+  const validarDadosCompletos = () => {
+    if (!dadosOnboarding || !dadosObjetivos) {
+      toast.error('Dados de onboarding ou objetivos não encontrados');
+      return false;
+    }
+
+    if (!conteudo.missao || conteudo.missao.length < 20) {
+      toast.error('É necessário ter uma missão definida e salva com pelo menos 20 caracteres');
+      return false;
+    }
+
+    if (!conteudo.posicionamento || conteudo.posicionamento.length < 50) {
+      toast.error('É necessário ter um posicionamento definido e salvo com pelo menos 50 caracteres');
+      return false;
+    }
+
     return true;
+  };
+
+  const gerarMissaoComIA = async () => {
+    if (!dadosOnboarding || !dadosObjetivos) {
+      toast.error('Dados de onboarding ou objetivos não encontrados');
+      return;
+    }
+
+    setGerandoMissao(true);
+    try {
+      const prompt = `Com base nas informações da empresa ${dadosOnboarding.nome_empresa}, 
+        que atua no segmento ${dadosOnboarding.segmento_atuacao}, 
+        oferece ${dadosOnboarding.produtos_servicos},
+        atende ao público ${dadosOnboarding.publico_alvo?.join(', ')} 
+        e tem como dores/problemas dos clientes: ${dadosOnboarding.dores_problemas},
+        
+        Valores principais: ${dadosOnboarding.valores_principais || 'Não definidos'}
+        Diferenciais: ${dadosOnboarding.diferenciais || 'Não definidos'}
+        Objetivos definidos: ${JSON.stringify(dadosObjetivos.objetivos)}
+        
+        Gere uma missão empresarial que:
+        1. Defina claramente o propósito da empresa
+        2. Seja inspiradora e motivadora
+        3. Reflita os valores e diferenciais
+        4. Tenha entre 50-100 palavras
+        5. Seja focada no impacto que a empresa gera
+        
+        Responda apenas com o texto da missão, sem títulos ou formatações extras.`;
+
+      const response = await supabase.functions.invoke('generate-content-with-ai', {
+        body: { prompt }
+      });
+
+      if (response.error) {
+        throw new Error(response.error.message);
+      }
+
+      if (response.data?.content) {
+        setConteudo(prev => ({ ...prev, missao: response.data.content }));
+        toast.success('Missão gerada com sucesso!');
+      }
+    } catch (error) {
+      console.error('Erro ao gerar missão:', error);
+      toast.error('Erro ao gerar missão com IA');
+    } finally {
+      setGerandoMissao(false);
+    }
   };
 
   const gerarPosicionamentoComIA = async () => {
@@ -346,8 +409,7 @@ Responda com um texto corrido, bem estruturado e com no máximo 700 palavras.
       const dadosOnboarding = await buscarDadosOnboarding();
       const dadosObjetivos = await buscarDadosObjetivos();
       
-      if (!validarDadosCompletos(dadosOnboarding, dadosObjetivos, conteudo.posicionamento)) {
-        toast.error('Para gerar personas é necessário ter onboarding completo, objetivos definidos e posicionamento de marca preenchido.');
+      if (!validarDadosCompletos()) {
         return;
       }
 
@@ -514,6 +576,29 @@ IMPORTANTE: Retorne APENAS o JSON válido, sem texto adicional.
       await saveField('frameworks_selecionados', componentesSelecionados);
     } finally {
       setSalvandoFrameworks(false);
+    }
+  };
+
+  const salvarMissao = async () => {
+    if (!planejamento?.id) {
+      toast.error('Erro: Planejamento não encontrado');
+      return;
+    }
+
+    if (!conteudo.missao || conteudo.missao.trim() === '') {
+      toast.error('A missão não pode estar vazia');
+      return;
+    }
+
+    setSalvandoMissao(true);
+    try {
+      await saveField('missao', conteudo.missao);
+      toast.success('Missão salva com sucesso!');
+    } catch (error) {
+      console.error('Erro ao salvar missão:', error);
+      toast.error('Erro ao salvar missão');
+    } finally {
+      setSalvandoMissao(false);
     }
   };
 
@@ -846,19 +931,46 @@ IMPORTANTE: Retorne APENAS o JSON válido, sem texto adicional.
               <CardTitle>Missão da Empresa</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              <div className="flex gap-2 mb-2">
+                <Button 
+                  onClick={gerarMissaoComIA}
+                  disabled={gerandoMissao}
+                  size="sm"
+                  variant="outline"
+                  className="gap-2"
+                >
+                  {gerandoMissao ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Sparkles className="h-4 w-4" />
+                  )}
+                  Gerar com IA
+                </Button>
+              </div>
               <Textarea
                 placeholder="Descreva a missão da empresa..."
                 value={conteudo.missao || ''}
                 onChange={(e) => setConteudo(prev => ({ ...prev, missao: e.target.value }))}
                 rows={4}
+                disabled={gerandoMissao}
               />
-              <Button 
-                onClick={() => saveField('missao', conteudo.missao)}
-                disabled={salvando}
-              >
-                {salvando ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                Salvar Missão
-              </Button>
+              
+              {/* Botão de salvar no final da seção */}
+              <div className="flex justify-end">
+                <Button 
+                  onClick={salvarMissao}
+                  disabled={salvandoMissao || !conteudo.missao?.trim()}
+                  size="sm"
+                  className="gap-2"
+                >
+                  {salvandoMissao ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Save className="h-4 w-4" />
+                  )}
+                  Salvar Missão
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
