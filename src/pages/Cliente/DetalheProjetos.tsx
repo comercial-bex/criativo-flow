@@ -408,16 +408,6 @@ export default function DetalheProjetos() {
 
 
       
-      {/* Planejamento do Projeto */}
-      {clienteId && (
-        <PlanejamentoProjeto
-          projetoId={projetos[0]?.id || ''}
-          clienteId={clienteId}
-          clienteNome={cliente?.nome || ''}
-          assinaturaId={cliente?.assinatura_id}
-        />
-      )}
-
       {/* Lista de Projetos */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {projetos.map((projeto) => (
@@ -472,6 +462,16 @@ export default function DetalheProjetos() {
                   </div>
                 )}
               </div>
+              
+              {/* Planejamento dentro de cada projeto */}
+              {clienteId && (
+                <PlanejamentoProjeto
+                  projetoId={projeto.id}
+                  clienteId={clienteId}
+                  clienteNome={cliente?.nome || ''}
+                  assinaturaId={cliente?.assinatura_id}
+                />
+              )}
             </CardContent>
           </Card>
         ))}
