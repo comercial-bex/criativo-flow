@@ -290,7 +290,7 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
       const prompt = `Com base nas informações da empresa ${dadosOnboarding.nome_empresa}, 
         que atua no segmento ${dadosOnboarding.segmento_atuacao}, 
         oferece ${dadosOnboarding.produtos_servicos},
-        atende ao público ${dadosOnboarding.publico_alvo?.join(', ')} 
+        atende ao público ${dadosOnboarding?.publico_alvo?.join(', ') || 'não definido'} 
         e tem como dores/problemas dos clientes: ${dadosOnboarding.dores_problemas},
         
         Valores principais: ${dadosOnboarding.valores_principais || 'Não definidos'}
@@ -362,7 +362,7 @@ Baseando-se nas informações de onboarding abaixo, gere um POSICIONAMENTO DE MA
 - Localização: ${dadosOnboarding.localizacao || 'Não informado'}
 
 **PÚBLICO-ALVO E MERCADO:**
-- Público-alvo: ${dadosOnboarding.publico_alvo?.join(', ') || 'Não informado'}
+- Público-alvo: ${dadosOnboarding?.publico_alvo?.join(', ') || 'Não informado'}
 - Tipos de clientes: ${dadosOnboarding.tipos_clientes || 'Não informado'}
 - Dores/Problemas dos clientes: ${dadosOnboarding.dores_problemas || 'Não informado'}
 - O que valorizam: ${dadosOnboarding.valorizado || 'Não informado'}
@@ -374,7 +374,7 @@ Baseando-se nas informações de onboarding abaixo, gere um POSICIONAMENTO DE MA
 **IDENTIDADE DA MARCA:**
 - História da marca: ${dadosOnboarding.historia_marca || 'Não informado'}
 - Valores principais: ${dadosOnboarding.valores_principais || 'Não informado'}
-- Tom de voz: ${dadosOnboarding.tom_voz?.join(', ') || 'Não informado'}
+- Tom de voz: ${dadosOnboarding?.tom_voz?.join(', ') || 'Não informado'}
 - Como quer ser lembrada: ${dadosOnboarding.como_lembrada || 'Não informado'}
 
 **ANÁLISE SWOT:**
@@ -386,7 +386,7 @@ Baseando-se nas informações de onboarding abaixo, gere um POSICIONAMENTO DE MA
 **OBJETIVOS:**
 - Objetivos digitais: ${dadosOnboarding.objetivos_digitais || 'Não informado'}
 - Onde quer estar em 6 meses: ${dadosOnboarding.onde_6_meses || 'Não informado'}
-- Resultados esperados: ${dadosOnboarding.resultados_esperados?.join(', ') || 'Não informado'}
+- Resultados esperados: ${dadosOnboarding?.resultados_esperados?.join(', ') || 'Não informado'}
 
 Com base nessas informações, elabore um posicionamento de marca que:
 1. Defina claramente como a empresa quer ser percebida
@@ -451,10 +451,10 @@ Baseando-se nas informações completas abaixo, gere 3 PERSONAS DISTINTAS para e
 - Posicionamento: ${conteudo.posicionamento}
 
 **PÚBLICO-ALVO:**
-- Tipos: ${dadosOnboarding.publico_alvo?.join(', ')}
-- Dores/Problemas: ${dadosOnboarding.dores_problemas}
-- O que valorizam: ${dadosOnboarding.valorizado}
-- Como encontram a empresa: ${dadosOnboarding.como_encontram?.join(', ')}
+- Tipos: ${dadosOnboarding?.publico_alvo?.join(', ') || 'Não informado'}
+- Dores/Problemas: ${dadosOnboarding?.dores_problemas || 'Não informado'}
+- O que valorizam: ${dadosOnboarding?.valorizado || 'Não informado'}
+- Como encontram a empresa: ${dadosOnboarding?.como_encontram?.join(', ') || 'Não informado'}
 - Frequência de compra: ${dadosOnboarding.frequencia_compra}
 
 **ANÁLISE SWOT:**
@@ -749,15 +749,15 @@ IMPORTANTE: Retorne APENAS o JSON válido, sem texto adicional.
     setGerando(true);
     try {
       const cronograma = gerarCronogramaPostagens(currentDate.getMonth(), currentDate.getFullYear());
-      const quantidadePosts = Math.min(cronograma.length, clienteAssinatura.posts_mes);
+      const quantidadePosts = Math.min(cronograma.length, clienteAssinatura?.posts_mensais || 12);
 
       const prompt = `
         Baseado na missão "${conteudo.missao}" e posicionamento "${conteudo.posicionamento}" da empresa,
         gere ${quantidadePosts} posts para redes sociais seguindo estas diretrizes:
         
-        - Componentes selecionados: ${componentesSelecionados?.join(', ')}
-        - Especialistas de referência: ${conteudo.especialistas_selecionados?.join(', ')}
-        - Formatos disponíveis: ${clienteAssinatura.formatos.join(', ')}
+        - Componentes selecionados: ${componentesSelecionados?.join(', ') || 'Nenhum'}
+        - Especialistas de referência: ${conteudo.especialistas_selecionados?.map((esp: any) => esp.nome).join(', ') || 'Nenhum'}
+        - Formatos disponíveis: post, stories${clienteAssinatura?.reels_suporte ? ', reels' : ''}
         - Persona: ${conteudo.persona || 'Não definida'}
         
         Para cada post, retorne um JSON com:
@@ -1358,12 +1358,15 @@ IMPORTANTE: Retorne APENAS o JSON válido, sem texto adicional.
               </CardHeader>
               <CardContent>
                 <div className="flex items-center gap-4">
-                  <Badge variant="secondary">{clienteAssinatura.nome}</Badge>
+                  <Badge variant="secondary">{clienteAssinatura?.nome || 'Plano não definido'}</Badge>
                   <span className="text-sm text-muted-foreground">
-                    {clienteAssinatura.posts_mes} posts/mês
+                    {clienteAssinatura?.posts_mensais || 0} posts/mês
                   </span>
                   <span className="text-sm text-muted-foreground">
-                    Formatos: {clienteAssinatura.formatos.join(', ')}
+                    Reels: {clienteAssinatura?.reels_suporte ? 'Sim' : 'Não'}
+                  </span>
+                  <span className="text-sm text-muted-foreground">
+                    Anúncios: {clienteAssinatura?.anuncios_facebook || clienteAssinatura?.anuncios_google ? 'Sim' : 'Não'}
                   </span>
                 </div>
               </CardContent>
