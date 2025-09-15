@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +9,8 @@ import { DataTable } from "@/components/DataTable";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Edit, Trash2, Save, X } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 
 interface Assinatura {
   id: string;
@@ -16,88 +18,55 @@ interface Assinatura {
   preco: number;
   periodo: string;
   posts_mensais: number;
-  reels_suporte: number;
-  anuncios_facebook: number;
-  anuncios_google: number;
+  reels_suporte: boolean;
+  anuncios_facebook: boolean;
+  anuncios_google: boolean;
   recursos: string[];
-  status: 'ativo' | 'inativo';
-  created_at: string;
+  status: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
-const mockAssinaturas: Assinatura[] = [
-  {
-    id: '1',
-    nome: 'Plano 90º',
-    preco: 997,
-    periodo: 'mensal',
-    posts_mensais: 12,
-    reels_suporte: 3,
-    anuncios_facebook: 4,
-    anuncios_google: 1,
-    recursos: [
-      'Criação de Layout Peças OFF',
-      'Elaboração da Linha Editorial',
-      'Gerenciador de Conteúdos'
-    ],
-    status: 'ativo',
-    created_at: '2024-01-15'
-  },
-  {
-    id: '2',
-    nome: 'Plano 180º',
-    preco: 1497,
-    periodo: 'mensal',
-    posts_mensais: 16,
-    reels_suporte: 6,
-    anuncios_facebook: 10,
-    anuncios_google: 3,
-    recursos: [
-      'Criação de Layout Peças OFF',
-      'Elaboração da Linha Editorial',
-      'Gerenciador de Conteúdos',
-      'Suporte Full & Gestão de Crises',
-      'Estratégias de Captação de Leads (Landing Page)'
-    ],
-    status: 'ativo',
-    created_at: '2024-01-15'
-  },
-  {
-    id: '3',
-    nome: 'Plano 360º',
-    preco: 2197,
-    periodo: 'mensal',
-    posts_mensais: 24,
-    reels_suporte: 8,
-    anuncios_facebook: 15,
-    anuncios_google: 5,
-    recursos: [
-      'Criação de Layout Peças OFF',
-      'Elaboração da Linha Editorial',
-      'Gerenciador de Conteúdos',
-      'Suporte Full & Gestão de Crises',
-      'Estratégias de Captação de Leads (Landing Page)',
-      'Consultoria em Branding'
-    ],
-    status: 'ativo',
-    created_at: '2024-01-15'
-  }
-];
-
 export default function Planos() {
-  const [assinaturas, setAssinaturas] = useState<Assinatura[]>(mockAssinaturas);
+  const [assinaturas, setAssinaturas] = useState<Assinatura[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingAssinatura, setEditingAssinatura] = useState<Assinatura | null>(null);
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     nome: '',
     preco: '',
     periodo: 'mensal',
     posts_mensais: '',
-    reels_suporte: '',
-    anuncios_facebook: '',
-    anuncios_google: '',
+    reels_suporte: false,
+    anuncios_facebook: false,
+    anuncios_google: false,
     recursos: '',
-    status: 'ativo' as 'ativo' | 'inativo'
+    status: 'ativo'
   });
+
+  // Carregar assinaturas do banco
+  useEffect(() => {
+    fetchAssinaturas();
+  }, []);
+
+  const fetchAssinaturas = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('assinaturas')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setAssinaturas(data || []);
+    } catch (error) {
+      console.error('Erro ao carregar assinaturas:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível carregar os planos de assinatura.",
+        variant: "destructive"
+      });
+    }
+  };
 
   const resetForm = () => {
     setFormData({
@@ -105,40 +74,77 @@ export default function Planos() {
       preco: '',
       periodo: 'mensal',
       posts_mensais: '',
-      reels_suporte: '',
-      anuncios_facebook: '',
-      anuncios_google: '',
+      reels_suporte: false,
+      anuncios_facebook: false,
+      anuncios_google: false,
       recursos: '',
       status: 'ativo'
     });
     setEditingAssinatura(null);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
     
-    const assinaturaData: Assinatura = {
-      id: editingAssinatura?.id || Date.now().toString(),
-      nome: formData.nome,
-      preco: parseFloat(formData.preco),
-      periodo: formData.periodo,
-      posts_mensais: parseInt(formData.posts_mensais),
-      reels_suporte: parseInt(formData.reels_suporte),
-      anuncios_facebook: parseInt(formData.anuncios_facebook),
-      anuncios_google: parseInt(formData.anuncios_google),
-      recursos: formData.recursos.split('\n').filter(r => r.trim()),
-      status: formData.status,
-      created_at: editingAssinatura?.created_at || new Date().toISOString().split('T')[0]
-    };
+    try {
+      const recursos = formData.recursos
+        .split('\n')
+        .map(r => r.trim())
+        .filter(r => r.length > 0);
 
-    if (editingAssinatura) {
-      setAssinaturas(prev => prev.map(a => a.id === editingAssinatura.id ? assinaturaData : a));
-    } else {
-      setAssinaturas(prev => [...prev, assinaturaData]);
+      const assinaturaData = {
+        nome: formData.nome,
+        preco: parseFloat(formData.preco),
+        periodo: formData.periodo,
+        posts_mensais: parseInt(formData.posts_mensais),
+        reels_suporte: formData.reels_suporte,
+        anuncios_facebook: formData.anuncios_facebook,
+        anuncios_google: formData.anuncios_google,
+        recursos,
+        status: formData.status
+      };
+
+      if (editingAssinatura) {
+        // Atualizar assinatura existente
+        const { error } = await supabase
+          .from('assinaturas')
+          .update(assinaturaData)
+          .eq('id', editingAssinatura.id);
+
+        if (error) throw error;
+
+        toast({
+          title: "Sucesso",
+          description: "Plano de assinatura atualizado com sucesso."
+        });
+      } else {
+        // Criar nova assinatura
+        const { error } = await supabase
+          .from('assinaturas')
+          .insert(assinaturaData as any);
+
+        if (error) throw error;
+
+        toast({
+          title: "Sucesso",
+          description: "Novo plano de assinatura criado com sucesso."
+        });
+      }
+
+      setIsDialogOpen(false);
+      resetForm();
+      fetchAssinaturas(); // Recarregar lista
+    } catch (error) {
+      console.error('Erro ao salvar assinatura:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível salvar o plano de assinatura.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
     }
-
-    setIsDialogOpen(false);
-    resetForm();
   };
 
   const handleEdit = (assinatura: Assinatura) => {
@@ -148,17 +154,38 @@ export default function Planos() {
       preco: assinatura.preco.toString(),
       periodo: assinatura.periodo,
       posts_mensais: assinatura.posts_mensais.toString(),
-      reels_suporte: assinatura.reels_suporte.toString(),
-      anuncios_facebook: assinatura.anuncios_facebook.toString(),
-      anuncios_google: assinatura.anuncios_google.toString(),
+      reels_suporte: assinatura.reels_suporte,
+      anuncios_facebook: assinatura.anuncios_facebook,
+      anuncios_google: assinatura.anuncios_google,
       recursos: assinatura.recursos.join('\n'),
       status: assinatura.status
     });
     setIsDialogOpen(true);
   };
 
-  const handleDelete = (id: string) => {
-    setAssinaturas(prev => prev.filter(a => a.id !== id));
+  const handleDelete = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('assinaturas')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Sucesso",
+        description: "Plano de assinatura removido com sucesso."
+      });
+      
+      fetchAssinaturas(); // Recarregar lista
+    } catch (error) {
+      console.error('Erro ao deletar assinatura:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível remover o plano de assinatura.",
+        variant: "destructive"
+      });
+    }
   };
 
   const columns = [
@@ -178,14 +205,17 @@ export default function Planos() {
     {
       key: "reels_suporte",
       label: "Reels",
+      render: (value: boolean) => value ? "Sim" : "Não",
     },
     {
       key: "anuncios_facebook",
       label: "Facebook Ads",
+      render: (value: boolean) => value ? "Sim" : "Não",
     },
     {
       key: "anuncios_google",
       label: "Google Ads",
+      render: (value: boolean) => value ? "Sim" : "Não",
     },
     {
       key: "status",
@@ -272,36 +302,42 @@ export default function Planos() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="reels_suporte">Suporte de Reels</Label>
-                  <Input
-                    id="reels_suporte"
-                    type="number"
-                    value={formData.reels_suporte}
-                    onChange={(e) => setFormData(prev => ({ ...prev, reels_suporte: e.target.value }))}
-                    required
-                  />
+                  <div className="flex items-center space-x-2">
+                    <input
+                      id="reels_suporte"
+                      type="checkbox"
+                      checked={formData.reels_suporte}
+                      onChange={(e) => setFormData(prev => ({ ...prev, reels_suporte: e.target.checked }))}
+                    />
+                    <Label htmlFor="reels_suporte">Incluir suporte para Reels</Label>
+                  </div>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="anuncios_facebook">Anúncios Facebook</Label>
-                  <Input
-                    id="anuncios_facebook"
-                    type="number"
-                    value={formData.anuncios_facebook}
-                    onChange={(e) => setFormData(prev => ({ ...prev, anuncios_facebook: e.target.value }))}
-                    required
-                  />
+                  <div className="flex items-center space-x-2">
+                    <input
+                      id="anuncios_facebook"
+                      type="checkbox"
+                      checked={formData.anuncios_facebook}
+                      onChange={(e) => setFormData(prev => ({ ...prev, anuncios_facebook: e.target.checked }))}
+                    />
+                    <Label htmlFor="anuncios_facebook">Incluir anúncios Facebook</Label>
+                  </div>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="anuncios_google">Anúncios Google</Label>
-                  <Input
-                    id="anuncios_google"
-                    type="number"
-                    value={formData.anuncios_google}
-                    onChange={(e) => setFormData(prev => ({ ...prev, anuncios_google: e.target.value }))}
-                    required
-                  />
+                  <div className="flex items-center space-x-2">
+                    <input
+                      id="anuncios_google"
+                      type="checkbox"
+                      checked={formData.anuncios_google}
+                      onChange={(e) => setFormData(prev => ({ ...prev, anuncios_google: e.target.checked }))}
+                    />
+                    <Label htmlFor="anuncios_google">Incluir anúncios Google</Label>
+                  </div>
                 </div>
               </div>
 
@@ -325,9 +361,9 @@ export default function Planos() {
                   <X className="h-4 w-4 mr-2" />
                   Cancelar
                 </Button>
-                <Button type="submit">
+                <Button type="submit" disabled={loading}>
                   <Save className="h-4 w-4 mr-2" />
-                  {editingAssinatura ? 'Atualizar' : 'Cadastrar'}
+                  {loading ? "Salvando..." : editingAssinatura ? 'Atualizar' : 'Cadastrar'}
                 </Button>
               </div>
             </form>

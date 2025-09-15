@@ -14,6 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
+      assinaturas: {
+        Row: {
+          anuncios_facebook: boolean
+          anuncios_google: boolean
+          created_at: string
+          id: string
+          nome: string
+          periodo: string
+          posts_mensais: number
+          preco: number
+          recursos: string[] | null
+          reels_suporte: boolean
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          anuncios_facebook?: boolean
+          anuncios_google?: boolean
+          created_at?: string
+          id: string
+          nome: string
+          periodo?: string
+          posts_mensais: number
+          preco: number
+          recursos?: string[] | null
+          reels_suporte?: boolean
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          anuncios_facebook?: boolean
+          anuncios_google?: boolean
+          created_at?: string
+          id?: string
+          nome?: string
+          periodo?: string
+          posts_mensais?: number
+          preco?: number
+          recursos?: string[] | null
+          reels_suporte?: boolean
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       categorias_financeiras: {
         Row: {
           cor: string | null
@@ -281,6 +326,13 @@ export type Database = {
             columns: ["responsavel_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_clientes_assinatura"
+            columns: ["assinatura_id"]
+            isOneToOne: false
+            referencedRelation: "assinaturas"
             referencedColumns: ["id"]
           },
         ]

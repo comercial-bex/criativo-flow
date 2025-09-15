@@ -177,32 +177,43 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
     }
   };
 
+  // Buscar dados da assinatura do cliente
   const fetchClienteAssinatura = async () => {
+    if (!clienteId) return;
+    
+    // setLoadingAssinatura(true);
     try {
-      const { data: cliente, error } = await supabase
+      // Buscar cliente e sua assinatura
+      const { data: cliente, error: clienteError } = await supabase
         .from('clientes')
-        .select('assinatura_id')
+        .select(`
+          assinatura_id,
+          assinaturas (
+            id,
+            nome,
+            preco,
+            posts_mensais,
+            reels_suporte,
+            anuncios_facebook,
+            anuncios_google,
+            recursos
+          )
+        `)
         .eq('id', clienteId)
         .single();
 
-      if (error) {
-        console.error('Erro ao buscar assinatura do cliente:', error);
-        return;
+      if (clienteError) throw clienteError;
+
+      if (cliente?.assinaturas) {
+        setClienteAssinatura(cliente.assinaturas);
+      } else {
+        console.log("Este cliente não possui um plano de assinatura definido.");
       }
-
-      // Mock data para diferentes tipos de assinatura
-      const mockPlanos = {
-        'starter': { nome: 'Starter', posts_mes: 12, formatos: ['post', 'stories'] },
-        'professional': { nome: 'Professional', posts_mes: 20, formatos: ['post', 'stories', 'reels'] },
-        'enterprise': { nome: 'Enterprise', posts_mes: 30, formatos: ['post', 'stories', 'reels', 'carousel'] }
-      };
-
-      const assinaturaType = cliente.assinatura_id?.includes('starter') ? 'starter' :
-                           cliente.assinatura_id?.includes('professional') ? 'professional' : 'enterprise';
-      
-      setClienteAssinatura(mockPlanos[assinaturaType]);
     } catch (error) {
-      console.error('Erro ao buscar dados do cliente:', error);
+      console.error('Erro ao buscar assinatura:', error);
+      console.error("Não foi possível carregar os dados da assinatura.");
+    } finally {
+      // setLoadingAssinatura(false);
     }
   };
 
