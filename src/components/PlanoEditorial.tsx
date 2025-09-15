@@ -1203,7 +1203,19 @@ IMPORTANTE: Retorne APENAS o JSON válido, sem texto adicional.
                 {/* Exibir personas geradas */}
                 {conteudo.persona && (() => {
                   try {
-                    const personasData = JSON.parse(conteudo.persona);
+                    // Verificar se é JSON válido antes do parse
+                    let personasData;
+                    if (conteudo.persona.startsWith('{') || conteudo.persona.startsWith('[')) {
+                      personasData = JSON.parse(conteudo.persona);
+                    } else {
+                      // Se não for JSON, tratar como texto simples
+                      return (
+                        <div className="mt-4 p-4 bg-muted rounded-lg">
+                          <p className="text-sm whitespace-pre-wrap">{conteudo.persona}</p>
+                        </div>
+                      );
+                    }
+                    
                     if (personasData.personas && Array.isArray(personasData.personas)) {
                       return (
                         <div className="grid gap-4 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
@@ -1258,8 +1270,16 @@ IMPORTANTE: Retorne APENAS o JSON válido, sem texto adicional.
                     }
                   } catch (error) {
                     console.error('Erro ao parsear personas:', error);
+                    // Exibir conteúdo como texto simples em caso de erro
+                    return (
+                      <div className="mt-4 p-4 bg-muted rounded-lg">
+                        <p className="text-sm text-muted-foreground">
+                          Conteúdo das personas (formato não JSON):
+                        </p>
+                        <p className="text-sm whitespace-pre-wrap mt-2">{conteudo.persona}</p>
+                      </div>
+                    );
                   }
-                  return null;
                 })()}
 
                 {/* Fallback para edição manual */}
