@@ -157,7 +157,7 @@ export default function Planos() {
       reels_suporte: assinatura.reels_suporte,
       anuncios_facebook: assinatura.anuncios_facebook,
       anuncios_google: assinatura.anuncios_google,
-      recursos: assinatura.recursos.join('\n'),
+      recursos: assinatura.recursos?.join('\n') || '',
       status: assinatura.status
     });
     setIsDialogOpen(true);
