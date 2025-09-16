@@ -59,14 +59,7 @@ const DraggablePost: React.FC<DraggablePostProps> = ({ post, onPreviewPost, getF
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.5 : 1,
-  };
-
-  const handleClick = (e: React.MouseEvent) => {
-    // Only trigger onClick if it's not a drag operation
-    if (!isDragging) {
-      e.stopPropagation();
-      onPreviewPost(post);
-    }
+    zIndex: isDragging ? 1000 : 1,
   };
 
   return (
@@ -74,18 +67,30 @@ const DraggablePost: React.FC<DraggablePostProps> = ({ post, onPreviewPost, getF
       ref={setNodeRef}
       style={style}
       {...attributes}
-      className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-xs hover:bg-primary/10 transition-colors cursor-grab active:cursor-grabbing group ${
-        isUpdating ? 'animate-pulse' : ''
-      } ${isDragging ? 'z-50' : ''}`}
-      onClick={handleClick}
+      {...listeners}
+      className={`
+        flex items-center gap-2 p-2 rounded-lg border border-border bg-card
+        hover:bg-accent/50 transition-all duration-200 cursor-grab active:cursor-grabbing
+        shadow-sm hover:shadow-md transform hover:scale-105
+        ${isUpdating ? 'animate-pulse' : ''}
+        ${isDragging ? 'shadow-lg rotate-2' : ''}
+      `}
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (!isDragging) {
+          onPreviewPost(post);
+        }
+      }}
     >
-      <div {...listeners} className="flex items-center gap-1 w-full">
-        <span className="text-primary text-sm flex-shrink-0">{getFormatIcon(post.formato_postagem)}</span>
-        <span className="flex-1 truncate text-xs font-medium text-foreground" title={post.titulo}>
-          {post.titulo.length > 18 ? `${post.titulo.substring(0, 18)}...` : post.titulo}
-        </span>
-        {isUpdating && <Loader2 className="h-3 w-3 animate-spin flex-shrink-0" />}
+      <span className="text-lg flex-shrink-0">{getFormatIcon(post.formato_postagem)}</span>
+      <div className="flex-1 min-w-0">
+        <div className="font-medium text-sm text-foreground truncate" title={post.titulo}>
+          {post.titulo.length > 20 ? `${post.titulo.substring(0, 20)}...` : post.titulo}
+        </div>
+        <div className="text-xs text-muted-foreground">{post.formato_postagem}</div>
       </div>
+      {isUpdating && <Loader2 className="h-4 w-4 animate-spin flex-shrink-0 text-primary" />}
     </div>
   );
 };
@@ -105,17 +110,33 @@ const DroppableDay: React.FC<DroppableDayProps> = ({ day, dateStr, dayPosts, onP
     disabled: !day
   });
 
+  const isToday = day && new Date().toDateString() === new Date(dateStr).toDateString();
+
   return (
     <div
       ref={setNodeRef}
-      className={`min-h-[60px] p-1 border rounded transition-colors ${
-        day ? 'bg-background border-border hover:bg-accent/30' : 'bg-muted/50 border-muted'
-      } ${isOver && day ? 'ring-2 ring-primary/50 bg-primary/5' : ''}`}
+      className={`
+        min-h-[120px] p-3 border-2 rounded-xl transition-all duration-300
+        ${day ? 'bg-card hover:bg-accent/30 border-border' : 'bg-muted/30 border-muted-foreground/20'}
+        ${isOver && day ? 'ring-2 ring-primary/60 bg-primary/10 border-primary/40 shadow-lg' : ''}
+        ${isToday ? 'ring-2 ring-blue-400 bg-blue-50/50' : ''}
+        ${dayPosts.length > 0 ? 'shadow-md' : 'shadow-sm'}
+      `}
     >
       {day && (
         <>
-          <div className="text-sm font-medium mb-1 text-foreground">{day}</div>
-          <div className="space-y-0.5 max-h-[40px] overflow-y-auto">
+          <div className={`
+            text-base font-semibold mb-3 flex items-center justify-between
+            ${isToday ? 'text-blue-600' : 'text-foreground'}
+          `}>
+            <span>{day}</span>
+            {dayPosts.length > 0 && (
+              <span className="text-xs bg-primary/20 text-primary px-2 py-1 rounded-full">
+                {dayPosts.length}
+              </span>
+            )}
+          </div>
+          <div className="space-y-2 max-h-[80px] overflow-y-auto scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent">
             {dayPosts.map((post) => (
               <DraggablePost
                 key={post.id}
@@ -126,8 +147,9 @@ const DroppableDay: React.FC<DroppableDayProps> = ({ day, dateStr, dayPosts, onP
               />
             ))}
             {dayPosts.length === 0 && (
-              <div className="text-xs text-muted-foreground/60 text-center py-1">
-                Sem posts
+              <div className="text-xs text-muted-foreground/60 text-center py-4 border-2 border-dashed border-muted-foreground/20 rounded-lg">
+                <div>📅</div>
+                <div>Adicione posts</div>
               </div>
             )}
           </div>
@@ -945,8 +967,8 @@ Gere um JSON com array de posts seguindo esta estrutura:
   {
     "titulo": "Título engajador do post",
     "objetivo_postagem": "Engajamento|Vendas|Educação|Relacionamento|Branding",
-    "tipo_criativo": "post_simples|carrossel|stories",
-    "formato_postagem": "post|reel|stories", 
+     "tipo_criativo": "post|carrossel|stories",
+     "formato_postagem": "post|reel|stories",
     "legenda": "Legenda completa seguindo modelo BEX com emojis, call-to-action e hashtags #tag1 #tag2 #tag3 #tag4 #tag5",
     "componente_hesec": "componente_do_framework",
     "persona_alvo": "nome_da_persona"
@@ -1739,61 +1761,60 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
                     onDragStart={handleDragStart}
                     onDragEnd={handleDragEnd}
                   >
-                    <SortableContext items={[...posts, ...postsGerados].map(p => p.id)}>
-                      <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center gap-2">
-                          <Button variant="outline" size="sm" onClick={() => navigateMonth('prev')}>
-                            <ChevronLeft className="h-4 w-4" />
-                          </Button>
-                          <span className="text-sm font-medium">
-                            {currentDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}
-                          </span>
-                          <Button variant="outline" size="sm" onClick={() => navigateMonth('next')}>
-                            <ChevronRight className="h-4 w-4" />
-                          </Button>
-                        </div>
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          onClick={() => setCalendarioExpanded(true)}
-                        >
-                          <Calendar className="h-4 w-4 mr-1" />
-                          Visualizar Completo
+                    <div className="flex items-center justify-between mb-6">
+                      <div className="flex items-center gap-3">
+                        <Button variant="outline" size="sm" onClick={() => navigateMonth('prev')}>
+                          <ChevronLeft className="h-4 w-4" />
+                        </Button>
+                        <span className="text-lg font-semibold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                          {currentDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}
+                        </span>
+                        <Button variant="outline" size="sm" onClick={() => navigateMonth('next')}>
+                          <ChevronRight className="h-4 w-4" />
                         </Button>
                       </div>
-                      
-                      <div className="grid grid-cols-7 gap-2 mb-4">
-                        {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map(day => (
-                          <div key={day} className="p-3 text-center text-sm font-medium text-muted-foreground">
-                            {day}
-                          </div>
-                        ))}
-                      </div>
-                      <div className="grid grid-cols-7 gap-2">
-                        {getDaysInMonth().map((day, index) => {
-                          const dayPosts = day ? getPostsForDay(day) : [];
-                          const dateStr = day ? `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}` : '';
-                          
-                          return (
-                            <DroppableDay
-                              key={index}
-                              day={day}
-                              dateStr={dateStr}
-                              dayPosts={dayPosts}
-                              onPreviewPost={onPreviewPost}
-                              getFormatIcon={getFormatIcon}
-                              atualizandoPost={atualizandoPost}
-                            />
-                          );
-                        })}
-                      </div>
-                    </SortableContext>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => setCalendarioExpanded(true)}
+                        className="bg-primary/5 hover:bg-primary/10 border-primary/20"
+                      >
+                        <Calendar className="h-4 w-4 mr-1" />
+                        Visualizar Completo
+                      </Button>
+                    </div>
+                    
+                    <div className="grid grid-cols-7 gap-4 mb-4 p-4 bg-muted/30 rounded-lg">
+                      {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map(day => (
+                        <div key={day} className="p-3 text-center text-sm font-bold text-muted-foreground uppercase tracking-wide">
+                          {day}
+                        </div>
+                      ))}
+                    </div>
+                    <div className="grid grid-cols-7 gap-4 p-4 bg-background border rounded-xl shadow-sm">
+                      {getDaysInMonth().map((day, index) => {
+                        const dayPosts = day ? getPostsForDay(day) : [];
+                        const dateStr = day ? `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}` : '';
+                        
+                        return (
+                          <DroppableDay
+                            key={index}
+                            day={day}
+                            dateStr={dateStr}
+                            dayPosts={dayPosts}
+                            onPreviewPost={onPreviewPost}
+                            getFormatIcon={getFormatIcon}
+                            atualizandoPost={atualizandoPost}
+                          />
+                        );
+                      })}
+                    </div>
                     <DragOverlay>
                       {draggedPost ? (
-                        <div className="flex items-center gap-1 px-1.5 py-0.5 rounded text-xs bg-primary/20 border border-primary/40">
-                          <span className="text-primary text-sm flex-shrink-0">{getFormatIcon(draggedPost.formato_postagem)}</span>
-                          <span className="flex-1 truncate text-xs font-medium text-foreground" title={draggedPost.titulo}>
-                            {draggedPost.titulo.length > 18 ? `${draggedPost.titulo.substring(0, 18)}...` : draggedPost.titulo}
+                        <div className="flex items-center gap-2 p-2 rounded-lg border border-primary bg-primary/10 shadow-lg">
+                          <span className="text-lg flex-shrink-0">{getFormatIcon(draggedPost.formato_postagem)}</span>
+                          <span className="flex-1 truncate text-sm font-medium text-foreground" title={draggedPost.titulo}>
+                            {draggedPost.titulo.length > 20 ? `${draggedPost.titulo.substring(0, 20)}...` : draggedPost.titulo}
                           </span>
                         </div>
                       ) : null}
