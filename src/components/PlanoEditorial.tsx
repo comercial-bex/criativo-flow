@@ -4,10 +4,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, ChevronLeft, ChevronRight, Loader2, Users, Target, BookOpen, Sparkles, Save, Eye, Undo2, AlertTriangle } from "lucide-react";
+import { Calendar, ChevronLeft, ChevronRight, Loader2, Users, Target, BookOpen, Sparkles, Save, Eye, Undo2, AlertTriangle, X } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { CalendarioEditorial } from "@/components/CalendarioEditorial";
 import { DataTable } from "@/components/DataTable";
@@ -1832,19 +1833,64 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
                 </Button>
                 
                 {postsGerados.length > 0 && (
-                  <Button
-                    onClick={salvarPostsGerados}
-                    disabled={salvandoPostsGerados}
-                    variant="outline"
-                    className="flex items-center gap-2"
-                  >
-                    {salvandoPostsGerados ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Save className="h-4 w-4" />
-                    )}
-                    Salvar Posts ({postsGerados.length})
-                  </Button>
+                  <div className="flex flex-col items-end gap-3 p-4 bg-muted/50 rounded-lg border border-border">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Calendar className="w-4 h-4" />
+                      <span>{postsGerados.length} posts prontos para salvar</span>
+                    </div>
+                    
+                    <div className="flex gap-2">
+                      <Button 
+                        variant="outline"
+                        onClick={() => setPostsGerados([])}
+                        disabled={salvandoPostsGerados}
+                        className="border-destructive/20 text-destructive hover:bg-destructive/10"
+                      >
+                        <X className="w-4 h-4 mr-2" />
+                        Descartar
+                      </Button>
+                      
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button 
+                            disabled={salvandoPostsGerados}
+                            className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg"
+                          >
+                            {salvandoPostsGerados ? (
+                              <>
+                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                Salvando...
+                              </>
+                            ) : (
+                              <>
+                                <Save className="w-4 h-4 mr-2" />
+                                Salvar {postsGerados.length} Posts
+                              </>
+                            )}
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Confirmar salvamento</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Você está prestes a salvar {postsGerados.length} posts no planejamento editorial. 
+                              Esta ação irá adicionar os posts ao calendário e eles ficarão disponíveis para edição.
+                              Tem certeza que deseja continuar?
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                            <AlertDialogAction 
+                              onClick={salvarPostsGerados}
+                              className="bg-emerald-600 hover:bg-emerald-700"
+                            >
+                              Sim, salvar posts
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
+                  </div>
                 )}
               </div>
               
