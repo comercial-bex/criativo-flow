@@ -15,6 +15,9 @@ interface Post {
   data_postagem: string;
   objetivo_postagem: string;
   planejamento_id: string;
+  persona_utilizada?: string;
+  componente_hesec?: string;
+  framework_selecionado?: string;
 }
 
 interface InstagramPreviewProps {
@@ -259,7 +262,7 @@ export const InstagramPreview = ({ isOpen, onClose, post }: InstagramPreviewProp
                 </Button>
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <p className="text-sm font-semibold">128 curtidas</p>
                 <div className="text-sm">
                   <span className="font-semibold">seu_perfil </span>
@@ -269,6 +272,39 @@ export const InstagramPreview = ({ isOpen, onClose, post }: InstagramPreviewProp
                 <p className="text-xs text-muted-foreground uppercase">
                   {new Date(post.data_postagem).toLocaleDateString('pt-BR')}
                 </p>
+              </div>
+
+              {/* Informações Estratégicas */}
+              <div className="mt-4 p-3 bg-muted/50 rounded-lg space-y-3">
+                <h4 className="text-sm font-semibold text-primary">Estratégia do Post</h4>
+                
+                <div className="grid grid-cols-2 gap-3 text-xs">
+                  <div>
+                    <span className="font-medium text-secondary">Objetivo:</span>
+                    <p className="text-muted-foreground mt-1">{post.objetivo_postagem}</p>
+                  </div>
+                  
+                  {post.persona_utilizada && (
+                    <div>
+                      <span className="font-medium text-accent">Persona:</span>
+                      <p className="text-muted-foreground mt-1">{post.persona_utilizada}</p>
+                    </div>
+                  )}
+                  
+                  {post.componente_hesec && (
+                    <div>
+                      <span className="font-medium text-primary">H.E.S.E.C:</span>
+                      <p className="text-muted-foreground mt-1">{post.componente_hesec}</p>
+                    </div>
+                  )}
+                  
+                  {post.framework_selecionado && (
+                    <div>
+                      <span className="font-medium text-secondary">Framework:</span>
+                      <p className="text-muted-foreground mt-1">{post.framework_selecionado}</p>
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div className="flex gap-2 mt-3">

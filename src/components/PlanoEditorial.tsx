@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, ChevronLeft, ChevronRight, Loader2, Users, Target, BookOpen, Sparkles, Save } from "lucide-react";
+import { Calendar, ChevronLeft, ChevronRight, Loader2, Users, Target, BookOpen, Sparkles, Save, Eye } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -1493,17 +1493,47 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
                 <CardTitle>Posts Gerados</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                   {postsGerados.map((post, index) => (
-                    <div key={index} className="p-3 border rounded-lg">
-                      <div className="flex justify-between items-start mb-2">
-                        <h4 className="font-medium">{post.titulo}</h4>
-                        <Badge variant="outline">{post.formato_postagem}</Badge>
+                    <Card key={index} className="p-4">
+                      <div className="space-y-3">
+                        <div className="flex justify-between items-start">
+                          <h4 className="font-medium text-sm line-clamp-2">{post.titulo}</h4>
+                          <Badge variant="outline" className="text-xs">{post.formato_postagem}</Badge>
+                        </div>
+                        
+                        <div className="space-y-2 text-xs">
+                          <div>
+                            <span className="font-medium text-primary">Objetivo:</span>
+                            <p className="text-muted-foreground mt-1">{post.objetivo_postagem}</p>
+                          </div>
+                          
+                          <div>
+                            <span className="font-medium text-secondary">Tipo:</span>
+                            <p className="text-muted-foreground mt-1">{post.tipo_criativo}</p>
+                          </div>
+                          
+                          <div>
+                            <span className="font-medium text-accent">Data:</span>
+                            <p className="text-muted-foreground mt-1">
+                              {new Date(post.data_postagem).toLocaleDateString('pt-BR')}
+                            </p>
+                          </div>
+                        </div>
+                        
+                        <div className="flex gap-2 pt-2">
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            className="flex-1"
+                            onClick={() => onPreviewPost(post)}
+                          >
+                            <Eye className="h-3 w-3 mr-1" />
+                            Visualizar
+                          </Button>
+                        </div>
                       </div>
-                      <p className="text-sm text-muted-foreground mb-1">{post.objetivo_postagem}</p>
-                      <p className="text-sm">{post.tipo_criativo}</p>
-                      <p className="text-xs text-muted-foreground">Data: {post.data_postagem}</p>
-                    </div>
+                    </Card>
                   ))}
                 </div>
               </CardContent>
@@ -1546,16 +1576,34 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
                       {day && (
                         <>
                           <div className="text-sm font-medium mb-1">{day}</div>
-                          {dayPosts.map((post, postIndex) => (
-                            <div
-                              key={postIndex}
-                              className="text-xs p-1 bg-primary/10 rounded cursor-pointer hover:bg-primary/20"
-                              onClick={() => onPreviewPost(post)}
-                            >
-                              <span className="mr-1">{getFormatIcon(post.formato_postagem)}</span>
-                              {post.titulo.length > 10 ? `${post.titulo.substring(0, 10)}...` : post.titulo}
-                            </div>
-                          ))}
+                           {dayPosts.map((post, postIndex) => (
+                             <div
+                               key={postIndex}
+                               className="text-xs p-2 bg-primary/10 rounded cursor-pointer hover:bg-primary/20 transition-colors group"
+                               onClick={() => onPreviewPost(post)}
+                             >
+                               <div className="flex items-center justify-between mb-1">
+                                 <span className="text-primary">{getFormatIcon(post.formato_postagem)}</span>
+                                 <Button 
+                                   size="sm" 
+                                   variant="ghost" 
+                                   className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                                   onClick={(e) => {
+                                     e.stopPropagation();
+                                     onPreviewPost(post);
+                                   }}
+                                 >
+                                   <Eye className="h-3 w-3" />
+                                 </Button>
+                               </div>
+                               <p className="font-medium leading-tight">
+                                 {post.titulo.length > 12 ? `${post.titulo.substring(0, 12)}...` : post.titulo}
+                               </p>
+                               <p className="text-muted-foreground mt-1">
+                                 {post.objetivo_postagem?.length > 15 ? `${post.objetivo_postagem.substring(0, 15)}...` : post.objetivo_postagem}
+                               </p>
+                             </div>
+                           ))}
                         </>
                       )}
                     </div>
