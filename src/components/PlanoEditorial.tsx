@@ -10,6 +10,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { CalendarioEditorial } from "@/components/CalendarioEditorial";
+import { DndContext, closestCenter, DragEndEvent, DragStartEvent, DragOverlay, useDroppable } from "@dnd-kit/core";
+import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 interface PlanoEditorialProps {
   planejamento: {
@@ -33,6 +36,101 @@ interface ConteudoEditorial {
   especialistas_selecionados?: string[];
   conteudo_gerado?: string;
 }
+
+interface DraggablePostProps {
+  post: any;
+  onPreviewPost: (post: any) => void;
+  getFormatIcon: (formato: string) => string;
+  isUpdating: boolean;
+}
+
+const DraggablePost: React.FC<DraggablePostProps> = ({ post, onPreviewPost, getFormatIcon, isUpdating }) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: post.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+      className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-xs hover:bg-primary/10 transition-colors cursor-grab active:cursor-grabbing group ${
+        isUpdating ? 'animate-pulse' : ''
+      } ${isDragging ? 'z-50' : ''}`}
+      onClick={(e) => {
+        e.stopPropagation();
+        onPreviewPost(post);
+      }}
+    >
+      <span className="text-primary text-sm flex-shrink-0">{getFormatIcon(post.formato_postagem)}</span>
+      <span className="flex-1 truncate text-xs font-medium text-foreground" title={post.titulo}>
+        {post.titulo.length > 18 ? `${post.titulo.substring(0, 18)}...` : post.titulo}
+      </span>
+      {isUpdating && <Loader2 className="h-3 w-3 animate-spin flex-shrink-0" />}
+    </div>
+  );
+};
+
+interface DroppableDayProps {
+  day: number | null;
+  dateStr: string;
+  dayPosts: any[];
+  onPreviewPost: (post: any) => void;
+  getFormatIcon: (formato: string) => string;
+  atualizandoPost: string | null;
+}
+
+const DroppableDay: React.FC<DroppableDayProps> = ({ day, dateStr, dayPosts, onPreviewPost, getFormatIcon, atualizandoPost }) => {
+  const { setNodeRef, isOver } = useDroppable({ 
+    id: dateStr,
+    disabled: !day
+  });
+
+  return (
+    <div
+      ref={setNodeRef}
+      className={`min-h-[60px] p-1 border rounded transition-colors ${
+        day ? 'bg-background border-border hover:bg-accent/30' : 'bg-muted/50 border-muted'
+      } ${isOver && day ? 'ring-2 ring-primary/50 bg-primary/5' : ''}`}
+    >
+      {day && (
+        <SortableContext items={dayPosts.map(p => p.id)} strategy={verticalListSortingStrategy}>
+          <>
+            <div className="text-sm font-medium mb-1 text-foreground">{day}</div>
+            <div className="space-y-0.5 max-h-[40px] overflow-y-auto">
+              {dayPosts.map((post) => (
+                <DraggablePost
+                  key={post.id}
+                  post={post}
+                  onPreviewPost={onPreviewPost}
+                  getFormatIcon={getFormatIcon}
+                  isUpdating={atualizandoPost === post.id}
+                />
+              ))}
+              {dayPosts.length === 0 && (
+                <div className="text-xs text-muted-foreground/60 text-center py-1">
+                  Sem posts
+                </div>
+              )}
+            </div>
+          </>
+        </SortableContext>
+      )}
+    </div>
+  );
+};
 
 const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
   planejamento,
@@ -65,6 +163,8 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
   const [componentesSelecionados, setComponentesSelecionados] = useState<string[]>([]);
   const [dadosOnboarding, setDadosOnboarding] = useState<any>(null);
   const [dadosObjetivos, setDadosObjetivos] = useState<any>(null);
+  const [atualizandoPost, setAtualizandoPost] = useState<string | null>(null);
+  const [draggedPost, setDraggedPost] = useState<any>(null);
 
   const especialistas = [
     { 
@@ -934,6 +1034,65 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
     }
   };
 
+  const atualizarDataPost = async (postId: string, novaData: string) => {
+    try {
+      setAtualizandoPost(postId);
+      
+      const { error } = await supabase
+        .from('posts_planejamento')
+        .update({ data_postagem: novaData })
+        .eq('id', postId);
+
+      if (error) throw error;
+
+      // Atualizar estado local
+      const updatedPosts = posts.map(post => 
+        post.id === postId ? { ...post, data_postagem: novaData } : post
+      );
+      setPosts(updatedPosts);
+
+      // Atualizar posts gerados também se existir
+      if (postsGerados.length > 0) {
+        const updatedPostsGerados = postsGerados.map(post => 
+          post.id === postId ? { ...post, data_postagem: novaData } : post
+        );
+        setPostsGerados(updatedPostsGerados);
+      }
+
+      toast.success('Data do post atualizada!');
+    } catch (error) {
+      console.error('Erro ao atualizar post:', error);
+      toast.error('Erro ao atualizar data do post');
+    } finally {
+      setAtualizandoPost(null);
+    }
+  };
+
+  const handleDragStart = (event: DragStartEvent) => {
+    const postId = event.active.id as string;
+    const post = [...posts, ...postsGerados].find(p => p.id === postId);
+    setDraggedPost(post);
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    setDraggedPost(null);
+
+    if (!over) return;
+
+    const postId = active.id as string;
+    const newDateStr = over.id as string;
+
+    // Verificar se é uma data válida
+    if (!newDateStr.match(/^\d{4}-\d{2}-\d{2}$/)) return;
+
+    // Encontrar o post nos arrays
+    const post = [...posts, ...postsGerados].find(p => p.id === postId);
+    if (!post || post.data_postagem === newDateStr) return;
+
+    atualizarDataPost(postId, newDateStr);
+  };
+
   const toggleEspecialista = (especialista: { nome: string; descricao: string }) => {
     const atual = conteudo.especialistas_selecionados || [];
     const novaSelecao = atual.includes(especialista.nome)
@@ -1587,51 +1746,47 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-7 gap-2 mb-4">
-                {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map(day => (
-                  <div key={day} className="p-3 text-center text-sm font-medium text-muted-foreground">
-                    {day}
-                  </div>
-                ))}
-              </div>
-              <div className="grid grid-cols-7 gap-2">
-                {getDaysInMonth().map((day, index) => {
-                  const dayPosts = day ? getPostsForDay(day) : [];
-                  return (
-                    <div
-                      key={index}
-                      className={`min-h-[60px] p-1 border rounded transition-colors ${
-                        day ? 'bg-background border-border hover:bg-accent/30' : 'bg-muted/50 border-muted'
-                      }`}
-                    >
-                      {day && (
-                        <>
-                          <div className="text-sm font-medium mb-1 text-foreground">{day}</div>
-                          <div className="space-y-0.5 max-h-[40px] overflow-y-auto">
-                            {dayPosts.map((post, postIndex) => (
-                              <div
-                                key={postIndex}
-                                className="flex items-center gap-1 px-1.5 py-0.5 rounded text-xs hover:bg-primary/10 transition-colors cursor-pointer group"
-                                onClick={() => onPreviewPost(post)}
-                              >
-                                <span className="text-primary text-sm flex-shrink-0">{getFormatIcon(post.formato_postagem)}</span>
-                                <span className="flex-1 truncate text-xs font-medium text-foreground" title={post.titulo}>
-                                  {post.titulo.length > 18 ? `${post.titulo.substring(0, 18)}...` : post.titulo}
-                                </span>
-                              </div>
-                            ))}
-                            {dayPosts.length === 0 && (
-                              <div className="text-xs text-muted-foreground/60 text-center py-1">
-                                Sem posts
-                              </div>
-                            )}
-                          </div>
-                        </>
-                      )}
+              <DndContext
+                collisionDetection={closestCenter}
+                onDragStart={handleDragStart}
+                onDragEnd={handleDragEnd}
+              >
+                <div className="grid grid-cols-7 gap-2 mb-4">
+                  {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map(day => (
+                    <div key={day} className="p-3 text-center text-sm font-medium text-muted-foreground">
+                      {day}
                     </div>
-                  );
-                })}
-              </div>
+                  ))}
+                </div>
+                <div className="grid grid-cols-7 gap-2">
+                  {getDaysInMonth().map((day, index) => {
+                    const dayPosts = day ? getPostsForDay(day) : [];
+                    const dateStr = day ? `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}` : '';
+                    
+                    return (
+                      <DroppableDay
+                        key={index}
+                        day={day}
+                        dateStr={dateStr}
+                        dayPosts={dayPosts}
+                        onPreviewPost={onPreviewPost}
+                        getFormatIcon={getFormatIcon}
+                        atualizandoPost={atualizandoPost}
+                      />
+                    );
+                  })}
+                </div>
+                <DragOverlay>
+                  {draggedPost ? (
+                    <div className="flex items-center gap-1 px-1.5 py-0.5 rounded text-xs bg-primary/20 border border-primary/40">
+                      <span className="text-primary text-sm flex-shrink-0">{getFormatIcon(draggedPost.formato_postagem)}</span>
+                      <span className="flex-1 truncate text-xs font-medium text-foreground" title={draggedPost.titulo}>
+                        {draggedPost.titulo.length > 18 ? `${draggedPost.titulo.substring(0, 18)}...` : draggedPost.titulo}
+                      </span>
+                    </div>
+                  ) : null}
+                </DragOverlay>
+              </DndContext>
             </CardContent>
           </Card>
 
