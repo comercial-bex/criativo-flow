@@ -249,7 +249,16 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
   const [gerandoPersonas, setGerandoPersonas] = useState(false);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [clienteAssinatura, setClienteAssinatura] = useState<any>(null);
-  const [postsGerados, setPostsGerados] = useState<any[]>([]);
+  const [postsGerados, setPostsGerados] = useState<Array<{
+    id?: string;
+    titulo: string;
+    objetivo_postagem: string;
+    tipo_criativo: string;
+    formato_postagem: string;
+    data_postagem: string;
+    status: 'pendente' | 'salvo';
+    data_salvamento?: string;
+  }>>([]);
   const [componentesSelecionados, setComponentesSelecionados] = useState<string[]>([]);
   const [dadosOnboarding, setDadosOnboarding] = useState<any>(null);
   const [dadosObjetivos, setDadosObjetivos] = useState<any>(null);
@@ -1088,7 +1097,7 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
         planejamento_id: planejamento.id
       }));
 
-      setPostsGerados(postsComData);
+      setPostsGerados(postsComData.map(post => ({ ...post, status: 'pendente' as const })));
       await salvarPostsCalendario(postsComData);
 
       toast.success(`${postsComData.length} posts gerados seguindo modelo BEX e salvos com sucesso!`);
@@ -1142,31 +1151,41 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
   };
 
   const salvarPostsGerados = async () => {
-    if (postsGerados.length === 0) {
-      toast.error('Nenhum post gerado para salvar');
+    const postsPendentes = postsGerados.filter(post => post.status === 'pendente');
+    
+    if (postsPendentes.length === 0) {
+      toast.error('Nenhum post pendente para salvar');
       return;
     }
 
     setSalvandoPostsGerados(true);
     try {
-      await salvarPostsCalendario(postsGerados);
+      await salvarPostsCalendario(postsPendentes);
       
-      // Limpar posts gerados após salvar
-      setPostsGerados([]);
+      // Marcar posts como salvos em vez de limpar
+      const postsAtualizadosLocal = postsGerados.map(post => 
+        post.status === 'pendente' 
+          ? { ...post, status: 'salvo' as const, data_salvamento: new Date().toISOString() }
+          : post
+      );
+      setPostsGerados(postsAtualizadosLocal);
       
       // Recarregar posts do banco para sincronizar
       const mesAtual = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}`;
-      const { data: postsAtualizados } = await supabase
+      const { data: postsDoBanco } = await supabase
         .from('posts_planejamento')
         .select('*')
         .eq('planejamento_id', planejamento.id)
         .like('data_postagem', `${mesAtual}%`);
 
-      if (postsAtualizados) {
-        setPosts(postsAtualizados);
+      if (postsDoBanco) {
+        setPosts(postsDoBanco);
       }
 
-      toast.success('Todos os posts foram salvos no calendário!');
+      toast.success(`${postsPendentes.length} posts salvos com sucesso!`, {
+        description: "Os posts foram adicionados ao planejamento e permanecem visíveis para acompanhamento.",
+        duration: 5000,
+      });
     } catch (error) {
       console.error('Erro ao salvar posts gerados:', error);
       toast.error('Erro ao salvar posts');
@@ -1836,7 +1855,9 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
                   <div className="flex flex-col items-end gap-3 p-4 bg-muted/50 rounded-lg border border-border">
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <Calendar className="w-4 h-4" />
-                      <span>{postsGerados.length} posts prontos para salvar</span>
+                      <span>
+                        {postsGerados.filter(p => p.status === 'pendente').length} pendentes, {postsGerados.filter(p => p.status === 'salvo').length} salvos
+                      </span>
                     </div>
                     
                     <div className="flex gap-2">
@@ -1847,48 +1868,50 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
                         className="border-destructive/20 text-destructive hover:bg-destructive/10"
                       >
                         <X className="w-4 h-4 mr-2" />
-                        Descartar
+                        Limpar Tudo
                       </Button>
                       
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button 
-                            disabled={salvandoPostsGerados}
-                            className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg"
-                          >
-                            {salvandoPostsGerados ? (
-                              <>
-                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                Salvando...
-                              </>
-                            ) : (
-                              <>
-                                <Save className="w-4 h-4 mr-2" />
-                                Salvar {postsGerados.length} Posts
-                              </>
-                            )}
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Confirmar salvamento</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Você está prestes a salvar {postsGerados.length} posts no planejamento editorial. 
-                              Esta ação irá adicionar os posts ao calendário e eles ficarão disponíveis para edição.
-                              Tem certeza que deseja continuar?
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                            <AlertDialogAction 
-                              onClick={salvarPostsGerados}
-                              className="bg-emerald-600 hover:bg-emerald-700"
+                      {postsGerados.filter(p => p.status === 'pendente').length > 0 && (
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button 
+                              disabled={salvandoPostsGerados}
+                              className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg"
                             >
-                              Sim, salvar posts
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
+                              {salvandoPostsGerados ? (
+                                <>
+                                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                  Salvando...
+                                </>
+                              ) : (
+                                <>
+                                  <Save className="w-4 h-4 mr-2" />
+                                  Salvar {postsGerados.filter(p => p.status === 'pendente').length} Posts Pendentes
+                                </>
+                              )}
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Confirmar salvamento</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Você está prestes a salvar {postsGerados.filter(p => p.status === 'pendente').length} posts pendentes no planejamento editorial. 
+                                Os posts salvos permanecerão visíveis para acompanhamento do desenvolvimento.
+                                Tem certeza que deseja continuar?
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                              <AlertDialogAction 
+                                onClick={salvarPostsGerados}
+                                className="bg-emerald-600 hover:bg-emerald-700"
+                              >
+                                Sim, salvar posts pendentes
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      )}
                     </div>
                   </div>
                 )}
@@ -2015,11 +2038,27 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
                 ) : !visualizacaoTabela ? (
                   <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                     {postsGerados.map((post, index) => (
-                      <Card key={index} className="p-4">
+                      <Card key={index} className={`p-4 relative ${
+                        post.status === 'salvo' 
+                          ? 'border-emerald-200 bg-emerald-50/50' 
+                          : 'border-blue-200 bg-blue-50/50'
+                      }`}>
                         <div className="space-y-3">
                           <div className="flex justify-between items-start">
                             <h4 className="font-medium text-sm line-clamp-2">{post.titulo}</h4>
-                            <Badge variant="outline" className="text-xs">{post.formato_postagem}</Badge>
+                            <div className="flex gap-1">
+                              <Badge variant="outline" className="text-xs">{post.formato_postagem}</Badge>
+                              <Badge 
+                                variant={post.status === 'salvo' ? 'default' : 'secondary'} 
+                                className={`text-xs ${
+                                  post.status === 'salvo' 
+                                    ? 'bg-emerald-100 text-emerald-700 border-emerald-200' 
+                                    : 'bg-blue-100 text-blue-700 border-blue-200'
+                                }`}
+                              >
+                                {post.status === 'salvo' ? '✓ Salvo' : '⏳ Pendente'}
+                              </Badge>
+                            </div>
                           </div>
                           
                           <div className="space-y-2 text-xs">
@@ -2039,6 +2078,15 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
                                 {new Date(post.data_postagem).toLocaleDateString('pt-BR')}
                               </p>
                             </div>
+
+                            {post.status === 'salvo' && post.data_salvamento && (
+                              <div>
+                                <span className="font-medium text-emerald-600">Salvo em:</span>
+                                <p className="text-muted-foreground mt-1">
+                                  {new Date(post.data_salvamento).toLocaleDateString('pt-BR')} às {new Date(post.data_salvamento).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                                </p>
+                              </div>
+                            )}
                           </div>
                           
                           <div className="flex gap-2 pt-2">
