@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogHeader } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal, Play, Pause, Volume2, VolumeX } from 'lucide-react';
 
 interface Post {
@@ -65,8 +66,9 @@ export const InstagramPreview = ({ isOpen, onClose, post }: InstagramPreviewProp
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className={`p-0 ${isVertical ? 'max-w-md' : 'max-w-2xl'} bg-background border-none`}>
-        <div className={`bg-background rounded-lg overflow-hidden ${isStory ? 'bg-black' : ''}`}>
+      <DialogContent className={`p-0 ${isVertical ? 'max-w-md max-h-[90vh]' : 'max-w-2xl max-h-[90vh]'} bg-background border-none overflow-hidden`}>
+        <ScrollArea className="max-h-[90vh]">
+          <div className={`bg-background rounded-lg overflow-hidden ${isStory ? 'bg-black' : ''}`}>
           {/* Header - apenas para posts normais e carrosséis */}
           {!isStory && (
             <div className="flex items-center justify-between p-4 border-b">
@@ -317,7 +319,8 @@ export const InstagramPreview = ({ isOpen, onClose, post }: InstagramPreviewProp
               </div>
             </div>
           )}
-        </div>
+          </div>
+        </ScrollArea>
       </DialogContent>
     </Dialog>
   );
