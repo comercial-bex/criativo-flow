@@ -57,7 +57,6 @@ const DraggablePost: React.FC<DraggablePostProps> = ({ post, onPreviewPost, getF
     listeners,
     setNodeRef,
     transform,
-    transition,
     isDragging,
   } = useDraggable({ 
     id: post.id,
@@ -256,6 +255,8 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
   setPosts,
   onPreviewPost
 }) => {
+  console.log('PlanoEditorial rendering with:', { planejamento, clienteId, postsCount: posts.length });
+  
   const [conteudo, setConteudo] = useState<ConteudoEditorial>({
     planejamento_id: planejamento.id,
     frameworks_selecionados: [],
@@ -1085,64 +1086,50 @@ Gere o conteúdo editorial completo agora:`;
     {
       key: "data_postagem",
       label: "Data",
-      render: (row: any) => {
-        const date = new Date(row.data_postagem);
+      render: (value: any, row: any) => {
+        const date = new Date(value);
         return format(date, "dd/MM/yyyy", { locale: ptBR });
       },
     },
     {
-      accessorKey: "titulo",
-      header: "Título",
+      key: "titulo",
+      label: "Título",
     },
     {
-      accessorKey: "formato_postagem",
-      header: "Formato",
-      cell: ({ row }: any) => {
-        const formato = row.getValue("formato_postagem");
-        return (
-          <Badge variant="outline">
-            {getFormatIcon(formato)} {formato}
-          </Badge>
-        );
-      },
-    },
-    {
-      accessorKey: "tipo_criativo",
-      header: "Tipo",
-      cell: ({ row }: any) => {
-        const tipo = row.getValue("tipo_criativo");
-        return (
-          <Badge variant="secondary">
-            {tipo === 'imagem' ? '🖼️' : '🎬'} {tipo}
-          </Badge>
-        );
-      },
-    },
-    {
-      accessorKey: "objetivo_postagem",
-      header: "Objetivo",
-      cell: ({ row }: any) => {
-        const objetivo = row.getValue("objetivo_postagem");
-        return (
-          <Badge variant="outline">
-            🎯 {objetivo?.replace('_', ' ')}
-          </Badge>
-        );
-      },
-    },
-    {
-      id: "actions",
-      header: "Ações",
-      cell: ({ row }: any) => (
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => onPreviewPost(row.original)}
-        >
-          <Eye className="h-4 w-4" />
-        </Button>
+      key: "formato_postagem",
+      label: "Formato",
+      render: (value: any, row: any) => (
+        <Badge variant="outline">
+          {getFormatIcon(value)} {value}
+        </Badge>
       ),
     },
+    {
+      key: "tipo_criativo",
+      label: "Tipo",
+      render: (value: any, row: any) => (
+        <Badge variant="secondary">
+          {value === 'imagem' ? '🖼️' : '🎬'} {value}
+        </Badge>
+      ),
+    },
+    {
+      key: "objetivo_postagem",
+      label: "Objetivo",
+      render: (value: any, row: any) => (
+        <Badge variant="outline">
+          🎯 {value?.replace('_', ' ')}
+        </Badge>
+      ),
+    },
+  ];
+
+  const tableActions = [
+    {
+      label: "Ver",
+      onClick: (row: any) => onPreviewPost(row),
+      variant: "outline" as const
+    }
   ];
 
   return (
@@ -1569,6 +1556,7 @@ Gere o conteúdo editorial completo agora:`;
                     <DataTable 
                       data={posts} 
                       columns={columns}
+                      actions={tableActions}
                     />
                   </CardContent>
                 </Card>
