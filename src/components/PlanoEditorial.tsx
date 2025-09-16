@@ -725,6 +725,7 @@ IMPORTANTE: Retorne APENAS o JSON válido, sem texto adicional.
     
     const ultimoDiaDoMes = new Date(ano, mes + 1, 0).getDate();
     
+    // Coletar todas as datas de Segunda, Quarta e Sexta do mês
     for (let dia = 1; dia <= ultimoDiaDoMes; dia++) {
       const data = new Date(ano, mes, dia);
       if (diasSemana.includes(data.getDay())) {
@@ -732,7 +733,9 @@ IMPORTANTE: Retorne APENAS o JSON válido, sem texto adicional.
       }
     }
     
-    return cronograma;
+    // Respeitar o limite exato de posts mensais da assinatura
+    const limitePosts = clienteAssinatura?.posts_mensais || 12;
+    return cronograma.slice(0, limitePosts);
   };
 
   const gerarConteudoEditorial = async () => {
@@ -746,28 +749,102 @@ IMPORTANTE: Retorne APENAS o JSON válido, sem texto adicional.
       return;
     }
 
+    // Verificar se há componentes H.E.S.E.C selecionados
+    if (!componentesSelecionados || componentesSelecionados.length === 0) {
+      toast.error('Selecione pelo menos um componente H.E.S.E.C antes de gerar o conteúdo');
+      return;
+    }
+
+    // Verificar se há personas definidas
+    if (!conteudo.persona || conteudo.persona.trim().length === 0) {
+      toast.error('É necessário gerar e salvar as personas antes de criar o conteúdo editorial');
+      return;
+    }
+
     setGerando(true);
     try {
       const cronograma = gerarCronogramaPostagens(currentDate.getMonth(), currentDate.getFullYear());
-      const quantidadePosts = Math.min(cronograma.length, clienteAssinatura?.posts_mensais || 12);
+      const quantidadePosts = cronograma.length;
 
+      console.log(`Gerando ${quantidadePosts} posts para plano de ${clienteAssinatura.posts_mensais} posts mensais`);
+
+      if (quantidadePosts === 0) {
+        toast.error('Não foi possível gerar cronograma de postagens para este mês');
+        return;
+      }
+
+      // Extrair personas do JSON
+      let personas = [];
+      try {
+        const personasData = JSON.parse(conteudo.persona);
+        personas = personasData.personas || [];
+      } catch (error) {
+        console.error('Erro ao fazer parse das personas:', error);
+        toast.error('Erro ao processar personas. Gere novamente.');
+        return;
+      }
+
+      // Distribuir componentes H.E.S.E.C pelos posts
+      const componentesDistribuidos = [];
+      componentesSelecionados.forEach((comp, index) => {
+        const postsParaEsteComponente = Math.ceil(quantidadePosts / componentesSelecionados.length);
+        for (let i = 0; i < postsParaEsteComponente && componentesDistribuidos.length < quantidadePosts; i++) {
+          componentesDistribuidos.push(comp);
+        }
+      });
+
+      // Prompt seguindo modelo BEX
       const prompt = `
-        Baseado na missão "${conteudo.missao}" e posicionamento "${conteudo.posicionamento}" da empresa,
-        gere ${quantidadePosts} posts para redes sociais seguindo estas diretrizes:
-        
-        - Componentes selecionados: ${componentesSelecionados?.join(', ') || 'Nenhum'}
-        - Especialistas de referência: ${conteudo.especialistas_selecionados?.map((esp: any) => esp.nome).join(', ') || 'Nenhum'}
-        - Formatos disponíveis: post, stories${clienteAssinatura?.reels_suporte ? ', reels' : ''}
-        - Persona: ${conteudo.persona || 'Não definida'}
-        
-        Para cada post, retorne um JSON com:
-        - titulo: título atrativo (máximo 50 caracteres)
-        - objetivo_postagem: objetivo específico do post
-        - tipo_criativo: tipo de conteúdo visual necessário
-        - formato_postagem: formato escolhido dentre os disponíveis
-        
-        Retorne apenas o array JSON sem explicações adicionais.
-      `;
+Gere um calendário editorial seguindo o MODELO BEX para marketing digital profissional.
+
+**CONTEXTO DA EMPRESA:**
+Missão: ${conteudo.missao}
+Posicionamento: ${conteudo.posicionamento}
+
+**PERSONAS DEFINIDAS:**
+${personas.map((p, i) => `PERSONA ${i+1}: ${p.nome} - ${p.descricao_breve} - Dores: ${p.principais_dores}`).join('\n')}
+
+**COMPONENTES H.E.S.E.C SELECIONADOS:**
+${componentesSelecionados.join(', ')}
+
+**ESPECIALISTAS DE REFERÊNCIA:**
+${conteudo.especialistas_selecionados?.join(', ') || 'Marketing estratégico'}
+
+**CRONOGRAMA:**
+${cronograma.map((data, index) => {
+  const formattedDate = data.toLocaleDateString('pt-BR');
+  const dayOfWeek = data.toLocaleDateString('pt-BR', { weekday: 'long' });
+  const componenteAssociado = componentesDistribuidos[index] || componentesSelecionados[0];
+  const personaIndex = index % personas.length;
+  const persona = personas[personaIndex];
+  
+  return `${index + 1}. ${formattedDate} (${dayOfWeek}) - Componente: ${componenteAssociado} - Persona: ${persona?.nome || 'Persona 1'}`;
+}).join('\n')}
+
+**DIRETRIZES:**
+1. Gerar exatamente ${quantidadePosts} posts
+2. Cada post deve seguir o modelo BEX com legenda completa (150-300 caracteres)
+3. Incluir 5-8 hashtags relevantes no final de cada legenda
+4. Alternar entre as personas definidas
+5. Cada post deve refletir o componente H.E.S.E.C específico
+6. Incluir call-to-action apropriado
+7. Tipos criativos: 70% posts simples, 20% carrossel, 10% stories
+8. Formatos: ${clienteAssinatura?.reels_suporte ? '60% posts, 30% reels, 10% stories' : '80% posts, 20% stories'}
+
+Gere um JSON com array de posts seguindo esta estrutura:
+[
+  {
+    "titulo": "Título engajador do post",
+    "objetivo_postagem": "Engajamento|Vendas|Educação|Relacionamento|Branding",
+    "tipo_criativo": "post_simples|carrossel|stories",
+    "formato_postagem": "post|reel|stories", 
+    "legenda": "Legenda completa seguindo modelo BEX com emojis, call-to-action e hashtags #tag1 #tag2 #tag3 #tag4 #tag5",
+    "componente_hesec": "componente_do_framework",
+    "persona_alvo": "nome_da_persona"
+  }
+]
+
+IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicional.`;
 
       const { data, error } = await supabase.functions.invoke('generate-content-with-ai', {
         body: { prompt }
@@ -777,20 +854,35 @@ IMPORTANTE: Retorne APENAS o JSON válido, sem texto adicional.
 
       let postsData;
       try {
-        postsData = JSON.parse(data.content);
+        // A edge function pode retornar diferentes estruturas
+        const responseText = data.generatedText || data.content || data;
+        if (typeof responseText === 'string') {
+          postsData = JSON.parse(responseText);
+        } else {
+          postsData = responseText;
+        }
       } catch (e) {
         console.error('Erro ao fazer parse do JSON:', e);
-        toast.error('Erro no formato da resposta da IA');
+        toast.error('Erro no formato da resposta da IA. Tente novamente.');
+        return;
+      }
+
+      if (!Array.isArray(postsData) || postsData.length === 0) {
+        console.error('Resposta inválida da IA:', postsData);
+        toast.error('IA não retornou posts válidos');
         return;
       }
 
       const postsComData = postsData.slice(0, quantidadePosts).map((post: any, index: number) => ({
         ...post,
-        data_postagem: cronograma[index].toISOString().split('T')[0]
+        data_postagem: cronograma[index].toISOString().split('T')[0],
+        planejamento_id: planejamento.id
       }));
 
       setPostsGerados(postsComData);
       await salvarPostsCalendario(postsComData);
+
+      toast.success(`${postsComData.length} posts gerados seguindo modelo BEX e salvos com sucesso!`);
 
     } catch (error) {
       console.error('Erro ao gerar conteúdo:', error);
