@@ -100,9 +100,9 @@ const DraggablePost: React.FC<DraggablePostProps> = ({ post, onPreviewPost, getF
             {...attributes}
             {...listeners}
             className={`
-              inline-flex items-center gap-1 px-2 py-1 m-0.5 bg-card border border-border rounded-md
+              flex items-center gap-1 px-1.5 py-0.5 bg-card border border-border rounded-md
               hover:bg-accent/50 transition-all duration-200 cursor-grab active:cursor-grabbing
-              shadow-sm hover:shadow-md text-xs
+              shadow-sm hover:shadow-md text-xs min-w-0 h-7
               ${isUpdating ? 'animate-pulse' : ''}
               ${isDragging ? 'shadow-lg ring-2 ring-primary/60 bg-primary/10 rotate-1 scale-105' : ''}
               ${post.formato_postagem === 'post' ? 'bg-blue-50 border-blue-200' : 
@@ -111,11 +111,11 @@ const DraggablePost: React.FC<DraggablePostProps> = ({ post, onPreviewPost, getF
             `}
             onClick={handleClick}
           >
-            <span className="text-sm">{getFormatIcon(post.formato_postagem)}</span>
-            <span className="text-xs font-medium truncate max-w-[80px]">
-              {post.titulo.length > 15 ? post.titulo.substring(0, 15) + '...' : post.titulo}
+            <span className="text-xs flex-shrink-0">{getFormatIcon(post.formato_postagem)}</span>
+            <span className="text-xs font-medium truncate">
+              {post.titulo.length > 6 ? post.titulo.substring(0, 6) : post.titulo}
             </span>
-            {isUpdating && <Loader2 className="h-3 w-3 animate-spin text-primary" />}
+            {isUpdating && <Loader2 className="h-3 w-3 animate-spin text-primary flex-shrink-0" />}
           </div>
         </TooltipTrigger>
         <TooltipContent side="top" className="max-w-sm">
@@ -170,7 +170,7 @@ const DroppableDay: React.FC<DroppableDayProps> = ({ day, dateStr, dayPosts, onP
     <div
       ref={setNodeRef}
       className={`
-        min-h-[100px] p-2 border rounded-lg transition-all duration-200
+        min-h-[120px] p-1.5 border rounded-lg transition-all duration-200
         ${day ? 'bg-card hover:bg-accent/30 border-border' : 'bg-muted/30 border-muted-foreground/20'}
         ${isOver && day ? 'ring-2 ring-primary/60 bg-primary/10 border-primary/40' : ''}
         ${isToday ? 'ring-2 ring-blue-400 bg-blue-50/50' : ''}
@@ -179,17 +179,17 @@ const DroppableDay: React.FC<DroppableDayProps> = ({ day, dateStr, dayPosts, onP
       {day && (
         <>
           <div className={`
-            text-sm font-semibold mb-2 flex items-center justify-between
+            text-sm font-semibold mb-1.5 flex items-center justify-between
             ${isToday ? 'text-blue-600' : 'text-foreground'}
           `}>
             <span>{day}</span>
             {dayPosts.length > 0 && (
-              <span className="text-xs bg-primary/20 text-primary px-1.5 py-0.5 rounded-full">
+              <span className="text-xs bg-primary/10 text-primary px-1.5 py-0.5 rounded-full">
                 {dayPosts.length}
               </span>
             )}
           </div>
-          <div className="flex flex-wrap gap-1">
+          <div className="grid grid-cols-2 gap-1 auto-rows-min">
             {dayPosts.map((post) => (
               <DraggablePost
                 key={post.id}
@@ -200,13 +200,13 @@ const DroppableDay: React.FC<DroppableDayProps> = ({ day, dateStr, dayPosts, onP
               />
             ))}
             {dayPosts.length === 0 && !isOver && (
-              <div className="w-full text-center py-4 text-xs text-muted-foreground/60 border border-dashed border-muted-foreground/20 rounded">
+              <div className="col-span-2 w-full text-center py-3 text-xs text-muted-foreground/60 border border-dashed border-muted-foreground/20 rounded">
                 <div className="mb-1">📝</div>
                 <div>Arraste posts</div>
               </div>
             )}
             {isOver && (
-              <div className="w-full p-2 border border-primary/30 rounded bg-primary/10 text-xs text-primary">
+              <div className="col-span-2 w-full p-2 border border-primary/30 rounded bg-primary/10 text-xs text-primary">
                 <div className="flex items-center justify-center gap-1">
                   <span>📌</span>
                   <span>Soltar aqui</span>
