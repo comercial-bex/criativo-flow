@@ -1600,48 +1600,29 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
                   return (
                     <div
                       key={index}
-                      className={`min-h-[100px] p-2 border rounded-lg transition-all hover:shadow-sm ${
-                        day ? 'bg-background border-border' : 'bg-muted/50 border-muted'
+                      className={`min-h-[60px] p-1 border rounded transition-colors ${
+                        day ? 'bg-background border-border hover:bg-accent/30' : 'bg-muted/50 border-muted'
                       }`}
                     >
                       {day && (
                         <>
-                          <div className="text-sm font-semibold mb-2 text-foreground">{day}</div>
-                          <div className="space-y-1">
+                          <div className="text-sm font-medium mb-1 text-foreground">{day}</div>
+                          <div className="space-y-0.5 max-h-[40px] overflow-y-auto">
                             {dayPosts.map((post, postIndex) => (
                               <div
                                 key={postIndex}
-                                className="group relative p-2 bg-gradient-to-r from-primary/5 to-primary/10 rounded-md cursor-pointer hover:from-primary/10 hover:to-primary/20 transition-all duration-200 border border-primary/20 hover:border-primary/40"
+                                className="flex items-center gap-1 px-1.5 py-0.5 rounded text-xs hover:bg-primary/10 transition-colors cursor-pointer group"
                                 onClick={() => onPreviewPost(post)}
                               >
-                                <div className="flex items-start justify-between mb-1">
-                                  <span className="text-primary text-lg">{getFormatIcon(post.formato_postagem)}</span>
-                                  <Button 
-                                    size="sm" 
-                                    variant="ghost" 
-                                    className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-primary/20"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      onPreviewPost(post);
-                                    }}
-                                  >
-                                    <Eye className="h-3 w-3" />
-                                  </Button>
-                                </div>
-                                <h4 className="font-medium text-xs leading-tight text-foreground mb-1" title={post.titulo}>
-                                  {post.titulo.length > 20 ? `${post.titulo.substring(0, 20)}...` : post.titulo}
-                                </h4>
-                                {post.objetivo_postagem && (
-                                  <p className="text-xs text-muted-foreground leading-tight" title={post.objetivo_postagem}>
-                                    {post.objetivo_postagem.length > 25 ? `${post.objetivo_postagem.substring(0, 25)}...` : post.objetivo_postagem}
-                                  </p>
-                                )}
-                                <div className="absolute inset-0 rounded-md ring-2 ring-transparent group-hover:ring-primary/30 transition-all duration-200 pointer-events-none" />
+                                <span className="text-primary text-sm flex-shrink-0">{getFormatIcon(post.formato_postagem)}</span>
+                                <span className="flex-1 truncate text-xs font-medium text-foreground" title={post.titulo}>
+                                  {post.titulo.length > 18 ? `${post.titulo.substring(0, 18)}...` : post.titulo}
+                                </span>
                               </div>
                             ))}
                             {dayPosts.length === 0 && (
-                              <div className="text-xs text-muted-foreground/60 text-center py-2">
-                                Nenhum post
+                              <div className="text-xs text-muted-foreground/60 text-center py-1">
+                                Sem posts
                               </div>
                             )}
                           </div>
