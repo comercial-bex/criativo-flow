@@ -1,19 +1,24 @@
-import React, { useState, useEffect } from 'react';
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
-import { Calendar, ChevronLeft, ChevronRight, Loader2, Users, Target, BookOpen, Sparkles, Save, Eye } from "lucide-react";
-import { Label } from "@/components/ui/label";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { CalendarioEditorial } from "@/components/CalendarioEditorial";
-import { DataTable } from "@/components/DataTable";
-import { DndContext, closestCenter, DragEndEvent, DragStartEvent, DragOverlay, useDroppable } from "@dnd-kit/core";
-import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
+import { toast } from '@/components/ui/use-toast';
+import { Loader2, Brain, Users, Target, PenTool, BookOpen, Award, Calendar, Table, Sparkles, Save } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { DataTable } from '@/components/DataTable';
+import { CalendarioEditorial } from '@/components/CalendarioEditorial';
+import { DndContext, DragEndEvent, DragOverlay, DragStartEvent } from '@dnd-kit/core';
+import { useSensor, useSensors, PointerSensor, KeyboardSensor } from '@dnd-kit/core';
+import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
+import { useDraggable, useDroppable } from '@dnd-kit/core';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isToday } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import { ChevronLeft, ChevronRight, Eye } from 'lucide-react';
+import { usePostDragDrop } from '@/hooks/usePostDragDrop';
 
 interface PlanoEditorialProps {
   planejamento: {
@@ -43,9 +48,10 @@ interface DraggablePostProps {
   onPreviewPost: (post: any) => void;
   getFormatIcon: (formato: string) => string;
   isUpdating: boolean;
+  canDragPost: (post: any) => boolean;
 }
 
-const DraggablePost: React.FC<DraggablePostProps> = ({ post, onPreviewPost, getFormatIcon, isUpdating }) => {
+const DraggablePost: React.FC<DraggablePostProps> = ({ post, onPreviewPost, getFormatIcon, isUpdating, canDragPost }) => {
   const {
     attributes,
     listeners,
@@ -53,13 +59,15 @@ const DraggablePost: React.FC<DraggablePostProps> = ({ post, onPreviewPost, getF
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: post.id });
+  } = useDraggable({ 
+    id: post.id,
+    disabled: !canDragPost(post)
+  });
 
   const [clickTimer, setClickTimer] = React.useState<NodeJS.Timeout | null>(null);
 
   const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
+    transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
     opacity: isDragging ? 0.5 : 1,
     zIndex: isDragging ? 1000 : 1,
   };
@@ -101,13 +109,14 @@ const DraggablePost: React.FC<DraggablePostProps> = ({ post, onPreviewPost, getF
             {...listeners}
             className={`
               flex items-center gap-1 px-1.5 py-0.5 bg-card border border-border rounded-md
-              hover:bg-accent/50 transition-all duration-200 cursor-grab active:cursor-grabbing
-              shadow-sm hover:shadow-md text-xs min-w-0 h-7
+              hover:bg-accent/50 transition-all duration-200 h-7 min-w-0
+              shadow-sm hover:shadow-md text-xs
               ${isUpdating ? 'animate-pulse' : ''}
               ${isDragging ? 'shadow-lg ring-2 ring-primary/60 bg-primary/10 rotate-1 scale-105' : ''}
               ${post.formato_postagem === 'post' ? 'bg-blue-50 border-blue-200' : 
-                post.formato_postagem === 'story' ? 'bg-pink-50 border-pink-200' : 
-                'bg-purple-50 border-purple-200'}
+                post.formato_postagem === 'stories' ? 'bg-purple-50 border-purple-200' : 
+                'bg-green-50 border-green-200'}
+              ${canDragPost(post) ? 'cursor-grab active:cursor-grabbing' : 'cursor-not-allowed opacity-50'}
             `}
             onClick={handleClick}
           >
@@ -156,15 +165,29 @@ interface DroppableDayProps {
   onPreviewPost: (post: any) => void;
   getFormatIcon: (formato: string) => string;
   atualizandoPost: string | null;
+  currentDate: Date;
+  isDroppable: (day: number, currentMonth: Date) => boolean;
+  canDragPost: (post: any) => boolean;
 }
 
-const DroppableDay: React.FC<DroppableDayProps> = ({ day, dateStr, dayPosts, onPreviewPost, getFormatIcon, atualizandoPost }) => {
+const DroppableDay: React.FC<DroppableDayProps> = ({ 
+  day, 
+  dateStr, 
+  dayPosts, 
+  onPreviewPost, 
+  getFormatIcon, 
+  atualizandoPost, 
+  currentDate, 
+  isDroppable,
+  canDragPost
+}) => {
   const { setNodeRef, isOver } = useDroppable({ 
-    id: dateStr,
-    disabled: !day
+    id: day ? day.toString() : 'empty',
+    disabled: !day || !isDroppable(day, currentDate)
   });
 
   const isToday = day && new Date().toDateString() === new Date(dateStr).toDateString();
+  const canDrop = day ? isDroppable(day, currentDate) : false;
 
   return (
     <div
@@ -172,9 +195,14 @@ const DroppableDay: React.FC<DroppableDayProps> = ({ day, dateStr, dayPosts, onP
       className={`
         min-h-[120px] p-1.5 border rounded-lg transition-all duration-200
         ${day ? 'bg-card hover:bg-accent/30 border-border' : 'bg-muted/30 border-muted-foreground/20'}
-        ${isOver && day ? 'ring-2 ring-primary/60 bg-primary/10 border-primary/40' : ''}
+        ${isOver && day && canDrop ? 'ring-2 ring-primary/60 bg-primary/10 border-primary/40' : ''}
+        ${isOver && day && !canDrop ? 'ring-2 ring-destructive/60 bg-destructive/10 border-destructive/40' : ''}
         ${isToday ? 'ring-2 ring-blue-400 bg-blue-50/50' : ''}
+        ${day && !canDrop ? 'opacity-50' : ''}
       `}
+      style={{ 
+        cursor: day && !canDrop ? 'not-allowed' : 'default' 
+      }}
     >
       {day && (
         <>
@@ -197,6 +225,7 @@ const DroppableDay: React.FC<DroppableDayProps> = ({ day, dateStr, dayPosts, onP
                 onPreviewPost={onPreviewPost}
                 getFormatIcon={getFormatIcon}
                 isUpdating={atualizandoPost === post.id}
+                canDragPost={canDragPost}
               />
             ))}
             {dayPosts.length === 0 && !isOver && (
@@ -234,8 +263,14 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
   });
   
   const [loading, setLoading] = useState(true);
-  const [gerando, setGerando] = useState(false);
-  const [calendarioExpanded, setCalendarioExpanded] = useState(false);
+  const [isGeneratingContent, setIsGeneratingContent] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isSavingPosts, setIsSavingPosts] = useState(false);
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const [calendarView, setCalendarView] = useState(false);
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const [postsGerados, setPostsGerados] = useState<any[]>([]);
+
   const [salvando, setSalvando] = useState(false);
   const [salvandoPosicionamento, setSalvandoPosicionamento] = useState(false);
   const [salvandoEspecialistas, setSalvandoEspecialistas] = useState(false);
@@ -245,9 +280,7 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
   const [gerandoMissao, setGerandoMissao] = useState(false);
   const [gerandoPosicionamento, setGerandoPosicionamento] = useState(false);
   const [gerandoPersonas, setGerandoPersonas] = useState(false);
-  const [currentDate, setCurrentDate] = useState(new Date());
   const [clienteAssinatura, setClienteAssinatura] = useState<any>(null);
-  const [postsGerados, setPostsGerados] = useState<any[]>([]);
   const [componentesSelecionados, setComponentesSelecionados] = useState<string[]>([]);
   const [dadosOnboarding, setDadosOnboarding] = useState<any>(null);
   const [dadosObjetivos, setDadosObjetivos] = useState<any>(null);
@@ -255,6 +288,26 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
   const [draggedPost, setDraggedPost] = useState<any>(null);
   const [visualizacaoTabela, setVisualizacaoTabela] = useState(false);
   const [visualizacaoCalendario, setVisualizacaoCalendario] = useState(false);
+  const [calendarioExpanded, setCalendarioExpanded] = useState(false);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const {
+    isDragging,
+    canDragPost,
+    isDroppable,
+    handleDragStart: onDragStart,
+    handleDragEnd: onDragEnd,
+    handleDrop: onDrop
+  } = usePostDragDrop({
+    posts,
+    onPostsUpdate: setPosts
+  });
 
   const especialistas = [
     { 
@@ -373,7 +426,6 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
   const fetchClienteAssinatura = async () => {
     if (!clienteId) return;
     
-    // setLoadingAssinatura(true);
     try {
       // Buscar cliente e sua assinatura
       const { data: cliente, error: clienteError } = await supabase
@@ -404,8 +456,6 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
     } catch (error) {
       console.error('Erro ao buscar assinatura:', error);
       console.error("Não foi possível carregar os dados da assinatura.");
-    } finally {
-      // setLoadingAssinatura(false);
     }
   };
 
@@ -454,17 +504,29 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
 
   const validarDadosCompletos = () => {
     if (!dadosOnboarding || !dadosObjetivos) {
-      toast.error('Dados de onboarding ou objetivos não encontrados');
+      toast({
+        title: "Erro",
+        description: "Dados de onboarding ou objetivos não encontrados",
+        variant: "destructive"
+      });
       return false;
     }
 
     if (!conteudo.missao || conteudo.missao.length < 20) {
-      toast.error('É necessário ter uma missão definida e salva com pelo menos 20 caracteres');
+      toast({
+        title: "Erro",
+        description: "É necessário ter uma missão definida e salva com pelo menos 20 caracteres",
+        variant: "destructive"
+      });
       return false;
     }
 
     if (!conteudo.posicionamento || conteudo.posicionamento.length < 50) {
-      toast.error('É necessário ter um posicionamento definido e salvo com pelo menos 50 caracteres');
+      toast({
+        title: "Erro",
+        description: "É necessário ter um posicionamento definido e salvo com pelo menos 50 caracteres",
+        variant: "destructive"
+      });
       return false;
     }
 
@@ -473,7 +535,11 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
 
   const gerarMissaoComIA = async () => {
     if (!dadosOnboarding || !dadosObjetivos) {
-      toast.error('Dados de onboarding ou objetivos não encontrados');
+      toast({
+        title: "Erro",
+        description: "Dados de onboarding ou objetivos não encontrados",
+        variant: "destructive"
+      });
       return;
     }
 
@@ -486,557 +552,10 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
         e tem como dores/problemas dos clientes: ${dadosOnboarding.dores_problemas},
         
         Valores principais: ${dadosOnboarding.valores_principais || 'Não definidos'}
-        Diferenciais: ${dadosOnboarding.diferenciais || 'Não definidos'}
-        Objetivos definidos: ${JSON.stringify(dadosObjetivos.objetivos)}
         
-        Gere uma missão empresarial que:
-        1. Defina claramente o propósito da empresa
-        2. Seja inspiradora e motivadora
-        3. Reflita os valores e diferenciais
-        4. Tenha máximo 70 palavras
-        5. Seja focada no impacto que a empresa gera
-        
-        Responda apenas com o texto da missão, sem títulos ou formatações extras.`;
-
-      const response = await supabase.functions.invoke('generate-content-with-ai', {
-        body: { prompt }
-      });
-
-      if (response.error) {
-        throw new Error(response.error.message);
-      }
-
-      console.log('Resposta da API:', response);
-      
-      if (response.data) {
-        // A edge function retorna { generatedText: "texto aqui" }
-        const missaoGerada = response.data.generatedText || response.data;
-        
-        console.log('Missão gerada:', missaoGerada);
-        
-        if (missaoGerada && typeof missaoGerada === 'string' && missaoGerada.trim().length > 0) {
-          setConteudo(prev => ({ ...prev, missao: missaoGerada.trim() }));
-          toast.success('Missão gerada com sucesso!');
-        } else {
-          throw new Error('Missão gerada inválida');
-        }
-      } else {
-        throw new Error('Nenhum dado retornado pela IA');
-      }
-    } catch (error) {
-      console.error('Erro ao gerar missão:', error);
-      toast.error('Erro ao gerar missão com IA');
-    } finally {
-      setGerandoMissao(false);
-    }
-  };
-
-  const gerarPosicionamentoComIA = async () => {
-    setGerandoPosicionamento(true);
-
-    try {
-      const dadosOnboarding = await buscarDadosOnboarding();
-      
-      if (!dadosOnboarding) {
-        toast.error('Não foram encontrados dados de onboarding para este cliente. Complete o onboarding primeiro.');
-        return;
-      }
-
-      // Construir prompt estruturado
-      const prompt = `
-Baseando-se nas informações de onboarding abaixo, gere um POSICIONAMENTO DE MARCA estratégico e bem estruturado para a empresa. O posicionamento deve ter no máximo 700 palavras e abordar como a empresa quer ser percebida no mercado.
-
-**INFORMAÇÕES DA EMPRESA:**
-- Nome: ${dadosOnboarding.nome_empresa || 'Não informado'}
-- Segmento: ${dadosOnboarding.segmento_atuacao || 'Não informado'}
-- Produtos/Serviços: ${dadosOnboarding.produtos_servicos || 'Não informado'}
-- Tempo no mercado: ${dadosOnboarding.tempo_mercado || 'Não informado'}
-- Localização: ${dadosOnboarding.localizacao || 'Não informado'}
-
-**PÚBLICO-ALVO E MERCADO:**
-- Público-alvo: ${dadosOnboarding?.publico_alvo?.join(', ') || 'Não informado'}
-- Tipos de clientes: ${dadosOnboarding.tipos_clientes || 'Não informado'}
-- Dores/Problemas dos clientes: ${dadosOnboarding.dores_problemas || 'Não informado'}
-- O que valorizam: ${dadosOnboarding.valorizado || 'Não informado'}
-
-**DIFERENCIAIS COMPETITIVOS:**
-- Principais diferenciais: ${dadosOnboarding.diferenciais || 'Não informado'}
-- Concorrentes diretos: ${dadosOnboarding.concorrentes_diretos || 'Não informado'}
-
-**IDENTIDADE DA MARCA:**
-- História da marca: ${dadosOnboarding.historia_marca || 'Não informado'}
-- Valores principais: ${dadosOnboarding.valores_principais || 'Não informado'}
-- Tom de voz: ${dadosOnboarding?.tom_voz?.join(', ') || 'Não informado'}
-- Como quer ser lembrada: ${dadosOnboarding.como_lembrada || 'Não informado'}
-
-**ANÁLISE SWOT:**
-- Forças: ${dadosOnboarding.forcas || 'Não informado'}
-- Fraquezas: ${dadosOnboarding.fraquezas || 'Não informado'}
-- Oportunidades: ${dadosOnboarding.oportunidades || 'Não informado'}
-- Ameaças: ${dadosOnboarding.ameacas || 'Não informado'}
-
-**OBJETIVOS:**
-- Objetivos digitais: ${dadosOnboarding.objetivos_digitais || 'Não informado'}
-- Onde quer estar em 6 meses: ${dadosOnboarding.onde_6_meses || 'Não informado'}
-- Resultados esperados: ${dadosOnboarding?.resultados_esperados?.join(', ') || 'Não informado'}
-
-Com base nessas informações, elabore um posicionamento de marca que:
-1. Defina claramente como a empresa quer ser percebida
-2. Destaque seus diferenciais únicos
-3. Conecte com as necessidades do público-alvo
-4. Seja consistente com os valores e história da marca
-5. Seja aplicável nas estratégias de comunicação
-
-Responda com um texto corrido, bem estruturado e com no máximo 700 palavras.
-`;
-
-      const { data: response, error } = await supabase.functions.invoke('generate-content-with-ai', {
-        body: { prompt }
-      });
-
-      if (error) {
-        throw error;
-      }
-
-      const posicionamentoGerado = typeof response === 'string' ? response : response.toString();
-      
-      // Salvar automaticamente
-      await saveField('posicionamento', posicionamentoGerado);
-      
-      setConteudo(prev => ({
-        ...prev,
-        posicionamento: posicionamentoGerado
-      }));
-
-      toast.success('Posicionamento gerado e salvo com sucesso!');
-    } catch (error) {
-      console.error('Erro ao gerar posicionamento:', error);
-      toast.error('Erro ao gerar posicionamento. Tente novamente.');
-    } finally {
-      setGerandoPosicionamento(false);
-    }
-  };
-
-  // Gerar 3 personas com IA baseado no onboarding, objetivos, posicionamento e frameworks
-  const gerarPersonasComIA = async () => {
-    setGerandoPersonas(true);
-
-    try {
-      const dadosOnboarding = await buscarDadosOnboarding();
-      const dadosObjetivos = await buscarDadosObjetivos();
-      
-      if (!validarDadosCompletos()) {
-        return;
-      }
-
-      // Construir prompt estruturado para gerar 3 personas
-      const frameworksTexto = componentesSelecionados.map((comp: any) => `${comp.nome}: ${comp.descricao}`).join('\n');
-      const especialistasTexto = conteudo.especialistas_selecionados?.map((esp: any) => `${esp.nome}: ${esp.descricao}`).join('\n') || '';
-
-      const prompt = `
-Baseando-se nas informações completas abaixo, gere 3 PERSONAS DISTINTAS para estratégia de marketing digital. Formate a resposta em JSON válido com a estrutura especificada.
-
-**INFORMAÇÕES DA EMPRESA:**
-- Nome: ${dadosOnboarding.nome_empresa}
-- Segmento: ${dadosOnboarding.segmento_atuacao}
-- Produtos/Serviços: ${dadosOnboarding.produtos_servicos}
-- Posicionamento: ${conteudo.posicionamento}
-
-**PÚBLICO-ALVO:**
-- Tipos: ${dadosOnboarding?.publico_alvo?.join(', ') || 'Não informado'}
-- Dores/Problemas: ${dadosOnboarding?.dores_problemas || 'Não informado'}
-- O que valorizam: ${dadosOnboarding?.valorizado || 'Não informado'}
-- Como encontram a empresa: ${dadosOnboarding?.como_encontram?.join(', ') || 'Não informado'}
-- Frequência de compra: ${dadosOnboarding.frequencia_compra}
-
-**ANÁLISE SWOT:**
-- Forças: ${(dadosObjetivos.analise_swot as any)?.forcas || dadosOnboarding.forcas}
-- Fraquezas: ${(dadosObjetivos.analise_swot as any)?.fraquezas || dadosOnboarding.fraquezas}
-- Oportunidades: ${(dadosObjetivos.analise_swot as any)?.oportunidades || dadosOnboarding.oportunidades}
-- Ameaças: ${(dadosObjetivos.analise_swot as any)?.ameacas || dadosOnboarding.ameacas}
-
-**OBJETIVOS ESTRATÉGICOS:**
-${JSON.stringify(dadosObjetivos.objetivos, null, 2)}
-
-**FRAMEWORKS DE CONTEÚDO SELECIONADOS:**
-${frameworksTexto}
-
-**ESPECIALISTAS SELECIONADOS:**
-${especialistasTexto}
-
-Gere 3 personas bem distintas que representem diferentes segmentos do público-alvo. Cada persona deve ser única e abordar diferentes aspectos do mercado.
-
-Formate a resposta em JSON válido com esta estrutura EXATA:
-{
-  "personas": [
-    {
-      "nome": "Nome da Persona",
-      "idade": "Faixa etária",
-      "profissao": "Profissão/Cargo",
-      "resumo": "Breve resumo em 2-3 linhas",
-      "dores": ["dor 1", "dor 2", "dor 3"],
-      "motivacoes": ["motivação 1", "motivação 2", "motivação 3"],
-      "canais_preferidos": ["canal 1", "canal 2", "canal 3"],
-      "comportamento_compra": "Como toma decisões de compra",
-      "objecoes": ["objeção 1", "objeção 2"],
-      "como_ajudar": "Como a empresa pode ajudar esta persona"
-    }
-  ]
-}
-
-IMPORTANTE: Retorne APENAS o JSON válido, sem texto adicional.
-`;
-
-      const { data: response, error } = await supabase.functions.invoke('generate-content-with-ai', {
-        body: { prompt }
-      });
-
-      if (error) {
-        throw error;
-      }
-
-      let personasGeradas;
-      try {
-        personasGeradas = typeof response === 'string' ? JSON.parse(response) : response;
-      } catch (parseError) {
-        console.error('Erro ao parsear resposta da IA:', parseError);
-        throw new Error('Resposta da IA não está em formato JSON válido');
-      }
-
-      // Validar estrutura das personas
-      if (!personasGeradas.personas || !Array.isArray(personasGeradas.personas) || personasGeradas.personas.length !== 3) {
-        throw new Error('IA não gerou 3 personas válidas');
-      }
-
-      // Salvar automaticamente como JSON
-      await saveField('persona', JSON.stringify(personasGeradas));
-      
-      setConteudo(prev => ({
-        ...prev,
-        persona: JSON.stringify(personasGeradas)
-      }));
-
-      toast.success('3 Personas geradas e salvas com sucesso!');
-    } catch (error) {
-      console.error('Erro ao gerar personas:', error);
-      toast.error('Erro ao gerar personas. Tente novamente.');
-    } finally {
-      setGerandoPersonas(false);
-    }
-  };
-
-  const saveField = async (field: keyof ConteudoEditorial, value: any) => {
-    setSalvando(true);
-    try {
-      const updateData = { [field]: value };
-      
-      if (conteudo.id) {
-        const { error } = await supabase
-          .from('conteudo_editorial')
-          .update(updateData)
-          .eq('id', conteudo.id);
-
-        if (error) throw error;
-      } else {
-        const { data, error } = await supabase
-          .from('conteudo_editorial')
-          .insert({
-            planejamento_id: planejamento.id,
-            ...updateData
-          })
-          .select()
-          .single();
-
-        if (error) throw error;
-        setConteudo(prev => ({ ...prev, id: data.id }));
-      }
-
-      setConteudo(prev => ({ ...prev, [field]: value }));
-      toast.success('Salvo com sucesso!');
-    } catch (error) {
-      console.error('Erro ao salvar:', error);
-      toast.error('Erro ao salvar. Tente novamente.');
-    } finally {
-      setSalvando(false);
-    }
-  };
-
-  const salvarPosicionamento = async () => {
-    if (!conteudo.posicionamento?.trim()) {
-      toast.error('Digite o posicionamento antes de salvar');
-      return;
-    }
-    await saveField('posicionamento', conteudo.posicionamento);
-  };
-
-  const salvarEspecialistas = async () => {
-    if (!conteudo.especialistas_selecionados?.length) {
-      toast.error('Selecione pelo menos um especialista antes de salvar');
-      return;
-    }
-    setSalvandoEspecialistas(true);
-    try {
-      await saveField('especialistas_selecionados', conteudo.especialistas_selecionados);
-    } finally {
-      setSalvandoEspecialistas(false);
-    }
-  };
-
-  const salvarFrameworks = async () => {
-    if (!componentesSelecionados?.length) {
-      toast.error('Selecione pelo menos um framework antes de salvar');
-      return;
-    }
-    setSalvandoFrameworks(true);
-    try {
-      await saveField('frameworks_selecionados', componentesSelecionados);
-    } finally {
-      setSalvandoFrameworks(false);
-    }
-  };
-
-  const salvarMissao = async () => {
-    if (!planejamento?.id) {
-      toast.error('Erro: Planejamento não encontrado');
-      return;
-    }
-
-    if (!conteudo.missao || conteudo.missao.trim() === '') {
-      toast.error('A missão não pode estar vazia');
-      return;
-    }
-
-    setSalvandoMissao(true);
-    try {
-      await saveField('missao', conteudo.missao);
-      toast.success('Missão salva com sucesso!');
-    } catch (error) {
-      console.error('Erro ao salvar missão:', error);
-      toast.error('Erro ao salvar missão');
-    } finally {
-      setSalvandoMissao(false);
-    }
-  };
-
-  const salvarPersonas = async () => {
-    if (!planejamento?.id) {
-      toast.error('Erro: Planejamento não encontrado');
-      return;
-    }
-
-    if (!conteudo.persona || conteudo.persona.trim() === '') {
-      toast.error('As personas não podem estar vazias');
-      return;
-    }
-
-    setSalvandoPersonas(true);
-    try {
-      await saveField('persona', conteudo.persona);
-      toast.success('Personas salvas com sucesso!');
-    } catch (error) {
-      console.error('Erro ao salvar personas:', error);
-      toast.error('Erro ao salvar personas');
-    } finally {
-      setSalvandoPersonas(false);
-    }
-  };
-
-  const saveAllSelections = async () => {
-    setSalvando(true);
-    try {
-      const updateData = {
-        frameworks_selecionados: componentesSelecionados,
-        especialistas_selecionados: conteudo.especialistas_selecionados,
-        missao: conteudo.missao,
-        posicionamento: conteudo.posicionamento,
-        persona: conteudo.persona
-      };
-
-      if (conteudo.id) {
-        const { error } = await supabase
-          .from('conteudo_editorial')
-          .update(updateData)
-          .eq('id', conteudo.id);
-
-        if (error) throw error;
-      } else {
-        const { data, error } = await supabase
-          .from('conteudo_editorial')
-          .insert({
-            planejamento_id: planejamento.id,
-            ...updateData
-          })
-          .select()
-          .single();
-
-        if (error) throw error;
-        setConteudo(prev => ({ ...prev, id: data.id }));
-      }
-
-      toast.success('Análise salva com sucesso!');
-    } catch (error) {
-      console.error('Erro ao salvar análise:', error);
-      toast.error('Erro ao salvar análise. Tente novamente.');
-    } finally {
-      setSalvando(false);
-    }
-  };
-
-  const resetAllSelections = async () => {
-    try {
-      if (conteudo.id) {
-        const { error } = await supabase
-          .from('conteudo_editorial')
-          .delete()
-          .eq('id', conteudo.id);
-
-        if (error) throw error;
-      }
-
-      setConteudo({
-        planejamento_id: planejamento.id,
-        frameworks_selecionados: [],
-        especialistas_selecionados: [],
-        missao: '',
-        posicionamento: '',
-        persona: ''
-      });
-      
-      setComponentesSelecionados([]);
-      
-      toast.success('Análise resetada com sucesso!');
-    } catch (error) {
-      console.error('Erro ao resetar análise:', error);
-      toast.error('Erro ao resetar análise. Tente novamente.');
-    }
-  };
-
-  const gerarCronogramaPostagens = (mes: number, ano: number) => {
-    const cronograma: Date[] = [];
-    const diasSemana = [1, 3, 5]; // Segunda, Quarta, Sexta
-    
-    const ultimoDiaDoMes = new Date(ano, mes + 1, 0).getDate();
-    
-    // Coletar todas as datas de Segunda, Quarta e Sexta do mês
-    for (let dia = 1; dia <= ultimoDiaDoMes; dia++) {
-      const data = new Date(ano, mes, dia);
-      if (diasSemana.includes(data.getDay())) {
-        cronograma.push(data);
-      }
-    }
-    
-    // Respeitar o limite exato de posts mensais da assinatura
-    const limitePosts = clienteAssinatura?.posts_mensais || 12;
-    return cronograma.slice(0, limitePosts);
-  };
-
-  const gerarConteudoEditorial = async () => {
-    if (!clienteAssinatura) {
-      toast.error('Dados da assinatura não encontrados');
-      return;
-    }
-
-    if (!conteudo.missao || !conteudo.posicionamento) {
-      toast.error('Missão e posicionamento são obrigatórios para gerar conteúdo');
-      return;
-    }
-
-    // Verificar se há componentes H.E.S.E.C selecionados
-    if (!componentesSelecionados || componentesSelecionados.length === 0) {
-      toast.error('Selecione pelo menos um componente H.E.S.E.C antes de gerar o conteúdo');
-      return;
-    }
-
-    // Verificar se há personas definidas
-    if (!conteudo.persona || conteudo.persona.trim().length === 0) {
-      toast.error('É necessário gerar e salvar as personas antes de criar o conteúdo editorial');
-      return;
-    }
-
-    setGerando(true);
-    try {
-      const cronograma = gerarCronogramaPostagens(currentDate.getMonth(), currentDate.getFullYear());
-      const quantidadePosts = cronograma.length;
-
-      console.log(`Gerando ${quantidadePosts} posts para plano de ${clienteAssinatura.posts_mensais} posts mensais`);
-
-      if (quantidadePosts === 0) {
-        toast.error('Não foi possível gerar cronograma de postagens para este mês');
-        return;
-      }
-
-      // Extrair personas do JSON
-      let personas = [];
-      try {
-        const personasData = JSON.parse(conteudo.persona);
-        personas = personasData.personas || [];
-      } catch (error) {
-        console.error('Erro ao fazer parse das personas:', error);
-        toast.error('Erro ao processar personas. Gere novamente.');
-        return;
-      }
-
-      // Distribuir componentes H.E.S.E.C pelos posts
-      const componentesDistribuidos = [];
-      componentesSelecionados.forEach((comp, index) => {
-        const postsParaEsteComponente = Math.ceil(quantidadePosts / componentesSelecionados.length);
-        for (let i = 0; i < postsParaEsteComponente && componentesDistribuidos.length < quantidadePosts; i++) {
-          componentesDistribuidos.push(comp);
-        }
-      });
-
-      // Prompt seguindo modelo BEX
-      const prompt = `
-Gere um calendário editorial seguindo o MODELO BEX para marketing digital profissional.
-
-**CONTEXTO DA EMPRESA:**
-Missão: ${conteudo.missao}
-Posicionamento: ${conteudo.posicionamento}
-
-**PERSONAS DEFINIDAS:**
-${personas.map((p, i) => `PERSONA ${i+1}: ${p.nome} - ${p.descricao_breve} - Dores: ${p.principais_dores}`).join('\n')}
-
-**COMPONENTES H.E.S.E.C SELECIONADOS:**
-${componentesSelecionados.join(', ')}
-
-**ESPECIALISTAS DE REFERÊNCIA:**
-${conteudo.especialistas_selecionados?.join(', ') || 'Marketing estratégico'}
-
-**CRONOGRAMA:**
-${cronograma.map((data, index) => {
-  const formattedDate = data.toLocaleDateString('pt-BR');
-  const dayOfWeek = data.toLocaleDateString('pt-BR', { weekday: 'long' });
-  const componenteAssociado = componentesDistribuidos[index] || componentesSelecionados[0];
-  const personaIndex = index % personas.length;
-  const persona = personas[personaIndex];
-  
-  return `${index + 1}. ${formattedDate} (${dayOfWeek}) - Componente: ${componenteAssociado} - Persona: ${persona?.nome || 'Persona 1'}`;
-}).join('\n')}
-
-**DIRETRIZES:**
-1. Gerar exatamente ${quantidadePosts} posts
-2. Cada post deve seguir o modelo BEX com legenda completa (150-300 caracteres)
-3. Incluir 5-8 hashtags relevantes no final de cada legenda
-4. Alternar entre as personas definidas
-5. Cada post deve refletir o componente H.E.S.E.C específico
-6. Incluir call-to-action apropriado
-7. Tipos criativos: 70% posts simples, 20% carrossel, 10% stories
-8. Formatos: ${clienteAssinatura?.reels_suporte ? '60% posts, 30% reels, 10% stories' : '80% posts, 20% stories'}
-
-Gere um JSON com array de posts seguindo esta estrutura:
-[
-  {
-    "titulo": "Título engajador do post",
-    "objetivo_postagem": "Engajamento|Vendas|Educação|Relacionamento|Branding",
-     "tipo_criativo": "post|carrossel|stories",
-     "formato_postagem": "post|reel|stories",
-    "legenda": "Legenda completa seguindo modelo BEX com emojis, call-to-action e hashtags #tag1 #tag2 #tag3 #tag4 #tag5",
-    "componente_hesec": "componente_do_framework",
-    "persona_alvo": "nome_da_persona"
-  }
-]
-
-IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicional.`;
+        Gere uma missão empresarial clara, inspiradora e focada no propósito da empresa. 
+        A missão deve ser concisa (máximo 2 frases) e expressar o que a empresa faz, 
+        para quem faz e qual o impacto que busca causar.`;
 
       const { data, error } = await supabase.functions.invoke('generate-content-with-ai', {
         body: { prompt }
@@ -1044,453 +563,771 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
 
       if (error) throw error;
 
-      let postsData;
-      try {
-        // A edge function pode retornar diferentes estruturas
-        const responseText = data.generatedText || data.content || data;
-        if (typeof responseText === 'string') {
-          postsData = JSON.parse(responseText);
-        } else {
-          postsData = responseText;
+      const missaoGerada = data.generatedText?.trim();
+      if (missaoGerada) {
+        setConteudo(prev => ({
+          ...prev,
+          missao: missaoGerada
+        }));
+        
+        toast({
+          title: "Sucesso!",
+          description: "Missão gerada com IA! Revise e salve se estiver satisfeito."
+        });
+      }
+    } catch (error) {
+      console.error('Erro ao gerar missão:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao gerar missão com IA. Tente novamente.",
+        variant: "destructive"
+      });
+    } finally {
+      setGerandoMissao(false);
+    }
+  };
+
+  const gerarPosicionamentoComIA = async () => {
+    if (!dadosOnboarding || !dadosObjetivos) {
+      toast({
+        title: "Erro",
+        description: "Dados de onboarding ou objetivos não encontrados",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setGerandoPosicionamento(true);
+    try {
+      const prompt = `Com base nas informações da empresa ${dadosOnboarding.nome_empresa}:
+        
+        Segmento: ${dadosOnboarding.segmento_atuacao}
+        Produtos/Serviços: ${dadosOnboarding.produtos_servicos}
+        Público-alvo: ${dadosOnboarding?.publico_alvo?.join(', ') || 'não definido'}
+        Diferenciais: ${dadosOnboarding.diferenciais || 'Não definidos'}
+        Concorrentes: ${dadosOnboarding.concorrentes_diretos || 'Não identificados'}
+        Valores: ${dadosOnboarding.valores_principais || 'Não definidos'}
+        Tom de voz desejado: ${dadosOnboarding?.tom_voz?.join(', ') || 'Não definido'}
+        Como quer ser lembrada: ${dadosOnboarding.como_lembrada || 'Não definido'}
+        
+        Crie um posicionamento de marca estratégico que defina:
+        1. Como a marca se diferencia dos concorrentes
+        2. Qual valor único entrega ao cliente
+        3. Como quer ser percebida pelo mercado
+        4. Seu tom de comunicação e personalidade
+        
+        O posicionamento deve ser claro, único e memorável (máximo 4 parágrafos).`;
+
+      const { data, error } = await supabase.functions.invoke('generate-content-with-ai', {
+        body: { prompt }
+      });
+
+      if (error) throw error;
+
+      const posicionamentoGerado = data.generatedText?.trim();
+      if (posicionamentoGerado) {
+        setConteudo(prev => ({
+          ...prev,
+          posicionamento: posicionamentoGerado
+        }));
+        
+        toast({
+          title: "Sucesso!",
+          description: "Posicionamento gerado com IA! Revise e salve se estiver satisfeito."
+        });
+      }
+    } catch (error) {
+      console.error('Erro ao gerar posicionamento:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao gerar posicionamento com IA. Tente novamente.",
+        variant: "destructive"
+      });
+    } finally {
+      setGerandoPosicionamento(false);
+    }
+  };
+
+  const gerarPersonasComIA = async () => {
+    if (!dadosOnboarding || !dadosObjetivos) {
+      toast({
+        title: "Erro",
+        description: "Dados de onboarding ou objetivos não encontrados",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setGerandoPersonas(true);
+    try {
+      const prompt = `Com base nas informações da empresa ${dadosOnboarding.nome_empresa}:
+        
+        Segmento: ${dadosOnboarding.segmento_atuacao}
+        Produtos/Serviços: ${dadosOnboarding.produtos_servicos}
+        Público-alvo: ${dadosOnboarding?.publico_alvo?.join(', ') || 'não definido'}
+        Dores/Problemas dos clientes: ${dadosOnboarding.dores_problemas}
+        O que é valorizado pelos clientes: ${dadosOnboarding.valorizado || 'Não definido'}
+        Como encontram a empresa: ${dadosOnboarding?.como_encontram?.join(', ') || 'Não definido'}
+        Tipos de clientes: ${dadosOnboarding.tipos_clientes || 'Não definido'}
+        
+        Crie 2-3 personas detalhadas dos clientes ideais, incluindo para cada uma:
+        1. Nome e dados demográficos
+        2. Comportamentos e hábitos
+        3. Dores e necessidades específicas
+        4. Objetivos e motivações
+        5. Como consome conteúdo/mídia
+        6. Linguagem e tom preferidos
+        
+        Seja específico e realista, criando personas que ajudem na criação de conteúdo direcionado.`;
+
+      const { data, error } = await supabase.functions.invoke('generate-content-with-ai', {
+        body: { prompt }
+      });
+
+      if (error) throw error;
+
+      const personasGeradas = data.generatedText?.trim();
+      if (personasGeradas) {
+        setConteudo(prev => ({
+          ...prev,
+          persona: personasGeradas
+        }));
+        
+        toast({
+          title: "Sucesso!",
+          description: "Personas geradas com IA! Revise e salve se estiver satisfeito."
+        });
+      }
+    } catch (error) {
+      console.error('Erro ao gerar personas:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao gerar personas com IA. Tente novamente.",
+        variant: "destructive"
+      });
+    } finally {
+      setGerandoPersonas(false);
+    }
+  };
+
+  const salvarCampo = async (campo: keyof ConteudoEditorial, valor: any, estadoSalvando: React.Dispatch<React.SetStateAction<boolean>>) => {
+    estadoSalvando(true);
+    try {
+      const dadosParaSalvar = {
+        planejamento_id: planejamento.id,
+        [campo]: valor
+      };
+
+      const { data: existingData } = await supabase
+        .from('conteudo_editorial')
+        .select('id')
+        .eq('planejamento_id', planejamento.id)
+        .maybeSingle();
+
+      if (existingData) {
+        // Atualizar registro existente
+        const { error } = await supabase
+          .from('conteudo_editorial')
+          .update(dadosParaSalvar)
+          .eq('planejamento_id', planejamento.id);
+
+        if (error) throw error;
+      } else {
+        // Criar novo registro
+        const { error } = await supabase
+          .from('conteudo_editorial')
+          .insert(dadosParaSalvar);
+
+        if (error) throw error;
+      }
+
+      toast({
+        title: "Sucesso!",
+        description: `${campo} salvo com sucesso!`
+      });
+
+    } catch (error) {
+      console.error(`Erro ao salvar ${campo}:`, error);
+      toast({
+        title: "Erro",
+        description: `Erro ao salvar ${campo}. Tente novamente.`,
+        variant: "destructive"
+      });
+    } finally {
+      estadoSalvando(false);
+    }
+  };
+
+  const salvarTodas = async () => {
+    setSalvando(true);
+    try {
+      const dadosParaSalvar = {
+        planejamento_id: planejamento.id,
+        missao: conteudo.missao,
+        posicionamento: conteudo.posicionamento,
+        persona: conteudo.persona,
+        frameworks_selecionados: componentesSelecionados,
+        especialistas_selecionados: conteudo.especialistas_selecionados
+      };
+
+      const { data: existingData } = await supabase
+        .from('conteudo_editorial')
+        .select('id')
+        .eq('planejamento_id', planejamento.id)
+        .maybeSingle();
+
+      if (existingData) {
+        const { error } = await supabase
+          .from('conteudo_editorial')
+          .update(dadosParaSalvar)
+          .eq('planejamento_id', planejamento.id);
+
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from('conteudo_editorial')
+          .insert(dadosParaSalvar);
+
+        if (error) throw error;
+      }
+
+      toast({
+        title: "Sucesso!",
+        description: "Todas as seleções foram salvas!"
+      });
+
+    } catch (error) {
+      console.error('Erro ao salvar seleções:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao salvar seleções. Tente novamente.",
+        variant: "destructive"
+      });
+    } finally {
+      setSalvando(false);
+    }
+  };
+
+  const resetarAnaliseEditorial = async () => {
+    try {
+      const { error } = await supabase
+        .from('conteudo_editorial')
+        .delete()
+        .eq('planejamento_id', planejamento.id);
+
+      if (error) throw error;
+
+      // Resetar estado local
+      setConteudo({
+        planejamento_id: planejamento.id,
+        frameworks_selecionados: [],
+        especialistas_selecionados: []
+      });
+      setComponentesSelecionados([]);
+
+      toast({
+        title: "Sucesso!",
+        description: "Análise editorial resetada com sucesso!"
+      });
+
+    } catch (error) {
+      console.error('Erro ao resetar análise:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao resetar análise. Tente novamente.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const gerarConteudoEditorial = useCallback(async () => {
+    if (!validarDadosCompletos()) {
+      return;
+    }
+
+    setIsGeneratingContent(true);
+    
+    try {
+      const componentesSelecionadosTexto = componentesSelecionados.length > 0 
+        ? componentesSelecionados.map(comp => {
+            const [framework, componente] = comp.split(': ');
+            const frameworkObj = frameworks.find(f => f.nome === framework);
+            const componenteObj = frameworkObj?.componentes.find(c => c.nome === componente);
+            return `${componente} (${componenteObj?.descricao || ''})`;
+          }).join(', ')
+        : 'Nenhum componente específico selecionado';
+
+      const especialistasTexto = conteudo.especialistas_selecionados?.length 
+        ? conteudo.especialistas_selecionados.map(esp => {
+            const especialistaObj = especialistas.find(e => e.nome === esp);
+            return `${esp} (${especialistaObj?.descricao || ''})`;
+          }).join(', ')
+        : 'Nenhum especialista específico selecionado';
+
+      const prompt = `Como especialista em marketing de conteúdo, crie um planejamento editorial detalhado com base nos seguintes dados:
+
+DADOS DA EMPRESA:
+- Nome: ${dadosOnboarding?.nome_empresa}
+- Segmento: ${dadosOnboarding?.segmento_atuacao}
+- Produtos/Serviços: ${dadosOnboarding?.produtos_servicos}
+- Público-alvo: ${dadosOnboarding?.publico_alvo?.join(', ') || 'Não definido'}
+
+ANÁLISE ESTRATÉGICA:
+Missão: ${conteudo.missao}
+Posicionamento: ${conteudo.posicionamento}
+Personas: ${conteudo.persona}
+
+FRAMEWORKS SELECIONADOS: ${componentesSelecionadosTexto}
+ESPECIALISTAS DE REFERÊNCIA: ${especialistasTexto}
+
+ASSINATURA DO CLIENTE: ${clienteAssinatura?.nome || 'Não definida'} (${clienteAssinatura?.posts_mensais || 0} posts mensais)
+
+INSTRUÇÕES:
+1. Crie 30 ideias de posts seguindo os frameworks e especialistas selecionados
+2. Varie entre posts educativos, promocionais, de relacionamento e de engajamento
+3. Use as personas definidas para direcionar o conteúdo
+4. Inclua diferentes formatos: posts carrossel, vídeos, imagens simples, stories
+5. Para cada post, defina: título, tipo de conteúdo, objetivo, formato sugerido
+6. Distribua os posts ao longo do mês de forma estratégica
+
+Gere o conteúdo editorial completo agora:`;
+
+      const { data, error } = await supabase.functions.invoke('generate-content-with-ai', {
+        body: { prompt }
+      });
+
+      if (error) throw error;
+
+      if (data?.generatedText) {
+        setConteudo(prev => ({
+          ...prev,
+          conteudo_gerado: data.generatedText
+        }));
+
+        // Parse and extract posts from generated content
+        try {
+          const postsData = parseGeneratedPosts(data.generatedText);
+          setPostsGerados(postsData);
+        } catch (parseError) {
+          console.error('Erro ao parsear posts:', parseError);
         }
-      } catch (e) {
-        console.error('Erro ao fazer parse do JSON:', e);
-        toast.error('Erro no formato da resposta da IA. Tente novamente.');
-        return;
+        
+        toast({
+          title: "Sucesso!",
+          description: "Conteúdo editorial gerado com sucesso!"
+        });
       }
-
-      if (!Array.isArray(postsData) || postsData.length === 0) {
-        console.error('Resposta inválida da IA:', postsData);
-        toast.error('IA não retornou posts válidos');
-        return;
-      }
-
-      const postsComData = postsData.slice(0, quantidadePosts).map((post: any, index: number) => ({
-        ...post,
-        data_postagem: cronograma[index].toISOString().split('T')[0],
-        planejamento_id: planejamento.id
-      }));
-
-      setPostsGerados(postsComData);
-      await salvarPostsCalendario(postsComData);
-
-      toast.success(`${postsComData.length} posts gerados seguindo modelo BEX e salvos com sucesso!`);
-
     } catch (error) {
       console.error('Erro ao gerar conteúdo:', error);
-      toast.error('Erro ao gerar conteúdo. Tente novamente.');
+      toast({
+        title: "Erro",
+        description: "Erro ao gerar conteúdo editorial. Tente novamente.",
+        variant: "destructive"
+      });
     } finally {
-      setGerando(false);
+      setIsGeneratingContent(false);
     }
+  }, [planejamento.id, conteudo.missao, conteudo.posicionamento, conteudo.persona, componentesSelecionados, conteudo.especialistas_selecionados]);
+
+  // Parse generated content to extract posts
+  const parseGeneratedPosts = (content: string) => {
+    // Simple parsing logic - in real implementation, this would be more sophisticated
+    const posts = [];
+    const lines = content.split('\n').filter(line => line.trim().length > 0);
+    
+    let currentDay = 1;
+    for (const line of lines) {
+      if (line.includes('Dia') || line.includes('Post')) {
+        posts.push({
+          id: `generated-${Date.now()}-${posts.length}`,
+          titulo: line.substring(0, 50),
+          tipo_criativo: 'post',
+          formato_postagem: 'post',
+          objetivo_postagem: 'engajamento',
+          data_postagem: `${currentDate.getFullYear()}-${(currentDate.getMonth() + 1).toString().padStart(2, '0')}-${currentDay.toString().padStart(2, '0')}`,
+          planejamento_id: planejamento.id
+        });
+        currentDay++;
+        if (currentDay > 31) currentDay = 1;
+      }
+    }
+    
+    return posts.slice(0, 30); // Limit to 30 posts
   };
 
-  const salvarPostsCalendario = async (novosPost: any[]) => {
+  // Save generated posts to database
+  const salvarPosts = useCallback(async () => {
+    if (postsGerados.length === 0) {
+      toast({
+        title: "Aviso",
+        description: "Nenhum post gerado para salvar.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsSavingPosts(true);
+    
     try {
-      // Deletar posts existentes do mês atual
-      const { error: deleteError } = await supabase
-        .from('posts_planejamento')
-        .delete()
-        .eq('planejamento_id', planejamento.id)
-        .gte('data_postagem', `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-01`)
-        .lt('data_postagem', `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 2).padStart(2, '0')}-01`);
-
-      if (deleteError) throw deleteError;
-
-      // Inserir novos posts
-      const postsParaInserir = novosPost.map(post => ({
-        planejamento_id: planejamento.id,
-        titulo: post.titulo,
-        objetivo_postagem: post.objetivo_postagem,
-        tipo_criativo: post.tipo_criativo,
-        formato_postagem: post.formato_postagem,
-        data_postagem: post.data_postagem
-      }));
-
       const { data, error } = await supabase
         .from('posts_planejamento')
-        .insert(postsParaInserir)
-        .select();
+        .insert(postsGerados.map(post => ({
+          titulo: post.titulo,
+          tipo_criativo: post.tipo_criativo,
+          formato_postagem: post.formato_postagem,
+          objetivo_postagem: post.objetivo_postagem,
+          data_postagem: post.data_postagem,
+          planejamento_id: planejamento.id
+        })));
 
       if (error) throw error;
 
-      // Atualizar estado local com os novos posts
-      const updatedPosts = [...posts.filter(p => !novosPost.find(np => np.data_postagem === p.data_postagem)), ...data];
-      setPosts(updatedPosts);
-      
-      toast.success('Posts salvos no calendário!');
+      // Add saved posts to the posts list
+      setPosts([...posts, ...postsGerados]);
+      setPostsGerados([]); // Clear generated posts
+
+      toast({
+        title: "Sucesso!",
+        description: `${postsGerados.length} posts salvos com sucesso!`
+      });
+
     } catch (error) {
       console.error('Erro ao salvar posts:', error);
-      toast.error('Erro ao salvar posts no calendário');
-    }
-  };
-
-  const atualizarDataPost = async (postId: string, novaData: string) => {
-    try {
-      setAtualizandoPost(postId);
-      
-      const { error } = await supabase
-        .from('posts_planejamento')
-        .update({ data_postagem: novaData })
-        .eq('id', postId);
-
-      if (error) throw error;
-
-      // Atualizar estado local
-      const updatedPosts = posts.map(post => 
-        post.id === postId ? { ...post, data_postagem: novaData } : post
-      );
-      setPosts(updatedPosts);
-
-      // Atualizar posts gerados também se existir
-      if (postsGerados.length > 0) {
-        const updatedPostsGerados = postsGerados.map(post => 
-          post.id === postId ? { ...post, data_postagem: novaData } : post
-        );
-        setPostsGerados(updatedPostsGerados);
-      }
-
-      toast.success('Data do post atualizada!');
-    } catch (error) {
-      console.error('Erro ao atualizar post:', error);
-      toast.error('Erro ao atualizar data do post');
+      toast({
+        title: "Erro",
+        description: "Erro ao salvar posts. Tente novamente.",
+        variant: "destructive"
+      });
     } finally {
-      setAtualizandoPost(null);
+      setIsSavingPosts(false);
     }
-  };
-
-  const handleDragStart = (event: DragStartEvent) => {
-    const postId = event.active.id as string;
-    const post = [...posts, ...postsGerados].find(p => p.id === postId);
-    console.log('Drag started:', { postId, post: post?.titulo });
-    setDraggedPost(post);
-  };
-
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-    setDraggedPost(null);
-
-    console.log('Drag ended:', { 
-      activeId: active.id, 
-      overId: over?.id,
-      activePost: [...posts, ...postsGerados].find(p => p.id === active.id)?.titulo
-    });
-
-    if (!over) {
-      console.log('No drop target found');
-      toast.error('Não foi possível mover o post. Tente novamente.');
-      return;
-    }
-
-    const postId = active.id as string;
-    const newDateStr = over.id as string;
-
-    console.log('Attempting to move post:', postId, 'to date:', newDateStr);
-
-    // Validar se é uma data válida
-    if (!newDateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
-      console.log('Invalid date format:', newDateStr);
-      toast.error('Data inválida para mover o post.');
-      return;
-    }
-
-    // Verificar se é uma data válida
-    if (!newDateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
-      console.log('Invalid date format:', newDateStr);
-      return;
-    }
-
-    // Encontrar o post nos arrays
-    const post = [...posts, ...postsGerados].find(p => p.id === postId);
-    if (!post) {
-      console.log('Post not found:', postId);
-      return;
-    }
-    
-    if (post.data_postagem === newDateStr) {
-      console.log('Post already on this date');
-      return;
-    }
-
-    console.log('Moving post from', post.data_postagem, 'to', newDateStr);
-    atualizarDataPost(postId, newDateStr);
-  };
-
-  const toggleEspecialista = (especialista: { nome: string; descricao: string }) => {
-    const atual = conteudo.especialistas_selecionados || [];
-    const novaSelecao = atual.includes(especialista.nome)
-      ? atual.filter(e => e !== especialista.nome)
-      : [...atual, especialista.nome];
-    
-    setConteudo(prev => ({ ...prev, especialistas_selecionados: novaSelecao }));
-  };
-
-  const toggleComponenteFramework = (componente: string) => {
-    const atual = componentesSelecionados || [];
-    const novaSelecao = atual.includes(componente)
-      ? atual.filter(c => c !== componente)
-      : [...atual, componente];
-    
-    setComponentesSelecionados(novaSelecao);
-  };
-
-  const toggleFramework = (framework: string) => {
-    const atual = conteudo.frameworks_selecionados || [];
-    const novaSelecao = atual.includes(framework)
-      ? atual.filter(f => f !== framework)
-      : [...atual, framework];
-    
-    setConteudo(prev => ({ ...prev, frameworks_selecionados: novaSelecao }));
-  };
+  }, [postsGerados, planejamento.id]);
 
   const navigateMonth = (direction: 'prev' | 'next') => {
     setCurrentDate(prev => {
-      const newDate = new Date(prev);
       if (direction === 'prev') {
-        newDate.setMonth(prev.getMonth() - 1);
+        return subMonths(prev, 1);
       } else {
-        newDate.setMonth(prev.getMonth() + 1);
+        return addMonths(prev, 1);
       }
-      return newDate;
     });
   };
 
-  const getDaysInMonth = () => {
-    const year = currentDate.getFullYear();
-    const month = currentDate.getMonth();
-    const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
-    const daysInMonth = lastDay.getDate();
-    const startingDayOfWeek = firstDay.getDay();
-
-    const days = [];
+  const getPostsForMonth = () => {
+    const start = startOfMonth(currentDate);
+    const end = endOfMonth(currentDate);
+    const days = eachDayOfInterval({ start, end });
     
-    // Adicionar dias vazios do início
-    for (let i = 0; i < startingDayOfWeek; i++) {
-      days.push(null);
-    }
-    
-    // Adicionar dias do mês
-    for (let day = 1; day <= daysInMonth; day++) {
-      days.push(day);
-    }
-    
-    return days;
-  };
-
-  const getPostsForDay = (day: number) => {
-    if (!day) return [];
-    const dateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-    
-    // Combinar posts do banco com posts gerados localmente
-    const postsFromDb = posts.filter(post => post.data_postagem === dateStr);
-    const postsFromGenerated = postsGerados.filter(post => {
+    const monthPosts = posts.filter(post => {
       const postDate = new Date(post.data_postagem);
-      const postDateStr = `${postDate.getFullYear()}-${String(postDate.getMonth() + 1).padStart(2, '0')}-${String(postDate.getDate()).padStart(2, '0')}`;
-      return postDateStr === dateStr;
+      return postDate >= start && postDate <= end;
     });
-    
-    // Combinar e remover duplicatas baseado no título
-    const allPosts = [...postsFromDb, ...postsFromGenerated];
-    const uniquePosts = allPosts.filter((post, index, self) => 
-      index === self.findIndex(p => p.titulo === post.titulo)
-    );
-    
-    return uniquePosts;
+
+    return days.map(day => {
+      const dayPosts = monthPosts.filter(post => 
+        isSameDay(new Date(post.data_postagem), day)
+      );
+      
+      return {
+        day: day.getDate(),
+        date: format(day, 'yyyy-MM-dd'),
+        posts: dayPosts,
+        isToday: isToday(day)
+      };
+    });
   };
 
   const getFormatIcon = (formato: string) => {
     switch (formato) {
-      case 'post': return '📝';
-      case 'stories': return '📱';
-      case 'reels': return '🎬';
-      case 'carousel': return '📸';
-      default: return '📝';
+      case 'post':
+        return '📝';
+      case 'stories':
+        return '📱';
+      case 'reel':
+        return '🎬';
+      default:
+        return '📄';
     }
   };
 
-  const hasCompleteAnalysis = () => {
-    return conteudo.missao && 
-           conteudo.posicionamento && 
-           componentesSelecionados.length > 0 && 
-           (conteudo.especialistas_selecionados?.length || 0) > 0;
-  };
+  function handleDragStart(event: DragStartEvent) {
+    const postId = event.active.id as string;
+    setActiveId(postId);
+    onDragStart(postId);
+  }
+
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    setActiveId(null);
+    onDragEnd();
+
+    if (!over) return;
+
+    const draggedPostId = active.id as string;
+    const droppedDay = parseInt(over.id as string);
+    
+    if (isNaN(droppedDay)) return;
+
+    // Use the drag drop hook to handle the drop
+    onDrop(draggedPostId, droppedDay, currentDate);
+  }
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center p-8">
+      <div className="flex items-center justify-center py-8">
         <Loader2 className="h-6 w-6 animate-spin" />
         <span className="ml-2">Carregando...</span>
       </div>
     );
   }
 
+  const columns = [
+    {
+      key: "data_postagem",
+      label: "Data",
+      render: (row: any) => {
+        const date = new Date(row.data_postagem);
+        return format(date, "dd/MM/yyyy", { locale: ptBR });
+      },
+    },
+    {
+      accessorKey: "titulo",
+      header: "Título",
+    },
+    {
+      accessorKey: "formato_postagem",
+      header: "Formato",
+      cell: ({ row }: any) => {
+        const formato = row.getValue("formato_postagem");
+        return (
+          <Badge variant="outline">
+            {getFormatIcon(formato)} {formato}
+          </Badge>
+        );
+      },
+    },
+    {
+      accessorKey: "tipo_criativo",
+      header: "Tipo",
+      cell: ({ row }: any) => {
+        const tipo = row.getValue("tipo_criativo");
+        return (
+          <Badge variant="secondary">
+            {tipo === 'imagem' ? '🖼️' : '🎬'} {tipo}
+          </Badge>
+        );
+      },
+    },
+    {
+      accessorKey: "objetivo_postagem",
+      header: "Objetivo",
+      cell: ({ row }: any) => {
+        const objetivo = row.getValue("objetivo_postagem");
+        return (
+          <Badge variant="outline">
+            🎯 {objetivo?.replace('_', ' ')}
+          </Badge>
+        );
+      },
+    },
+    {
+      id: "actions",
+      header: "Ações",
+      cell: ({ row }: any) => (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => onPreviewPost(row.original)}
+        >
+          <Eye className="h-4 w-4" />
+        </Button>
+      ),
+    },
+  ];
+
   return (
     <div className="space-y-6">
       <Tabs defaultValue="missao" className="w-full">
         <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="missao" className="flex items-center gap-2">
-            <Target className="h-4 w-4" />
-            Missão
-          </TabsTrigger>
-          <TabsTrigger value="posicionamento" className="flex items-center gap-2">
-            <Users className="h-4 w-4" />
-            Posicionamento
-          </TabsTrigger>
-          <TabsTrigger value="conteudo" className="flex items-center gap-2">
-            <BookOpen className="h-4 w-4" />
-            Conteúdo Editorial
-          </TabsTrigger>
+          <TabsTrigger value="missao">Missão</TabsTrigger>
+          <TabsTrigger value="posicionamento">Posicionamento</TabsTrigger>
+          <TabsTrigger value="conteudo">Conteúdo</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="missao" className="space-y-4">
+        <TabsContent value="missao" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Missão da Empresa</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <Target className="h-5 w-5" />
+                Missão da Empresa
+              </CardTitle>
+              <CardDescription>
+                Defina a missão da empresa ou gere automaticamente com IA
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex gap-2 mb-2">
-                <Button 
+              <div className="flex gap-2">
+                <Button
                   onClick={gerarMissaoComIA}
-                  disabled={gerandoMissao}
-                  size="sm"
+                  disabled={gerandoMissao || !dadosOnboarding}
                   variant="outline"
-                  className="gap-2"
+                  size="sm"
                 >
                   {gerandoMissao ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Gerando...
+                    </>
                   ) : (
-                    <Sparkles className="h-4 w-4" />
+                    <>
+                      <Brain className="mr-2 h-4 w-4" />
+                      Gerar com IA
+                    </>
                   )}
-                  Gerar com IA
                 </Button>
-              </div>
-              <Textarea
-                placeholder="Descreva a missão da empresa..."
-                value={conteudo.missao || ''}
-                onChange={(e) => setConteudo(prev => ({ ...prev, missao: e.target.value }))}
-                rows={4}
-                disabled={gerandoMissao}
-              />
-              
-              {/* Botão de salvar no final da seção */}
-              <div className="flex justify-end">
-                <Button 
-                  onClick={salvarMissao}
-                  disabled={salvandoMissao || !conteudo.missao?.trim()}
+                <Button
+                  onClick={() => salvarCampo('missao', conteudo.missao, setSalvandoMissao)}
+                  disabled={salvandoMissao || !conteudo.missao}
                   size="sm"
-                  className="gap-2"
                 >
                   {salvandoMissao ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Salvando...
+                    </>
                   ) : (
-                    <Save className="h-4 w-4" />
+                    <>
+                      <Save className="mr-2 h-4 w-4" />
+                      Salvar
+                    </>
                   )}
-                  Salvar Missão
                 </Button>
               </div>
+              
+              <Textarea
+                placeholder="Defina a missão da empresa..."
+                value={conteudo.missao || ''}
+                onChange={(e) => setConteudo(prev => ({ ...prev, missao: e.target.value }))}
+                className="min-h-[120px]"
+              />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="h-5 w-5" />
+                Personas
+              </CardTitle>
+              <CardDescription>
+                Defina as personas do público-alvo ou gere automaticamente com IA
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex gap-2">
+                <Button
+                  onClick={gerarPersonasComIA}
+                  disabled={gerandoPersonas || !dadosOnboarding}
+                  variant="outline"
+                  size="sm"
+                >
+                  {gerandoPersonas ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Gerando...
+                    </>
+                  ) : (
+                    <>
+                      <Brain className="mr-2 h-4 w-4" />
+                      Gerar com IA
+                    </>
+                  )}
+                </Button>
+                <Button
+                  onClick={() => salvarCampo('persona', conteudo.persona, setSalvandoPersonas)}
+                  disabled={salvandoPersonas || !conteudo.persona}
+                  size="sm"
+                >
+                  {salvandoPersonas ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Salvando...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="mr-2 h-4 w-4" />
+                      Salvar
+                    </>
+                  )}
+                </Button>
+              </div>
+              
+              <Textarea
+                placeholder="Descreva as personas do público-alvo..."
+                value={conteudo.persona || ''}
+                onChange={(e) => setConteudo(prev => ({ ...prev, persona: e.target.value }))}
+                className="min-h-[200px]"
+              />
             </CardContent>
           </Card>
         </TabsContent>
 
-        <TabsContent value="posicionamento" className="space-y-4">
+        <TabsContent value="posicionamento" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Posicionamento da Marca</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <Award className="h-5 w-5" />
+                Posicionamento da Marca
+              </CardTitle>
+              <CardDescription>
+                Defina o posicionamento estratégico da marca ou gere automaticamente com IA
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="posicionamento">Posicionamento da Marca</Label>
-                  <div className="flex gap-2">
-                    <Button 
-                      onClick={gerarPosicionamentoComIA}
-                      disabled={gerandoPosicionamento}
-                      variant="outline"
-                      size="sm"
-                      className="gap-2"
-                    >
-                      {gerandoPosicionamento ? (
-                        <>
-                          <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                          Gerando...
-                        </>
-                      ) : (
-                        <>
-                          <Sparkles className="h-4 w-4" />
-                          Gerar com IA
-                        </>
-                      )}
-                    </Button>
-                    <Button 
-                      onClick={salvarPosicionamento}
-                      disabled={salvandoPosicionamento || !conteudo.posicionamento?.trim()}
-                      size="sm"
-                      className="gap-2"
-                    >
-                      {salvandoPosicionamento ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <Save className="h-4 w-4" />
-                      )}
-                      Salvar
-                    </Button>
-                  </div>
-                </div>
-                <Textarea
-                  id="posicionamento"
-                  placeholder="Descreva o posicionamento da marca ou use a IA para gerar automaticamente..."
-                  value={conteudo.posicionamento || ''}
-                  onChange={(e) => setConteudo(prev => ({ ...prev, posicionamento: e.target.value }))}
-                  rows={6}
-                  disabled={gerandoPosicionamento}
-                  onBlur={() => saveField('posicionamento', conteudo.posicionamento)}
-                />
-                <p className="text-xs text-muted-foreground">
-                  A IA irá gerar o posicionamento baseado nos dados de onboarding do cliente. Máximo 700 palavras.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Especialistas de Referência</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                {especialistas.map((especialista) => (
-                  <Tooltip key={especialista.nome}>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant={conteudo.especialistas_selecionados?.includes(especialista.nome) ? "default" : "outline"}
-                        onClick={() => toggleEspecialista(especialista)}
-                        className="h-auto py-2"
-                      >
-                        {especialista.nome}
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent side="top" className="max-w-xs">
-                      <p>{especialista.descricao}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                ))}
-              </div>
-              
-              <div className="flex justify-end">
-                <Button 
-                  onClick={salvarEspecialistas}
-                  disabled={salvandoEspecialistas || !conteudo.especialistas_selecionados?.length}
+              <div className="flex gap-2">
+                <Button
+                  onClick={gerarPosicionamentoComIA}
+                  disabled={gerandoPosicionamento || !dadosOnboarding}
+                  variant="outline"
                   size="sm"
-                  className="gap-2"
                 >
-                  {salvandoEspecialistas ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
+                  {gerandoPosicionamento ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Gerando...
+                    </>
                   ) : (
-                    <Save className="h-4 w-4" />
+                    <>
+                      <Brain className="mr-2 h-4 w-4" />
+                      Gerar com IA
+                    </>
                   )}
-                  Salvar Especialistas
+                </Button>
+                <Button
+                  onClick={() => salvarCampo('posicionamento', conteudo.posicionamento, setSalvandoPosicionamento)}
+                  disabled={salvandoPosicionamento || !conteudo.posicionamento}
+                  size="sm"
+                >
+                  {salvandoPosicionamento ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Salvando...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="mr-2 h-4 w-4" />
+                      Salvar
+                    </>
+                  )}
                 </Button>
               </div>
+              
+              <Textarea
+                placeholder="Defina o posicionamento estratégico da marca..."
+                value={conteudo.posicionamento || ''}
+                onChange={(e) => setConteudo(prev => ({ ...prev, posicionamento: e.target.value }))}
+                className="min-h-[200px]"
+              />
             </CardContent>
           </Card>
 
@@ -1500,501 +1337,371 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
                 <BookOpen className="h-5 w-5" />
                 Frameworks de Conteúdo
               </CardTitle>
+              <CardDescription>
+                Selecione os componentes dos frameworks que serão utilizados no conteúdo
+              </CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-6">
-                {frameworks.map((framework) => (
-                  <div key={framework.nome} className="space-y-3">
-                    <div className="border-l-4 border-primary pl-4">
-                      <h4 className="font-semibold text-lg text-primary">{framework.nome}</h4>
-                      <p className="text-sm text-muted-foreground">{framework.descricao}</p>
-                    </div>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 ml-4">
-                      {framework.componentes.map((componente) => (
-                        <TooltipProvider key={`${framework.nome}-${componente.nome}`}>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                variant={componentesSelecionados.includes(`${framework.nome}: ${componente.nome}`) ? "default" : "outline"}
-                                onClick={() => toggleComponenteFramework(`${framework.nome}: ${componente.nome}`)}
-                                className="h-auto py-3 px-4 text-left justify-start transition-all hover:scale-105"
-                                size="sm"
-                              >
-                                <div className="flex flex-col items-start">
-                                  <span className="font-medium">{componente.nome}</span>
-                                  <span className="text-xs opacity-70 text-left">{componente.descricao}</span>
-                                </div>
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent side="top" className="max-w-xs">
-                              <p><strong>{componente.nome}:</strong> {componente.descricao}</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      ))}
-                    </div>
-                    
-                    {framework.nome !== frameworks[frameworks.length - 1].nome && (
-                      <div className="border-b border-border/50 mt-4"></div>
-                    )}
+            <CardContent className="space-y-6">
+              {frameworks.map((framework) => (
+                <div key={framework.nome} className="space-y-3">
+                  <div>
+                    <h4 className="font-semibold text-lg">{framework.nome}</h4>
+                    <p className="text-sm text-muted-foreground">{framework.descricao}</p>
                   </div>
-                ))}
-                
-                {componentesSelecionados && componentesSelecionados.length > 0 && (
-                  <div className="mt-6 p-4 bg-primary/5 rounded-lg border border-primary/20">
-                    <h5 className="font-medium text-sm mb-2 text-primary">
-                      Componentes Selecionados ({componentesSelecionados.length}):
-                    </h5>
-                    <div className="flex flex-wrap gap-2">
-                      {componentesSelecionados.map((componente) => (
-                        <Badge key={componente} variant="secondary" className="text-xs">
-                          {componente}
-                        </Badge>
-                      ))}
-                    </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {framework.componentes.map((componente) => {
+                      const componenteId = `${framework.nome}: ${componente.nome}`;
+                      const isSelected = componentesSelecionados.includes(componenteId);
+                      
+                      return (
+                        <div key={componenteId} className="flex items-start space-x-2">
+                          <Checkbox
+                            id={componenteId}
+                            checked={isSelected}
+                            onCheckedChange={(checked) => {
+                              if (checked) {
+                                setComponentesSelecionados(prev => [...prev, componenteId]);
+                              } else {
+                                setComponentesSelecionados(prev => 
+                                  prev.filter(item => item !== componenteId)
+                                );
+                              }
+                            }}
+                          />
+                          <div className="space-y-1">
+                            <label 
+                              htmlFor={componenteId}
+                              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                            >
+                              {componente.nome}
+                            </label>
+                            <p className="text-xs text-muted-foreground">
+                              {componente.descricao}
+                            </p>
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
-                )}
-
-                <div className="flex justify-end pt-4">
-                  <Button 
-                    onClick={salvarFrameworks}
-                    disabled={salvandoFrameworks || !componentesSelecionados?.length}
-                    size="sm"
-                    className="gap-2"
-                  >
-                    {salvandoFrameworks ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Save className="h-4 w-4" />
-                    )}
-                    Salvar Frameworks
-                  </Button>
                 </div>
+              ))}
+
+              <div className="flex gap-2 pt-4 border-t">
+                <Button
+                  onClick={() => salvarCampo('frameworks_selecionados', componentesSelecionados, setSalvandoFrameworks)}
+                  disabled={salvandoFrameworks}
+                  size="sm"
+                >
+                  {salvandoFrameworks ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Salvando...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="mr-2 h-4 w-4" />
+                      Salvar Frameworks
+                    </>
+                  )}
+                </Button>
               </div>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
-              <CardTitle>Personas do Cliente</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <Award className="h-5 w-5" />
+                Especialistas de Marketing
+              </CardTitle>
+              <CardDescription>
+                Selecione especialistas cujas abordagens influenciarão o conteúdo
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label>3 Personas Estratégicas</Label>
-                  <Button 
-                    onClick={gerarPersonasComIA}
-                    disabled={gerandoPersonas}
-                    variant="outline"
-                    size="sm"
-                    className="gap-2"
-                  >
-                    {gerandoPersonas ? (
-                      <>
-                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                        Gerando...
-                      </>
-                    ) : (
-                      <>
-                        <Sparkles className="h-4 w-4" />
-                        Gerar 3 Personas com IA
-                      </>
-                    )}
-                  </Button>
-                </div>
-
-                {/* Exibir personas geradas */}
-                {conteudo.persona && (() => {
-                  try {
-                    // Verificar se é JSON válido antes do parse
-                    let personasData;
-                    if (conteudo.persona.startsWith('{') || conteudo.persona.startsWith('[')) {
-                      personasData = JSON.parse(conteudo.persona);
-                    } else {
-                      // Se não for JSON, tratar como texto simples
-                      return (
-                        <div className="mt-4 p-4 bg-muted rounded-lg">
-                          <p className="text-sm whitespace-pre-wrap">{conteudo.persona}</p>
-                        </div>
-                      );
-                    }
-                    
-                    if (personasData.personas && Array.isArray(personasData.personas)) {
-                      return (
-                        <div className="grid gap-4 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
-                          {personasData.personas.map((persona: any, index: number) => (
-                            <Card key={index} className="p-4">
-                              <div className="space-y-3">
-                                <div className="flex items-center gap-2">
-                                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                                    <span className="text-sm font-semibold text-primary">
-                                      {index + 1}
-                                    </span>
-                                  </div>
-                                  <div>
-                                    <h4 className="font-semibold text-sm">{persona.nome}</h4>
-                                    <p className="text-xs text-muted-foreground">
-                                      {persona.idade} • {persona.profissao}
-                                    </p>
-                                  </div>
-                                </div>
-                                
-                                <p className="text-xs text-muted-foreground leading-relaxed">
-                                  {persona.resumo}
-                                </p>
-                                
-                                <div className="space-y-2 text-xs">
-                                  <div>
-                                    <span className="font-medium text-red-600">Dores:</span>
-                                    <p className="text-muted-foreground mt-1">
-                                      {persona.dores?.join(', ') || 'Não definido'}
-                                    </p>
-                                  </div>
-                                  
-                                  <div>
-                                    <span className="font-medium text-green-600">Motivações:</span>
-                                    <p className="text-muted-foreground mt-1">
-                                      {persona.motivacoes?.join(', ') || 'Não definido'}
-                                    </p>
-                                  </div>
-                                  
-                                  <div>
-                                    <span className="font-medium text-blue-600">Canais:</span>
-                                    <p className="text-muted-foreground mt-1">
-                                      {persona.canais_preferidos?.join(', ') || 'Não definido'}
-                                    </p>
-                                  </div>
-                                </div>
-                              </div>
-                            </Card>
-                          ))}
-                        </div>
-                      );
-                    }
-                  } catch (error) {
-                    console.error('Erro ao parsear personas:', error);
-                    // Exibir conteúdo como texto simples em caso de erro
-                    return (
-                      <div className="mt-4 p-4 bg-muted rounded-lg">
-                        <p className="text-sm text-muted-foreground">
-                          Conteúdo das personas (formato não JSON):
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {especialistas.map((especialista) => {
+                  const isSelected = conteudo.especialistas_selecionados?.includes(especialista.nome) || false;
+                  
+                  return (
+                    <div key={especialista.nome} className="flex items-start space-x-2">
+                      <Checkbox
+                        id={especialista.nome}
+                        checked={isSelected}
+                        onCheckedChange={(checked) => {
+                          const novosEspecialistas = checked
+                            ? [...(conteudo.especialistas_selecionados || []), especialista.nome]
+                            : (conteudo.especialistas_selecionados || []).filter(nome => nome !== especialista.nome);
+                          
+                          setConteudo(prev => ({
+                            ...prev,
+                            especialistas_selecionados: novosEspecialistas
+                          }));
+                        }}
+                      />
+                      <div className="space-y-1">
+                        <label 
+                          htmlFor={especialista.nome}
+                          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                        >
+                          {especialista.nome}
+                        </label>
+                        <p className="text-xs text-muted-foreground">
+                          {especialista.descricao}
                         </p>
-                        <p className="text-sm whitespace-pre-wrap mt-2">{conteudo.persona}</p>
                       </div>
-                    );
-                  }
-                })()}
+                    </div>
+                  );
+                })}
+              </div>
 
-                {/* Fallback para edição manual */}
-                <div className="space-y-2">
-                  <Label htmlFor="persona-manual">Edição Manual (JSON ou Texto)</Label>
-                  <Textarea
-                    id="persona-manual"
-                    placeholder="Cole aqui o JSON das personas ou descreva as personas manualmente..."
-                    value={conteudo.persona || ''}
-                    onChange={(e) => setConteudo(prev => ({ ...prev, persona: e.target.value }))}
-                    rows={4}
-                    disabled={gerandoPersonas}
-                  />
-                </div>
-                
-                {/* Botão de salvar no final da seção */}
-                <div className="flex justify-end">
-                  <Button 
-                    onClick={salvarPersonas}
-                    disabled={salvandoPersonas || !conteudo.persona?.trim()}
-                    size="sm"
-                    className="gap-2"
-                  >
-                    {salvandoPersonas ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Save className="h-4 w-4" />
-                    )}
-                    Salvar Personas
-                  </Button>
-                </div>
-                
-                <p className="text-xs text-muted-foreground">
-                  A IA irá gerar 3 personas distintas baseadas no onboarding, objetivos, posicionamento e frameworks selecionados.
-                </p>
+              <div className="flex gap-2 pt-4 border-t">
+                <Button
+                  onClick={() => salvarCampo('especialistas_selecionados', conteudo.especialistas_selecionados, setSalvandoEspecialistas)}
+                  disabled={salvandoEspecialistas}
+                  size="sm"
+                >
+                  {salvandoEspecialistas ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Salvando...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="mr-2 h-4 w-4" />
+                      Salvar Especialistas
+                    </>
+                  )}
+                </Button>
               </div>
             </CardContent>
           </Card>
-
-          <div className="flex gap-2">
-            <Button 
-              onClick={saveAllSelections}
-              disabled={salvando}
-            >
-              {salvando ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-              Salvar Análise
-            </Button>
-            
-            {hasCompleteAnalysis() && (
-              <Button 
-                variant="outline"
-                onClick={resetAllSelections}
-              >
-                Fazer Nova Análise
-              </Button>
-            )}
-          </div>
         </TabsContent>
 
-        <TabsContent value="conteudo" className="space-y-4">
-          {clienteAssinatura && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Plano de Assinatura</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center gap-4">
-                  <Badge variant="secondary">{clienteAssinatura?.nome || 'Plano não definido'}</Badge>
-                  <span className="text-sm text-muted-foreground">
-                    {clienteAssinatura?.posts_mensais || 0} posts/mês
-                  </span>
-                  <span className="text-sm text-muted-foreground">
-                    Reels: {clienteAssinatura?.reels_suporte ? 'Sim' : 'Não'}
-                  </span>
-                  <span className="text-sm text-muted-foreground">
-                    Anúncios: {clienteAssinatura?.anuncios_facebook || clienteAssinatura?.anuncios_google ? 'Sim' : 'Não'}
-                  </span>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
+        <TabsContent value="conteudo" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Geração de Conteúdo</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <PenTool className="h-5 w-5" />
+                Geração de Conteúdo Editorial
+              </CardTitle>
+              <CardDescription>
+                Gere conteúdo automático para o planejamento baseado nas suas seleções
+              </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <Button 
-                onClick={gerarConteudoEditorial}
-                disabled={gerando || !hasCompleteAnalysis()}
-                className="w-full"
-              >
-                {gerando ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                Gerar Conteúdo Editorial
-              </Button>
-              
-              {!hasCompleteAnalysis() && (
-                <p className="text-sm text-muted-foreground">
-                  Complete a missão, posicionamento e seleções para gerar conteúdo.
-                </p>
-              )}
-            </CardContent>
-          </Card>
+            <CardContent className="space-y-6">
+              <div className="flex gap-2">
+                <Button
+                  onClick={gerarConteudoEditorial}
+                  disabled={isGeneratingContent}
+                  className="flex-1"
+                >
+                  {isGeneratingContent ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Gerando Conteúdo...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="mr-2 h-4 w-4" />
+                      Gerar Conteúdo Editorial
+                    </>
+                  )}
+                </Button>
+                
+                <Button
+                  onClick={salvarPosts}
+                  disabled={postsGerados.length === 0 || isSavingPosts}
+                  variant="outline"
+                  className="flex-1"
+                >
+                  {isSavingPosts ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Salvando...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="mr-2 h-4 w-4" />
+                      Salvar Posts ({postsGerados.length})
+                    </>
+                  )}
+                </Button>
+              </div>
 
-          {postsGerados.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                  <span>Posts Gerados</span>
-                  <div className="flex gap-2">
-                    <Button
-                      variant={!visualizacaoTabela && !visualizacaoCalendario ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => {
-                        setVisualizacaoTabela(false);
-                        setVisualizacaoCalendario(false);
-                      }}
-                    >
-                      Cards
-                    </Button>
-                    <Button
-                      variant={visualizacaoTabela && !visualizacaoCalendario ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => {
-                        setVisualizacaoTabela(true);
-                        setVisualizacaoCalendario(false);
-                      }}
-                    >
-                      Tabela
-                    </Button>
-                    <Button
-                      variant={visualizacaoCalendario ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => {
-                        setVisualizacaoTabela(false);
-                        setVisualizacaoCalendario(true);
-                      }}
-                    >
-                      <Calendar className="h-4 w-4 mr-1" />
-                      Calendário
-                    </Button>
+              {conteudo.conteudo_gerado && (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-semibold">Conteúdo Gerado</h4>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setVisualizacaoTabela(!visualizacaoTabela)}
+                      >
+                        <Table className="mr-2 h-4 w-4" />
+                        {visualizacaoTabela ? 'Ocultar' : 'Ver'} Tabela
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setVisualizacaoCalendario(!visualizacaoCalendario)}
+                      >
+                        <Calendar className="mr-2 h-4 w-4" />
+                        {visualizacaoCalendario ? 'Ocultar' : 'Ver'} Calendário
+                      </Button>
+                    </div>
                   </div>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {visualizacaoCalendario ? (
-                  <DndContext
-                    collisionDetection={closestCenter}
-                    onDragStart={handleDragStart}
-                    onDragEnd={handleDragEnd}
-                  >
-                    <SortableContext 
-                      items={[...posts, ...postsGerados].map(p => p.id)}
-                    >
-                      <div className="flex items-center justify-between mb-6">
-                        <div className="flex items-center gap-3">
-                          <Button variant="outline" size="sm" onClick={() => navigateMonth('prev')}>
-                            <ChevronLeft className="h-4 w-4" />
-                          </Button>
-                          <span className="text-lg font-semibold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                            {currentDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}
-                          </span>
-                          <Button variant="outline" size="sm" onClick={() => navigateMonth('next')}>
-                            <ChevronRight className="h-4 w-4" />
-                          </Button>
-                        </div>
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          onClick={() => setCalendarioExpanded(true)}
-                          className="bg-primary/5 hover:bg-primary/10 border-primary/20"
+                  
+                  <div className="border rounded-lg p-4 bg-muted/30">
+                    <pre className="whitespace-pre-wrap text-sm">{conteudo.conteudo_gerado}</pre>
+                  </div>
+                </div>
+              )}
+
+              {visualizacaoTabela && posts.length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Posts do Planejamento</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <DataTable 
+                      data={posts} 
+                      columns={columns}
+                    />
+                  </CardContent>
+                </Card>
+              )}
+
+              {visualizacaoCalendario && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center justify-between">
+                      <span>Calendário Editorial</span>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => navigateMonth('prev')}
                         >
-                          <Calendar className="h-4 w-4 mr-1" />
-                          Visualizar Completo
+                          <ChevronLeft className="h-4 w-4" />
+                        </Button>
+                        <span className="text-sm font-medium">
+                          {format(currentDate, 'MMMM yyyy', { locale: ptBR })}
+                        </span>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => navigateMonth('next')}
+                        >
+                          <ChevronRight className="h-4 w-4" />
                         </Button>
                       </div>
-                      
-                      <div className="grid grid-cols-7 gap-1 mb-2 p-2 bg-muted/30 rounded-lg">
-                        {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map(day => (
-                          <div key={day} className="p-2 text-center text-xs font-bold text-muted-foreground uppercase tracking-wide">
-                            {day}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <DndContext
+                      sensors={sensors}
+                      onDragStart={handleDragStart}
+                      onDragEnd={handleDragEnd}
+                    >
+                      <div className="grid grid-cols-7 gap-2">
+                        {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map(dia => (
+                          <div key={dia} className="p-2 text-center font-semibold text-sm bg-muted rounded">
+                            {dia}
                           </div>
                         ))}
-                      </div>
-                      <div className="grid grid-cols-7 gap-1 p-2 bg-background border rounded-xl shadow-sm">
-                        {getDaysInMonth().map((day, index) => {
-                          const dayPosts = day ? getPostsForDay(day) : [];
-                          const dateStr = day ? `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}` : '';
+                        
+                        {getPostsForMonth().map((dayData, index) => {
+                          const dayOfWeek = new Date(dayData.date).getDay();
+                          const isFirstWeek = index < 7;
+                          const shouldRenderEmptyCell = isFirstWeek && index < dayOfWeek;
+                          
+                          if (shouldRenderEmptyCell) {
+                            return (
+                              <DroppableDay
+                                key={`empty-${index}`}
+                                day={null}
+                                dateStr=""
+                                dayPosts={[]}
+                                onPreviewPost={onPreviewPost}
+                                getFormatIcon={getFormatIcon}
+                                atualizandoPost={atualizandoPost}
+                                currentDate={currentDate}
+                                isDroppable={isDroppable}
+                                canDragPost={canDragPost}
+                              />
+                            );
+                          }
                           
                           return (
                             <DroppableDay
-                              key={index}
-                              day={day}
-                              dateStr={dateStr}
-                              dayPosts={dayPosts}
+                              key={dayData.date}
+                              day={dayData.day}
+                              dateStr={dayData.date}
+                              dayPosts={dayData.posts}
                               onPreviewPost={onPreviewPost}
                               getFormatIcon={getFormatIcon}
                               atualizandoPost={atualizandoPost}
+                              currentDate={currentDate}
+                              isDroppable={isDroppable}
+                              canDragPost={canDragPost}
                             />
                           );
                         })}
                       </div>
-                    </SortableContext>
-                    <DragOverlay>
-                      {draggedPost ? (
-                        <div className="flex items-center gap-2 p-2 rounded-lg border border-primary bg-primary/10 shadow-lg">
-                          <span className="text-lg flex-shrink-0">{getFormatIcon(draggedPost.formato_postagem)}</span>
-                          <span className="flex-1 truncate text-sm font-medium text-foreground" title={draggedPost.titulo}>
-                            {draggedPost.titulo.length > 20 ? `${draggedPost.titulo.substring(0, 20)}...` : draggedPost.titulo}
-                          </span>
-                        </div>
-                      ) : null}
-                    </DragOverlay>
-                  </DndContext>
-                ) : !visualizacaoTabela ? (
-                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                    {postsGerados.map((post, index) => (
-                      <Card key={index} className="p-4">
-                        <div className="space-y-3">
-                          <div className="flex justify-between items-start">
-                            <h4 className="font-medium text-sm line-clamp-2">{post.titulo}</h4>
-                            <Badge variant="outline" className="text-xs">{post.formato_postagem}</Badge>
+                      
+                      <DragOverlay>
+                        {activeId ? (
+                          <div className="bg-primary/20 border-2 border-primary rounded p-2">
+                            Movendo post...
                           </div>
-                          
-                          <div className="space-y-2 text-xs">
-                            <div>
-                              <span className="font-medium text-primary">Objetivo:</span>
-                              <p className="text-muted-foreground mt-1">{post.objetivo_postagem}</p>
-                            </div>
-                            
-                            <div>
-                              <span className="font-medium text-secondary">Tipo:</span>
-                              <p className="text-muted-foreground mt-1">{post.tipo_criativo}</p>
-                            </div>
-                            
-                            <div>
-                              <span className="font-medium text-accent">Data:</span>
-                              <p className="text-muted-foreground mt-1">
-                                {new Date(post.data_postagem).toLocaleDateString('pt-BR')}
-                              </p>
-                            </div>
-                          </div>
-                          
-                          <div className="flex gap-2 pt-2">
-                            <Button 
-                              size="sm" 
-                              variant="outline" 
-                              className="flex-1"
-                              onClick={() => onPreviewPost(post)}
-                            >
-                              <Eye className="h-3 w-3 mr-1" />
-                              Visualizar
-                            </Button>
-                          </div>
-                        </div>
-                      </Card>
-                    ))}
-                  </div>
-                ) : (
-                  <DataTable
-                    title=""
-                    columns={[
-                      {
-                        key: 'numero',
-                        label: 'Post',
-                        render: (value, row) => `#${postsGerados.indexOf(row) + 1}`
-                      },
-                      {
-                        key: 'data_postagem',
-                        label: 'Data',
-                        render: (value) => new Date(value).toLocaleDateString('pt-BR')
-                      },
-                      {
-                        key: 'formato_postagem',
-                        label: 'Criativo'
-                      },
-                      {
-                        key: 'objetivo_postagem',
-                        label: 'Objetivo'
-                      },
-                      {
-                        key: 'titulo',
-                        label: 'Conteúdo'
-                      }
-                    ]}
-                    data={postsGerados}
-                    searchable={true}
-                    filterable={false}
-                    actions={[
-                      {
-                        label: 'Visualizar',
-                        onClick: (post) => onPreviewPost(post),
-                        variant: 'outline' as const
-                      }
-                    ]}
-                    emptyMessage="Nenhum post gerado ainda"
-                  />
-                )}
-              </CardContent>
-            </Card>
-          )}
+                        ) : null}
+                      </DragOverlay>
+                    </DndContext>
+                  </CardContent>
+                </Card>
+              )}
 
-
-            <CalendarioEditorial
-            isOpen={calendarioExpanded}
-            onClose={() => setCalendarioExpanded(false)}
-            posts={[...posts, ...postsGerados]}
-            onPostClick={onPreviewPost}
-          />
+              <div className="flex gap-2 pt-4 border-t">
+                <Button
+                  onClick={salvarTodas}
+                  disabled={salvando}
+                  variant="outline"
+                >
+                  {salvando ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Salvando...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="mr-2 h-4 w-4" />
+                      Salvar Todas as Seleções
+                    </>
+                  )}
+                </Button>
+                
+                <Button
+                  onClick={resetarAnaliseEditorial}
+                  variant="destructive"
+                  size="sm"
+                >
+                  Resetar Análise
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
+
+      <CalendarioEditorial
+        isOpen={calendarioExpanded}
+        onClose={() => setCalendarioExpanded(false)}
+        posts={posts}
+        onPostClick={onPreviewPost}
+      />
     </div>
   );
 };

@@ -59,6 +59,36 @@ export type Database = {
         }
         Relationships: []
       }
+      audit_logs: {
+        Row: {
+          action: string
+          after: Json
+          before: Json
+          created_at: string
+          id: string
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          action?: string
+          after: Json
+          before: Json
+          created_at?: string
+          id?: string
+          post_id: string
+          user_id: string
+        }
+        Update: {
+          action?: string
+          after?: Json
+          before?: Json
+          created_at?: string
+          id?: string
+          post_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       categorias_financeiras: {
         Row: {
           cor: string | null
