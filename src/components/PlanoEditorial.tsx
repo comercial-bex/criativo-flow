@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { CalendarioEditorial } from "@/components/CalendarioEditorial";
 
 interface PlanoEditorialProps {
   planejamento: {
@@ -48,6 +49,7 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
   
   const [loading, setLoading] = useState(true);
   const [gerando, setGerando] = useState(false);
+  const [calendarioExpanded, setCalendarioExpanded] = useState(false);
   const [salvando, setSalvando] = useState(false);
   const [salvandoPosicionamento, setSalvandoPosicionamento] = useState(false);
   const [salvandoEspecialistas, setSalvandoEspecialistas] = useState(false);
@@ -1545,6 +1547,15 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
               <CardTitle className="flex items-center justify-between">
                 <span>Calendário Editorial</span>
                 <div className="flex items-center gap-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => setCalendarioExpanded(true)}
+                    className="mr-2"
+                  >
+                    <Calendar className="h-4 w-4 mr-1" />
+                    Visualizar Completo
+                  </Button>
                   <Button variant="outline" size="sm" onClick={() => navigateMonth('prev')}>
                     <ChevronLeft className="h-4 w-4" />
                   </Button>
@@ -1558,52 +1569,64 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-7 gap-1 mb-4">
+              <div className="grid grid-cols-7 gap-2 mb-4">
                 {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map(day => (
-                  <div key={day} className="p-2 text-center text-sm font-medium">
+                  <div key={day} className="p-3 text-center text-sm font-medium text-muted-foreground">
                     {day}
                   </div>
                 ))}
               </div>
-              <div className="grid grid-cols-7 gap-1">
+              <div className="grid grid-cols-7 gap-2">
                 {getDaysInMonth().map((day, index) => {
                   const dayPosts = day ? getPostsForDay(day) : [];
                   return (
                     <div
                       key={index}
-                      className={`min-h-[60px] p-1 border rounded ${day ? 'bg-background' : 'bg-muted'}`}
+                      className={`min-h-[100px] p-2 border rounded-lg transition-all hover:shadow-sm ${
+                        day ? 'bg-background border-border' : 'bg-muted/50 border-muted'
+                      }`}
                     >
                       {day && (
                         <>
-                          <div className="text-sm font-medium mb-1">{day}</div>
-                           {dayPosts.map((post, postIndex) => (
-                             <div
-                               key={postIndex}
-                               className="text-xs p-2 bg-primary/10 rounded cursor-pointer hover:bg-primary/20 transition-colors group"
-                               onClick={() => onPreviewPost(post)}
-                             >
-                               <div className="flex items-center justify-between mb-1">
-                                 <span className="text-primary">{getFormatIcon(post.formato_postagem)}</span>
-                                 <Button 
-                                   size="sm" 
-                                   variant="ghost" 
-                                   className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                                   onClick={(e) => {
-                                     e.stopPropagation();
-                                     onPreviewPost(post);
-                                   }}
-                                 >
-                                   <Eye className="h-3 w-3" />
-                                 </Button>
-                               </div>
-                               <p className="font-medium leading-tight">
-                                 {post.titulo.length > 12 ? `${post.titulo.substring(0, 12)}...` : post.titulo}
-                               </p>
-                               <p className="text-muted-foreground mt-1">
-                                 {post.objetivo_postagem?.length > 15 ? `${post.objetivo_postagem.substring(0, 15)}...` : post.objetivo_postagem}
-                               </p>
-                             </div>
-                           ))}
+                          <div className="text-sm font-semibold mb-2 text-foreground">{day}</div>
+                          <div className="space-y-1">
+                            {dayPosts.map((post, postIndex) => (
+                              <div
+                                key={postIndex}
+                                className="group relative p-2 bg-gradient-to-r from-primary/5 to-primary/10 rounded-md cursor-pointer hover:from-primary/10 hover:to-primary/20 transition-all duration-200 border border-primary/20 hover:border-primary/40"
+                                onClick={() => onPreviewPost(post)}
+                              >
+                                <div className="flex items-start justify-between mb-1">
+                                  <span className="text-primary text-lg">{getFormatIcon(post.formato_postagem)}</span>
+                                  <Button 
+                                    size="sm" 
+                                    variant="ghost" 
+                                    className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-primary/20"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      onPreviewPost(post);
+                                    }}
+                                  >
+                                    <Eye className="h-3 w-3" />
+                                  </Button>
+                                </div>
+                                <h4 className="font-medium text-xs leading-tight text-foreground mb-1" title={post.titulo}>
+                                  {post.titulo.length > 20 ? `${post.titulo.substring(0, 20)}...` : post.titulo}
+                                </h4>
+                                {post.objetivo_postagem && (
+                                  <p className="text-xs text-muted-foreground leading-tight" title={post.objetivo_postagem}>
+                                    {post.objetivo_postagem.length > 25 ? `${post.objetivo_postagem.substring(0, 25)}...` : post.objetivo_postagem}
+                                  </p>
+                                )}
+                                <div className="absolute inset-0 rounded-md ring-2 ring-transparent group-hover:ring-primary/30 transition-all duration-200 pointer-events-none" />
+                              </div>
+                            ))}
+                            {dayPosts.length === 0 && (
+                              <div className="text-xs text-muted-foreground/60 text-center py-2">
+                                Nenhum post
+                              </div>
+                            )}
+                          </div>
                         </>
                       )}
                     </div>
@@ -1612,6 +1635,13 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
               </div>
             </CardContent>
           </Card>
+
+          <CalendarioEditorial
+            isOpen={calendarioExpanded}
+            onClose={() => setCalendarioExpanded(false)}
+            posts={posts}
+            onPostClick={onPreviewPost}
+          />
         </TabsContent>
       </Tabs>
     </div>
