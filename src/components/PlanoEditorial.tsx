@@ -171,6 +171,7 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
   const [atualizandoPost, setAtualizandoPost] = useState<string | null>(null);
   const [draggedPost, setDraggedPost] = useState<any>(null);
   const [visualizacaoTabela, setVisualizacaoTabela] = useState(false);
+  const [visualizacaoCalendario, setVisualizacaoCalendario] = useState(false);
 
   const especialistas = [
     { 
@@ -1698,24 +1699,107 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
                   <span>Posts Gerados</span>
                   <div className="flex gap-2">
                     <Button
-                      variant={!visualizacaoTabela ? "default" : "outline"}
+                      variant={!visualizacaoTabela && !visualizacaoCalendario ? "default" : "outline"}
                       size="sm"
-                      onClick={() => setVisualizacaoTabela(false)}
+                      onClick={() => {
+                        setVisualizacaoTabela(false);
+                        setVisualizacaoCalendario(false);
+                      }}
                     >
                       Cards
                     </Button>
                     <Button
-                      variant={visualizacaoTabela ? "default" : "outline"}
+                      variant={visualizacaoTabela && !visualizacaoCalendario ? "default" : "outline"}
                       size="sm"
-                      onClick={() => setVisualizacaoTabela(true)}
+                      onClick={() => {
+                        setVisualizacaoTabela(true);
+                        setVisualizacaoCalendario(false);
+                      }}
                     >
                       Tabela
+                    </Button>
+                    <Button
+                      variant={visualizacaoCalendario ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => {
+                        setVisualizacaoTabela(false);
+                        setVisualizacaoCalendario(true);
+                      }}
+                    >
+                      <Calendar className="h-4 w-4 mr-1" />
+                      Calendário
                     </Button>
                   </div>
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {!visualizacaoTabela ? (
+                {visualizacaoCalendario ? (
+                  <DndContext
+                    collisionDetection={closestCenter}
+                    onDragStart={handleDragStart}
+                    onDragEnd={handleDragEnd}
+                  >
+                    <SortableContext items={[...posts, ...postsGerados].map(p => p.id)}>
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-2">
+                          <Button variant="outline" size="sm" onClick={() => navigateMonth('prev')}>
+                            <ChevronLeft className="h-4 w-4" />
+                          </Button>
+                          <span className="text-sm font-medium">
+                            {currentDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}
+                          </span>
+                          <Button variant="outline" size="sm" onClick={() => navigateMonth('next')}>
+                            <ChevronRight className="h-4 w-4" />
+                          </Button>
+                        </div>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => setCalendarioExpanded(true)}
+                        >
+                          <Calendar className="h-4 w-4 mr-1" />
+                          Visualizar Completo
+                        </Button>
+                      </div>
+                      
+                      <div className="grid grid-cols-7 gap-2 mb-4">
+                        {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map(day => (
+                          <div key={day} className="p-3 text-center text-sm font-medium text-muted-foreground">
+                            {day}
+                          </div>
+                        ))}
+                      </div>
+                      <div className="grid grid-cols-7 gap-2">
+                        {getDaysInMonth().map((day, index) => {
+                          const dayPosts = day ? getPostsForDay(day) : [];
+                          const dateStr = day ? `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}` : '';
+                          
+                          return (
+                            <DroppableDay
+                              key={index}
+                              day={day}
+                              dateStr={dateStr}
+                              dayPosts={dayPosts}
+                              onPreviewPost={onPreviewPost}
+                              getFormatIcon={getFormatIcon}
+                              atualizandoPost={atualizandoPost}
+                            />
+                          );
+                        })}
+                      </div>
+                    </SortableContext>
+                    <DragOverlay>
+                      {draggedPost ? (
+                        <div className="flex items-center gap-1 px-1.5 py-0.5 rounded text-xs bg-primary/20 border border-primary/40">
+                          <span className="text-primary text-sm flex-shrink-0">{getFormatIcon(draggedPost.formato_postagem)}</span>
+                          <span className="flex-1 truncate text-xs font-medium text-foreground" title={draggedPost.titulo}>
+                            {draggedPost.titulo.length > 18 ? `${draggedPost.titulo.substring(0, 18)}...` : draggedPost.titulo}
+                          </span>
+                        </div>
+                      ) : null}
+                    </DragOverlay>
+                  </DndContext>
+                ) : !visualizacaoTabela ? (
                   <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                     {postsGerados.map((post, index) => (
                       <Card key={index} className="p-4">
@@ -1803,78 +1887,6 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
             </Card>
           )}
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                <span>Calendário Editorial</span>
-                <div className="flex items-center gap-2">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={() => setCalendarioExpanded(true)}
-                    className="mr-2"
-                  >
-                    <Calendar className="h-4 w-4 mr-1" />
-                    Visualizar Completo
-                  </Button>
-                  <Button variant="outline" size="sm" onClick={() => navigateMonth('prev')}>
-                    <ChevronLeft className="h-4 w-4" />
-                  </Button>
-                  <span className="text-sm font-medium">
-                    {currentDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}
-                  </span>
-                  <Button variant="outline" size="sm" onClick={() => navigateMonth('next')}>
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
-                </div>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-                <DndContext
-                collisionDetection={closestCenter}
-                onDragStart={handleDragStart}
-                onDragEnd={handleDragEnd}
-              >
-                <SortableContext items={[...posts, ...postsGerados].map(p => p.id)}>
-                  <div className="grid grid-cols-7 gap-2 mb-4">
-                    {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map(day => (
-                      <div key={day} className="p-3 text-center text-sm font-medium text-muted-foreground">
-                        {day}
-                      </div>
-                    ))}
-                  </div>
-                  <div className="grid grid-cols-7 gap-2">
-                    {getDaysInMonth().map((day, index) => {
-                      const dayPosts = day ? getPostsForDay(day) : [];
-                      const dateStr = day ? `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}` : '';
-                      
-                      return (
-                        <DroppableDay
-                          key={index}
-                          day={day}
-                          dateStr={dateStr}
-                          dayPosts={dayPosts}
-                          onPreviewPost={onPreviewPost}
-                          getFormatIcon={getFormatIcon}
-                          atualizandoPost={atualizandoPost}
-                        />
-                      );
-                    })}
-                  </div>
-                </SortableContext>
-                <DragOverlay>
-                  {draggedPost ? (
-                    <div className="flex items-center gap-1 px-1.5 py-0.5 rounded text-xs bg-primary/20 border border-primary/40">
-                      <span className="text-primary text-sm flex-shrink-0">{getFormatIcon(draggedPost.formato_postagem)}</span>
-                      <span className="flex-1 truncate text-xs font-medium text-foreground" title={draggedPost.titulo}>
-                        {draggedPost.titulo.length > 18 ? `${draggedPost.titulo.substring(0, 18)}...` : draggedPost.titulo}
-                      </span>
-                    </div>
-                  ) : null}
-                </DragOverlay>
-              </DndContext>
-            </CardContent>
-          </Card>
 
             <CalendarioEditorial
             isOpen={calendarioExpanded}
