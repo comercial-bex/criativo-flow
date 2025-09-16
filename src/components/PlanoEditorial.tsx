@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { CalendarioEditorial } from "@/components/CalendarioEditorial";
+import { DataTable } from "@/components/DataTable";
 import { DndContext, closestCenter, DragEndEvent, DragStartEvent, DragOverlay, useDroppable } from "@dnd-kit/core";
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -165,6 +166,7 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
   const [dadosObjetivos, setDadosObjetivos] = useState<any>(null);
   const [atualizandoPost, setAtualizandoPost] = useState<string | null>(null);
   const [draggedPost, setDraggedPost] = useState<any>(null);
+  const [visualizacaoTabela, setVisualizacaoTabela] = useState(false);
 
   const especialistas = [
     { 
@@ -1669,52 +1671,111 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
           {postsGerados.length > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle>Posts Gerados</CardTitle>
+                <CardTitle className="flex items-center justify-between">
+                  <span>Posts Gerados</span>
+                  <div className="flex gap-2">
+                    <Button
+                      variant={!visualizacaoTabela ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setVisualizacaoTabela(false)}
+                    >
+                      Cards
+                    </Button>
+                    <Button
+                      variant={visualizacaoTabela ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setVisualizacaoTabela(true)}
+                    >
+                      Tabela
+                    </Button>
+                  </div>
+                </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                  {postsGerados.map((post, index) => (
-                    <Card key={index} className="p-4">
-                      <div className="space-y-3">
-                        <div className="flex justify-between items-start">
-                          <h4 className="font-medium text-sm line-clamp-2">{post.titulo}</h4>
-                          <Badge variant="outline" className="text-xs">{post.formato_postagem}</Badge>
-                        </div>
-                        
-                        <div className="space-y-2 text-xs">
-                          <div>
-                            <span className="font-medium text-primary">Objetivo:</span>
-                            <p className="text-muted-foreground mt-1">{post.objetivo_postagem}</p>
+                {!visualizacaoTabela ? (
+                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                    {postsGerados.map((post, index) => (
+                      <Card key={index} className="p-4">
+                        <div className="space-y-3">
+                          <div className="flex justify-between items-start">
+                            <h4 className="font-medium text-sm line-clamp-2">{post.titulo}</h4>
+                            <Badge variant="outline" className="text-xs">{post.formato_postagem}</Badge>
                           </div>
                           
-                          <div>
-                            <span className="font-medium text-secondary">Tipo:</span>
-                            <p className="text-muted-foreground mt-1">{post.tipo_criativo}</p>
+                          <div className="space-y-2 text-xs">
+                            <div>
+                              <span className="font-medium text-primary">Objetivo:</span>
+                              <p className="text-muted-foreground mt-1">{post.objetivo_postagem}</p>
+                            </div>
+                            
+                            <div>
+                              <span className="font-medium text-secondary">Tipo:</span>
+                              <p className="text-muted-foreground mt-1">{post.tipo_criativo}</p>
+                            </div>
+                            
+                            <div>
+                              <span className="font-medium text-accent">Data:</span>
+                              <p className="text-muted-foreground mt-1">
+                                {new Date(post.data_postagem).toLocaleDateString('pt-BR')}
+                              </p>
+                            </div>
                           </div>
                           
-                          <div>
-                            <span className="font-medium text-accent">Data:</span>
-                            <p className="text-muted-foreground mt-1">
-                              {new Date(post.data_postagem).toLocaleDateString('pt-BR')}
-                            </p>
+                          <div className="flex gap-2 pt-2">
+                            <Button 
+                              size="sm" 
+                              variant="outline" 
+                              className="flex-1"
+                              onClick={() => onPreviewPost(post)}
+                            >
+                              <Eye className="h-3 w-3 mr-1" />
+                              Visualizar
+                            </Button>
                           </div>
                         </div>
-                        
-                        <div className="flex gap-2 pt-2">
-                          <Button 
-                            size="sm" 
-                            variant="outline" 
-                            className="flex-1"
-                            onClick={() => onPreviewPost(post)}
-                          >
-                            <Eye className="h-3 w-3 mr-1" />
-                            Visualizar
-                          </Button>
-                        </div>
-                      </div>
-                    </Card>
-                  ))}
-                </div>
+                      </Card>
+                    ))}
+                  </div>
+                ) : (
+                  <DataTable
+                    title=""
+                    columns={[
+                      {
+                        key: 'numero',
+                        label: 'Post',
+                        render: (value, row) => `#${postsGerados.indexOf(row) + 1}`
+                      },
+                      {
+                        key: 'data_postagem',
+                        label: 'Data',
+                        render: (value) => new Date(value).toLocaleDateString('pt-BR')
+                      },
+                      {
+                        key: 'formato_postagem',
+                        label: 'Criativo'
+                      },
+                      {
+                        key: 'objetivo_postagem',
+                        label: 'Objetivo'
+                      },
+                      {
+                        key: 'titulo',
+                        label: 'Conteúdo'
+                      }
+                    ]}
+                    data={postsGerados}
+                    searchable={true}
+                    filterable={false}
+                    actions={[
+                      {
+                        label: 'Visualizar',
+                        onClick: (post) => onPreviewPost(post),
+                        variant: 'outline' as const
+                      }
+                    ]}
+                    emptyMessage="Nenhum post gerado ainda"
+                  />
+                )}
               </CardContent>
             </Card>
           )}
@@ -1746,36 +1807,38 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <DndContext
+                <DndContext
                 collisionDetection={closestCenter}
                 onDragStart={handleDragStart}
                 onDragEnd={handleDragEnd}
               >
-                <div className="grid grid-cols-7 gap-2 mb-4">
-                  {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map(day => (
-                    <div key={day} className="p-3 text-center text-sm font-medium text-muted-foreground">
-                      {day}
-                    </div>
-                  ))}
-                </div>
-                <div className="grid grid-cols-7 gap-2">
-                  {getDaysInMonth().map((day, index) => {
-                    const dayPosts = day ? getPostsForDay(day) : [];
-                    const dateStr = day ? `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}` : '';
-                    
-                    return (
-                      <DroppableDay
-                        key={index}
-                        day={day}
-                        dateStr={dateStr}
-                        dayPosts={dayPosts}
-                        onPreviewPost={onPreviewPost}
-                        getFormatIcon={getFormatIcon}
-                        atualizandoPost={atualizandoPost}
-                      />
-                    );
-                  })}
-                </div>
+                <SortableContext items={[...posts, ...postsGerados].map(p => p.id)} strategy={verticalListSortingStrategy}>
+                  <div className="grid grid-cols-7 gap-2 mb-4">
+                    {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map(day => (
+                      <div key={day} className="p-3 text-center text-sm font-medium text-muted-foreground">
+                        {day}
+                      </div>
+                    ))}
+                  </div>
+                  <div className="grid grid-cols-7 gap-2">
+                    {getDaysInMonth().map((day, index) => {
+                      const dayPosts = day ? getPostsForDay(day) : [];
+                      const dateStr = day ? `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}` : '';
+                      
+                      return (
+                        <DroppableDay
+                          key={index}
+                          day={day}
+                          dateStr={dateStr}
+                          dayPosts={dayPosts}
+                          onPreviewPost={onPreviewPost}
+                          getFormatIcon={getFormatIcon}
+                          atualizandoPost={atualizandoPost}
+                        />
+                      );
+                    })}
+                  </div>
+                </SortableContext>
                 <DragOverlay>
                   {draggedPost ? (
                     <div className="flex items-center gap-1 px-1.5 py-0.5 rounded text-xs bg-primary/20 border border-primary/40">
