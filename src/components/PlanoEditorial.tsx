@@ -55,12 +55,41 @@ const DraggablePost: React.FC<DraggablePostProps> = ({ post, onPreviewPost, getF
     isDragging,
   } = useSortable({ id: post.id });
 
+  const [clickTimer, setClickTimer] = React.useState<NodeJS.Timeout | null>(null);
+
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.5 : 1,
     zIndex: isDragging ? 1000 : 1,
   };
+
+  const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    // Use timeout to differentiate click from drag
+    if (clickTimer) {
+      clearTimeout(clickTimer);
+      setClickTimer(null);
+    }
+
+    const timer = setTimeout(() => {
+      if (!isDragging) {
+        onPreviewPost(post);
+      }
+    }, 100);
+    
+    setClickTimer(timer);
+  };
+
+  React.useEffect(() => {
+    return () => {
+      if (clickTimer) {
+        clearTimeout(clickTimer);
+      }
+    };
+  }, [clickTimer]);
 
   return (
     <div
@@ -73,15 +102,9 @@ const DraggablePost: React.FC<DraggablePostProps> = ({ post, onPreviewPost, getF
         hover:bg-accent/50 transition-all duration-200 cursor-grab active:cursor-grabbing
         shadow-sm hover:shadow-md transform hover:scale-105
         ${isUpdating ? 'animate-pulse' : ''}
-        ${isDragging ? 'shadow-lg rotate-2' : ''}
+        ${isDragging ? 'shadow-lg ring-2 ring-primary/60 bg-primary/10' : ''}
       `}
-      onClick={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        if (!isDragging) {
-          onPreviewPost(post);
-        }
-      }}
+      onClick={handleClick}
     >
       <span className="text-lg flex-shrink-0">{getFormatIcon(post.formato_postagem)}</span>
       <div className="flex-1 min-w-0">
@@ -1100,6 +1123,7 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
   const handleDragStart = (event: DragStartEvent) => {
     const postId = event.active.id as string;
     const post = [...posts, ...postsGerados].find(p => p.id === postId);
+    console.log('Drag started:', { postId, post: post?.titulo });
     setDraggedPost(post);
   };
 
@@ -1107,7 +1131,11 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
     const { active, over } = event;
     setDraggedPost(null);
 
-    console.log('Drag ended:', { active: active.id, over: over?.id });
+    console.log('Drag ended:', { 
+      activeId: active.id, 
+      overId: over?.id,
+      activePost: [...posts, ...postsGerados].find(p => p.id === active.id)?.titulo
+    });
 
     if (!over) {
       console.log('No drop target found');
