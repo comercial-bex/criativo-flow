@@ -98,22 +98,58 @@ const DraggablePost: React.FC<DraggablePostProps> = ({ post, onPreviewPost, getF
       {...attributes}
       {...listeners}
       className={`
-        flex items-center gap-2 p-2 rounded-lg border border-border bg-card
+        p-3 mb-2 bg-card border border-border rounded-lg
         hover:bg-accent/50 transition-all duration-200 cursor-grab active:cursor-grabbing
-        shadow-sm hover:shadow-md transform hover:scale-105
+        shadow-sm hover:shadow-md
         ${isUpdating ? 'animate-pulse' : ''}
-        ${isDragging ? 'shadow-lg ring-2 ring-primary/60 bg-primary/10' : ''}
+        ${isDragging ? 'shadow-lg ring-2 ring-primary/60 bg-primary/10 rotate-1 scale-105' : ''}
       `}
       onClick={handleClick}
     >
-      <span className="text-lg flex-shrink-0">{getFormatIcon(post.formato_postagem)}</span>
-      <div className="flex-1 min-w-0">
-        <div className="font-medium text-sm text-foreground truncate" title={post.titulo}>
-          {post.titulo.length > 20 ? `${post.titulo.substring(0, 20)}...` : post.titulo}
+      <div className="space-y-2">
+        {/* Header with format and type */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="text-base">{getFormatIcon(post.formato_postagem)}</span>
+            <Badge 
+              variant="secondary" 
+              className="text-xs px-2 py-0.5"
+            >
+              {post.formato_postagem.toUpperCase()}
+            </Badge>
+          </div>
+          <Badge 
+            variant="outline" 
+            className="text-xs px-2 py-0.5"
+          >
+            {post.tipo_criativo === 'imagem' ? '🖼️' : '🎬'} {post.tipo_criativo}
+          </Badge>
         </div>
-        <div className="text-xs text-muted-foreground">{post.formato_postagem}</div>
+
+        {/* Image preview if available */}
+        {post.anexo_url && (
+          <div className={`relative overflow-hidden rounded-md ${
+            post.formato_postagem === 'story' || post.formato_postagem === 'reel' 
+              ? 'aspect-[9/16] max-h-20' 
+              : 'aspect-square max-h-16'
+          }`}>
+            <img 
+              src={post.anexo_url} 
+              alt={post.titulo}
+              className="w-full h-full object-cover"
+            />
+          </div>
+        )}
+
+        {/* Content */}
+        <div className="space-y-1">
+          <p className="text-sm font-medium line-clamp-2 leading-tight">{post.titulo}</p>
+          <Badge variant="outline" className="text-xs">
+            🎯 {post.objetivo_postagem?.replace('_', ' ') || 'Objetivo não definido'}
+          </Badge>
+        </div>
       </div>
-      {isUpdating && <Loader2 className="h-4 w-4 animate-spin flex-shrink-0 text-primary" />}
+      {isUpdating && <Loader2 className="h-4 w-4 animate-spin absolute top-2 right-2 text-primary" />}
     </div>
   );
 };
@@ -139,7 +175,7 @@ const DroppableDay: React.FC<DroppableDayProps> = ({ day, dateStr, dayPosts, onP
     <div
       ref={setNodeRef}
       className={`
-        min-h-[120px] p-3 border-2 rounded-xl transition-all duration-300
+        min-h-[280px] max-h-[400px] p-3 border-2 rounded-xl transition-all duration-300 overflow-hidden
         ${day ? 'bg-card hover:bg-accent/30 border-border' : 'bg-muted/30 border-muted-foreground/20'}
         ${isOver && day ? 'ring-2 ring-primary/60 bg-primary/10 border-primary/40 shadow-lg' : ''}
         ${isToday ? 'ring-2 ring-blue-400 bg-blue-50/50' : ''}
@@ -149,7 +185,7 @@ const DroppableDay: React.FC<DroppableDayProps> = ({ day, dateStr, dayPosts, onP
       {day && (
         <>
           <div className={`
-            text-base font-semibold mb-3 flex items-center justify-between
+            text-base font-semibold mb-3 flex items-center justify-between sticky top-0 bg-card/80 backdrop-blur-sm rounded px-2 py-1
             ${isToday ? 'text-blue-600' : 'text-foreground'}
           `}>
             <span>{day}</span>
@@ -159,7 +195,7 @@ const DroppableDay: React.FC<DroppableDayProps> = ({ day, dateStr, dayPosts, onP
               </span>
             )}
           </div>
-          <div className="space-y-2 max-h-[80px] overflow-y-auto scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent">
+          <div className="space-y-2 max-h-[320px] overflow-y-auto scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent">
             {dayPosts.map((post) => (
               <DraggablePost
                 key={post.id}
@@ -169,10 +205,18 @@ const DroppableDay: React.FC<DroppableDayProps> = ({ day, dateStr, dayPosts, onP
                 isUpdating={atualizandoPost === post.id}
               />
             ))}
-            {dayPosts.length === 0 && (
-              <div className="text-xs text-muted-foreground/60 text-center py-4 border-2 border-dashed border-muted-foreground/20 rounded-lg">
-                <div>📅</div>
-                <div>Adicione posts</div>
+            {dayPosts.length === 0 && !isOver && (
+              <div className="text-xs text-muted-foreground/60 text-center py-8 border-2 border-dashed border-muted-foreground/20 rounded-lg">
+                <div className="text-2xl mb-2">📝</div>
+                <div>Arraste posts aqui</div>
+              </div>
+            )}
+            {isOver && (
+              <div className="mt-2 p-3 border border-primary/30 rounded-lg bg-primary/10 text-xs text-primary animate-pulse">
+                <div className="flex items-center gap-2">
+                  <span>📌</span>
+                  <span>Soltar post aqui</span>
+                </div>
               </div>
             )}
           </div>
@@ -1139,6 +1183,7 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
 
     if (!over) {
       console.log('No drop target found');
+      toast.error('Não foi possível mover o post. Tente novamente.');
       return;
     }
 
@@ -1146,6 +1191,13 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
     const newDateStr = over.id as string;
 
     console.log('Attempting to move post:', postId, 'to date:', newDateStr);
+
+    // Validar se é uma data válida
+    if (!newDateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
+      console.log('Invalid date format:', newDateStr);
+      toast.error('Data inválida para mover o post.');
+      return;
+    }
 
     // Verificar se é uma data válida
     if (!newDateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
@@ -1789,54 +1841,58 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
                     onDragStart={handleDragStart}
                     onDragEnd={handleDragEnd}
                   >
-                    <div className="flex items-center justify-between mb-6">
-                      <div className="flex items-center gap-3">
-                        <Button variant="outline" size="sm" onClick={() => navigateMonth('prev')}>
-                          <ChevronLeft className="h-4 w-4" />
-                        </Button>
-                        <span className="text-lg font-semibold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                          {currentDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}
-                        </span>
-                        <Button variant="outline" size="sm" onClick={() => navigateMonth('next')}>
-                          <ChevronRight className="h-4 w-4" />
+                    <SortableContext 
+                      items={postsGerados.map(p => p.id)}
+                    >
+                      <div className="flex items-center justify-between mb-6">
+                        <div className="flex items-center gap-3">
+                          <Button variant="outline" size="sm" onClick={() => navigateMonth('prev')}>
+                            <ChevronLeft className="h-4 w-4" />
+                          </Button>
+                          <span className="text-lg font-semibold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                            {currentDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}
+                          </span>
+                          <Button variant="outline" size="sm" onClick={() => navigateMonth('next')}>
+                            <ChevronRight className="h-4 w-4" />
+                          </Button>
+                        </div>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => setCalendarioExpanded(true)}
+                          className="bg-primary/5 hover:bg-primary/10 border-primary/20"
+                        >
+                          <Calendar className="h-4 w-4 mr-1" />
+                          Visualizar Completo
                         </Button>
                       </div>
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        onClick={() => setCalendarioExpanded(true)}
-                        className="bg-primary/5 hover:bg-primary/10 border-primary/20"
-                      >
-                        <Calendar className="h-4 w-4 mr-1" />
-                        Visualizar Completo
-                      </Button>
-                    </div>
-                    
-                    <div className="grid grid-cols-7 gap-4 mb-4 p-4 bg-muted/30 rounded-lg">
-                      {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map(day => (
-                        <div key={day} className="p-3 text-center text-sm font-bold text-muted-foreground uppercase tracking-wide">
-                          {day}
-                        </div>
-                      ))}
-                    </div>
-                    <div className="grid grid-cols-7 gap-4 p-4 bg-background border rounded-xl shadow-sm">
-                      {getDaysInMonth().map((day, index) => {
-                        const dayPosts = day ? getPostsForDay(day) : [];
-                        const dateStr = day ? `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}` : '';
-                        
-                        return (
-                          <DroppableDay
-                            key={index}
-                            day={day}
-                            dateStr={dateStr}
-                            dayPosts={dayPosts}
-                            onPreviewPost={onPreviewPost}
-                            getFormatIcon={getFormatIcon}
-                            atualizandoPost={atualizandoPost}
-                          />
-                        );
-                      })}
-                    </div>
+                      
+                      <div className="grid grid-cols-7 gap-2 mb-4 p-4 bg-muted/30 rounded-lg">
+                        {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map(day => (
+                          <div key={day} className="p-3 text-center text-sm font-bold text-muted-foreground uppercase tracking-wide">
+                            {day}
+                          </div>
+                        ))}
+                      </div>
+                      <div className="grid grid-cols-7 gap-2 p-4 bg-background border rounded-xl shadow-sm">
+                        {getDaysInMonth().map((day, index) => {
+                          const dayPosts = day ? getPostsForDay(day) : [];
+                          const dateStr = day ? `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}` : '';
+                          
+                          return (
+                            <DroppableDay
+                              key={index}
+                              day={day}
+                              dateStr={dateStr}
+                              dayPosts={dayPosts}
+                              onPreviewPost={onPreviewPost}
+                              getFormatIcon={getFormatIcon}
+                              atualizandoPost={atualizandoPost}
+                            />
+                          );
+                        })}
+                      </div>
+                    </SortableContext>
                     <DragOverlay>
                       {draggedPost ? (
                         <div className="flex items-center gap-2 p-2 rounded-lg border border-primary bg-primary/10 shadow-lg">
