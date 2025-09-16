@@ -923,7 +923,10 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
 
       if (error) throw error;
 
-      setPosts([...posts.filter(p => !novosPost.find(np => np.data_postagem === p.data_postagem)), ...data]);
+      // Atualizar estado local com os novos posts
+      const updatedPosts = [...posts.filter(p => !novosPost.find(np => np.data_postagem === p.data_postagem)), ...data];
+      setPosts(updatedPosts);
+      
       toast.success('Posts salvos no calendário!');
     } catch (error) {
       console.error('Erro ao salvar posts:', error);
@@ -996,7 +999,22 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
   const getPostsForDay = (day: number) => {
     if (!day) return [];
     const dateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-    return posts.filter(post => post.data_postagem === dateStr);
+    
+    // Combinar posts do banco com posts gerados localmente
+    const postsFromDb = posts.filter(post => post.data_postagem === dateStr);
+    const postsFromGenerated = postsGerados.filter(post => {
+      const postDate = new Date(post.data_postagem);
+      const postDateStr = `${postDate.getFullYear()}-${String(postDate.getMonth() + 1).padStart(2, '0')}-${String(postDate.getDate()).padStart(2, '0')}`;
+      return postDateStr === dateStr;
+    });
+    
+    // Combinar e remover duplicatas baseado no título
+    const allPosts = [...postsFromDb, ...postsFromGenerated];
+    const uniquePosts = allPosts.filter((post, index, self) => 
+      index === self.findIndex(p => p.titulo === post.titulo)
+    );
+    
+    return uniquePosts;
   };
 
   const getFormatIcon = (formato: string) => {
@@ -1636,10 +1654,10 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
             </CardContent>
           </Card>
 
-          <CalendarioEditorial
+            <CalendarioEditorial
             isOpen={calendarioExpanded}
             onClose={() => setCalendarioExpanded(false)}
-            posts={posts}
+            posts={[...posts, ...postsGerados]}
             onPostClick={onPreviewPost}
           />
         </TabsContent>
