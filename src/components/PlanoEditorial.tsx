@@ -61,25 +61,31 @@ const DraggablePost: React.FC<DraggablePostProps> = ({ post, onPreviewPost, getF
     opacity: isDragging ? 0.5 : 1,
   };
 
+  const handleClick = (e: React.MouseEvent) => {
+    // Only trigger onClick if it's not a drag operation
+    if (!isDragging) {
+      e.stopPropagation();
+      onPreviewPost(post);
+    }
+  };
+
   return (
     <div
       ref={setNodeRef}
       style={style}
       {...attributes}
-      {...listeners}
       className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-xs hover:bg-primary/10 transition-colors cursor-grab active:cursor-grabbing group ${
         isUpdating ? 'animate-pulse' : ''
       } ${isDragging ? 'z-50' : ''}`}
-      onClick={(e) => {
-        e.stopPropagation();
-        onPreviewPost(post);
-      }}
+      onClick={handleClick}
     >
-      <span className="text-primary text-sm flex-shrink-0">{getFormatIcon(post.formato_postagem)}</span>
-      <span className="flex-1 truncate text-xs font-medium text-foreground" title={post.titulo}>
-        {post.titulo.length > 18 ? `${post.titulo.substring(0, 18)}...` : post.titulo}
-      </span>
-      {isUpdating && <Loader2 className="h-3 w-3 animate-spin flex-shrink-0" />}
+      <div {...listeners} className="flex items-center gap-1 w-full">
+        <span className="text-primary text-sm flex-shrink-0">{getFormatIcon(post.formato_postagem)}</span>
+        <span className="flex-1 truncate text-xs font-medium text-foreground" title={post.titulo}>
+          {post.titulo.length > 18 ? `${post.titulo.substring(0, 18)}...` : post.titulo}
+        </span>
+        {isUpdating && <Loader2 className="h-3 w-3 animate-spin flex-shrink-0" />}
+      </div>
     </div>
   );
 };
@@ -107,27 +113,25 @@ const DroppableDay: React.FC<DroppableDayProps> = ({ day, dateStr, dayPosts, onP
       } ${isOver && day ? 'ring-2 ring-primary/50 bg-primary/5' : ''}`}
     >
       {day && (
-        <SortableContext items={dayPosts.map(p => p.id)} strategy={verticalListSortingStrategy}>
-          <>
-            <div className="text-sm font-medium mb-1 text-foreground">{day}</div>
-            <div className="space-y-0.5 max-h-[40px] overflow-y-auto">
-              {dayPosts.map((post) => (
-                <DraggablePost
-                  key={post.id}
-                  post={post}
-                  onPreviewPost={onPreviewPost}
-                  getFormatIcon={getFormatIcon}
-                  isUpdating={atualizandoPost === post.id}
-                />
-              ))}
-              {dayPosts.length === 0 && (
-                <div className="text-xs text-muted-foreground/60 text-center py-1">
-                  Sem posts
-                </div>
-              )}
-            </div>
-          </>
-        </SortableContext>
+        <>
+          <div className="text-sm font-medium mb-1 text-foreground">{day}</div>
+          <div className="space-y-0.5 max-h-[40px] overflow-y-auto">
+            {dayPosts.map((post) => (
+              <DraggablePost
+                key={post.id}
+                post={post}
+                onPreviewPost={onPreviewPost}
+                getFormatIcon={getFormatIcon}
+                isUpdating={atualizandoPost === post.id}
+              />
+            ))}
+            {dayPosts.length === 0 && (
+              <div className="text-xs text-muted-foreground/60 text-center py-1">
+                Sem posts
+              </div>
+            )}
+          </div>
+        </>
       )}
     </div>
   );
@@ -1080,18 +1084,37 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
     const { active, over } = event;
     setDraggedPost(null);
 
-    if (!over) return;
+    console.log('Drag ended:', { active: active.id, over: over?.id });
+
+    if (!over) {
+      console.log('No drop target found');
+      return;
+    }
 
     const postId = active.id as string;
     const newDateStr = over.id as string;
 
+    console.log('Attempting to move post:', postId, 'to date:', newDateStr);
+
     // Verificar se é uma data válida
-    if (!newDateStr.match(/^\d{4}-\d{2}-\d{2}$/)) return;
+    if (!newDateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
+      console.log('Invalid date format:', newDateStr);
+      return;
+    }
 
     // Encontrar o post nos arrays
     const post = [...posts, ...postsGerados].find(p => p.id === postId);
-    if (!post || post.data_postagem === newDateStr) return;
+    if (!post) {
+      console.log('Post not found:', postId);
+      return;
+    }
+    
+    if (post.data_postagem === newDateStr) {
+      console.log('Post already on this date');
+      return;
+    }
 
+    console.log('Moving post from', post.data_postagem, 'to', newDateStr);
     atualizarDataPost(postId, newDateStr);
   };
 
@@ -1812,7 +1835,7 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
                 onDragStart={handleDragStart}
                 onDragEnd={handleDragEnd}
               >
-                <SortableContext items={[...posts, ...postsGerados].map(p => p.id)} strategy={verticalListSortingStrategy}>
+                <SortableContext items={[...posts, ...postsGerados].map(p => p.id)}>
                   <div className="grid grid-cols-7 gap-2 mb-4">
                     {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map(day => (
                       <div key={day} className="p-3 text-center text-sm font-medium text-muted-foreground">
