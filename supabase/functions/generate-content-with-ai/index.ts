@@ -59,49 +59,70 @@ serve(async (req) => {
     if (isJsonRequest) {
       let parsedContent;
       try {
-        parsedContent = JSON.parse(generatedText);
-      } catch {
-        // Se não conseguir parsear, criar estrutura padrão
-        parsedContent = {
-          posts: [
-            {
-              titulo: "Post Inspiracional",
-              descricao: "Conteúdo motivacional para engajar a audiência",
-              hashtags: ["#motivacao", "#inspiracao", "#empreendedorismo"],
-              objetivo: "Engajamento",
-              formato: "post"
-            },
-            {
-              titulo: "Dica Valiosa", 
-              descricao: "Compartilhe conhecimento útil para seu público",
-              hashtags: ["#dicas", "#conhecimento", "#aprendizado"],
-              objetivo: "Educação",
-              formato: "post"
-            }
-          ],
-          reels: [
-            {
-              titulo: "Tutorial Rápido",
-              descricao: "Como fazer algo em 60 segundos",
-              hashtags: ["#tutorial", "#pratico", "#rapido"],
-              objetivo: "Educação",
-              formato: "reel"
-            }
-          ],
-          carrosseis: [
-            {
-              titulo: "Guia Completo",
-              descricao: "Passo a passo detalhado sobre o tema",
-              hashtags: ["#guia", "#passoapasso", "#completo"],
-              objetivo: "Educação", 
-              formato: "carrossel"
-            }
-          ]
-        };
+        // Limpar o texto antes de parsear
+        let cleanText = generatedText.trim();
+        
+        // Remover markdown code blocks se existirem
+        if (cleanText.startsWith('```json')) {
+          cleanText = cleanText.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+        } else if (cleanText.startsWith('```')) {
+          cleanText = cleanText.replace(/^```\s*/, '').replace(/\s*```$/, '');
+        }
+        
+        parsedContent = JSON.parse(cleanText);
+        
+        // Verificar se é array direto ou objeto com propriedades
+        if (Array.isArray(parsedContent)) {
+          console.log('Resposta é array direto:', parsedContent.length, 'posts');
+          return new Response(JSON.stringify(parsedContent), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        } else if (parsedContent.posts || parsedContent.reels || parsedContent.carrosseis) {
+          // Converter estrutura antiga para array
+          let allPosts = [];
+          if (parsedContent.posts) allPosts = allPosts.concat(parsedContent.posts);
+          if (parsedContent.reels) allPosts = allPosts.concat(parsedContent.reels);
+          if (parsedContent.carrosseis) allPosts = allPosts.concat(parsedContent.carrosseis);
+          
+          console.log('Convertendo estrutura para array:', allPosts.length, 'posts');
+          return new Response(JSON.stringify(allPosts), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        } else {
+          throw new Error('Estrutura JSON inválida');
+        }
+        
+      } catch (parseError) {
+        console.error('Erro ao parsear JSON:', parseError);
+        console.log('Texto original:', generatedText);
+        
+        // Fallback: criar array de posts padrão
+        const fallbackPosts = [
+          {
+            titulo: "Post Inspiracional",
+            objetivo_postagem: "Engajamento",
+            tipo_criativo: "post_simples",
+            formato_postagem: "post",
+            legenda: "🌟 Inspire-se todos os dias! A criatividade é o que move nossos sonhos para a realidade. Venha descobrir como podemos ajudar você a criar algo incrível! ✨ #inspiracao #criatividade #sonhos #realizacao #motivacao",
+            componente_hesec: "HESEC: Emoções",
+            persona_alvo: "Maria da Costura"
+          },
+          {
+            titulo: "Dica Valiosa", 
+            objetivo_postagem: "Educação",
+            tipo_criativo: "post_simples",
+            formato_postagem: "post",
+            legenda: "💡 Dica do dia: Escolher o tecido certo faz toda a diferença no seu projeto! Venha conhecer nossa seleção exclusiva e deixe sua criação ainda mais especial. 🧵 #dicas #tecidos #qualidade #projetos #conhecimento",
+            componente_hesec: "HESEC: Educação",
+            persona_alvo: "Lucas Designer"
+          }
+        ];
+        
+        console.log('Usando fallback com', fallbackPosts.length, 'posts');
+        return new Response(JSON.stringify(fallbackPosts), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
       }
-      return new Response(JSON.stringify(parsedContent), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
     } else {
       // Para requests de texto simples, retornar o texto diretamente
       return new Response(JSON.stringify(generatedText), {
