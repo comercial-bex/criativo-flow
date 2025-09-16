@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, ChevronLeft, ChevronRight, Loader2, Users, Target, BookOpen, Sparkles, Save, Eye } from "lucide-react";
+import { Calendar, ChevronLeft, ChevronRight, Loader2, Users, Target, BookOpen, Sparkles, Save, Eye, Undo2, AlertTriangle } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -14,6 +14,7 @@ import { DataTable } from "@/components/DataTable";
 import { DndContext, closestCenter, DragEndEvent, DragStartEvent, DragOverlay, useDroppable } from "@dnd-kit/core";
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { usePostDragDrop } from "@/hooks/usePostDragDrop";
 
 interface PlanoEditorialProps {
   planejamento: {
@@ -255,6 +256,21 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
   const [draggedPost, setDraggedPost] = useState<any>(null);
   const [visualizacaoTabela, setVisualizacaoTabela] = useState(false);
   const [visualizacaoCalendario, setVisualizacaoCalendario] = useState(false);
+  const [salvandoPostsGerados, setSalvandoPostsGerados] = useState(false);
+
+  // Initialize drag & drop hook
+  const {
+    reschedulePost,
+    undoLastAction,
+    checkConflicts,
+    isUpdating,
+    canUndo,
+    validateReschedule
+  } = usePostDragDrop({
+    posts,
+    setPosts,
+    onUndoAction: (message) => toast.info(message)
+  });
 
   const especialistas = [
     { 
@@ -1124,6 +1140,40 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
     }
   };
 
+  const salvarPostsGerados = async () => {
+    if (postsGerados.length === 0) {
+      toast.error('Nenhum post gerado para salvar');
+      return;
+    }
+
+    setSalvandoPostsGerados(true);
+    try {
+      await salvarPostsCalendario(postsGerados);
+      
+      // Limpar posts gerados após salvar
+      setPostsGerados([]);
+      
+      // Recarregar posts do banco para sincronizar
+      const mesAtual = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}`;
+      const { data: postsAtualizados } = await supabase
+        .from('posts_planejamento')
+        .select('*')
+        .eq('planejamento_id', planejamento.id)
+        .like('data_postagem', `${mesAtual}%`);
+
+      if (postsAtualizados) {
+        setPosts(postsAtualizados);
+      }
+
+      toast.success('Todos os posts foram salvos no calendário!');
+    } catch (error) {
+      console.error('Erro ao salvar posts gerados:', error);
+      toast.error('Erro ao salvar posts');
+    } finally {
+      setSalvandoPostsGerados(false);
+    }
+  };
+
   const atualizarDataPost = async (postId: string, novaData: string) => {
     try {
       setAtualizandoPost(postId);
@@ -1771,14 +1821,32 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
               <CardTitle>Geração de Conteúdo</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <Button 
-                onClick={gerarConteudoEditorial}
-                disabled={gerando || !hasCompleteAnalysis()}
-                className="w-full"
-              >
-                {gerando ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                Gerar Conteúdo Editorial
-              </Button>
+              <div className="flex gap-2">
+                <Button 
+                  onClick={gerarConteudoEditorial}
+                  disabled={gerando || !hasCompleteAnalysis()}
+                  className="flex-1"
+                >
+                  {gerando ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                  Gerar Conteúdo Editorial
+                </Button>
+                
+                {postsGerados.length > 0 && (
+                  <Button
+                    onClick={salvarPostsGerados}
+                    disabled={salvandoPostsGerados}
+                    variant="outline"
+                    className="flex items-center gap-2"
+                  >
+                    {salvandoPostsGerados ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Save className="h-4 w-4" />
+                    )}
+                    Salvar Posts ({postsGerados.length})
+                  </Button>
+                )}
+              </div>
               
               {!hasCompleteAnalysis() && (
                 <p className="text-sm text-muted-foreground">
