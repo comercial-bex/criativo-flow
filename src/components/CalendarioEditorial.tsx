@@ -142,12 +142,13 @@ export function CalendarioEditorial({ isOpen, onClose, posts, postsGerados, onPo
   };
 
   const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault(); // SEMPRE primeiro para permitir drop
+    
     if (!draggedPost || !isDraggable(draggedPost)) {
       e.dataTransfer.dropEffect = 'none';
       return;
     }
     
-    e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
   };
 
@@ -253,74 +254,68 @@ export function CalendarioEditorial({ isOpen, onClose, posts, postsGerados, onPo
                     <div
                       key={index}
                       className={`
-                        relative min-h-[80px] border rounded-lg transition-all
+                        relative min-h-[100px] border rounded-lg transition-all cursor-pointer
                         ${isSelected ? 'border-primary bg-primary/5' : 'border-border'}
                         ${!isCurrentMonth ? 'opacity-50' : ''}
                         ${hasContent ? 'bg-gradient-to-br from-primary/5 to-transparent' : ''}
+                        ${isDragActive && isDraggable(draggedPost as any) ? 'border-primary bg-primary/10 border-2' : ''}
                       `}
+                      onDragOver={handleDragOver}
+                      onDrop={(e) => handleDrop(e, date)}
+                      onClick={() => setSelectedDate(date)}
                     >
-                      {/* Header do dia - clicável para seleção */}
-                      <div 
-                        className="text-sm font-medium p-2 pb-1 cursor-pointer hover:bg-accent/30 rounded-t-lg"
-                        onClick={() => setSelectedDate(date)}
-                      >
+                      {/* Header do dia */}
+                      <div className="text-sm font-medium p-2 pb-1 border-b border-border/30">
                         {format(date, 'd')}
                       </div>
                       
-                      {/* Drop Zone para posts */}
-                      <div
-                        className={`
-                          min-h-[50px] p-2 pt-0 transition-all duration-200 rounded-b-lg
-                          ${isDragActive && isDraggable(draggedPost as any) ? 'bg-primary/10 border-primary border-2 border-t-0' : ''}
-                          ${draggedPost ? 'hover:bg-primary/5' : ''}
-                        `}
-                        onDragOver={handleDragOver}
-                        onDrop={(e) => handleDrop(e, date)}
-                      >
+                      {/* Container dos posts */}
+                      <div className="p-1 space-y-1 min-h-[60px]">
                         {datePosts.length > 0 ? (
-                          <div className="space-y-1">
-                            {datePosts.slice(0, 2).map((post) => {
-                              const isGenerated = !post.id || post.id.startsWith('temp-');
-                              const canDrag = isDraggable(post);
-                              
-                              return (
-                                <div
-                                  key={post.id}
-                                  draggable={canDrag}
-                                  onDragStart={(e) => handleDragStart(e, post)}
-                                  onDragEnd={handleDragEnd}
-                                  className={`
-                                    text-xs px-1.5 py-0.5 rounded text-center truncate transition-all relative
-                                    ${canDrag ? 'cursor-grab active:cursor-grabbing hover:scale-105' : 'cursor-not-allowed'}
-                                    ${getFormatColor(post.formato_postagem)}
-                                    ${isGenerated ? 'border-dashed border-orange-300 bg-orange-50/80' : ''}
-                                    ${isUpdating === post.id ? 'opacity-50 cursor-not-allowed' : ''}
-                                    ${draggedPost?.id === post.id ? 'opacity-50 scale-95' : ''}
-                                  `}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    onPostClick(post);
-                                  }}
-                                  title={isGenerated ? "Salve primeiro para reagendar" : "Arraste para reagendar"}
-                                >
-                                  {getFormatIcon(post.formato_postagem)} {post.titulo.slice(0, 8)}...
-                                  {isGenerated && <span className="absolute -top-1 -right-1 w-2 h-2 bg-orange-400 rounded-full animate-pulse" />}
-                                </div>
-                              );
-                            })}
-                            {datePosts.length > 2 && (
-                              <div className="text-xs text-muted-foreground text-center">
-                                +{datePosts.length - 2} mais
+                          datePosts.slice(0, 3).map((post) => {
+                            const isGenerated = !post.id || post.id.startsWith('temp-');
+                            const canDrag = isDraggable(post);
+                            
+                            return (
+                              <div
+                                key={post.id}
+                                draggable={canDrag}
+                                onDragStart={(e) => {
+                                  e.stopPropagation();
+                                  handleDragStart(e, post);
+                                }}
+                                onDragEnd={handleDragEnd}
+                                className={`
+                                  text-xs px-2 py-1 rounded text-center truncate transition-all relative bg-white/80 border
+                                  ${canDrag ? 'cursor-grab active:cursor-grabbing hover:shadow-sm hover:bg-white' : 'cursor-not-allowed opacity-60'}
+                                  ${getFormatColor(post.formato_postagem)}
+                                  ${isGenerated ? 'border-dashed border-orange-300 bg-orange-50/80' : ''}
+                                  ${isUpdating === post.id ? 'opacity-50 cursor-not-allowed' : ''}
+                                  ${draggedPost?.id === post.id ? 'opacity-50 scale-95' : ''}
+                                `}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onPostClick(post);
+                                }}
+                                title={isGenerated ? "Salve primeiro para reagendar" : "Arraste para reagendar"}
+                              >
+                                {getFormatIcon(post.formato_postagem)} {post.titulo.slice(0, 10)}...
+                                {isGenerated && <span className="absolute -top-1 -right-1 w-2 h-2 bg-orange-400 rounded-full animate-pulse" />}
                               </div>
-                            )}
-                          </div>
+                            );
+                          })
                         ) : (
-                          /* Área vazia para drop quando não há posts */
                           <div className={`
-                            h-12 flex items-center justify-center text-xs text-muted-foreground/50 transition-all
-                            ${isDragActive && isDraggable(draggedPost as any) ? 'text-primary font-medium bg-primary/5 border border-dashed border-primary rounded' : ''}
+                            h-full min-h-[50px] flex items-center justify-center text-xs text-muted-foreground/50 transition-all rounded
+                            ${isDragActive && isDraggable(draggedPost as any) ? 'text-primary font-medium bg-primary/5 border-2 border-dashed border-primary' : ''}
                           `}>
-                            {isDragActive && isDraggable(draggedPost as any) ? "Solte aqui" : ""}
+                            {isDragActive && isDraggable(draggedPost as any) ? "📅 Solte aqui" : ""}
+                          </div>
+                        )}
+                        
+                        {datePosts.length > 3 && (
+                          <div className="text-xs text-muted-foreground text-center py-0.5">
+                            +{datePosts.length - 3} mais
                           </div>
                         )}
                       </div>
