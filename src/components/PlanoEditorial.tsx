@@ -247,6 +247,7 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
   const [gerandoMissao, setGerandoMissao] = useState(false);
   const [gerandoPosicionamento, setGerandoPosicionamento] = useState(false);
   const [gerandoPersonas, setGerandoPersonas] = useState(false);
+  const [salvandoConteudoCompleto, setSalvandoConteudoCompleto] = useState(false);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [clienteAssinatura, setClienteAssinatura] = useState<any>(null);
   const [postsGerados, setPostsGerados] = useState<Array<{
@@ -864,6 +865,62 @@ IMPORTANTE: Retorne APENAS o JSON válido, sem texto adicional.
       toast.error('Erro ao salvar personas');
     } finally {
       setSalvandoPersonas(false);
+    }
+  };
+
+  const hasUnsavedContent = () => {
+    return (
+      (conteudo.missao && conteudo.missao.trim().length > 0) ||
+      (conteudo.posicionamento && conteudo.posicionamento.trim().length > 0) ||
+      (conteudo.persona && conteudo.persona.trim().length > 0) ||
+      (conteudo.especialistas_selecionados && conteudo.especialistas_selecionados.length > 0) ||
+      (componentesSelecionados && componentesSelecionados.length > 0)
+    );
+  };
+
+  const salvarConteudoEditorialCompleto = async () => {
+    if (!hasUnsavedContent()) {
+      toast.error('Não há conteúdo para salvar');
+      return;
+    }
+
+    setSalvandoConteudoCompleto(true);
+    try {
+      const updateData = {
+        frameworks_selecionados: componentesSelecionados,
+        especialistas_selecionados: conteudo.especialistas_selecionados,
+        missao: conteudo.missao,
+        posicionamento: conteudo.posicionamento,
+        persona: conteudo.persona
+      };
+
+      if (conteudo.id) {
+        const { error } = await supabase
+          .from('conteudo_editorial')
+          .update(updateData)
+          .eq('id', conteudo.id);
+
+        if (error) throw error;
+      } else {
+        const { data, error } = await supabase
+          .from('conteudo_editorial')
+          .insert({
+            planejamento_id: planejamento.id,
+            ...updateData
+          })
+          .select()
+          .single();
+
+        if (error) throw error;
+        setConteudo(prev => ({ ...prev, id: data.id }));
+      }
+
+      toast.success('Conteúdo editorial completo salvo com sucesso!');
+    } catch (error) {
+      console.error('Erro ao salvar conteúdo editorial:', error);
+      toast.error('Erro ao salvar conteúdo editorial. Tente novamente.');
+    } finally {
+      setSalvandoConteudoCompleto(false);
     }
   };
 
@@ -1851,6 +1908,46 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
                   Gerar Conteúdo Editorial
                 </Button>
                 
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button 
+                      variant="outline"
+                      disabled={salvandoConteudoCompleto || !hasUnsavedContent()}
+                      className="gap-2"
+                    >
+                      {salvandoConteudoCompleto ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Save className="h-4 w-4" />
+                      )}
+                      Salvar Conteúdo Completo
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Salvar Conteúdo Editorial Completo</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Isso irá salvar todos os elementos do conteúdo editorial:
+                        <ul className="list-disc list-inside mt-2 space-y-1">
+                          {conteudo.missao && <li>Missão da empresa</li>}
+                          {conteudo.posicionamento && <li>Posicionamento estratégico</li>}
+                          {conteudo.persona && <li>Personas definidas</li>}
+                          {conteudo.especialistas_selecionados?.length > 0 && <li>{conteudo.especialistas_selecionados.length} especialistas selecionados</li>}
+                          {componentesSelecionados?.length > 0 && <li>{componentesSelecionados.length} frameworks H.E.S.E.C selecionados</li>}
+                        </ul>
+                        <p className="mt-3 text-sm">Deseja prosseguir?</p>
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                      <AlertDialogAction onClick={salvarConteudoEditorialCompleto}>
+                        Salvar Tudo
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
+                
                 {postsGerados.length > 0 && (
                   <div className="flex flex-col items-end gap-3 p-4 bg-muted/50 rounded-lg border border-border">
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -1915,7 +2012,6 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
                     </div>
                   </div>
                 )}
-              </div>
               
               {!hasCompleteAnalysis() && (
                 <p className="text-sm text-muted-foreground">
