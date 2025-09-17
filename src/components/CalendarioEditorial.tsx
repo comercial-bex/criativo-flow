@@ -7,6 +7,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { CalendarDays, Instagram, Eye, ChevronLeft, ChevronRight } from "lucide-react";
 import { format, isSameDay, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { usePostDragDrop } from "@/hooks/usePostDragDrop";
+import { toast } from "sonner";
 
 interface Post {
   id: string;
@@ -27,14 +29,31 @@ interface CalendarioEditorialProps {
   onClose: () => void;
   posts: Post[];
   onPostClick: (post: Post) => void;
+  onPostsUpdate?: (posts: Post[]) => void;
 }
 
-export function CalendarioEditorial({ isOpen, onClose, posts, onPostClick }: CalendarioEditorialProps) {
+export function CalendarioEditorial({ isOpen, onClose, posts, onPostClick, onPostsUpdate }: CalendarioEditorialProps) {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
+  const [draggedPost, setDraggedPost] = useState<Post | null>(null);
+  const [localPosts, setLocalPosts] = useState<Post[]>(posts);
+
+  // Update local posts when props change
+  useEffect(() => {
+    setLocalPosts(posts);
+  }, [posts]);
+
+  // Initialize drag and drop hook
+  const { reschedulePost, isUpdating } = usePostDragDrop({
+    posts: localPosts,
+    setPosts: (updatedPosts) => {
+      setLocalPosts(updatedPosts);
+      onPostsUpdate?.(updatedPosts);
+    }
+  });
 
   const getPostsForDate = (date: Date) => {
-    return posts.filter(post => 
+    return localPosts.filter(post => 
       isSameDay(new Date(post.data_postagem), date)
     );
   };
@@ -78,6 +97,47 @@ export function CalendarioEditorial({ isOpen, onClose, posts, onPostClick }: Cal
       newMonth.setMonth(currentMonth.getMonth() + 1);
     }
     setCurrentMonth(newMonth);
+  };
+
+  // Drag and drop handlers
+  const handleDragStart = (e: React.DragEvent, post: Post) => {
+    setDraggedPost(post);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleDrop = async (e: React.DragEvent, targetDate: Date) => {
+    e.preventDefault();
+    
+    if (!draggedPost) return;
+
+    const newDateString = format(targetDate, 'yyyy-MM-dd');
+    const oldDateString = draggedPost.data_postagem;
+
+    // Skip if dropping on same date
+    if (newDateString === oldDateString) {
+      setDraggedPost(null);
+      return;
+    }
+
+    // Perform reschedule
+    const result = await reschedulePost({
+      postId: draggedPost.id,
+      newDate: newDateString,
+      oldDate: oldDateString
+    });
+
+    if (result.success) {
+      toast.success('Post reagendado com sucesso!');
+    } else {
+      toast.error(result.error || 'Erro ao reagendar post');
+    }
+
+    setDraggedPost(null);
   };
 
   const monthData = getPostsForMonth();
@@ -145,8 +205,11 @@ export function CalendarioEditorial({ isOpen, onClose, posts, onPostClick }: Cal
                         ${isSelected ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}
                         ${!isCurrentMonth ? 'opacity-50' : ''}
                         ${hasContent ? 'bg-gradient-to-br from-primary/5 to-transparent' : ''}
+                        ${draggedPost ? 'hover:border-primary hover:bg-primary/10' : ''}
                       `}
                       onClick={() => setSelectedDate(date)}
+                      onDragOver={handleDragOver}
+                      onDrop={(e) => handleDrop(e, date)}
                     >
                       <div className="text-sm font-medium mb-1">
                         {format(date, 'd')}
@@ -157,7 +220,19 @@ export function CalendarioEditorial({ isOpen, onClose, posts, onPostClick }: Cal
                           {datePosts.slice(0, 2).map((post, postIndex) => (
                             <div
                               key={post.id}
-                              className={`text-xs px-1.5 py-0.5 rounded text-center truncate ${getFormatColor(post.formato_postagem)}`}
+                              draggable
+                              onDragStart={(e) => handleDragStart(e, post)}
+                              className={`
+                                text-xs px-1.5 py-0.5 rounded text-center truncate cursor-grab active:cursor-grabbing
+                                ${getFormatColor(post.formato_postagem)}
+                                ${isUpdating === post.id ? 'opacity-50 cursor-not-allowed' : ''}
+                                ${draggedPost?.id === post.id ? 'opacity-50 scale-95' : ''}
+                                hover:scale-105 transition-transform
+                              `}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onPostClick(post);
+                              }}
                             >
                               {getFormatIcon(post.formato_postagem)} {post.titulo.slice(0, 10)}...
                             </div>
@@ -199,7 +274,17 @@ export function CalendarioEditorial({ isOpen, onClose, posts, onPostClick }: Cal
             ) : (
               <div className="space-y-3">
                 {selectedDatePosts.map((post) => (
-                  <Card key={post.id} className="p-4 cursor-pointer hover:shadow-md transition-shadow">
+                  <Card 
+                    key={post.id} 
+                    draggable
+                    onDragStart={(e) => handleDragStart(e, post)}
+                    className={`
+                      p-4 cursor-grab active:cursor-grabbing hover:shadow-md transition-all
+                      ${isUpdating === post.id ? 'opacity-50 cursor-not-allowed' : ''}
+                      ${draggedPost?.id === post.id ? 'opacity-50 scale-95' : ''}
+                      hover:scale-[1.02]
+                    `}
+                  >
                     <div className="space-y-3">
                       {post.anexo_url && (
                         <div className={`relative overflow-hidden rounded-lg ${
