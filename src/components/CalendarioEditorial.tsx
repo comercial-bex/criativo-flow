@@ -24,19 +24,33 @@ interface Post {
   descricao?: string;
 }
 
+interface PostGerado {
+  id?: string;
+  titulo: string;
+  objetivo_postagem: string;
+  tipo_criativo: string;
+  formato_postagem: string;
+  data_postagem: string;
+  status: 'pendente' | 'salvo';
+  data_salvamento?: string;
+  anexo_url?: string;
+}
+
 interface CalendarioEditorialProps {
   isOpen: boolean;
   onClose: () => void;
-  posts: Post[];
-  onPostClick: (post: Post) => void;
+  posts: Post[]; // Posts salvos no banco
+  postsGerados: PostGerado[]; // Posts gerados temporariamente
+  onPostClick: (post: Post | PostGerado) => void;
   onPostsUpdate?: (posts: Post[]) => void;
 }
 
-export function CalendarioEditorial({ isOpen, onClose, posts, onPostClick, onPostsUpdate }: CalendarioEditorialProps) {
+export function CalendarioEditorial({ isOpen, onClose, posts, postsGerados, onPostClick, onPostsUpdate }: CalendarioEditorialProps) {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
-  const [draggedPost, setDraggedPost] = useState<Post | null>(null);
+  const [draggedPost, setDraggedPost] = useState<Post | PostGerado | null>(null);
   const [localPosts, setLocalPosts] = useState<Post[]>(posts);
+  const [isDragActive, setIsDragActive] = useState<boolean>(false);
 
   // Update local posts when props change
   useEffect(() => {
@@ -52,10 +66,25 @@ export function CalendarioEditorial({ isOpen, onClose, posts, onPostClick, onPos
     }
   });
 
+  // Verificar se um post pode ser arrastado
+  const isDraggable = (post: Post | PostGerado): boolean => {
+    return post.id !== undefined && !post.id.startsWith('temp-');
+  };
+
   const getPostsForDate = (date: Date) => {
     return localPosts.filter(post => 
       isSameDay(new Date(post.data_postagem), date)
     );
+  };
+
+  const getPostsGeradosForDate = (date: Date) => {
+    return postsGerados.filter(post => 
+      isSameDay(new Date(post.data_postagem), date)
+    );
+  };
+
+  const getAllPostsForDate = (date: Date) => {
+    return [...getPostsForDate(date), ...getPostsGeradosForDate(date)];
   };
 
   const getPostsForMonth = () => {
@@ -65,7 +94,7 @@ export function CalendarioEditorial({ isOpen, onClose, posts, onPostClick, onPos
     
     return days.map(day => ({
       date: day,
-      posts: getPostsForDate(day)
+      posts: getAllPostsForDate(day)
     }));
   };
 
@@ -100,20 +129,36 @@ export function CalendarioEditorial({ isOpen, onClose, posts, onPostClick, onPos
   };
 
   // Drag and drop handlers
-  const handleDragStart = (e: React.DragEvent, post: Post) => {
+  const handleDragStart = (e: React.DragEvent, post: Post | PostGerado) => {
+    if (!isDraggable(post)) {
+      e.preventDefault();
+      toast.info('Salve os posts gerados primeiro para poder reagendá-los');
+      return;
+    }
+    
     setDraggedPost(post);
+    setIsDragActive(true);
     e.dataTransfer.effectAllowed = 'move';
   };
 
   const handleDragOver = (e: React.DragEvent) => {
+    if (!draggedPost || !isDraggable(draggedPost)) {
+      e.dataTransfer.dropEffect = 'none';
+      return;
+    }
+    
     e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
   };
 
   const handleDrop = async (e: React.DragEvent, targetDate: Date) => {
     e.preventDefault();
+    setIsDragActive(false);
     
-    if (!draggedPost) return;
+    if (!draggedPost || !isDraggable(draggedPost)) {
+      setDraggedPost(null);
+      return;
+    }
 
     const newDateString = format(targetDate, 'yyyy-MM-dd');
     const oldDateString = draggedPost.data_postagem;
@@ -140,8 +185,15 @@ export function CalendarioEditorial({ isOpen, onClose, posts, onPostClick, onPos
     setDraggedPost(null);
   };
 
+  const handleDragEnd = () => {
+    setIsDragActive(false);
+    setDraggedPost(null);
+  };
+
   const monthData = getPostsForMonth();
   const selectedDatePosts = getPostsForDate(selectedDate);
+  const selectedDatePostsGerados = getPostsGeradosForDate(selectedDate);
+  const allSelectedDatePosts = getAllPostsForDate(selectedDate);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -205,6 +257,7 @@ export function CalendarioEditorial({ isOpen, onClose, posts, onPostClick, onPos
                         ${isSelected ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}
                         ${!isCurrentMonth ? 'opacity-50' : ''}
                         ${hasContent ? 'bg-gradient-to-br from-primary/5 to-transparent' : ''}
+                        ${isDragActive && isDraggable(draggedPost as any) ? 'border-dashed border-2 border-primary/50 bg-primary/5' : ''}
                         ${draggedPost ? 'hover:border-primary hover:bg-primary/10' : ''}
                       `}
                       onClick={() => setSelectedDate(date)}
@@ -217,26 +270,35 @@ export function CalendarioEditorial({ isOpen, onClose, posts, onPostClick, onPos
                       
                       {datePosts.length > 0 && (
                         <div className="space-y-1">
-                          {datePosts.slice(0, 2).map((post, postIndex) => (
-                            <div
-                              key={post.id}
-                              draggable
-                              onDragStart={(e) => handleDragStart(e, post)}
-                              className={`
-                                text-xs px-1.5 py-0.5 rounded text-center truncate cursor-grab active:cursor-grabbing
-                                ${getFormatColor(post.formato_postagem)}
-                                ${isUpdating === post.id ? 'opacity-50 cursor-not-allowed' : ''}
-                                ${draggedPost?.id === post.id ? 'opacity-50 scale-95' : ''}
-                                hover:scale-105 transition-transform
-                              `}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                onPostClick(post);
-                              }}
-                            >
-                              {getFormatIcon(post.formato_postagem)} {post.titulo.slice(0, 10)}...
-                            </div>
-                          ))}
+                          {datePosts.slice(0, 2).map((post) => {
+                            const isGenerated = !post.id || post.id.startsWith('temp-');
+                            const canDrag = isDraggable(post);
+                            
+                            return (
+                              <div
+                                key={post.id}
+                                draggable={canDrag}
+                                onDragStart={(e) => handleDragStart(e, post)}
+                                onDragEnd={handleDragEnd}
+                                className={`
+                                  text-xs px-1.5 py-0.5 rounded text-center truncate transition-all relative
+                                  ${canDrag ? 'cursor-grab active:cursor-grabbing hover:scale-105' : 'cursor-not-allowed'}
+                                  ${getFormatColor(post.formato_postagem)}
+                                  ${isGenerated ? 'border-dashed border-orange-300 bg-orange-50/80' : ''}
+                                  ${isUpdating === post.id ? 'opacity-50 cursor-not-allowed' : ''}
+                                  ${draggedPost?.id === post.id ? 'opacity-50 scale-95' : ''}
+                                `}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onPostClick(post);
+                                }}
+                                title={isGenerated ? "Salve primeiro para reagendar" : "Arraste para reagendar"}
+                              >
+                                {getFormatIcon(post.formato_postagem)} {post.titulo.slice(0, 8)}...
+                                {isGenerated && <span className="absolute -top-1 -right-1 w-2 h-2 bg-orange-400 rounded-full animate-pulse" />}
+                              </div>
+                            );
+                          })}
                           {datePosts.length > 2 && (
                             <div className="text-xs text-muted-foreground text-center">
                               +{datePosts.length - 2} mais
@@ -258,11 +320,14 @@ export function CalendarioEditorial({ isOpen, onClose, posts, onPostClick, onPos
                 {format(selectedDate, "dd 'de' MMMM", { locale: ptBR })}
               </h3>
               <p className="text-sm text-muted-foreground">
-                {selectedDatePosts.length} {selectedDatePosts.length === 1 ? 'postagem' : 'postagens'} programada{selectedDatePosts.length !== 1 ? 's' : ''}
+                {allSelectedDatePosts.length} {allSelectedDatePosts.length === 1 ? 'postagem' : 'postagens'} programada{allSelectedDatePosts.length !== 1 ? 's' : ''}
+                {selectedDatePosts.length > 0 && selectedDatePostsGerados.length > 0 && 
+                  ` (${selectedDatePosts.length} salvos, ${selectedDatePostsGerados.length} gerados)`
+                }
               </p>
             </div>
 
-            {selectedDatePosts.length === 0 ? (
+            {allSelectedDatePosts.length === 0 ? (
               <Card className="p-6 text-center">
                 <div className="p-4 rounded-full bg-muted/50 w-16 h-16 mx-auto mb-4 flex items-center justify-center">
                   <Instagram className="h-8 w-8 text-muted-foreground" />
@@ -273,18 +338,28 @@ export function CalendarioEditorial({ isOpen, onClose, posts, onPostClick, onPos
               </Card>
             ) : (
               <div className="space-y-3">
-                {selectedDatePosts.map((post) => (
-                  <Card 
-                    key={post.id} 
-                    draggable
-                    onDragStart={(e) => handleDragStart(e, post)}
-                    className={`
-                      p-4 cursor-grab active:cursor-grabbing hover:shadow-md transition-all
-                      ${isUpdating === post.id ? 'opacity-50 cursor-not-allowed' : ''}
-                      ${draggedPost?.id === post.id ? 'opacity-50 scale-95' : ''}
-                      hover:scale-[1.02]
-                    `}
-                  >
+                {/* Posts Salvos */}
+                {selectedDatePosts.length > 0 && (
+                  <>
+                    <div className="flex items-center gap-2">
+                      <h4 className="text-sm font-medium text-green-600">Posts Salvos</h4>
+                      <Badge variant="secondary" className="text-xs bg-green-100 text-green-700">
+                        {selectedDatePosts.length}
+                      </Badge>
+                    </div>
+                    {selectedDatePosts.map((post) => (
+                      <Card 
+                        key={post.id} 
+                        draggable
+                        onDragStart={(e) => handleDragStart(e, post)}
+                        onDragEnd={handleDragEnd}
+                        className={`
+                          p-4 cursor-grab active:cursor-grabbing hover:shadow-md transition-all border-green-200
+                          ${isUpdating === post.id ? 'opacity-50 cursor-not-allowed' : ''}
+                          ${draggedPost?.id === post.id ? 'opacity-50 scale-95' : ''}
+                          hover:scale-[1.02]
+                        `}
+                      >
                     <div className="space-y-3">
                       {post.anexo_url && (
                         <div className={`relative overflow-hidden rounded-lg ${
@@ -308,6 +383,9 @@ export function CalendarioEditorial({ isOpen, onClose, posts, onPostClick, onPos
                           <Badge variant="secondary" className="text-xs">
                             {post.tipo_criativo === 'imagem' ? '🖼️' : '🎬'} {post.tipo_criativo}
                           </Badge>
+                          <Badge variant="secondary" className="text-xs bg-green-100 text-green-700">
+                            ✓ Salvo
+                          </Badge>
                         </div>
                         
                         <h4 className="font-medium text-sm leading-relaxed">
@@ -330,7 +408,84 @@ export function CalendarioEditorial({ isOpen, onClose, posts, onPostClick, onPos
                       </div>
                     </div>
                   </Card>
-                ))}
+                    ))}
+                  </>
+                )}
+
+                {/* Posts Gerados */}
+                {selectedDatePostsGerados.length > 0 && (
+                  <>
+                    <div className="flex items-center gap-2">
+                      <h4 className="text-sm font-medium text-orange-600">Posts Gerados</h4>
+                      <Badge variant="secondary" className="text-xs bg-orange-100 text-orange-700">
+                        {selectedDatePostsGerados.length}
+                      </Badge>
+                    </div>
+                    {selectedDatePostsGerados.map((post) => (
+                      <Card 
+                        key={post.id} 
+                        className={`
+                          p-4 cursor-pointer hover:shadow-md transition-all border-dashed border-orange-300 bg-orange-50/30
+                          opacity-75
+                        `}
+                        onClick={() => onPostClick(post)}
+                      >
+                        <div className="space-y-3">
+                          {post.anexo_url && (
+                            <div className={`relative overflow-hidden rounded-lg ${
+                              post.formato_postagem === 'story' || post.formato_postagem === 'reel' 
+                                ? 'aspect-[9/16]' 
+                                : 'aspect-square'
+                            }`}>
+                              <img 
+                                src={post.anexo_url} 
+                                alt={post.titulo}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                          )}
+                          
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-2">
+                              <Badge className={getFormatColor(post.formato_postagem)}>
+                                {getFormatIcon(post.formato_postagem)} {post.formato_postagem.toUpperCase()}
+                              </Badge>
+                              <Badge variant="secondary" className="text-xs">
+                                {post.tipo_criativo === 'imagem' ? '🖼️' : '🎬'} {post.tipo_criativo}
+                              </Badge>
+                              <Badge variant="secondary" className="text-xs bg-orange-100 text-orange-700">
+                                ⚠ Não salvo
+                              </Badge>
+                            </div>
+                            
+                            <h4 className="font-medium text-sm leading-relaxed">
+                              {post.titulo}
+                            </h4>
+                            
+                            <div className="flex items-center justify-between">
+                              <Badge variant="outline" className="text-xs">
+                                🎯 {post.objetivo_postagem.replace('_', ' ')}
+                              </Badge>
+                              <div className="flex items-center gap-2">
+                                <Button 
+                                  size="sm" 
+                                  variant="ghost" 
+                                  className="h-8 w-8 p-0"
+                                  onClick={() => onPostClick(post)}
+                                >
+                                  <Eye className="h-3 w-3" />
+                                </Button>
+                                <span className="text-xs text-orange-600 font-medium">
+                                  Salve para reagendar
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </Card>
+                    ))}
+                  </>
+                )}
               </div>
             )}
           </div>

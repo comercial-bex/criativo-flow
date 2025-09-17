@@ -2248,17 +2248,11 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
             <CalendarioEditorial
             isOpen={calendarioExpanded}
             onClose={() => setCalendarioExpanded(false)}
-            posts={[...posts, ...postsGerados]}
+            posts={posts}
+            postsGerados={postsGerados}
             onPostClick={onPreviewPost}
             onPostsUpdate={(updatedPosts) => {
-              // Update regular posts that match the updated ones
-              const updatedRegularPosts = updatedPosts.filter(updatedPost => 
-                posts.some(originalPost => originalPost.id === updatedPost.id)
-              );
-              
-              if (updatedRegularPosts.length > 0) {
-                setPosts(updatedRegularPosts);
-              }
+              setPosts(updatedPosts);
             }}
           />
         </TabsContent>
