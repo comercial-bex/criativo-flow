@@ -289,9 +289,12 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
     hashtags: string[];
     contexto_estrategico: string;
     data_postagem: string;
-    status: 'pendente' | 'salvo';
+    status: 'temporario' | 'aprovado';
     data_salvamento?: string;
+    anexo_url?: string;
   }>>([]);
+  const [postsTemporarios, setPostsTemporarios] = useState<any[]>([]);
+  const [postsAprovadosCounter, setPostsAprovadosCounter] = useState(0);
   const [componentesSelecionados, setComponentesSelecionados] = useState<string[]>([]);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [previewPosts, setPreviewPosts] = useState<any[]>([]);
@@ -384,7 +387,19 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
     fetchClienteAssinatura();
     buscarDadosOnboarding().then(setDadosOnboarding);
     buscarDadosObjetivos().then(setDadosObjetivos);
+    carregarPostsTemporarios();
   }, [planejamento.id]);
+
+  // Auto-save posts temporários a cada 30 segundos
+  useEffect(() => {
+    if (postsGerados.length === 0) return;
+    
+    const interval = setInterval(async () => {
+      await salvarPostsTemporarios();
+    }, 30000); // 30 segundos
+
+    return () => clearInterval(interval);
+  }, [postsGerados]);
 
   const fetchConteudoEditorial = async () => {
     try {
@@ -427,6 +442,113 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
       console.error('Erro ao buscar conteúdo editorial:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Carregar posts temporários salvos anteriormente
+  const carregarPostsTemporarios = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('posts_gerados_temp')
+        .select('*')
+        .eq('planejamento_id', planejamento.id);
+
+      if (error) {
+        console.error('Erro ao carregar posts temporários:', error);
+        return;
+      }
+
+      if (data && data.length > 0) {
+        const postsFormatados = data.map(post => ({
+          id: post.id,
+          titulo: post.titulo,
+          legenda: post.legenda || '',
+          objetivo_postagem: post.objetivo_postagem,
+          tipo_criativo: post.tipo_criativo,
+          formato_postagem: post.formato_postagem,
+          componente_hesec: post.componente_hesec || '',
+          persona_alvo: post.persona_alvo || '',
+          call_to_action: post.call_to_action || '',
+          hashtags: post.hashtags || [],
+          contexto_estrategico: post.contexto_estrategico || '',
+          data_postagem: post.data_postagem,
+          status: 'temporario' as const,
+          anexo_url: post.anexo_url
+        }));
+        
+        setPostsGerados(postsFormatados);
+        setPostsTemporarios(data);
+        
+        // Backup no LocalStorage
+        localStorage.setItem(`posts_temp_${planejamento.id}`, JSON.stringify(postsFormatados));
+        
+        toast.info(`${data.length} posts temporários recuperados`);
+      } else {
+        // Tentar recuperar do LocalStorage como fallback
+        const postsLocal = localStorage.getItem(`posts_temp_${planejamento.id}`);
+        if (postsLocal) {
+          const posts = JSON.parse(postsLocal);
+          setPostsGerados(posts);
+          toast.info(`${posts.length} posts recuperados do cache local`);
+        }
+      }
+    } catch (error) {
+      console.error('Erro ao carregar posts temporários:', error);
+      // Fallback para LocalStorage
+      const postsLocal = localStorage.getItem(`posts_temp_${planejamento.id}`);
+      if (postsLocal) {
+        const posts = JSON.parse(postsLocal);
+        setPostsGerados(posts);
+        toast.info(`${posts.length} posts recuperados do cache local`);
+      }
+    }
+  };
+
+  // Salvar posts temporariamente no banco
+  const salvarPostsTemporarios = async () => {
+    if (postsGerados.length === 0) return;
+
+    try {
+      // Primeiro, deletar posts temporários existentes
+      await supabase
+        .from('posts_gerados_temp')
+        .delete()
+        .eq('planejamento_id', planejamento.id);
+
+      // Inserir novos posts temporários
+      const postsParaSalvar = postsGerados.map(post => ({
+        planejamento_id: planejamento.id,
+        titulo: post.titulo,
+        legenda: post.legenda,
+        objetivo_postagem: post.objetivo_postagem,
+        tipo_criativo: post.tipo_criativo,
+        formato_postagem: post.formato_postagem,
+        componente_hesec: post.componente_hesec,
+        persona_alvo: post.persona_alvo,
+        call_to_action: post.call_to_action,
+        hashtags: post.hashtags,
+        contexto_estrategico: post.contexto_estrategico,
+        data_postagem: post.data_postagem,
+        anexo_url: post.anexo_url || null
+      }));
+
+      const { error } = await supabase
+        .from('posts_gerados_temp')
+        .insert(postsParaSalvar);
+
+      if (error) {
+        console.error('Erro ao salvar posts temporários:', error);
+        throw error;
+      }
+
+      // Backup no LocalStorage
+      localStorage.setItem(`posts_temp_${planejamento.id}`, JSON.stringify(postsGerados));
+      
+      console.log('Posts temporários salvos automaticamente');
+    } catch (error) {
+      console.error('Erro ao salvar posts temporários:', error);
+      // Salvar pelo menos no LocalStorage como fallback
+      localStorage.setItem(`posts_temp_${planejamento.id}`, JSON.stringify(postsGerados));
     }
   };
 

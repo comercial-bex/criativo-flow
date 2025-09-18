@@ -188,12 +188,12 @@ export function PostPreviewModal({ isOpen, onClose, posts, onSave, onCancel, onA
                     {savingPost === safeSelectedPost ? (
                       <>
                         <div className="animate-spin h-3 w-3 border border-white border-t-transparent rounded-full mr-1" />
-                        Salvando...
+                        Aprovando...
                       </>
                     ) : (
                       <>
                         <Save className="h-4 w-4 mr-1" />
-                        Aprovar
+                        Aprovar e Salvar
                       </>
                     )}
                   </Button>

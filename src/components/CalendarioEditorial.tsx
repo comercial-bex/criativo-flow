@@ -31,7 +31,7 @@ interface PostGerado {
   tipo_criativo: string;
   formato_postagem: string;
   data_postagem: string;
-  status: 'pendente' | 'salvo';
+  status: 'temporario' | 'aprovado';
   data_salvamento?: string;
   anexo_url?: string;
 }
