@@ -70,7 +70,7 @@ const PostsContentView: React.FC<PostsContentViewProps> = ({ posts, onViewPost }
             </div>
 
             {/* Grid de Conteúdo */}
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-end">
               {/* Coluna 1: Info do Post */}
               <div className="space-y-3">
                 <div className="bg-muted/30 p-4 rounded-lg">
