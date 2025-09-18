@@ -1246,37 +1246,42 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
           
           let anexo_url = null;
           try {
-            // Tentar primeiro com Gemini (Nano Banana)
-            const { data: geminiData, error: geminiError } = await supabase.functions.invoke('generate-image-gemini', {
-              body: { 
-                prompt: promptElaborado,
-                onboardingData: onboardingData
-              }
-            });
+            // Gerar EXCLUSIVAMENTE com Gemini (Nano Banana) - sistema de retry
+            let tentativa = 1;
+            const maxTentativas = 3;
+            
+            while (tentativa <= maxTentativas && !anexo_url) {
+              console.log(`🎯 Tentativa ${tentativa}/${maxTentativas} com Nano Banana para post ${index + 1}`);
+              
+              try {
+                const { data: geminiData, error: geminiError } = await supabase.functions.invoke('generate-image-gemini', {
+                  body: { 
+                    prompt: promptElaborado,
+                    onboardingData: onboardingData
+                  }
+                });
 
-            if (geminiError) {
-              console.warn(`⚠️ Erro na Nano Banana para post ${index + 1}, tentando DALL-E:`, geminiError);
-              
-              // Fallback para DALL-E com prompt simplificado
-              const promptSimples = `${post.titulo}. ${post.legenda?.substring(0, 200) || ''}. Style: ${post.formato_postagem === 'story' ? 'vertical Instagram story' : post.formato_postagem === 'reel' ? 'dynamic video thumbnail' : 'Instagram post'}, professional, high quality, modern, vibrant colors.`;
-              
-              const { data: dalleData, error: dalleError } = await supabase.functions.invoke('generate-post-image', {
-                body: { 
-                  prompt: promptSimples,
-                  style: post.formato_postagem === 'story' ? 'social media story' : 'social media post',
-                  size: post.formato_postagem === 'story' ? '1080x1920' : '1080x1080'
+                if (geminiError) {
+                  console.warn(`⚠️ Erro na tentativa ${tentativa} com Nano Banana para post ${index + 1}:`, geminiError);
+                  
+                  if (tentativa === maxTentativas) {
+                    console.error(`❌ Falha final após ${maxTentativas} tentativas para post ${index + 1}`);
+                  }
+                } else if (geminiData?.imageUrl) {
+                  console.log(`✅ Imagem gerada com sucesso - Nano Banana - Tentativa ${tentativa} para post ${index + 1}`);
+                  anexo_url = geminiData.imageUrl;
+                  break;
                 }
-              });
-
-              if (dalleError) {
-                console.warn(`⚠️ Erro também no DALL-E para post ${index + 1}:`, dalleError);
-              } else if (dalleData?.imageUrl) {
-                console.log(`✅ Imagem gerada com DALL-E para post ${index + 1}`);
-                anexo_url = dalleData.imageUrl;
+              } catch (error) {
+                console.warn(`⚠️ Erro na tentativa ${tentativa} para post ${index + 1}:`, error);
               }
-            } else if (geminiData?.imageUrl) {
-              console.log(`✅ Imagem gerada com Nano Banana para post ${index + 1}`);
-              anexo_url = geminiData.imageUrl;
+              
+              tentativa++;
+              
+              // Pequeno delay entre tentativas (apenas se não for a última)
+              if (tentativa <= maxTentativas && !anexo_url) {
+                await new Promise(resolve => setTimeout(resolve, 1000));
+              }
             }
           } catch (imageError) {
             console.warn(`⚠️ Erro ao gerar imagem para post ${index + 1}:`, imageError);
@@ -1298,7 +1303,13 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
       setShowPreviewModal(true);
 
       const imagensGeradas = postsComCronograma.filter(post => post.anexo_url).length;
-      toast.success(`${postsData.length} posts gerados com sucesso! ${imagensGeradas} imagens criadas com Nano Banana/DALL-E.`);
+      const imagensNaoGeradas = postsData.length - imagensGeradas;
+      
+      if (imagensNaoGeradas > 0) {
+        toast.success(`${postsData.length} posts gerados! ${imagensGeradas} imagens criadas com Nano Banana. ${imagensNaoGeradas} posts sem imagem (erro no Gemini).`);
+      } else {
+        toast.success(`${postsData.length} posts gerados com sucesso! Todas as ${imagensGeradas} imagens criadas com Nano Banana.`);
+      }
 
     } catch (error) {
       console.error('Erro ao gerar conteúdo:', error);

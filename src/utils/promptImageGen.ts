@@ -52,23 +52,22 @@ export function criarPromptImagem(post: PostData, onboarding?: OnboardingData): 
   // Elementos técnicos baseados no formato
   const elementosTecnicos = getElementosTecnicos(post.formato_postagem);
   
-  // Contexto geográfico/cultural
+  // Contexto geográfico/cultural específico e regionalizado
   const contextoLocal = onboarding?.localizacao || onboarding?.areaAtendimento || 'Brasil';
-  const contextoGeografico = contextoLocal.includes('Brasil') || contextoLocal.includes('brasileir') 
-    ? 'ambiente brasileiro, diversidade cultural brasileira' 
-    : `ambiente de ${contextoLocal}`;
+  const contextoGeografico = getContextoRegional(contextoLocal);
   
-  // Construção do prompt final
+  // Construção do prompt final com foco em realismo
   const promptFinal = `${promptBase}
 
   Elementos técnicos: ${elementosTecnicos}
-  Contexto geográfico: ${contextoGeografico}
+  Contexto geográfico: ${contextoGeografico} 
   Segmento: ${segmento}
   
   Estilo fotográfico: ${getEstiloFotografico(tipoConteudo, segmento)}
   Qualidade: Ultra alta resolução, profissional, pronto para redes sociais
   Composição: Regra dos terços, boa iluminação, cores vibrantes mas harmoniosas
   
+  OBRIGATÓRIO: Fotografia realista, sem desenhos, sem cartoon, sem ilustrações, apenas fotos reais
   Evitar: Textos visíveis, logos, marcas específicas, elementos genéricos ou clichês`;
 
   return promptFinal;
@@ -78,20 +77,20 @@ function determinarDemografico(publicoAlvo: string[], tiposClientes: string): st
   const texto = `${publicoAlvo.join(' ')} ${tiposClientes}`.toLowerCase();
   
   if (texto.includes('jovem') || texto.includes('18-30') || texto.includes('geração z')) {
-    return 'jovem brasileiro entre 20-30 anos, moderno, conectado';
+    return 'jovem brasileiro entre 20-30 anos, moderno, conectado, traços característicos brasileiros';
   } else if (texto.includes('executiv') || texto.includes('profissional') || texto.includes('corporativ')) {
-    return 'profissional brasileiro entre 30-45 anos, executivo, confiante';
+    return 'profissional brasileiro entre 30-45 anos, executivo, confiante, feições brasileiras autênticas';
   } else if (texto.includes('família') || texto.includes('mãe') || texto.includes('pai')) {
-    return 'pessoa brasileira entre 35-50 anos, perfil familiar, caloroso';
+    return 'pessoa brasileira entre 35-50 anos, perfil familiar, caloroso, diversidade étnica brasileira';
   } else if (texto.includes('idoso') || texto.includes('terceira idade') || texto.includes('50+')) {
-    return 'pessoa brasileira madura, entre 50-65 anos, experiente, sábia';
+    return 'pessoa brasileira madura, entre 50-65 anos, experiente, sábia, características regionais';
   } else if (texto.includes('mulher') || texto.includes('feminino')) {
-    return 'mulher brasileira entre 25-40 anos, elegante, determinada';
+    return 'mulher brasileira entre 25-40 anos, elegante, determinada, beleza brasileira natural';
   } else if (texto.includes('homem') || texto.includes('masculino')) {
-    return 'homem brasileiro entre 30-45 anos, profissional, seguro';
+    return 'homem brasileiro entre 30-45 anos, profissional, seguro, aparência brasileira autêntica';
   }
   
-  return 'pessoa brasileira entre 25-45 anos, moderna, autêntica';
+  return 'pessoa brasileira entre 25-45 anos, moderna, autêntica, diversidade étnica e cultural brasileira';
 }
 
 function analisarTipoConteudo(objetivo: string, legenda: string): string {
@@ -182,12 +181,55 @@ function getElementosTecnicos(formato: string): string {
 
 function getEstiloFotografico(tipoConteudo: string, segmento: string): string {
   if (tipoConteudo === 'pessoas') {
-    return 'retrato profissional, fotojornalismo corporativo, luz natural';
+    return 'retrato profissional, fotojornalismo corporativo, luz natural, fotografia realista';
   } else if (tipoConteudo === 'produto') {
-    return 'fotografia comercial, product photography, iluminação controlada';
+    return 'fotografia comercial, product photography, iluminação controlada, fotografia realista';
   } else if (tipoConteudo === 'lifestyle') {
-    return 'fotografia lifestyle, editorial, cores vibrantes, composição aspiracional';
+    return 'fotografia lifestyle, editorial, cores vibrantes, composição aspiracional, fotografia realista';
   } else {
-    return 'fotografia institucional, clean, minimalista, cores profissionais';
+    return 'fotografia institucional, clean, minimalista, cores profissionais, fotografia realista';
   }
+}
+
+// Nova função para contexto regional específico
+function getContextoRegional(localizacao: string): string {
+  const local = localizacao.toLowerCase();
+  
+  // Região Norte (Amapá - caso específico do Rocha Tecido)
+  if (local.includes('amapá') || local.includes('macapá') || local.includes('ap')) {
+    return 'ambiente amapaense, pessoas da região Norte, arquitetura amazônica, cores tropicais, natureza exuberante, características étnicas regionais, clima quente e úmido, vegetação amazônica';
+  }
+  
+  // Outras regiões do Norte
+  if (local.includes('amazonas') || local.includes('acre') || local.includes('roraima') || 
+      local.includes('rondônia') || local.includes('pará') || local.includes('tocantins')) {
+    return 'ambiente amazônico, pessoas da região Norte, biodiversidade, arquitetura regional, clima tropical, características étnicas amazônicas';
+  }
+  
+  // Região Nordeste
+  if (local.includes('bahia') || local.includes('pernambuco') || local.includes('ceará') || 
+      local.includes('maranhão') || local.includes('paraíba') || local.includes('alagoas') ||
+      local.includes('sergipe') || local.includes('rio grande do norte') || local.includes('piauí')) {
+    return 'ambiente nordestino, pessoas da região Nordeste, arquitetura colonial, cores vibrantes, sol intenso, características étnicas nordestinas, cultura regional';
+  }
+  
+  // Região Sudeste
+  if (local.includes('são paulo') || local.includes('rio de janeiro') || local.includes('minas gerais') || 
+      local.includes('espírito santo')) {
+    return 'ambiente metropolitano do Sudeste, pessoas da região Sudeste, arquitetura moderna, urbanismo, diversidade étnica, clima subtropical';
+  }
+  
+  // Região Sul
+  if (local.includes('rio grande do sul') || local.includes('santa catarina') || local.includes('paraná')) {
+    return 'ambiente sulista, pessoas da região Sul, arquitetura europeia, clima temperado, características étnicas sulinas, paisagem rural e urbana';
+  }
+  
+  // Região Centro-Oeste
+  if (local.includes('mato grosso') || local.includes('goiás') || local.includes('distrito federal') ||
+      local.includes('brasília')) {
+    return 'ambiente do Centro-Oeste, pessoas da região central, cerrado, arquitetura moderna, características étnicas centro-oestinas';
+  }
+  
+  // Default para Brasil
+  return 'ambiente brasileiro diverso, pessoas de diferentes regiões do Brasil, diversidade cultural e étnica brasileira, características nacionais autênticas';
 }
