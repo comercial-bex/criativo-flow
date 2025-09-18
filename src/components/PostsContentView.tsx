@@ -96,7 +96,7 @@ const PostsContentView: React.FC<PostsContentViewProps> = ({ posts, onViewPost }
                     <p className="text-sm font-medium">{post.headline}</p>
                   ) : (
                     <p className="text-xs text-muted-foreground italic">
-                      Clique em "Gerar Headlines e Conteúdo" para gerar
+                      Clique em "Gerar Conteúdo Editorial Completo" para gerar
                     </p>
                   )}
                 </div>
@@ -114,7 +114,7 @@ const PostsContentView: React.FC<PostsContentViewProps> = ({ posts, onViewPost }
                     </div>
                   ) : (
                     <p className="text-xs text-muted-foreground italic">
-                      Clique em "Gerar Headlines e Conteúdo" para gerar
+                      Clique em "Gerar Conteúdo Editorial Completo" para gerar
                     </p>
                   )}
                 </div>

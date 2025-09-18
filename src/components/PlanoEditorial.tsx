@@ -1184,128 +1184,7 @@ IMPORTANTE: Retorne APENAS o JSON válido, sem texto adicional.
     return cronograma.slice(0, limitePosts); // Garantir exatamente a quantidade
   };
 
-  const gerarConteudoDetalhado = async () => {
-    setGerandoConteudo(true);
-    
-    try {
-      const dadosOnboarding = await buscarDadosOnboarding();
-      const dadosObjetivos = await buscarDadosObjetivos();
-      
-      if (!validarDadosCompletos()) {
-        return;
-      }
-
-      // Construir prompt para gerar conteúdo detalhado dos posts
-      const prompt = `
-Baseando-se nas informações da empresa e nos posts já gerados, crie conteúdo detalhado para cada post.
-
-**INFORMAÇÕES DA EMPRESA:**
-- Nome: ${dadosOnboarding.nome_empresa}
-- Segmento: ${dadosOnboarding.segmento_atuacao}
-- Missão: ${conteudo.missao}
-- Posicionamento: ${conteudo.posicionamento}
-
-**POSTS GERADOS:**
-${postsGerados.map((post, index) => `
-POST ${index + 1}:
-- Título: ${post.titulo}
-- Tipo: ${post.tipo_criativo.toUpperCase()}
-- Formato: ${post.formato_postagem}
-- Objetivo: ${post.objetivo_postagem}
-- Persona: ${post.persona_alvo}
-- Componente HESEC: ${post.componente_hesec}
-`).join('\n')}
-
-Para cada post, gere:
-
-1. **HEADLINE**: Título chamativo e engajador (máximo 60 caracteres)
-2. **CONTEÚDO COMPLETO**: 
-   - Para POST/CARROSSEL: Texto completo da legenda (150-300 palavras)
-   - Para VÍDEO: Roteiro técnico completo seguindo o formato abaixo
-
-**FORMATO TÉCNICO PARA VÍDEOS:**
-
-Identificação
-– Cliente: ${dadosOnboarding.nome_empresa}
-– Agência: [Nome da Agência]
-– Produtora: [Nome da Produtora]
-– Peça: [Reel 15", Vídeo 30", etc.]
-– Título: [Título do vídeo]
-– Duração: [15-30 segundos]
-– Veiculação: [Instagram, TikTok, etc.]
-– Data: [Data de postagem]
-– Criação: [Equipe criativa]
-
-Objetivo e Tom
-– Objetivo: [impactar, emocionar, informar, vender, educar]
-– Tom: [poético, épico, institucional, leve, divertido, inspirador]
-
-Roteiro
-– Abertura (Imagem de apoio): [Descreva as primeiras imagens ou cenas - primeiros 3 segundos]
-– Locução em OFF: [Texto narrado correspondente à abertura]
-– Desenvolvimento (Imagem de apoio): [Descreva cenas intermediárias - pessoas, ações, lugares]
-– Locução em OFF: [Texto narrado que acompanha essas cenas]
-– Falas / Depoimentos (se houver): [Insira falas de personagens, entrevistas ou discursos]
-– Encerramento (Imagem de apoio): [Descrição da tela final, logos, slogans]
-– Locução em OFF final: [Frase curta de impacto para fechamento]
-
-Retorne um JSON com esta estrutura:
-{
-  "posts_conteudo": [
-    {
-      "post_id": "índice do post (0, 1, 2...)",
-      "headline": "Headline chamativa",
-      "conteudo_completo": "Para posts: legenda completa | Para vídeos: roteiro completo formatado"
-    }
-  ]
-}
-
-IMPORTANTE: Responda APENAS com o JSON válido, sem comentários adicionais.
-`;
-
-      const { data: response, error } = await supabase.functions.invoke('generate-content-with-ai', {
-        body: { prompt }
-      });
-
-      if (error) {
-        throw error;
-      }
-
-      let conteudoGerado;
-      try {
-        conteudoGerado = typeof response === 'string' ? JSON.parse(response) : response;
-      } catch (parseError) {
-        console.error('Erro ao parsear resposta da IA:', parseError);
-        throw new Error('Resposta da IA não está em formato JSON válido');
-      }
-
-      // Aplicar o conteúdo gerado aos posts
-      if (conteudoGerado.posts_conteudo && Array.isArray(conteudoGerado.posts_conteudo)) {
-        const postsAtualizados = postsGerados.map((post, index) => {
-          const conteudoPost = conteudoGerado.posts_conteudo.find(c => parseInt(c.post_id) === index);
-          if (conteudoPost) {
-            return {
-              ...post,
-              headline: conteudoPost.headline,
-              conteudo_completo: conteudoPost.conteudo_completo
-            };
-          }
-          return post;
-        });
-        
-        setPostsGerados(postsAtualizados);
-        toast.success('Conteúdo detalhado gerado com sucesso!');
-      } else {
-        throw new Error('Formato de resposta inválido');
-      }
-
-    } catch (error) {
-      console.error('Erro ao gerar conteúdo detalhado:', error);
-      toast.error('Erro ao gerar conteúdo detalhado. Tente novamente.');
-    } finally {
-      setGerandoConteudo(false);
-    }
-  };
+  // Função removida - geração de conteúdo agora é feita diretamente no gerarConteudoEditorial
 
   const gerarConteudoEditorial = async () => {
     if (!clienteAssinatura) {
@@ -1369,49 +1248,86 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários adicionais.
         }
       });
 
-      // Prompt seguindo modelo BEX
+      // Buscar dados adicionais para contexto
+      const dadosOnboarding = await buscarDadosOnboarding();
+      const dadosObjetivos = await buscarDadosObjetivos();
+
+      // Prompt seguindo modelo BEX com geração completa de conteúdo
       const prompt = `
-Gere um calendário editorial seguindo o MODELO BEX para marketing digital profissional.
+Gere um calendário editorial completo seguindo o MODELO BEX para marketing digital profissional.
 
 **CONTEXTO DA EMPRESA:**
-Missão: ${conteudo.missao}
-Posicionamento: ${conteudo.posicionamento}
+- Nome: ${dadosOnboarding.nome_empresa}
+- Segmento: ${dadosOnboarding.segmento_atuacao}
+- Missão: ${conteudo.missao}
+- Posicionamento: ${conteudo.posicionamento}
 
 **PERSONAS DEFINIDAS:**
-${personas.map((p, i) => `PERSONA ${i+1}: ${p.nome} - ${p.descricao_breve} - Dores: ${p.principais_dores}`).join('\n')}
+${personas.map((p, i) => `PERSONA ${i+1}: ${p.nome} - ${p.resumo} - Dores: ${p.dores?.join(', ') || 'Não definidas'}`).join('\n')}
 
 **COMPONENTES H.E.S.E.C SELECIONADOS:**
-${componentesSelecionados.join(', ')}
+${componentesSelecionados.map(comp => typeof comp === 'string' ? comp : (comp as any)?.nome || comp).join(', ')}
 
 **ESPECIALISTAS DE REFERÊNCIA:**
-${conteudo.especialistas_selecionados?.join(', ') || 'Marketing estratégico'}
+${conteudo.especialistas_selecionados?.map(esp => typeof esp === 'string' ? esp : (esp as any)?.nome || esp).join(', ') || 'Marketing estratégico'}
 
 **CRONOGRAMA:**
 ${cronograma.map((data, index) => {
   const formattedDate = data.toLocaleDateString('pt-BR');
   const dayOfWeek = data.toLocaleDateString('pt-BR', { weekday: 'long' });
   const componenteAssociado = componentesDistribuidos[index] || componentesSelecionados[0];
+  const componenteNome = typeof componenteAssociado === 'string' ? componenteAssociado : componenteAssociado?.nome || 'Componente';
   const personaIndex = index % personas.length;
   const persona = personas[personaIndex];
   
-  return `${index + 1}. ${formattedDate} (${dayOfWeek}) - Componente: ${componenteAssociado} - Persona: ${persona?.nome || 'Persona 1'}`;
+  return `${index + 1}. ${formattedDate} (${dayOfWeek}) - Componente: ${componenteNome} - Persona: ${persona?.nome || 'Persona 1'}`;
 }).join('\n')}
 
 **DIRETRIZES:**
 1. Gerar exatamente ${quantidadePosts} posts
-2. Cada post deve seguir o modelo BEX com legenda completa (150-300 caracteres)
-3. Incluir 5-8 hashtags relevantes no final de cada legenda
-4. Alternar entre as personas definidas
-5. Cada post deve refletir o componente H.E.S.E.C específico
-6. Incluir call-to-action apropriado
-7. Tipos criativos: 70% posts simples, 20% carrossel, 10% stories
-8. Formatos: ${clienteAssinatura?.reels_suporte ? '60% posts, 30% reels, 10% stories' : '80% posts, 20% stories'}
+2. Cada post deve seguir o modelo BEX com conteúdo completo
+3. Incluir headline chamativa (máximo 60 caracteres)
+4. Para POST/CARROSSEL: Legenda completa de 150-300 palavras
+5. Para VÍDEO: Roteiro técnico completo
+6. Incluir 5-8 hashtags relevantes
+7. Alternar entre as personas definidas
+8. Cada post deve refletir o componente H.E.S.E.C específico
+9. Incluir call-to-action apropriado
+10. Tipos criativos distribuídos: ${distribuicaoTipos.join(', ')}
+
+**FORMATO TÉCNICO PARA VÍDEOS:**
+
+Identificação
+– Cliente: ${dadosOnboarding.nome_empresa}
+– Agência: [Nome da Agência]
+– Produtora: [Nome da Produtora]
+– Peça: [Reel 15", Vídeo 30", etc.]
+– Título: [Título do vídeo]
+– Duração: [15-30 segundos]
+– Veiculação: [Instagram, TikTok, etc.]
+– Data: [Data de postagem]
+– Criação: [Equipe criativa]
+
+Objetivo e Tom
+– Objetivo: [impactar, emocionar, informar, vender, educar]
+– Tom: [poético, épico, institucional, leve, divertido, inspirador]
+
+Roteiro
+– Abertura (Imagem de apoio): [Descreva as primeiras imagens ou cenas - primeiros 3s]
+– Locução em OFF: [Texto narrado correspondente à abertura]
+– Desenvolvimento (Imagem de apoio): [Descreva cenas intermediárias - pessoas, ações, lugares]
+– Locução em OFF: [Texto narrado que acompanha essas cenas]
+– Falas / Depoimentos (se houver): [Insira falas de personagens, entrevistas ou discursos]
+– Encerramento (Imagem de apoio): [Descrição da tela final, logos, slogans]
+– Locução em OFF final: [Frase curta de impacto para fechamento]
 
 Gere um JSON com array de posts seguindo esta estrutura:
 [
   {
     "titulo": "Título engajador específico para o tipo",
-    "legenda": "Para POST: 100-200 palavras | Para CARROSSEL: estrutura por slides | Para VÍDEO: roteiro com timing",
+    "headline": "Headline chamativa de máximo 60 caracteres",
+    "conteudo_completo": "Para POST/CARROSSEL: legenda completa de 150-300 palavras | Para VÍDEO: roteiro técnico completo seguindo formato acima",
+    "legenda": "Resumo da legenda para compatibilidade",
     "objetivo_postagem": "engajamento|vendas|educacao|relacionamento|branding",
     "tipo_criativo": "post|carrossel|video",
     "formato_postagem": "post|reel|story", 
@@ -1446,9 +1362,10 @@ Gere um JSON com array de posts seguindo esta estrutura:
 REGRAS IMPORTANTES:
 - Distribua os tipos conforme especificado: ${distribuicaoTipos.join(', ')}
 - Para carrossel, detalhe cada slide no campo especificacoes_tecnicas
-- Para vídeo, inclua roteiro completo com timing
+- Para vídeo, inclua roteiro completo com timing no campo conteudo_completo
 - Para post, foque em impacto visual e mensagem direta
 - Mantenha consistência com a persona e framework selecionados
+- SEMPRE inclua tanto headline quanto conteudo_completo para cada post
 
 IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicional.`;
 
@@ -1494,15 +1411,19 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
           id: `temp-${Date.now()}-${index}`,
           status: 'temporario' as const,
           hashtags: Array.isArray(post.hashtags) ? post.hashtags : [],
-          especificacoes_tecnicas: post.especificacoes_tecnicas || {}
+          especificacoes_tecnicas: post.especificacoes_tecnicas || {},
+          // Garantir que headline e conteudo_completo estejam sempre presentes
+          headline: post.headline || post.titulo,
+          conteudo_completo: post.conteudo_completo || post.legenda || ''
         };
       });
 
+      // Sobrescrever posts anteriores completamente
       setPostsGerados(postsComCronograma);
       setPreviewPosts(postsComCronograma);
       setShowPreviewModal(true);
 
-      toast.success(`${postsData.length} posts gerados com sucesso!`);
+      toast.success(`${postsData.length} posts gerados com conteúdo completo!`);
 
     } catch (error) {
       console.error('Erro ao gerar conteúdo:', error);
@@ -2338,20 +2259,9 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
                   className="flex-1"
                 >
                   {gerando ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                  Gerar Conteúdo Editorial
+                  Gerar Conteúdo Editorial Completo
                 </Button>
                 
-                {postsGerados.length > 0 && (
-                  <Button 
-                    onClick={gerarConteudoDetalhado}
-                    disabled={gerandoConteudo}
-                    variant="outline"
-                    className="flex-1"
-                  >
-                    {gerandoConteudo ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <BookOpen className="h-4 w-4 mr-2" />}
-                    Gerar Headlines e Conteúdo
-                  </Button>
-                )}
               </div>
                 
                 {postsGerados.length > 0 && (
