@@ -33,14 +33,16 @@ interface PostPreviewModalProps {
   onSave: (posts: PostPreview[]) => void;
   onCancel: () => void;
   onApprovePost?: (post: PostPreview, index: number) => void;
+  onApproveAll?: () => void;
 }
 
-export function PostPreviewModal({ isOpen, onClose, posts, onSave, onCancel, onApprovePost }: PostPreviewModalProps) {
+export function PostPreviewModal({ isOpen, onClose, posts, onSave, onCancel, onApprovePost, onApproveAll }: PostPreviewModalProps) {
   const [editedPosts, setEditedPosts] = useState<PostPreview[]>(posts);
   const [selectedPost, setSelectedPost] = useState(0);
   const [isEditing, setIsEditing] = useState(false);
   const [approvedPosts, setApprovedPosts] = useState<Set<number>>(new Set());
   const [savingPost, setSavingPost] = useState<number | null>(null);
+  const [approvingAll, setApprovingAll] = useState(false);
 
   // Update editedPosts when posts prop changes
   React.useEffect(() => {
@@ -100,16 +102,55 @@ export function PostPreviewModal({ isOpen, onClose, posts, onSave, onCancel, onA
     }
   };
 
+  const handleApproveAll = async () => {
+    if (!onApproveAll) return;
+    
+    setApprovingAll(true);
+    try {
+      await onApproveAll();
+      // Marcar todos os posts como aprovados
+      const allIndexes = editedPosts.map((_, index) => index);
+      setApprovedPosts(new Set(allIndexes));
+    } catch (error) {
+      console.error('Erro ao aprovar todos os posts:', error);
+    } finally {
+      setApprovingAll(false);
+    }
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="w-[95vw] max-w-7xl h-[95vh] p-0 overflow-hidden">
         <DialogHeader className="p-4 sm:p-6 pb-0 flex-shrink-0">
-          <DialogTitle className="flex items-center gap-2 text-sm sm:text-base">
-            <Eye className="h-4 w-4 sm:h-5 sm:w-5" />
-            Preview do Conteúdo Editorial
-            <Badge variant="outline" className="ml-2 text-xs">
-              {editedPosts.length} posts gerados
-            </Badge>
+          <DialogTitle className="flex items-center justify-between gap-2 text-sm sm:text-base">
+            <div className="flex items-center gap-2">
+              <Eye className="h-4 w-4 sm:h-5 sm:w-5" />
+              Preview do Conteúdo Editorial
+              <Badge variant="outline" className="ml-2 text-xs">
+                {editedPosts.length} posts gerados
+              </Badge>
+            </div>
+            {onApproveAll && editedPosts.length > 0 && (
+              <Button
+                variant="default"
+                size="sm"
+                onClick={handleApproveAll}
+                disabled={approvingAll}
+                className="bg-green-600 hover:bg-green-700 text-white"
+              >
+                {approvingAll ? (
+                  <>
+                    <div className="animate-spin h-3 w-3 border border-white border-t-transparent rounded-full mr-1" />
+                    Aprovando Todos...
+                  </>
+                ) : (
+                  <>
+                    <Save className="h-4 w-4 mr-1" />
+                    Aprovar Todos
+                  </>
+                )}
+              </Button>
+            )}
           </DialogTitle>
         </DialogHeader>
 

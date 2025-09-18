@@ -1541,6 +1541,32 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
     }
   };
 
+  const handleApproveAllPosts = async () => {
+    console.log('🚀 handleApproveAllPosts chamada para todos os posts temporários');
+    try {
+      if (postsGerados.length === 0) {
+        toast.warning('Nenhum post para aprovar');
+        return;
+      }
+
+      // Filtrar apenas posts temporários
+      const postsTemporariosParaAprovar = postsGerados.filter(post => post.status === 'temporario');
+      
+      if (postsTemporariosParaAprovar.length === 0) {
+        toast.warning('Nenhum post temporário para aprovar');
+        return;
+      }
+
+      await salvarPostsCalendario(postsTemporariosParaAprovar);
+      toast.success(`${postsTemporariosParaAprovar.length} posts aprovados e salvos automaticamente!`);
+      console.log('✅ Todos os posts aprovados com sucesso');
+    } catch (error) {
+      console.error('💥 Erro ao aprovar todos os posts:', error);
+      toast.error('Erro ao aprovar todos os posts');
+      throw error;
+    }
+  };
+
   const handlePreviewSave = async (postsEditados: any[]) => {
     console.log('🚀 handlePreviewSave chamada com:', postsEditados);
     setSalvando(true);
@@ -2708,6 +2734,7 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
         onSave={handlePreviewSave}
         onCancel={handlePreviewCancel}
         onApprovePost={handleApproveIndividualPost}
+        onApproveAll={handleApproveAllPosts}
       />
     </div>
   );
