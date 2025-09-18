@@ -38,7 +38,7 @@ ESTRUTURA OBRIGATÓRIA PARA CADA POST:
   "legenda": "Legenda completa de 150-300 palavras com emojis, narrativa e CTA específico",
   "objetivo_postagem": "Engajamento|Vendas|Educação|Relacionamento|Branding",
   "tipo_criativo": "post|carrossel|stories",
-  "formato_postagem": "post|reel|stories", 
+  "formato_postagem": "post|reel|story", 
   "componente_hesec": "Componente específico do framework (ex: HESEC: Histórias)",
   "persona_alvo": "Nome da persona específica",
   "call_to_action": "CTA específico e personalizado para a persona",

@@ -1122,7 +1122,7 @@ Gere um JSON com array de posts seguindo esta estrutura:
     "legenda": "Legenda completa de 150-300 palavras seguindo modelo BEX com emojis, narrativa envolvente e call-to-action específico",
     "objetivo_postagem": "Engajamento|Vendas|Educação|Relacionamento|Branding",
     "tipo_criativo": "post|carrossel|stories",
-    "formato_postagem": "post|reel|stories",
+    "formato_postagem": "post|reel|story",
     "componente_hesec": "componente_do_framework",
     "persona_alvo": "nome_da_persona",
     "call_to_action": "CTA específico e personalizado para a persona",
@@ -1170,6 +1170,7 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
       setPreviewPosts(postsComData);
       setShowPreviewModal(true);
       
+      console.log('🎯 Modal de preview aberto com posts:', postsComData);
       toast.success(`${postsComData.length} posts gerados com sucesso! Revise e aprove o conteúdo.`);
 
     } catch (error) {
@@ -1182,6 +1183,9 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
 
   const salvarPostsCalendario = async (novosPost: any[]) => {
     try {
+      console.log('🔄 Iniciando salvamento de posts:', novosPost);
+      console.log('📊 Dados para inserir:', JSON.stringify(novosPost, null, 2));
+      
       // Deletar posts existentes do mês atual
       const { error: deleteError } = await supabase
         .from('posts_planejamento')
@@ -1190,59 +1194,86 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
         .gte('data_postagem', `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-01`)
         .lt('data_postagem', `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 2).padStart(2, '0')}-01`);
 
-      if (deleteError) throw deleteError;
+      if (deleteError) {
+        console.error('❌ Erro ao deletar posts existentes:', deleteError);
+        throw deleteError;
+      }
+      console.log('✅ Posts existentes removidos');
 
       // Inserir novos posts
-      const postsParaInserir = novosPost.map(post => ({
-        planejamento_id: planejamento.id,
-        titulo: post.titulo,
-        legenda: post.legenda || '',
-        objetivo_postagem: post.objetivo_postagem,
-        tipo_criativo: post.tipo_criativo,
-        formato_postagem: post.formato_postagem,
-        componente_hesec: post.componente_hesec || '',
-        persona_alvo: post.persona_alvo || '',
-        call_to_action: post.call_to_action || '',
-        hashtags: post.hashtags || [],
-        contexto_estrategico: post.contexto_estrategico || '',
-        data_postagem: post.data_postagem
-      }));
+      const postsParaInserir = novosPost.map(post => {
+        // Converter valores para compatibilidade com constraints do banco
+        let formatoPostagem = post.formato_postagem;
+        if (formatoPostagem === 'stories') {
+          formatoPostagem = 'story'; // Converter para o valor aceito pela constraint
+        }
+        
+        return {
+          planejamento_id: planejamento.id,
+          titulo: post.titulo,
+          legenda: post.legenda || '',
+          objetivo_postagem: post.objetivo_postagem,
+          tipo_criativo: post.tipo_criativo,
+          formato_postagem: formatoPostagem,
+          componente_hesec: post.componente_hesec || '',
+          persona_alvo: post.persona_alvo || '',
+          call_to_action: post.call_to_action || '',
+          hashtags: post.hashtags || [],
+          contexto_estrategico: post.contexto_estrategico || '',
+          data_postagem: post.data_postagem
+        };
+      });
+
+      console.log('📝 Posts formatados para inserção:', JSON.stringify(postsParaInserir, null, 2));
 
       const { data, error } = await supabase
         .from('posts_planejamento')
         .insert(postsParaInserir)
         .select();
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Erro na inserção:', error);
+        throw error;
+      }
+
+      console.log('✅ Posts inseridos com sucesso:', data);
 
       // Atualizar estado local com os novos posts
       const updatedPosts = [...posts.filter(p => !novosPost.find(np => np.data_postagem === p.data_postagem)), ...data];
       setPosts(updatedPosts);
+      console.log('🔄 Estado local atualizado com', updatedPosts.length, 'posts');
       
       toast.success('Posts salvos no calendário!');
     } catch (error) {
-      console.error('Erro ao salvar posts:', error);
+      console.error('💥 Erro crítico ao salvar posts:', error);
       toast.error('Erro ao salvar posts no calendário');
+      throw error; // Re-throw para que a função que chama possa lidar com o erro
     }
   };
 
   const handlePreviewSave = async (postsEditados: any[]) => {
+    console.log('🚀 handlePreviewSave chamada com:', postsEditados);
     setSalvando(true);
     try {
+      console.log('📤 Enviando posts para salvarPostsCalendario...');
       await salvarPostsCalendario(postsEditados);
+      console.log('✅ Salvamento concluído, atualizando estados...');
       setPostsGerados(postsEditados.map(post => ({ ...post, status: 'salvo' as const })));
       setShowPreviewModal(false);
       setPreviewPosts([]);
+      console.log('🎉 Modal fechado e estados limpos');
       toast.success('Calendário editorial salvo com sucesso!');
     } catch (error) {
-      console.error('Erro ao salvar posts:', error);
+      console.error('💥 Erro em handlePreviewSave:', error);
       toast.error('Erro ao salvar posts no calendário');
     } finally {
       setSalvando(false);
+      console.log('🔄 Estado de salvando resetado');
     }
   };
 
   const handlePreviewCancel = () => {
+    console.log('❌ Preview cancelado');
     setShowPreviewModal(false);
     setPreviewPosts([]);
     toast.info('Geração de conteúdo cancelada');
