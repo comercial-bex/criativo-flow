@@ -266,11 +266,7 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
   const [gerando, setGerando] = useState(false);
   const [calendarioExpanded, setCalendarioExpanded] = useState(false);
   const [salvando, setSalvando] = useState(false);
-  const [salvandoPosicionamento, setSalvandoPosicionamento] = useState(false);
-  const [salvandoEspecialistas, setSalvandoEspecialistas] = useState(false);
-  const [salvandoFrameworks, setSalvandoFrameworks] = useState(false);
-  const [salvandoPersonas, setSalvandoPersonas] = useState(false);
-  const [salvandoMissao, setSalvandoMissao] = useState(false);
+  const [autoSaveStatus, setAutoSaveStatus] = useState<'saved' | 'saving' | 'unsaved'>('saved');
   const [gerandoMissao, setGerandoMissao] = useState(false);
   const [gerandoPosicionamento, setGerandoPosicionamento] = useState(false);
   const [gerandoPersonas, setGerandoPersonas] = useState(false);
@@ -403,6 +399,22 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
 
     return () => clearInterval(interval);
   }, [postsGerados]);
+
+  // Auto-save para conteúdo editorial com debounce
+  useEffect(() => {
+    if (!conteudo.missao && !conteudo.posicionamento && !conteudo.persona && 
+        !componentesSelecionados.length && !conteudo.especialistas_selecionados?.length) {
+      return;
+    }
+
+    setAutoSaveStatus('unsaved');
+    
+    const timer = setTimeout(() => {
+      autoSaveContent();
+    }, 3000); // Auto-save após 3 segundos de inatividade
+
+    return () => clearTimeout(timer);
+  }, [conteudo.missao, conteudo.posicionamento, conteudo.persona, componentesSelecionados, conteudo.especialistas_selecionados]);
 
   const fetchConteudoEditorial = async () => {
     try {
@@ -786,8 +798,7 @@ Responda com um texto corrido, bem estruturado e com no máximo 700 palavras.
 
       const posicionamentoGerado = typeof response === 'string' ? response : response.toString();
       
-      // Salvar automaticamente
-      await saveField('posicionamento', posicionamentoGerado);
+      // Auto-save será ativado automaticamente pelo useEffect
       
       setConteudo(prev => ({
         ...prev,
@@ -894,8 +905,7 @@ IMPORTANTE: Retorne APENAS o JSON válido, sem texto adicional.
         throw new Error('IA não gerou 3 personas válidas');
       }
 
-      // Salvar automaticamente como JSON
-      await saveField('persona', JSON.stringify(personasGeradas));
+      // Auto-save será ativado automaticamente pelo useEffect
       
       setConteudo(prev => ({
         ...prev,
@@ -908,6 +918,52 @@ IMPORTANTE: Retorne APENAS o JSON válido, sem texto adicional.
       toast.error('Erro ao gerar personas. Tente novamente.');
     } finally {
       setGerandoPersonas(false);
+    }
+  };
+
+  // Auto-save único para todos os campos
+  const autoSaveContent = async () => {
+    if (autoSaveStatus === 'saving') return;
+    
+    setAutoSaveStatus('saving');
+    try {
+      const updateData = {
+        missao: conteudo.missao,
+        posicionamento: conteudo.posicionamento,
+        persona: conteudo.persona,
+        frameworks_selecionados: componentesSelecionados,
+        especialistas_selecionados: conteudo.especialistas_selecionados
+      };
+      
+      if (conteudo.id) {
+        const { error } = await supabase
+          .from('conteudo_editorial')
+          .update(updateData)
+          .eq('id', conteudo.id);
+
+        if (error) throw error;
+      } else {
+        const { data, error } = await supabase
+          .from('conteudo_editorial')
+          .insert({
+            planejamento_id: planejamento.id,
+            ...updateData
+          })
+          .select()
+          .single();
+
+        if (error) throw error;
+        if (data) {
+          setConteudo(prev => ({ ...prev, id: data.id }));
+        }
+      }
+      
+      setAutoSaveStatus('saved');
+      toast.success('Progresso salvo automaticamente');
+    } catch (error) {
+      console.error('Erro ao salvar automaticamente:', error);
+      setAutoSaveStatus('unsaved');
+      toast.error('Erro ao salvar automaticamente');
     }
   };
 
@@ -947,83 +1003,22 @@ IMPORTANTE: Retorne APENAS o JSON válido, sem texto adicional.
     }
   };
 
-  const salvarPosicionamento = async () => {
-    if (!conteudo.posicionamento?.trim()) {
-      toast.error('Digite o posicionamento antes de salvar');
-      return;
-    }
-    await saveField('posicionamento', conteudo.posicionamento);
-  };
-
-  const salvarEspecialistas = async () => {
-    if (!conteudo.especialistas_selecionados?.length) {
-      toast.error('Selecione pelo menos um especialista antes de salvar');
-      return;
-    }
-    setSalvandoEspecialistas(true);
-    try {
-      await saveField('especialistas_selecionados', conteudo.especialistas_selecionados);
-    } finally {
-      setSalvandoEspecialistas(false);
+  // Indicador de progresso de salvamento
+  const getSaveStatusColor = () => {
+    switch (autoSaveStatus) {
+      case 'saved': return 'text-green-600';
+      case 'saving': return 'text-yellow-600';
+      case 'unsaved': return 'text-red-600';
+      default: return 'text-muted-foreground';
     }
   };
 
-  const salvarFrameworks = async () => {
-    if (!componentesSelecionados?.length) {
-      toast.error('Selecione pelo menos um framework antes de salvar');
-      return;
-    }
-    setSalvandoFrameworks(true);
-    try {
-      await saveField('frameworks_selecionados', componentesSelecionados);
-    } finally {
-      setSalvandoFrameworks(false);
-    }
-  };
-
-  const salvarMissao = async () => {
-    if (!planejamento?.id) {
-      toast.error('Erro: Planejamento não encontrado');
-      return;
-    }
-
-    if (!conteudo.missao || conteudo.missao.trim() === '') {
-      toast.error('A missão não pode estar vazia');
-      return;
-    }
-
-    setSalvandoMissao(true);
-    try {
-      await saveField('missao', conteudo.missao);
-      toast.success('Missão salva com sucesso!');
-    } catch (error) {
-      console.error('Erro ao salvar missão:', error);
-      toast.error('Erro ao salvar missão');
-    } finally {
-      setSalvandoMissao(false);
-    }
-  };
-
-  const salvarPersonas = async () => {
-    if (!planejamento?.id) {
-      toast.error('Erro: Planejamento não encontrado');
-      return;
-    }
-
-    if (!conteudo.persona || conteudo.persona.trim() === '') {
-      toast.error('As personas não podem estar vazias');
-      return;
-    }
-
-    setSalvandoPersonas(true);
-    try {
-      await saveField('persona', conteudo.persona);
-      toast.success('Personas salvas com sucesso!');
-    } catch (error) {
-      console.error('Erro ao salvar personas:', error);
-      toast.error('Erro ao salvar personas');
-    } finally {
-      setSalvandoPersonas(false);
+  const getSaveStatusText = () => {
+    switch (autoSaveStatus) {
+      case 'saved': return 'Salvo automaticamente';
+      case 'saving': return 'Salvando...';
+      case 'unsaved': return 'Alterações não salvas';
+      default: return '';
     }
   };
 
@@ -1871,23 +1866,6 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
                 rows={4}
                 disabled={gerandoMissao}
               />
-              
-              {/* Botão de salvar no final da seção */}
-              <div className="flex justify-end">
-                <Button 
-                  onClick={salvarMissao}
-                  disabled={salvandoMissao || !conteudo.missao?.trim()}
-                  size="sm"
-                  className="gap-2"
-                >
-                  {salvandoMissao ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Save className="h-4 w-4" />
-                  )}
-                  Salvar Missão
-                </Button>
-              </div>
             </CardContent>
           </Card>
         </TabsContent>
@@ -1921,19 +1899,6 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
                         </>
                       )}
                     </Button>
-                    <Button 
-                      onClick={salvarPosicionamento}
-                      disabled={salvandoPosicionamento || !conteudo.posicionamento?.trim()}
-                      size="sm"
-                      className="gap-2"
-                    >
-                      {salvandoPosicionamento ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <Save className="h-4 w-4" />
-                      )}
-                      Salvar
-                    </Button>
                   </div>
                 </div>
                 <Textarea
@@ -1943,7 +1908,6 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
                   onChange={(e) => setConteudo(prev => ({ ...prev, posicionamento: e.target.value }))}
                   rows={6}
                   disabled={gerandoPosicionamento}
-                  onBlur={() => saveField('posicionamento', conteudo.posicionamento)}
                 />
                 <p className="text-xs text-muted-foreground">
                   A IA irá gerar o posicionamento baseado nos dados de onboarding do cliente. Máximo 700 palavras.
@@ -1974,22 +1938,6 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
                     </TooltipContent>
                   </Tooltip>
                 ))}
-              </div>
-              
-              <div className="flex justify-end">
-                <Button 
-                  onClick={salvarEspecialistas}
-                  disabled={salvandoEspecialistas || !conteudo.especialistas_selecionados?.length}
-                  size="sm"
-                  className="gap-2"
-                >
-                  {salvandoEspecialistas ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Save className="h-4 w-4" />
-                  )}
-                  Salvar Especialistas
-                </Button>
               </div>
             </CardContent>
           </Card>
@@ -2056,21 +2004,6 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
                   </div>
                 )}
 
-                <div className="flex justify-end pt-4">
-                  <Button 
-                    onClick={salvarFrameworks}
-                    disabled={salvandoFrameworks || !componentesSelecionados?.length}
-                    size="sm"
-                    className="gap-2"
-                  >
-                    {salvandoFrameworks ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Save className="h-4 w-4" />
-                    )}
-                    Salvar Frameworks
-                  </Button>
-                </div>
               </div>
             </CardContent>
           </Card>
@@ -2199,23 +2132,6 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
                   />
                 </div>
                 
-                {/* Botão de salvar no final da seção */}
-                <div className="flex justify-end">
-                  <Button 
-                    onClick={salvarPersonas}
-                    disabled={salvandoPersonas || !conteudo.persona?.trim()}
-                    size="sm"
-                    className="gap-2"
-                  >
-                    {salvandoPersonas ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Save className="h-4 w-4" />
-                    )}
-                    Salvar Personas
-                  </Button>
-                </div>
-                
                 <p className="text-xs text-muted-foreground">
                   A IA irá gerar 3 personas distintas baseadas no onboarding, objetivos, posicionamento e frameworks selecionados.
                 </p>
@@ -2223,24 +2139,6 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
             </CardContent>
           </Card>
 
-          <div className="flex gap-2">
-            <Button 
-              onClick={saveAllSelections}
-              disabled={salvando}
-            >
-              {salvando ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-              Salvar Análise
-            </Button>
-            
-            {hasCompleteAnalysis() && (
-              <Button 
-                variant="outline"
-                onClick={resetAllSelections}
-              >
-                Fazer Nova Análise
-              </Button>
-            )}
-          </div>
         </TabsContent>
 
         <TabsContent value="conteudo" className="space-y-4">
@@ -2280,45 +2178,6 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
                   {gerando ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
                   Gerar Conteúdo Editorial
                 </Button>
-                
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button 
-                      variant="outline"
-                      disabled={salvandoConteudoCompleto || !hasUnsavedContent()}
-                      className="gap-2"
-                    >
-                      {salvandoConteudoCompleto ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <Save className="h-4 w-4" />
-                      )}
-                      Salvar Conteúdo Completo
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Salvar Conteúdo Editorial Completo</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        Isso irá salvar todos os elementos do conteúdo editorial:
-                        <ul className="list-disc list-inside mt-2 space-y-1">
-                          {conteudo.missao && <li>Missão da empresa</li>}
-                          {conteudo.posicionamento && <li>Posicionamento estratégico</li>}
-                          {conteudo.persona && <li>Personas definidas</li>}
-                          {conteudo.especialistas_selecionados?.length > 0 && <li>{conteudo.especialistas_selecionados.length} especialistas selecionados</li>}
-                          {componentesSelecionados?.length > 0 && <li>{componentesSelecionados.length} frameworks H.E.S.E.C selecionados</li>}
-                        </ul>
-                        <p className="mt-3 text-sm">Deseja prosseguir?</p>
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                      <AlertDialogAction onClick={salvarConteudoEditorialCompleto}>
-                        Salvar Tudo
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
               </div>
                 
                 {postsGerados.length > 0 && (
@@ -2356,7 +2215,7 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
                               ) : (
                                 <>
                                   <Save className="w-4 h-4 mr-2" />
-                                  Salvar {postsGerados.filter(p => p.status === 'temporario').length} Posts Temporários
+                                  Salvar Posts no Calendário Editorial
                                 </>
                               )}
                             </Button>
