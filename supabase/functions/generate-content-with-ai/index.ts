@@ -23,37 +23,40 @@ serve(async (req) => {
     const isJsonRequest = prompt.includes('JSON') || prompt.includes('json') || prompt.includes('Formate a resposta em JSON');
 
     const systemContent = isJsonRequest 
-      ? `Você é um especialista em marketing digital e criação de conteúdo para redes sociais seguindo o MODELO BEX. 
+      ? `Você é um especialista em marketing digital e criação de conteúdo para redes sociais seguindo o formato de calendário editorial específico. 
 
-CONTEXTO ESTRATÉGICO:
-- Gere conteúdo baseado nas personas, posicionamento e objetivos da empresa
-- Cada post deve ter justificativa estratégica clara
-- Legendas devem ser completas (150-300 palavras) com narrativa envolvente
-- Include call-to-actions específicos para cada persona
-- Use hashtags estratégicas baseadas no posicionamento da marca
+FORMATO OBRIGATÓRIO DO CALENDÁRIO EDITORIAL:
+Cada post deve seguir exatamente esta estrutura:
+POST | DIA DA SEMANA | CRIATIVO | OBJETIVO | LEGENDA
 
-ESTRUTURA OBRIGATÓRIA PARA CADA POST:
+ESTRUTURA JSON OBRIGATÓRIA PARA CADA POST:
 {
-  "titulo": "Título engajador e específico",
-  "legenda": "Legenda completa de 150-300 palavras com emojis, narrativa e CTA específico",
+  "post": "Número sequencial (01, 02, 03, etc.)",
+  "dia_semana": "Nome do dia da semana (SEGUNDA, TERÇA, QUARTA, etc.)",
+  "criativo": "IMAGEM|VÍDEO|CARROSEL",
+  "objetivo": "Descrição clara e específica do objetivo do post (2-3 linhas)",
+  "legenda": "Legenda completa com texto envolvente e hashtags relevantes no final",
+  "titulo": "Título engajador para identificação interna",
   "objetivo_postagem": "Engajamento|Vendas|Educação|Relacionamento|Branding",
   "tipo_criativo": "post|carrossel|stories",
-  "formato_postagem": "post|reel|story", 
-  "componente_hesec": "Componente específico do framework (ex: HESEC: Histórias)",
-  "persona_alvo": "Nome da persona específica",
-  "call_to_action": "CTA específico e personalizado para a persona",
+  "formato_postagem": "post|reel|story",
+  "componente_hesec": "Framework aplicado",
+  "persona_alvo": "Persona específica",
+  "call_to_action": "CTA específico",
   "hashtags": ["#tag1", "#tag2", "#tag3", "#tag4", "#tag5"],
-  "contexto_estrategico": "Explicação de 2-3 linhas do por que este post, como ele atinge a persona e qual resultado esperado"
+  "contexto_estrategico": "Justificativa estratégica"
 }
 
 DIRETRIZES OBRIGATÓRIAS:
-1. Legendas COMPLETAS com início envolvente, desenvolvimento e CTA claro
-2. Contexto estratégico explicando o motivo de cada post
-3. CTAs personalizados por persona (não genéricos)
-4. Hashtags balanceadas: marca + nicho + localização + trending
-5. Componentes H.E.S.E.C específicos e aplicados corretamente
+1. CRIATIVO deve ser: IMAGEM, VÍDEO ou CARROSEL (exatamente como especificado)
+2. DIA_SEMANA deve ser o nome completo: SEGUNDA, TERÇA, QUARTA, QUINTA, SEXTA, SÁBADO, DOMINGO
+3. POST deve ser numeração sequencial: 01, 02, 03, etc.
+4. OBJETIVO deve ser uma descrição clara e específica (2-3 linhas) do que o post pretende alcançar
+5. LEGENDA deve incluir texto envolvente + hashtags estratégicas no final
+6. Varie os tipos de CRIATIVO ao longo do calendário (IMAGEM, VÍDEO, CARROSEL)
+7. Distribua os posts ao longo dos dias da semana de forma estratégica
 
-IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicional.`
+IMPORTANTE: Responda APENAS com o JSON válido em formato de array, sem comentários ou texto adicional.`
       : 'Você é um especialista em marketing digital e criação de personas. Responda em texto corrido, bem formatado e de fácil leitura.';
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {

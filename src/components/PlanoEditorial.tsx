@@ -2584,26 +2584,37 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
                     title=""
                     columns={[
                       {
-                        key: 'numero',
-                        label: 'Post',
-                        render: (value, row) => `#${postsGerados.indexOf(row) + 1}`
+                        key: 'post',
+                        label: 'POST',
+                        render: (value, row) => row.post || `${String(postsGerados.indexOf(row) + 1).padStart(2, '0')}`
                       },
                       {
-                        key: 'data_postagem',
-                        label: 'Data',
-                        render: (value) => new Date(value).toLocaleDateString('pt-BR')
+                        key: 'dia_semana',
+                        label: 'DIA DA SEMANA',
+                        render: (value, row) => {
+                          const data = new Date(row.data_postagem);
+                          const dias = ['DOMINGO', 'SEGUNDA', 'TERÇA', 'QUARTA', 'QUINTA', 'SEXTA', 'SÁBADO'];
+                          return `${data.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })} ${dias[data.getDay()]}`;
+                        }
                       },
                       {
-                        key: 'formato_postagem',
-                        label: 'Criativo'
+                        key: 'criativo',
+                        label: 'CRIATIVO',
+                        render: (value, row) => row.criativo || row.tipo_criativo?.toUpperCase() || 'IMAGEM'
                       },
                       {
-                        key: 'objetivo_postagem',
-                        label: 'Objetivo'
+                        key: 'objetivo',
+                        label: 'OBJETIVO',
+                        render: (value, row) => row.objetivo || row.objetivo_postagem
                       },
                       {
-                        key: 'titulo',
-                        label: 'Conteúdo'
+                        key: 'legenda',
+                        label: 'LEGENDA',
+                        render: (value, row) => (
+                          <div className="max-w-xs truncate" title={row.legenda}>
+                            {row.legenda || row.titulo}
+                          </div>
+                        )
                       }
                     ]}
                     data={postsGerados}
