@@ -259,7 +259,7 @@ export function CalendarioEditorial({ isOpen, onClose, posts, postsGerados, onPo
                     <div
                       key={index}
                       className={`
-                        relative min-h-[120px] border rounded-lg transition-all cursor-pointer
+                        relative min-h-[120px] border rounded-lg transition-all cursor-pointer overflow-hidden
                         ${isSelected ? 'border-primary bg-primary/5' : 'border-border'}
                         ${!isCurrentMonth ? 'opacity-50' : ''}
                         ${hasContent ? 'bg-gradient-to-br from-primary/5 to-transparent' : ''}
@@ -275,7 +275,7 @@ export function CalendarioEditorial({ isOpen, onClose, posts, postsGerados, onPo
                       </div>
                       
                       {/* Container dos posts */}
-                      <div className="p-1 space-y-1 min-h-[80px]">
+                      <div className="p-1 space-y-1 min-h-[80px] max-h-[85px] overflow-hidden">
                         {datePosts.length > 0 ? (
                           datePosts.slice(0, 3).map((post) => {
                             const isGenerated = !post.id || post.id.startsWith('temp-');
@@ -290,14 +290,14 @@ export function CalendarioEditorial({ isOpen, onClose, posts, postsGerados, onPo
                                   handleDragStart(e, post);
                                 }}
                                 onDragEnd={handleDragEnd}
-                                className={`
-                                  text-xs px-2 py-1 rounded text-center truncate transition-all relative bg-white/80 border
-                                  ${canDrag ? 'cursor-grab active:cursor-grabbing hover:shadow-sm hover:bg-white' : 'cursor-not-allowed opacity-60'}
-                                  ${getFormatColor(post.formato_postagem)}
-                                  ${isGenerated ? 'border-dashed border-orange-300 bg-orange-50/80' : ''}
-                                  ${isUpdating === post.id ? 'opacity-50 cursor-not-allowed' : ''}
-                                  ${draggedPost?.id === post.id ? 'opacity-50 scale-95' : ''}
-                                `}
+                         className={`
+                          text-xs px-2 py-1 rounded text-center truncate transition-colors relative bg-white/80 border
+                          ${canDrag ? 'cursor-grab active:cursor-grabbing hover:bg-white/90 hover:border-primary/30' : 'cursor-not-allowed opacity-60'}
+                          ${getFormatColor(post.formato_postagem)}
+                          ${isGenerated ? 'border-dashed border-orange-300 bg-orange-50/80' : ''}
+                          ${isUpdating === post.id ? 'opacity-50 cursor-not-allowed' : ''}
+                          ${draggedPost?.id === post.id ? 'opacity-50' : ''}
+                        `}
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   onPostClick(post);
@@ -372,10 +372,10 @@ export function CalendarioEditorial({ isOpen, onClose, posts, postsGerados, onPo
                         onDragStart={(e) => handleDragStart(e, post)}
                         onDragEnd={handleDragEnd}
                         className={`
-                          p-4 cursor-grab active:cursor-grabbing hover:shadow-md transition-all border-green-200
+                          p-4 cursor-grab active:cursor-grabbing hover:shadow-md transition-all border-green-200 max-h-96 overflow-hidden
                           ${isUpdating === post.id ? 'opacity-50 cursor-not-allowed' : ''}
-                          ${draggedPost?.id === post.id ? 'opacity-50 scale-95' : ''}
-                          hover:scale-[1.02]
+                          ${draggedPost?.id === post.id ? 'opacity-50' : ''}
+                          hover:border-primary/30 hover:shadow-lg
                         `}
                       >
                     <div className="space-y-3">
@@ -443,8 +443,8 @@ export function CalendarioEditorial({ isOpen, onClose, posts, postsGerados, onPo
                       <Card 
                         key={post.id} 
                         className={`
-                          p-4 cursor-pointer hover:shadow-md transition-all border-dashed border-orange-300 bg-orange-50/30
-                          opacity-75
+                          p-4 cursor-pointer hover:shadow-md transition-all border-dashed border-orange-300 bg-orange-50/30 max-h-96 overflow-hidden
+                          opacity-75 hover:border-orange-400/50 hover:shadow-lg
                         `}
                         onClick={() => onPostClick(post)}
                       >
