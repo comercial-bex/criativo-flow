@@ -1,3 +1,4 @@
+import React from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -38,6 +39,26 @@ export function PostPreviewModal({ isOpen, onClose, posts, onSave, onCancel }: P
   const [selectedPost, setSelectedPost] = useState(0);
   const [isEditing, setIsEditing] = useState(false);
 
+  // Update editedPosts when posts prop changes
+  React.useEffect(() => {
+    setEditedPosts(posts);
+    setSelectedPost(0); // Reset to first post when new posts are loaded
+  }, [posts]);
+
+  // Early return if no posts
+  if (!posts || posts.length === 0) {
+    return null;
+  }
+
+  // Ensure selectedPost is within bounds
+  const safeSelectedPost = Math.max(0, Math.min(selectedPost, editedPosts.length - 1));
+  const safeCurrentPost = editedPosts[safeSelectedPost];
+
+  // Don't render if no valid post
+  if (!safeCurrentPost) {
+    return null;
+  }
+
   const getObjetivoColor = (objetivo: string) => {
     const colors = {
       'Engajamento': 'bg-blue-500/10 text-blue-700 border-blue-300',
@@ -61,8 +82,6 @@ export function PostPreviewModal({ isOpen, onClose, posts, onSave, onCancel }: P
     updated[index] = { ...updated[index], [field]: value };
     setEditedPosts(updated);
   };
-
-  const currentPost = editedPosts[selectedPost];
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -124,10 +143,10 @@ export function PostPreviewModal({ isOpen, onClose, posts, onSave, onCancel }: P
             <div className="p-4 border-b flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <h3 className="font-medium">
-                  Post {selectedPost + 1}: {currentPost?.titulo}
+                  Post {safeSelectedPost + 1}: {safeCurrentPost.titulo}
                 </h3>
-                <Badge className={getObjetivoColor(currentPost?.objetivo_postagem)}>
-                  {currentPost?.objetivo_postagem}
+                <Badge className={getObjetivoColor(safeCurrentPost.objetivo_postagem)}>
+                  {safeCurrentPost.objetivo_postagem}
                 </Badge>
               </div>
               <Button
@@ -149,8 +168,8 @@ export function PostPreviewModal({ isOpen, onClose, posts, onSave, onCancel }: P
                       <Label htmlFor="titulo">Título</Label>
                       <Input
                         id="titulo"
-                        value={currentPost.titulo}
-                        onChange={(e) => updatePost(selectedPost, 'titulo', e.target.value)}
+                        value={safeCurrentPost.titulo}
+                        onChange={(e) => updatePost(safeSelectedPost, 'titulo', e.target.value)}
                       />
                     </div>
 
@@ -158,8 +177,8 @@ export function PostPreviewModal({ isOpen, onClose, posts, onSave, onCancel }: P
                       <Label htmlFor="legenda">Legenda Completa</Label>
                       <Textarea
                         id="legenda"
-                        value={currentPost.legenda}
-                        onChange={(e) => updatePost(selectedPost, 'legenda', e.target.value)}
+                        value={safeCurrentPost.legenda}
+                        onChange={(e) => updatePost(safeSelectedPost, 'legenda', e.target.value)}
                         rows={8}
                         className="resize-none"
                       />
@@ -170,16 +189,16 @@ export function PostPreviewModal({ isOpen, onClose, posts, onSave, onCancel }: P
                         <Label htmlFor="persona">Persona Alvo</Label>
                         <Input
                           id="persona"
-                          value={currentPost.persona_alvo}
-                          onChange={(e) => updatePost(selectedPost, 'persona_alvo', e.target.value)}
+                          value={safeCurrentPost.persona_alvo}
+                          onChange={(e) => updatePost(safeSelectedPost, 'persona_alvo', e.target.value)}
                         />
                       </div>
                       <div>
                         <Label htmlFor="componente">Componente H.E.S.E.C</Label>
                         <Input
                           id="componente"
-                          value={currentPost.componente_hesec}
-                          onChange={(e) => updatePost(selectedPost, 'componente_hesec', e.target.value)}
+                          value={safeCurrentPost.componente_hesec}
+                          onChange={(e) => updatePost(safeSelectedPost, 'componente_hesec', e.target.value)}
                         />
                       </div>
                     </div>
@@ -188,8 +207,8 @@ export function PostPreviewModal({ isOpen, onClose, posts, onSave, onCancel }: P
                       <Label htmlFor="cta">Call to Action</Label>
                       <Input
                         id="cta"
-                        value={currentPost.call_to_action}
-                        onChange={(e) => updatePost(selectedPost, 'call_to_action', e.target.value)}
+                        value={safeCurrentPost.call_to_action}
+                        onChange={(e) => updatePost(safeSelectedPost, 'call_to_action', e.target.value)}
                       />
                     </div>
 
@@ -197,8 +216,8 @@ export function PostPreviewModal({ isOpen, onClose, posts, onSave, onCancel }: P
                       <Label htmlFor="hashtags">Hashtags (separadas por vírgula)</Label>
                       <Input
                         id="hashtags"
-                        value={currentPost.hashtags.join(', ')}
-                        onChange={(e) => updatePost(selectedPost, 'hashtags', e.target.value.split(', ').filter(tag => tag.trim()))}
+                        value={safeCurrentPost.hashtags?.join(', ') || ''}
+                        onChange={(e) => updatePost(safeSelectedPost, 'hashtags', e.target.value.split(', ').filter(tag => tag.trim()))}
                       />
                     </div>
 
@@ -206,8 +225,8 @@ export function PostPreviewModal({ isOpen, onClose, posts, onSave, onCancel }: P
                       <Label htmlFor="contexto">Contexto Estratégico</Label>
                       <Textarea
                         id="contexto"
-                        value={currentPost.contexto_estrategico}
-                        onChange={(e) => updatePost(selectedPost, 'contexto_estrategico', e.target.value)}
+                        value={safeCurrentPost.contexto_estrategico}
+                        onChange={(e) => updatePost(safeSelectedPost, 'contexto_estrategico', e.target.value)}
                         rows={3}
                       />
                     </div>
@@ -227,25 +246,25 @@ export function PostPreviewModal({ isOpen, onClose, posts, onSave, onCancel }: P
                         <div className="grid grid-cols-2 gap-4 text-sm">
                           <div>
                             <span className="text-muted-foreground">Persona:</span>
-                            <p className="font-medium">{currentPost.persona_alvo}</p>
+                            <p className="font-medium">{safeCurrentPost.persona_alvo}</p>
                           </div>
                           <div>
                             <span className="text-muted-foreground">Framework:</span>
-                            <p className="font-medium">{currentPost.componente_hesec}</p>
+                            <p className="font-medium">{safeCurrentPost.componente_hesec}</p>
                           </div>
                           <div>
                             <span className="text-muted-foreground">Tipo:</span>
-                            <p className="font-medium capitalize">{currentPost.tipo_criativo}</p>
+                            <p className="font-medium capitalize">{safeCurrentPost.tipo_criativo}</p>
                           </div>
                           <div>
                             <span className="text-muted-foreground">Formato:</span>
-                            <p className="font-medium capitalize">{currentPost.formato_postagem}</p>
+                            <p className="font-medium capitalize">{safeCurrentPost.formato_postagem}</p>
                           </div>
                         </div>
                         <Separator />
                         <div>
                           <span className="text-muted-foreground text-sm">Contexto Estratégico:</span>
-                          <p className="text-sm mt-1">{currentPost.contexto_estrategico}</p>
+                          <p className="text-sm mt-1">{safeCurrentPost.contexto_estrategico}</p>
                         </div>
                       </CardContent>
                     </Card>
@@ -260,21 +279,21 @@ export function PostPreviewModal({ isOpen, onClose, posts, onSave, onCancel }: P
                       </CardHeader>
                       <CardContent>
                         <div className="bg-gradient-to-b from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 rounded-lg p-4">
-                          <h3 className="font-bold text-lg mb-3">{currentPost.titulo}</h3>
+                          <h3 className="font-bold text-lg mb-3">{safeCurrentPost.titulo}</h3>
                           <div className="whitespace-pre-wrap text-sm leading-relaxed mb-4">
-                            {currentPost.legenda}
+                            {safeCurrentPost.legenda}
                           </div>
                           
-                          {currentPost.call_to_action && (
+                          {safeCurrentPost.call_to_action && (
                             <div className="bg-primary/10 rounded-lg p-3 mb-3">
                               <p className="text-sm font-medium text-primary">
-                                👆 {currentPost.call_to_action}
+                                👆 {safeCurrentPost.call_to_action}
                               </p>
                             </div>
                           )}
                           
                           <div className="flex flex-wrap gap-1">
-                            {currentPost.hashtags.map((tag, index) => (
+                            {(safeCurrentPost.hashtags || []).map((tag, index) => (
                               <Badge key={index} variant="secondary" className="text-xs">
                                 <Hash className="h-3 w-3 mr-1" />
                                 {tag.replace('#', '')}
@@ -294,7 +313,7 @@ export function PostPreviewModal({ isOpen, onClose, posts, onSave, onCancel }: P
         {/* Botões de Ação */}
         <div className="p-6 border-t flex items-center justify-between">
           <div className="text-sm text-muted-foreground">
-            {selectedPost + 1} de {editedPosts.length} posts
+            {safeSelectedPost + 1} de {editedPosts.length} posts
           </div>
           <div className="flex gap-2">
             <Button variant="outline" onClick={onCancel}>
