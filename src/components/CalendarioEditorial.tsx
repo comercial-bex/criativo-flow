@@ -143,20 +143,25 @@ export function CalendarioEditorial({ isOpen, onClose, posts, postsGerados, onPo
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault(); // SEMPRE primeiro para permitir drop
+    console.log('🎯 DragOver on target, draggedPost:', draggedPost?.titulo);
     
     if (!draggedPost || !isDraggable(draggedPost)) {
       e.dataTransfer.dropEffect = 'none';
+      console.log('❌ Drop not allowed - no dragged post or not draggable');
       return;
     }
     
+    console.log('✅ Drop allowed - setting move effect');
     e.dataTransfer.dropEffect = 'move';
   };
 
   const handleDrop = async (e: React.DragEvent, targetDate: Date) => {
     e.preventDefault();
+    console.log('🎯 Drop executed on date:', format(targetDate, 'dd/MM/yyyy'), 'for post:', draggedPost?.titulo);
     setIsDragActive(false);
     
     if (!draggedPost || !isDraggable(draggedPost)) {
+      console.log('❌ Drop failed - no dragged post or not draggable');
       setDraggedPost(null);
       return;
     }
@@ -254,11 +259,11 @@ export function CalendarioEditorial({ isOpen, onClose, posts, postsGerados, onPo
                     <div
                       key={index}
                       className={`
-                        relative min-h-[100px] border rounded-lg transition-all cursor-pointer
+                        relative min-h-[120px] border rounded-lg transition-all cursor-pointer
                         ${isSelected ? 'border-primary bg-primary/5' : 'border-border'}
                         ${!isCurrentMonth ? 'opacity-50' : ''}
                         ${hasContent ? 'bg-gradient-to-br from-primary/5 to-transparent' : ''}
-                        ${isDragActive && isDraggable(draggedPost as any) ? 'border-primary bg-primary/10 border-2' : ''}
+                        ${isDragActive && isDraggable(draggedPost as any) ? 'border-primary/60 bg-primary/15 border-2 border-dashed' : ''}
                       `}
                       onDragOver={handleDragOver}
                       onDrop={(e) => handleDrop(e, date)}
@@ -270,7 +275,7 @@ export function CalendarioEditorial({ isOpen, onClose, posts, postsGerados, onPo
                       </div>
                       
                       {/* Container dos posts */}
-                      <div className="p-1 space-y-1 min-h-[60px]">
+                      <div className="p-1 space-y-1 min-h-[80px]">
                         {datePosts.length > 0 ? (
                           datePosts.slice(0, 3).map((post) => {
                             const isGenerated = !post.id || post.id.startsWith('temp-');
@@ -281,7 +286,7 @@ export function CalendarioEditorial({ isOpen, onClose, posts, postsGerados, onPo
                                 key={post.id}
                                 draggable={canDrag}
                                 onDragStart={(e) => {
-                                  e.stopPropagation();
+                                  console.log('🔥 Drag started for post:', post.titulo, post.id);
                                   handleDragStart(e, post);
                                 }}
                                 onDragEnd={handleDragEnd}
@@ -306,8 +311,8 @@ export function CalendarioEditorial({ isOpen, onClose, posts, postsGerados, onPo
                           })
                         ) : (
                           <div className={`
-                            h-full min-h-[50px] flex items-center justify-center text-xs text-muted-foreground/50 transition-all rounded
-                            ${isDragActive && isDraggable(draggedPost as any) ? 'text-primary font-medium bg-primary/5 border-2 border-dashed border-primary' : ''}
+                            h-full min-h-[70px] flex items-center justify-center text-xs text-muted-foreground/50 transition-all rounded
+                            ${isDragActive && isDraggable(draggedPost as any) ? 'text-primary font-medium bg-primary/10 border-2 border-dashed border-primary animate-pulse' : ''}
                           `}>
                             {isDragActive && isDraggable(draggedPost as any) ? "📅 Solte aqui" : ""}
                           </div>
