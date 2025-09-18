@@ -1207,26 +1207,76 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
         postsData.map(async (post, index) => {
           const dataPostagem = cronograma[index]?.toISOString().split('T')[0] || new Date().toISOString().split('T')[0];
           
-          // Criar prompt específico para a imagem baseado no conteúdo do post
-          const imagePrompt = `${post.titulo}. ${post.legenda.substring(0, 200)}. Style: ${post.formato_postagem === 'story' ? 'vertical Instagram story' : post.formato_postagem === 'reel' ? 'dynamic video thumbnail' : 'Instagram post'}, professional, high quality, modern, vibrant colors.`;
+          // Carregar dados de onboarding para contexto das imagens
+          let onboardingData = null;
+          try {
+            const { data: onboarding, error: onboardingError } = await supabase
+              .from('cliente_onboarding')
+              .select('*')
+              .eq('cliente_id', planejamento.cliente_id)
+              .single();
+
+            if (!onboardingError) {
+              onboardingData = onboarding;
+              console.log('📊 Onboarding carregado para contexto de imagem');
+            }
+          } catch (error) {
+            console.log('ℹ️ Continuando sem dados de onboarding específicos');
+          }
+
+          // Usar função de prompt elaborado
+          const { criarPromptImagem } = await import('@/utils/promptImageGen');
           
-          console.log(`🖼️ Gerando imagem para post ${index + 1}: ${post.titulo}`);
+          const promptElaborado = criarPromptImagem(post, onboardingData ? {
+            segmentoAtuacao: onboardingData.segmento_atuacao,
+            produtosServicos: onboardingData.produtos_servicos,
+            publicoAlvo: onboardingData.publico_alvo,
+            tiposClientes: onboardingData.tipos_clientes,
+            valoresPrincipais: onboardingData.valores_principais,
+            tomVoz: onboardingData.tom_voz,
+            historiaMarca: onboardingData.historia_marca,
+            comoLembrada: onboardingData.como_lembrada,
+            diferenciais: onboardingData.diferenciais,
+            localizacao: onboardingData.localizacao,
+            areaAtendimento: onboardingData.area_atendimento
+          } : undefined);
+          
+          console.log(`🖼️ Gerando imagem com Nano Banana para post ${index + 1}: ${post.titulo}`);
+          console.log(`📝 Prompt elaborado: ${promptElaborado.substring(0, 150)}...`);
           
           let anexo_url = null;
           try {
-            const { data: imageData, error: imageError } = await supabase.functions.invoke('generate-post-image', {
+            // Tentar primeiro com Gemini (Nano Banana)
+            const { data: geminiData, error: geminiError } = await supabase.functions.invoke('generate-image-gemini', {
               body: { 
-                prompt: imagePrompt,
-                style: post.formato_postagem === 'story' ? 'social media story' : 'social media post',
-                size: post.formato_postagem === 'story' ? '1080x1920' : '1080x1080'
+                prompt: promptElaborado,
+                onboardingData: onboardingData
               }
             });
 
-            if (imageError) {
-              console.warn(`⚠️ Erro ao gerar imagem para post ${index + 1}:`, imageError);
-            } else if (imageData?.imageUrl) {
-              console.log(`✅ Imagem gerada com sucesso para post ${index + 1}`);
-              anexo_url = imageData.imageUrl;
+            if (geminiError) {
+              console.warn(`⚠️ Erro na Nano Banana para post ${index + 1}, tentando DALL-E:`, geminiError);
+              
+              // Fallback para DALL-E com prompt simplificado
+              const promptSimples = `${post.titulo}. ${post.legenda?.substring(0, 200) || ''}. Style: ${post.formato_postagem === 'story' ? 'vertical Instagram story' : post.formato_postagem === 'reel' ? 'dynamic video thumbnail' : 'Instagram post'}, professional, high quality, modern, vibrant colors.`;
+              
+              const { data: dalleData, error: dalleError } = await supabase.functions.invoke('generate-post-image', {
+                body: { 
+                  prompt: promptSimples,
+                  style: post.formato_postagem === 'story' ? 'social media story' : 'social media post',
+                  size: post.formato_postagem === 'story' ? '1080x1920' : '1080x1080'
+                }
+              });
+
+              if (dalleError) {
+                console.warn(`⚠️ Erro também no DALL-E para post ${index + 1}:`, dalleError);
+              } else if (dalleData?.imageUrl) {
+                console.log(`✅ Imagem gerada com DALL-E para post ${index + 1}`);
+                anexo_url = dalleData.imageUrl;
+              }
+            } else if (geminiData?.imageUrl) {
+              console.log(`✅ Imagem gerada com Nano Banana para post ${index + 1}`);
+              anexo_url = geminiData.imageUrl;
             }
           } catch (imageError) {
             console.warn(`⚠️ Erro ao gerar imagem para post ${index + 1}:`, imageError);
@@ -1248,7 +1298,7 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
       setShowPreviewModal(true);
 
       const imagensGeradas = postsComCronograma.filter(post => post.anexo_url).length;
-      toast.success(`${postsData.length} posts gerados com sucesso! ${imagensGeradas} imagens criadas com DALL-E.`);
+      toast.success(`${postsData.length} posts gerados com sucesso! ${imagensGeradas} imagens criadas com Nano Banana/DALL-E.`);
 
     } catch (error) {
       console.error('Erro ao gerar conteúdo:', error);
@@ -1284,29 +1334,38 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
       }
       console.log('✅ Posts existentes removidos');
 
-      // Inserir novos posts
-      const postsParaInserir = novosPost.map(post => {
-        // Converter valores para compatibilidade com constraints do banco
-        let formatoPostagem = post.formato_postagem;
-        if (formatoPostagem === 'stories') {
-          formatoPostagem = 'story'; // Converter para o valor aceito pela constraint
-        }
-        
-        return {
-          planejamento_id: planejamento.id,
-          titulo: post.titulo,
-          legenda: post.legenda || '',
-          objetivo_postagem: post.objetivo_postagem,
-          tipo_criativo: post.tipo_criativo,
-          formato_postagem: formatoPostagem,
-          componente_hesec: post.componente_hesec || '',
-          persona_alvo: post.persona_alvo || '',
-          call_to_action: post.call_to_action || '',
-          hashtags: post.hashtags || [],
-          contexto_estrategico: post.contexto_estrategico || '',
-          data_postagem: post.data_postagem
-        };
-      });
+          // Inserir novos posts
+          const postsParaInserir = novosPost.map(post => {
+            // Converter valores para compatibilidade com constraints do banco
+            let formatoPostagem = post.formato_postagem;
+            if (formatoPostagem === 'stories') {
+              formatoPostagem = 'story'; // Converter para o valor aceito pela constraint
+            }
+            
+            // Validar tipo_criativo para constraint do banco
+            let tipoCriativo = post.tipo_criativo;
+            const tiposPermitidos = ['post', 'carrossel', 'stories'];
+            if (!tiposPermitidos.includes(tipoCriativo)) {
+              console.warn(`⚠️ tipo_criativo "${tipoCriativo}" não permitido, usando "post" como fallback`);
+              tipoCriativo = 'post';
+            }
+            
+            return {
+              planejamento_id: planejamento.id,
+              titulo: post.titulo,
+              legenda: post.legenda || '',
+              objetivo_postagem: post.objetivo_postagem,
+              tipo_criativo: tipoCriativo,
+              formato_postagem: formatoPostagem,
+              componente_hesec: post.componente_hesec || '',
+              persona_alvo: post.persona_alvo || '',
+              call_to_action: post.call_to_action || '',
+              hashtags: post.hashtags || [],
+              contexto_estrategico: post.contexto_estrategico || '',
+              data_postagem: post.data_postagem,
+              anexo_url: post.anexo_url || null  // 🔥 INCLUIR anexo_url
+            };
+          });
 
       console.log('📝 Posts formatados para inserção:', JSON.stringify(postsParaInserir, null, 2));
 
