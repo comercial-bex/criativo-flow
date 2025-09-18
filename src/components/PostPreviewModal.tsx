@@ -32,12 +32,15 @@ interface PostPreviewModalProps {
   posts: PostPreview[];
   onSave: (posts: PostPreview[]) => void;
   onCancel: () => void;
+  onApprovePost?: (post: PostPreview, index: number) => void;
 }
 
-export function PostPreviewModal({ isOpen, onClose, posts, onSave, onCancel }: PostPreviewModalProps) {
+export function PostPreviewModal({ isOpen, onClose, posts, onSave, onCancel, onApprovePost }: PostPreviewModalProps) {
   const [editedPosts, setEditedPosts] = useState<PostPreview[]>(posts);
   const [selectedPost, setSelectedPost] = useState(0);
   const [isEditing, setIsEditing] = useState(false);
+  const [approvedPosts, setApprovedPosts] = useState<Set<number>>(new Set());
+  const [savingPost, setSavingPost] = useState<number | null>(null);
 
   // Update editedPosts when posts prop changes
   React.useEffect(() => {
@@ -83,6 +86,20 @@ export function PostPreviewModal({ isOpen, onClose, posts, onSave, onCancel }: P
     setEditedPosts(updated);
   };
 
+  const handleApprovePost = async (postIndex: number) => {
+    if (!onApprovePost) return;
+    
+    setSavingPost(postIndex);
+    try {
+      await onApprovePost(editedPosts[postIndex], postIndex);
+      setApprovedPosts(prev => new Set([...prev, postIndex]));
+    } catch (error) {
+      console.error('Erro ao aprovar post:', error);
+    } finally {
+      setSavingPost(null);
+    }
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="w-[95vw] max-w-7xl h-[95vh] p-0 overflow-hidden">
@@ -113,23 +130,28 @@ export function PostPreviewModal({ isOpen, onClose, posts, onSave, onCancel }: P
                     onClick={() => setSelectedPost(index)}
                   >
                     <CardContent className="p-2 sm:p-3">
-                      <div className="flex items-start gap-2">
-                        <span className="text-base sm:text-lg flex-shrink-0">{getTipoIcon(post.tipo_criativo, post.formato_postagem)}</span>
-                        <div className="flex-1 min-w-0">
-                          <h4 className="font-medium text-xs sm:text-sm truncate pr-1">{post.titulo}</h4>
-                          <div className="flex items-center gap-1 mt-1">
-                            <Calendar className="h-3 w-3 text-muted-foreground flex-shrink-0" />
-                            <span className="text-xs text-muted-foreground">
-                              {new Date(post.data_postagem).toLocaleDateString('pt-BR')}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-1 mt-1">
-                            <Users className="h-3 w-3 text-muted-foreground flex-shrink-0" />
-                            <span className="text-xs text-muted-foreground truncate">
-                              {post.persona_alvo}
-                            </span>
-                          </div>
-                        </div>
+                         <div className="flex items-start gap-2">
+                         <div className="flex flex-col items-center gap-1">
+                           <span className="text-base sm:text-lg flex-shrink-0">{getTipoIcon(post.tipo_criativo, post.formato_postagem)}</span>
+                           {approvedPosts.has(index) && (
+                             <div className="w-2 h-2 bg-green-500 rounded-full" title="Post aprovado" />
+                           )}
+                         </div>
+                         <div className="flex-1 min-w-0">
+                           <h4 className="font-medium text-xs sm:text-sm truncate pr-1">{post.titulo}</h4>
+                           <div className="flex items-center gap-1 mt-1">
+                             <Calendar className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+                             <span className="text-xs text-muted-foreground">
+                               {new Date(post.data_postagem).toLocaleDateString('pt-BR')}
+                             </span>
+                           </div>
+                           <div className="flex items-center gap-1 mt-1">
+                             <Users className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+                             <span className="text-xs text-muted-foreground truncate">
+                               {post.persona_alvo}
+                             </span>
+                           </div>
+                         </div>
                       </div>
                     </CardContent>
                   </Card>
@@ -148,18 +170,46 @@ export function PostPreviewModal({ isOpen, onClose, posts, onSave, onCancel }: P
                 <Badge className={`${getObjetivoColor(safeCurrentPost.objetivo_postagem)} text-xs flex-shrink-0`}>
                   {safeCurrentPost.objetivo_postagem}
                 </Badge>
+                {approvedPosts.has(safeSelectedPost) && (
+                  <Badge variant="secondary" className="bg-green-100 text-green-700 text-xs">
+                    ✓ Aprovado
+                  </Badge>
+                )}
               </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setIsEditing(!isEditing)}
-                className="ml-2 flex-shrink-0"
-              >
-                {isEditing ? <X className="h-4 w-4" /> : <Edit3 className="h-4 w-4" />}
-                <span className="hidden sm:inline ml-1">
-                  {isEditing ? 'Cancelar' : 'Editar'}
-                </span>
-              </Button>
+              <div className="flex items-center gap-2">
+                {onApprovePost && !approvedPosts.has(safeSelectedPost) && (
+                  <Button
+                    variant="default"
+                    size="sm"
+                    onClick={() => handleApprovePost(safeSelectedPost)}
+                    disabled={savingPost === safeSelectedPost}
+                    className="bg-green-600 hover:bg-green-700 text-white"
+                  >
+                    {savingPost === safeSelectedPost ? (
+                      <>
+                        <div className="animate-spin h-3 w-3 border border-white border-t-transparent rounded-full mr-1" />
+                        Salvando...
+                      </>
+                    ) : (
+                      <>
+                        <Save className="h-4 w-4 mr-1" />
+                        Aprovar
+                      </>
+                    )}
+                  </Button>
+                )}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsEditing(!isEditing)}
+                  className="flex-shrink-0"
+                >
+                  {isEditing ? <X className="h-4 w-4" /> : <Edit3 className="h-4 w-4" />}
+                  <span className="hidden sm:inline ml-1">
+                    {isEditing ? 'Cancelar' : 'Editar'}
+                  </span>
+                </Button>
+              </div>
             </div>
 
             <ScrollArea className="flex-1 min-h-0">
@@ -347,17 +397,34 @@ export function PostPreviewModal({ isOpen, onClose, posts, onSave, onCancel }: P
         <div className="p-3 sm:p-6 border-t flex items-center justify-between flex-shrink-0 bg-background">
           <div className="text-xs sm:text-sm text-muted-foreground">
             {safeSelectedPost + 1} de {editedPosts.length} posts gerados
+            {approvedPosts.size > 0 && (
+              <span className="text-green-600 ml-2">
+                ({approvedPosts.size} aprovados)
+              </span>
+            )}
           </div>
           <div className="flex gap-2">
             <Button variant="outline" onClick={onCancel} size="sm">
               <span className="hidden sm:inline">Cancelar</span>
               <span className="sm:hidden">✕</span>
             </Button>
-            <Button onClick={() => onSave(editedPosts)} className="gap-2 bg-primary hover:bg-primary/90" size="sm">
-              <Save className="h-4 w-4" />
-              <span className="hidden sm:inline">Aprovar e Salvar Posts</span>
-              <span className="sm:hidden">Aprovar</span>
-            </Button>
+            {!onApprovePost && (
+              <Button onClick={() => onSave(editedPosts)} className="gap-2 bg-primary hover:bg-primary/90" size="sm">
+                <Save className="h-4 w-4" />
+                <span className="hidden sm:inline">Aprovar e Salvar Posts</span>
+                <span className="sm:hidden">Aprovar</span>
+              </Button>
+            )}
+            {onApprovePost && approvedPosts.size === editedPosts.length && (
+              <Button 
+                onClick={onClose} 
+                className="gap-2 bg-green-600 hover:bg-green-700 text-white" 
+                size="sm"
+              >
+                <span className="hidden sm:inline">Todos Aprovados - Fechar</span>
+                <span className="sm:hidden">Fechar</span>
+              </Button>
+            )}
           </div>
         </div>
       </DialogContent>

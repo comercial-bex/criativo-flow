@@ -1335,6 +1335,20 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
     }
   };
 
+  const handleApproveIndividualPost = async (post: any, index: number) => {
+    console.log('🚀 handleApproveIndividualPost chamada para post:', post.titulo);
+    try {
+      // Salvar apenas este post específico
+      await salvarPostsCalendario([post]);
+      toast.success(`Post "${post.titulo}" aprovado e salvo com sucesso!`);
+      console.log('✅ Post individual salvo com sucesso');
+    } catch (error) {
+      console.error('💥 Erro ao aprovar post individual:', error);
+      toast.error(`Erro ao aprovar post "${post.titulo}"`);
+      throw error;
+    }
+  };
+
   const handlePreviewSave = async (postsEditados: any[]) => {
     console.log('🚀 handlePreviewSave chamada com:', postsEditados);
     setSalvando(true);
@@ -2421,6 +2435,7 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
         posts={previewPosts}
         onSave={handlePreviewSave}
         onCancel={handlePreviewCancel}
+        onApprovePost={handleApproveIndividualPost}
       />
     </div>
   );
