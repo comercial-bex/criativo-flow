@@ -1006,20 +1006,35 @@ IMPORTANTE: Retorne APENAS o JSON válido, sem texto adicional.
   const gerarCronogramaPostagens = (mes: number, ano: number) => {
     const cronograma: Date[] = [];
     const diasSemana = [1, 3, 5]; // Segunda, Quarta, Sexta
+    const limitePosts = clienteAssinatura?.posts_mensais || 12;
     
-    const ultimoDiaDoMes = new Date(ano, mes + 1, 0).getDate();
+    let mesAtual = mes;
+    let anoAtual = ano;
     
-    // Coletar todas as datas de Segunda, Quarta e Sexta do mês
-    for (let dia = 1; dia <= ultimoDiaDoMes; dia++) {
-      const data = new Date(ano, mes, dia);
-      if (diasSemana.includes(data.getDay())) {
-        cronograma.push(data);
+    // Gerar exatamente a quantidade de posts da assinatura
+    while (cronograma.length < limitePosts) {
+      const ultimoDiaDoMes = new Date(anoAtual, mesAtual + 1, 0).getDate();
+      
+      // Coletar datas do mês atual
+      for (let dia = 1; dia <= ultimoDiaDoMes && cronograma.length < limitePosts; dia++) {
+        const data = new Date(anoAtual, mesAtual, dia);
+        if (diasSemana.includes(data.getDay())) {
+          cronograma.push(data);
+        }
+      }
+      
+      // Se ainda não temos posts suficientes, pular para o próximo mês
+      if (cronograma.length < limitePosts) {
+        mesAtual++;
+        if (mesAtual > 11) {
+          mesAtual = 0;
+          anoAtual++;
+        }
       }
     }
     
-    // Respeitar o limite exato de posts mensais da assinatura
-    const limitePosts = clienteAssinatura?.posts_mensais || 12;
-    return cronograma.slice(0, limitePosts);
+    console.log(`📅 Cronograma gerado: ${cronograma.length} datas para ${limitePosts} posts do plano`);
+    return cronograma.slice(0, limitePosts); // Garantir exatamente a quantidade
   };
 
   const gerarConteudoEditorial = async () => {
@@ -1187,11 +1202,10 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
       console.log('📊 Quantidade de posts:', novosPost.length);
       console.log('📊 Limite de posts da assinatura:', clienteAssinatura?.posts_mensais || "não definido");
       
-      // Validar quantidade de posts
+      // Validação informativa de quantidade de posts
       if (clienteAssinatura?.posts_mensais && novosPost.length !== clienteAssinatura.posts_mensais) {
-        console.warn(`⚠️ Quantidade incorreta: ${novosPost.length} posts gerados, esperado ${clienteAssinatura.posts_mensais}`);
-        toast.error(`Erro: Sistema gerou ${novosPost.length} posts, mas o plano permite ${clienteAssinatura.posts_mensais} posts mensais`);
-        return;
+        console.warn(`⚠️ Quantidade divergente: ${novosPost.length} posts gerados, esperado ${clienteAssinatura.posts_mensais}`);
+        toast(`Sistema gerou ${novosPost.length} posts. Seu plano permite ${clienteAssinatura.posts_mensais} posts mensais.`);
       }
       
       // Deletar posts existentes do mês atual

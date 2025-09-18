@@ -72,7 +72,7 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
           { role: 'user', content: prompt }
         ],
         temperature: 0.7,
-        max_tokens: 3000,
+        max_tokens: 4000,
       }),
     });
 
@@ -124,7 +124,21 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
         
       } catch (parseError) {
         console.error('Erro ao parsear JSON:', parseError);
-        console.log('Texto original:', generatedText);
+        console.log('Texto original:', generatedText.substring(0, 500) + '...');
+        
+        // Tentar recuperar JSON truncado procurando por um array válido
+        try {
+          const match = generatedText.match(/\[[\s\S]*\]/);
+          if (match) {
+            const recoveredJson = JSON.parse(match[0]);
+            console.log('JSON recuperado com sucesso:', recoveredJson.length, 'posts');
+            return new Response(JSON.stringify(recoveredJson), {
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            });
+          }
+        } catch (recoveryError) {
+          console.log('Falha na recuperação do JSON, usando fallback');
+        }
         
         // Fallback: criar array de posts padrão
         const fallbackPosts = [
