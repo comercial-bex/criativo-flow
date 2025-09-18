@@ -278,40 +278,64 @@ export function PostPreviewModal({ isOpen, onClose, posts, onSave, onCancel }: P
                       </CardContent>
                     </Card>
 
-                    {/* Preview do Post */}
+                  {/* Imagem Gerada */}
+                  {(safeCurrentPost as any).anexo_url && (
                     <Card>
                       <CardHeader className="pb-2 sm:pb-3">
                         <CardTitle className="text-sm flex items-center gap-2">
-                          <MessageCircle className="h-4 w-4" />
-                          Preview da Postagem
+                          🖼️ Imagem Gerada pelo DALL-E
                         </CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <div className="bg-gradient-to-b from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 rounded-lg p-3 sm:p-4">
-                          <h3 className="font-bold text-base sm:text-lg mb-2 sm:mb-3 leading-tight">{safeCurrentPost.titulo}</h3>
-                          <div className="whitespace-pre-wrap text-sm leading-relaxed mb-3 sm:mb-4">
-                            {safeCurrentPost.legenda}
-                          </div>
-                          
-                          {safeCurrentPost.call_to_action && (
-                            <div className="bg-primary/10 rounded-lg p-2 sm:p-3 mb-2 sm:mb-3">
-                              <p className="text-sm font-medium text-primary">
-                                👆 {safeCurrentPost.call_to_action}
-                              </p>
-                            </div>
-                          )}
-                          
-                          <div className="flex flex-wrap gap-1">
-                            {(safeCurrentPost.hashtags || []).map((tag, index) => (
-                              <Badge key={index} variant="secondary" className="text-xs">
-                                <Hash className="h-3 w-3 mr-1" />
-                                {tag.replace('#', '')}
-                              </Badge>
-                            ))}
-                          </div>
+                        <div className={`relative overflow-hidden rounded-lg ${
+                          safeCurrentPost.formato_postagem === 'story' || safeCurrentPost.formato_postagem === 'reel' 
+                            ? 'aspect-[9/16] max-w-xs mx-auto' 
+                            : 'aspect-square max-w-md mx-auto'
+                        }`}>
+                          <img 
+                            src={(safeCurrentPost as any).anexo_url} 
+                            alt={safeCurrentPost.titulo}
+                            className="w-full h-full object-cover"
+                          />
                         </div>
                       </CardContent>
                     </Card>
+                  )}
+
+                  {/* Preview do Post */}
+                  <Card>
+                    <CardHeader className="pb-2 sm:pb-3">
+                      <CardTitle className="text-sm flex items-center gap-2">
+                        <MessageCircle className="h-4 w-4" />
+                        Preview da Postagem
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="bg-gradient-to-b from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 rounded-lg p-3 sm:p-4">
+                        <h3 className="font-bold text-base sm:text-lg mb-2 sm:mb-3 leading-tight">{safeCurrentPost.titulo}</h3>
+                        <div className="whitespace-pre-wrap text-sm leading-relaxed mb-3 sm:mb-4">
+                          {safeCurrentPost.legenda}
+                        </div>
+                        
+                        {safeCurrentPost.call_to_action && (
+                          <div className="bg-primary/10 rounded-lg p-2 sm:p-3 mb-2 sm:mb-3">
+                            <p className="text-sm font-medium text-primary">
+                              👆 {safeCurrentPost.call_to_action}
+                            </p>
+                          </div>
+                        )}
+                        
+                        <div className="flex flex-wrap gap-1">
+                          {(safeCurrentPost.hashtags || []).map((tag, index) => (
+                            <Badge key={index} variant="secondary" className="text-xs">
+                              <Hash className="h-3 w-3 mr-1" />
+                              {tag.replace('#', '')}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
                   </div>
                 )}
               </div>

@@ -13,6 +13,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { CalendarioEditorial } from "@/components/CalendarioEditorial";
 import { PostPreviewModal } from "@/components/PostPreviewModal";
 import { DataTable } from "@/components/DataTable";
+import { TableView } from "@/components/TableView";
 import { DndContext, closestCenter, DragEndEvent, DragStartEvent, DragOverlay, useDroppable } from "@dnd-kit/core";
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -96,57 +97,81 @@ const DraggablePost: React.FC<DraggablePostProps> = ({ post, onPreviewPost, getF
   return (
     <TooltipProvider>
       <Tooltip>
-        <TooltipTrigger asChild>
-          <div
-            ref={setNodeRef}
-            style={style}
-            {...attributes}
-            {...listeners}
-            className={`
-              inline-flex items-center gap-1 px-2 py-1 m-0.5 bg-card border border-border rounded-md
-              hover:bg-accent/50 transition-all duration-200 cursor-grab active:cursor-grabbing
-              shadow-sm hover:shadow-md text-xs
-              ${isUpdating ? 'animate-pulse' : ''}
-              ${isDragging ? 'shadow-lg ring-2 ring-primary/60 bg-primary/10 rotate-1 scale-105' : ''}
-              ${post.formato_postagem === 'post' ? 'bg-blue-50 border-blue-200' : 
-                post.formato_postagem === 'story' ? 'bg-pink-50 border-pink-200' : 
-                'bg-purple-50 border-purple-200'}
-            `}
-            onClick={handleClick}
-          >
-            <span className="text-sm">{getFormatIcon(post.formato_postagem)}</span>
-            <span className="text-xs font-medium truncate max-w-[80px]">
-              {post.titulo.length > 15 ? post.titulo.substring(0, 15) + '...' : post.titulo}
-            </span>
-            {isUpdating && <Loader2 className="h-3 w-3 animate-spin text-primary" />}
-          </div>
-        </TooltipTrigger>
-        <TooltipContent side="top" className="max-w-sm">
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <span>{getFormatIcon(post.formato_postagem)}</span>
-              <Badge variant="secondary" className="text-xs">
-                {post.formato_postagem.toUpperCase()}
-              </Badge>
-              <Badge variant="outline" className="text-xs">
-                {post.tipo_criativo === 'imagem' ? '🖼️' : '🎬'} {post.tipo_criativo}
-              </Badge>
-            </div>
-            {post.anexo_url && (
-              <div className="w-20 h-20 rounded overflow-hidden">
-                <img 
-                  src={post.anexo_url} 
-                  alt={post.titulo}
-                  className="w-full h-full object-cover"
-                />
+            <TooltipTrigger asChild>
+              <div
+                ref={setNodeRef}
+                style={style}
+                {...attributes}
+                {...listeners}
+                className={`
+                  inline-flex items-center gap-1 px-2 py-1 m-0.5 bg-card border border-border rounded-md
+                  hover:bg-accent/50 transition-all duration-200 cursor-grab active:cursor-grabbing
+                  shadow-sm hover:shadow-md text-xs
+                  ${isUpdating ? 'animate-pulse' : ''}
+                  ${isDragging ? 'shadow-lg ring-2 ring-primary/60 bg-primary/10 rotate-1 scale-105' : ''}
+                  ${post.formato_postagem === 'post' ? 'bg-blue-50 border-blue-200' : 
+                    post.formato_postagem === 'story' ? 'bg-pink-50 border-pink-200' : 
+                    'bg-purple-50 border-purple-200'}
+                `}
+                onClick={handleClick}
+              >
+                <span className="text-sm">{getFormatIcon(post.formato_postagem)}</span>
+                <span className="text-xs font-medium truncate max-w-[80px]">
+                  {post.titulo.length > 15 ? post.titulo.substring(0, 15) + '...' : post.titulo}
+                </span>
+                {isUpdating && <Loader2 className="h-3 w-3 animate-spin text-primary" />}
               </div>
-            )}
-            <p className="text-sm font-medium">{post.titulo}</p>
-            <Badge variant="outline" className="text-xs">
-              🎯 {post.objetivo_postagem?.replace('_', ' ') || 'Objetivo não definido'}
-            </Badge>
-          </div>
-        </TooltipContent>
+            </TooltipTrigger>
+            <TooltipContent side="top" className="max-w-sm">
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <span>{getFormatIcon(post.formato_postagem)}</span>
+                  <Badge variant="secondary" className="text-xs">
+                    {post.formato_postagem.toUpperCase()}
+                  </Badge>
+                  <Badge variant="outline" className="text-xs">
+                    {post.tipo_criativo === 'imagem' ? '🖼️' : '🎬'} {post.tipo_criativo}
+                  </Badge>
+                </div>
+                {post.anexo_url && (
+                  <div className="w-24 h-24 rounded overflow-hidden">
+                    <img 
+                      src={post.anexo_url} 
+                      alt={post.titulo}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )}
+                <p className="text-sm font-medium">{post.titulo}</p>
+                {post.legenda && (
+                  <p className="text-xs text-muted-foreground line-clamp-2">
+                    {post.legenda.length > 100 ? post.legenda.substring(0, 100) + '...' : post.legenda}
+                  </p>
+                )}
+                <div className="flex flex-wrap gap-1">
+                  <Badge variant="outline" className="text-xs">
+                    🎯 {post.objetivo_postagem?.replace('_', ' ') || 'Objetivo não definido'}
+                  </Badge>
+                  {post.persona_alvo && (
+                    <Badge variant="outline" className="text-xs">
+                      👤 {post.persona_alvo}
+                    </Badge>
+                  )}
+                </div>
+                {post.hashtags && post.hashtags.length > 0 && (
+                  <div className="flex flex-wrap gap-1">
+                    {post.hashtags.slice(0, 3).map((tag: string, index: number) => (
+                      <span key={index} className="text-xs bg-primary/10 text-primary px-1 py-0.5 rounded">
+                        #{tag.replace('#', '')}
+                      </span>
+                    ))}
+                    {post.hashtags.length > 3 && (
+                      <span className="text-xs text-muted-foreground">+{post.hashtags.length - 3}</span>
+                    )}
+                  </div>
+                )}
+              </div>
+            </TooltipContent>
       </Tooltip>
     </TooltipProvider>
   );
@@ -1175,18 +1200,55 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
         return;
       }
 
-      const postsComData = postsData.slice(0, quantidadePosts).map((post: any, index: number) => ({
-        ...post,
-        data_postagem: cronograma[index].toISOString().split('T')[0],
-        planejamento_id: planejamento.id
-      }));
+      console.log('🎯 Posts extraídos:', postsData.length);
 
-      // Mostrar modal de preview em vez de salvar diretamente
-      setPreviewPosts(postsComData);
+      // Mapear posts com cronograma e gerar imagens
+      const postsComCronograma = await Promise.all(
+        postsData.map(async (post, index) => {
+          const dataPostagem = cronograma[index]?.toISOString().split('T')[0] || new Date().toISOString().split('T')[0];
+          
+          // Criar prompt específico para a imagem baseado no conteúdo do post
+          const imagePrompt = `${post.titulo}. ${post.legenda.substring(0, 200)}. Style: ${post.formato_postagem === 'story' ? 'vertical Instagram story' : post.formato_postagem === 'reel' ? 'dynamic video thumbnail' : 'Instagram post'}, professional, high quality, modern, vibrant colors.`;
+          
+          console.log(`🖼️ Gerando imagem para post ${index + 1}: ${post.titulo}`);
+          
+          let anexo_url = null;
+          try {
+            const { data: imageData, error: imageError } = await supabase.functions.invoke('generate-post-image', {
+              body: { 
+                prompt: imagePrompt,
+                style: post.formato_postagem === 'story' ? 'social media story' : 'social media post',
+                size: post.formato_postagem === 'story' ? '1080x1920' : '1080x1080'
+              }
+            });
+
+            if (imageError) {
+              console.warn(`⚠️ Erro ao gerar imagem para post ${index + 1}:`, imageError);
+            } else if (imageData?.imageUrl) {
+              console.log(`✅ Imagem gerada com sucesso para post ${index + 1}`);
+              anexo_url = imageData.imageUrl;
+            }
+          } catch (imageError) {
+            console.warn(`⚠️ Erro ao gerar imagem para post ${index + 1}:`, imageError);
+          }
+          
+          return {
+            ...post,
+            data_postagem: dataPostagem,
+            anexo_url,
+            id: `temp-${Date.now()}-${index}`,
+            status: 'pendente' as const,
+            hashtags: Array.isArray(post.hashtags) ? post.hashtags : []
+          };
+        })
+      );
+
+      setPostsGerados(postsComCronograma);
+      setPreviewPosts(postsComCronograma);
       setShowPreviewModal(true);
-      
-      console.log('🎯 Modal de preview aberto com posts:', postsComData);
-      toast.success(`${postsComData.length} posts gerados com sucesso! Revise e aprove o conteúdo.`);
+
+      const imagensGeradas = postsComCronograma.filter(post => post.anexo_url).length;
+      toast.success(`${postsData.length} posts gerados com sucesso! ${imagensGeradas} imagens criadas com DALL-E.`);
 
     } catch (error) {
       console.error('Erro ao gerar conteúdo:', error);
