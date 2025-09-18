@@ -302,7 +302,7 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
   const [dadosObjetivos, setDadosObjetivos] = useState<any>(null);
   const [atualizandoPost, setAtualizandoPost] = useState<string | null>(null);
   const [draggedPost, setDraggedPost] = useState<any>(null);
-  const [visualizacaoTabela, setVisualizacaoTabela] = useState(false);
+  const [visualizacaoTabela, setVisualizacaoTabela] = useState(true);
   const [visualizacaoCalendario, setVisualizacaoCalendario] = useState(false);
   const [salvandoPostsGerados, setSalvandoPostsGerados] = useState(false);
 
@@ -2387,17 +2387,7 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
                   <span>Posts Gerados</span>
                   <div className="flex gap-2">
                     <Button
-                      variant={!visualizacaoTabela && !visualizacaoCalendario ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => {
-                        setVisualizacaoTabela(false);
-                        setVisualizacaoCalendario(false);
-                      }}
-                    >
-                      Cards
-                    </Button>
-                    <Button
-                      variant={visualizacaoTabela && !visualizacaoCalendario ? "default" : "outline"}
+                      variant={visualizacaoCalendario ? "outline" : "default"}
                       size="sm"
                       onClick={() => {
                         setVisualizacaoTabela(true);
@@ -2490,95 +2480,6 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
                       ) : null}
                     </DragOverlay>
                   </DndContext>
-                ) : !visualizacaoTabela ? (
-                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                    {postsGerados.map((post, index) => (
-                      <Card key={index} className={`p-4 relative ${
-                       post.status === 'aprovado' 
-                          ? 'border-emerald-200 bg-emerald-50/50' 
-                          : 'border-blue-200 bg-blue-50/50'
-                      }`}>
-                        <div className="space-y-3">
-                          <div className="flex justify-between items-start">
-                            <h4 className="font-medium text-sm line-clamp-2">{post.titulo}</h4>
-                            <div className="flex gap-1">
-                              <Badge variant="outline" className="text-xs">{post.formato_postagem}</Badge>
-                               <Badge 
-                                variant={post.status === 'aprovado' ? 'default' : 'secondary'} 
-                                className={`text-xs ${
-                                  post.status === 'aprovado' 
-                                    ? 'bg-emerald-100 text-emerald-700 border-emerald-200' 
-                                    : 'bg-blue-100 text-blue-700 border-blue-200'
-                                }`}
-                               >
-                                 {post.status === 'aprovado' ? '✓ Aprovado' : '📝 Temporário'}
-                              </Badge>
-                            </div>
-                          </div>
-                          
-                          <div className="space-y-2 text-xs">
-                            <div>
-                              <span className="font-medium text-primary">Objetivo:</span>
-                              <p className="text-muted-foreground mt-1">{post.objetivo_postagem}</p>
-                            </div>
-                            
-                            <div>
-                              <span className="font-medium text-secondary">Tipo:</span>
-                              <p className="text-muted-foreground mt-1">{post.tipo_criativo}</p>
-                            </div>
-                            
-                            <div>
-                              <span className="font-medium text-accent">Data:</span>
-                              <p className="text-muted-foreground mt-1">
-                                {new Date(post.data_postagem).toLocaleDateString('pt-BR')}
-                              </p>
-                            </div>
-
-                            {post.status === 'aprovado' && post.data_salvamento && (
-                              <div>
-                                <span className="font-medium text-emerald-600">Salvo em:</span>
-                                <p className="text-muted-foreground mt-1">
-                                  {new Date(post.data_salvamento).toLocaleDateString('pt-BR')} às {new Date(post.data_salvamento).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
-                                </p>
-                              </div>
-                            )}
-                          </div>
-                          
-                           <div className="flex gap-2 pt-2">
-                             <Button 
-                               size="sm" 
-                               variant="outline" 
-                               className="flex-1"
-                               onClick={() => onPreviewPost(post)}
-                             >
-                               <Eye className="h-3 w-3 mr-1" />
-                               Visualizar
-                             </Button>
-                             {post.status === 'temporario' && post.id && (
-                               <Button 
-                                 size="sm" 
-                                 onClick={() => aprovarPost(post.id!)}
-                                 disabled={aprovandoPost === post.id}
-                                 className="flex items-center gap-1 bg-emerald-600 hover:bg-emerald-700 text-white"
-                               >
-                                 {aprovandoPost === post.id ? (
-                                   <>
-                                     <Loader2 className="h-3 w-3 animate-spin" />
-                                     Aprovando...
-                                   </>
-                                 ) : (
-                                   <>
-                                     <CheckCircle className="h-3 w-3" />
-                                     Aprovar
-                                   </>
-                                 )}
-                               </Button>
-                             )}
-                           </div>
-                        </div>
-                      </Card>
-                    ))}
-                  </div>
                 ) : (
                   <DataTable
                     title=""
