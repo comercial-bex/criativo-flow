@@ -12,6 +12,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { CalendarioEditorial } from "@/components/CalendarioEditorial";
 import { PostPreviewModal } from "@/components/PostPreviewModal";
+import { PostViewModal } from "@/components/PostViewModal";
 import { DataTable } from "@/components/DataTable";
 import { TableView } from "@/components/TableView";
 import { DndContext, closestCenter, DragEndEvent, DragStartEvent, DragOverlay, useDroppable } from "@dnd-kit/core";
@@ -305,6 +306,8 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
   const [visualizacaoTabela, setVisualizacaoTabela] = useState(true);
   const [visualizacaoCalendario, setVisualizacaoCalendario] = useState(false);
   const [salvandoPostsGerados, setSalvandoPostsGerados] = useState(false);
+  const [showPostViewModal, setShowPostViewModal] = useState(false);
+  const [selectedPostForView, setSelectedPostForView] = useState<any>(null);
 
   // Initialize drag & drop hook
   const {
@@ -1644,6 +1647,17 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
     }
   };
 
+  // Função para visualizar post individual
+  const handleViewPost = (post: any) => {
+    setSelectedPostForView(post);
+    setShowPostViewModal(true);
+  };
+
+  const handleClosePostView = () => {
+    setShowPostViewModal(false);
+    setSelectedPostForView(null);
+  };
+
   const handleDragStart = (event: DragStartEvent) => {
     const postId = event.active.id as string;
     const post = [...posts, ...postsGerados].find(p => p.id === postId);
@@ -2523,9 +2537,9 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
                     filterable={false}
                     actions={[
                       {
-                        label: 'Visualizar',
-                        onClick: (post) => onPreviewPost(post),
-                        variant: 'outline' as const
+                         label: 'Visualizar',
+                         onClick: (post) => handleViewPost(post),
+                         variant: 'outline' as const
                       }
                     ]}
                     emptyMessage="Nenhum post gerado ainda"
@@ -2558,6 +2572,15 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
         onCancel={handlePreviewCancel}
         onApprovePost={handleApproveIndividualPost}
         onApproveAll={handleApproveAllPosts}
+      />
+
+      {/* Modal de Visualização Individual do Post */}
+      <PostViewModal
+        isOpen={showPostViewModal}
+        onClose={handleClosePostView}
+        post={selectedPostForView}
+        onApprove={selectedPostForView?.status === 'temporario' ? (post) => handleApproveIndividualPost(post, 0) : undefined}
+        isApproving={aprovandoPost === selectedPostForView?.id}
       />
     </div>
   );
