@@ -1324,114 +1324,25 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
 
       console.log('🎯 Posts extraídos:', postsData.length);
 
-      // Mapear posts com cronograma e gerar imagens
-      const postsComCronograma = await Promise.all(
-        postsData.map(async (post, index) => {
-          const dataPostagem = cronograma[index]?.toISOString().split('T')[0] || new Date().toISOString().split('T')[0];
-          
-          // Carregar dados de onboarding para contexto das imagens
-          let onboardingData = null;
-          try {
-            const { data: onboarding, error: onboardingError } = await supabase
-              .from('cliente_onboarding')
-              .select('*')
-              .eq('cliente_id', planejamento.cliente_id)
-              .single();
-
-            if (!onboardingError) {
-              onboardingData = onboarding;
-              console.log('📊 Onboarding carregado para contexto de imagem');
-            }
-          } catch (error) {
-            console.log('ℹ️ Continuando sem dados de onboarding específicos');
-          }
-
-          // Usar função de prompt elaborado
-          const { criarPromptImagem } = await import('@/utils/promptImageGen');
-          
-          const promptElaborado = criarPromptImagem(post, onboardingData ? {
-            segmentoAtuacao: onboardingData.segmento_atuacao,
-            produtosServicos: onboardingData.produtos_servicos,
-            publicoAlvo: onboardingData.publico_alvo,
-            tiposClientes: onboardingData.tipos_clientes,
-            valoresPrincipais: onboardingData.valores_principais,
-            tomVoz: onboardingData.tom_voz,
-            historiaMarca: onboardingData.historia_marca,
-            comoLembrada: onboardingData.como_lembrada,
-            diferenciais: onboardingData.diferenciais,
-            localizacao: onboardingData.localizacao,
-            areaAtendimento: onboardingData.area_atendimento
-          } : undefined);
-          
-          console.log(`🖼️ Gerando imagem com Nano Banana para post ${index + 1}: ${post.titulo}`);
-          console.log(`📝 Prompt elaborado: ${promptElaborado.substring(0, 150)}...`);
-          
-          let anexo_url = null;
-          try {
-            // Gerar EXCLUSIVAMENTE com Gemini (Nano Banana) - sistema de retry
-            let tentativa = 1;
-            const maxTentativas = 3;
-            
-            while (tentativa <= maxTentativas && !anexo_url) {
-              console.log(`🎯 Tentativa ${tentativa}/${maxTentativas} com Nano Banana para post ${index + 1}`);
-              
-              try {
-                const { data: geminiData, error: geminiError } = await supabase.functions.invoke('generate-image-gemini', {
-                  body: { 
-                    prompt: promptElaborado,
-                    onboardingData: onboardingData
-                  }
-                });
-
-                if (geminiError) {
-                  console.warn(`⚠️ Erro na tentativa ${tentativa} com Nano Banana para post ${index + 1}:`, geminiError);
-                  
-                  if (tentativa === maxTentativas) {
-                    console.error(`❌ Falha final após ${maxTentativas} tentativas para post ${index + 1}`);
-                  }
-                } else if (geminiData?.imageUrl) {
-                  console.log(`✅ Imagem gerada com sucesso - Nano Banana - Tentativa ${tentativa} para post ${index + 1}`);
-                  anexo_url = geminiData.imageUrl;
-                  break;
-                }
-              } catch (error) {
-                console.warn(`⚠️ Erro na tentativa ${tentativa} para post ${index + 1}:`, error);
-              }
-              
-              tentativa++;
-              
-              // Pequeno delay entre tentativas (apenas se não for a última)
-              if (tentativa <= maxTentativas && !anexo_url) {
-                await new Promise(resolve => setTimeout(resolve, 1000));
-              }
-            }
-          } catch (imageError) {
-            console.warn(`⚠️ Erro ao gerar imagem para post ${index + 1}:`, imageError);
-          }
-          
-          return {
-            ...post,
-            data_postagem: dataPostagem,
-            anexo_url,
-            id: `temp-${Date.now()}-${index}`,
-            status: 'pendente' as const,
-            hashtags: Array.isArray(post.hashtags) ? post.hashtags : []
-          };
-        })
-      );
+      // Mapear posts com cronograma (sem geração de imagem)
+      const postsComCronograma = postsData.map((post, index) => {
+        const dataPostagem = cronograma[index]?.toISOString().split('T')[0] || new Date().toISOString().split('T')[0];
+        
+        return {
+          ...post,
+          data_postagem: dataPostagem,
+          anexo_url: null, // Geração de imagem inativada
+          id: `temp-${Date.now()}-${index}`,
+          status: 'temporario' as const,
+          hashtags: Array.isArray(post.hashtags) ? post.hashtags : []
+        };
+      });
 
       setPostsGerados(postsComCronograma);
       setPreviewPosts(postsComCronograma);
       setShowPreviewModal(true);
 
-      const imagensGeradas = postsComCronograma.filter(post => post.anexo_url).length;
-      const imagensNaoGeradas = postsData.length - imagensGeradas;
-      
-      if (imagensNaoGeradas > 0) {
-        toast.success(`${postsData.length} posts gerados! ${imagensGeradas} imagens criadas com Nano Banana. ${imagensNaoGeradas} posts sem imagem (erro no Gemini).`);
-      } else {
-        toast.success(`${postsData.length} posts gerados com sucesso! Todas as ${imagensGeradas} imagens criadas com Nano Banana.`);
-      }
+      toast.success(`${postsData.length} posts gerados com sucesso!`);
 
     } catch (error) {
       console.error('Erro ao gerar conteúdo:', error);
