@@ -15,6 +15,7 @@ import { PostPreviewModal } from "@/components/PostPreviewModal";
 import { PostViewModal } from "@/components/PostViewModal";
 import { DataTable } from "@/components/DataTable";
 import { TableView } from "@/components/TableView";
+import PostsContentView from "@/components/PostsContentView";
 import { DndContext, closestCenter, DragEndEvent, DragStartEvent, DragOverlay, useDroppable } from "@dnd-kit/core";
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -304,6 +305,7 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
   const [salvandoPostsGerados, setSalvandoPostsGerados] = useState(false);
   const [showPostViewModal, setShowPostViewModal] = useState(false);
   const [selectedPostForView, setSelectedPostForView] = useState<any>(null);
+  const [gerandoConteudo, setGerandoConteudo] = useState(false);
 
   // Initialize drag & drop hook
   const {
@@ -1180,6 +1182,129 @@ IMPORTANTE: Retorne APENAS o JSON válido, sem texto adicional.
     
     console.log(`📅 Cronograma gerado: ${cronograma.length} datas para ${limitePosts} posts do plano`);
     return cronograma.slice(0, limitePosts); // Garantir exatamente a quantidade
+  };
+
+  const gerarConteudoDetalhado = async () => {
+    setGerandoConteudo(true);
+    
+    try {
+      const dadosOnboarding = await buscarDadosOnboarding();
+      const dadosObjetivos = await buscarDadosObjetivos();
+      
+      if (!validarDadosCompletos()) {
+        return;
+      }
+
+      // Construir prompt para gerar conteúdo detalhado dos posts
+      const prompt = `
+Baseando-se nas informações da empresa e nos posts já gerados, crie conteúdo detalhado para cada post.
+
+**INFORMAÇÕES DA EMPRESA:**
+- Nome: ${dadosOnboarding.nome_empresa}
+- Segmento: ${dadosOnboarding.segmento_atuacao}
+- Missão: ${conteudo.missao}
+- Posicionamento: ${conteudo.posicionamento}
+
+**POSTS GERADOS:**
+${postsGerados.map((post, index) => `
+POST ${index + 1}:
+- Título: ${post.titulo}
+- Tipo: ${post.tipo_criativo.toUpperCase()}
+- Formato: ${post.formato_postagem}
+- Objetivo: ${post.objetivo_postagem}
+- Persona: ${post.persona_alvo}
+- Componente HESEC: ${post.componente_hesec}
+`).join('\n')}
+
+Para cada post, gere:
+
+1. **HEADLINE**: Título chamativo e engajador (máximo 60 caracteres)
+2. **CONTEÚDO COMPLETO**: 
+   - Para POST/CARROSSEL: Texto completo da legenda (150-300 palavras)
+   - Para VÍDEO: Roteiro técnico completo seguindo o formato abaixo
+
+**FORMATO TÉCNICO PARA VÍDEOS:**
+
+Identificação
+– Cliente: ${dadosOnboarding.nome_empresa}
+– Agência: [Nome da Agência]
+– Produtora: [Nome da Produtora]
+– Peça: [Reel 15", Vídeo 30", etc.]
+– Título: [Título do vídeo]
+– Duração: [15-30 segundos]
+– Veiculação: [Instagram, TikTok, etc.]
+– Data: [Data de postagem]
+– Criação: [Equipe criativa]
+
+Objetivo e Tom
+– Objetivo: [impactar, emocionar, informar, vender, educar]
+– Tom: [poético, épico, institucional, leve, divertido, inspirador]
+
+Roteiro
+– Abertura (Imagem de apoio): [Descreva as primeiras imagens ou cenas - primeiros 3 segundos]
+– Locução em OFF: [Texto narrado correspondente à abertura]
+– Desenvolvimento (Imagem de apoio): [Descreva cenas intermediárias - pessoas, ações, lugares]
+– Locução em OFF: [Texto narrado que acompanha essas cenas]
+– Falas / Depoimentos (se houver): [Insira falas de personagens, entrevistas ou discursos]
+– Encerramento (Imagem de apoio): [Descrição da tela final, logos, slogans]
+– Locução em OFF final: [Frase curta de impacto para fechamento]
+
+Retorne um JSON com esta estrutura:
+{
+  "posts_conteudo": [
+    {
+      "post_id": "índice do post (0, 1, 2...)",
+      "headline": "Headline chamativa",
+      "conteudo_completo": "Para posts: legenda completa | Para vídeos: roteiro completo formatado"
+    }
+  ]
+}
+
+IMPORTANTE: Responda APENAS com o JSON válido, sem comentários adicionais.
+`;
+
+      const { data: response, error } = await supabase.functions.invoke('generate-content-with-ai', {
+        body: { prompt }
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      let conteudoGerado;
+      try {
+        conteudoGerado = typeof response === 'string' ? JSON.parse(response) : response;
+      } catch (parseError) {
+        console.error('Erro ao parsear resposta da IA:', parseError);
+        throw new Error('Resposta da IA não está em formato JSON válido');
+      }
+
+      // Aplicar o conteúdo gerado aos posts
+      if (conteudoGerado.posts_conteudo && Array.isArray(conteudoGerado.posts_conteudo)) {
+        const postsAtualizados = postsGerados.map((post, index) => {
+          const conteudoPost = conteudoGerado.posts_conteudo.find(c => parseInt(c.post_id) === index);
+          if (conteudoPost) {
+            return {
+              ...post,
+              headline: conteudoPost.headline,
+              conteudo_completo: conteudoPost.conteudo_completo
+            };
+          }
+          return post;
+        });
+        
+        setPostsGerados(postsAtualizados);
+        toast.success('Conteúdo detalhado gerado com sucesso!');
+      } else {
+        throw new Error('Formato de resposta inválido');
+      }
+
+    } catch (error) {
+      console.error('Erro ao gerar conteúdo detalhado:', error);
+      toast.error('Erro ao gerar conteúdo detalhado. Tente novamente.');
+    } finally {
+      setGerandoConteudo(false);
+    }
   };
 
   const gerarConteudoEditorial = async () => {
@@ -2215,6 +2340,18 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
                   {gerando ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
                   Gerar Conteúdo Editorial
                 </Button>
+                
+                {postsGerados.length > 0 && (
+                  <Button 
+                    onClick={gerarConteudoDetalhado}
+                    disabled={gerandoConteudo}
+                    variant="outline"
+                    className="flex-1"
+                  >
+                    {gerandoConteudo ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <BookOpen className="h-4 w-4 mr-2" />}
+                    Gerar Headlines e Conteúdo
+                  </Button>
+                )}
               </div>
                 
                 {postsGerados.length > 0 && (
@@ -2391,54 +2528,9 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
                     </DragOverlay>
                   </DndContext>
                 ) : (
-                  <DataTable
-                    title=""
-                    columns={[
-                      {
-                        key: 'post',
-                        label: 'POST',
-                        render: (value, row) => row.post || `${String(postsGerados.indexOf(row) + 1).padStart(2, '0')}`
-                      },
-                      {
-                        key: 'dia_semana',
-                        label: 'DIA DA SEMANA',
-                        render: (value, row) => {
-                          const data = new Date(row.data_postagem);
-                          const dias = ['DOMINGO', 'SEGUNDA', 'TERÇA', 'QUARTA', 'QUINTA', 'SEXTA', 'SÁBADO'];
-                          return `${data.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })} ${dias[data.getDay()]}`;
-                        }
-                      },
-                      {
-                        key: 'criativo',
-                        label: 'CRIATIVO',
-                        render: (value, row) => row.criativo || row.tipo_criativo?.toUpperCase() || 'IMAGEM'
-                      },
-                      {
-                        key: 'objetivo',
-                        label: 'OBJETIVO',
-                        render: (value, row) => row.objetivo || row.objetivo_postagem
-                      },
-                      {
-                        key: 'legenda',
-                        label: 'LEGENDA',
-                        render: (value, row) => (
-                          <div className="max-w-xs truncate" title={row.legenda}>
-                            {row.legenda || row.titulo}
-                          </div>
-                        )
-                      }
-                    ]}
-                    data={postsGerados}
-                    searchable={true}
-                    filterable={false}
-                    actions={[
-                      {
-                         label: 'Visualizar',
-                         onClick: (post) => handleViewPost(post),
-                         variant: 'outline' as const
-                      }
-                    ]}
-                    emptyMessage="Nenhum post gerado ainda"
+                  <PostsContentView 
+                    posts={postsGerados}
+                    onViewPost={handleViewPost}
                   />
                 )}
               </CardContent>

@@ -160,6 +160,30 @@ export function PostViewModal({ isOpen, onClose, post, onApprove, isApproving }:
                     </div>
                   )}
 
+                  {/* Headline */}
+                  {post.headline && (
+                    <div>
+                      <Label className="text-sm font-medium text-muted-foreground">Headline</Label>
+                      <div className="p-3 bg-muted/50 rounded border mt-1">
+                        <p className="font-medium text-base">{post.headline}</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Conteúdo Completo */}
+                  {post.conteudo_completo && (
+                    <div>
+                      <Label className="text-sm font-medium text-muted-foreground">
+                        {post.tipo_criativo === 'video' ? 'Roteiro Técnico' : 'Conteúdo Completo'}
+                      </Label>
+                      <div className="p-3 bg-muted/50 rounded border mt-1 max-h-[300px] overflow-y-auto">
+                        <div className="text-sm whitespace-pre-wrap">
+                          {post.conteudo_completo}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   {post.componente_hesec && (
                     <div>
                       <Label className="text-sm font-medium text-muted-foreground">Framework H.E.S.E.C</Label>
