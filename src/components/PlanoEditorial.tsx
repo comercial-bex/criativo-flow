@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, ChevronLeft, ChevronRight, Loader2, Users, Target, BookOpen, Sparkles, Save, Eye, Undo2, AlertTriangle, X } from "lucide-react";
+import { Calendar, ChevronLeft, ChevronRight, Loader2, Users, Target, BookOpen, Sparkles, Save, Eye, Undo2, AlertTriangle, X, CheckCircle } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -1569,22 +1569,82 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
     toast.info('Geração de conteúdo cancelada');
   };
 
+  // Estado para controlar se está aprovando/salvando post
+  const [aprovandoPost, setAprovandoPost] = useState<string | null>(null);
+
+  // Função para aprovar um post individual e salvar automaticamente
+  const aprovarPost = async (postId: string) => {
+    const post = postsGerados.find(p => p.id === postId);
+    if (!post) return;
+
+    try {
+      setAprovandoPost(postId);
+      
+      // Mover post para tabela principal
+      const { error } = await supabase
+        .from('posts_planejamento')
+        .insert({
+          planejamento_id: planejamento.id,
+          titulo: post.titulo,
+          legenda: post.legenda,
+          objetivo_postagem: post.objetivo_postagem,
+          tipo_criativo: post.tipo_criativo,
+          formato_postagem: post.formato_postagem,
+          componente_hesec: post.componente_hesec,
+          persona_alvo: post.persona_alvo,
+          call_to_action: post.call_to_action,
+          hashtags: post.hashtags,
+          contexto_estrategico: post.contexto_estrategico,
+          data_postagem: post.data_postagem,
+          anexo_url: post.anexo_url
+        });
+
+      if (error) throw error;
+
+      // Remover da tabela temporária
+      if (post.id) {
+        await supabase
+          .from('posts_gerados_temp')
+          .delete()
+          .eq('id', post.id);
+      }
+
+      // Atualizar estado local
+      setPostsGerados(prev => prev.filter(p => p.id !== postId));
+      
+      // Atualizar localStorage
+      const updatedTempPosts = postsGerados.filter(p => p.id !== postId);
+      localStorage.setItem(`posts_temp_${planejamento.id}`, JSON.stringify(updatedTempPosts));
+      
+      // Recarregar posts salvos usando setPosts (sem verificações aqui pois já foi salvo no DB)
+      // setPosts será atualizado automaticamente quando o componente pai recarregar
+      // Posts serão recarregados pelo componente pai quando necessário
+      
+      toast.success("Post aprovado e salvo automaticamente!");
+    } catch (error) {
+      console.error('Erro ao aprovar post:', error);
+      toast.error("Erro ao aprovar post");
+    } finally {
+      setAprovandoPost(null);
+    }
+  };
+
   const salvarPostsGerados = async () => {
-    const postsPendentes = postsGerados.filter(post => post.status === 'pendente');
+    const postsTemporarios = postsGerados.filter(post => post.status === 'temporario');
     
-    if (postsPendentes.length === 0) {
-      toast.error('Nenhum post pendente para salvar');
+    if (postsTemporarios.length === 0) {
+      toast.error('Nenhum post temporário para salvar');
       return;
     }
 
     setSalvandoPostsGerados(true);
     try {
-      await salvarPostsCalendario(postsPendentes);
+      await salvarPostsCalendario(postsTemporarios);
       
       // Marcar posts como salvos em vez de limpar
       const postsAtualizadosLocal = postsGerados.map(post => 
-        post.status === 'pendente' 
-          ? { ...post, status: 'salvo' as const, data_salvamento: new Date().toISOString() }
+        post.status === 'temporario' 
+          ? { ...post, status: 'aprovado' as const, data_salvamento: new Date().toISOString() }
           : post
       );
       setPostsGerados(postsAtualizadosLocal);
@@ -1601,7 +1661,7 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
         setPosts(postsDoBanco);
       }
 
-      toast.success(`${postsPendentes.length} posts salvos com sucesso!`, {
+      toast.success(`${postsTemporarios.length} posts salvos com sucesso!`, {
         description: "Os posts foram adicionados ao planejamento e permanecem visíveis para acompanhamento.",
         duration: 5000,
       });
@@ -2315,7 +2375,7 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <Calendar className="w-4 h-4" />
                       <span>
-                        {postsGerados.filter(p => p.status === 'pendente').length} pendentes, {postsGerados.filter(p => p.status === 'salvo').length} salvos
+                        {postsGerados.filter(p => p.status === 'temporario').length} temporários, {postsGerados.filter(p => p.status === 'aprovado').length} aprovados
                       </span>
                     </div>
                     
@@ -2330,7 +2390,7 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
                         Limpar Tudo
                       </Button>
                       
-                      {postsGerados.filter(p => p.status === 'pendente').length > 0 && (
+                      {postsGerados.filter(p => p.status === 'temporario').length > 0 && (
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
                             <Button 
@@ -2345,7 +2405,7 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
                               ) : (
                                 <>
                                   <Save className="w-4 h-4 mr-2" />
-                                  Salvar {postsGerados.filter(p => p.status === 'pendente').length} Posts Pendentes
+                                  Salvar {postsGerados.filter(p => p.status === 'temporario').length} Posts Temporários
                                 </>
                               )}
                             </Button>
@@ -2354,7 +2414,7 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
                             <AlertDialogHeader>
                               <AlertDialogTitle>Confirmar salvamento</AlertDialogTitle>
                               <AlertDialogDescription>
-                                Você está prestes a salvar {postsGerados.filter(p => p.status === 'pendente').length} posts pendentes no planejamento editorial. 
+                                Você está prestes a salvar {postsGerados.filter(p => p.status === 'temporario').length} posts temporários no planejamento editorial. 
                                 Os posts salvos permanecerão visíveis para acompanhamento do desenvolvimento.
                                 Tem certeza que deseja continuar?
                               </AlertDialogDescription>
@@ -2497,7 +2557,7 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
                   <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                     {postsGerados.map((post, index) => (
                       <Card key={index} className={`p-4 relative ${
-                        post.status === 'salvo' 
+                       post.status === 'aprovado' 
                           ? 'border-emerald-200 bg-emerald-50/50' 
                           : 'border-blue-200 bg-blue-50/50'
                       }`}>
@@ -2506,15 +2566,15 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
                             <h4 className="font-medium text-sm line-clamp-2">{post.titulo}</h4>
                             <div className="flex gap-1">
                               <Badge variant="outline" className="text-xs">{post.formato_postagem}</Badge>
-                              <Badge 
-                                variant={post.status === 'salvo' ? 'default' : 'secondary'} 
+                               <Badge 
+                                variant={post.status === 'aprovado' ? 'default' : 'secondary'} 
                                 className={`text-xs ${
-                                  post.status === 'salvo' 
+                                  post.status === 'aprovado' 
                                     ? 'bg-emerald-100 text-emerald-700 border-emerald-200' 
                                     : 'bg-blue-100 text-blue-700 border-blue-200'
                                 }`}
-                              >
-                                {post.status === 'salvo' ? '✓ Salvo' : '⏳ Pendente'}
+                               >
+                                 {post.status === 'aprovado' ? '✓ Aprovado' : '📝 Temporário'}
                               </Badge>
                             </div>
                           </div>
@@ -2537,7 +2597,7 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
                               </p>
                             </div>
 
-                            {post.status === 'salvo' && post.data_salvamento && (
+                            {post.status === 'aprovado' && post.data_salvamento && (
                               <div>
                                 <span className="font-medium text-emerald-600">Salvo em:</span>
                                 <p className="text-muted-foreground mt-1">
@@ -2547,17 +2607,37 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
                             )}
                           </div>
                           
-                          <div className="flex gap-2 pt-2">
-                            <Button 
-                              size="sm" 
-                              variant="outline" 
-                              className="flex-1"
-                              onClick={() => onPreviewPost(post)}
-                            >
-                              <Eye className="h-3 w-3 mr-1" />
-                              Visualizar
-                            </Button>
-                          </div>
+                           <div className="flex gap-2 pt-2">
+                             <Button 
+                               size="sm" 
+                               variant="outline" 
+                               className="flex-1"
+                               onClick={() => onPreviewPost(post)}
+                             >
+                               <Eye className="h-3 w-3 mr-1" />
+                               Visualizar
+                             </Button>
+                             {post.status === 'temporario' && post.id && (
+                               <Button 
+                                 size="sm" 
+                                 onClick={() => aprovarPost(post.id!)}
+                                 disabled={aprovandoPost === post.id}
+                                 className="flex items-center gap-1 bg-emerald-600 hover:bg-emerald-700 text-white"
+                               >
+                                 {aprovandoPost === post.id ? (
+                                   <>
+                                     <Loader2 className="h-3 w-3 animate-spin" />
+                                     Aprovando...
+                                   </>
+                                 ) : (
+                                   <>
+                                     <CheckCircle className="h-3 w-3" />
+                                     Aprovar
+                                   </>
+                                 )}
+                               </Button>
+                             )}
+                           </div>
                         </div>
                       </Card>
                     ))}
