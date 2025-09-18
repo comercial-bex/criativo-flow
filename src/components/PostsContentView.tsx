@@ -70,7 +70,7 @@ const PostsContentView: React.FC<PostsContentViewProps> = ({ posts, onViewPost }
             </div>
 
             {/* Grid de Conteúdo */}
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-end">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Coluna 1: Info do Post */}
               <div className="space-y-3">
                 <div className="bg-muted/30 p-4 rounded-lg">
@@ -91,9 +91,9 @@ const PostsContentView: React.FC<PostsContentViewProps> = ({ posts, onViewPost }
               {/* Coluna 2: Headline */}
               <div className="space-y-2">
                 <Label className="text-xs font-medium text-muted-foreground">HEADLINE</Label>
-                <div className="p-3 bg-muted/50 rounded border min-h-[80px]">
+                <div className="p-4 bg-muted/50 rounded-lg border min-h-[120px]">
                   {post.headline ? (
-                    <p className="text-sm">{post.headline}</p>
+                    <p className="text-sm font-medium">{post.headline}</p>
                   ) : (
                     <p className="text-xs text-muted-foreground italic">
                       Clique em "Gerar Headlines e Conteúdo" para gerar
@@ -107,7 +107,7 @@ const PostsContentView: React.FC<PostsContentViewProps> = ({ posts, onViewPost }
                 <Label className="text-xs font-medium text-muted-foreground">
                   {post.tipo_criativo === 'video' ? 'ROTEIRO' : 'CONTEÚDO'}
                 </Label>
-                <div className="p-3 bg-muted/50 rounded border min-h-[80px] max-h-[200px] overflow-y-auto">
+                <div className="p-4 bg-muted/50 rounded-lg border min-h-[120px] max-h-[200px] overflow-y-auto">
                   {post.conteudo_completo ? (
                     <div className="text-sm whitespace-pre-wrap">
                       {post.conteudo_completo}
@@ -119,51 +119,51 @@ const PostsContentView: React.FC<PostsContentViewProps> = ({ posts, onViewPost }
                   )}
                 </div>
               </div>
+            </div>
 
-              {/* Coluna 4: Estratégia Reorganizada */}
-              <div className="space-y-3">
-                <Label className="text-xs font-medium text-muted-foreground flex items-center gap-1">
-                  <Target className="h-3 w-3" />
-                  ESTRATÉGIA
-                </Label>
-                <div className="space-y-3">
-                  {/* CTA Card */}
-                  <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-lg p-3">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Target className="h-3 w-3 text-blue-600" />
-                      <strong className="text-xs text-blue-800">CALL TO ACTION</strong>
-                    </div>
-                    <p className="text-xs text-blue-700 font-medium">{post.call_to_action}</p>
+            {/* Seção de Estratégia - Parte Inferior */}
+            <div className="mt-6 pt-4 border-t">
+              <Label className="text-xs font-medium text-muted-foreground flex items-center gap-1 mb-3">
+                <Target className="h-3 w-3" />
+                ESTRATÉGIA
+              </Label>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                {/* CTA Card */}
+                <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-lg p-3">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Target className="h-3 w-3 text-blue-600" />
+                    <strong className="text-xs text-blue-800">CALL TO ACTION</strong>
                   </div>
+                  <p className="text-xs text-blue-700 font-medium">{post.call_to_action}</p>
+                </div>
 
-                  {/* Hashtags Card */}
-                  <div className="bg-gradient-to-br from-green-50 to-green-100 border border-green-200 rounded-lg p-3">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Hash className="h-3 w-3 text-green-600" />
-                      <strong className="text-xs text-green-800">HASHTAGS</strong>
-                    </div>
-                    <div className="flex flex-wrap gap-1">
-                      {post.hashtags?.slice(0, 4).map((tag, i) => (
-                        <span key={i} className="text-xs bg-green-200 text-green-800 px-2 py-1 rounded-full font-medium">
-                          #{tag.replace('#', '')}
-                        </span>
-                      ))}
-                      {post.hashtags?.length > 4 && (
-                        <span className="text-xs bg-green-100 text-green-600 px-2 py-1 rounded-full">
-                          +{post.hashtags.length - 4}
-                        </span>
-                      )}
-                    </div>
+                {/* Hashtags Card */}
+                <div className="bg-gradient-to-br from-green-50 to-green-100 border border-green-200 rounded-lg p-3">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Hash className="h-3 w-3 text-green-600" />
+                    <strong className="text-xs text-green-800">HASHTAGS</strong>
                   </div>
+                  <div className="flex flex-wrap gap-1">
+                    {post.hashtags?.slice(0, 4).map((tag, i) => (
+                      <span key={i} className="text-xs bg-green-200 text-green-800 px-2 py-1 rounded-full font-medium">
+                        #{tag.replace('#', '')}
+                      </span>
+                    ))}
+                    {post.hashtags?.length > 4 && (
+                      <span className="text-xs bg-green-100 text-green-600 px-2 py-1 rounded-full">
+                        +{post.hashtags.length - 4}
+                      </span>
+                    )}
+                  </div>
+                </div>
 
-                  {/* HESEC Card */}
-                  <div className="bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200 rounded-lg p-3">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Lightbulb className="h-3 w-3 text-purple-600" />
-                      <strong className="text-xs text-purple-800">HESEC</strong>
-                    </div>
-                    <p className="text-xs text-purple-700 font-medium">{post.componente_hesec}</p>
+                {/* HESEC Card */}
+                <div className="bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200 rounded-lg p-3">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Lightbulb className="h-3 w-3 text-purple-600" />
+                    <strong className="text-xs text-purple-800">HESEC</strong>
                   </div>
+                  <p className="text-xs text-purple-700 font-medium">{post.componente_hesec}</p>
                 </div>
               </div>
             </div>
