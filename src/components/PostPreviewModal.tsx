@@ -313,7 +313,7 @@ export function PostPreviewModal({ isOpen, onClose, posts, onSave, onCancel }: P
         {/* Botões de Ação */}
         <div className="p-6 border-t flex items-center justify-between">
           <div className="text-sm text-muted-foreground">
-            {safeSelectedPost + 1} de {editedPosts.length} posts
+            {safeSelectedPost + 1} de {editedPosts.length} posts gerados
           </div>
           <div className="flex gap-2">
             <Button variant="outline" onClick={onCancel}>
@@ -321,7 +321,7 @@ export function PostPreviewModal({ isOpen, onClose, posts, onSave, onCancel }: P
             </Button>
             <Button onClick={() => onSave(editedPosts)} className="gap-2">
               <Save className="h-4 w-4" />
-              Salvar Calendário
+              Aprovar e Salvar Posts
             </Button>
           </div>
         </div>

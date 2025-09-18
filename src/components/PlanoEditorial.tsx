@@ -1184,7 +1184,15 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
   const salvarPostsCalendario = async (novosPost: any[]) => {
     try {
       console.log('🔄 Iniciando salvamento de posts:', novosPost);
-      console.log('📊 Dados para inserir:', JSON.stringify(novosPost, null, 2));
+      console.log('📊 Quantidade de posts:', novosPost.length);
+      console.log('📊 Limite de posts da assinatura:', clienteAssinatura?.posts_mensais || "não definido");
+      
+      // Validar quantidade de posts
+      if (clienteAssinatura?.posts_mensais && novosPost.length !== clienteAssinatura.posts_mensais) {
+        console.warn(`⚠️ Quantidade incorreta: ${novosPost.length} posts gerados, esperado ${clienteAssinatura.posts_mensais}`);
+        toast.error(`Erro: Sistema gerou ${novosPost.length} posts, mas o plano permite ${clienteAssinatura.posts_mensais} posts mensais`);
+        return;
+      }
       
       // Deletar posts existentes do mês atual
       const { error: deleteError } = await supabase
@@ -1243,7 +1251,7 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
       setPosts(updatedPosts);
       console.log('🔄 Estado local atualizado com', updatedPosts.length, 'posts');
       
-      toast.success('Posts salvos no calendário!');
+      toast.success(`${data.length} posts aprovados e salvos no calendário!`);
     } catch (error) {
       console.error('💥 Erro crítico ao salvar posts:', error);
       toast.error('Erro ao salvar posts no calendário');
