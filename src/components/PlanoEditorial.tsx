@@ -1209,6 +1209,13 @@ IMPORTANTE: Retorne APENAS o JSON válido, sem texto adicional.
     try {
       const cronograma = gerarCronogramaPostagens(currentDate.getMonth(), currentDate.getFullYear());
       const quantidadePosts = cronograma.length;
+      
+      // Tipos de criativo e distribuição equilibrada
+      const tiposCreativos = ['post', 'carrossel', 'video'];
+      const distribuicaoTipos = [];
+      for (let i = 0; i < quantidadePosts; i++) {
+        distribuicaoTipos.push(tiposCreativos[i % tiposCreativos.length]);
+      }
 
       console.log(`Gerando ${quantidadePosts} posts para plano de ${clienteAssinatura.posts_mensais} posts mensais`);
 
@@ -1278,18 +1285,45 @@ ${cronograma.map((data, index) => {
 Gere um JSON com array de posts seguindo esta estrutura:
 [
   {
-    "titulo": "Título engajador do post",
-    "legenda": "Legenda completa de 150-300 palavras seguindo modelo BEX com emojis, narrativa envolvente e call-to-action específico",
-    "objetivo_postagem": "Engajamento|Vendas|Educação|Relacionamento|Branding",
-    "tipo_criativo": "post|carrossel|stories",
-    "formato_postagem": "post|reel|story",
-    "componente_hesec": "componente_do_framework",
-    "persona_alvo": "nome_da_persona",
-    "call_to_action": "CTA específico e personalizado para a persona",
+    "titulo": "Título engajador específico para o tipo",
+    "legenda": "Para POST: 100-200 palavras | Para CARROSSEL: estrutura por slides | Para VÍDEO: roteiro com timing",
+    "objetivo_postagem": "engajamento|vendas|educacao|relacionamento|branding",
+    "tipo_criativo": "post|carrossel|video",
+    "formato_postagem": "post|reel|story", 
+    "componente_hesec": "componente_do_framework_selecionado",
+    "persona_alvo": "nome_da_persona_especifica",
+    "call_to_action": "CTA específico para o tipo de criativo",
     "hashtags": ["#tag1", "#tag2", "#tag3", "#tag4", "#tag5"],
-    "contexto_estrategico": "Explicação de 2-3 linhas do por que este post, como ele atinge a persona e qual resultado esperado"
+    "contexto_estrategico": "Estratégia específica para este tipo de criativo",
+    "especificacoes_tecnicas": {
+      "carrossel": {
+        "num_slides": 3-5,
+        "slide_1": "Título/Hook",
+        "slides_meio": ["Conteúdo sequencial"],
+        "slide_final": "Recap/CTA"
+      },
+      "video": {
+        "duracao": "15-30s",
+        "hook_inicial": "Primeiros 3s",
+        "roteiro": "Script detalhado",
+        "elementos_visuais": ["Sugestões visuais"],
+        "som_sugerido": "Música/efeito trending"
+      },
+      "post": {
+        "estilo_visual": "clean|bold|minimalista|vibrante",
+        "elementos": ["Texto", "Imagem", "Logo"],
+        "cores_sugeridas": ["#cor1", "#cor2"]
+      }
+    }
   }
 ]
+
+REGRAS IMPORTANTES:
+- Distribua os tipos conforme especificado: ${distribuicaoTipos.join(', ')}
+- Para carrossel, detalhe cada slide no campo especificacoes_tecnicas
+- Para vídeo, inclua roteiro completo com timing
+- Para post, foque em impacto visual e mensagem direta
+- Mantenha consistência com a persona e framework selecionados
 
 IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicional.`;
 
@@ -1322,17 +1356,20 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
 
       console.log('🎯 Posts extraídos:', postsData.length);
 
-      // Mapear posts com cronograma (sem geração de imagem)
+      // Mapear posts com cronograma e tipo específico
       const postsComCronograma = postsData.map((post, index) => {
         const dataPostagem = cronograma[index]?.toISOString().split('T')[0] || new Date().toISOString().split('T')[0];
+        const tipoEsperado = distribuicaoTipos[index];
         
         return {
           ...post,
           data_postagem: dataPostagem,
-          anexo_url: null, // Geração de imagem inativada
+          tipo_criativo: post.tipo_criativo || tipoEsperado, // Garantir que use o tipo correto
+          anexo_url: null, // Geração de imagem será implementada separadamente
           id: `temp-${Date.now()}-${index}`,
           status: 'temporario' as const,
-          hashtags: Array.isArray(post.hashtags) ? post.hashtags : []
+          hashtags: Array.isArray(post.hashtags) ? post.hashtags : [],
+          especificacoes_tecnicas: post.especificacoes_tecnicas || {}
         };
       });
 

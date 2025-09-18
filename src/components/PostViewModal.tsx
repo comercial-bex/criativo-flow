@@ -31,10 +31,21 @@ export function PostViewModal({ isOpen, onClose, post, onApprove, isApproving }:
   };
 
   const getTipoIcon = (tipo: string, formato: string) => {
-    if (formato === 'reel') return '🎬';
-    if (formato === 'stories' || formato === 'story') return '📱';
-    if (tipo === 'carrossel') return '🖼️';
+    if (tipo === 'video') return '🎬';
+    if (tipo === 'carrossel') return '📸';
+    if (tipo === 'post') return '🖼️';
+    if (formato === 'reel') return '🎞️';
+    if (formato === 'story' || formato === 'stories') return '📱';
     return '📝';
+  };
+
+  const getTipoDescription = (tipo: string) => {
+    switch (tipo) {
+      case 'video': return 'Vídeo/Reel';
+      case 'carrossel': return 'Carrossel';
+      case 'post': return 'Post Simples';
+      default: return tipo;
+    }
   };
 
   const getStatusBadge = (status: string) => {
@@ -128,7 +139,9 @@ export function PostViewModal({ isOpen, onClose, post, onApprove, isApproving }:
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <Label className="text-sm font-medium text-muted-foreground">Tipo de Criativo</Label>
-                      <p className="mt-1 capitalize">{post.tipo_criativo}</p>
+                      <p className="mt-1 flex items-center gap-2">
+                        {getTipoIcon(post.tipo_criativo, post.formato_postagem)} {getTipoDescription(post.tipo_criativo)}
+                      </p>
                     </div>
 
                     <div>
@@ -277,6 +290,104 @@ export function PostViewModal({ isOpen, onClose, post, onApprove, isApproving }:
                 <p className="bg-blue-50 border border-blue-200 p-3 rounded-lg text-blue-800">
                   {post.contexto_estrategico}
                 </p>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Especificações Técnicas por Tipo */}
+          {post.especificacoes_tecnicas && (
+            <Card className="mt-6">
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2">
+                  📋 Especificações Técnicas
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {post.tipo_criativo === 'carrossel' && post.especificacoes_tecnicas.carrossel && (
+                  <div className="space-y-3">
+                    <p className="text-sm text-muted-foreground">
+                      <strong>Slides:</strong> {post.especificacoes_tecnicas.carrossel.num_slides}
+                    </p>
+                    <div className="grid gap-2">
+                      <div>
+                        <span className="text-xs font-medium text-blue-600">Slide 1 (Hook):</span>
+                        <p className="text-sm bg-blue-50 p-2 rounded mt-1">{post.especificacoes_tecnicas.carrossel.slide_1}</p>
+                      </div>
+                      {post.especificacoes_tecnicas.carrossel.slides_meio?.map((slide, index) => (
+                        <div key={index}>
+                          <span className="text-xs font-medium text-green-600">Slide {index + 2}:</span>
+                          <p className="text-sm bg-green-50 p-2 rounded mt-1">{slide}</p>
+                        </div>
+                      ))}
+                      <div>
+                        <span className="text-xs font-medium text-purple-600">Slide Final:</span>
+                        <p className="text-sm bg-purple-50 p-2 rounded mt-1">{post.especificacoes_tecnicas.carrossel.slide_final}</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {post.tipo_criativo === 'video' && post.especificacoes_tecnicas.video && (
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <span className="text-sm font-medium text-red-600">Duração:</span>
+                        <p className="text-sm">{post.especificacoes_tecnicas.video.duracao}</p>
+                      </div>
+                      <div>
+                        <span className="text-sm font-medium text-orange-600">Som Sugerido:</span>
+                        <p className="text-sm">{post.especificacoes_tecnicas.video.som_sugerido}</p>
+                      </div>
+                    </div>
+                    <div>
+                      <span className="text-sm font-medium text-yellow-600">Hook (0-3s):</span>
+                      <p className="text-sm bg-yellow-50 p-2 rounded mt-1">{post.especificacoes_tecnicas.video.hook_inicial}</p>
+                    </div>
+                    <div>
+                      <span className="text-sm font-medium text-green-600">Roteiro Completo:</span>
+                      <p className="text-sm bg-green-50 p-2 rounded mt-1 whitespace-pre-line">{post.especificacoes_tecnicas.video.roteiro}</p>
+                    </div>
+                    {post.especificacoes_tecnicas.video.elementos_visuais && (
+                      <div>
+                        <span className="text-sm font-medium text-blue-600">Elementos Visuais:</span>
+                        <ul className="text-sm list-disc list-inside mt-1">
+                          {post.especificacoes_tecnicas.video.elementos_visuais.map((elemento, index) => (
+                            <li key={index}>{elemento}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {post.tipo_criativo === 'post' && post.especificacoes_tecnicas.post && (
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <span className="text-sm font-medium text-purple-600">Estilo Visual:</span>
+                        <p className="text-sm">{post.especificacoes_tecnicas.post.estilo_visual}</p>
+                      </div>
+                      <div>
+                        <span className="text-sm font-medium text-pink-600">Cores Sugeridas:</span>
+                        <div className="flex gap-1 mt-1">
+                          {post.especificacoes_tecnicas.post.cores_sugeridas?.map((cor, index) => (
+                            <div key={index} className="w-6 h-6 rounded border" style={{backgroundColor: cor}} title={cor}></div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                    {post.especificacoes_tecnicas.post.elementos && (
+                      <div>
+                        <span className="text-sm font-medium text-indigo-600">Elementos:</span>
+                        <ul className="text-sm list-disc list-inside mt-1">
+                          {post.especificacoes_tecnicas.post.elementos.map((elemento, index) => (
+                            <li key={index}>{elemento}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                )}
               </CardContent>
             </Card>
           )}
