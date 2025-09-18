@@ -1214,7 +1214,7 @@ IMPORTANTE: Retorne APENAS o JSON válido, sem texto adicional.
       const cronograma = gerarCronogramaPostagens(currentDate.getMonth(), currentDate.getFullYear());
       const quantidadePosts = cronograma.length;
       
-      // Tipos de criativo e distribuição equilibrada
+      // Tipos de criativo e distribuição equilibrada conforme assinatura
       const tiposCreativos = ['post', 'carrossel', 'video'];
       const distribuicaoTipos = [];
       for (let i = 0; i < quantidadePosts; i++) {
@@ -1222,6 +1222,8 @@ IMPORTANTE: Retorne APENAS o JSON válido, sem texto adicional.
       }
 
       console.log(`Gerando ${quantidadePosts} posts para plano de ${clienteAssinatura.posts_mensais} posts mensais`);
+      console.log('📊 Distribuição de tipos:', distribuicaoTipos);
+      console.log('📅 Cronograma:', cronograma.map(d => d.toLocaleDateString()));
 
       if (quantidadePosts === 0) {
         toast.error('Não foi possível gerar cronograma de postagens para este mês');
@@ -1397,6 +1399,7 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
       }
 
       console.log('🎯 Posts extraídos:', postsData.length);
+      console.log('🔍 Posts recebidos da IA:', postsData.map(p => ({ titulo: p.titulo, tipo: p.tipo_criativo })));
 
       // Mapear posts com cronograma e tipo específico
       const postsComCronograma = postsData.map((post, index) => {
@@ -1467,8 +1470,12 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
               formatoPostagem = 'story'; // Converter para o valor aceito pela constraint
             }
             
-            // Validar tipo_criativo para constraint do banco
+            // Validar e converter tipo_criativo para constraint do banco
             let tipoCriativo = post.tipo_criativo;
+            // Converter video para stories no banco de dados (para compatibilidade)
+            if (tipoCriativo === 'video') {
+              tipoCriativo = 'stories';
+            }
             const tiposPermitidos = ['post', 'carrossel', 'stories'];
             if (!tiposPermitidos.includes(tipoCriativo)) {
               console.warn(`⚠️ tipo_criativo "${tipoCriativo}" não permitido, usando "post" como fallback`);
