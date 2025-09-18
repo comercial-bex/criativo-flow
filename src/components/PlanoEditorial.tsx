@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { CalendarioEditorial } from "@/components/CalendarioEditorial";
+import { PostPreviewModal } from "@/components/PostPreviewModal";
 import { DataTable } from "@/components/DataTable";
 import { DndContext, closestCenter, DragEndEvent, DragStartEvent, DragOverlay, useDroppable } from "@dnd-kit/core";
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
@@ -253,14 +254,22 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
   const [postsGerados, setPostsGerados] = useState<Array<{
     id?: string;
     titulo: string;
+    legenda: string;
     objetivo_postagem: string;
     tipo_criativo: string;
     formato_postagem: string;
+    componente_hesec: string;
+    persona_alvo: string;
+    call_to_action: string;
+    hashtags: string[];
+    contexto_estrategico: string;
     data_postagem: string;
     status: 'pendente' | 'salvo';
     data_salvamento?: string;
   }>>([]);
   const [componentesSelecionados, setComponentesSelecionados] = useState<string[]>([]);
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [previewPosts, setPreviewPosts] = useState<any[]>([]);
   const [dadosOnboarding, setDadosOnboarding] = useState<any>(null);
   const [dadosObjetivos, setDadosObjetivos] = useState<any>(null);
   const [atualizandoPost, setAtualizandoPost] = useState<string | null>(null);
@@ -1110,12 +1119,15 @@ Gere um JSON com array de posts seguindo esta estrutura:
 [
   {
     "titulo": "Título engajador do post",
+    "legenda": "Legenda completa de 150-300 palavras seguindo modelo BEX com emojis, narrativa envolvente e call-to-action específico",
     "objetivo_postagem": "Engajamento|Vendas|Educação|Relacionamento|Branding",
-     "tipo_criativo": "post|carrossel|stories",
-     "formato_postagem": "post|reel|stories",
-    "legenda": "Legenda completa seguindo modelo BEX com emojis, call-to-action e hashtags #tag1 #tag2 #tag3 #tag4 #tag5",
+    "tipo_criativo": "post|carrossel|stories",
+    "formato_postagem": "post|reel|stories",
     "componente_hesec": "componente_do_framework",
-    "persona_alvo": "nome_da_persona"
+    "persona_alvo": "nome_da_persona",
+    "call_to_action": "CTA específico e personalizado para a persona",
+    "hashtags": ["#tag1", "#tag2", "#tag3", "#tag4", "#tag5"],
+    "contexto_estrategico": "Explicação de 2-3 linhas do por que este post, como ele atinge a persona e qual resultado esperado"
   }
 ]
 
@@ -1154,10 +1166,11 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
         planejamento_id: planejamento.id
       }));
 
-      setPostsGerados(postsComData.map(post => ({ ...post, status: 'pendente' as const })));
-      await salvarPostsCalendario(postsComData);
-
-      toast.success(`${postsComData.length} posts gerados seguindo modelo BEX e salvos com sucesso!`);
+      // Mostrar modal de preview em vez de salvar diretamente
+      setPreviewPosts(postsComData);
+      setShowPreviewModal(true);
+      
+      toast.success(`${postsComData.length} posts gerados com sucesso! Revise e aprove o conteúdo.`);
 
     } catch (error) {
       console.error('Erro ao gerar conteúdo:', error);
@@ -1183,9 +1196,15 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
       const postsParaInserir = novosPost.map(post => ({
         planejamento_id: planejamento.id,
         titulo: post.titulo,
+        legenda: post.legenda || '',
         objetivo_postagem: post.objetivo_postagem,
         tipo_criativo: post.tipo_criativo,
         formato_postagem: post.formato_postagem,
+        componente_hesec: post.componente_hesec || '',
+        persona_alvo: post.persona_alvo || '',
+        call_to_action: post.call_to_action || '',
+        hashtags: post.hashtags || [],
+        contexto_estrategico: post.contexto_estrategico || '',
         data_postagem: post.data_postagem
       }));
 
@@ -1205,6 +1224,28 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
       console.error('Erro ao salvar posts:', error);
       toast.error('Erro ao salvar posts no calendário');
     }
+  };
+
+  const handlePreviewSave = async (postsEditados: any[]) => {
+    setSalvando(true);
+    try {
+      await salvarPostsCalendario(postsEditados);
+      setPostsGerados(postsEditados.map(post => ({ ...post, status: 'salvo' as const })));
+      setShowPreviewModal(false);
+      setPreviewPosts([]);
+      toast.success('Calendário editorial salvo com sucesso!');
+    } catch (error) {
+      console.error('Erro ao salvar posts:', error);
+      toast.error('Erro ao salvar posts no calendário');
+    } finally {
+      setSalvando(false);
+    }
+  };
+
+  const handlePreviewCancel = () => {
+    setShowPreviewModal(false);
+    setPreviewPosts([]);
+    toast.info('Geração de conteúdo cancelada');
   };
 
   const salvarPostsGerados = async () => {
@@ -2257,6 +2298,15 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
           />
         </TabsContent>
       </Tabs>
+
+      {/* Modal de Preview dos Posts Gerados */}
+      <PostPreviewModal
+        isOpen={showPreviewModal}
+        onClose={() => setShowPreviewModal(false)}
+        posts={previewPosts}
+        onSave={handlePreviewSave}
+        onCancel={handlePreviewCancel}
+      />
     </div>
   );
 };

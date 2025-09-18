@@ -525,11 +525,17 @@ export type Database = {
       posts_planejamento: {
         Row: {
           anexo_url: string | null
+          call_to_action: string | null
+          componente_hesec: string | null
+          contexto_estrategico: string | null
           created_at: string
           data_postagem: string
           formato_postagem: string
+          hashtags: string[] | null
           id: string
+          legenda: string | null
           objetivo_postagem: string
+          persona_alvo: string | null
           planejamento_id: string
           tipo_criativo: string
           titulo: string
@@ -537,11 +543,17 @@ export type Database = {
         }
         Insert: {
           anexo_url?: string | null
+          call_to_action?: string | null
+          componente_hesec?: string | null
+          contexto_estrategico?: string | null
           created_at?: string
           data_postagem: string
           formato_postagem?: string
+          hashtags?: string[] | null
           id?: string
+          legenda?: string | null
           objetivo_postagem: string
+          persona_alvo?: string | null
           planejamento_id: string
           tipo_criativo: string
           titulo: string
@@ -549,11 +561,17 @@ export type Database = {
         }
         Update: {
           anexo_url?: string | null
+          call_to_action?: string | null
+          componente_hesec?: string | null
+          contexto_estrategico?: string | null
           created_at?: string
           data_postagem?: string
           formato_postagem?: string
+          hashtags?: string[] | null
           id?: string
+          legenda?: string | null
           objetivo_postagem?: string
+          persona_alvo?: string | null
           planejamento_id?: string
           tipo_criativo?: string
           titulo?: string
