@@ -729,7 +729,15 @@ export type Database = {
           projeto_id?: string
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "projeto_especialistas_especialista_id_fkey"
+            columns: ["especialista_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       projetos: {
         Row: {
@@ -986,7 +994,6 @@ export type Database = {
         | "videomaker"
         | "filmmaker"
         | "design"
-        | "copywriter"
         | "gerente_redes_sociais"
       priority_type: "baixa" | "media" | "alta" | "urgente"
       status_padrao:
@@ -1140,7 +1147,6 @@ export const Constants = {
         "videomaker",
         "filmmaker",
         "design",
-        "copywriter",
         "gerente_redes_sociais",
       ],
       priority_type: ["baixa", "media", "alta", "urgente"],

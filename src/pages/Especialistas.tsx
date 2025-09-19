@@ -23,7 +23,6 @@ const especialidadeLabels: Record<string, string> = {
   'videomaker': 'Videomaker',
   'filmmaker': 'Filmmaker',
   'design': 'Designer',
-  'copywriter': 'Copywriter',
   'gerente_redes_sociais': 'Gerente de Redes Sociais'
 };
 
@@ -362,7 +361,6 @@ export function Especialistas() {
                       <SelectItem value="videomaker">Videomaker</SelectItem>
                       <SelectItem value="filmmaker">Filmmaker</SelectItem>
                       <SelectItem value="design">Designer</SelectItem>
-                      <SelectItem value="copywriter">Copywriter</SelectItem>
                       <SelectItem value="gerente_redes_sociais">Gerente de Redes Sociais</SelectItem>
                     </SelectContent>
                   </Select>
@@ -444,12 +442,12 @@ export function Especialistas() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Copywriters</CardTitle>
+            <CardTitle className="text-sm font-medium">Designers</CardTitle>
             <Briefcase className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {especialistas.filter(e => e.especialidade === 'copywriter').length}
+              {especialistas.filter(e => e.especialidade === 'design').length}
             </div>
           </CardContent>
         </Card>

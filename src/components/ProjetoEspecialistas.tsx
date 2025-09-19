@@ -20,7 +20,6 @@ const especialidadeLabels: Record<string, string> = {
   'videomaker': 'Videomaker',
   'filmmaker': 'Filmmaker', 
   'design': 'Designer',
-  'copywriter': 'Copywriter',
   'gerente_redes_sociais': 'Gerente de Redes Sociais'
 };
 
@@ -163,7 +162,7 @@ export function ProjetoEspecialistas({ projetoId }: ProjetoEspecialistasProps) {
   );
 
   const especialidadesDisponiveis = [
-    'videomaker', 'filmmaker', 'design', 'copywriter', 'gerente_redes_sociais'
+    'videomaker', 'filmmaker', 'design', 'gerente_redes_sociais'
   ].filter(esp => !projetoEspecialistas.some(pe => pe.especialidade === esp));
 
   return (
