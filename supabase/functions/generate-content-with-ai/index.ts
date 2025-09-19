@@ -18,7 +18,7 @@ serve(async (req) => {
   }
 
   if (!openAIApiKey) {
-    console.error('❌ OPENAI_API_KEY não encontrada');
+    console.error('❌ API key do OpenAI não configurada');
     return new Response(JSON.stringify({ error: 'OpenAI API key not configured' }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -26,19 +26,16 @@ serve(async (req) => {
   }
 
   try {
-    console.log('📥 Processando request...');
-    const body = await req.json();
-    const { prompt } = body;
+    const { prompt } = await req.json();
+    console.log('📝 Prompt recebido. Tamanho:', prompt.length);
     
     if (!prompt) {
-      console.error('❌ Prompt não fornecido');
+      console.error('❌ Prompt não fornecido no body');
       return new Response(JSON.stringify({ error: 'Prompt is required' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
-    
-    console.log('📝 Prompt recebido, tamanho:', prompt.length);
 
     // Detectar se é um prompt para JSON ou texto simples
     const isJsonRequest = prompt.includes('JSON') || prompt.includes('json') || prompt.includes('Formate a resposta em JSON');

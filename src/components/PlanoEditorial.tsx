@@ -1251,8 +1251,20 @@ IMPORTANTE: Retorne APENAS o JSON válido, sem texto adicional.
       });
 
       // Buscar dados adicionais para contexto
+      console.log('🔍 Buscando dados do onboarding...');
       const dadosOnboarding = await buscarDadosOnboarding();
+      console.log('✅ Dados onboarding:', {
+        nome: dadosOnboarding?.nome_empresa,
+        temTomVoz: !!dadosOnboarding?.tom_voz,
+        temValores: !!dadosOnboarding?.valores_principais,
+        temDiferenciais: !!dadosOnboarding?.diferenciais
+      });
+      
+      console.log('🔍 Buscando dados de objetivos...');
       const dadosObjetivos = await buscarDadosObjetivos();
+      console.log('✅ Dados objetivos:', {
+        temSwot: !!dadosObjetivos?.analise_swot
+      });
 
       // Prompt seguindo modelo BEX com geração completa de conteúdo e dados do onboarding
       const prompt = `
@@ -1373,29 +1385,51 @@ REGRAS CRÍTICAS:
 
 IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicional.`;
 
+      console.log('📤 Enviando prompt para IA. Tamanho:', prompt.length);
+      console.log('📝 Prompt preparado com dados:', {
+        temOnboarding: !!dadosOnboarding,
+        temSwot: !!dadosObjetivos?.analise_swot,
+        quantidadePosts,
+        tiposDistribuidos: distribuicaoTipos
+      });
+
       const { data, error } = await supabase.functions.invoke('generate-content-with-ai', {
         body: { prompt }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Erro na função generate-content-with-ai:', error);
+        throw error;
+      }
+
+      console.log('✅ Resposta da IA recebida:', {
+        hasData: !!data,
+        hasGeneratedText: !!data?.generatedText,
+        textLength: data?.generatedText?.length || 0
+      });
 
       let postsData;
       try {
         // A edge function pode retornar diferentes estruturas
         const responseText = data.generatedText || data.content || data;
+        console.log('🔍 Processando resposta da IA...');
+        console.log('📄 Tipo de resposta:', typeof responseText);
+        console.log('📝 Primeiros 300 chars:', typeof responseText === 'string' ? responseText.substring(0, 300) : JSON.stringify(responseText).substring(0, 300));
+        
         if (typeof responseText === 'string') {
           postsData = JSON.parse(responseText);
         } else {
           postsData = responseText;
         }
       } catch (e) {
-        console.error('Erro ao fazer parse do JSON:', e);
+        console.error('❌ Erro ao fazer parse do JSON:', e);
+        console.log('📄 Resposta completa que falhou:', data);
         toast.error('Erro no formato da resposta da IA. Tente novamente.');
         return;
       }
 
       if (!Array.isArray(postsData) || postsData.length === 0) {
-        console.error('Resposta inválida da IA:', postsData);
+        console.error('❌ Resposta inválida da IA:', postsData);
         toast.error('IA não retornou posts válidos');
         return;
       }
