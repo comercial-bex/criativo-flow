@@ -1565,6 +1565,8 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
               planejamento_id: planejamento.id,
               titulo: post.titulo,
               legenda: post.legenda || '',
+              headline: post.headline || '', // 🔥 INCLUIR headline
+              conteudo_completo: post.conteudo_completo || '', // 🔥 INCLUIR conteudo_completo
               objetivo_postagem: post.objetivo_postagem,
               tipo_criativo: tipoCriativo,
               formato_postagem: formatoPostagem,

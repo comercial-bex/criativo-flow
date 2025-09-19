@@ -55,6 +55,8 @@ ESTRUTURA JSON OBRIGATÓRIA PARA CADA POST:
   "objetivo": "Descrição clara e específica do objetivo do post (2-3 linhas)",
   "legenda": "Legenda completa com texto envolvente e hashtags relevantes no final",
   "titulo": "Título engajador para identificação interna",
+  "headline": "Manchete principal atrativa (obrigatório)",
+  "conteudo_completo": "Para VÍDEOS: roteiro técnico detalhado com cenas e direções. Para POSTS/CARROSSEL: conteúdo elaborado baseado no onboarding (obrigatório)",
   "objetivo_postagem": "Engajamento|Vendas|Educação|Relacionamento|Branding",
   "tipo_criativo": "post|carrossel|stories",
   "formato_postagem": "post|reel|story",
@@ -71,8 +73,13 @@ DIRETRIZES OBRIGATÓRIAS:
 3. POST deve ser numeração sequencial: 01, 02, 03, etc.
 4. OBJETIVO deve ser uma descrição clara e específica (2-3 linhas) do que o post pretende alcançar
 5. LEGENDA deve incluir texto envolvente + hashtags estratégicas no final
-6. Varie os tipos de CRIATIVO ao longo do calendário (IMAGEM, VÍDEO, CARROSEL)
-7. Distribua os posts ao longo dos dias da semana de forma estratégica
+6. HEADLINE deve sempre ser preenchida com uma manchete atrativa
+7. CONTEUDO_COMPLETO - CRÍTICO:
+   • Para tipo_criativo "video" ou "stories": gere ROTEIRO TÉCNICO detalhado com descrição de cenas, ações, música, etc.
+   • Para tipo_criativo "post" ou "carrossel": gere CONTEÚDO ELABORADO baseado nos dados de onboarding, com informações aprofundadas sobre a empresa/produto
+8. Varie os tipos de CRIATIVO ao longo do calendário (IMAGEM, VÍDEO, CARROSEL)
+9. Distribua os posts ao longo dos dias da semana de forma estratégica
+10. NUNCA deixe "headline" ou "conteudo_completo" vazios - são obrigatórios!
 
 IMPORTANTE: Responda APENAS com o JSON válido em formato de array, sem comentários ou texto adicional.`
       : 'Você é um especialista em marketing digital e criação de personas. Responda em texto corrido, bem formatado e de fácil leitura.';
@@ -165,6 +172,8 @@ IMPORTANTE: Responda APENAS com o JSON válido em formato de array, sem comentá
         const fallbackPosts = [
           {
             titulo: "Post Inspiracional",
+            headline: "🌟 Transforme seus sonhos em realidade!",
+            conteudo_completo: "Este post inspiracional foi criado para conectar emocionalmente com nossa persona principal, utilizando linguagem motivacional que ressoa com os valores da marca. O conteúdo explora a importância da criatividade no dia a dia, relacionando-se diretamente com os objetivos de fortalecimento da marca e engajamento do público. A abordagem visual deve transmitir energia positiva e aspiração, elementos fundamentais para gerar identificação e compartilhamento espontâneo.",
             legenda: "🌟 Inspire-se todos os dias! A criatividade é o que move nossos sonhos para a realidade. Cada projeto que criamos é uma extensão dos nossos valores e paixões. Aqui na nossa empresa, acreditamos que a inspiração deve ser constante e acessível a todos. Venha descobrir como podemos ajudar você a transformar suas ideias em realidade! ✨ #inspiracao #criatividade #sonhos #realizacao #motivacao",
             objetivo_postagem: "Engajamento",
             tipo_criativo: "post",
@@ -176,16 +185,18 @@ IMPORTANTE: Responda APENAS com o JSON válido em formato de array, sem comentá
             contexto_estrategico: "Este post visa conectar emocionalmente com Maria da Costura, mostrando que valorizamos a criatividade e os sonhos dos nossos clientes, criando um vínculo emocional que fortalece a relação com a marca."
           },
           {
-            titulo: "Dica Valiosa", 
+            titulo: "Roteiro de Vídeo Tutorial", 
+            headline: "🎬 Aprenda o passo a passo completo!",
+            conteudo_completo: "ROTEIRO TÉCNICO PARA VÍDEO:\n\nCENA 1 (0-3s): Close-up das mãos segurando diferentes tipos de tecido\n- Música: instrumental suave de fundo\n- Narração: 'A escolha do tecido é fundamental...'\n\nCENA 2 (3-8s): Plano médio mostrando a textura dos tecidos\n- Câmera: movimento lento da esquerda para direita\n- Iluminação: luz natural difusa\n- Narração: 'Cada material tem sua personalidade...'\n\nCENA 3 (8-12s): Montagem rápida de projetos finalizados\n- Transição: corte seco entre takes\n- Música: intensifica o ritmo\n- Texto na tela: 'Resultados incríveis'\n\nCENA 4 (12-15s): Logo da empresa com CTA\n- Fundo: tecido em movimento\n- Narração: 'Venha descobrir sua criação ideal!'",
             legenda: "💡 Dica do dia: Escolher o tecido certo faz toda a diferença no seu projeto! A qualidade dos materiais que você utiliza impacta diretamente no resultado final da sua criação. Por isso, sempre recomendamos tecidos que combinam durabilidade, beleza e facilidade de trabalho. Nossa equipe está sempre pronta para ajudar você a escolher os melhores materiais para cada tipo de projeto. Venha conhecer nossa seleção exclusiva e deixe sua criação ainda mais especial! 🧵",
             objetivo_postagem: "Educação",
-            tipo_criativo: "post",
-            formato_postagem: "post",
+            tipo_criativo: "video",
+            formato_postagem: "reel",
             componente_hesec: "HESEC: Educação",
             persona_alvo: "Lucas Designer",
             call_to_action: "Solicite orientação da nossa equipe especializada!",
             hashtags: ["#dicas", "#tecidos", "#qualidade", "#projetos", "#conhecimento"],
-            contexto_estrategico: "Este post educativo posiciona nossa marca como especialista técnico, fornecendo valor real para Lucas Designer e demonstrando nossa expertise, o que gera confiança e autoridade no mercado."
+            contexto_estrategico: "Este vídeo educativo posiciona nossa marca como especialista técnico, fornecendo valor real para Lucas Designer e demonstrando nossa expertise, o que gera confiança e autoridade no mercado."
           }
         ];
         
