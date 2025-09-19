@@ -527,11 +527,13 @@ export type Database = {
           anexo_url: string | null
           call_to_action: string | null
           componente_hesec: string | null
+          conteudo_completo: string | null
           contexto_estrategico: string | null
           created_at: string
           data_postagem: string
           formato_postagem: string
           hashtags: string[] | null
+          headline: string | null
           id: string
           legenda: string | null
           objetivo_postagem: string
@@ -546,11 +548,13 @@ export type Database = {
           anexo_url?: string | null
           call_to_action?: string | null
           componente_hesec?: string | null
+          conteudo_completo?: string | null
           contexto_estrategico?: string | null
           created_at?: string
           data_postagem: string
           formato_postagem?: string
           hashtags?: string[] | null
+          headline?: string | null
           id?: string
           legenda?: string | null
           objetivo_postagem: string
@@ -565,11 +569,13 @@ export type Database = {
           anexo_url?: string | null
           call_to_action?: string | null
           componente_hesec?: string | null
+          conteudo_completo?: string | null
           contexto_estrategico?: string | null
           created_at?: string
           data_postagem?: string
           formato_postagem?: string
           hashtags?: string[] | null
+          headline?: string | null
           id?: string
           legenda?: string | null
           objetivo_postagem?: string
@@ -587,11 +593,13 @@ export type Database = {
           anexo_url: string | null
           call_to_action: string | null
           componente_hesec: string | null
+          conteudo_completo: string | null
           contexto_estrategico: string | null
           created_at: string
           data_postagem: string
           formato_postagem: string
           hashtags: string[] | null
+          headline: string | null
           id: string
           legenda: string | null
           objetivo_postagem: string
@@ -606,11 +614,13 @@ export type Database = {
           anexo_url?: string | null
           call_to_action?: string | null
           componente_hesec?: string | null
+          conteudo_completo?: string | null
           contexto_estrategico?: string | null
           created_at?: string
           data_postagem: string
           formato_postagem?: string
           hashtags?: string[] | null
+          headline?: string | null
           id?: string
           legenda?: string | null
           objetivo_postagem: string
@@ -625,11 +635,13 @@ export type Database = {
           anexo_url?: string | null
           call_to_action?: string | null
           componente_hesec?: string | null
+          conteudo_completo?: string | null
           contexto_estrategico?: string | null
           created_at?: string
           data_postagem?: string
           formato_postagem?: string
           hashtags?: string[] | null
+          headline?: string | null
           id?: string
           legenda?: string | null
           objetivo_postagem?: string

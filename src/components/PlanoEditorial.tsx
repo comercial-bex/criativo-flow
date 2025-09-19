@@ -290,6 +290,9 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
     status: 'temporario' | 'aprovado';
     data_salvamento?: string;
     anexo_url?: string;
+    responsavel_id?: string;
+    headline?: string;
+    conteudo_completo?: string;
   }>>([]);
   const [postsTemporarios, setPostsTemporarios] = useState<any[]>([]);
   const [postsAprovadosCounter, setPostsAprovadosCounter] = useState(0);
@@ -546,8 +549,22 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
         hashtags: post.hashtags,
         contexto_estrategico: post.contexto_estrategico,
         data_postagem: post.data_postagem,
-        anexo_url: post.anexo_url || null
+        anexo_url: post.anexo_url || null,
+        responsavel_id: post.responsavel_id || null,
+        // Novos campos para conteúdo diferenciado
+        headline: post.headline,
+        conteudo_completo: post.conteudo_completo
       }));
+
+      console.log('💾 Salvando posts temporários:', {
+        quantidade: postsParaSalvar.length,
+        comHeadline: postsParaSalvar.filter(p => p.headline).length,
+        comConteudo: postsParaSalvar.filter(p => p.conteudo_completo).length,
+        tipos: postsParaSalvar.reduce((acc: any, p) => {
+          acc[p.tipo_criativo] = (acc[p.tipo_criativo] || 0) + 1;
+          return acc;
+        }, {})
+      });
 
       const { error } = await supabase
         .from('posts_gerados_temp')
@@ -1683,7 +1700,11 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
           hashtags: post.hashtags,
           contexto_estrategico: post.contexto_estrategico,
           data_postagem: post.data_postagem,
-          anexo_url: post.anexo_url
+          anexo_url: post.anexo_url,
+          responsavel_id: post.responsavel_id,
+          // Novos campos para conteúdo diferenciado
+          headline: post.headline,
+          conteudo_completo: post.conteudo_completo
         });
 
       if (error) throw error;
