@@ -15,7 +15,7 @@ import { PostPreviewModal } from "@/components/PostPreviewModal";
 import { PostViewModal } from "@/components/PostViewModal";
 import { DataTable } from "@/components/DataTable";
 import { TableView } from "@/components/TableView";
-import PostsContentView from "@/components/PostsContentView";
+import { PostsContentView } from "@/components/PostsContentView";
 import { DndContext, closestCenter, DragEndEvent, DragStartEvent, DragOverlay, useDroppable } from "@dnd-kit/core";
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -1405,7 +1405,7 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
       const { data: projetoEspecialistas, error: especialistasError } = await supabase
         .from('projeto_especialistas')
         .select('*')
-        .eq('projeto_id', cliente?.projeto_id || '');
+        .eq('projeto_id', clienteId);
 
       console.log('📋 Especialistas do projeto:', projetoEspecialistas);
 
@@ -2471,9 +2471,9 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
                     </DragOverlay>
                   </DndContext>
                 ) : (
-                  <PostsContentView 
-                    posts={postsGerados}
-                    onViewPost={handleViewPost}
+                  <PostsContentView
+                    planejamentoId={planejamento.id}
+                    isTemp={true}
                   />
                 )}
               </CardContent>

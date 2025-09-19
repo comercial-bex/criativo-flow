@@ -256,8 +256,6 @@ export default function PlanejamentoVisual() {
         {/* Instagram Preview Modal */}
         {showInstagramPreview && selectedPost && (
           <InstagramPreview
-            isOpen={showInstagramPreview}
-            onClose={() => setShowInstagramPreview(false)}
             post={selectedPost}
           />
         )}

@@ -357,9 +357,9 @@ export function PostsContentView({ planejamentoId, isTemp = false }: PostsConten
           <PostPreviewModal
             isOpen={isEditModalOpen}
             onClose={() => setIsEditModalOpen(false)}
-            post={selectedPost}
-            onSave={(updatedPost) => {
-              // Implementar lógica de salvamento
+            onCancel={() => setIsEditModalOpen(false)}
+            posts={selectedPost ? [selectedPost] : []}
+            onSave={(updatedPosts) => {
               setIsEditModalOpen(false);
               fetchPosts();
             }}

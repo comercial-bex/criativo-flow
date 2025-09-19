@@ -9,15 +9,36 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
+  console.log('🚀 Edge function iniciada, método:', req.method);
+  
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
+    console.log('✅ Respondendo a OPTIONS request');
     return new Response(null, { headers: corsHeaders });
   }
 
+  if (!openAIApiKey) {
+    console.error('❌ OPENAI_API_KEY não encontrada');
+    return new Response(JSON.stringify({ error: 'OpenAI API key not configured' }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
   try {
-    const { prompt } = await req.json();
+    console.log('📥 Processando request...');
+    const body = await req.json();
+    const { prompt } = body;
     
-    console.log('Gerando conteúdo com prompt:', prompt);
+    if (!prompt) {
+      console.error('❌ Prompt não fornecido');
+      return new Response(JSON.stringify({ error: 'Prompt is required' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    
+    console.log('📝 Prompt recebido, tamanho:', prompt.length);
 
     // Detectar se é um prompt para JSON ou texto simples
     const isJsonRequest = prompt.includes('JSON') || prompt.includes('json') || prompt.includes('Formate a resposta em JSON');
