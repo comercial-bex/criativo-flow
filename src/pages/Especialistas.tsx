@@ -136,30 +136,19 @@ export function Especialistas() {
 
         toast.success('Especialista atualizado com sucesso');
       } else {
-        // Criar novo usuário
-        const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-          email: formData.email,
-          password: formData.senha,
-          user_metadata: {
+        // Criar novo usuário usando Edge Function
+        const { data: userData, error: userError } = await supabase.functions.invoke('create-user', {
+          body: {
+            email: formData.email,
+            password: formData.senha,
             nome: formData.nome,
             telefone: formData.telefone,
-            especialidade: formData.especialidade
+            especialidade: formData.especialidade,
+            role: formData.role
           }
         });
 
-        if (authError) throw authError;
-
-        if (authData.user) {
-          // Inserir role
-          const { error: roleError } = await supabase
-            .from('user_roles')
-            .insert({
-              user_id: authData.user.id,
-              role: formData.role as any
-            });
-
-          if (roleError) throw roleError;
-        }
+        if (userError) throw userError;
 
         toast.success('Especialista criado com sucesso');
       }

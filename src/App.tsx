@@ -29,6 +29,7 @@ import Configuracoes from "./pages/Configuracoes";
 import Relatorios from "./pages/Relatorios";
 import Planos from "./pages/Planos";
 import { Especialistas } from "./pages/Especialistas";
+import PerfilCliente from "./pages/Cliente/Perfil";
 
 import AprovacaoJob from "./pages/AprovacaoJob";
 
@@ -146,6 +147,13 @@ const App = () => (
               <ProtectedRoute>
                 <Layout>
                   <ClienteEditar />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/clientes/:clienteId/perfil" element={
+              <ProtectedRoute>
+                <Layout>
+                  <PerfilCliente />
                 </Layout>
               </ProtectedRoute>
             } />
