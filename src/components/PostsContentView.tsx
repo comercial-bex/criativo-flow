@@ -239,6 +239,22 @@ export function PostsContentView({ planejamentoId, isTemp = false }: PostsConten
 
                   {/* Conteúdo */}
                   <div className="space-y-4">
+                    {/* Headline */}
+                    {post.headline && (
+                      <div>
+                        <Label className="text-sm font-medium text-muted-foreground">Headline</Label>
+                        <p className="text-sm mt-1 leading-relaxed font-medium">{post.headline}</p>
+                      </div>
+                    )}
+
+                    {/* Conteúdo Completo */}
+                    {post.conteudo_completo && (
+                      <div>
+                        <Label className="text-sm font-medium text-muted-foreground">Conteúdo</Label>
+                        <p className="text-sm mt-1 leading-relaxed whitespace-pre-wrap">{post.conteudo_completo}</p>
+                      </div>
+                    )}
+
                     {/* Legenda */}
                     {post.legenda && (
                       <div>
