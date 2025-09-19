@@ -1254,18 +1254,32 @@ IMPORTANTE: Retorne APENAS o JSON válido, sem texto adicional.
       const dadosOnboarding = await buscarDadosOnboarding();
       const dadosObjetivos = await buscarDadosObjetivos();
 
-      // Prompt seguindo modelo BEX com geração completa de conteúdo
+      // Prompt seguindo modelo BEX com geração completa de conteúdo e dados do onboarding
       const prompt = `
 Gere um calendário editorial completo seguindo o MODELO BEX para marketing digital profissional.
 
-**CONTEXTO DA EMPRESA:**
-- Nome: ${dadosOnboarding.nome_empresa}
-- Segmento: ${dadosOnboarding.segmento_atuacao}
+**CONTEXTO COMPLETO DA EMPRESA:**
+- Nome: ${dadosOnboarding?.nome_empresa || 'Nome não informado'}
+- Segmento: ${dadosOnboarding?.segmento_atuacao || 'Segmento não informado'}
+- Tom de Voz: ${dadosOnboarding?.tom_voz || 'Não definido'}
+- Valores Principais: ${dadosOnboarding?.valores_principais || 'Não definidos'}
+- Diferenciais: ${dadosOnboarding?.diferenciais || 'Não definidos'}
+- Dores/Problemas dos Clientes: ${dadosOnboarding?.dores_problemas || 'Não definidas'}
+- O que é valorizado pelos clientes: ${dadosOnboarding?.valorizado || 'Não definido'}
+- Como quer ser lembrada: ${dadosOnboarding?.como_lembrada || 'Não definido'}
 - Missão: ${conteudo.missao}
 - Posicionamento: ${conteudo.posicionamento}
 
+**ANÁLISE SWOT EMPRESA:**
+${dadosObjetivos?.analise_swot ? `
+- Forças: ${Array.isArray((dadosObjetivos.analise_swot as any)?.forcas) ? (dadosObjetivos.analise_swot as any).forcas.join(', ') : 'Não definidas'}
+- Fraquezas: ${Array.isArray((dadosObjetivos.analise_swot as any)?.fraquezas) ? (dadosObjetivos.analise_swot as any).fraquezas.join(', ') : 'Não definidas'}
+- Oportunidades: ${Array.isArray((dadosObjetivos.analise_swot as any)?.oportunidades) ? (dadosObjetivos.analise_swot as any).oportunidades.join(', ') : 'Não definidas'}
+- Ameaças: ${Array.isArray((dadosObjetivos.analise_swot as any)?.ameacas) ? (dadosObjetivos.analise_swot as any).ameacas.join(', ') : 'Não definidas'}
+` : 'Análise SWOT não disponível'}
+
 **PERSONAS DEFINIDAS:**
-${personas.map((p, i) => `PERSONA ${i+1}: ${p.nome} - ${p.resumo} - Dores: ${p.dores?.join(', ') || 'Não definidas'}`).join('\n')}
+${personas.map((p, i) => `PERSONA ${i+1}: ${p.nome} - ${p.resumo} - Dores: ${p.dores?.join(', ') || 'Não definidas'} - Características: ${p.caracteristicas?.join(', ') || 'Não definidas'}`).join('\n')}
 
 **COMPONENTES H.E.S.E.C SELECIONADOS:**
 ${componentesSelecionados.map(comp => typeof comp === 'string' ? comp : (comp as any)?.nome || comp).join(', ')}
@@ -1273,7 +1287,7 @@ ${componentesSelecionados.map(comp => typeof comp === 'string' ? comp : (comp as
 **ESPECIALISTAS DE REFERÊNCIA:**
 ${conteudo.especialistas_selecionados?.map(esp => typeof esp === 'string' ? esp : (esp as any)?.nome || esp).join(', ') || 'Marketing estratégico'}
 
-**CRONOGRAMA:**
+**CRONOGRAMA E DISTRIBUIÇÃO:**
 ${cronograma.map((data, index) => {
   const formattedDate = data.toLocaleDateString('pt-BR');
   const dayOfWeek = data.toLocaleDateString('pt-BR', { weekday: 'long' });
@@ -1281,93 +1295,81 @@ ${cronograma.map((data, index) => {
   const componenteNome = typeof componenteAssociado === 'string' ? componenteAssociado : componenteAssociado?.nome || 'Componente';
   const personaIndex = index % personas.length;
   const persona = personas[personaIndex];
+  const tipoPost = distribuicaoTipos[index];
   
-  return `${index + 1}. ${formattedDate} (${dayOfWeek}) - Componente: ${componenteNome} - Persona: ${persona?.nome || 'Persona 1'}`;
+  return `${index + 1}. ${formattedDate} (${dayOfWeek}) - TIPO: ${tipoPost.toUpperCase()} - Componente: ${componenteNome} - Persona: ${persona?.nome || 'Persona 1'}`;
 }).join('\n')}
 
-**DIRETRIZES:**
-1. Gerar exatamente ${quantidadePosts} posts
-2. Cada post deve seguir o modelo BEX com conteúdo completo
-3. Incluir headline chamativa (máximo 60 caracteres)
-4. Para POST/CARROSSEL: Legenda completa de 150-300 palavras
-5. Para VÍDEO: Roteiro técnico completo
-6. Incluir 5-8 hashtags relevantes
-7. Alternar entre as personas definidas
-8. Cada post deve refletir o componente H.E.S.E.C específico
-9. Incluir call-to-action apropriado
-10. Tipos criativos distribuídos: ${distribuicaoTipos.join(', ')}
+**DIRETRIZES ESPECÍFICAS POR TIPO:**
+🎥 PARA VÍDEOS (${distribuicaoTipos.filter(t => t === 'video').length} posts):
+- Campo "conteudo_completo" DEVE conter ROTEIRO TÉCNICO COMPLETO
+- Usar tom de voz da empresa: ${dadosOnboarding?.tom_voz || 'profissional'}
+- Duração ideal: 15-30 segundos para engagement máximo
+- Hook nos primeiros 3 segundos é OBRIGATÓRIO
 
-**FORMATO TÉCNICO PARA VÍDEOS:**
+📚 PARA POSTS/CARROSSEL (${distribuicaoTipos.filter(t => t !== 'video').length} posts):
+- Campo "conteudo_completo" DEVE conter LEGENDA ELABORADA (150-300 palavras)
+- Integrar valores da empresa: ${dadosOnboarding?.valores_principais || 'valores corporativos'}
+- Abordar dores específicas: ${dadosOnboarding?.dores_problemas || 'dores do público'}
+- Reforçar diferenciais: ${dadosOnboarding?.diferenciais || 'diferenciais únicos'}
 
-Identificação
-– Cliente: ${dadosOnboarding.nome_empresa}
-– Agência: [Nome da Agência]
-– Produtora: [Nome da Produtora]
-– Peça: [Reel 15", Vídeo 30", etc.]
-– Título: [Título do vídeo]
-– Duração: [15-30 segundos]
-– Veiculação: [Instagram, TikTok, etc.]
-– Data: [Data de postagem]
-– Criação: [Equipe criativa]
+**FORMATO TÉCNICO OBRIGATÓRIO PARA VÍDEOS:**
 
-Objetivo e Tom
-– Objetivo: [impactar, emocionar, informar, vender, educar]
-– Tom: [poético, épico, institucional, leve, divertido, inspirador]
+IDENTIFICAÇÃO:
+– Cliente: ${dadosOnboarding?.nome_empresa || '[NOME_EMPRESA]'}
+– Segmento: ${dadosOnboarding?.segmento_atuacao || '[SEGMENTO]'}
+– Peça: Reel/Vídeo 15-30"
+– Título: [Título específico do vídeo]
+– Duração: 15-30 segundos
+– Plataforma: Instagram/TikTok/LinkedIn
+– Tom: ${dadosOnboarding?.tom_voz || 'profissional'}
 
-Roteiro
-– Abertura (Imagem de apoio): [Descreva as primeiras imagens ou cenas - primeiros 3s]
-– Locução em OFF: [Texto narrado correspondente à abertura]
-– Desenvolvimento (Imagem de apoio): [Descreva cenas intermediárias - pessoas, ações, lugares]
-– Locução em OFF: [Texto narrado que acompanha essas cenas]
-– Falas / Depoimentos (se houver): [Insira falas de personagens, entrevistas ou discursos]
-– Encerramento (Imagem de apoio): [Descrição da tela final, logos, slogans]
-– Locução em OFF final: [Frase curta de impacto para fechamento]
+OBJETIVO E ESTRATÉGIA:
+– Objetivo: [baseado no componente H.E.S.E.C]
+– Tom de voz: ${dadosOnboarding?.tom_voz || 'profissional'}
+– Persona-alvo: [persona específica do cronograma]
 
-Gere um JSON com array de posts seguindo esta estrutura:
+ROTEIRO DETALHADO:
+🎬 ABERTURA (0-3s) - HOOK OBRIGATÓRIO:
+[Imagem/Cena]: Descrição visual específica
+[Locução OFF]: Frase de impacto para capturar atenção
+
+🎬 DESENVOLVIMENTO (3-20s):
+[Imagem/Cena]: Desenvolvimento do conteúdo
+[Locução OFF]: Desenvolvimento da narrativa
+[Elementos visuais]: Textos, gráficos, transições
+
+🎬 ENCERRAMENTO (20-30s):
+[Imagem/Cena]: Call-to-action visual
+[Locução OFF]: Frase de fechamento + CTA
+[Elementos finais]: Logo, contato, hashtag principal
+
+Gere um JSON com array de ${quantidadePosts} posts seguindo esta estrutura EXATA:
 [
   {
-    "titulo": "Título engajador específico para o tipo",
+    "titulo": "Título específico e engajador",
     "headline": "Headline chamativa de máximo 60 caracteres",
-    "conteudo_completo": "Para POST/CARROSSEL: legenda completa de 150-300 palavras | Para VÍDEO: roteiro técnico completo seguindo formato acima",
+    "conteudo_completo": "SE VIDEO: roteiro técnico completo seguindo formato acima | SE POST/CARROSSEL: legenda elaborada 150-300 palavras integrando dados do onboarding",
     "legenda": "Resumo da legenda para compatibilidade",
     "objetivo_postagem": "engajamento|vendas|educacao|relacionamento|branding",
     "tipo_criativo": "post|carrossel|video",
     "formato_postagem": "post|reel|story", 
     "componente_hesec": "componente_do_framework_selecionado",
     "persona_alvo": "nome_da_persona_especifica",
-    "call_to_action": "CTA específico para o tipo de criativo",
+    "call_to_action": "CTA específico baseado no objetivo",
     "hashtags": ["#tag1", "#tag2", "#tag3", "#tag4", "#tag5"],
-    "contexto_estrategico": "Estratégia específica para este tipo de criativo",
-    "especificacoes_tecnicas": {
-      "carrossel": {
-        "num_slides": 3-5,
-        "slide_1": "Título/Hook",
-        "slides_meio": ["Conteúdo sequencial"],
-        "slide_final": "Recap/CTA"
-      },
-      "video": {
-        "duracao": "15-30s",
-        "hook_inicial": "Primeiros 3s",
-        "roteiro": "Script detalhado",
-        "elementos_visuais": ["Sugestões visuais"],
-        "som_sugerido": "Música/efeito trending"
-      },
-      "post": {
-        "estilo_visual": "clean|bold|minimalista|vibrante",
-        "elementos": ["Texto", "Imagem", "Logo"],
-        "cores_sugeridas": ["#cor1", "#cor2"]
-      }
-    }
+    "contexto_estrategico": "Estratégia baseada no onboarding e análise SWOT"
   }
 ]
 
-REGRAS IMPORTANTES:
-- Distribua os tipos conforme especificado: ${distribuicaoTipos.join(', ')}
-- Para carrossel, detalhe cada slide no campo especificacoes_tecnicas
-- Para vídeo, inclua roteiro completo com timing no campo conteudo_completo
-- Para post, foque em impacto visual e mensagem direta
-- Mantenha consistência com a persona e framework selecionados
-- SEMPRE inclua tanto headline quanto conteudo_completo para cada post
+REGRAS CRÍTICAS:
+✅ Distribua EXATAMENTE conforme especificado: ${distribuicaoTipos.join(', ')}
+✅ Para vídeos: "conteudo_completo" = ROTEIRO TÉCNICO COMPLETO
+✅ Para posts/carrossel: "conteudo_completo" = LEGENDA ELABORADA com dados do onboarding
+✅ SEMPRE preencha "headline" E "conteudo_completo" para TODOS os posts
+✅ Use tom de voz da empresa: ${dadosOnboarding?.tom_voz || 'profissional'}
+✅ Integre valores: ${dadosOnboarding?.valores_principais || 'valores corporativos'}
+✅ Aborde dores: ${dadosOnboarding?.dores_problemas || 'dores do público'}
 
 IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicional.`;
 

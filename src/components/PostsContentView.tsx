@@ -247,11 +247,33 @@ export function PostsContentView({ planejamentoId, isTemp = false }: PostsConten
                       </div>
                     )}
 
-                    {/* Conteúdo Completo */}
+                    {/* Conteúdo Completo Diferenciado */}
                     {post.conteudo_completo && (
                       <div>
-                        <Label className="text-sm font-medium text-muted-foreground">Conteúdo</Label>
-                        <p className="text-sm mt-1 leading-relaxed whitespace-pre-wrap">{post.conteudo_completo}</p>
+                        <Label className="text-sm font-medium text-muted-foreground">
+                          {post.tipo_criativo === 'video' ? 'Roteiro Técnico' : 'Conteúdo Completo'}
+                        </Label>
+                        <div className={`text-sm mt-1 leading-relaxed ${
+                          post.tipo_criativo === 'video' 
+                            ? 'bg-red-50 dark:bg-red-900/10 p-3 rounded-lg border border-red-200 dark:border-red-800' 
+                            : 'bg-muted/30 p-3 rounded-lg border'
+                        }`}>
+                          {post.tipo_criativo === 'video' ? (
+                            <div className="space-y-2">
+                              <div className="flex items-center gap-2 mb-2">
+                                <div className="p-1 rounded-full bg-red-100 dark:bg-red-900/20">
+                                  <MessageSquare className="h-3 w-3 text-red-600 dark:text-red-400" />
+                                </div>
+                                <span className="text-xs font-medium text-red-700 dark:text-red-300">
+                                  ROTEIRO PARA VÍDEO
+                                </span>
+                              </div>
+                              <pre className="whitespace-pre-wrap text-xs font-mono">{post.conteudo_completo}</pre>
+                            </div>
+                          ) : (
+                            <p className="whitespace-pre-wrap">{post.conteudo_completo}</p>
+                          )}
+                        </div>
                       </div>
                     )}
 
