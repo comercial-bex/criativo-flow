@@ -18,7 +18,7 @@ import {
   Building,
   MapPin,
   Calendar,
-  Eye
+  Edit
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -232,10 +232,10 @@ const Clientes = () => {
                   variant="outline" 
                   size="sm" 
                   className="flex-1"
-                  onClick={() => navigate(`/clientes/${cliente.id}/perfil`)}
+                  onClick={() => navigate(`/clientes/${cliente.id}/editar`)}
                 >
-                  <Eye className="h-4 w-4 mr-2" />
-                  Ver Perfil
+                  <Edit className="h-4 w-4 mr-2" />
+                  Editar
                 </Button>
                 <Button size="sm" className="flex-1">
                   Contatar
