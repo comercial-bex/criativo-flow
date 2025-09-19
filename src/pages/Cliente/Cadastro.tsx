@@ -232,6 +232,20 @@ export default function ClienteCadastro() {
     return cliente.assinatura_id && validAssinaturaIds.includes(cliente.assinatura_id);
   };
 
+  const hasOnboardingData = async (clienteId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('cliente_onboarding')
+        .select('id')
+        .eq('cliente_id', clienteId)
+        .maybeSingle();
+      
+      return !error && data;
+    } catch (error) {
+      return false;
+    }
+  };
+
 
   return (
     <div className="space-y-6">
@@ -398,9 +412,10 @@ export default function ClienteCadastro() {
                     onClick={() => handleOnboarding(cliente)}
                     disabled={!clienteTemAssinatura(cliente)}
                     title={!clienteTemAssinatura(cliente) ? 'Cliente precisa ter uma assinatura (90º, 180º ou 360º) para acessar o onboarding' : ''}
+                    className={clienteTemAssinatura(cliente) ? "bg-primary hover:bg-primary/90" : ""}
                   >
                     <Users className="h-4 w-4 mr-1" />
-                    Onboarding
+                    {clienteTemAssinatura(cliente) ? "Onboarding" : "Sem Plano"}
                   </Button>
                   <Button
                     variant="outline"

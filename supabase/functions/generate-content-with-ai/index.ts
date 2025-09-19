@@ -1,88 +1,67 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
-
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
 serve(async (req) => {
-  console.log('🚀 Edge function iniciada, método:', req.method);
-  
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    console.log('✅ Respondendo a OPTIONS request');
     return new Response(null, { headers: corsHeaders });
   }
 
-  if (!openAIApiKey) {
-    console.error('❌ API key do OpenAI não configurada');
-    return new Response(JSON.stringify({ error: 'OpenAI API key not configured' }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
-  }
-
   try {
-    const { prompt } = await req.json();
-    console.log('📝 Prompt recebido. Tamanho:', prompt.length);
+    const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
     
-    if (!prompt) {
-      console.error('❌ Prompt não fornecido no body');
-      return new Response(JSON.stringify({ error: 'Prompt is required' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+    if (!openAIApiKey) {
+      throw new Error('OPENAI_API_KEY not configured');
     }
 
-    // Detectar se é um prompt para JSON ou texto simples
-    const isJsonRequest = prompt.includes('JSON') || prompt.includes('json') || prompt.includes('Formate a resposta em JSON');
+    const { prompt, type = 'text' } = await req.json();
+    
+    if (!prompt) {
+      throw new Error('Prompt is required');
+    }
 
-    const systemContent = isJsonRequest 
-      ? `Você é um especialista em marketing digital e criação de conteúdo para redes sociais seguindo o formato de calendário editorial específico. 
+    console.log('Generating content with OpenAI for type:', type);
 
-FORMATO OBRIGATÓRIO DO CALENDÁRIO EDITORIAL:
-Cada post deve seguir exatamente esta estrutura:
-POST | DIA DA SEMANA | CRIATIVO | OBJETIVO | LEGENDA
+    // Determinar se deve retornar JSON estruturado
+    const shouldReturnJSON = type === 'json' || prompt.toLowerCase().includes('calendario editorial') || prompt.toLowerCase().includes('posts');
 
-ESTRUTURA JSON OBRIGATÓRIA PARA CADA POST:
+    // System message baseado no tipo
+    let systemMessage = 'Você é um assistente especializado em marketing digital e criação de conteúdo.';
+    
+    if (shouldReturnJSON) {
+      systemMessage = `Você é um especialista em marketing digital. Sempre responda APENAS com JSON válido seguindo esta estrutura exata para calendário editorial:
+
 {
-  "post": "Número sequencial (01, 02, 03, etc.)",
-  "dia_semana": "Nome do dia da semana (SEGUNDA, TERÇA, QUARTA, etc.)",
-  "criativo": "IMAGEM|VÍDEO|CARROSEL",
-  "objetivo": "Descrição clara e específica do objetivo do post (2-3 linhas)",
-  "legenda": "Legenda completa com texto envolvente e hashtags relevantes no final",
-  "titulo": "Título engajador para identificação interna",
-  "headline": "Manchete principal atrativa (obrigatório)",
-  "conteudo_completo": "Para VÍDEOS: roteiro técnico detalhado com cenas e direções. Para POSTS/CARROSSEL: conteúdo elaborado baseado no onboarding (obrigatório)",
-  "objetivo_postagem": "Engajamento|Vendas|Educação|Relacionamento|Branding",
-  "tipo_criativo": "post|carrossel|stories",
-  "formato_postagem": "post|reel|story",
-  "componente_hesec": "Framework aplicado",
-  "persona_alvo": "Persona específica",
-  "call_to_action": "CTA específico",
-  "hashtags": ["#tag1", "#tag2", "#tag3", "#tag4", "#tag5"],
-  "contexto_estrategico": "Justificativa estratégica"
+  "posts": [
+    {
+      "titulo": "Título do post",
+      "objetivo_postagem": "Objetivo específico",
+      "tipo_criativo": "Imagem/Vídeo/Carrossel",
+      "formato_postagem": "Post/Stories/Reels",
+      "data_postagem": "YYYY-MM-DD",
+      "legenda": "Caption elaborada do post",
+      "headline": "Manchete/Título chamativo",
+      "conteudo_completo": "Para vídeo: roteiro técnico detalhado. Para post/carrossel: conteúdo elaborado",
+      "hashtags": ["#tag1", "#tag2"],
+      "call_to_action": "CTA específico",
+      "persona_alvo": "Persona específica",
+      "componente_hesec": "Hook/Engajamento/Social Proof/Call to Action"
+    }
+  ]
 }
 
-DIRETRIZES OBRIGATÓRIAS:
-1. CRIATIVO deve ser: IMAGEM, VÍDEO ou CARROSEL (exatamente como especificado)
-2. DIA_SEMANA deve ser o nome completo: SEGUNDA, TERÇA, QUARTA, QUINTA, SEXTA, SÁBADO, DOMINGO
-3. POST deve ser numeração sequencial: 01, 02, 03, etc.
-4. OBJETIVO deve ser uma descrição clara e específica (2-3 linhas) do que o post pretende alcançar
-5. LEGENDA deve incluir texto envolvente + hashtags estratégicas no final
-6. HEADLINE deve sempre ser preenchida com uma manchete atrativa
-7. CONTEUDO_COMPLETO - CRÍTICO:
-   • Para tipo_criativo "video" ou "stories": gere ROTEIRO TÉCNICO detalhado com descrição de cenas, ações, música, etc.
-   • Para tipo_criativo "post" ou "carrossel": gere CONTEÚDO ELABORADO baseado nos dados de onboarding, com informações aprofundadas sobre a empresa/produto
-8. Varie os tipos de CRIATIVO ao longo do calendário (IMAGEM, VÍDEO, CARROSEL)
-9. Distribua os posts ao longo dos dias da semana de forma estratégica
-10. NUNCA deixe "headline" ou "conteudo_completo" vazios - são obrigatórios!
-
-IMPORTANTE: Responda APENAS com o JSON válido em formato de array, sem comentários ou texto adicional.`
-      : 'Você é um especialista em marketing digital e criação de personas. Responda em texto corrido, bem formatado e de fácil leitura.';
+IMPORTANTE: 
+- Para VÍDEOS/REELS: "conteudo_completo" deve ser um roteiro técnico detalhado
+- Para POSTS/CARROSSEL: "conteudo_completo" deve ser o conteúdo elaborado da postagem
+- Sempre inclua todos os campos obrigatórios
+- Use datas sequenciais começando pela data fornecida
+- NÃO adicione comentários ou texto fora do JSON`;
+    }
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -91,133 +70,103 @@ IMPORTANTE: Responda APENAS com o JSON válido em formato de array, sem comentá
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'gpt-4.1-2025-04-14',
         messages: [
-          { 
-            role: 'system', 
-            content: systemContent
-          },
+          { role: 'system', content: systemMessage },
           { role: 'user', content: prompt }
         ],
-        temperature: 0.7,
-        max_tokens: 4000,
+        max_completion_tokens: shouldReturnJSON ? 4000 : 2000
       }),
     });
 
     if (!response.ok) {
-      throw new Error(`OpenAI API Error: ${response.status}`);
+      const errorText = await response.text();
+      console.error('OpenAI API error:', errorText);
+      throw new Error(`OpenAI API error: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();
     const generatedText = data.choices[0].message.content;
-    
-    console.log('Conteúdo gerado:', generatedText);
 
-    // Se é request JSON, tentar parsear
-    if (isJsonRequest) {
-      let parsedContent;
+    console.log('Generated content length:', generatedText.length);
+
+    if (shouldReturnJSON) {
       try {
-        // Limpar o texto antes de parsear
-        let cleanText = generatedText.trim();
-        
-        // Remover markdown code blocks se existirem
-        if (cleanText.startsWith('```json')) {
-          cleanText = cleanText.replace(/^```json\s*/, '').replace(/\s*```$/, '');
-        } else if (cleanText.startsWith('```')) {
-          cleanText = cleanText.replace(/^```\s*/, '').replace(/\s*```$/, '');
+        // Limpar possível markdown do JSON
+        let cleanJson = generatedText.trim();
+        if (cleanJson.startsWith('```json')) {
+          cleanJson = cleanJson.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+        } else if (cleanJson.startsWith('```')) {
+          cleanJson = cleanJson.replace(/^```\s*/, '').replace(/\s*```$/, '');
         }
+
+        // Tentar parsear o JSON
+        const parsedContent = JSON.parse(cleanJson);
         
-        parsedContent = JSON.parse(cleanText);
-        
-        // Verificar se é array direto ou objeto com propriedades
-        if (Array.isArray(parsedContent)) {
-          console.log('Resposta é array direto:', parsedContent.length, 'posts');
-          return new Response(JSON.stringify(parsedContent), {
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          });
-        } else if (parsedContent.posts || parsedContent.reels || parsedContent.carrosseis) {
-          // Converter estrutura antiga para array
-          let allPosts = [];
-          if (parsedContent.posts) allPosts = allPosts.concat(parsedContent.posts);
-          if (parsedContent.reels) allPosts = allPosts.concat(parsedContent.reels);
-          if (parsedContent.carrosseis) allPosts = allPosts.concat(parsedContent.carrosseis);
-          
-          console.log('Convertendo estrutura para array:', allPosts.length, 'posts');
-          return new Response(JSON.stringify(allPosts), {
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          });
-        } else {
-          throw new Error('Estrutura JSON inválida');
+        // Validar estrutura
+        if (!parsedContent.posts || !Array.isArray(parsedContent.posts)) {
+          throw new Error('Invalid JSON structure: missing posts array');
         }
-        
+
+        console.log('Successfully parsed JSON with', parsedContent.posts.length, 'posts');
+
+        return new Response(JSON.stringify({ 
+          generatedText: JSON.stringify(parsedContent),
+          type: 'json',
+          success: true
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+
       } catch (parseError) {
-        console.error('Erro ao parsear JSON:', parseError);
-        console.log('Texto original:', generatedText.substring(0, 500) + '...');
+        console.error('JSON parsing error:', parseError);
+        console.log('Raw response:', generatedText);
         
-        // Tentar recuperar JSON truncado procurando por um array válido
-        try {
-          const match = generatedText.match(/\[[\s\S]*\]/);
-          if (match) {
-            const recoveredJson = JSON.parse(match[0]);
-            console.log('JSON recuperado com sucesso:', recoveredJson.length, 'posts');
-            return new Response(JSON.stringify(recoveredJson), {
-              headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            });
-          }
-        } catch (recoveryError) {
-          console.log('Falha na recuperação do JSON, usando fallback');
-        }
-        
-        // Fallback: criar array de posts padrão
-        const fallbackPosts = [
-          {
-            titulo: "Post Inspiracional",
-            headline: "🌟 Transforme seus sonhos em realidade!",
-            conteudo_completo: "Este post inspiracional foi criado para conectar emocionalmente com nossa persona principal, utilizando linguagem motivacional que ressoa com os valores da marca. O conteúdo explora a importância da criatividade no dia a dia, relacionando-se diretamente com os objetivos de fortalecimento da marca e engajamento do público. A abordagem visual deve transmitir energia positiva e aspiração, elementos fundamentais para gerar identificação e compartilhamento espontâneo.",
-            legenda: "🌟 Inspire-se todos os dias! A criatividade é o que move nossos sonhos para a realidade. Cada projeto que criamos é uma extensão dos nossos valores e paixões. Aqui na nossa empresa, acreditamos que a inspiração deve ser constante e acessível a todos. Venha descobrir como podemos ajudar você a transformar suas ideias em realidade! ✨ #inspiracao #criatividade #sonhos #realizacao #motivacao",
-            objetivo_postagem: "Engajamento",
-            tipo_criativo: "post",
-            formato_postagem: "post",
-            componente_hesec: "HESEC: Emoções",
-            persona_alvo: "Maria da Costura",
-            call_to_action: "Venha conhecer nossa loja e se inspire!",
-            hashtags: ["#inspiracao", "#criatividade", "#sonhos", "#realizacao", "#motivacao"],
-            contexto_estrategico: "Este post visa conectar emocionalmente com Maria da Costura, mostrando que valorizamos a criatividade e os sonhos dos nossos clientes, criando um vínculo emocional que fortalece a relação com a marca."
-          },
-          {
-            titulo: "Roteiro de Vídeo Tutorial", 
-            headline: "🎬 Aprenda o passo a passo completo!",
-            conteudo_completo: "ROTEIRO TÉCNICO PARA VÍDEO:\n\nCENA 1 (0-3s): Close-up das mãos segurando diferentes tipos de tecido\n- Música: instrumental suave de fundo\n- Narração: 'A escolha do tecido é fundamental...'\n\nCENA 2 (3-8s): Plano médio mostrando a textura dos tecidos\n- Câmera: movimento lento da esquerda para direita\n- Iluminação: luz natural difusa\n- Narração: 'Cada material tem sua personalidade...'\n\nCENA 3 (8-12s): Montagem rápida de projetos finalizados\n- Transição: corte seco entre takes\n- Música: intensifica o ritmo\n- Texto na tela: 'Resultados incríveis'\n\nCENA 4 (12-15s): Logo da empresa com CTA\n- Fundo: tecido em movimento\n- Narração: 'Venha descobrir sua criação ideal!'",
-            legenda: "💡 Dica do dia: Escolher o tecido certo faz toda a diferença no seu projeto! A qualidade dos materiais que você utiliza impacta diretamente no resultado final da sua criação. Por isso, sempre recomendamos tecidos que combinam durabilidade, beleza e facilidade de trabalho. Nossa equipe está sempre pronta para ajudar você a escolher os melhores materiais para cada tipo de projeto. Venha conhecer nossa seleção exclusiva e deixe sua criação ainda mais especial! 🧵",
-            objetivo_postagem: "Educação",
-            tipo_criativo: "video",
-            formato_postagem: "reel",
-            componente_hesec: "HESEC: Educação",
-            persona_alvo: "Lucas Designer",
-            call_to_action: "Solicite orientação da nossa equipe especializada!",
-            hashtags: ["#dicas", "#tecidos", "#qualidade", "#projetos", "#conhecimento"],
-            contexto_estrategico: "Este vídeo educativo posiciona nossa marca como especialista técnico, fornecendo valor real para Lucas Designer e demonstrando nossa expertise, o que gera confiança e autoridade no mercado."
-          }
-        ];
-        
-        console.log('Usando fallback com', fallbackPosts.length, 'posts');
-        return new Response(JSON.stringify(fallbackPosts), {
+        // Fallback: tentar recuperar ou retornar estrutura padrão
+        const fallbackContent = {
+          posts: [
+            {
+              titulo: "Post de exemplo",
+              objetivo_postagem: "Engajar audiência",
+              tipo_criativo: "Imagem",
+              formato_postagem: "Post",
+              data_postagem: new Date().toISOString().split('T')[0],
+              legenda: "Conteúdo gerado automaticamente",
+              headline: "Título chamativo",
+              conteudo_completo: "Conteúdo elaborado da postagem",
+              hashtags: ["#marketing", "#digital"],
+              call_to_action: "Saiba mais",
+              persona_alvo: "Público geral",
+              componente_hesec: "Engajamento"
+            }
+          ]
+        };
+
+        return new Response(JSON.stringify({ 
+          generatedText: JSON.stringify(fallbackContent),
+          type: 'json',
+          success: true,
+          warning: 'Used fallback content due to parsing error'
+        }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
-    } else {
-      // Para requests de texto simples, retornar o texto diretamente
-      return new Response(JSON.stringify(generatedText), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
     }
 
-  } catch (error) {
-    console.error('Erro na geração de conteúdo:', error);
-    
+    // Retorno para texto simples
     return new Response(JSON.stringify({ 
-      error: 'Erro ao gerar conteúdo', 
-      details: error.message 
+      generatedText,
+      type: 'text',
+      success: true
+    }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+
+  } catch (error) {
+    console.error('Error in generate-content-with-ai function:', error);
+    return new Response(JSON.stringify({ 
+      error: error.message,
+      success: false
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
