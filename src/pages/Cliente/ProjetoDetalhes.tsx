@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, Calendar, DollarSign, User } from "lucide-react";
 import { SectionHeader } from "@/components/SectionHeader";
 import { PlanejamentoProjeto } from "@/components/PlanejamentoProjeto";
+import { ProjetoEspecialistas } from "@/components/ProjetoEspecialistas";
 import { supabase } from "@/integrations/supabase/client";
 
 
@@ -217,6 +218,9 @@ export default function ProjetoDetalhes() {
             )}
           </CardContent>
         </Card>
+
+        {/* Especialistas do Projeto */}
+        <ProjetoEspecialistas projetoId={projeto.id} />
 
         {/* Planejamento do Projeto */}
         <PlanejamentoProjeto

@@ -1401,15 +1401,40 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
       console.log('🎯 Posts extraídos:', postsData.length);
       console.log('🔍 Posts recebidos da IA:', postsData.map(p => ({ titulo: p.titulo, tipo: p.tipo_criativo })));
 
-      // Mapear posts com cronograma e tipo específico
+      // Buscar especialistas do projeto para atribuição
+      const { data: projetoEspecialistas, error: especialistasError } = await supabase
+        .from('projeto_especialistas')
+        .select('*')
+        .eq('projeto_id', cliente?.projeto_id || '');
+
+      console.log('📋 Especialistas do projeto:', projetoEspecialistas);
+
+      // Mapear posts com cronograma, tipo específico e responsável
       const postsComCronograma = postsData.map((post, index) => {
         const dataPostagem = cronograma[index]?.toISOString().split('T')[0] || new Date().toISOString().split('T')[0];
         const tipoEsperado = distribuicaoTipos[index];
+        const tipoCreativo = post.tipo_criativo || tipoEsperado;
+        
+        // Atribuir responsável baseado no tipo criativo
+        let responsavelId = null;
+        if (projetoEspecialistas) {
+          if (tipoCreativo === 'video') {
+            // Para vídeos, procurar filmmaker ou videomaker
+            const filmmaker = projetoEspecialistas.find(pe => 
+              pe.especialidade === 'filmmaker' || pe.especialidade === 'videomaker'
+            );
+            responsavelId = filmmaker?.especialista_id || null;
+          } else if (tipoCreativo === 'carrossel' || tipoCreativo === 'post') {
+            // Para carrossel e post, procurar designer
+            const designer = projetoEspecialistas.find(pe => pe.especialidade === 'design');
+            responsavelId = designer?.especialista_id || null;
+          }
+        }
         
         return {
           ...post,
           data_postagem: dataPostagem,
-          tipo_criativo: post.tipo_criativo || tipoEsperado, // Garantir que use o tipo correto
+          tipo_criativo: tipoCreativo,
           anexo_url: null, // Geração de imagem será implementada separadamente
           id: `temp-${Date.now()}-${index}`,
           status: 'temporario' as const,
@@ -1417,7 +1442,8 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
           especificacoes_tecnicas: post.especificacoes_tecnicas || {},
           // Garantir que headline e conteudo_completo estejam sempre presentes
           headline: post.headline || post.titulo,
-          conteudo_completo: post.conteudo_completo || post.legenda || ''
+          conteudo_completo: post.conteudo_completo || post.legenda || '',
+          responsavel_id: responsavelId
         };
       });
 

@@ -28,6 +28,7 @@ import ClienteEditar from "./pages/Cliente/Editar";
 import Configuracoes from "./pages/Configuracoes";
 import Relatorios from "./pages/Relatorios";
 import Planos from "./pages/Planos";
+import { Especialistas } from "./pages/Especialistas";
 
 import AprovacaoJob from "./pages/AprovacaoJob";
 
@@ -205,6 +206,13 @@ const App = () => (
               <ProtectedRoute>
                 <Layout>
                   <Planos />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/especialistas" element={
+              <ProtectedRoute>
+                <Layout>
+                  <Especialistas />
                 </Layout>
               </ProtectedRoute>
             } />

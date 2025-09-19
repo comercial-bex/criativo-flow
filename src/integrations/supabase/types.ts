@@ -537,6 +537,7 @@ export type Database = {
           objetivo_postagem: string
           persona_alvo: string | null
           planejamento_id: string
+          responsavel_id: string | null
           tipo_criativo: string
           titulo: string
           updated_at: string
@@ -555,6 +556,7 @@ export type Database = {
           objetivo_postagem: string
           persona_alvo?: string | null
           planejamento_id: string
+          responsavel_id?: string | null
           tipo_criativo: string
           titulo: string
           updated_at?: string
@@ -573,6 +575,7 @@ export type Database = {
           objetivo_postagem?: string
           persona_alvo?: string | null
           planejamento_id?: string
+          responsavel_id?: string | null
           tipo_criativo?: string
           titulo?: string
           updated_at?: string
@@ -594,6 +597,7 @@ export type Database = {
           objetivo_postagem: string
           persona_alvo: string | null
           planejamento_id: string
+          responsavel_id: string | null
           tipo_criativo: string
           titulo: string
           updated_at: string
@@ -612,6 +616,7 @@ export type Database = {
           objetivo_postagem: string
           persona_alvo?: string | null
           planejamento_id: string
+          responsavel_id?: string | null
           tipo_criativo: string
           titulo: string
           updated_at?: string
@@ -630,6 +635,7 @@ export type Database = {
           objetivo_postagem?: string
           persona_alvo?: string | null
           planejamento_id?: string
+          responsavel_id?: string | null
           tipo_criativo?: string
           titulo?: string
           updated_at?: string
@@ -649,6 +655,9 @@ export type Database = {
           avatar_url: string | null
           created_at: string | null
           email: string
+          especialidade:
+            | Database["public"]["Enums"]["especialidade_type"]
+            | null
           id: string
           nome: string
           telefone: string | null
@@ -658,6 +667,9 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string | null
           email: string
+          especialidade?:
+            | Database["public"]["Enums"]["especialidade_type"]
+            | null
           id: string
           nome: string
           telefone?: string | null
@@ -667,9 +679,42 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string | null
           email?: string
+          especialidade?:
+            | Database["public"]["Enums"]["especialidade_type"]
+            | null
           id?: string
           nome?: string
           telefone?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      projeto_especialistas: {
+        Row: {
+          created_at: string | null
+          especialidade: Database["public"]["Enums"]["especialidade_type"]
+          especialista_id: string
+          id: string
+          is_gerente: boolean | null
+          projeto_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          especialidade: Database["public"]["Enums"]["especialidade_type"]
+          especialista_id: string
+          id?: string
+          is_gerente?: boolean | null
+          projeto_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          especialidade?: Database["public"]["Enums"]["especialidade_type"]
+          especialista_id?: string
+          id?: string
+          is_gerente?: boolean | null
+          projeto_id?: string
           updated_at?: string | null
         }
         Relationships: []
@@ -925,6 +970,12 @@ export type Database = {
       }
     }
     Enums: {
+      especialidade_type:
+        | "videomaker"
+        | "filmmaker"
+        | "design"
+        | "copywriter"
+        | "gerente_redes_sociais"
       priority_type: "baixa" | "media" | "alta" | "urgente"
       status_padrao:
         | "rascunho"
@@ -1073,6 +1124,13 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      especialidade_type: [
+        "videomaker",
+        "filmmaker",
+        "design",
+        "copywriter",
+        "gerente_redes_sociais",
+      ],
       priority_type: ["baixa", "media", "alta", "urgente"],
       status_padrao: [
         "rascunho",
