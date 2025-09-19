@@ -242,6 +242,7 @@ export default function PlanejamentoVisual() {
               <PlanoEditorial 
                 planejamento={planejamento}
                 clienteId={clienteId!}
+                projetoId={projetoId!}
                 posts={posts}
                 setPosts={setPosts}
                 onPreviewPost={(post) => {

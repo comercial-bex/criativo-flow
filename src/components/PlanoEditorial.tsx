@@ -28,6 +28,7 @@ interface PlanoEditorialProps {
     cliente_id: string;
   };
   clienteId: string;
+  projetoId: string;
   posts: any[];
   setPosts: (posts: any[]) => void;
   onPreviewPost: (post: any) => void;
@@ -253,6 +254,7 @@ const DroppableDay: React.FC<DroppableDayProps> = ({ day, dateStr, dayPosts, onP
 const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
   planejamento,
   clienteId,
+  projetoId,
   posts,
   setPosts,
   onPreviewPost
@@ -521,6 +523,67 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
         setPostsGerados(posts);
         toast.info(`${posts.length} posts recuperados do cache local`);
       }
+    }
+  };
+
+  // Buscar especialista por especialidade
+  const buscarEspecialistaPorEspecialidade = async (especialidade: 'design' | 'videomaker' | 'filmmaker' | 'gerente_redes_sociais'): Promise<string | null> => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('especialidade', especialidade)
+        .maybeSingle();
+      
+      if (error) {
+        console.error('Erro ao buscar especialista:', error);
+        return null;
+      }
+      
+      return data?.id || null;
+    } catch (error) {
+      console.error('Erro ao buscar especialista:', error);
+      return null;
+    }
+  };
+
+  // Criar tarefa automática
+  const criarTarefaAutomatica = async (post: any, especialistaId: string, projetoId: string) => {
+    try {
+      const tipoTarefa = post.tipo_criativo === 'video' || post.tipo_criativo === 'stories' ? 'conteudo' : 'design';
+      const tituloTarefa = `Criar conteúdo: ${post.titulo}`;
+      
+      const descricaoTarefa = `
+**Tipo:** ${post.tipo_criativo}
+**Objetivo:** ${post.objetivo_postagem}
+**Persona:** ${post.persona_alvo || 'Não definida'}
+**Data de postagem:** ${post.data_postagem}
+**CTA:** ${post.call_to_action || 'Não definido'}
+      `.trim();
+
+      const { data, error } = await supabase
+        .from('tarefas')
+        .insert({
+          projeto_id: projetoId,
+          titulo: tituloTarefa,
+          descricao: descricaoTarefa,
+          tipo: tipoTarefa,
+          prioridade: 'media',
+          status: 'backlog',
+          responsavel_id: especialistaId
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Erro ao criar tarefa automática:', error);
+        return null;
+      }
+
+      return data;
+    } catch (error) {
+      console.error('Erro ao criar tarefa automática:', error);
+      return null;
     }
   };
 
@@ -1594,12 +1657,50 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
 
       console.log('✅ Posts inseridos com sucesso:', data);
 
+      // NOVO: Criar tarefas automáticas para cada post
+      console.log('🔄 Criando tarefas automáticas...');
+      const tarefasCriadas = [];
+
+      for (const post of data) {
+        try {
+          // Determinar especialidade baseada no tipo criativo
+          let especialidade: 'design' | 'videomaker' | 'filmmaker' | 'gerente_redes_sociais' | null = null;
+          if (post.tipo_criativo === 'video' || post.tipo_criativo === 'stories') {
+            especialidade = 'videomaker';
+          } else if (post.tipo_criativo === 'post' || post.tipo_criativo === 'carrossel') {
+            especialidade = 'design';
+          }
+
+          if (especialidade) {
+            const especialistaId = await buscarEspecialistaPorEspecialidade(especialidade);
+            
+            if (especialistaId) {
+              const tarefaCriada = await criarTarefaAutomatica(post, especialistaId, projetoId);
+              if (tarefaCriada) {
+                tarefasCriadas.push(tarefaCriada);
+                console.log(`✅ Tarefa criada para ${post.titulo} - ${especialidade}`);
+              }
+            } else {
+              console.warn(`⚠️ Especialista não encontrado para: ${especialidade}`);
+            }
+          }
+        } catch (error) {
+          console.error(`❌ Erro ao processar post ${post.titulo}:`, error);
+        }
+      }
+
+      console.log(`🎯 Total de tarefas criadas: ${tarefasCriadas.length}`);
+
       // Atualizar estado local com os novos posts
       const updatedPosts = [...posts.filter(p => !novosPost.find(np => np.data_postagem === p.data_postagem)), ...data];
       setPosts(updatedPosts);
       console.log('🔄 Estado local atualizado com', updatedPosts.length, 'posts');
       
-      toast.success(`${data.length} posts aprovados e salvos no calendário!`);
+      if (tarefasCriadas.length > 0) {
+        toast.success(`${data.length} posts salvos + ${tarefasCriadas.length} tarefas criadas automaticamente!`);
+      } else {
+        toast.success(`${data.length} posts salvos no calendário!`);
+      }
     } catch (error) {
       console.error('💥 Erro crítico ao salvar posts:', error);
       toast.error('Erro ao salvar posts no calendário');
