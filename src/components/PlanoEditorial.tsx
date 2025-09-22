@@ -1659,10 +1659,14 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
 
       // NOVO: Criar tarefas automáticas para cada post
       console.log('🔄 Criando tarefas automáticas...');
+      console.log('📊 projetoId disponível:', projetoId);
+      console.log('📊 Posts para processar:', data?.length || 0);
       const tarefasCriadas = [];
 
       for (const post of data) {
         try {
+          console.log(`🔍 Processando post: ${post.titulo} - Tipo: ${post.tipo_criativo}`);
+          
           // Determinar especialidade baseada no tipo criativo
           let especialidade: 'design' | 'videomaker' | 'filmmaker' | 'gerente_redes_sociais' | null = null;
           if (post.tipo_criativo === 'video' || post.tipo_criativo === 'stories') {
@@ -1671,18 +1675,27 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
             especialidade = 'design';
           }
 
+          console.log(`🎯 Especialidade determinada: ${especialidade}`);
+
           if (especialidade) {
+            console.log(`🔍 Buscando especialista para: ${especialidade}`);
             const especialistaId = await buscarEspecialistaPorEspecialidade(especialidade);
+            console.log(`🔍 Especialista encontrado: ${especialistaId}`);
             
             if (especialistaId) {
+              console.log(`🔄 Criando tarefa para especialista ${especialistaId}`);
               const tarefaCriada = await criarTarefaAutomatica(post, especialistaId, projetoId);
               if (tarefaCriada) {
                 tarefasCriadas.push(tarefaCriada);
-                console.log(`✅ Tarefa criada para ${post.titulo} - ${especialidade}`);
+                console.log(`✅ Tarefa criada para ${post.titulo} - ${especialidade} - ID: ${tarefaCriada.id}`);
+              } else {
+                console.error(`❌ Falha ao criar tarefa para ${post.titulo}`);
               }
             } else {
               console.warn(`⚠️ Especialista não encontrado para: ${especialidade}`);
             }
+          } else {
+            console.warn(`⚠️ Especialidade não definida para tipo_criativo: ${post.tipo_criativo}`);
           }
         } catch (error) {
           console.error(`❌ Erro ao processar post ${post.titulo}:`, error);
