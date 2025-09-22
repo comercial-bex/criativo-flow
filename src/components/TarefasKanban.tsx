@@ -55,11 +55,41 @@ interface Profile {
 }
 
 const colunas = [
-  { id: 'backlog', titulo: 'Backlog', cor: 'bg-gray-100 dark:bg-gray-800' },
-  { id: 'to_do', titulo: 'Para Fazer', cor: 'bg-blue-100 dark:bg-blue-900' },
-  { id: 'em_andamento', titulo: 'Em Andamento', cor: 'bg-yellow-100 dark:bg-yellow-900' },
-  { id: 'em_revisao', titulo: 'Em Revisão', cor: 'bg-purple-100 dark:bg-purple-900' },
-  { id: 'concluida', titulo: 'Concluída', cor: 'bg-green-100 dark:bg-green-900' },
+  { 
+    id: 'backlog', 
+    titulo: 'Backlog', 
+    cor: 'bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900',
+    icon: '📋',
+    accentColor: 'border-gray-300 dark:border-gray-600'
+  },
+  { 
+    id: 'to_do', 
+    titulo: 'Para Fazer', 
+    cor: 'bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30',
+    icon: '📝',
+    accentColor: 'border-blue-300 dark:border-blue-600'
+  },
+  { 
+    id: 'em_andamento', 
+    titulo: 'Em Andamento', 
+    cor: 'bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-yellow-900/30 dark:to-yellow-800/30',
+    icon: '⚡',
+    accentColor: 'border-yellow-300 dark:border-yellow-600'
+  },
+  { 
+    id: 'em_revisao', 
+    titulo: 'Em Revisão', 
+    cor: 'bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/30 dark:to-purple-800/30',
+    icon: '👀',
+    accentColor: 'border-purple-300 dark:border-purple-600'
+  },
+  { 
+    id: 'concluida', 
+    titulo: 'Concluída', 
+    cor: 'bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/30 dark:to-green-800/30',
+    icon: '✅',
+    accentColor: 'border-green-300 dark:border-green-600'
+  },
 ];
 
 interface TarefaCardProps {
@@ -81,21 +111,54 @@ function TarefaCard({ tarefa, profiles, onUpdateStatus }: TarefaCardProps) {
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    opacity: isDragging ? 0.5 : 1,
+    opacity: isDragging ? 0.8 : 1,
   };
 
   const responsavel = profiles.find(p => p.id === tarefa.responsavel_id);
 
-  const getPrioridadeColor = (prioridade?: string) => {
+  const getPrioridadeConfig = (prioridade?: string) => {
     switch (prioridade) {
-      case 'alta': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
-      case 'media': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
-      case 'baixa': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
-      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200';
+      case 'alta': 
+        return { 
+          color: 'bg-red-500', 
+          badge: 'bg-red-50 text-red-700 border-red-200 dark:bg-red-950 dark:text-red-300',
+          icon: '🔴'
+        };
+      case 'media': 
+        return { 
+          color: 'bg-yellow-500', 
+          badge: 'bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-950 dark:text-yellow-300',
+          icon: '🟡'
+        };
+      case 'baixa': 
+        return { 
+          color: 'bg-green-500', 
+          badge: 'bg-green-50 text-green-700 border-green-200 dark:bg-green-950 dark:text-green-300',
+          icon: '🟢'
+        };
+      default: 
+        return { 
+          color: 'bg-gray-400', 
+          badge: 'bg-gray-50 text-gray-700 border-gray-200 dark:bg-gray-800 dark:text-gray-300',
+          icon: '⚪'
+        };
+    }
+  };
+
+  const getTipoConfig = (tipo?: string) => {
+    switch (tipo) {
+      case 'design': return { icon: '🎨', color: 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950 dark:text-purple-300' };
+      case 'conteudo': return { icon: '📝', color: 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950 dark:text-blue-300' };
+      case 'aprovacao': return { icon: '✅', color: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300' };
+      case 'publicacao': return { icon: '📢', color: 'bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-950 dark:text-orange-300' };
+      case 'revisao': return { icon: '🔍', color: 'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-950 dark:text-indigo-300' };
+      default: return { icon: '📋', color: 'bg-gray-50 text-gray-700 border-gray-200 dark:bg-gray-800 dark:text-gray-300' };
     }
   };
 
   const isAtrasada = tarefa.data_prazo && new Date(tarefa.data_prazo) < new Date() && tarefa.status !== 'concluida';
+  const prioridadeConfig = getPrioridadeConfig(tarefa.prioridade);
+  const tipoConfig = getTipoConfig(tarefa.tipo);
 
   return (
     <div
@@ -103,49 +166,91 @@ function TarefaCard({ tarefa, profiles, onUpdateStatus }: TarefaCardProps) {
       style={style}
       {...attributes}
       {...listeners}
-      className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 cursor-grab active:cursor-grabbing hover:shadow-md transition-shadow"
+      className={`
+        relative bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 
+        cursor-grab active:cursor-grabbing 
+        hover:shadow-lg hover:scale-[1.02] hover:border-primary/30
+        transition-all duration-200 ease-in-out
+        group
+        ${isDragging ? 'rotate-2 scale-105 shadow-2xl ring-2 ring-primary/20' : ''}
+        ${isAtrasada ? 'ring-2 ring-red-200 dark:ring-red-800' : ''}
+      `}
     >
-      <div className="space-y-3">
-        <div className="flex items-start justify-between">
-          <h4 className="font-medium text-sm line-clamp-2">{tarefa.titulo}</h4>
-          {isAtrasada && (
-            <AlertTriangle className="h-4 w-4 text-red-500 flex-shrink-0" />
+      {/* Barra de prioridade */}
+      <div className={`absolute top-0 left-0 right-0 h-1 rounded-t-xl ${prioridadeConfig.color}`} />
+      
+      <div className="p-4 space-y-3">
+        {/* Header com título e menu */}
+        <div className="flex items-start justify-between gap-2">
+          <h4 className="font-semibold text-sm text-gray-900 dark:text-gray-100 line-clamp-2 leading-snug">
+            {tarefa.titulo}
+          </h4>
+          <div className="flex items-center gap-1">
+            {isAtrasada && (
+              <div className="p-1 bg-red-100 dark:bg-red-900 rounded-full">
+                <AlertTriangle className="h-3 w-3 text-red-600 dark:text-red-400" />
+              </div>
+            )}
+            <button className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded">
+              <MoreHorizontal className="h-3 w-3 text-gray-400" />
+            </button>
+          </div>
+        </div>
+
+        {/* Descrição */}
+        {tarefa.descricao && (
+          <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2 leading-relaxed">
+            {tarefa.descricao}
+          </p>
+        )}
+
+        {/* Tags */}
+        <div className="flex items-center gap-1.5 flex-wrap">
+          {tarefa.prioridade && (
+            <Badge className={`text-xs px-2 py-0.5 font-medium border ${prioridadeConfig.badge}`}>
+              {prioridadeConfig.icon} {tarefa.prioridade}
+            </Badge>
+          )}
+          {tarefa.tipo && (
+            <Badge className={`text-xs px-2 py-0.5 font-medium border ${tipoConfig.color}`}>
+              {tipoConfig.icon} {tarefa.tipo}
+            </Badge>
           )}
         </div>
 
-        {tarefa.descricao && (
-          <p className="text-xs text-muted-foreground line-clamp-2">{tarefa.descricao}</p>
-        )}
-
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            {tarefa.prioridade && (
-              <Badge className={`text-xs px-2 py-1 ${getPrioridadeColor(tarefa.prioridade)}`}>
-                {tarefa.prioridade}
-              </Badge>
-            )}
-            {tarefa.tipo && (
-              <Badge variant="outline" className="text-xs px-2 py-1">
-                {tarefa.tipo}
-              </Badge>
-            )}
+        {/* Footer com data e responsável */}
+        <div className="flex items-center justify-between pt-2 border-t border-gray-100 dark:border-gray-800">
+          <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
+            <div className="flex items-center gap-1 bg-gray-50 dark:bg-gray-800 px-2 py-1 rounded-md">
+              <Calendar className="h-3 w-3" />
+              <span className="font-medium">
+                {tarefa.data_prazo ? format(new Date(tarefa.data_prazo), 'dd/MM', { locale: ptBR }) : 'Sem prazo'}
+              </span>
+            </div>
           </div>
-        </div>
-
-        <div className="flex items-center justify-between text-xs text-muted-foreground">
-          <div className="flex items-center gap-1">
-            <Calendar className="h-3 w-3" />
-            {tarefa.data_prazo ? format(new Date(tarefa.data_prazo), 'dd/MM', { locale: ptBR }) : 'Sem prazo'}
-          </div>
+          
           {responsavel && (
-            <div className="flex items-center gap-1">
-              <Avatar className="h-5 w-5">
+            <div className="flex items-center gap-1.5">
+              <Avatar className="h-6 w-6 ring-2 ring-white dark:ring-gray-900 shadow-sm">
                 <AvatarImage src={responsavel.avatar_url} />
-                <AvatarFallback className="text-xs">{responsavel.nome.charAt(0)}</AvatarFallback>
+                <AvatarFallback className="text-xs font-semibold bg-gradient-to-br from-primary to-primary/80 text-white">
+                  {responsavel.nome.charAt(0).toUpperCase()}
+                </AvatarFallback>
               </Avatar>
+              <span className="text-xs font-medium text-gray-600 dark:text-gray-300 max-w-[60px] truncate">
+                {responsavel.nome.split(' ')[0]}
+              </span>
             </div>
           )}
         </div>
+
+        {/* Tempo estimado */}
+        {tarefa.tempo_estimado && (
+          <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 px-2 py-1 rounded-md w-fit">
+            <Clock className="h-3 w-3" />
+            <span>{tarefa.tempo_estimado}h</span>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -474,16 +579,22 @@ export function TarefasKanban({ planejamento, clienteId, projetoId }: TarefasKan
                 items={tarefasColuna.map(t => t.id)} 
                 strategy={verticalListSortingStrategy}
               >
-                <Card className={`${coluna.cor} border-2 border-dashed`}>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-sm font-medium flex items-center justify-between">
-                      {coluna.titulo}
-                      <Badge variant="secondary" className="ml-2">
+                <Card className={`${coluna.cor} border-2 ${coluna.accentColor} rounded-xl shadow-sm hover:shadow-md transition-all duration-200`}>
+                  <CardHeader className="pb-3 border-b border-gray-200/50 dark:border-gray-700/50">
+                    <CardTitle className="text-sm font-semibold flex items-center justify-between text-gray-800 dark:text-gray-200">
+                      <div className="flex items-center gap-2">
+                        <span className="text-base">{coluna.icon}</span>
+                        {coluna.titulo}
+                      </div>
+                      <Badge 
+                        variant="secondary" 
+                        className="bg-white/80 dark:bg-gray-800/80 text-gray-700 dark:text-gray-300 font-bold px-2 py-1 shadow-sm"
+                      >
                         {tarefasColuna.length}
                       </Badge>
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-3 min-h-[400px]">
+                  <CardContent className="space-y-3 min-h-[500px] p-4">
                     {tarefasColuna.map((tarefa) => (
                       <TarefaCard
                         key={tarefa.id}
