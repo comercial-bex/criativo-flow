@@ -798,6 +798,7 @@ export type Database = {
       }
       tarefas: {
         Row: {
+          anexos: Json | null
           created_at: string | null
           data_prazo: string | null
           descricao: string | null
@@ -813,6 +814,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          anexos?: Json | null
           created_at?: string | null
           data_prazo?: string | null
           descricao?: string | null
@@ -828,6 +830,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          anexos?: Json | null
           created_at?: string | null
           data_prazo?: string | null
           descricao?: string | null

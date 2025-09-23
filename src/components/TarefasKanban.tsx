@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Label } from "@/components/ui/label";
 import { 
   Plus, 
   Clock, 
@@ -16,7 +17,11 @@ import {
   Circle,
   MoreHorizontal,
   Calendar,
-  User
+  User,
+  Edit,
+  Paperclip,
+  Download,
+  X
 } from "lucide-react";
 import { DndContext, DragEndEvent, closestCorners } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
@@ -46,6 +51,7 @@ interface Tarefa {
   tipo?: string;
   tempo_estimado?: number;
   created_at?: string;
+  anexos?: any;
 }
 
 interface Profile {
@@ -96,9 +102,10 @@ interface TarefaCardProps {
   tarefa: Tarefa;
   profiles: Profile[];
   onUpdateStatus: (tarefaId: string, novoStatus: string) => void;
+  onEditTarefa: (tarefa: Tarefa) => void;
 }
 
-function TarefaCard({ tarefa, profiles, onUpdateStatus }: TarefaCardProps) {
+function TarefaCard({ tarefa, profiles, onUpdateStatus, onEditTarefa }: TarefaCardProps) {
   const {
     attributes,
     listeners,
@@ -191,8 +198,11 @@ function TarefaCard({ tarefa, profiles, onUpdateStatus }: TarefaCardProps) {
                 <AlertTriangle className="h-3 w-3 text-red-600 dark:text-red-400" />
               </div>
             )}
-            <button className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded">
-              <MoreHorizontal className="h-3 w-3 text-gray-400" />
+            <button 
+              onClick={() => onEditTarefa(tarefa)}
+              className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded"
+            >
+              <Edit className="h-3 w-3 text-gray-400" />
             </button>
           </div>
         </div>
@@ -244,13 +254,21 @@ function TarefaCard({ tarefa, profiles, onUpdateStatus }: TarefaCardProps) {
           )}
         </div>
 
-        {/* Tempo estimado */}
-        {tarefa.tempo_estimado && (
-          <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 px-2 py-1 rounded-md w-fit">
-            <Clock className="h-3 w-3" />
-            <span>{tarefa.tempo_estimado}h</span>
-          </div>
-        )}
+        {/* Tempo estimado e anexos */}
+        <div className="flex items-center gap-2">
+          {tarefa.tempo_estimado && (
+            <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 px-2 py-1 rounded-md w-fit">
+              <Clock className="h-3 w-3" />
+              <span>{tarefa.tempo_estimado}h</span>
+            </div>
+          )}
+          {tarefa.anexos && tarefa.anexos.length > 0 && (
+            <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 px-2 py-1 rounded-md w-fit">
+              <Paperclip className="h-3 w-3" />
+              <span>{tarefa.anexos.length}</span>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -261,6 +279,8 @@ export function TarefasKanban({ planejamento, clienteId, projetoId }: TarefasKan
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
+  const [editingTarefa, setEditingTarefa] = useState<Tarefa | null>(null);
+  const [uploadingFile, setUploadingFile] = useState(false);
   const [novaTarefa, setNovaTarefa] = useState({
     titulo: '',
     descricao: '',
@@ -410,6 +430,133 @@ export function TarefasKanban({ planejamento, clienteId, projetoId }: TarefasKan
 
   const getTarefasPorStatus = (status: string) => {
     return tarefas.filter(tarefa => tarefa.status === status);
+  };
+
+  const updateTarefa = async (tarefaId: string, updates: any) => {
+    try {
+      const { error } = await supabase
+        .from('tarefas')
+        .update(updates)
+        .eq('id', tarefaId);
+
+      if (error) throw error;
+
+      setTarefas(prev => prev.map(tarefa => 
+        tarefa.id === tarefaId ? { ...tarefa, ...updates } : tarefa
+      ));
+
+      toast({
+        title: "Sucesso",
+        description: "Tarefa atualizada com sucesso!",
+      });
+    } catch (error) {
+      console.error('Erro ao atualizar tarefa:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao atualizar tarefa.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const uploadFile = async (file: File, tarefaId: string) => {
+    try {
+      setUploadingFile(true);
+      
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${tarefaId}/${Date.now()}.${fileExt}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('task-attachments')
+        .upload(fileName, file);
+
+      if (uploadError) throw uploadError;
+
+      // Buscar tarefa atual para pegar anexos existentes
+      const tarefa = tarefas.find(t => t.id === tarefaId);
+      const anexosAtuais = tarefa?.anexos || [];
+      
+      const novoAnexo = {
+        name: file.name,
+        path: fileName,
+        size: file.size,
+        type: file.type,
+        uploadedAt: new Date().toISOString()
+      };
+
+      const novosAnexos = [...anexosAtuais, novoAnexo];
+
+      await updateTarefa(tarefaId, { anexos: novosAnexos });
+
+      toast({
+        title: "Sucesso",
+        description: "Arquivo anexado com sucesso!",
+      });
+    } catch (error) {
+      console.error('Erro ao fazer upload:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao anexar arquivo.",
+        variant: "destructive",
+      });
+    } finally {
+      setUploadingFile(false);
+    }
+  };
+
+  const removeAttachment = async (tarefaId: string, attachmentPath: string) => {
+    try {
+      // Remove do storage
+      const { error: storageError } = await supabase.storage
+        .from('task-attachments')
+        .remove([attachmentPath]);
+
+      if (storageError) throw storageError;
+
+      // Remove da lista de anexos
+      const tarefa = tarefas.find(t => t.id === tarefaId);
+      const anexosAtualizados = (tarefa?.anexos || []).filter((anexo: any) => anexo.path !== attachmentPath);
+
+      await updateTarefa(tarefaId, { anexos: anexosAtualizados });
+
+      toast({
+        title: "Sucesso",
+        description: "Anexo removido com sucesso!",
+      });
+    } catch (error) {
+      console.error('Erro ao remover anexo:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao remover anexo.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const downloadAttachment = async (attachmentPath: string, fileName: string) => {
+    try {
+      const { data, error } = await supabase.storage
+        .from('task-attachments')
+        .download(attachmentPath);
+
+      if (error) throw error;
+
+      const url = URL.createObjectURL(data);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Erro ao baixar anexo:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao baixar anexo.",
+        variant: "destructive",
+      });
+    }
   };
 
   if (loading) {
@@ -565,6 +712,204 @@ export function TarefasKanban({ planejamento, clienteId, projetoId }: TarefasKan
             </div>
           </DialogContent>
         </Dialog>
+
+        {/* Modal de Edição */}
+        <Dialog open={!!editingTarefa} onOpenChange={() => setEditingTarefa(null)}>
+          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Editar Tarefa</DialogTitle>
+            </DialogHeader>
+            {editingTarefa && (
+              <div className="space-y-6">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Título</Label>
+                    <Input
+                      value={editingTarefa.titulo}
+                      onChange={(e) => setEditingTarefa({...editingTarefa, titulo: e.target.value})}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Tipo</Label>
+                    <Select 
+                      value={editingTarefa.tipo || 'conteudo'} 
+                      onValueChange={(value) => setEditingTarefa({...editingTarefa, tipo: value})}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="conteudo">📝 Criação de Conteúdo</SelectItem>
+                        <SelectItem value="design">🎨 Design</SelectItem>
+                        <SelectItem value="aprovacao">✅ Aprovação</SelectItem>
+                        <SelectItem value="publicacao">📢 Publicação</SelectItem>
+                        <SelectItem value="revisao">🔍 Revisão</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Descrição</Label>
+                  <Textarea
+                    value={editingTarefa.descricao || ''}
+                    onChange={(e) => setEditingTarefa({...editingTarefa, descricao: e.target.value})}
+                    className="resize-none"
+                    rows={3}
+                  />
+                </div>
+
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label>Prioridade</Label>
+                    <Select 
+                      value={editingTarefa.prioridade || 'media'} 
+                      onValueChange={(value) => setEditingTarefa({...editingTarefa, prioridade: value})}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="baixa">🟢 Baixa</SelectItem>
+                        <SelectItem value="media">🟡 Média</SelectItem>
+                        <SelectItem value="alta">🔴 Alta</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Data Limite</Label>
+                    <Input
+                      type="date"
+                      value={editingTarefa.data_prazo || ''}
+                      onChange={(e) => setEditingTarefa({...editingTarefa, data_prazo: e.target.value})}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Tempo Estimado (h)</Label>
+                    <Input
+                      type="number"
+                      value={editingTarefa.tempo_estimado || ''}
+                      onChange={(e) => setEditingTarefa({...editingTarefa, tempo_estimado: parseInt(e.target.value) || 0})}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Responsável</Label>
+                  <Select 
+                    value={editingTarefa.responsavel_id || ''} 
+                    onValueChange={(value) => setEditingTarefa({...editingTarefa, responsavel_id: value})}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecionar responsável" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {profiles.map((profile) => (
+                        <SelectItem key={profile.id} value={profile.id}>
+                          <div className="flex items-center gap-2">
+                            <Avatar className="h-6 w-6">
+                              <AvatarImage src={profile.avatar_url} />
+                              <AvatarFallback className="text-xs">{profile.nome.charAt(0)}</AvatarFallback>
+                            </Avatar>
+                            {profile.nome}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Seção de Anexos */}
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <Label>Anexos</Label>
+                    <div className="flex gap-2">
+                      <input
+                        type="file"
+                        id="file-upload"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file && editingTarefa) {
+                            uploadFile(file, editingTarefa.id);
+                          }
+                        }}
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        disabled={uploadingFile}
+                        onClick={() => document.getElementById('file-upload')?.click()}
+                      >
+                        <Paperclip className="h-4 w-4 mr-2" />
+                        {uploadingFile ? 'Enviando...' : 'Anexar Arquivo'}
+                      </Button>
+                    </div>
+                  </div>
+
+                  {editingTarefa.anexos && editingTarefa.anexos.length > 0 && (
+                    <div className="space-y-2">
+                      {editingTarefa.anexos.map((anexo: any, index: number) => (
+                        <div key={index} className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                          <div className="flex items-center gap-2">
+                            <Paperclip className="h-4 w-4 text-muted-foreground" />
+                            <span className="text-sm font-medium">{anexo.name}</span>
+                            <span className="text-xs text-muted-foreground">
+                              ({(anexo.size / 1024).toFixed(1)} KB)
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => downloadAttachment(anexo.path, anexo.name)}
+                            >
+                              <Download className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => removeAttachment(editingTarefa.id, anexo.path)}
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex justify-end gap-2">
+                  <Button variant="outline" onClick={() => setEditingTarefa(null)}>
+                    Cancelar
+                  </Button>
+                  <Button 
+                    onClick={() => {
+                      updateTarefa(editingTarefa.id, {
+                        titulo: editingTarefa.titulo,
+                        descricao: editingTarefa.descricao,
+                        tipo: editingTarefa.tipo,
+                        prioridade: editingTarefa.prioridade,
+                        data_prazo: editingTarefa.data_prazo,
+                        responsavel_id: editingTarefa.responsavel_id,
+                        tempo_estimado: editingTarefa.tempo_estimado
+                      });
+                      setEditingTarefa(null);
+                    }}
+                  >
+                    Salvar Alterações
+                  </Button>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
 
       {/* Kanban Board */}
@@ -601,6 +946,7 @@ export function TarefasKanban({ planejamento, clienteId, projetoId }: TarefasKan
                         tarefa={tarefa}
                         profiles={profiles}
                         onUpdateStatus={updateTarefaStatus}
+                        onEditTarefa={setEditingTarefa}
                       />
                     ))}
                   </CardContent>
