@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, ChevronLeft, ChevronRight, Loader2, Users, Target, BookOpen, Sparkles, Save, Eye, Undo2, AlertTriangle, X, CheckCircle } from "lucide-react";
 import { Label } from "@/components/ui/label";
@@ -311,6 +312,11 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
   const [showPostViewModal, setShowPostViewModal] = useState(false);
   const [selectedPostForView, setSelectedPostForView] = useState<any>(null);
   const [gerandoConteudo, setGerandoConteudo] = useState(false);
+  const [datasComemorativas, setDatasComemorativas] = useState<string[]>([]);
+  const [datasPersonalizadas, setDatasPersonalizadas] = useState<Array<{nome: string, data: string}>>([]);
+  const [objetivosTrafego, setObjetivosTrafego] = useState<string[]>([]);
+  const [publicoAlvo, setPublicoAlvo] = useState('');
+  const [orcamentoSugerido, setOrcamentoSugerido] = useState('');
 
   // Initialize drag & drop hook
   const {
@@ -2099,6 +2105,84 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
            (conteudo.especialistas_selecionados?.length || 0) > 0;
   };
 
+  const gerarSugestoesDatasComIA = async () => {
+    setGerandoConteudo(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-content-with-ai', {
+        body: {
+          prompt: `Com base no segmento "${dadosOnboarding?.segmento_atuacao || 'não especificado'}" e produtos/serviços "${dadosOnboarding?.produtos_servicos || 'não especificado'}", sugira 8-10 datas comemorativas relevantes para campanhas de marketing. Retorne apenas uma lista JSON com formato: [{"nome": "Nome da Data", "data": "DD/MM", "relevancia": "motivo da relevância"}]`,
+          client_id: clienteId,
+          context: 'datas_comemorativas'
+        }
+      });
+
+      if (error) throw error;
+      
+      if (data?.content) {
+        try {
+          const sugestoes = JSON.parse(data.content);
+          if (Array.isArray(sugestoes)) {
+            toast.success(`${sugestoes.length} datas comemorativas sugeridas pela IA`);
+          }
+        } catch (parseError) {
+          console.error('Erro ao parsear sugestões:', parseError);
+          toast.info('Sugestões geradas, verifique o conteúdo');
+        }
+      }
+    } catch (error) {
+      console.error('Erro ao gerar sugestões:', error);
+      toast.error('Erro ao gerar sugestões de datas comemorativas');
+    } finally {
+      setGerandoConteudo(false);
+    }
+  };
+
+  const gerarEstrategiaTrafegoPago = async () => {
+    setGerandoConteudo(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-content-with-ai', {
+        body: {
+          prompt: `Com base no perfil do cliente (segmento: "${dadosOnboarding?.segmento_atuacao || 'não especificado'}", produtos/serviços: "${dadosOnboarding?.produtos_servicos || 'não especificado'}", público-alvo: "${dadosOnboarding?.publico_alvo || 'não especificado'}") e assinatura que inclui ${clienteAssinatura?.anuncios_facebook ? 'Facebook Ads' : ''} ${clienteAssinatura?.anuncios_google ? 'Google Ads' : ''}, crie uma estratégia completa de tráfego pago incluindo: 1) Objetivos recomendados, 2) Segmentação de público, 3) Tipos de campanha, 4) Orçamento sugerido, 5) KPIs para acompanhar`,
+          client_id: clienteId,
+          context: 'estrategia_trafego_pago'
+        }
+      });
+
+      if (error) throw error;
+      
+      if (data?.content) {
+        toast.success('Estratégia de tráfego pago gerada com sucesso');
+      }
+    } catch (error) {
+      console.error('Erro ao gerar estratégia:', error);
+      toast.error('Erro ao gerar estratégia de tráfego pago');
+    } finally {
+      setGerandoConteudo(false);
+    }
+  };
+
+  const toggleDataComemorativa = (data: string) => {
+    setDatasComemorativas(prev => 
+      prev.includes(data) 
+        ? prev.filter(d => d !== data)
+        : [...prev, data]
+    );
+  };
+
+  const toggleObjetivoTrafego = (objetivo: string) => {
+    setObjetivosTrafego(prev => 
+      prev.includes(objetivo) 
+        ? prev.filter(o => o !== objetivo)
+        : [...prev, objetivo]
+    );
+  };
+
+  const adicionarDataPersonalizada = (nome: string, data: string) => {
+    if (nome && data) {
+      setDatasPersonalizadas(prev => [...prev, { nome, data }]);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center p-8">
@@ -2111,7 +2195,7 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
   return (
     <div className="space-y-6">
       <Tabs defaultValue="missao" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="missao" className="flex items-center gap-2">
             <Target className="h-4 w-4" />
             Missão
@@ -2120,9 +2204,17 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
             <Users className="h-4 w-4" />
             Posicionamento
           </TabsTrigger>
+          <TabsTrigger value="datas-comemorativas" className="flex items-center gap-2">
+            <Calendar className="h-4 w-4" />
+            Datas
+          </TabsTrigger>
+          <TabsTrigger value="trafego-pago" className="flex items-center gap-2">
+            <Sparkles className="h-4 w-4" />
+            Tráfego
+          </TabsTrigger>
           <TabsTrigger value="conteudo" className="flex items-center gap-2">
             <BookOpen className="h-4 w-4" />
-            Conteúdo Editorial
+            Editorial
           </TabsTrigger>
         </TabsList>
 
@@ -2428,6 +2520,212 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
             </CardContent>
           </Card>
 
+        </TabsContent>
+
+        <TabsContent value="datas-comemorativas" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Calendar className="h-5 w-5" />
+                Datas Comemorativas
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid gap-4">
+                <div>
+                  <Label>Datas Estratégicas para o Segmento</Label>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    Selecione datas comemorativas relevantes para o segmento do cliente
+                  </p>
+                  
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    {[
+                      { nome: "Dia da Mulher", data: "08/03" },
+                      { nome: "Dia do Trabalhador", data: "01/05" },
+                      { nome: "Dia das Mães", data: "2º dom/mai" },
+                      { nome: "Dia dos Namorados", data: "12/06" },
+                      { nome: "Festa Junina", data: "Jun" },
+                      { nome: "Dia dos Pais", data: "2º dom/ago" },
+                      { nome: "Dia do Cliente", data: "15/09" },
+                      { nome: "Dia das Crianças", data: "12/10" },
+                      { nome: "Black Friday", data: "Nov" },
+                      { nome: "Natal", data: "25/12" },
+                      { nome: "Ano Novo", data: "31/12" },
+                      { nome: "Carnaval", data: "Fev/Mar" }
+                    ].map((data) => (
+                      <div key={data.nome} className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-muted/50">
+                        <input 
+                          type="checkbox" 
+                          id={data.nome} 
+                          className="rounded" 
+                          checked={datasComemorativas.includes(data.nome)}
+                          onChange={() => toggleDataComemorativa(data.nome)}
+                        />
+                        <div className="flex-1">
+                          <label htmlFor={data.nome} className="text-sm font-medium cursor-pointer">
+                            {data.nome}
+                          </label>
+                          <p className="text-xs text-muted-foreground">{data.data}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <Label>Datas Personalizadas</Label>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    Adicione datas específicas importantes para o cliente
+                  </p>
+                  <div className="space-y-2">
+                    <div className="flex gap-2">
+                      <Input placeholder="Nome da data comemorativa" />
+                      <Input type="date" />
+                      <Button variant="outline" size="sm">
+                        Adicionar
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <Button 
+                    className="gap-2"
+                    disabled={gerandoConteudo}
+                    onClick={gerarSugestoesDatasComIA}
+                  >
+                    {gerandoConteudo ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Sparkles className="h-4 w-4" />
+                    )}
+                    Gerar Sugestões com IA
+                  </Button>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    A IA analisará o segmento do cliente e sugerirá datas comemorativas relevantes
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="trafego-pago" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Sparkles className="h-5 w-5" />
+                Estratégias de Tráfego Pago
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {clienteAssinatura && (
+                <div className="p-4 bg-muted/50 rounded-lg border">
+                  <h4 className="font-medium mb-2">Recursos Disponíveis na Assinatura</h4>
+                  <div className="flex flex-wrap gap-2">
+                    <Badge variant={clienteAssinatura?.anuncios_facebook ? "default" : "secondary"}>
+                      Facebook Ads: {clienteAssinatura?.anuncios_facebook ? "Incluído" : "Não incluído"}
+                    </Badge>
+                    <Badge variant={clienteAssinatura?.anuncios_google ? "default" : "secondary"}>
+                      Google Ads: {clienteAssinatura?.anuncios_google ? "Incluído" : "Não incluído"}
+                    </Badge>
+                  </div>
+                </div>
+              )}
+
+              <div className="grid gap-4">
+                <div>
+                  <Label>Objetivos de Campanha</Label>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    Selecione os principais objetivos para as campanhas de tráfego pago
+                  </p>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {[
+                      { nome: "Reconhecimento de Marca", descricao: "Aumentar visibilidade e awareness" },
+                      { nome: "Tráfego para Website", descricao: "Direcionar visitantes qualificados" },
+                      { nome: "Geração de Leads", descricao: "Capturar contatos interessados" },
+                      { nome: "Conversões de Venda", descricao: "Aumentar vendas diretas" },
+                      { nome: "Engajamento", descricao: "Interações nas redes sociais" },
+                      { nome: "Remarketing", descricao: "Reconectar com visitantes anteriores" }
+                    ].map((objetivo) => (
+                      <div key={objetivo.nome} className="flex items-start space-x-3 p-3 border rounded-lg hover:bg-muted/50">
+                        <input 
+                          type="checkbox" 
+                          id={objetivo.nome} 
+                          className="rounded mt-1" 
+                          checked={objetivosTrafego.includes(objetivo.nome)}
+                          onChange={() => toggleObjetivoTrafego(objetivo.nome)}
+                        />
+                        <div className="flex-1">
+                          <label htmlFor={objetivo.nome} className="text-sm font-medium cursor-pointer">
+                            {objetivo.nome}
+                          </label>
+                          <p className="text-xs text-muted-foreground">{objetivo.descricao}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <Label>Públicos-Alvo</Label>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    Configure os públicos para segmentação das campanhas
+                  </p>
+                  <Textarea 
+                    placeholder="Descreva os públicos-alvo prioritários para as campanhas (idade, localização, interesses, comportamentos...)"
+                    rows={4}
+                    value={publicoAlvo}
+                    onChange={(e) => setPublicoAlvo(e.target.value)}
+                  />
+                </div>
+
+                <div>
+                  <Label>Orçamento Sugerido</Label>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    Investimento mensal recomendado para tráfego pago
+                  </p>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    {[
+                      { valor: "R$ 500", tipo: "Básico" },
+                      { valor: "R$ 1.000", tipo: "Intermediário" },
+                      { valor: "R$ 2.500", tipo: "Avançado" },
+                      { valor: "Custom", tipo: "Personalizado" }
+                    ].map((orcamento) => (
+                      <Button 
+                        key={orcamento.tipo}
+                        variant={orcamentoSugerido === orcamento.valor ? "default" : "outline"} 
+                        className="h-auto py-3 flex flex-col gap-1"
+                        onClick={() => setOrcamentoSugerido(orcamento.valor)}
+                      >
+                        <span className="font-medium">{orcamento.valor}</span>
+                        <span className="text-xs text-muted-foreground">{orcamento.tipo}</span>
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <Button 
+                    className="gap-2"
+                    disabled={gerandoConteudo}
+                    onClick={gerarEstrategiaTrafegoPago}
+                  >
+                    {gerandoConteudo ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Sparkles className="h-4 w-4" />
+                    )}
+                    Gerar Estratégia com IA
+                  </Button>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    A IA criará uma estratégia personalizada baseada no perfil e objetivos do cliente
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="conteudo" className="space-y-4">

@@ -274,44 +274,18 @@ export default function GRSPlanejamentoDetalhes() {
         </TabsContent>
 
         <TabsContent value="plano-editorial" className="space-y-6">
-          <div className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Posts do Planejamento</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid gap-4">
-                  {posts.map((post) => (
-                    <div key={post.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
-                      <div>
-                        <h4 className="font-medium">{post.titulo}</h4>
-                        <p className="text-sm text-muted-foreground">
-                          {new Date(post.data_postagem).toLocaleDateString('pt-BR')} • {post.tipo_criativo}
-                        </p>
-                      </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setSelectedPost(post)}
-                      >
-                        Visualizar
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-                
-                {posts.length === 0 && (
-                  <div className="text-center py-8">
-                    <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold mb-2">Nenhum post encontrado</h3>
-                    <p className="text-muted-foreground">
-                      Este planejamento ainda não possui posts criados.
-                    </p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
+          <PlanoEditorial
+            planejamento={{
+              id: planejamento.id,
+              titulo: planejamento.titulo,
+              cliente_id: planejamento.clientes.id
+            }}
+            clienteId={planejamento.clientes.id}
+            projetoId={planejamento.id}
+            posts={posts}
+            setPosts={setPosts}
+            onPreviewPost={setSelectedPost}
+          />
         </TabsContent>
       </Tabs>
 
