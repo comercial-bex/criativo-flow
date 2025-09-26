@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Calendar as CalendarIcon, Plus, Eye, Edit, Trash } from "lucide-react";
+import { Calendar as CalendarIcon, Eye, Edit, Trash } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -14,8 +14,9 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
-import { format, isSameDay, startOfDay, endOfDay } from "date-fns";
+import { format, isSameDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { NewEventModal } from "@/components/NewEventModal";
 
 interface Event {
   id: string;
@@ -133,10 +134,7 @@ export function CalendarModal() {
               <h3 className="text-lg font-semibold">
                 {selectedDate ? format(selectedDate, "d 'de' MMMM", { locale: ptBR }) : 'Selecione uma data'}
               </h3>
-              <Button size="sm" variant="outline">
-                <Plus className="h-4 w-4 mr-2" />
-                Novo Evento
-              </Button>
+              <NewEventModal onEventCreated={fetchEvents} />
             </div>
             
             <ScrollArea className="h-80">
