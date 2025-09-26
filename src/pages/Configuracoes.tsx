@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { SectionHeader } from '@/components/SectionHeader';
 import { FeatureCard } from '@/components/FeatureCard';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -25,6 +26,7 @@ import { useToast } from '@/hooks/use-toast';
 
 const Configuracoes = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [notifications, setNotifications] = useState({
     email: true,
     push: false,
@@ -332,7 +334,7 @@ const Configuracoes = () => {
                   Clique no botão abaixo para acessar o painel de configuração de funções
                 </p>
                 <Button 
-                  onClick={() => window.open('/configuracoes/funcoes', '_blank')}
+                  onClick={() => navigate('/configuracoes/funcoes')}
                   className="w-full"
                 >
                   Abrir Configurações de Funções
