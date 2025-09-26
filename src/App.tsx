@@ -32,6 +32,7 @@ import { Especialistas } from "./pages/Especialistas";
 import GRSDashboard from "./pages/GRS/Dashboard";
 import GRSPlanejamentos from "./pages/GRS/Planejamentos";
 import GRSPlanejamentoDetalhes from "./pages/GRS/PlanejamentoDetalhes";
+import GRSPlanejamentoEstrategico from "./pages/GRS/PlanejamentoEstrategico";
 import GRSCalendarioEditorial from "./pages/GRS/CalendarioEditorial";
 import GRSAprovacoes from "./pages/GRS/Aprovacoes";
 import AtendimentoInbox from "./pages/Atendimento/Inbox";
@@ -189,6 +190,12 @@ function App() {
                 <Route path="/grs/planejamento/:id" element={
                   <ProtectedRoute requiredRole="grs">
                     <Layout><GRSPlanejamentoDetalhes /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/grs/planejamento-estrategico" element={
+                  <ProtectedRoute requiredRole="grs">
+                    <Layout><GRSPlanejamentoEstrategico /></Layout>
                   </ProtectedRoute>
                 } />
                 

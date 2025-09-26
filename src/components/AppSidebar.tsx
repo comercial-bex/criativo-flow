@@ -175,6 +175,7 @@ export function AppSidebar() {
   const grsItems = [
     { title: "Dashboard GRS", url: "/grs/dashboard", icon: BarChart3 },
     { title: "Planejamentos", url: "/grs/planejamentos", icon: FileText },
+    { title: "Planejamento Estratégico", url: "/grs/planejamento-estrategico", icon: Target },
     { title: "Calendário Editorial", url: "/grs/calendario", icon: Calendar },
     { title: "Aprovações", url: "/grs/aprovacoes", icon: ClipboardCheck },
   ];
