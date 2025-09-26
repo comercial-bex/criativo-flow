@@ -21,6 +21,7 @@ import Clientes from "./pages/Clientes";
 import Financeiro from "./pages/Financeiro";
 import CategoriasFinanceiras from "./pages/CategoriasFinanceiras";
 import Configuracoes from "./pages/Configuracoes";
+import Funcoes from "./pages/Configuracoes/Funcoes";
 import Relatorios from "./pages/Relatorios";
 import Planos from "./pages/Planos";
 import { Especialistas } from "./pages/Especialistas";
@@ -139,6 +140,12 @@ function App() {
                 <Route path="/configuracoes" element={
                   <ProtectedRoute module="configuracoes">
                     <Layout><Configuracoes /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/configuracoes/funcoes" element={
+                  <ProtectedRoute module="configuracoes" action="canEdit" requiredRole="admin">
+                    <Layout><Funcoes /></Layout>
                   </ProtectedRoute>
                 } />
                 

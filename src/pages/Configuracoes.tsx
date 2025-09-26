@@ -18,7 +18,8 @@ import {
   Key,
   Globe,
   Save,
-  AlertTriangle
+  AlertTriangle,
+  Users
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -51,12 +52,13 @@ const Configuracoes = () => {
       />
 
       <Tabs defaultValue="geral" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="geral">Geral</TabsTrigger>
           <TabsTrigger value="perfil">Perfil</TabsTrigger>
           <TabsTrigger value="seguranca">Segurança</TabsTrigger>
           <TabsTrigger value="notificacoes">Notificações</TabsTrigger>
           <TabsTrigger value="aparencia">Aparência</TabsTrigger>
+          <TabsTrigger value="funcoes">Funções</TabsTrigger>
         </TabsList>
 
         <TabsContent value="geral" className="space-y-6">
@@ -308,6 +310,33 @@ const Configuracoes = () => {
                     ))}
                   </div>
                 </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="funcoes" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Users className="h-5 w-5 mr-2" />
+                Gerenciar Funções e Permissões
+              </CardTitle>
+              <CardDescription>
+                Configure as permissões de acesso para cada função do sistema
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="text-center p-6 border border-dashed rounded-lg">
+                <p className="text-muted-foreground mb-4">
+                  Clique no botão abaixo para acessar o painel de configuração de funções
+                </p>
+                <Button 
+                  onClick={() => window.open('/configuracoes/funcoes', '_blank')}
+                  className="w-full"
+                >
+                  Abrir Configurações de Funções
+                </Button>
               </div>
             </CardContent>
           </Card>

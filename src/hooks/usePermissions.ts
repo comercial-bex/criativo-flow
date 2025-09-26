@@ -1,4 +1,6 @@
 import { useUserRole, UserRole } from './useUserRole';
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 export interface PermissionActions {
   canView: boolean;
@@ -19,6 +21,18 @@ export interface ModulePermissions {
   planos: PermissionActions;
   especialistas: PermissionActions;
   relatorios: PermissionActions;
+}
+
+interface RolePermission {
+  id: string;
+  role: string;
+  module: string;
+  can_view: boolean;
+  can_create: boolean;
+  can_edit: boolean;
+  can_delete: boolean;
+  created_at: string;
+  updated_at: string;
 }
 
 const ROLE_PERMISSIONS: Record<NonNullable<UserRole>, Partial<ModulePermissions>> = {
@@ -89,10 +103,56 @@ const DEFAULT_PERMISSIONS: PermissionActions = {
 
 export function usePermissions() {
   const { role, loading } = useUserRole();
+  const [dynamicPermissions, setDynamicPermissions] = useState<Record<string, PermissionActions>>({});
+  const [permissionsLoading, setPermissionsLoading] = useState(true);
+
+  // Carregar permissões dinâmicas do banco
+  useEffect(() => {
+    if (!role || loading) return;
+
+    const fetchPermissions = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('role_permissions')
+          .select('*')
+          .eq('role', role);
+
+        if (error) {
+          console.warn('Erro ao buscar permissões:', error);
+          setPermissionsLoading(false);
+          return;
+        }
+
+        const permissions: Record<string, PermissionActions> = {};
+        data?.forEach((perm: RolePermission) => {
+          permissions[perm.module] = {
+            canView: perm.can_view,
+            canCreate: perm.can_create,
+            canEdit: perm.can_edit,
+            canDelete: perm.can_delete,
+          };
+        });
+
+        setDynamicPermissions(permissions);
+      } catch (error) {
+        console.error('Erro ao buscar permissões:', error);
+      } finally {
+        setPermissionsLoading(false);
+      }
+    };
+
+    fetchPermissions();
+  }, [role, loading]);
 
   const getModulePermissions = (module: keyof ModulePermissions): PermissionActions => {
-    if (!role || loading) return DEFAULT_PERMISSIONS;
+    if (!role || loading || permissionsLoading) return DEFAULT_PERMISSIONS;
     
+    // Priorizar permissões dinâmicas do banco
+    if (dynamicPermissions[module]) {
+      return dynamicPermissions[module];
+    }
+    
+    // Fallback para permissões estáticas
     const rolePermissions = role ? ROLE_PERMISSIONS[role] : undefined;
     return rolePermissions?.[module] || DEFAULT_PERMISSIONS;
   };
@@ -132,10 +192,11 @@ export function usePermissions() {
 
   return {
     role,
-    loading,
+    loading: loading || permissionsLoading,
     getModulePermissions,
     hasModuleAccess,
     canPerformAction,
     getDefaultRoute,
+    dynamicPermissions,
   };
 }
