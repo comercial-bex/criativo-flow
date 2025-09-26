@@ -31,6 +31,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
+import { AddressSearch } from "@/components/AddressSearch";
 import { toast } from "@/hooks/use-toast";
 
 interface EventFormData {
@@ -42,6 +43,7 @@ interface EventFormData {
   cor: string;
   participantes: string[];
   endereco: string;
+  coordenadas?: { lat: number; lng: number };
 }
 
 interface Usuario {
@@ -76,7 +78,8 @@ export function NewEventModal({ onEventCreated }: { onEventCreated?: () => void 
     tipo: "evento",
     cor: eventColors[0],
     participantes: [],
-    endereco: ""
+    endereco: "",
+    coordenadas: undefined
   });
 
   // Load users for participants
@@ -163,7 +166,8 @@ export function NewEventModal({ onEventCreated }: { onEventCreated?: () => void 
         tipo: "evento",
         cor: eventColors[0],
         participantes: [],
-        endereco: ""
+        endereco: "",
+        coordenadas: undefined
       });
       setSelectedParticipants([]);
       
@@ -385,18 +389,29 @@ export function NewEventModal({ onEventCreated }: { onEventCreated?: () => void 
             </div>
           </div>
 
-          {/* Location */}
+          {/* Location with Google Maps Autocomplete */}
           <div className="space-y-2">
             <Label htmlFor="endereco">
               <MapPin className="inline w-4 h-4 mr-1" />
               Endereço/Local
             </Label>
-            <Input
-              id="endereco"
+            <AddressSearch
               value={formData.endereco}
-              onChange={(e) => setFormData(prev => ({ ...prev, endereco: e.target.value }))}
-              placeholder="Ex: Rua das Flores, 123 - São Paulo, SP"
+              onAddressSelect={(address, coordinates) => {
+                setFormData(prev => ({ 
+                  ...prev, 
+                  endereco: address,
+                  coordenadas: coordinates 
+                }));
+              }}
+              placeholder="Digite o endereço e selecione uma sugestão..."
+              className="w-full"
             />
+            {formData.coordenadas && (
+              <div className="text-xs text-muted-foreground">
+                📍 Localização: {formData.coordenadas.lat.toFixed(6)}, {formData.coordenadas.lng.toFixed(6)}
+              </div>
+            )}
           </div>
 
           {/* Participants */}
