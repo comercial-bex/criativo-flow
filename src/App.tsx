@@ -45,6 +45,8 @@ import DesignDashboard from "./pages/Design/Dashboard";
 import DesignKanban from "./pages/Design/Kanban";
 import DesignCalendario from "./pages/Design/Calendario";
 import DesignMetas from "./pages/Design/Metas";
+import DesignBiblioteca from "./pages/Design/Biblioteca";
+import DesignAprovacoes from "./pages/Design/Aprovacoes";
 
 import AprovacaoJob from "./pages/AprovacaoJob";
 
@@ -320,6 +322,20 @@ const App = () => (
               <ProtectedRoute>
                 <Layout>
                   <DesignMetas />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/design/biblioteca" element={
+              <ProtectedRoute>
+                <Layout>
+                  <DesignBiblioteca />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/design/aprovacoes" element={
+              <ProtectedRoute>
+                <Layout>
+                  <DesignAprovacoes />
                 </Layout>
               </ProtectedRoute>
             } />
