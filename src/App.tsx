@@ -12,7 +12,6 @@ import Dashboard from "./pages/Dashboard";
 import CRM from "./pages/CRM";
 import Clientes from "./pages/Clientes";
 import Financeiro from "./pages/Financeiro";
-import Administrativo from "./pages/Administrativo";
 import CategoriasFinanceiras from "./pages/CategoriasFinanceiras";
 import NotFound from "./pages/NotFound";
 
@@ -165,13 +164,6 @@ const App = () => (
               <ProtectedRoute>
                 <Layout>
                   <Financeiro />
-                </Layout>
-              </ProtectedRoute>
-            } />
-            <Route path="/administrativo" element={
-              <ProtectedRoute>
-                <Layout>
-                  <Administrativo />
                 </Layout>
               </ProtectedRoute>
             } />

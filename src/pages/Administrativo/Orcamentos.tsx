@@ -70,13 +70,20 @@ export default function Orcamentos() {
   const { toast } = useToast();
 
   // Form state
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    titulo: string;
+    descricao: string;
+    cliente_id: string;
+    data_validade: string;
+    observacoes: string;
+    status: 'rascunho' | 'enviado' | 'aprovado' | 'rejeitado' | 'expirado';
+  }>({
     titulo: "",
     descricao: "",
     cliente_id: "",
     data_validade: "",
     observacoes: "",
-    status: "rascunho" as const
+    status: "rascunho"
   });
 
   const [itens, setItens] = useState<OrcamentoItem[]>([
