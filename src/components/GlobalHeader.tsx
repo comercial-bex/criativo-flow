@@ -10,7 +10,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { SidebarTrigger } from "@/components/ui/sidebar";
+
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { useUniversalSearch } from "@/hooks/useUniversalSearch";
 import { SearchResults } from "@/components/SearchResults";
@@ -41,8 +41,6 @@ export function GlobalHeader() {
   return (
     <header className="h-16 border-b bg-background flex items-center justify-between px-4 sticky top-0 z-50">
       <div className="flex items-center gap-4">
-        <SidebarTrigger />
-        
         {/* Busca Universal */}
         <div className="relative w-96">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
