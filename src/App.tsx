@@ -1,36 +1,45 @@
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ThemeProvider } from "next-themes";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider, useAuth } from "@/hooks/useAuth";
-import { ThemeProvider } from "next-themes";
+import { useAuth, AuthProvider } from "@/hooks/useAuth";
 import { Layout } from "@/components/Layout";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { SmartRedirect } from "@/components/SmartRedirect";
+
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
+import NotFound from "./pages/NotFound";
+import Unauthorized from "./pages/Unauthorized";
+
+// Core pages
 import Dashboard from "./pages/Dashboard";
 import CRM from "./pages/CRM";
 import Clientes from "./pages/Clientes";
 import Financeiro from "./pages/Financeiro";
 import CategoriasFinanceiras from "./pages/CategoriasFinanceiras";
-import NotFound from "./pages/NotFound";
-
-// Páginas específicas por perfil
-import GRSDashboard from "./pages/GRS/Dashboard";
-import AtendimentoInbox from "./pages/Atendimento/Inbox";
-import ClientePainel from "./pages/Cliente/Painel";
-import ClienteProjetos from "./pages/Cliente/Projetos";
-import DetalheProjetos from "./pages/Cliente/DetalheProjetos";
-import ProjetoDetalhes from "./pages/Cliente/ProjetoDetalhes";
-import PlanejamentoVisual from "./pages/Cliente/PlanejamentoVisual";
-
-import ClienteEditar from "./pages/Cliente/Editar";
 import Configuracoes from "./pages/Configuracoes";
 import Relatorios from "./pages/Relatorios";
 import Planos from "./pages/Planos";
 import { Especialistas } from "./pages/Especialistas";
-import PerfilCliente from "./pages/Cliente/Perfil";
-import AdministrativoDashboard from "./pages/Administrativo/Dashboard";
+
+// Role-specific pages
+import GRSDashboard from "./pages/GRS/Dashboard";
+import AtendimentoInbox from "./pages/Atendimento/Inbox";
+
+// Client pages
+import ClientePainel from "./pages/Cliente/Painel";
+import ClienteProjetos from "./pages/Cliente/Projetos";
+import ClienteDetalheProjetos from "./pages/Cliente/DetalheProjetos";
+import ClienteProjetoDetalhes from "./pages/Cliente/ProjetoDetalhes";
+import ClientePlanejamentoVisual from "./pages/Cliente/PlanejamentoVisual";
+import ClienteEditar from "./pages/Cliente/Editar";
+import ClientePerfil from "./pages/Cliente/Perfil";
+
+// Administrative pages
+import AdminDashboard from "./pages/Administrativo/Dashboard";
 import Orcamentos from "./pages/Administrativo/Orcamentos";
 import Propostas from "./pages/Administrativo/Propostas";
 
@@ -52,20 +61,6 @@ import AprovacaoJob from "./pages/AprovacaoJob";
 
 const queryClient = new QueryClient();
 
-const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { user, loading } = useAuth();
-  
-  if (loading) {
-    return <div className="min-h-screen flex items-center justify-center">Carregando...</div>;
-  }
-  
-  if (!user) {
-    return <Navigate to="/auth" replace />;
-  }
-  
-  return <>{children}</>;
-};
-
 const PublicRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
   
@@ -74,279 +69,244 @@ const PublicRoute = ({ children }: { children: React.ReactNode }) => {
   }
   
   if (user) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/" replace />;
   }
   
   return <>{children}</>;
 };
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <ThemeProvider
-      attribute="class"
-      defaultTheme="system"
-      enableSystem
-      disableTransitionOnChange
-    >
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <AuthProvider>
-          <Routes>
-            <Route path="/" element={
-              <PublicRoute>
-                <Index />
-              </PublicRoute>
-            } />
-            <Route path="/auth" element={
-              <PublicRoute>
-                <Auth />
-              </PublicRoute>
-            } />
-            <Route path="/dashboard" element={
-              <ProtectedRoute>
-                <Layout>
-                  <Dashboard />
-                </Layout>
-              </ProtectedRoute>
-            } />
-            <Route path="/crm" element={
-              <ProtectedRoute>
-                <Layout>
-                  <CRM />
-                </Layout>
-              </ProtectedRoute>
-            } />
-            <Route path="/clientes" element={
-              <ProtectedRoute>
-                <Layout>
-                  <Clientes />
-                </Layout>
-              </ProtectedRoute>
-            } />
-            <Route path="/clientes/projetos" element={
-              <ProtectedRoute>
-                <Layout>
-                  <ClienteProjetos />
-                </Layout>
-              </ProtectedRoute>
-            } />
-            <Route path="/clientes/:clienteId/detalhes" element={
-              <ProtectedRoute>
-                <Layout>
-                  <DetalheProjetos />
-                </Layout>
-              </ProtectedRoute>
-            } />
-            <Route path="/clientes/:clienteId/projetos/:projetoId" element={
-              <ProtectedRoute>
-                <Layout>
-                  <ProjetoDetalhes />
-                </Layout>
-              </ProtectedRoute>
-            } />
-            <Route path="/clientes/:clienteId/projetos/:projetoId/planejamento" element={
-              <ProtectedRoute>
-                <Layout>
-                  <PlanejamentoVisual />
-                </Layout>
-              </ProtectedRoute>
-            } />
-            <Route path="/clientes/:clienteId/editar" element={
-              <ProtectedRoute>
-                <Layout>
-                  <ClienteEditar />
-                </Layout>
-              </ProtectedRoute>
-            } />
-            <Route path="/clientes/:clienteId/perfil" element={
-              <ProtectedRoute>
-                <Layout>
-                  <PerfilCliente />
-                </Layout>
-              </ProtectedRoute>
-            } />
-            <Route path="/financeiro" element={
-              <ProtectedRoute>
-                <Layout>
-                  <Financeiro />
-                </Layout>
-              </ProtectedRoute>
-            } />
-            <Route path="/financeiro/categorias" element={
-              <ProtectedRoute>
-                <Layout>
-                  <CategoriasFinanceiras />
-                </Layout>
-              </ProtectedRoute>
-            } />
-            
-            {/* Rotas específicas por perfil */}
-            <Route path="/planejamentos" element={
-              <ProtectedRoute>
-                <Layout>
-                  <GRSDashboard />
-                </Layout>
-              </ProtectedRoute>
-            } />
-            <Route path="/inbox" element={
-              <ProtectedRoute>
-                <Layout>
-                  <AtendimentoInbox />
-                </Layout>
-              </ProtectedRoute>
-            } />
-            <Route path="/cliente-painel" element={
-              <ProtectedRoute>
-                <Layout>
-                  <ClientePainel />
-                </Layout>
-              </ProtectedRoute>
-            } />
-            
-            {/* Novas rotas */}
-            <Route path="/configuracoes" element={
-              <ProtectedRoute>
-                <Layout>
-                  <Configuracoes />
-                </Layout>
-              </ProtectedRoute>
-            } />
-            <Route path="/relatorios" element={
-              <ProtectedRoute>
-                <Layout>
-                  <Relatorios />
-                </Layout>
-              </ProtectedRoute>
-            } />
-            <Route path="/planos" element={
-              <ProtectedRoute>
-                <Layout>
-                  <Planos />
-                </Layout>
-              </ProtectedRoute>
-            } />
-            <Route path="/especialistas" element={
-              <ProtectedRoute>
-                <Layout>
-                  <Especialistas />
-                </Layout>
-              </ProtectedRoute>
-            } />
-            
-            {/* Rotas Administrativas */}
-            <Route path="/administrativo" element={
-              <ProtectedRoute>
-                <Layout>
-                  <AdministrativoDashboard />
-                </Layout>
-              </ProtectedRoute>
-            } />
-            <Route path="/administrativo/orcamentos" element={
-              <ProtectedRoute>
-                <Layout>
-                  <Orcamentos />
-                </Layout>
-              </ProtectedRoute>
-            } />
-            <Route path="/administrativo/propostas" element={
-              <ProtectedRoute>
-                <Layout>
-                  <Propostas />
-                </Layout>
-              </ProtectedRoute>
-            } />
-            
-            {/* Audiovisual Routes */}
-            <Route path="/audiovisual/dashboard" element={
-              <ProtectedRoute>
-                <Layout>
-                  <AudiovisualDashboard />
-                </Layout>
-              </ProtectedRoute>
-            } />
-            <Route path="/audiovisual/captacoes" element={
-              <ProtectedRoute>
-                <Layout>
-                  <AudiovisualCaptacoes />
-                </Layout>
-              </ProtectedRoute>
-            } />
-            <Route path="/audiovisual/projetos" element={
-              <ProtectedRoute>
-                <Layout>
-                  <AudiovisualProjetos />
-                </Layout>
-              </ProtectedRoute>
-            } />
-            <Route path="/audiovisual/equipamentos" element={
-              <ProtectedRoute>
-                <Layout>
-                  <AudiovisualEquipamentos />
-                </Layout>
-              </ProtectedRoute>
-            } />
-            
-            <Route path="/aprovacao" element={
-              <ProtectedRoute>
-                <Layout>
-                  <AprovacaoJob />
-                </Layout>
-              </ProtectedRoute>
-            } />
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider
+        attribute="class"
+        defaultTheme="system"
+        enableSystem
+        disableTransitionOnChange
+      >
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <AuthProvider>
+              <Routes>
+                {/* Public routes */}
+                <Route path="/auth" element={<PublicRoute><Auth /></PublicRoute>} />
 
-            {/* Design Routes */}
-            <Route path="/design/dashboard" element={
-              <ProtectedRoute>
-                <Layout>
-                  <DesignDashboard />
-                </Layout>
-              </ProtectedRoute>
-            } />
-            <Route path="/design/kanban" element={
-              <ProtectedRoute>
-                <Layout>
-                  <DesignKanban />
-                </Layout>
-              </ProtectedRoute>
-            } />
-            <Route path="/design/calendario" element={
-              <ProtectedRoute>
-                <Layout>
-                  <DesignCalendario />
-                </Layout>
-              </ProtectedRoute>
-            } />
-            <Route path="/design/metas" element={
-              <ProtectedRoute>
-                <Layout>
-                  <DesignMetas />
-                </Layout>
-              </ProtectedRoute>
-            } />
-            <Route path="/design/biblioteca" element={
-              <ProtectedRoute>
-                <Layout>
-                  <DesignBiblioteca />
-                </Layout>
-              </ProtectedRoute>
-            } />
-            <Route path="/design/aprovacoes" element={
-              <ProtectedRoute>
-                <Layout>
-                  <DesignAprovacoes />
-                </Layout>
-              </ProtectedRoute>
-            } />
-            
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-          </AuthProvider>
-        </BrowserRouter>
-      </TooltipProvider>
-    </ThemeProvider>
-  </QueryClientProvider>
-);
+                {/* Smart redirect for root path */}
+                <Route path="/" element={<SmartRedirect />} />
+
+                {/* Unauthorized access */}
+                <Route path="/unauthorized" element={<Unauthorized />} />
+
+                {/* Protected routes with permissions */}
+                <Route path="/dashboard" element={
+                  <ProtectedRoute module="dashboard">
+                    <Layout><Dashboard /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/crm" element={
+                  <ProtectedRoute module="crm">
+                    <Layout><CRM /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/clientes" element={
+                  <ProtectedRoute module="clientes">
+                    <Layout><Clientes /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/financeiro" element={
+                  <ProtectedRoute module="financeiro">
+                    <Layout><Financeiro /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/categorias-financeiras" element={
+                  <ProtectedRoute module="financeiro">
+                    <Layout><CategoriasFinanceiras /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/planos" element={
+                  <ProtectedRoute module="planos">
+                    <Layout><Planos /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/configuracoes" element={
+                  <ProtectedRoute module="configuracoes">
+                    <Layout><Configuracoes /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/relatorios" element={
+                  <ProtectedRoute module="relatorios">
+                    <Layout><Relatorios /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/especialistas" element={
+                  <ProtectedRoute module="especialistas">
+                    <Layout><Especialistas /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                {/* GRS routes */}
+                <Route path="/grs/dashboard" element={
+                  <ProtectedRoute requiredRole="grs">
+                    <Layout><GRSDashboard /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                {/* Administrative routes */}
+                <Route path="/administrativo/dashboard" element={
+                  <ProtectedRoute module="administrativo">
+                    <Layout><AdminDashboard /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/administrativo/orcamentos" element={
+                  <ProtectedRoute module="administrativo">
+                    <Layout><Orcamentos /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/administrativo/propostas" element={
+                  <ProtectedRoute module="administrativo">
+                    <Layout><Propostas /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                {/* Audiovisual routes */}
+                <Route path="/audiovisual/dashboard" element={
+                  <ProtectedRoute module="audiovisual">
+                    <Layout><AudiovisualDashboard /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/audiovisual/projetos" element={
+                  <ProtectedRoute module="audiovisual">
+                    <Layout><AudiovisualProjetos /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/audiovisual/captacoes" element={
+                  <ProtectedRoute module="audiovisual">
+                    <Layout><AudiovisualCaptacoes /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/audiovisual/equipamentos" element={
+                  <ProtectedRoute module="audiovisual">
+                    <Layout><AudiovisualEquipamentos /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                {/* Design routes */}
+                <Route path="/design/dashboard" element={
+                  <ProtectedRoute module="design">
+                    <Layout><DesignDashboard /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/design/biblioteca" element={
+                  <ProtectedRoute module="design">
+                    <Layout><DesignBiblioteca /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/design/kanban" element={
+                  <ProtectedRoute module="design">
+                    <Layout><DesignKanban /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/design/calendario" element={
+                  <ProtectedRoute module="design">
+                    <Layout><DesignCalendario /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/design/metas" element={
+                  <ProtectedRoute module="design">
+                    <Layout><DesignMetas /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/design/aprovacoes" element={
+                  <ProtectedRoute module="design">
+                    <Layout><DesignAprovacoes /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                {/* Client routes */}
+                <Route path="/cliente/painel" element={
+                  <ProtectedRoute requiredRole="cliente">
+                    <Layout><ClientePainel /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/cliente/perfil" element={
+                  <ProtectedRoute requiredRole="cliente">
+                    <Layout><ClientePerfil /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/cliente/editar" element={
+                  <ProtectedRoute requiredRole="cliente">
+                    <Layout><ClienteEditar /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/cliente/projetos" element={
+                  <ProtectedRoute requiredRole="cliente">
+                    <Layout><ClienteProjetos /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/cliente/projeto-detalhes/:id" element={
+                  <ProtectedRoute requiredRole="cliente">
+                    <Layout><ClienteProjetoDetalhes /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/cliente/detalhe-projetos" element={
+                  <ProtectedRoute requiredRole="cliente">
+                    <Layout><ClienteDetalheProjetos /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/cliente/planejamento-visual" element={
+                  <ProtectedRoute requiredRole="cliente">
+                    <Layout><ClientePlanejamentoVisual /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                {/* Service routes */}
+                <Route path="/atendimento/inbox" element={
+                  <ProtectedRoute requiredRole="atendimento">
+                    <Layout><AtendimentoInbox /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/aprovacao-job" element={
+                  <ProtectedRoute>
+                    <Layout><AprovacaoJob /></Layout>
+                  </ProtectedRoute>
+                } />
+
+                {/* 404 route */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </AuthProvider>
+          </BrowserRouter>
+        </TooltipProvider>
+      </ThemeProvider>
+    </QueryClientProvider>
+  );
+}
 
 export default App;
