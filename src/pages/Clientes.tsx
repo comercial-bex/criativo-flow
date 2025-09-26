@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useClientData, type Cliente } from '@/hooks/useClientData';
 import { supabase } from '@/integrations/supabase/client';
 import { SectionHeader } from '@/components/SectionHeader';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -28,19 +29,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { toast } from 'sonner';
 
-interface Cliente {
-  id: string;
-  nome: string;
-  email: string;
-  telefone: string;
-  cnpj_cpf: string;
-  endereco: string;
-  status: 'ativo' | 'inativo' | 'pendente' | 'arquivado';
-  responsavel_id?: string;
-  assinatura_id?: string;
-  created_at: string;
-  updated_at: string;
-}
+// Cliente interface moved to useClientData hook
 
 interface Assinatura {
   id: string;
@@ -50,9 +39,15 @@ interface Assinatura {
 
 const Clientes = () => {
   const navigate = useNavigate();
-  const [clientes, setClientes] = useState<Cliente[]>([]);
+  const { 
+    clientes, 
+    loading, 
+    error: clientesError, 
+    fetchClientes, 
+    createCliente, 
+    deleteCliente 
+  } = useClientData();
   const [assinaturas, setAssinaturas] = useState<Assinatura[]>([]);
-  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('created_at');
   const [showForm, setShowForm] = useState(false);
@@ -70,30 +65,8 @@ const Clientes = () => {
   const { toast: toastHook } = useToast();
 
   useEffect(() => {
-    fetchClientes();
     fetchAssinaturas();
   }, []);
-
-  const fetchClientes = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('clientes')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setClientes(data || []);
-    } catch (error) {
-      console.error('Erro ao carregar clientes:', error);
-      toastHook({
-        title: "Erro ao carregar clientes",
-        description: "Não foi possível carregar a lista de clientes",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const fetchAssinaturas = async () => {
     try {
@@ -117,22 +90,19 @@ const Clientes = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
 
     try {
       const clienteData = {
         nome: formData.nome!,
-        email: formData.email!,
+        email: formData.email || null,
         telefone: formData.telefone || null,
         cnpj_cpf: formData.cnpj_cpf || null,
         endereco: formData.endereco || null,
-        status: formData.status!,
-        assinatura_id: (formData.assinatura_id && formData.assinatura_id !== 'none') ? formData.assinatura_id : null
+        status: formData.status! as 'ativo' | 'inativo' | 'pendente' | 'arquivado',
+        assinatura_id: (formData.assinatura_id && formData.assinatura_id !== 'none') ? formData.assinatura_id : undefined
       };
 
-      const { error } = await supabase
-        .from('clientes')
-        .insert([clienteData]);
+      const { error } = await createCliente(clienteData);
 
       if (error) {
         console.error('Erro ao criar cliente:', error);
@@ -141,13 +111,10 @@ const Clientes = () => {
       }
 
       toast.success("Cliente cadastrado com sucesso!");
-      await fetchClientes();
       resetForm();
     } catch (error) {
       console.error('Erro ao salvar cliente:', error);
       toast.error('Erro ao salvar cliente');
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -376,8 +343,8 @@ const Clientes = () => {
             </div>
 
             <div className="flex gap-2 pt-4">
-              <Button type="submit" disabled={loading}>
-                {loading ? "Salvando..." : "Cadastrar"}
+              <Button type="submit">
+                Cadastrar
               </Button>
               <Button type="button" variant="outline" onClick={resetForm}>
                 Cancelar
@@ -411,14 +378,23 @@ const Clientes = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <div className="flex items-center text-sm text-muted-foreground">
-                  <Mail className="h-4 w-4 mr-2" />
-                  {cliente.email}
-                </div>
-                <div className="flex items-center text-sm text-muted-foreground">
-                  <Phone className="h-4 w-4 mr-2" />
-                  {cliente.telefone}
-                </div>
+                {cliente.email && (
+                  <div className="flex items-center text-sm text-muted-foreground">
+                    <Mail className="h-4 w-4 mr-2" />
+                    {cliente.email}
+                  </div>
+                )}
+                {cliente.telefone && (
+                  <div className="flex items-center text-sm text-muted-foreground">
+                    <Phone className="h-4 w-4 mr-2" />
+                    {cliente.telefone}
+                  </div>
+                )}
+                {!cliente.email && !cliente.telefone && (
+                  <div className="text-sm text-muted-foreground italic">
+                    📊 Dados pessoais protegidos - acesso limitado
+                  </div>
+                )}
                 {cliente.endereco && (
                   <div className="flex items-center text-sm text-muted-foreground">
                     <MapPin className="h-4 w-4 mr-2" />
