@@ -22,6 +22,7 @@ import Financeiro from "./pages/Financeiro";
 import CategoriasFinanceiras from "./pages/CategoriasFinanceiras";
 import Configuracoes from "./pages/Configuracoes";
 import Funcoes from "./pages/Configuracoes/Funcoes";
+import Perfil from "./pages/Perfil";
 import Relatorios from "./pages/Relatorios";
 import Planos from "./pages/Planos";
 import { Especialistas } from "./pages/Especialistas";
@@ -146,6 +147,12 @@ function App() {
                 <Route path="/configuracoes/funcoes" element={
                   <ProtectedRoute module="configuracoes" action="canEdit" requiredRole="admin">
                     <Layout><Funcoes /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/perfil" element={
+                  <ProtectedRoute>
+                    <Layout><Perfil /></Layout>
                   </ProtectedRoute>
                 } />
                 

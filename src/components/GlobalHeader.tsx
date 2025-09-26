@@ -1,4 +1,4 @@
-import { Search, User, LogOut } from "lucide-react";
+import { Search, User, LogOut, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
@@ -23,11 +23,19 @@ export function GlobalHeader() {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [showResults, setShowResults] = useState(false);
+  const [isSigningOut, setIsSigningOut] = useState(false);
   const { results, isLoading } = useUniversalSearch(searchQuery);
 
   const handleSignOut = async () => {
-    await signOut();
-    navigate('/auth');
+    setIsSigningOut(true);
+    try {
+      await signOut();
+      navigate('/auth');
+    } catch (error) {
+      console.error('Erro no logout:', error);
+    } finally {
+      setIsSigningOut(false);
+    }
   };
 
   return (
@@ -86,9 +94,13 @@ export function GlobalHeader() {
               <User className="mr-2 h-4 w-4" />
               Meu Perfil
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={handleSignOut}>
-              <LogOut className="mr-2 h-4 w-4" />
-              Sair
+            <DropdownMenuItem onClick={handleSignOut} disabled={isSigningOut}>
+              {isSigningOut ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <LogOut className="mr-2 h-4 w-4" />
+              )}
+              {isSigningOut ? 'Saindo...' : 'Sair'}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
