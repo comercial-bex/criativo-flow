@@ -42,7 +42,7 @@ export function UserActionsModule() {
               variant="ghost"
               size="sm"
               onClick={() => navigate("/perfil")}
-              className="h-12 w-12 p-0 rounded-xl bg-white/5 hover:bg-white/10 transition-all duration-200 text-white/80 hover:text-white flex items-center justify-center"
+              className="h-12 w-12 p-0 rounded-xl bg-white/5 hover:bg-white/10 transition-all duration-200 text-black hover:text-black/80 flex items-center justify-center"
               title="Meu Perfil"
             >
               <User className="h-5 w-5" />
@@ -61,7 +61,7 @@ export function UserActionsModule() {
               size="sm"
               onClick={handleSignOut}
               disabled={signingOut}
-              className="h-12 w-12 p-0 rounded-xl bg-white/5 hover:bg-red-500/20 transition-all duration-200 text-white/80 hover:text-red-200 flex items-center justify-center"
+              className="h-12 w-12 p-0 rounded-xl bg-white/5 hover:bg-red-500/20 transition-all duration-200 text-black hover:text-red-600 flex items-center justify-center"
               title={signingOut ? "Saindo..." : "Sair"}
             >
               <LogOut className="h-5 w-5" />
