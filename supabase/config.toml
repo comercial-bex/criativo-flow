@@ -46,3 +46,6 @@ verify_jwt = false
 
 [functions.generate-content-with-ai]
 verify_jwt = false
+
+[functions.create-user]
+verify_jwt = false

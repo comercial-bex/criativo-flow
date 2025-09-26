@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,6 +14,7 @@ export default function Auth() {
   const [password, setPassword] = useState('');
   const [nome, setNome] = useState('');
   const [loading, setLoading] = useState(false);
+  const [creatingAccounts, setCreatingAccounts] = useState(false);
   const { signIn, signUp, user } = useAuth();
   const navigate = useNavigate();
 
@@ -66,6 +68,44 @@ export default function Auth() {
       toast.error('Erro inesperado no cadastro');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const createTestAccounts = async () => {
+    setCreatingAccounts(true);
+    const testAccounts = [
+      { email: 'admin@test.com', password: 'admin123', nome: 'Admin Test', role: 'admin', telefone: '(11) 99999-1111', especialidade: 'gestao' },
+      { email: 'designer@test.com', password: 'designer123', nome: 'Designer Test', role: 'designer', telefone: '(11) 99999-2222', especialidade: 'design' },
+      { email: 'cliente@test.com', password: 'cliente123', nome: 'Cliente Test', role: 'cliente', telefone: '(11) 99999-3333', especialidade: null }
+    ];
+
+    try {
+      let successCount = 0;
+      for (const account of testAccounts) {
+        try {
+          const { error } = await supabase.functions.invoke('create-user', {
+            body: account
+          });
+          
+          if (!error) {
+            successCount++;
+          } else {
+            console.log(`Conta ${account.email} pode já existir:`, error);
+          }
+        } catch (error) {
+          console.log(`Erro ao criar ${account.email}:`, error);
+        }
+      }
+      
+      if (successCount > 0) {
+        toast.success(`${successCount} contas de teste criadas com sucesso!`);
+      } else {
+        toast.info('Contas de teste já existem ou houve erro na criação');
+      }
+    } catch (error) {
+      toast.error('Erro ao criar contas de teste');
+    } finally {
+      setCreatingAccounts(false);
     }
   };
 
@@ -185,34 +225,45 @@ export default function Auth() {
               Use estas contas para testar diferentes níveis de acesso
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-2">
+          <CardContent className="space-y-3">
             <Button
-              variant="outline"
-              className="w-full justify-start"
-              onClick={() => handleTestLogin('admin@test.com', 'admin123')}
-              disabled={loading}
+              onClick={createTestAccounts}
+              disabled={creatingAccounts || loading}
+              className="w-full"
+              variant="secondary"
             >
-              <span className="font-medium">Admin:</span>
-              <span className="ml-2 text-muted-foreground">admin@test.com</span>
+              {creatingAccounts ? 'Criando contas...' : 'Criar/Verificar Contas de Teste'}
             </Button>
-            <Button
-              variant="outline"
-              className="w-full justify-start"
-              onClick={() => handleTestLogin('designer@test.com', 'designer123')}
-              disabled={loading}
-            >
-              <span className="font-medium">Designer:</span>
-              <span className="ml-2 text-muted-foreground">designer@test.com</span>
-            </Button>
-            <Button
-              variant="outline"
-              className="w-full justify-start"
-              onClick={() => handleTestLogin('cliente@test.com', 'cliente123')}
-              disabled={loading}
-            >
-              <span className="font-medium">Cliente:</span>
-              <span className="ml-2 text-muted-foreground">cliente@test.com</span>
-            </Button>
+            
+            <div className="border-t pt-3 space-y-2">
+              <Button
+                variant="outline"
+                className="w-full justify-start"
+                onClick={() => handleTestLogin('admin@test.com', 'admin123')}
+                disabled={loading || creatingAccounts}
+              >
+                <span className="font-medium">Admin:</span>
+                <span className="ml-2 text-muted-foreground">admin@test.com</span>
+              </Button>
+              <Button
+                variant="outline"
+                className="w-full justify-start"
+                onClick={() => handleTestLogin('designer@test.com', 'designer123')}
+                disabled={loading || creatingAccounts}
+              >
+                <span className="font-medium">Designer:</span>
+                <span className="ml-2 text-muted-foreground">designer@test.com</span>
+              </Button>
+              <Button
+                variant="outline"
+                className="w-full justify-start"
+                onClick={() => handleTestLogin('cliente@test.com', 'cliente123')}
+                disabled={loading || creatingAccounts}
+              >
+                <span className="font-medium">Cliente:</span>
+                <span className="ml-2 text-muted-foreground">cliente@test.com</span>
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </div>
