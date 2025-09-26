@@ -108,7 +108,20 @@ export function usePermissions() {
 
   // Carregar permissões dinâmicas do banco
   useEffect(() => {
-    if (!role || loading) return;
+    console.log('🔑 Permissions: Effect triggered, role:', role, 'loading:', loading);
+    
+    if (!role || loading) {
+      console.log('🔑 Permissions: Waiting for role or still loading...');
+      return;
+    }
+
+    console.log('🔑 Permissions: Fetching permissions for role:', role);
+    
+    // Timeout para permissões
+    const permTimeout = setTimeout(() => {
+      console.log('⚠️ Permissions: Timeout reached, using static permissions');
+      setPermissionsLoading(false);
+    }, 1000);
 
     const fetchPermissions = async () => {
       try {
@@ -117,8 +130,10 @@ export function usePermissions() {
           .select('*')
           .eq('role', role);
 
+        clearTimeout(permTimeout);
+
         if (error) {
-          console.warn('Erro ao buscar permissões:', error);
+          console.warn('🔑 Permissions: Error fetching permissions:', error);
           setPermissionsLoading(false);
           return;
         }
@@ -133,15 +148,19 @@ export function usePermissions() {
           };
         });
 
+        console.log('🔑 Permissions: Dynamic permissions loaded:', permissions);
         setDynamicPermissions(permissions);
       } catch (error) {
-        console.error('Erro ao buscar permissões:', error);
+        console.error('🔑 Permissions: Error fetching permissions:', error);
+        clearTimeout(permTimeout);
       } finally {
         setPermissionsLoading(false);
       }
     };
 
     fetchPermissions();
+    
+    return () => clearTimeout(permTimeout);
   }, [role, loading]);
 
   const getModulePermissions = (module: keyof ModulePermissions): PermissionActions => {
@@ -166,28 +185,46 @@ export function usePermissions() {
   };
 
   const getDefaultRoute = (): string => {
-    if (!role || loading) return '/auth';
+    console.log('🔄 Permissions: getDefaultRoute called, role:', role, 'loading:', loading);
+    
+    if (!role || loading) {
+      console.log('🔄 Permissions: No role or loading, returning /auth');
+      return '/auth';
+    }
 
+    let defaultRoute: string;
     switch (role) {
       case 'admin':
-        return '/dashboard';
+        defaultRoute = '/dashboard';
+        break;
       case 'grs':
-        return '/grs/dashboard';
+        defaultRoute = '/grs/dashboard';
+        break;
       case 'atendimento':
-        return '/atendimento/inbox';
+        defaultRoute = '/atendimento/inbox';
+        break;
       case 'designer':
-        return '/design/dashboard';
+        defaultRoute = '/design/dashboard';
+        break;
       case 'filmmaker':
-        return '/audiovisual/dashboard';
+        defaultRoute = '/audiovisual/dashboard';
+        break;
       case 'gestor':
-        return '/dashboard';
+        defaultRoute = '/dashboard';
+        break;
       case 'financeiro':
-        return '/financeiro';
+        defaultRoute = '/financeiro';
+        break;
       case 'cliente':
-        return '/cliente/painel';
+        defaultRoute = '/cliente/painel';
+        break;
       default:
-        return '/auth';
+        console.log('🔄 Permissions: Unknown role, returning /dashboard');
+        defaultRoute = '/dashboard';
     }
+    
+    console.log('🔄 Permissions: Returning route:', defaultRoute);
+    return defaultRoute;
   };
 
   return {

@@ -39,7 +39,7 @@ export function useUserRole() {
     const roleTimeout = setTimeout(() => {
       console.log('⚠️ UserRole: Timeout reached, keeping default role');
       setLoading(false);
-    }, 1500);
+    }, 1000);
 
     const fetchUserRole = async () => {
       try {
