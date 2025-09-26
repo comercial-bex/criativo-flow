@@ -14,30 +14,37 @@ export type UserRole =
   | null;
 
 export function useUserRole() {
-  const { user } = useAuth();
-  const [role, setRole] = useState<UserRole>(null);
-  const [loading, setLoading] = useState(true);
+  const { user, loading: authLoading } = useAuth();
+  const [role, setRole] = useState<UserRole>('cliente'); // Default to 'cliente' immediately
+  const [loading, setLoading] = useState(false); // Start with false for faster UI
 
   useEffect(() => {
-    console.log('👤 UserRole: Effect triggered, user:', !!user);
+    console.log('👤 UserRole: Effect triggered, user:', !!user, 'authLoading:', authLoading);
     
+    // If auth is still loading, wait
+    if (authLoading) {
+      setLoading(true);
+      return;
+    }
+
+    // If no user, set cliente role immediately
     if (!user) {
-      console.log('👤 UserRole: No user, setting role to null');
-      setRole(null);
+      console.log('👤 UserRole: No user, setting role to cliente');
+      setRole('cliente');
       setLoading(false);
       return;
     }
 
-    // Set timeout for role fetching to prevent infinite loading
+    // Short timeout for role fetching
     const roleTimeout = setTimeout(() => {
-      console.log('⚠️ UserRole: Timeout reached, setting default role');
-      setRole('cliente'); // Default role as fallback
+      console.log('⚠️ UserRole: Timeout reached, keeping default role');
       setLoading(false);
-    }, 3000);
+    }, 1500);
 
     const fetchUserRole = async () => {
       try {
         console.log('👤 UserRole: Fetching role for user:', user.id);
+        setLoading(true);
         
         const { data, error } = await supabase
           .from('user_roles')
@@ -47,18 +54,18 @@ export function useUserRole() {
 
         clearTimeout(roleTimeout);
 
-        if (error) {
-          console.warn('👤 UserRole: Warning fetching user role:', error);
-          setRole('cliente'); // Default to cliente if no role found
+        if (error || !data) {
+          console.warn('👤 UserRole: No role found, using default cliente');
+          setRole('cliente');
         } else {
-          const userRole = (data?.role as UserRole) ?? 'cliente';
+          const userRole = (data.role as UserRole) ?? 'cliente';
           console.log('👤 UserRole: Fetched role:', userRole);
           setRole(userRole);
         }
       } catch (error) {
         console.error('👤 UserRole: Error fetching role:', error);
         clearTimeout(roleTimeout);
-        setRole('cliente'); // Default fallback
+        setRole('cliente');
       } finally {
         setLoading(false);
       }
@@ -69,7 +76,7 @@ export function useUserRole() {
     return () => {
       clearTimeout(roleTimeout);
     };
-  }, [user]);
+  }, [user, authLoading]);
 
   return { role, loading };
 }

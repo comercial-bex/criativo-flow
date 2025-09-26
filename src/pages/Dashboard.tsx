@@ -28,21 +28,59 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const [clientes, projetos, leads, tarefas] = await Promise.all([
-          supabase.from('clientes').select('*', { count: 'exact' }),
-          supabase.from('projetos').select('*', { count: 'exact' }),
-          supabase.from('leads').select('*', { count: 'exact' }),
-          supabase.from('tarefas').select('*', { count: 'exact' }).neq('status', 'concluido')
-        ]);
+        // Try to fetch stats, but use fallbacks if tables don't exist
+        const fetchClientesCount = async () => {
+          try {
+            const { count } = await supabase.from('clientes').select('*', { count: 'exact' });
+            return count || 0;
+          } catch { return 0; }
+        };
+
+        const fetchProjetosCount = async () => {
+          try {
+            const { count } = await supabase.from('projetos').select('*', { count: 'exact' });
+            return count || 0;
+          } catch { return 0; }
+        };
+
+        const fetchLeadsCount = async () => {
+          try {
+            const { count } = await supabase.from('leads').select('*', { count: 'exact' });
+            return count || 0;
+          } catch { return 0; }
+        };
+
+        const fetchTarefasCount = async () => {
+          try {
+            const { count } = await supabase.from('tarefas').select('*', { count: 'exact' }).neq('status', 'concluido');
+            return count || 0;
+          } catch { return 0; }
+        };
+
+        const statsPromises = [
+          fetchClientesCount(),
+          fetchProjetosCount(),
+          fetchLeadsCount(),
+          fetchTarefasCount()
+        ];
+
+        const [totalClientes, totalProjetos, totalLeads, tarefasPendentes] = await Promise.all(statsPromises);
 
         setStats({
-          totalClientes: clientes.count || 0,
-          totalProjetos: projetos.count || 0,
-          totalLeads: leads.count || 0,
-          tarefasPendentes: tarefas.count || 0
+          totalClientes,
+          totalProjetos,
+          totalLeads,
+          tarefasPendentes
         });
       } catch (error) {
         console.error('Erro ao carregar estatísticas:', error);
+        // Set mock data if database is not available
+        setStats({
+          totalClientes: 0,
+          totalProjetos: 0,
+          totalLeads: 0,
+          tarefasPendentes: 0
+        });
       } finally {
         setLoading(false);
       }

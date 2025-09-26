@@ -21,21 +21,13 @@ export function ProtectedRoute({
   const { role, loading: roleLoading, canPerformAction, hasModuleAccess } = usePermissions();
   const location = useLocation();
 
-  // Show loading while auth or role is loading - with timeout
-  if (authLoading || roleLoading) {
-    console.log('🛡️ ProtectedRoute: Loading state - Auth:', authLoading, 'Role:', roleLoading);
-    
+  // Show loading state while auth is loading
+  if (authLoading) {
     return (
-      <div className="p-6 space-y-4">
-        <div className="text-sm text-muted-foreground mb-4">
-          Carregando... {authLoading ? 'Autenticação' : ''} {roleLoading ? 'Permissões' : ''}
-        </div>
-        <Skeleton className="h-8 w-48" />
-        <Skeleton className="h-4 w-96" />
-        <div className="grid gap-4">
-          <Skeleton className="h-32 w-full" />
-          <Skeleton className="h-32 w-full" />
-          <Skeleton className="h-32 w-full" />
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="space-y-4 text-center">
+          <Skeleton className="h-8 w-48 mx-auto" />
+          <Skeleton className="h-4 w-32 mx-auto" />
         </div>
       </div>
     );
