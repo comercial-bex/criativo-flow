@@ -24,7 +24,10 @@ import {
   Inbox,
   HeadphonesIcon,
   TrendingUp,
-  Users2
+  Users2,
+  CalendarDays,
+  CheckCircle,
+  Globe
 } from "lucide-react"
 import { NavLink, useLocation } from "react-router-dom"
 import React from "react"
@@ -125,13 +128,12 @@ const modules = [
   {
     id: "grs",
     title: "GRS",
-    icon: Users2,
+    icon: Globe,
     items: [
-      { title: "Dashboard", url: "/grs/dashboard", icon: TrendingUp },
-      { title: "Calendário Editorial", url: "/grs/calendario-editorial", icon: Calendar },
-      { title: "Planejamentos", url: "/grs/planejamentos", icon: Target },
-      { title: "Planejamento Estratégico", url: "/grs/planejamento-estrategico", icon: Target },
-      { title: "Aprovações", url: "/grs/aprovacoes", icon: UserCheck },
+      { title: "Dashboard", url: "/grs/dashboard", icon: BarChart3 },
+      { title: "Planejamentos", url: "/grs/planejamentos", icon: Calendar },
+      { title: "Aprovações", url: "/grs/aprovacoes", icon: CheckCircle },
+      { title: "Calendário Editorial", url: "/grs/calendario-editorial", icon: CalendarDays },
     ],
     permissions: ["grs"]
   },
@@ -169,7 +171,7 @@ export function AppSidebar() {
       
       // Check permissions - only check valid module permissions
       return module.permissions.some(permission => {
-        const validPermissions = ['dashboard', 'clientes', 'crm', 'financeiro', 'administrativo', 'audiovisual', 'design', 'configuracoes', 'planos', 'especialistas', 'relatorios'] as const;
+        const validPermissions = ['dashboard', 'clientes', 'crm', 'financeiro', 'administrativo', 'audiovisual', 'design', 'grs', 'configuracoes', 'planos', 'especialistas', 'relatorios'] as const;
         if (validPermissions.includes(permission as any)) {
           return hasModuleAccess(permission as keyof ModulePermissions);
         }
@@ -253,7 +255,7 @@ export function AppSidebar() {
           })}
 
           {/* User Actions Module - Bottom Left */}
-          <div className="mt-auto">
+          <div className="mt-auto pb-4">
             <UserActionsModule />
           </div>
         </div>
