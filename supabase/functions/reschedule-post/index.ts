@@ -147,11 +147,11 @@ serve(async (req) => {
     const response = {
       success: true,
       post: updatedPost,
-      conflicts: conflictPosts?.length > 0 ? {
+      conflicts: conflictPosts && conflictPosts.length > 0 ? {
         count: conflictPosts.length,
         posts: conflictPosts
       } : null,
-      message: conflictPosts?.length > 0 
+      message: conflictPosts && conflictPosts.length > 0 
         ? `Post reagendado com sucesso. Atenção: há ${conflictPosts.length} outro(s) post(s) agendado(s) para a mesma data.`
         : 'Post reagendado com sucesso!'
     }
@@ -170,7 +170,7 @@ serve(async (req) => {
     console.error('Error in reschedule-post function:', error)
     return new Response(
       JSON.stringify({ 
-        error: error.message || 'Internal server error',
+        error: error instanceof Error ? error.message : 'Internal server error',
         code: 'INTERNAL_ERROR'
       }),
       { 

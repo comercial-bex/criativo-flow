@@ -160,7 +160,7 @@ Forneça 2-3 ações prioritárias específicas para os próximos 90 dias, consi
     console.error('Error in analyze-swot function:', error);
     return new Response(JSON.stringify({ 
       success: false,
-      error: error.message 
+      error: error instanceof Error ? error.message : 'Unknown error occurred'
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

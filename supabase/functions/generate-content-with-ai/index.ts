@@ -165,7 +165,7 @@ IMPORTANTE:
   } catch (error) {
     console.error('Error in generate-content-with-ai function:', error);
     return new Response(JSON.stringify({ 
-      error: error.message,
+      error: error instanceof Error ? error.message : 'Unknown error occurred',
       success: false
     }), {
       status: 500,
