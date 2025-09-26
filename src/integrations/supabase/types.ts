@@ -1610,6 +1610,13 @@ export type Database = {
         Args: { user_uuid: string }
         Returns: Database["public"]["Enums"]["user_role"]
       }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["user_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
       is_admin: {
         Args: { user_uuid: string }
         Returns: boolean
