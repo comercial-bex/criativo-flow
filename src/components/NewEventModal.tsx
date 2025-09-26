@@ -263,107 +263,37 @@ export function NewEventModal({ onEventCreated }: { onEventCreated?: () => void 
           {/* Date and Time */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Data/Hora de Início *</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      "w-full justify-start text-left font-normal",
-                      !formData.data_inicio && "text-muted-foreground"
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {formData.data_inicio ? (
-                      format(formData.data_inicio, "PPP 'às' HH:mm", { locale: ptBR })
-                    ) : (
-                      <span>Selecionar data e hora</span>
-                    )}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
-                  <Calendar
-                    mode="single"
-                    selected={formData.data_inicio}
-                    onSelect={(date) => {
-                      if (date) {
-                        const newDate = new Date(date);
-                        newDate.setHours(9, 0, 0, 0); // Default to 9 AM
-                        setFormData(prev => ({ ...prev, data_inicio: newDate }));
-                      }
-                    }}
-                    initialFocus
-                    className="pointer-events-auto"
-                  />
-                  {formData.data_inicio && (
-                    <div className="p-3 border-t">
-                      <Label>Hora de início</Label>
-                      <Input
-                        type="time"
-                        value={format(formData.data_inicio, "HH:mm")}
-                        onChange={(e) => {
-                          const [hours, minutes] = e.target.value.split(':');
-                          const newDate = new Date(formData.data_inicio!);
-                          newDate.setHours(parseInt(hours), parseInt(minutes));
-                          setFormData(prev => ({ ...prev, data_inicio: newDate }));
-                        }}
-                      />
-                    </div>
-                  )}
-                </PopoverContent>
-              </Popover>
+              <Label htmlFor="data_inicio">Data de Início *</Label>
+              <Input
+                id="data_inicio"
+                type="datetime-local"
+                value={formData.data_inicio ? format(formData.data_inicio, "yyyy-MM-dd'T'HH:mm") : ""}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (value) {
+                    setFormData(prev => ({ ...prev, data_inicio: new Date(value) }));
+                  }
+                }}
+                className="w-full"
+                required
+              />
             </div>
             
             <div className="space-y-2">
-              <Label>Data/Hora de Fim *</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      "w-full justify-start text-left font-normal",
-                      !formData.data_fim && "text-muted-foreground"
-                    )}
-                  >
-                    <Clock className="mr-2 h-4 w-4" />
-                    {formData.data_fim ? (
-                      format(formData.data_fim, "PPP 'às' HH:mm", { locale: ptBR })
-                    ) : (
-                      <span>Selecionar data e hora</span>
-                    )}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
-                  <Calendar
-                    mode="single"
-                    selected={formData.data_fim}
-                    onSelect={(date) => {
-                      if (date) {
-                        const newDate = new Date(date);
-                        newDate.setHours(10, 0, 0, 0); // Default to 10 AM
-                        setFormData(prev => ({ ...prev, data_fim: newDate }));
-                      }
-                    }}
-                    initialFocus
-                    className="pointer-events-auto"
-                  />
-                  {formData.data_fim && (
-                    <div className="p-3 border-t">
-                      <Label>Hora de fim</Label>
-                      <Input
-                        type="time"
-                        value={format(formData.data_fim, "HH:mm")}
-                        onChange={(e) => {
-                          const [hours, minutes] = e.target.value.split(':');
-                          const newDate = new Date(formData.data_fim!);
-                          newDate.setHours(parseInt(hours), parseInt(minutes));
-                          setFormData(prev => ({ ...prev, data_fim: newDate }));
-                        }}
-                      />
-                    </div>
-                  )}
-                </PopoverContent>
-              </Popover>
+              <Label htmlFor="data_fim">Data de Fim *</Label>
+              <Input
+                id="data_fim"
+                type="datetime-local"
+                value={formData.data_fim ? format(formData.data_fim, "yyyy-MM-dd'T'HH:mm") : ""}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (value) {
+                    setFormData(prev => ({ ...prev, data_fim: new Date(value) }));
+                  }
+                }}
+                className="w-full"
+                required
+              />
             </div>
           </div>
 
