@@ -30,6 +30,10 @@ import { Especialistas } from "./pages/Especialistas";
 
 // Role-specific pages
 import GRSDashboard from "./pages/GRS/Dashboard";
+import GRSPlanejamentos from "./pages/GRS/Planejamentos";
+import GRSPlanejamentoDetalhes from "./pages/GRS/PlanejamentoDetalhes";
+import GRSCalendarioEditorial from "./pages/GRS/CalendarioEditorial";
+import GRSAprovacoes from "./pages/GRS/Aprovacoes";
 import AtendimentoInbox from "./pages/Atendimento/Inbox";
 
 // Client pages
@@ -173,6 +177,30 @@ function App() {
                 <Route path="/grs/dashboard" element={
                   <ProtectedRoute requiredRole="grs">
                     <Layout><GRSDashboard /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/grs/planejamentos" element={
+                  <ProtectedRoute requiredRole="grs">
+                    <Layout><GRSPlanejamentos /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/grs/planejamento/:id" element={
+                  <ProtectedRoute requiredRole="grs">
+                    <Layout><GRSPlanejamentoDetalhes /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/grs/calendario" element={
+                  <ProtectedRoute requiredRole="grs">
+                    <Layout><GRSCalendarioEditorial /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/grs/aprovacoes" element={
+                  <ProtectedRoute requiredRole="grs">
+                    <Layout><GRSAprovacoes /></Layout>
                   </ProtectedRoute>
                 } />
                 

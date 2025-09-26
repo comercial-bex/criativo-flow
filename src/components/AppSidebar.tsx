@@ -174,6 +174,9 @@ export function AppSidebar() {
   // GRS specific items
   const grsItems = [
     { title: "Dashboard GRS", url: "/grs/dashboard", icon: BarChart3 },
+    { title: "Planejamentos", url: "/grs/planejamentos", icon: FileText },
+    { title: "Calendário Editorial", url: "/grs/calendario", icon: Calendar },
+    { title: "Aprovações", url: "/grs/aprovacoes", icon: ClipboardCheck },
   ];
 
   // Detect current module based on location
