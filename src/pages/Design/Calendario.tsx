@@ -57,7 +57,7 @@ export default function DesignCalendario() {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [viewMode, setViewMode] = useState<'month' | 'week'>('month');
-  const [filtroDesigner, setFiltroDesigner] = useState('');
+  const [filtroDesigner, setFiltroDesigner] = useState('all');
   const [loading, setLoading] = useState(true);
   const [isCreatingEvento, setIsCreatingEvento] = useState(false);
   const [novoEvento, setNovoEvento] = useState({
@@ -182,12 +182,12 @@ export default function DesignCalendario() {
     return dias.map(dia => {
       const tarefasDoDia = tarefas.filter(tarefa => 
         isSameDay(new Date(tarefa.data_prazo), dia) &&
-        (filtroDesigner === '' || tarefa.responsavel_id === filtroDesigner)
+        (filtroDesigner === 'all' || tarefa.responsavel_id === filtroDesigner)
       );
       
       const eventosDoDia = eventos.filter(evento => 
         isSameDay(new Date(evento.data_inicio), dia) &&
-        (filtroDesigner === '' || evento.responsavel_id === filtroDesigner)
+        (filtroDesigner === 'all' || evento.responsavel_id === filtroDesigner)
       );
 
       return {
@@ -203,7 +203,7 @@ export default function DesignCalendario() {
     
     return tarefas.filter(tarefa => 
       isSameDay(new Date(tarefa.data_prazo), selectedDate) &&
-      (filtroDesigner === '' || tarefa.responsavel_id === filtroDesigner)
+      (filtroDesigner === 'all' || tarefa.responsavel_id === filtroDesigner)
     );
   };
 
@@ -212,7 +212,7 @@ export default function DesignCalendario() {
     
     return eventos.filter(evento => 
       isSameDay(new Date(evento.data_inicio), selectedDate) &&
-      (filtroDesigner === '' || evento.responsavel_id === filtroDesigner)
+      (filtroDesigner === 'all' || evento.responsavel_id === filtroDesigner)
     );
   };
 
@@ -367,7 +367,7 @@ export default function DesignCalendario() {
               <SelectValue placeholder="Filtrar por designer" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Todos os designers</SelectItem>
+              <SelectItem value="all">Todos os designers</SelectItem>
               {profiles.map((profile) => (
                 <SelectItem key={profile.id} value={profile.id}>
                   {profile.nome}

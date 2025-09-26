@@ -250,7 +250,7 @@ export default function DesignKanban() {
   const [isCreating, setIsCreating] = useState(false);
   const [editingTarefa, setEditingTarefa] = useState<Tarefa | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filtroResponsavel, setFiltroResponsavel] = useState('');
+  const [filtroResponsavel, setFiltroResponsavel] = useState('all');
   const [novaTarefa, setNovaTarefa] = useState({
     titulo: '',
     descricao: '',
@@ -426,7 +426,7 @@ export default function DesignKanban() {
       );
     }
 
-    if (filtroResponsavel) {
+    if (filtroResponsavel && filtroResponsavel !== 'all') {
       tarefasFiltradas = tarefasFiltradas.filter(tarefa => tarefa.responsavel_id === filtroResponsavel);
     }
 
@@ -578,7 +578,7 @@ export default function DesignKanban() {
             <SelectValue placeholder="Filtrar por designer" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">Todos os designers</SelectItem>
+            <SelectItem value="all">Todos os designers</SelectItem>
             {profiles.map((profile) => (
               <SelectItem key={profile.id} value={profile.id}>
                 {profile.nome}
@@ -586,12 +586,12 @@ export default function DesignKanban() {
             ))}
           </SelectContent>
         </Select>
-        {(searchTerm || filtroResponsavel) && (
+        {(searchTerm || (filtroResponsavel && filtroResponsavel !== 'all')) && (
           <Button
             variant="outline"
             onClick={() => {
               setSearchTerm('');
-              setFiltroResponsavel('');
+              setFiltroResponsavel('all');
             }}
           >
             Limpar Filtros
