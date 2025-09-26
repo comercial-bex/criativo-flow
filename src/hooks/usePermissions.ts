@@ -17,6 +17,7 @@ export interface ModulePermissions {
   administrativo: PermissionActions;
   audiovisual: PermissionActions;
   design: PermissionActions;
+  grs: PermissionActions;
   configuracoes: PermissionActions;
   planos: PermissionActions;
   especialistas: PermissionActions;
@@ -44,6 +45,7 @@ const ROLE_PERMISSIONS: Record<NonNullable<UserRole>, Partial<ModulePermissions>
     administrativo: { canView: true, canCreate: true, canEdit: true, canDelete: true },
     audiovisual: { canView: true, canCreate: true, canEdit: true, canDelete: true },
     design: { canView: true, canCreate: true, canEdit: true, canDelete: true },
+    grs: { canView: true, canCreate: true, canEdit: true, canDelete: true },
     configuracoes: { canView: true, canCreate: true, canEdit: true, canDelete: true },
     planos: { canView: true, canCreate: true, canEdit: true, canDelete: true },
     especialistas: { canView: true, canCreate: true, canEdit: true, canDelete: true },
@@ -54,6 +56,7 @@ const ROLE_PERMISSIONS: Record<NonNullable<UserRole>, Partial<ModulePermissions>
     clientes: { canView: true, canCreate: true, canEdit: true, canDelete: false },
     crm: { canView: true, canCreate: true, canEdit: true, canDelete: false },
     design: { canView: true, canCreate: true, canEdit: true, canDelete: false },
+    grs: { canView: true, canCreate: true, canEdit: true, canDelete: false },
     relatorios: { canView: true, canCreate: false, canEdit: false, canDelete: false },
   },
   atendimento: {

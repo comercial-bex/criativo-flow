@@ -23,7 +23,8 @@ import {
   Home,
   Inbox,
   HeadphonesIcon,
-  TrendingUp
+  TrendingUp,
+  Users2
 } from "lucide-react"
 import { NavLink, useLocation } from "react-router-dom"
 import React from "react"
@@ -120,6 +121,19 @@ const modules = [
       { title: "Equipamentos", url: "/audiovisual/equipamentos", icon: Settings },
     ],
     permissions: ["audiovisual"]
+  },
+  {
+    id: "grs",
+    title: "GRS",
+    icon: Users2,
+    items: [
+      { title: "Dashboard", url: "/grs/dashboard", icon: TrendingUp },
+      { title: "Calendário Editorial", url: "/grs/calendario-editorial", icon: Calendar },
+      { title: "Planejamentos", url: "/grs/planejamentos", icon: Target },
+      { title: "Planejamento Estratégico", url: "/grs/planejamento-estrategico", icon: Target },
+      { title: "Aprovações", url: "/grs/aprovacoes", icon: UserCheck },
+    ],
+    permissions: ["grs"]
   },
   {
     id: "configuracoes",
