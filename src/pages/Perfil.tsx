@@ -147,15 +147,34 @@ export default function Perfil() {
   const handleSaveProfile = async () => {
     if (!user) return;
 
+    // Validate required fields
+    if (!profile.nome.trim()) {
+      toast({
+        title: "Erro",
+        description: "Nome é obrigatório",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!profile.email.trim()) {
+      toast({
+        title: "Erro",
+        description: "Email é obrigatório",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setSaving(true);
     try {
       const { error } = await supabase
         .from('profiles')
         .upsert({
           id: user.id,
-          nome: profile.nome,
-          email: profile.email,
-          telefone: profile.telefone,
+          nome: profile.nome.trim(),
+          email: profile.email.trim(),
+          telefone: profile.telefone?.trim() || null,
           avatar_url: profile.avatar_url,
         });
 
