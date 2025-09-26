@@ -14,6 +14,44 @@ export type Database = {
   }
   public: {
     Tables: {
+      assinatura_logs: {
+        Row: {
+          created_at: string
+          dados_gov_br: Json | null
+          evento: string
+          id: string
+          ip_usuario: unknown | null
+          proposta_id: string
+          user_agent: string | null
+        }
+        Insert: {
+          created_at?: string
+          dados_gov_br?: Json | null
+          evento: string
+          id?: string
+          ip_usuario?: unknown | null
+          proposta_id: string
+          user_agent?: string | null
+        }
+        Update: {
+          created_at?: string
+          dados_gov_br?: Json | null
+          evento?: string
+          id?: string
+          ip_usuario?: unknown | null
+          proposta_id?: string
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assinatura_logs_proposta_id_fkey"
+            columns: ["proposta_id"]
+            isOneToOne: false
+            referencedRelation: "propostas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       assinaturas: {
         Row: {
           anuncios_facebook: boolean
@@ -406,6 +444,50 @@ export type Database = {
         }
         Relationships: []
       }
+      financeiro_previsao: {
+        Row: {
+          created_at: string
+          data_inicio: string
+          id: string
+          observacoes: string | null
+          parcelas: number
+          proposta_id: string
+          status: string
+          updated_at: string
+          valor_mensal: number
+        }
+        Insert: {
+          created_at?: string
+          data_inicio: string
+          id?: string
+          observacoes?: string | null
+          parcelas?: number
+          proposta_id: string
+          status?: string
+          updated_at?: string
+          valor_mensal: number
+        }
+        Update: {
+          created_at?: string
+          data_inicio?: string
+          id?: string
+          observacoes?: string | null
+          parcelas?: number
+          proposta_id?: string
+          status?: string
+          updated_at?: string
+          valor_mensal?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financeiro_previsao_proposta_id_fkey"
+            columns: ["proposta_id"]
+            isOneToOne: false
+            referencedRelation: "propostas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       leads: {
         Row: {
           cargo: string | null
@@ -458,6 +540,112 @@ export type Database = {
             columns: ["responsavel_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orcamento_itens: {
+        Row: {
+          created_at: string
+          desconto_percentual: number | null
+          descricao: string | null
+          id: string
+          orcamento_id: string
+          preco_unitario: number
+          produto_servico: string
+          quantidade: number
+          updated_at: string
+          valor_total: number
+        }
+        Insert: {
+          created_at?: string
+          desconto_percentual?: number | null
+          descricao?: string | null
+          id?: string
+          orcamento_id: string
+          preco_unitario: number
+          produto_servico: string
+          quantidade?: number
+          updated_at?: string
+          valor_total: number
+        }
+        Update: {
+          created_at?: string
+          desconto_percentual?: number | null
+          descricao?: string | null
+          id?: string
+          orcamento_id?: string
+          preco_unitario?: number
+          produto_servico?: string
+          quantidade?: number
+          updated_at?: string
+          valor_total?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orcamento_itens_orcamento_id_fkey"
+            columns: ["orcamento_id"]
+            isOneToOne: false
+            referencedRelation: "orcamentos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orcamentos: {
+        Row: {
+          cliente_id: string | null
+          created_at: string
+          data_validade: string
+          desconto_percentual: number | null
+          desconto_valor: number | null
+          descricao: string | null
+          id: string
+          observacoes: string | null
+          responsavel_id: string | null
+          status: string
+          titulo: string
+          updated_at: string
+          valor_final: number
+          valor_total: number
+        }
+        Insert: {
+          cliente_id?: string | null
+          created_at?: string
+          data_validade: string
+          desconto_percentual?: number | null
+          desconto_valor?: number | null
+          descricao?: string | null
+          id?: string
+          observacoes?: string | null
+          responsavel_id?: string | null
+          status?: string
+          titulo: string
+          updated_at?: string
+          valor_final?: number
+          valor_total?: number
+        }
+        Update: {
+          cliente_id?: string | null
+          created_at?: string
+          data_validade?: string
+          desconto_percentual?: number | null
+          desconto_valor?: number | null
+          descricao?: string | null
+          id?: string
+          observacoes?: string | null
+          responsavel_id?: string | null
+          status?: string
+          titulo?: string
+          updated_at?: string
+          valor_final?: number
+          valor_total?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orcamentos_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
             referencedColumns: ["id"]
           },
         ]
@@ -792,6 +980,65 @@ export type Database = {
             columns: ["responsavel_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      propostas: {
+        Row: {
+          assinatura_data: string | null
+          assinatura_status: string
+          assinatura_url: string | null
+          created_at: string
+          data_envio: string | null
+          id: string
+          link_publico: string | null
+          orcamento_id: string
+          pdf_assinado_path: string | null
+          pdf_path: string | null
+          responsavel_id: string | null
+          titulo: string
+          updated_at: string
+          visualizado_em: string | null
+        }
+        Insert: {
+          assinatura_data?: string | null
+          assinatura_status?: string
+          assinatura_url?: string | null
+          created_at?: string
+          data_envio?: string | null
+          id?: string
+          link_publico?: string | null
+          orcamento_id: string
+          pdf_assinado_path?: string | null
+          pdf_path?: string | null
+          responsavel_id?: string | null
+          titulo: string
+          updated_at?: string
+          visualizado_em?: string | null
+        }
+        Update: {
+          assinatura_data?: string | null
+          assinatura_status?: string
+          assinatura_url?: string | null
+          created_at?: string
+          data_envio?: string | null
+          id?: string
+          link_publico?: string | null
+          orcamento_id?: string
+          pdf_assinado_path?: string | null
+          pdf_path?: string | null
+          responsavel_id?: string | null
+          titulo?: string
+          updated_at?: string
+          visualizado_em?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "propostas_orcamento_id_fkey"
+            columns: ["orcamento_id"]
+            isOneToOne: false
+            referencedRelation: "orcamentos"
             referencedColumns: ["id"]
           },
         ]

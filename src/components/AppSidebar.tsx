@@ -9,7 +9,8 @@ import {
   UserCheck,
   Calendar,
   BarChart3,
-  ClipboardCheck
+  ClipboardCheck,
+  Calculator
 } from "lucide-react"
 import { NavLink, useLocation } from "react-router-dom"
 
@@ -35,6 +36,7 @@ const mainItems = [
 
 const financialItems = [
   { title: "Financeiro", url: "/financeiro", icon: DollarSign },
+  { title: "Administrativo", url: "/administrativo", icon: Calculator },
   { title: "Planos", url: "/planos", icon: CreditCard },
   { title: "Categorias", url: "/financeiro/categorias", icon: FileText },
 ]
