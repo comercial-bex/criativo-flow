@@ -12,6 +12,7 @@ import { useProfileData } from "@/hooks/useProfileData";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { User, Settings, LogOut, ChevronDown, Loader2 } from "lucide-react";
+import bexLogo from "@/assets/logo_bex_verde.png";
 
 export function UserProfileSection() {
   const { user, signOut } = useAuth();
@@ -46,24 +47,28 @@ export function UserProfileSection() {
   return (
     <div className="p-6 border-b border-sidebar-border animate-fade-in">
       {/* Logo BEX */}
-      <div className="text-center mb-6">
-        <h2 className="text-2xl font-bold text-bex-green neon-text">BEX</h2>
+      <div className="flex justify-center mb-6">
+        <img 
+          src={bexLogo} 
+          alt="BEX Logo" 
+          className="h-12 w-auto hover-lift"
+        />
       </div>
 
       {/* Avatar Centralizado e Maior */}
       <div className="flex flex-col items-center mb-6">
-        <Avatar className="w-20 h-20 border-3 border-bex-green hover-lift neon-glow mb-3">
+        <Avatar className="w-20 h-20 border-2 border-bex-green hover-lift mb-3">
           <AvatarImage src={profile.avatar_url} alt={displayName} />
-          <AvatarFallback className="bg-bex-green text-bex-dark font-bold text-lg">
+          <AvatarFallback className="bg-bex-green text-white font-bold text-lg">
             {initials}
           </AvatarFallback>
         </Avatar>
         
         <div className="text-center">
-          <h3 className="text-lg font-semibold text-bex-green neon-text mb-1">
+          <h3 className="text-lg font-semibold text-bex-green mb-1">
             Olá, {displayName.split(' ')[0]}
           </h3>
-          <p className="text-sm text-gray-400 truncate max-w-[200px]">
+          <p className="text-sm text-muted-foreground truncate max-w-[200px]">
             {user.email}
           </p>
         </div>

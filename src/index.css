@@ -19,12 +19,12 @@ All colors MUST be HSL.
     --popover-foreground: 0 0% 15%;
 
     /* Verde personalizado BCF125 */
-    --primary: 69 77% 76%;
-    --primary-foreground: 0 0% 11%;
+    --primary: 84 65% 47%;
+    --primary-foreground: 0 0% 98%;
     
-    /* Cores customizadas BEX - Neon */
-    --bex-green: 69 77% 76%; /* #BCF125 */
-    --bex-green-glow: 69 77% 76%; /* #BCF125 with glow */
+    /* Cores customizadas BEX */
+    --bex-green: 84 65% 47%; /* #54C43D - Verde da logo BEX */
+    --bex-green-glow: 84 65% 47%; /* #54C43D with glow */
     --bex-dark: 0 0% 11%;   /* #1D1D1D */
 
     --secondary: 0 0% 96%;
@@ -65,12 +65,12 @@ All colors MUST be HSL.
     /* Sidebar customizada BEX */
     --sidebar-background: 0 0% 11%;        /* #1D1D1D */
     --sidebar-foreground: 0 0% 85%;
-    --sidebar-primary: 69 77% 76%;          /* #BCF125 */
-    --sidebar-primary-foreground: 0 0% 11%;
+    --sidebar-primary: 84 65% 47%;          /* #54C43D */
+    --sidebar-primary-foreground: 0 0% 98%;
     --sidebar-accent: 0 0% 15%;
     --sidebar-accent-foreground: 0 0% 85%;
     --sidebar-border: 0 0% 20%;
-    --sidebar-ring: 69 77% 76%;
+    --sidebar-ring: 84 65% 47%;
   }
 
   .dark {
@@ -83,8 +83,8 @@ All colors MUST be HSL.
     --popover: 0 0% 15%;
     --popover-foreground: 0 0% 85%;
 
-    --primary: 69 77% 76%;
-    --primary-foreground: 0 0% 11%;
+    --primary: 84 65% 47%;
+    --primary-foreground: 0 0% 98%;
 
     --secondary: 0 0% 20%;
     --secondary-foreground: 0 0% 85%;
@@ -104,12 +104,12 @@ All colors MUST be HSL.
     
     --sidebar-background: 0 0% 11%;        /* #1D1D1D */
     --sidebar-foreground: 0 0% 85%;
-    --sidebar-primary: 69 77% 76%;          /* #BCF125 */
-    --sidebar-primary-foreground: 0 0% 11%;
+    --sidebar-primary: 84 65% 47%;          /* #54C43D */
+    --sidebar-primary-foreground: 0 0% 98%;
     --sidebar-accent: 0 0% 15%;
     --sidebar-accent-foreground: 0 0% 85%;
     --sidebar-border: 0 0% 20%;
-    --sidebar-ring: 69 77% 76%;
+    --sidebar-ring: 84 65% 47%;
   }
 }
 
@@ -146,25 +146,13 @@ All colors MUST be HSL.
     box-shadow: 0 4px 12px rgba(188, 241, 37, 0.15);
   }
   
-  .neon-text {
-    text-shadow: 0 0 5px hsl(var(--bex-green)), 
-                 0 0 10px hsl(var(--bex-green)), 
-                 0 0 15px hsl(var(--bex-green));
-  }
-
-  .neon-glow {
-    box-shadow: 0 0 5px hsl(var(--bex-green) / 0.5),
-                0 0 10px hsl(var(--bex-green) / 0.3),
-                0 0 15px hsl(var(--bex-green) / 0.2);
-  }
-
   .module-hover {
     transition: all 0.3s ease;
   }
 
   .module-hover:hover {
-    transform: scale(1.05);
-    box-shadow: 0 0 15px hsl(var(--bex-green) / 0.4);
+    transform: scale(1.02);
+    background: linear-gradient(135deg, hsl(var(--bex-green) / 0.1), hsl(var(--bex-green) / 0.05));
   }
   
   .pulse-glow {

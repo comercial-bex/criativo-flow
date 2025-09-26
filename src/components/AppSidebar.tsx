@@ -221,7 +221,7 @@ export function AppSidebar() {
                 onClick={() => setSelectedModule(module.id)}
                 className={`w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-300 module-hover animate-fade-in ${
                   isSelected 
-                    ? 'bg-bex-dark text-bex-green shadow-lg neon-glow' 
+                    ? 'bg-bex-dark text-bex-green shadow-lg' 
                     : 'bg-bex-green/90 text-bex-dark hover:bg-white/90'
                 }`}
                 style={{ animationDelay: `${index * 50}ms` }}
@@ -240,7 +240,7 @@ export function AppSidebar() {
 
           {/* Active Module Highlight */}
           {currentModule && (
-            <div className="px-4 py-3 mx-4 mb-4 bg-bex-green rounded-lg animate-fade-in hover-lift neon-glow">
+            <div className="px-4 py-3 mx-4 mb-4 bg-bex-green rounded-lg animate-fade-in hover-lift">
               <div className="flex items-center text-bex-dark">
                 <currentModule.icon className="mr-2 h-4 w-4" />
                 <span className="font-medium text-sm">{currentModule.title}</span>
@@ -260,7 +260,7 @@ export function AppSidebar() {
                 to={item.url}
                 className={`flex items-center px-4 py-3 mb-1 text-sm rounded-lg transition-all duration-300 hover-lift animate-slide-in ${
                   isItemActive
-                    ? 'bg-sidebar-accent text-bex-green border-l-2 border-bex-green neon-glow'
+                    ? 'bg-sidebar-accent text-bex-green border-l-2 border-bex-green'
                     : 'text-sidebar-foreground hover:bg-bex-green/10 hover:text-bex-green'
                 }`}
                 style={{ animationDelay: `${index * 30}ms` }}
