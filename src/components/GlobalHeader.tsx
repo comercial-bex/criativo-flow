@@ -1,4 +1,5 @@
-import { Search, Bell, HelpCircle, User, LogOut, Calendar } from "lucide-react";
+import { Search, User, LogOut } from "lucide-react";
+import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -9,13 +10,20 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Badge } from "@/components/ui/badge";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { useUniversalSearch } from "@/hooks/useUniversalSearch";
+import { SearchResults } from "@/components/SearchResults";
+import { NotificationDropdown } from "@/components/NotificationDropdown";
+import { CalendarModal } from "@/components/CalendarModal";
+import { HelpModal } from "@/components/HelpModal";
 
 export function GlobalHeader() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showResults, setShowResults] = useState(false);
+  const { results, isLoading } = useUniversalSearch(searchQuery);
 
   const handleSignOut = async () => {
     await signOut();
@@ -33,28 +41,34 @@ export function GlobalHeader() {
           <Input
             placeholder="Buscar clientes, projetos, planejamentos..."
             className="pl-10"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onFocus={() => setShowResults(true)}
+            onBlur={() => setTimeout(() => setShowResults(false), 200)}
           />
+          {showResults && (
+            <SearchResults
+              results={results}
+              isLoading={isLoading}
+              query={searchQuery}
+              onResultClick={() => {
+                setShowResults(false);
+                setSearchQuery("");
+              }}
+            />
+          )}
         </div>
       </div>
 
       <div className="flex items-center gap-3">
         {/* Calendário Geral - Acesso Rápido */}
-        <Button variant="ghost" size="sm" title="Calendário Geral da Agência">
-          <Calendar className="h-5 w-5" />
-        </Button>
+        <CalendarModal />
 
         {/* Notificações */}
-        <Button variant="ghost" size="sm" className="relative">
-          <Bell className="h-5 w-5" />
-          <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 text-xs">
-            3
-          </Badge>
-        </Button>
+        <NotificationDropdown />
 
         {/* Ajuda */}
-        <Button variant="ghost" size="sm">
-          <HelpCircle className="h-5 w-5" />
-        </Button>
+        <HelpModal />
 
         {/* Toggle de Tema */}
         <ThemeToggle />

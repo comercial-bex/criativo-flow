@@ -203,7 +203,22 @@ export type Database = {
           titulo?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_captacoes_cliente"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_captacoes_especialista"
+            columns: ["especialista_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       categorias_financeiras: {
         Row: {
@@ -556,6 +571,117 @@ export type Database = {
           tipo?: string
           updated_at?: string
         }
+        Relationships: [
+          {
+            foreignKeyName: "fk_equipamentos_responsavel"
+            columns: ["responsavel_atual"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      eventos_agenda: {
+        Row: {
+          cliente_id: string | null
+          cor: string | null
+          created_at: string
+          data_fim: string
+          data_inicio: string
+          descricao: string | null
+          id: string
+          projeto_id: string | null
+          responsavel_id: string | null
+          tipo: string
+          titulo: string
+          updated_at: string
+        }
+        Insert: {
+          cliente_id?: string | null
+          cor?: string | null
+          created_at?: string
+          data_fim: string
+          data_inicio: string
+          descricao?: string | null
+          id?: string
+          projeto_id?: string | null
+          responsavel_id?: string | null
+          tipo?: string
+          titulo: string
+          updated_at?: string
+        }
+        Update: {
+          cliente_id?: string | null
+          cor?: string | null
+          created_at?: string
+          data_fim?: string
+          data_inicio?: string
+          descricao?: string | null
+          id?: string
+          projeto_id?: string | null
+          responsavel_id?: string | null
+          tipo?: string
+          titulo?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "eventos_agenda_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "eventos_agenda_projeto_id_fkey"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "projetos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "eventos_agenda_responsavel_id_fkey"
+            columns: ["responsavel_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      faq_suporte: {
+        Row: {
+          ativo: boolean
+          categoria: string
+          created_at: string
+          id: string
+          ordem: number | null
+          pergunta: string
+          resposta: string
+          tags: string[] | null
+          updated_at: string
+        }
+        Insert: {
+          ativo?: boolean
+          categoria?: string
+          created_at?: string
+          id?: string
+          ordem?: number | null
+          pergunta: string
+          resposta: string
+          tags?: string[] | null
+          updated_at?: string
+        }
+        Update: {
+          ativo?: boolean
+          categoria?: string
+          created_at?: string
+          id?: string
+          ordem?: number | null
+          pergunta?: string
+          resposta?: string
+          tags?: string[] | null
+          updated_at?: string
+        }
         Relationships: []
       }
       financeiro_previsao: {
@@ -657,6 +783,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      notificacoes: {
+        Row: {
+          created_at: string
+          data_evento: string | null
+          id: string
+          lida: boolean
+          link_acao: string | null
+          mensagem: string
+          tipo: string
+          titulo: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          data_evento?: string | null
+          id?: string
+          lida?: boolean
+          link_acao?: string | null
+          mensagem: string
+          tipo?: string
+          titulo: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          data_evento?: string | null
+          id?: string
+          lida?: boolean
+          link_acao?: string | null
+          mensagem?: string
+          tipo?: string
+          titulo?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       orcamento_itens: {
         Row: {
@@ -1138,7 +1303,22 @@ export type Database = {
           titulo?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_projetos_av_especialista"
+            columns: ["especialista_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_projetos_av_planejamento"
+            columns: ["planejamento_id"]
+            isOneToOne: false
+            referencedRelation: "planejamentos"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       propostas: {
         Row: {
