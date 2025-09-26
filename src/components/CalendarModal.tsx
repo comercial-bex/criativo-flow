@@ -174,7 +174,7 @@ export function CalendarModal() {
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-semibold">
-                {selectedDate ? format(selectedDate, "d 'de' MMMM", { locale: ptBR }) : 'Selecione uma data'}
+                {selectedDate ? format(selectedDate, "d 'de' MMMM 'de' yyyy", { locale: ptBR }) : 'Selecione uma data'}
               </h3>
               <NewEventModal onEventCreated={fetchEvents} />
             </div>
