@@ -174,7 +174,7 @@ export function AppSidebar() {
                       <NavLink
                         to={item.url}
                         className={({ isActive }) =>
-                          isActive ? "bg-muted text-primary font-medium" : "hover:bg-muted/50"
+                          isActive ? "border-l-2 border-l-primary bg-muted/50 text-foreground font-medium pl-3" : "hover:bg-muted/30 pl-3"
                         }
                       >
                         <item.icon className="mr-2 h-4 w-4" />
@@ -199,7 +199,7 @@ export function AppSidebar() {
                     <NavLink
                       to="/grs/dashboard"
                       className={({ isActive }) =>
-                        isActive ? "bg-muted text-primary font-medium" : "hover:bg-muted/50"
+                        isActive ? "border-l-2 border-l-primary bg-muted/50 text-foreground font-medium pl-3" : "hover:bg-muted/30 pl-3"
                       }
                     >
                       <BarChart3 className="mr-2 h-4 w-4" />
@@ -223,7 +223,7 @@ export function AppSidebar() {
                     <NavLink
                       to="/atendimento/inbox"
                       className={({ isActive }) =>
-                        isActive ? "bg-muted text-primary font-medium" : "hover:bg-muted/50"
+                        isActive ? "border-l-2 border-l-primary bg-muted/50 text-foreground font-medium pl-3" : "hover:bg-muted/30 pl-3"
                       }
                     >
                       <Inbox className="mr-2 h-4 w-4" />
@@ -247,7 +247,7 @@ export function AppSidebar() {
                     <NavLink
                       to="/cliente/painel"
                       className={({ isActive }) =>
-                        isActive ? "bg-muted text-primary font-medium" : "hover:bg-muted/50"
+                        isActive ? "border-l-2 border-l-primary bg-muted/50 text-foreground font-medium pl-3" : "hover:bg-muted/30 pl-3"
                       }
                     >
                       <Home className="mr-2 h-4 w-4" />
@@ -260,7 +260,7 @@ export function AppSidebar() {
                     <NavLink
                       to="/cliente/projetos"
                       className={({ isActive }) =>
-                        isActive ? "bg-muted text-primary font-medium" : "hover:bg-muted/50"
+                        isActive ? "border-l-2 border-l-primary bg-muted/50 text-foreground font-medium pl-3" : "hover:bg-muted/30 pl-3"
                       }
                     >
                       <Briefcase className="mr-2 h-4 w-4" />
@@ -273,7 +273,7 @@ export function AppSidebar() {
                     <NavLink
                       to="/aprovacao-job"
                       className={({ isActive }) =>
-                        isActive ? "bg-muted text-primary font-medium" : "hover:bg-muted/50"
+                        isActive ? "border-l-2 border-l-primary bg-muted/50 text-foreground font-medium pl-3" : "hover:bg-muted/30 pl-3"
                       }
                     >
                       <Eye className="mr-2 h-4 w-4" />
@@ -297,7 +297,7 @@ export function AppSidebar() {
                       <NavLink
                         to={item.url}
                         className={({ isActive }) =>
-                          isActive ? "bg-muted text-primary font-medium" : "hover:bg-muted/50"
+                          isActive ? "border-l-2 border-l-primary bg-muted/50 text-foreground font-medium pl-3" : "hover:bg-muted/30 pl-3"
                         }
                       >
                         <item.icon className="mr-2 h-4 w-4" />
@@ -322,7 +322,7 @@ export function AppSidebar() {
                       <NavLink
                         to={item.url}
                         className={({ isActive }) =>
-                          isActive ? "bg-muted text-primary font-medium" : "hover:bg-muted/50"
+                          isActive ? "border-l-2 border-l-primary bg-muted/50 text-foreground font-medium pl-3" : "hover:bg-muted/30 pl-3"
                         }
                       >
                         <item.icon className="mr-2 h-4 w-4" />
@@ -347,7 +347,7 @@ export function AppSidebar() {
                       <NavLink
                         to={item.url}
                         className={({ isActive }) =>
-                          isActive ? "bg-muted text-primary font-medium" : "hover:bg-muted/50"
+                          isActive ? "border-l-2 border-l-primary bg-muted/50 text-foreground font-medium pl-3" : "hover:bg-muted/30 pl-3"
                         }
                       >
                         <item.icon className="mr-2 h-4 w-4" />
@@ -372,7 +372,7 @@ export function AppSidebar() {
                       <NavLink
                         to={item.url}
                         className={({ isActive }) =>
-                          isActive ? "bg-muted text-primary font-medium" : "hover:bg-muted/50"
+                          isActive ? "border-l-2 border-l-primary bg-muted/50 text-foreground font-medium pl-3" : "hover:bg-muted/30 pl-3"
                         }
                       >
                         <item.icon className="mr-2 h-4 w-4" />
@@ -397,7 +397,7 @@ export function AppSidebar() {
                       <NavLink
                         to={item.url}
                         className={({ isActive }) =>
-                          isActive ? "bg-muted text-primary font-medium" : "hover:bg-muted/50"
+                          isActive ? "border-l-2 border-l-primary bg-muted/50 text-foreground font-medium pl-3" : "hover:bg-muted/30 pl-3"
                         }
                       >
                         <item.icon className="mr-2 h-4 w-4" />

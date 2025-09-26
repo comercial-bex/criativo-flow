@@ -20,13 +20,27 @@ import {
   Globe,
   Save,
   AlertTriangle,
-  Users
+  Users,
+  Monitor,
+  RefreshCw
 } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+import { useUserRole } from '@/hooks/useUserRole';
+import { usePermissions } from '@/hooks/usePermissions';
 import { useToast } from '@/hooks/use-toast';
 
 const Configuracoes = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { user, session, loading: authLoading } = useAuth();
+  const { role, loading: roleLoading } = useUserRole();
+  const { 
+    getDefaultRoute, 
+    loading: permissionsLoading, 
+    hasModuleAccess, 
+    canPerformAction,
+    dynamicPermissions 
+  } = usePermissions();
   const [notifications, setNotifications] = useState({
     email: true,
     push: false,
@@ -39,6 +53,12 @@ const Configuracoes = () => {
       description: "Suas configurações foram atualizadas com sucesso."
     });
   };
+
+  const handleRefresh = () => {
+    window.location.reload();
+  };
+
+  const isJefferson = user?.email === 'jefferson@agenciabex.com.br';
 
   return (
     <div className="p-6 space-y-8">
@@ -54,13 +74,14 @@ const Configuracoes = () => {
       />
 
       <Tabs defaultValue="geral" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className="grid w-full grid-cols-7">
           <TabsTrigger value="geral">Geral</TabsTrigger>
           <TabsTrigger value="perfil">Perfil</TabsTrigger>
           <TabsTrigger value="seguranca">Segurança</TabsTrigger>
           <TabsTrigger value="notificacoes">Notificações</TabsTrigger>
           <TabsTrigger value="aparencia">Aparência</TabsTrigger>
           <TabsTrigger value="funcoes">Funções</TabsTrigger>
+          <TabsTrigger value="servidor">Status do Servidor</TabsTrigger>
         </TabsList>
 
         <TabsContent value="geral" className="space-y-6">
@@ -342,6 +363,195 @@ const Configuracoes = () => {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="servidor" className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Monitor className="h-5 w-5 mr-2" />
+                  Status do Sistema
+                </CardTitle>
+                <CardDescription>
+                  Informações sobre o estado atual do servidor
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm">Status da Conexão:</span>
+                    <Badge variant={user ? "default" : "destructive"}>
+                      {user ? "Conectado" : "Desconectado"}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm">Sessão Ativa:</span>
+                    <Badge variant={session ? "default" : "secondary"}>
+                      {session ? "Sim" : "Não"}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm">Tempo de Atividade:</span>
+                    <Badge variant="outline">{new Date().toLocaleTimeString()}</Badge>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <User className="h-5 w-5 mr-2" />
+                  Informações do Usuário
+                </CardTitle>
+                <CardDescription>
+                  Dados de autenticação e permissões
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm">Email:</span>
+                    <span className="text-xs text-muted-foreground">{user?.email || "N/A"}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm">Role:</span>
+                    <Badge variant={role === 'admin' ? "default" : "secondary"}>
+                      {role || "Carregando..."}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm">Rota Padrão:</span>
+                    <Badge variant="outline">{getDefaultRoute()}</Badge>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="lg:col-span-2">
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Shield className="h-5 w-5 mr-2" />
+                  Estados de Carregamento
+                </CardTitle>
+                <CardDescription>
+                  Status dos hooks e permissões do sistema
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Auth Loading:</span>
+                      <Badge variant={authLoading ? "destructive" : "secondary"}>
+                        {authLoading ? "Carregando" : "OK"}
+                      </Badge>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Role Loading:</span>
+                      <Badge variant={roleLoading ? "destructive" : "secondary"}>
+                        {roleLoading ? "Carregando" : "OK"}
+                      </Badge>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Permissions Loading:</span>
+                      <Badge variant={permissionsLoading ? "destructive" : "secondary"}>
+                        {permissionsLoading ? "Carregando" : "OK"}
+                      </Badge>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="lg:col-span-2">
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Database className="h-5 w-5 mr-2" />
+                  Acesso aos Módulos
+                </CardTitle>
+                <CardDescription>
+                  Status de acesso para cada módulo do sistema
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                  {Object.keys(dynamicPermissions).map(module => (
+                    <div key={module} className="flex items-center justify-between p-2 bg-muted/30 rounded">
+                      <span className="text-xs font-medium">{module}</span>
+                      <Badge 
+                        variant={hasModuleAccess(module as any) ? "default" : "destructive"} 
+                        className="text-xs"
+                      >
+                        {hasModuleAccess(module as any) ? "✅" : "❌"}
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Special Jefferson Status */}
+            {isJefferson && (
+              <Card className="lg:col-span-2 border-l-4 border-l-primary">
+                <CardHeader>
+                  <CardTitle className="flex items-center text-primary">
+                    <AlertTriangle className="h-5 w-5 mr-2" />
+                    Status Especial - Jefferson
+                  </CardTitle>
+                  <CardDescription>
+                    Informações específicas para resolução de problemas
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Admin Access:</span>
+                      <Badge variant={role === 'admin' ? "default" : "destructive"}>
+                        {role === 'admin' ? "✅ YES" : "❌ NO"}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Dashboard Access:</span>
+                      <Badge variant={hasModuleAccess('dashboard') ? "default" : "destructive"}>
+                        {hasModuleAccess('dashboard') ? "✅ YES" : "❌ NO"}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Current Issue:</span>
+                      <Badge variant="destructive">
+                        {window.location.pathname === '/unauthorized' ? 'Blocked' : 'Unknown'}
+                      </Badge>
+                    </div>
+                  </div>
+                  <div className="pt-4 border-t space-y-2">
+                    <Button 
+                      onClick={handleRefresh} 
+                      variant="outline" 
+                      size="sm" 
+                      className="w-full"
+                    >
+                      <RefreshCw className="w-4 h-4 mr-2" />
+                      Atualizar Página
+                    </Button>
+                    <Button 
+                      onClick={() => window.location.href = '/dashboard'} 
+                      variant="default" 
+                      size="sm" 
+                      className="w-full"
+                    >
+                      🎯 Forçar Dashboard
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
         </TabsContent>
       </Tabs>
     </div>
