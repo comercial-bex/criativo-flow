@@ -164,24 +164,39 @@ export function usePermissions() {
   }, [role, loading]);
 
   const getModulePermissions = (module: keyof ModulePermissions): PermissionActions => {
-    if (!role || loading || permissionsLoading) return DEFAULT_PERMISSIONS;
+    // Admin gets full access always
+    if (role === 'admin') {
+      return { canView: true, canCreate: true, canEdit: true, canDelete: true };
+    }
+    
+    if (!role || loading || permissionsLoading) {
+      console.log('🔑 getModulePermissions: No role or loading', { role, loading, permissionsLoading, module });
+      return DEFAULT_PERMISSIONS;
+    }
     
     // Priorizar permissões dinâmicas do banco
     if (dynamicPermissions[module]) {
+      console.log('🔑 getModulePermissions: Using dynamic permissions', { module, permissions: dynamicPermissions[module] });
       return dynamicPermissions[module];
     }
     
     // Fallback para permissões estáticas
     const rolePermissions = role ? ROLE_PERMISSIONS[role] : undefined;
-    return rolePermissions?.[module] || DEFAULT_PERMISSIONS;
+    const permissions = rolePermissions?.[module] || DEFAULT_PERMISSIONS;
+    console.log('🔑 getModulePermissions: Using static permissions', { module, role, permissions });
+    return permissions;
   };
 
   const hasModuleAccess = (module: keyof ModulePermissions): boolean => {
-    return getModulePermissions(module).canView;
+    const result = getModulePermissions(module).canView;
+    console.log('🔑 hasModuleAccess:', { module, result, role });
+    return result;
   };
 
   const canPerformAction = (module: keyof ModulePermissions, action: keyof PermissionActions): boolean => {
-    return getModulePermissions(module)[action];
+    const result = getModulePermissions(module)[action];
+    console.log('🔑 canPerformAction:', { module, action, result, role });
+    return result;
   };
 
   const getDefaultRoute = (): string => {
