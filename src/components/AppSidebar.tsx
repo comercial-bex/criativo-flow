@@ -21,65 +21,120 @@ import {
   Target,
   Eye,
   Home,
-  Inbox
+  Inbox,
+  HeadphonesIcon,
+  TrendingUp
 } from "lucide-react"
 import { NavLink, useLocation } from "react-router-dom"
-import { usePermissions } from "@/hooks/usePermissions";
+import React from "react"
+import { usePermissions, type ModulePermissions } from "@/hooks/usePermissions";
+import { UserProfileSection } from "./UserProfileSection";
+import { useState } from "react";
 
 import {
   Sidebar,
   SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
 } from "@/components/ui/sidebar"
 
-const mainItems = [
-  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
-  { title: "CRM", url: "/crm", icon: Users },
-  { title: "Clientes", url: "/clientes", icon: Building2 },
-  { title: "Especialistas", url: "/especialistas", icon: UserCheck },
-]
-
-const financialItems = [
-  { title: "Financeiro", url: "/financeiro", icon: DollarSign },
-  { title: "Planos", url: "/planos", icon: CreditCard },
-  { title: "Categorias", url: "/categorias-financeiras", icon: FileText },
-]
-
-const administrativeItems = [
-  { title: "Dashboard Admin", url: "/administrativo/dashboard", icon: Briefcase },
-  { title: "Orçamentos", url: "/administrativo/orcamentos", icon: Calculator },
-  { title: "Propostas", url: "/administrativo/propostas", icon: Signature },
-]
-
-const audiovisualItems = [
-  { title: "Dashboard AV", url: "/audiovisual/dashboard", icon: Video },
-  { title: "Captações", url: "/audiovisual/captacoes", icon: Camera },
-  { title: "Projetos AV", url: "/audiovisual/projetos", icon: Film },
-  { title: "Equipamentos", url: "/audiovisual/equipamentos", icon: Settings },
-]
-
-const designItems = [
-  { title: "Dashboard Design", url: "/design/dashboard", icon: Palette },
-  { title: "Kanban", url: "/design/kanban", icon: ClipboardCheck },
-  { title: "Calendário", url: "/design/calendario", icon: Calendar },
-  { title: "Biblioteca", url: "/design/biblioteca", icon: FolderOpen },
-  { title: "Metas", url: "/design/metas", icon: Target },
-  { title: "Aprovações", url: "/design/aprovacoes", icon: Eye },
-]
-
-const managementItems = [
-  { title: "Relatórios", url: "/relatorios", icon: BarChart3 },
-  { title: "Configurações", url: "/configuracoes", icon: Settings },
+// Modules structure for the new layout
+const modules = [
+  {
+    id: "dashboard",
+    title: "Dashboard",
+    icon: LayoutDashboard,
+    items: [
+      { title: "Meu Painel", url: "/dashboard", icon: Home },
+    ],
+    permissions: ["dashboard"]
+  },
+  {
+    id: "crm",
+    title: "CRM",
+    icon: Users,
+    items: [
+      { title: "CRM", url: "/crm", icon: Users },
+      { title: "Clientes", url: "/clientes", icon: Building2 },
+      { title: "Especialistas", url: "/especialistas", icon: UserCheck },
+    ],
+    permissions: ["crm", "clientes", "especialistas"]
+  },
+  {
+    id: "atendimento",
+    title: "Atendimento",
+    icon: HeadphonesIcon,
+    items: [
+      { title: "Atendimentos", url: "/atendimento/inbox", icon: Inbox },
+      { title: "Minhas Tarefas", url: "/atendimento/tarefas", icon: ClipboardCheck },
+      { title: "Mensagens", url: "/atendimento/mensagens", icon: FileText },
+    ],
+    permissions: ["atendimento"],
+    roles: ["atendimento", "admin"]
+  },
+  {
+    id: "financeiro",
+    title: "Financeiro",
+    icon: DollarSign,
+    items: [
+      { title: "Financeiro", url: "/financeiro", icon: DollarSign },
+      { title: "Planos", url: "/planos", icon: CreditCard },
+      { title: "Categorias", url: "/categorias-financeiras", icon: FileText },
+      { title: "Meus Ganhos", url: "/financeiro/ganhos", icon: TrendingUp },
+    ],
+    permissions: ["financeiro"]
+  },
+  {
+    id: "administrativo", 
+    title: "Administrativo",
+    icon: Briefcase,
+    items: [
+      { title: "Dashboard Admin", url: "/administrativo/dashboard", icon: Briefcase },
+      { title: "Orçamentos", url: "/administrativo/orcamentos", icon: Calculator },
+      { title: "Propostas", url: "/administrativo/propostas", icon: Signature },
+    ],
+    permissions: ["administrativo"]
+  },
+  {
+    id: "design",
+    title: "Design",
+    icon: Palette,
+    items: [
+      { title: "Dashboard Design", url: "/design/dashboard", icon: Palette },
+      { title: "Kanban", url: "/design/kanban", icon: ClipboardCheck },
+      { title: "Calendário", url: "/design/calendario", icon: Calendar },
+      { title: "Biblioteca", url: "/design/biblioteca", icon: FolderOpen },
+      { title: "Metas", url: "/design/metas", icon: Target },
+      { title: "Aprovações", url: "/design/aprovacoes", icon: Eye },
+    ],
+    permissions: ["design"]
+  },
+  {
+    id: "audiovisual",
+    title: "Audiovisual", 
+    icon: Video,
+    items: [
+      { title: "Dashboard AV", url: "/audiovisual/dashboard", icon: Video },
+      { title: "Captações", url: "/audiovisual/captacoes", icon: Camera },
+      { title: "Projetos AV", url: "/audiovisual/projetos", icon: Film },
+      { title: "Equipamentos", url: "/audiovisual/equipamentos", icon: Settings },
+    ],
+    permissions: ["audiovisual"]
+  },
+  {
+    id: "configuracoes",
+    title: "Configurações",
+    icon: Settings,
+    items: [
+      { title: "Configurações", url: "/configuracoes", icon: Settings },
+      { title: "Relatórios", url: "/relatorios", icon: BarChart3 },
+    ],
+    permissions: ["configuracoes", "relatorios"]
+  },
 ]
 
 export function AppSidebar() {
   const location = useLocation();
   const { hasModuleAccess, role } = usePermissions();
+  const [selectedModule, setSelectedModule] = useState<string>("dashboard");
 
   const isActive = (path: string) => {
     if (path === '/dashboard') {
@@ -88,329 +143,141 @@ export function AppSidebar() {
     return location.pathname.startsWith(path);
   };
 
-  // Filter items based on permissions
-  const getVisibleMainItems = () => {
-    return mainItems.filter(item => {
-      switch (item.url) {
-        case '/dashboard':
-          return hasModuleAccess('dashboard');
-        case '/clientes':
-          return hasModuleAccess('clientes');
-        case '/crm':
-          return hasModuleAccess('crm');
-        case '/especialistas':
-          return hasModuleAccess('especialistas');
-        default:
-          return true;
-      }
-    });
-  };
-
-  const getVisibleFinancialItems = () => {
-    return financialItems.filter(() => hasModuleAccess('financeiro'));
-  };
-
-  const getVisibleAdministrativeItems = () => {
-    return administrativeItems.filter(() => hasModuleAccess('administrativo'));
-  };
-
-  const getVisibleAudiovisualItems = () => {
-    return audiovisualItems.filter(() => hasModuleAccess('audiovisual'));
-  };
-
-  const getVisibleDesignItems = () => {
-    return designItems.filter(() => hasModuleAccess('design'));
-  };
-
-  const getVisibleManagementItems = () => {
-    return managementItems.filter(item => {
-      if (item.url.startsWith('/relatorios')) {
-        return hasModuleAccess('relatorios');
-      }
-      if (item.url.startsWith('/configuracoes')) {
-        return hasModuleAccess('configuracoes');
-      }
-      return true;
-    });
-  };
-
-  // Role-specific sections
-  const shouldShowSection = (section: string) => {
-    switch (section) {
-      case 'main':
-        return true;
-      case 'financial':
-        return hasModuleAccess('financeiro');
-      case 'administrative':
-        return hasModuleAccess('administrativo');
-      case 'audiovisual':
-        return hasModuleAccess('audiovisual');
-      case 'design':
-        return hasModuleAccess('design');
-      case 'management':
-        return hasModuleAccess('relatorios') || hasModuleAccess('configuracoes') || role === 'gestor' || role === 'admin';
-      case 'grs':
-        return role === 'grs' || role === 'admin';
-      case 'atendimento':
-        return role === 'atendimento' || role === 'admin';
-      case 'cliente':
-        return role === 'cliente';
-      default:
+  // Get visible modules based on permissions and role
+  const getVisibleModules = () => {
+    return modules.filter(module => {
+      // Check role restrictions first
+      if (module.roles && !module.roles.includes(role)) {
         return false;
+      }
+      
+      // Check permissions - only check valid module permissions
+      return module.permissions.some(permission => {
+        const validPermissions = ['dashboard', 'clientes', 'crm', 'financeiro', 'administrativo', 'audiovisual', 'design', 'configuracoes', 'planos', 'especialistas', 'relatorios'] as const;
+        if (validPermissions.includes(permission as any)) {
+          return hasModuleAccess(permission as keyof ModulePermissions);
+        }
+        return false;
+      });
+    });
+  };
+
+  // Client-specific items for role 'cliente'
+  const clientItems = [
+    { title: "Meu Painel", url: "/cliente/painel", icon: Home },
+    { title: "Meus Projetos", url: "/cliente/projetos", icon: Briefcase },
+    { title: "Aprovações", url: "/aprovacao-job", icon: Eye },
+  ];
+
+  // GRS specific items
+  const grsItems = [
+    { title: "Dashboard GRS", url: "/grs/dashboard", icon: BarChart3 },
+  ];
+
+  // Detect current module based on location
+  const detectCurrentModule = () => {
+    const currentPath = location.pathname;
+    for (const module of modules) {
+      if (module.items.some(item => currentPath.startsWith(item.url))) {
+        return module.id;
+      }
     }
+    return "dashboard";
+  };
+
+  // Update selected module when location changes
+  React.useEffect(() => {
+    setSelectedModule(detectCurrentModule());
+  }, [location.pathname]);
+
+  const visibleModules = getVisibleModules();
+  const currentModule = visibleModules.find(m => m.id === selectedModule);
+
+  // Get current module items or fallback items based on role
+  const getCurrentItems = () => {
+    if (role === 'cliente') {
+      return clientItems;
+    }
+    
+    if (role === 'grs') {
+      return grsItems;
+    }
+    
+    return currentModule?.items || [];
   };
 
   return (
-    <Sidebar>
-      <SidebarContent>
-        {shouldShowSection('main') && getVisibleMainItems().length > 0 && (
-          <SidebarGroup>
-            <SidebarGroupLabel>Principais</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {getVisibleMainItems().map((item) => (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild>
-                      <NavLink
-                        to={item.url}
-                        className={({ isActive }) =>
-                          isActive ? "border-l-2 border-l-primary bg-muted/50 text-foreground font-medium pl-3" : "hover:bg-muted/30 pl-3"
-                        }
-                      >
-                        <item.icon className="mr-2 h-4 w-4" />
-                        <span>{item.title}</span>
-                      </NavLink>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
+    <div className="flex h-full">
+      {/* Left Column - Modules (Green) */}
+      <div className="w-16 bg-lime-400 flex flex-col items-center py-4 space-y-2">
+        {visibleModules.map((module) => {
+          const isSelected = selectedModule === module.id;
+          const Icon = module.icon;
+          
+          return (
+            <button
+              key={module.id}
+              onClick={() => setSelectedModule(module.id)}
+              className={`w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 ${
+                isSelected 
+                  ? 'bg-white text-gray-900 shadow-lg' 
+                  : 'text-gray-800 hover:bg-white/20'
+              }`}
+              title={module.title}
+            >
+              <Icon size={20} />
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Right Column - Functions + User Profile (Dark) */}
+      <div className="flex-1 bg-gray-900 flex flex-col">
+        {/* User Profile Section */}
+        <UserProfileSection />
+
+        {/* Active Module Highlight */}
+        {currentModule && (
+          <div className="px-4 py-3 mx-4 mb-4 bg-lime-400 rounded-lg">
+            <div className="flex items-center text-gray-900">
+              <currentModule.icon className="mr-2 h-4 w-4" />
+              <span className="font-medium text-sm">{currentModule.title}</span>
+            </div>
+          </div>
         )}
 
-        {/* GRS Section */}
-        {shouldShowSection('grs') && (
-          <SidebarGroup>
-            <SidebarGroupLabel>GRS</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                <SidebarMenuItem>
-                  <SidebarMenuButton asChild>
-                    <NavLink
-                      to="/grs/dashboard"
-                      className={({ isActive }) =>
-                        isActive ? "border-l-2 border-l-primary bg-muted/50 text-foreground font-medium pl-3" : "hover:bg-muted/30 pl-3"
-                      }
-                    >
-                      <BarChart3 className="mr-2 h-4 w-4" />
-                      <span>Dashboard GRS</span>
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        )}
+        {/* Navigation Items */}
+        <div className="flex-1 px-2">
+          {getCurrentItems().map((item) => {
+            const isItemActive = isActive(item.url);
+            const Icon = item.icon;
+            
+            return (
+              <NavLink
+                key={item.url}
+                to={item.url}
+                className={`flex items-center px-4 py-3 mb-1 text-sm rounded-lg transition-all duration-200 ${
+                  isItemActive
+                    ? 'bg-gray-800 text-lime-400 border-l-2 border-lime-400'
+                    : 'text-gray-300 hover:bg-gray-800/50 hover:text-white'
+                }`}
+              >
+                <Icon className="mr-3 h-4 w-4" />
+                <span>{item.title}</span>
+                {item.url.includes('/ganhos') && (
+                  <span className="ml-auto text-xs bg-lime-400 text-gray-900 px-2 py-1 rounded">→</span>
+                )}
+              </NavLink>
+            );
+          })}
+        </div>
 
-        {/* Atendimento Section */}
-        {shouldShowSection('atendimento') && (
-          <SidebarGroup>
-            <SidebarGroupLabel>Atendimento</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                <SidebarMenuItem>
-                  <SidebarMenuButton asChild>
-                    <NavLink
-                      to="/atendimento/inbox"
-                      className={({ isActive }) =>
-                        isActive ? "border-l-2 border-l-primary bg-muted/50 text-foreground font-medium pl-3" : "hover:bg-muted/30 pl-3"
-                      }
-                    >
-                      <Inbox className="mr-2 h-4 w-4" />
-                      <span>Inbox</span>
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        )}
-
-        {/* Cliente Section */}
-        {shouldShowSection('cliente') && (
-          <SidebarGroup>
-            <SidebarGroupLabel>Cliente</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                <SidebarMenuItem>
-                  <SidebarMenuButton asChild>
-                    <NavLink
-                      to="/cliente/painel"
-                      className={({ isActive }) =>
-                        isActive ? "border-l-2 border-l-primary bg-muted/50 text-foreground font-medium pl-3" : "hover:bg-muted/30 pl-3"
-                      }
-                    >
-                      <Home className="mr-2 h-4 w-4" />
-                      <span>Meu Painel</span>
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton asChild>
-                    <NavLink
-                      to="/cliente/projetos"
-                      className={({ isActive }) =>
-                        isActive ? "border-l-2 border-l-primary bg-muted/50 text-foreground font-medium pl-3" : "hover:bg-muted/30 pl-3"
-                      }
-                    >
-                      <Briefcase className="mr-2 h-4 w-4" />
-                      <span>Meus Projetos</span>
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton asChild>
-                    <NavLink
-                      to="/aprovacao-job"
-                      className={({ isActive }) =>
-                        isActive ? "border-l-2 border-l-primary bg-muted/50 text-foreground font-medium pl-3" : "hover:bg-muted/30 pl-3"
-                      }
-                    >
-                      <Eye className="mr-2 h-4 w-4" />
-                      <span>Aprovações</span>
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        )}
-
-        {shouldShowSection('financial') && getVisibleFinancialItems().length > 0 && (
-          <SidebarGroup>
-            <SidebarGroupLabel>Financeiro</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {getVisibleFinancialItems().map((item) => (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild>
-                      <NavLink
-                        to={item.url}
-                        className={({ isActive }) =>
-                          isActive ? "border-l-2 border-l-primary bg-muted/50 text-foreground font-medium pl-3" : "hover:bg-muted/30 pl-3"
-                        }
-                      >
-                        <item.icon className="mr-2 h-4 w-4" />
-                        <span>{item.title}</span>
-                      </NavLink>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        )}
-
-        {shouldShowSection('administrative') && getVisibleAdministrativeItems().length > 0 && (
-          <SidebarGroup>
-            <SidebarGroupLabel>Administrativo</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {getVisibleAdministrativeItems().map((item) => (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild>
-                      <NavLink
-                        to={item.url}
-                        className={({ isActive }) =>
-                          isActive ? "border-l-2 border-l-primary bg-muted/50 text-foreground font-medium pl-3" : "hover:bg-muted/30 pl-3"
-                        }
-                      >
-                        <item.icon className="mr-2 h-4 w-4" />
-                        <span>{item.title}</span>
-                      </NavLink>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        )}
-
-        {shouldShowSection('audiovisual') && getVisibleAudiovisualItems().length > 0 && (
-          <SidebarGroup>
-            <SidebarGroupLabel>Audiovisual</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {getVisibleAudiovisualItems().map((item) => (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild>
-                      <NavLink
-                        to={item.url}
-                        className={({ isActive }) =>
-                          isActive ? "border-l-2 border-l-primary bg-muted/50 text-foreground font-medium pl-3" : "hover:bg-muted/30 pl-3"
-                        }
-                      >
-                        <item.icon className="mr-2 h-4 w-4" />
-                        <span>{item.title}</span>
-                      </NavLink>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        )}
-
-        {shouldShowSection('design') && getVisibleDesignItems().length > 0 && (
-          <SidebarGroup>
-            <SidebarGroupLabel>Design</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {getVisibleDesignItems().map((item) => (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild>
-                      <NavLink
-                        to={item.url}
-                        className={({ isActive }) =>
-                          isActive ? "border-l-2 border-l-primary bg-muted/50 text-foreground font-medium pl-3" : "hover:bg-muted/30 pl-3"
-                        }
-                      >
-                        <item.icon className="mr-2 h-4 w-4" />
-                        <span>{item.title}</span>
-                      </NavLink>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        )}
-
-        {shouldShowSection('management') && getVisibleManagementItems().length > 0 && (
-          <SidebarGroup>
-            <SidebarGroupLabel>Gestão</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {getVisibleManagementItems().map((item) => (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild>
-                      <NavLink
-                        to={item.url}
-                        className={({ isActive }) =>
-                          isActive ? "border-l-2 border-l-primary bg-muted/50 text-foreground font-medium pl-3" : "hover:bg-muted/30 pl-3"
-                        }
-                      >
-                        <item.icon className="mr-2 h-4 w-4" />
-                        <span>{item.title}</span>
-                      </NavLink>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        )}
-      </SidebarContent>
-    </Sidebar>
-  )
+        {/* Footer */}
+        <div className="p-4 text-center text-xs text-gray-500 border-t border-gray-800">
+          <p>Agência Bex Ltda. Admin Dashboard</p>
+          <p>© 2025 Todos os Direitos Reservados</p>
+        </div>
+      </div>
+    </div>
+  );
 }
