@@ -29,11 +29,13 @@ import { NavLink, useLocation } from "react-router-dom"
 import React from "react"
 import { usePermissions, type ModulePermissions } from "@/hooks/usePermissions";
 import { UserProfileSection } from "./UserProfileSection";
+import { UserActionsModule } from "./UserActionsModule";
 import { useState } from "react";
 
 import {
   Sidebar,
   SidebarContent,
+  SidebarTrigger,
 } from "@/components/ui/sidebar"
 
 // Modules structure for the new layout
@@ -235,6 +237,11 @@ export function AppSidebar() {
 
         {/* Right Column - Functions + User Profile (Dark) */}
         <div className="flex-1 bg-bex-dark flex flex-col animate-scale-in relative z-40">
+          {/* Sidebar Controls */}
+          <div className="p-4 flex items-center justify-between border-b border-bex-green/20">
+            <SidebarTrigger className="text-bex-green hover:text-white hover:bg-bex-green/20 transition-colors" />
+          </div>
+          
           {/* User Profile Section */}
           <UserProfileSection />
 
@@ -275,8 +282,13 @@ export function AppSidebar() {
           })}
         </div>
 
+          {/* User Actions Module - Bottom Left */}
+          <div className="mt-auto">
+            <UserActionsModule />
+          </div>
+
           {/* Footer */}
-          <div className="p-4 text-center text-xs text-sidebar-foreground/50 border-t border-sidebar-border animate-fade-in mt-auto">
+          <div className="p-4 text-center text-xs text-sidebar-foreground/50 border-t border-sidebar-border animate-fade-in">
             <p>Agência Bex Ltda. Admin Dashboard</p>
             <p>© 2025 Todos os Direitos Reservados</p>
           </div>
