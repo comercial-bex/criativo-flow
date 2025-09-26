@@ -40,6 +40,12 @@ import AudiovisualCaptacoes from "./pages/Audiovisual/Captacoes";
 import AudiovisualProjetos from "./pages/Audiovisual/Projetos";
 import AudiovisualEquipamentos from "./pages/Audiovisual/Equipamentos";
 
+// Design pages
+import DesignDashboard from "./pages/Design/Dashboard";
+import DesignKanban from "./pages/Design/Kanban";
+import DesignCalendario from "./pages/Design/Calendario";
+import DesignMetas from "./pages/Design/Metas";
+
 import AprovacaoJob from "./pages/AprovacaoJob";
 
 const queryClient = new QueryClient();
