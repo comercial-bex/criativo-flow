@@ -97,6 +97,42 @@ export type Database = {
         }
         Relationships: []
       }
+      audiovisual_metas: {
+        Row: {
+          created_at: string
+          especialista_id: string
+          horas_trabalhadas: number
+          id: string
+          mes_ano: string
+          meta_horas: number
+          meta_projetos: number
+          projetos_concluidos: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          especialista_id: string
+          horas_trabalhadas?: number
+          id?: string
+          mes_ano: string
+          meta_horas?: number
+          meta_projetos?: number
+          projetos_concluidos?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          especialista_id?: string
+          horas_trabalhadas?: number
+          id?: string
+          mes_ano?: string
+          meta_horas?: number
+          meta_projetos?: number
+          projetos_concluidos?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       audit_logs: {
         Row: {
           action: string
@@ -124,6 +160,48 @@ export type Database = {
           id?: string
           post_id?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      captacoes_agenda: {
+        Row: {
+          cliente_id: string | null
+          created_at: string
+          data_captacao: string
+          equipamentos: string[] | null
+          especialista_id: string
+          id: string
+          local: string | null
+          observacoes: string | null
+          status: string
+          titulo: string
+          updated_at: string
+        }
+        Insert: {
+          cliente_id?: string | null
+          created_at?: string
+          data_captacao: string
+          equipamentos?: string[] | null
+          especialista_id: string
+          id?: string
+          local?: string | null
+          observacoes?: string | null
+          status?: string
+          titulo: string
+          updated_at?: string
+        }
+        Update: {
+          cliente_id?: string | null
+          created_at?: string
+          data_captacao?: string
+          equipamentos?: string[] | null
+          especialista_id?: string
+          id?: string
+          local?: string | null
+          observacoes?: string | null
+          status?: string
+          titulo?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -440,6 +518,42 @@ export type Database = {
           persona?: string | null
           planejamento_id?: string
           posicionamento?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      equipamentos: {
+        Row: {
+          created_at: string
+          data_reserva: string | null
+          id: string
+          nome: string
+          observacoes: string | null
+          responsavel_atual: string | null
+          status: string
+          tipo: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          data_reserva?: string | null
+          id?: string
+          nome: string
+          observacoes?: string | null
+          responsavel_atual?: string | null
+          status?: string
+          tipo: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          data_reserva?: string | null
+          id?: string
+          nome?: string
+          observacoes?: string | null
+          responsavel_atual?: string | null
+          status?: string
+          tipo?: string
           updated_at?: string
         }
         Relationships: []
@@ -983,6 +1097,48 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      projetos_audiovisual: {
+        Row: {
+          assets_url: string | null
+          created_at: string
+          deadline: string | null
+          especialista_id: string | null
+          feedback_cliente: string | null
+          id: string
+          planejamento_id: string | null
+          status_review: string
+          tipo_projeto: string
+          titulo: string
+          updated_at: string
+        }
+        Insert: {
+          assets_url?: string | null
+          created_at?: string
+          deadline?: string | null
+          especialista_id?: string | null
+          feedback_cliente?: string | null
+          id?: string
+          planejamento_id?: string | null
+          status_review?: string
+          tipo_projeto: string
+          titulo: string
+          updated_at?: string
+        }
+        Update: {
+          assets_url?: string | null
+          created_at?: string
+          deadline?: string | null
+          especialista_id?: string | null
+          feedback_cliente?: string | null
+          id?: string
+          planejamento_id?: string | null
+          status_review?: string
+          tipo_projeto?: string
+          titulo?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       propostas: {
         Row: {

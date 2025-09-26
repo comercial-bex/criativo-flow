@@ -34,6 +34,12 @@ import AdministrativoDashboard from "./pages/Administrativo/Dashboard";
 import Orcamentos from "./pages/Administrativo/Orcamentos";
 import Propostas from "./pages/Administrativo/Propostas";
 
+// Audiovisual pages
+import AudiovisualDashboard from "./pages/Audiovisual/Dashboard";
+import AudiovisualCaptacoes from "./pages/Audiovisual/Captacoes";
+import AudiovisualProjetos from "./pages/Audiovisual/Projetos";
+import AudiovisualEquipamentos from "./pages/Audiovisual/Equipamentos";
+
 import AprovacaoJob from "./pages/AprovacaoJob";
 
 const queryClient = new QueryClient();
@@ -247,6 +253,36 @@ const App = () => (
               <ProtectedRoute>
                 <Layout>
                   <Propostas />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            
+            {/* Audiovisual Routes */}
+            <Route path="/audiovisual/dashboard" element={
+              <ProtectedRoute>
+                <Layout>
+                  <AudiovisualDashboard />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/audiovisual/captacoes" element={
+              <ProtectedRoute>
+                <Layout>
+                  <AudiovisualCaptacoes />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/audiovisual/projetos" element={
+              <ProtectedRoute>
+                <Layout>
+                  <AudiovisualProjetos />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/audiovisual/equipamentos" element={
+              <ProtectedRoute>
+                <Layout>
+                  <AudiovisualEquipamentos />
                 </Layout>
               </ProtectedRoute>
             } />

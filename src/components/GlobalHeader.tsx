@@ -1,4 +1,4 @@
-import { Search, Bell, HelpCircle, User, LogOut } from "lucide-react";
+import { Search, Bell, HelpCircle, User, LogOut, Calendar } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -38,6 +38,11 @@ export function GlobalHeader() {
       </div>
 
       <div className="flex items-center gap-3">
+        {/* Calendário Geral - Acesso Rápido */}
+        <Button variant="ghost" size="sm" title="Calendário Geral da Agência">
+          <Calendar className="h-5 w-5" />
+        </Button>
+
         {/* Notificações */}
         <Button variant="ghost" size="sm" className="relative">
           <Bell className="h-5 w-5" />

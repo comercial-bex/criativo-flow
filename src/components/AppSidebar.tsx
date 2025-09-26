@@ -12,7 +12,10 @@ import {
   ClipboardCheck,
   Calculator,
   Briefcase,
-  Signature
+  Signature,
+  Video,
+  Camera,
+  Film
 } from "lucide-react"
 import { NavLink, useLocation } from "react-router-dom"
 
@@ -48,6 +51,13 @@ const administrativeItems = [
   { title: "Propostas", url: "/administrativo/propostas", icon: Signature },
 ]
 
+const audiovisualItems = [
+  { title: "Dashboard AV", url: "/audiovisual/dashboard", icon: Video },
+  { title: "Captações", url: "/audiovisual/captacoes", icon: Camera },
+  { title: "Projetos AV", url: "/audiovisual/projetos", icon: Film },
+  { title: "Equipamentos", url: "/audiovisual/equipamentos", icon: Settings },
+]
+
 const managementItems = [
   { title: "Planejamentos", url: "/planejamentos", icon: Calendar },
   { title: "Relatórios", url: "/relatorios", icon: BarChart3 },
@@ -71,6 +81,7 @@ export function AppSidebar() {
   const isMainExpanded = mainItems.some((i) => isActive(i.url))
   const isFinancialExpanded = financialItems.some((i) => isActive(i.url))
   const isAdministrativeExpanded = administrativeItems.some((i) => isActive(i.url))
+  const isAudiovisualExpanded = audiovisualItems.some((i) => isActive(i.url))
   const isManagementExpanded = managementItems.some((i) => isActive(i.url))
 
   const getNavCls = (path: string) =>
@@ -120,6 +131,24 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {administrativeItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild>
+                    <NavLink to={item.url} className={getNavCls(item.url)}>
+                      <item.icon className="mr-2 h-4 w-4" />
+                      {!false && <span>{item.title}</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>Audiovisual</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {audiovisualItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <NavLink to={item.url} className={getNavCls(item.url)}>
