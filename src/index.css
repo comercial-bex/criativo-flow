@@ -22,8 +22,9 @@ All colors MUST be HSL.
     --primary: 69 77% 76%;
     --primary-foreground: 0 0% 11%;
     
-    /* Cores customizadas BEX */
+    /* Cores customizadas BEX - Neon */
     --bex-green: 69 77% 76%; /* #BCF125 */
+    --bex-green-glow: 69 77% 76%; /* #BCF125 with glow */
     --bex-dark: 0 0% 11%;   /* #1D1D1D */
 
     --secondary: 0 0% 96%;
@@ -143,6 +144,27 @@ All colors MUST be HSL.
   .hover-lift:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(188, 241, 37, 0.15);
+  }
+  
+  .neon-text {
+    text-shadow: 0 0 5px hsl(var(--bex-green)), 
+                 0 0 10px hsl(var(--bex-green)), 
+                 0 0 15px hsl(var(--bex-green));
+  }
+
+  .neon-glow {
+    box-shadow: 0 0 5px hsl(var(--bex-green) / 0.5),
+                0 0 10px hsl(var(--bex-green) / 0.3),
+                0 0 15px hsl(var(--bex-green) / 0.2);
+  }
+
+  .module-hover {
+    transition: all 0.3s ease;
+  }
+
+  .module-hover:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 15px hsl(var(--bex-green) / 0.4);
   }
   
   .pulse-glow {

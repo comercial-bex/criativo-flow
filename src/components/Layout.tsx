@@ -8,20 +8,21 @@ interface LayoutProps {
 
 export function Layout({ children }: LayoutProps) {
   return (
-    <div className="min-h-screen flex w-full">
-      <div className="w-80">
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full bg-background">
         <AppSidebar />
+        <div className="flex-1 flex flex-col relative">
+          <header className="h-16 flex items-center border-b bg-background px-4 sticky top-0 z-40">
+            <SidebarTrigger className="mr-4" />
+            <div className="flex-1">
+              <GlobalHeader />
+            </div>
+          </header>
+          <main className="flex-1 overflow-auto bg-muted/20 relative z-10">
+            {children}
+          </main>
+        </div>
       </div>
-      <div className="flex-1 flex flex-col">
-        <header className="h-16 flex items-center border-b bg-background px-4">
-          <div className="flex-1">
-            <GlobalHeader />
-          </div>
-        </header>
-        <main className="flex-1 overflow-auto bg-muted/20">
-          {children}
-        </main>
-      </div>
-    </div>
+    </SidebarProvider>
   );
 }

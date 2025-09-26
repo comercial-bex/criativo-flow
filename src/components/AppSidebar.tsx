@@ -207,45 +207,46 @@ export function AppSidebar() {
   };
 
   return (
-    <div className="flex h-full">
-      {/* Left Column - Modules (Green) */}
-      <div className="w-16 bg-bex-green flex flex-col items-center py-4 space-y-2 animate-slide-in">
-        {visibleModules.map((module, index) => {
-          const isSelected = selectedModule === module.id;
-          const Icon = module.icon;
-          
-          return (
-            <button
-              key={module.id}
-              onClick={() => setSelectedModule(module.id)}
-              className={`w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-300 hover:scale-110 hover-lift animate-fade-in ${
-                isSelected 
-                  ? 'bg-bex-dark text-bex-green shadow-lg pulse-glow' 
-                  : 'bg-bex-green/90 text-bex-dark hover:bg-white/90'
-              }`}
-              style={{ animationDelay: `${index * 50}ms` }}
-              title={module.title}
-            >
-              <Icon size={20} />
-            </button>
-          );
-        })}
-      </div>
+    <Sidebar className="h-screen bg-bex-dark border-r border-bex-green/20" collapsible="none">
+      <div className="flex h-full">
+        {/* Left Column - Modules (Green) */}
+        <div className="w-16 bg-bex-green flex flex-col items-center py-4 space-y-2 animate-slide-in relative z-50">
+          {visibleModules.map((module, index) => {
+            const isSelected = selectedModule === module.id;
+            const Icon = module.icon;
+            
+            return (
+              <button
+                key={module.id}
+                onClick={() => setSelectedModule(module.id)}
+                className={`w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-300 module-hover animate-fade-in ${
+                  isSelected 
+                    ? 'bg-bex-dark text-bex-green shadow-lg neon-glow' 
+                    : 'bg-bex-green/90 text-bex-dark hover:bg-white/90'
+                }`}
+                style={{ animationDelay: `${index * 50}ms` }}
+                title={module.title}
+              >
+                <Icon size={20} />
+              </button>
+            );
+          })}
+        </div>
 
-      {/* Right Column - Functions + User Profile (Dark) */}
-      <div className="flex-1 bg-bex-dark flex flex-col animate-scale-in">
-        {/* User Profile Section */}
-        <UserProfileSection />
+        {/* Right Column - Functions + User Profile (Dark) */}
+        <div className="flex-1 bg-bex-dark flex flex-col animate-scale-in relative z-40">
+          {/* User Profile Section */}
+          <UserProfileSection />
 
-        {/* Active Module Highlight */}
-        {currentModule && (
-          <div className="px-4 py-3 mx-4 mb-4 bg-bex-green rounded-lg animate-fade-in hover-lift">
-            <div className="flex items-center text-bex-dark">
-              <currentModule.icon className="mr-2 h-4 w-4" />
-              <span className="font-medium text-sm">{currentModule.title}</span>
+          {/* Active Module Highlight */}
+          {currentModule && (
+            <div className="px-4 py-3 mx-4 mb-4 bg-bex-green rounded-lg animate-fade-in hover-lift neon-glow">
+              <div className="flex items-center text-bex-dark">
+                <currentModule.icon className="mr-2 h-4 w-4" />
+                <span className="font-medium text-sm">{currentModule.title}</span>
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
         {/* Navigation Items */}
         <div className="flex-1 px-2">
@@ -259,8 +260,8 @@ export function AppSidebar() {
                 to={item.url}
                 className={`flex items-center px-4 py-3 mb-1 text-sm rounded-lg transition-all duration-300 hover-lift animate-slide-in ${
                   isItemActive
-                    ? 'bg-sidebar-accent text-bex-green border-l-2 border-bex-green pulse-glow'
-                    : 'text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-bex-green'
+                    ? 'bg-sidebar-accent text-bex-green border-l-2 border-bex-green neon-glow'
+                    : 'text-sidebar-foreground hover:bg-bex-green/10 hover:text-bex-green'
                 }`}
                 style={{ animationDelay: `${index * 30}ms` }}
               >
@@ -274,12 +275,13 @@ export function AppSidebar() {
           })}
         </div>
 
-        {/* Footer */}
-        <div className="p-4 text-center text-xs text-sidebar-foreground/50 border-t border-sidebar-border animate-fade-in">
-          <p>Agência Bex Ltda. Admin Dashboard</p>
-          <p>© 2025 Todos os Direitos Reservados</p>
+          {/* Footer */}
+          <div className="p-4 text-center text-xs text-sidebar-foreground/50 border-t border-sidebar-border animate-fade-in mt-auto">
+            <p>Agência Bex Ltda. Admin Dashboard</p>
+            <p>© 2025 Todos os Direitos Reservados</p>
+          </div>
         </div>
       </div>
-    </div>
+    </Sidebar>
   );
 }

@@ -44,76 +44,65 @@ export function UserProfileSection() {
   const initials = displayName.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);
 
   return (
-    <div className="p-4 border-b border-sidebar-border animate-fade-in">
-      {/* Avatar e Info Principal */}
-      <div className="flex items-center gap-3 mb-4">
-        <Avatar className="w-12 h-12 border-2 border-bex-green hover-lift">
+    <div className="p-6 border-b border-sidebar-border animate-fade-in">
+      {/* Logo BEX */}
+      <div className="text-center mb-6">
+        <h2 className="text-2xl font-bold text-bex-green neon-text">BEX</h2>
+      </div>
+
+      {/* Avatar Centralizado e Maior */}
+      <div className="flex flex-col items-center mb-6">
+        <Avatar className="w-20 h-20 border-3 border-bex-green hover-lift neon-glow mb-3">
           <AvatarImage src={profile.avatar_url} alt={displayName} />
-          <AvatarFallback className="bg-bex-green text-bex-dark font-semibold">
+          <AvatarFallback className="bg-bex-green text-bex-dark font-bold text-lg">
             {initials}
           </AvatarFallback>
         </Avatar>
         
-        <div className="flex-1 min-w-0">
-          <h3 className="text-sm font-medium text-bex-green truncate">
+        <div className="text-center">
+          <h3 className="text-lg font-semibold text-bex-green neon-text mb-1">
             Olá, {displayName.split(' ')[0]}
           </h3>
-          <p className="text-xs text-sidebar-foreground/70 truncate">
+          <p className="text-sm text-gray-400 truncate max-w-[200px]">
             {user.email}
           </p>
         </div>
       </div>
 
-      {/* Menu de Ações */}
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button 
-            variant="ghost" 
-            className="w-full justify-between text-sidebar-foreground hover:bg-sidebar-accent hover:text-bex-green transition-all duration-200 hover-lift"
-          >
-            <span className="flex items-center gap-2">
-              <User className="h-4 w-4" />
-              <span className="text-sm">Minha Conta</span>
-            </span>
-            <ChevronDown className="h-4 w-4" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent 
-          align="start" 
-          className="w-56 bg-sidebar-accent border-sidebar-border animate-scale-in"
+      {/* Menu de Ações Compacto */}
+      <div className="space-y-2">
+        <Button 
+          variant="ghost" 
+          onClick={() => navigate('/perfil')}
+          className="w-full justify-start text-sidebar-foreground hover:bg-bex-green/10 hover:text-bex-green transition-all duration-200 hover-lift"
         >
-          <DropdownMenuItem 
-            onClick={() => navigate('/perfil')}
-            className="flex items-center gap-2 hover:bg-sidebar-primary/10 hover:text-bex-green cursor-pointer"
-          >
-            <User className="h-4 w-4" />
-            <span>Meu Perfil</span>
-          </DropdownMenuItem>
-          
-          <DropdownMenuItem 
-            onClick={() => navigate('/configuracoes')}
-            className="flex items-center gap-2 hover:bg-sidebar-primary/10 hover:text-bex-green cursor-pointer"
-          >
-            <Settings className="h-4 w-4" />
-            <span>Configurações</span>
-          </DropdownMenuItem>
-          
-          <DropdownMenuSeparator className="bg-sidebar-border" />
-          
-          <DropdownMenuItem 
-            onClick={handleSignOut} 
-            disabled={isSigningOut}
-            className="flex items-center gap-2 hover:bg-destructive/10 hover:text-destructive cursor-pointer"
-          >
-            {isSigningOut ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <LogOut className="h-4 w-4" />
-            )}
-            <span>{isSigningOut ? 'Saindo...' : 'Sair'}</span>
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+          <User className="h-4 w-4 mr-2" />
+          <span className="text-sm">Meu Perfil</span>
+        </Button>
+        
+        <Button 
+          variant="ghost" 
+          onClick={() => navigate('/configuracoes')}
+          className="w-full justify-start text-sidebar-foreground hover:bg-bex-green/10 hover:text-bex-green transition-all duration-200 hover-lift"
+        >
+          <Settings className="h-4 w-4 mr-2" />
+          <span className="text-sm">Configurações</span>
+        </Button>
+        
+        <Button 
+          variant="ghost" 
+          onClick={handleSignOut} 
+          disabled={isSigningOut}
+          className="w-full justify-start text-sidebar-foreground hover:bg-destructive/10 hover:text-destructive transition-all duration-200 hover-lift"
+        >
+          {isSigningOut ? (
+            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+          ) : (
+            <LogOut className="h-4 w-4 mr-2" />
+          )}
+          <span className="text-sm">{isSigningOut ? 'Saindo...' : 'Sair'}</span>
+        </Button>
+      </div>
     </div>
   );
 }
