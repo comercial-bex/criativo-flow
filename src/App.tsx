@@ -8,6 +8,7 @@ import { useAuth, AuthProvider } from "@/hooks/useAuth";
 import { Layout } from "@/components/Layout";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { SmartRedirect } from "@/components/SmartRedirect";
+import { DebugPanel } from "@/components/DebugPanel";
 
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
@@ -315,6 +316,7 @@ function App() {
                 {/* 404 route */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
+              <DebugPanel />
             </AuthProvider>
           </BrowserRouter>
         </TooltipProvider>
