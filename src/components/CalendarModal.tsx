@@ -9,6 +9,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Calendar } from "@/components/ui/calendar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,6 +27,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { format, isSameDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { NewEventModal } from "@/components/NewEventModal";
+import { toast } from "@/hooks/use-toast";
 
 interface Event {
   id: string;
@@ -51,6 +62,11 @@ export function CalendarModal() {
   const [events, setEvents] = useState<Event[]>([]);
   const [selectedDayEvents, setSelectedDayEvents] = useState<Event[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  
+  // Modal states for event actions
+  const [viewEventModal, setViewEventModal] = useState<Event | null>(null);
+  const [editEventModal, setEditEventModal] = useState<Event | null>(null);
+  const [deleteEventModal, setDeleteEventModal] = useState<Event | null>(null);
 
   const fetchEvents = async () => {
     setIsLoading(true);
@@ -86,6 +102,32 @@ export function CalendarModal() {
 
   const hasEventsOnDate = (date: Date) => {
     return events.some(event => isSameDay(new Date(event.data_inicio), date));
+  };
+
+  const handleDeleteEvent = async (eventId: string) => {
+    try {
+      const { error } = await supabase
+        .from('eventos_agenda')
+        .delete()
+        .eq('id', eventId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Evento excluído",
+        description: "O evento foi removido com sucesso",
+      });
+
+      fetchEvents();
+      setDeleteEventModal(null);
+    } catch (error) {
+      console.error('Erro ao deletar evento:', error);
+      toast({
+        title: "Erro ao deletar evento",
+        description: "Tente novamente em alguns instantes",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -171,13 +213,31 @@ export function CalendarModal() {
                           {format(new Date(event.data_inicio), "HH:mm")} - {format(new Date(event.data_fim), "HH:mm")}
                         </div>
                         <div className="flex space-x-1 mt-2">
-                          <Button size="sm" variant="ghost" className="h-6 px-2">
+                          <Button 
+                            size="sm" 
+                            variant="ghost" 
+                            className="h-6 px-2"
+                            onClick={() => setViewEventModal(event)}
+                            title="Visualizar evento"
+                          >
                             <Eye className="h-3 w-3" />
                           </Button>
-                          <Button size="sm" variant="ghost" className="h-6 px-2">
+                          <Button 
+                            size="sm" 
+                            variant="ghost" 
+                            className="h-6 px-2"
+                            onClick={() => setEditEventModal(event)}
+                            title="Editar evento"
+                          >
                             <Edit className="h-3 w-3" />
                           </Button>
-                          <Button size="sm" variant="ghost" className="h-6 px-2 text-destructive">
+                          <Button 
+                            size="sm" 
+                            variant="ghost" 
+                            className="h-6 px-2 text-destructive hover:text-destructive"
+                            onClick={() => setDeleteEventModal(event)}
+                            title="Deletar evento"
+                          >
                             <Trash className="h-3 w-3" />
                           </Button>
                         </div>
@@ -195,6 +255,109 @@ export function CalendarModal() {
           </div>
         </div>
       </DialogContent>
+
+      {/* Modal de Visualização de Evento */}
+      <Dialog open={!!viewEventModal} onOpenChange={() => setViewEventModal(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>{viewEventModal?.titulo}</DialogTitle>
+            <DialogDescription>
+              Detalhes do evento
+            </DialogDescription>
+          </DialogHeader>
+          {viewEventModal && (
+            <div className="space-y-4">
+              <div>
+                <Badge 
+                  variant="secondary"
+                  className={eventTypeColors[viewEventModal.tipo as keyof typeof eventTypeColors]}
+                >
+                  {eventTypeLabels[viewEventModal.tipo as keyof typeof eventTypeLabels]}
+                </Badge>
+              </div>
+              
+              {viewEventModal.descricao && (
+                <div>
+                  <h4 className="text-sm font-medium mb-1">Descrição</h4>
+                  <p className="text-sm text-muted-foreground">{viewEventModal.descricao}</p>
+                </div>
+              )}
+              
+              <div>
+                <h4 className="text-sm font-medium mb-1">Período</h4>
+                <p className="text-sm text-muted-foreground">
+                  {format(new Date(viewEventModal.data_inicio), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })} até{' '}
+                  {format(new Date(viewEventModal.data_fim), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                </p>
+              </div>
+              
+              <div className="flex justify-end space-x-2">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setViewEventModal(null)}
+                >
+                  Fechar
+                </Button>
+                <Button 
+                  onClick={() => {
+                    setEditEventModal(viewEventModal);
+                    setViewEventModal(null);
+                  }}
+                >
+                  Editar
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de Edição de Evento */}
+      <Dialog open={!!editEventModal} onOpenChange={() => setEditEventModal(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Editar Evento</DialogTitle>
+            <DialogDescription>
+              Esta funcionalidade será implementada em breve
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end space-x-2">
+            <Button 
+              variant="outline" 
+              onClick={() => setEditEventModal(null)}
+            >
+              Fechar
+            </Button>
+            <Button disabled>
+              Em breve
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de Confirmação de Exclusão */}
+      <AlertDialog open={!!deleteEventModal} onOpenChange={() => setDeleteEventModal(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja deletar o evento "{deleteEventModal?.titulo}"? 
+              Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setDeleteEventModal(null)}>
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={() => deleteEventModal && handleDeleteEvent(deleteEventModal.id)}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Deletar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Dialog>
   );
 }
