@@ -30,29 +30,11 @@ interface Assinatura {
   preco: number;
 }
 
-// Mock de assinaturas disponíveis - usando UUIDs válidos
-const mockAssinaturas: Assinatura[] = [
-  {
-    id: '550e8400-e29b-41d4-a716-446655440001',
-    nome: 'Plano 90º',
-    preco: 997
-  },
-  {
-    id: '550e8400-e29b-41d4-a716-446655440002',
-    nome: 'Plano 180º',
-    preco: 1497
-  },
-  {
-    id: '550e8400-e29b-41d4-a716-446655440003',
-    nome: 'Plano 360º',
-    preco: 2197
-  }
-];
 
 export default function ClienteEditar() {
   const { clienteId } = useParams<{ clienteId: string }>();
   const navigate = useNavigate();
-  const [assinaturas] = useState<Assinatura[]>(mockAssinaturas);
+  const [assinaturas, setAssinaturas] = useState<Assinatura[]>([]);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<Partial<Cliente>>({
     nome: "",
@@ -64,12 +46,27 @@ export default function ClienteEditar() {
     assinatura_id: ""
   });
 
-  // Carregar dados do cliente
+  // Carregar dados do cliente e assinaturas
   useEffect(() => {
+    fetchAssinaturas();
     if (clienteId) {
       fetchCliente();
     }
   }, [clienteId]);
+
+  const fetchAssinaturas = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('assinaturas')
+        .select('*')
+        .order('nome');
+
+      if (error) throw error;
+      setAssinaturas(data || []);
+    } catch (error) {
+      console.error('Erro ao carregar assinaturas:', error);
+    }
+  };
 
   const fetchCliente = async () => {
     if (!clienteId) return;
@@ -85,7 +82,7 @@ export default function ClienteEditar() {
       if (error) {
         console.error('Erro ao buscar cliente:', error);
         toast.error('Erro ao carregar dados do cliente');
-        navigate('/clientes/cadastro');
+        navigate('/clientes');
         return;
       }
 
@@ -93,7 +90,7 @@ export default function ClienteEditar() {
     } catch (error) {
       console.error('Erro ao buscar cliente:', error);
       toast.error('Erro ao carregar dados do cliente');
-      navigate('/clientes/cadastro');
+      navigate('/clientes');
     } finally {
       setLoading(false);
     }
@@ -127,7 +124,7 @@ export default function ClienteEditar() {
       }
 
       toast.success("Cliente atualizado com sucesso!");
-      navigate('/clientes/cadastro');
+      navigate('/clientes');
     } catch (error) {
       console.error('Erro ao salvar cliente:', error);
       toast.error('Erro ao salvar cliente');
@@ -146,10 +143,10 @@ export default function ClienteEditar() {
     return (
       <div className="space-y-6">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="sm" onClick={() => navigate('/clientes/cadastro')}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Voltar
-          </Button>
+        <Button variant="ghost" size="sm" onClick={() => navigate('/clientes')}>
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Voltar
+        </Button>
         </div>
         <div className="text-center py-12">
           <p className="text-muted-foreground">Carregando dados do cliente...</p>
@@ -161,7 +158,7 @@ export default function ClienteEditar() {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="sm" onClick={() => navigate('/clientes/cadastro')}>
+        <Button variant="ghost" size="sm" onClick={() => navigate('/clientes')}>
           <ArrowLeft className="h-4 w-4 mr-2" />
           Voltar
         </Button>
@@ -269,13 +266,13 @@ export default function ClienteEditar() {
               <Button type="submit" disabled={loading}>
                 {loading ? "Salvando..." : "Atualizar Cliente"}
               </Button>
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={() => navigate('/clientes/cadastro')}
-              >
-                Cancelar
-              </Button>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => navigate('/clientes')}
+                >
+                  Cancelar
+                </Button>
             </div>
           </form>
         </CardContent>
