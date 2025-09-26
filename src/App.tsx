@@ -64,21 +64,21 @@ import AprovacaoJob from "./pages/AprovacaoJob";
 
 const queryClient = new QueryClient();
 
-const PublicRoute = ({ children }: { children: React.ReactNode }) => {
-  const { user, loading } = useAuth();
-  
-  if (loading) {
-    return <div className="min-h-screen flex items-center justify-center">Carregando...</div>;
-  }
-  
-  if (user) {
-    return <Navigate to="/" replace />;
-  }
-  
-  return <>{children}</>;
-};
-
 function App() {
+  // Move PublicRoute inside App component so it has access to AuthProvider context
+  const PublicRoute = ({ children }: { children: React.ReactNode }) => {
+    const { user, loading } = useAuth();
+    
+    if (loading) {
+      return <div className="min-h-screen flex items-center justify-center">Carregando...</div>;
+    }
+    
+    if (user) {
+      return <Navigate to="/" replace />;
+    }
+    
+    return <>{children}</>;
+  };
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider
