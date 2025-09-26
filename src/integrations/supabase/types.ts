@@ -1602,6 +1602,10 @@ export type Database = {
         Args: { prompt_text: string }
         Returns: string
       }
+      get_filtered_profile: {
+        Args: { profile_id: string }
+        Returns: Json
+      }
       get_user_role: {
         Args: { user_uuid: string }
         Returns: Database["public"]["Enums"]["user_role"]
