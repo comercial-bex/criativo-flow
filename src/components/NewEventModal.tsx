@@ -260,41 +260,139 @@ export function NewEventModal({ onEventCreated }: { onEventCreated?: () => void 
             />
           </div>
 
-          {/* Date and Time */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="data_inicio">Data de Início *</Label>
-              <Input
-                id="data_inicio"
-                type="datetime-local"
-                value={formData.data_inicio ? format(formData.data_inicio, "yyyy-MM-dd'T'HH:mm") : ""}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  if (value) {
-                    setFormData(prev => ({ ...prev, data_inicio: new Date(value) }));
-                  }
-                }}
-                className="w-full"
-                required
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="data_fim">Data de Fim *</Label>
-              <Input
-                id="data_fim"
-                type="datetime-local"
-                value={formData.data_fim ? format(formData.data_fim, "yyyy-MM-dd'T'HH:mm") : ""}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  if (value) {
-                    setFormData(prev => ({ ...prev, data_fim: new Date(value) }));
-                  }
-                }}
-                className="w-full"
-                required
-              />
-            </div>
+          {/* Date and Time - iPhone Style */}
+          <div className="space-y-6">
+            {/* Date Section */}
+            <Card className="p-6 bg-muted/30">
+              <div className="space-y-4">
+                <div className="flex items-center gap-2 mb-4">
+                  <CalendarIcon className="h-5 w-5 text-primary" />
+                  <Label className="text-lg font-semibold">Data do Evento</Label>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-3">
+                    <Label htmlFor="data_inicio" className="text-base font-medium">
+                      Início *
+                    </Label>
+                    <Input
+                      id="data_inicio"
+                      type="date"
+                      value={formData.data_inicio ? format(formData.data_inicio, "yyyy-MM-dd") : ""}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (value) {
+                          const currentTime = formData.data_inicio ? format(formData.data_inicio, "HH:mm") : "09:00";
+                          setFormData(prev => ({ 
+                            ...prev, 
+                            data_inicio: new Date(`${value}T${currentTime}`) 
+                          }));
+                        }
+                      }}
+                      className="h-14 text-lg font-medium border-2 rounded-xl"
+                      required
+                    />
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <Label htmlFor="data_fim" className="text-base font-medium">
+                      Fim *
+                    </Label>
+                    <Input
+                      id="data_fim"
+                      type="date"
+                      value={formData.data_fim ? format(formData.data_fim, "yyyy-MM-dd") : ""}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (value) {
+                          const currentTime = formData.data_fim ? format(formData.data_fim, "HH:mm") : "18:00";
+                          setFormData(prev => ({ 
+                            ...prev, 
+                            data_fim: new Date(`${value}T${currentTime}`) 
+                          }));
+                        }
+                      }}
+                      className="h-14 text-lg font-medium border-2 rounded-xl"
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
+            </Card>
+
+            {/* Time Section */}
+            <Card className="p-6 bg-muted/30">
+              <div className="space-y-4">
+                <div className="flex items-center gap-2 mb-4">
+                  <Clock className="h-5 w-5 text-primary" />
+                  <Label className="text-lg font-semibold">Horário</Label>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-3">
+                    <Label htmlFor="hora_inicio" className="text-base font-medium">
+                      Hora de Início
+                    </Label>
+                    <Input
+                      id="hora_inicio"
+                      type="time"
+                      value={formData.data_inicio ? format(formData.data_inicio, "HH:mm") : "09:00"}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (value && formData.data_inicio) {
+                          const currentDate = format(formData.data_inicio, "yyyy-MM-dd");
+                          setFormData(prev => ({ 
+                            ...prev, 
+                            data_inicio: new Date(`${currentDate}T${value}`) 
+                          }));
+                        }
+                      }}
+                      className="h-14 text-lg font-medium border-2 rounded-xl"
+                    />
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <Label htmlFor="hora_fim" className="text-base font-medium">
+                      Hora de Fim
+                    </Label>
+                    <Input
+                      id="hora_fim"
+                      type="time"
+                      value={formData.data_fim ? format(formData.data_fim, "HH:mm") : "18:00"}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (value && formData.data_fim) {
+                          const currentDate = format(formData.data_fim, "yyyy-MM-dd");
+                          setFormData(prev => ({ 
+                            ...prev, 
+                            data_fim: new Date(`${currentDate}T${value}`) 
+                          }));
+                        }
+                      }}
+                      className="h-14 text-lg font-medium border-2 rounded-xl"
+                    />
+                  </div>
+                </div>
+                
+                {/* Duration Display */}
+                {formData.data_inicio && formData.data_fim && formData.data_inicio < formData.data_fim && (
+                  <div className="mt-4 p-3 bg-primary/10 rounded-lg">
+                    <p className="text-sm text-primary font-medium">
+                      ⏱️ Duração: {Math.round((formData.data_fim.getTime() - formData.data_inicio.getTime()) / (1000 * 60 * 60 * 100)) / 10}h
+                    </p>
+                  </div>
+                )}
+                
+                {/* Validation Warning */}
+                {formData.data_inicio && formData.data_fim && formData.data_inicio >= formData.data_fim && (
+                  <div className="mt-4 p-3 bg-destructive/10 rounded-lg border border-destructive/20">
+                    <p className="text-sm text-destructive font-medium">
+                      ⚠️ A data/hora de fim deve ser posterior ao início
+                    </p>
+                  </div>
+                )}
+              </div>
+            </Card>
           </div>
 
           {/* Color Picker */}
