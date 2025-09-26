@@ -18,9 +18,13 @@ All colors MUST be HSL.
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 15%;
 
-    /* Verde/lima como cor primária (inspirado no BEX) */
-    --primary: 83 100% 50%;
-    --primary-foreground: 0 0% 15%;
+    /* Verde personalizado BCF125 */
+    --primary: 69 77% 76%;
+    --primary-foreground: 0 0% 11%;
+    
+    /* Cores customizadas BEX */
+    --bex-green: 69 77% 76%; /* #BCF125 */
+    --bex-dark: 0 0% 11%;   /* #1D1D1D */
 
     --secondary: 0 0% 96%;
     --secondary-foreground: 0 0% 45%;
@@ -57,15 +61,15 @@ All colors MUST be HSL.
 
     --radius: 0.75rem;
 
-    /* Sidebar escura (estilo BEX) */
-    --sidebar-background: 0 0% 15%;
+    /* Sidebar customizada BEX */
+    --sidebar-background: 0 0% 11%;        /* #1D1D1D */
     --sidebar-foreground: 0 0% 85%;
-    --sidebar-primary: 83 100% 50%;
-    --sidebar-primary-foreground: 0 0% 15%;
-    --sidebar-accent: 0 0% 20%;
+    --sidebar-primary: 69 77% 76%;          /* #BCF125 */
+    --sidebar-primary-foreground: 0 0% 11%;
+    --sidebar-accent: 0 0% 15%;
     --sidebar-accent-foreground: 0 0% 85%;
-    --sidebar-border: 0 0% 25%;
-    --sidebar-ring: 83 100% 50%;
+    --sidebar-border: 0 0% 20%;
+    --sidebar-ring: 69 77% 76%;
   }
 
   .dark {
@@ -78,8 +82,8 @@ All colors MUST be HSL.
     --popover: 0 0% 15%;
     --popover-foreground: 0 0% 85%;
 
-    --primary: 83 100% 50%;
-    --primary-foreground: 0 0% 15%;
+    --primary: 69 77% 76%;
+    --primary-foreground: 0 0% 11%;
 
     --secondary: 0 0% 20%;
     --secondary-foreground: 0 0% 85%;
@@ -97,14 +101,14 @@ All colors MUST be HSL.
     --input: 0 0% 25%;
     --ring: 83 100% 50%;
     
-    --sidebar-background: 0 0% 10%;
+    --sidebar-background: 0 0% 11%;        /* #1D1D1D */
     --sidebar-foreground: 0 0% 85%;
-    --sidebar-primary: 83 100% 50%;
-    --sidebar-primary-foreground: 0 0% 15%;
+    --sidebar-primary: 69 77% 76%;          /* #BCF125 */
+    --sidebar-primary-foreground: 0 0% 11%;
     --sidebar-accent: 0 0% 15%;
     --sidebar-accent-foreground: 0 0% 85%;
     --sidebar-border: 0 0% 20%;
-    --sidebar-ring: 83 100% 50%;
+    --sidebar-ring: 69 77% 76%;
   }
 }
 
@@ -115,5 +119,53 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+/* Animações customizadas para dinamismo */
+@layer utilities {
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease-out;
+  }
+  
+  .animate-scale-in {
+    animation: scaleIn 0.2s ease-out;
+  }
+  
+  .animate-slide-in {
+    animation: slideIn 0.3s ease-out;
+  }
+  
+  .hover-lift {
+    transition: all 0.2s ease-out;
+  }
+  
+  .hover-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(188, 241, 37, 0.15);
+  }
+  
+  .pulse-glow {
+    animation: pulseGlow 2s infinite;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  @keyframes scaleIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+  }
+  
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(-20px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+  
+  @keyframes pulseGlow {
+    0%, 100% { box-shadow: 0 0 5px rgba(188, 241, 37, 0.3); }
+    50% { box-shadow: 0 0 15px rgba(188, 241, 37, 0.6); }
   }
 }

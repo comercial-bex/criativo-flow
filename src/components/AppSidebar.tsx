@@ -209,8 +209,8 @@ export function AppSidebar() {
   return (
     <div className="flex h-full">
       {/* Left Column - Modules (Green) */}
-      <div className="w-16 bg-lime-400 flex flex-col items-center py-4 space-y-2">
-        {visibleModules.map((module) => {
+      <div className="w-16 bg-bex-green flex flex-col items-center py-4 space-y-2 animate-slide-in">
+        {visibleModules.map((module, index) => {
           const isSelected = selectedModule === module.id;
           const Icon = module.icon;
           
@@ -218,11 +218,12 @@ export function AppSidebar() {
             <button
               key={module.id}
               onClick={() => setSelectedModule(module.id)}
-              className={`w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 ${
+              className={`w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-300 hover:scale-110 hover-lift animate-fade-in ${
                 isSelected 
-                  ? 'bg-white text-gray-900 shadow-lg' 
-                  : 'text-gray-800 hover:bg-white/20'
+                  ? 'bg-bex-dark text-bex-green shadow-lg pulse-glow' 
+                  : 'bg-bex-green/90 text-bex-dark hover:bg-white/90'
               }`}
+              style={{ animationDelay: `${index * 50}ms` }}
               title={module.title}
             >
               <Icon size={20} />
@@ -232,14 +233,14 @@ export function AppSidebar() {
       </div>
 
       {/* Right Column - Functions + User Profile (Dark) */}
-      <div className="flex-1 bg-gray-900 flex flex-col">
+      <div className="flex-1 bg-bex-dark flex flex-col animate-scale-in">
         {/* User Profile Section */}
         <UserProfileSection />
 
         {/* Active Module Highlight */}
         {currentModule && (
-          <div className="px-4 py-3 mx-4 mb-4 bg-lime-400 rounded-lg">
-            <div className="flex items-center text-gray-900">
+          <div className="px-4 py-3 mx-4 mb-4 bg-bex-green rounded-lg animate-fade-in hover-lift">
+            <div className="flex items-center text-bex-dark">
               <currentModule.icon className="mr-2 h-4 w-4" />
               <span className="font-medium text-sm">{currentModule.title}</span>
             </div>
@@ -248,7 +249,7 @@ export function AppSidebar() {
 
         {/* Navigation Items */}
         <div className="flex-1 px-2">
-          {getCurrentItems().map((item) => {
+          {getCurrentItems().map((item, index) => {
             const isItemActive = isActive(item.url);
             const Icon = item.icon;
             
@@ -256,16 +257,17 @@ export function AppSidebar() {
               <NavLink
                 key={item.url}
                 to={item.url}
-                className={`flex items-center px-4 py-3 mb-1 text-sm rounded-lg transition-all duration-200 ${
+                className={`flex items-center px-4 py-3 mb-1 text-sm rounded-lg transition-all duration-300 hover-lift animate-slide-in ${
                   isItemActive
-                    ? 'bg-gray-800 text-lime-400 border-l-2 border-lime-400'
-                    : 'text-gray-300 hover:bg-gray-800/50 hover:text-white'
+                    ? 'bg-sidebar-accent text-bex-green border-l-2 border-bex-green pulse-glow'
+                    : 'text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-bex-green'
                 }`}
+                style={{ animationDelay: `${index * 30}ms` }}
               >
                 <Icon className="mr-3 h-4 w-4" />
                 <span>{item.title}</span>
                 {item.url.includes('/ganhos') && (
-                  <span className="ml-auto text-xs bg-lime-400 text-gray-900 px-2 py-1 rounded">→</span>
+                  <span className="ml-auto text-xs bg-bex-green text-bex-dark px-2 py-1 rounded">→</span>
                 )}
               </NavLink>
             );
@@ -273,7 +275,7 @@ export function AppSidebar() {
         </div>
 
         {/* Footer */}
-        <div className="p-4 text-center text-xs text-gray-500 border-t border-gray-800">
+        <div className="p-4 text-center text-xs text-sidebar-foreground/50 border-t border-sidebar-border animate-fade-in">
           <p>Agência Bex Ltda. Admin Dashboard</p>
           <p>© 2025 Todos os Direitos Reservados</p>
         </div>
