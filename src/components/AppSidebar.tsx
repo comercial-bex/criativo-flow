@@ -282,16 +282,16 @@ export function AppSidebar() {
           })}
         </div>
 
-          {/* User Actions Module - Bottom Left */}
-          <div className="mt-auto">
-            <UserActionsModule />
-          </div>
+        {/* User Actions Module - Bottom Left */}
+        <div className="mt-auto">
+          <UserActionsModule />
+        </div>
 
-          {/* Footer */}
-          <div className="p-4 text-center text-xs text-sidebar-foreground/50 border-t border-sidebar-border animate-fade-in">
-            <p>Agência Bex Ltda. Admin Dashboard</p>
-            <p>© 2025 Todos os Direitos Reservados</p>
-          </div>
+        {/* Footer */}
+        <div className="p-4 text-center text-xs text-sidebar-foreground/50 border-t border-sidebar-border animate-fade-in">
+          <p>Agência Bex Ltda. Admin Dashboard</p>
+          <p>© 2025 Todos os Direitos Reservados</p>
+        </div>
         </div>
       </div>
     </Sidebar>

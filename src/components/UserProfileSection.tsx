@@ -1,25 +1,13 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfileData } from "@/hooks/useProfileData";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { User, Settings, LogOut, ChevronDown, Loader2 } from "lucide-react";
 import bexLogo from "@/assets/logo_bex_verde.png";
 
 export function UserProfileSection() {
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
   const { getProfileById } = useProfileData();
   const [profile, setProfile] = useState<any>(null);
-  const [isSigningOut, setIsSigningOut] = useState(false);
-  const navigate = useNavigate();
 
   useEffect(() => {
     if (user?.id) {
@@ -27,17 +15,6 @@ export function UserProfileSection() {
     }
   }, [user?.id, getProfileById]);
 
-  const handleSignOut = async () => {
-    setIsSigningOut(true);
-    try {
-      await signOut();
-      navigate('/auth');
-    } catch (error) {
-      console.error('Erro no logout:', error);
-    } finally {
-      setIsSigningOut(false);
-    }
-  };
 
   if (!user || !profile) return null;
 
@@ -74,40 +51,6 @@ export function UserProfileSection() {
         </div>
       </div>
 
-      {/* Menu de Ações Compacto */}
-      <div className="space-y-2">
-        <Button 
-          variant="ghost" 
-          onClick={() => navigate('/perfil')}
-          className="w-full justify-start text-sidebar-foreground hover:bg-bex-green/10 hover:text-bex-green transition-all duration-200 hover-lift"
-        >
-          <User className="h-4 w-4 mr-2" />
-          <span className="text-sm">Meu Perfil</span>
-        </Button>
-        
-        <Button 
-          variant="ghost" 
-          onClick={() => navigate('/configuracoes')}
-          className="w-full justify-start text-sidebar-foreground hover:bg-bex-green/10 hover:text-bex-green transition-all duration-200 hover-lift"
-        >
-          <Settings className="h-4 w-4 mr-2" />
-          <span className="text-sm">Configurações</span>
-        </Button>
-        
-        <Button 
-          variant="ghost" 
-          onClick={handleSignOut} 
-          disabled={isSigningOut}
-          className="w-full justify-start text-sidebar-foreground hover:bg-destructive/10 hover:text-destructive transition-all duration-200 hover-lift"
-        >
-          {isSigningOut ? (
-            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-          ) : (
-            <LogOut className="h-4 w-4 mr-2" />
-          )}
-          <span className="text-sm">{isSigningOut ? 'Saindo...' : 'Sair'}</span>
-        </Button>
-      </div>
     </div>
   );
 }
