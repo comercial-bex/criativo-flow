@@ -39,12 +39,6 @@ export function UserActionsModule() {
       variant: "ghost" as const,
     },
     {
-      icon: Settings,
-      label: "Configurações",
-      onClick: () => navigate("/configuracoes"),
-      variant: "ghost" as const,
-    },
-    {
       icon: LogOut,
       label: "Sair",
       onClick: handleSignOut,
@@ -54,8 +48,8 @@ export function UserActionsModule() {
   ];
 
   return (
-    <div className="p-4 space-y-2 border-t border-bex-green/20">
-      <div className="text-xs text-sidebar-foreground/70 mb-3 font-medium">
+    <div className="p-3 space-y-2 border-t border-white/20">
+      <div className="text-xs text-white/70 mb-3 font-medium">
         Conta
       </div>
       {userActions.map((action) => {
@@ -69,8 +63,8 @@ export function UserActionsModule() {
             disabled={action.loading}
             className={`w-full justify-start gap-3 h-9 ${
               action.variant === "ghost"
-                ? "text-sidebar-foreground hover:text-bex-green hover:bg-bex-green/10"
-                : "hover:bg-destructive/10"
+                ? "text-white/90 hover:text-white hover:bg-white/10"
+                : "text-white/90 hover:bg-red-500/20 hover:text-red-300"
             }`}
           >
             <Icon className="h-4 w-4" />

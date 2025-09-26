@@ -233,6 +233,11 @@ export function AppSidebar() {
               </button>
             );
           })}
+
+          {/* User Actions Module - Bottom Left */}
+          <div className="mt-auto">
+            <UserActionsModule />
+          </div>
         </div>
 
         {/* Right Column - Functions + User Profile (Dark) */}
@@ -280,11 +285,6 @@ export function AppSidebar() {
               </NavLink>
             );
           })}
-        </div>
-
-        {/* User Actions Module - Bottom Left */}
-        <div className="mt-auto">
-          <UserActionsModule />
         </div>
 
         {/* Footer */}
