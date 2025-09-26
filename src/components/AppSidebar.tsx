@@ -10,7 +10,9 @@ import {
   Calendar,
   BarChart3,
   ClipboardCheck,
-  Calculator
+  Calculator,
+  Briefcase,
+  Signature
 } from "lucide-react"
 import { NavLink, useLocation } from "react-router-dom"
 
@@ -36,9 +38,14 @@ const mainItems = [
 
 const financialItems = [
   { title: "Financeiro", url: "/financeiro", icon: DollarSign },
-  { title: "Administrativo", url: "/administrativo", icon: Calculator },
   { title: "Planos", url: "/planos", icon: CreditCard },
   { title: "Categorias", url: "/financeiro/categorias", icon: FileText },
+]
+
+const administrativeItems = [
+  { title: "Dashboard Admin", url: "/administrativo", icon: Briefcase },
+  { title: "Orçamentos", url: "/administrativo/orcamentos", icon: Calculator },
+  { title: "Propostas", url: "/administrativo/propostas", icon: Signature },
 ]
 
 const managementItems = [
@@ -63,6 +70,7 @@ export function AppSidebar() {
 
   const isMainExpanded = mainItems.some((i) => isActive(i.url))
   const isFinancialExpanded = financialItems.some((i) => isActive(i.url))
+  const isAdministrativeExpanded = administrativeItems.some((i) => isActive(i.url))
   const isManagementExpanded = managementItems.some((i) => isActive(i.url))
 
   const getNavCls = (path: string) =>
@@ -94,6 +102,24 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {financialItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild>
+                    <NavLink to={item.url} className={getNavCls(item.url)}>
+                      <item.icon className="mr-2 h-4 w-4" />
+                      {!false && <span>{item.title}</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>Administrativo</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {administrativeItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <NavLink to={item.url} className={getNavCls(item.url)}>

@@ -31,6 +31,9 @@ import Relatorios from "./pages/Relatorios";
 import Planos from "./pages/Planos";
 import { Especialistas } from "./pages/Especialistas";
 import PerfilCliente from "./pages/Cliente/Perfil";
+import AdministrativoDashboard from "./pages/Administrativo/Dashboard";
+import Orcamentos from "./pages/Administrativo/Orcamentos";
+import Propostas from "./pages/Administrativo/Propostas";
 
 import AprovacaoJob from "./pages/AprovacaoJob";
 
@@ -229,6 +232,29 @@ const App = () => (
               <ProtectedRoute>
                 <Layout>
                   <Especialistas />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            
+            {/* Rotas Administrativas */}
+            <Route path="/administrativo" element={
+              <ProtectedRoute>
+                <Layout>
+                  <AdministrativoDashboard />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/administrativo/orcamentos" element={
+              <ProtectedRoute>
+                <Layout>
+                  <Orcamentos />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/administrativo/propostas" element={
+              <ProtectedRoute>
+                <Layout>
+                  <Propostas />
                 </Layout>
               </ProtectedRoute>
             } />
