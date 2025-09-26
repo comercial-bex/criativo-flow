@@ -287,7 +287,36 @@ const App = () => (
                 </Layout>
               </ProtectedRoute>
             } />
-            
+
+            {/* Design Routes */}
+            <Route path="/design/dashboard" element={
+              <ProtectedRoute>
+                <Layout>
+                  <DesignDashboard />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/design/kanban" element={
+              <ProtectedRoute>
+                <Layout>
+                  <DesignKanban />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/design/calendario" element={
+              <ProtectedRoute>
+                <Layout>
+                  <DesignCalendario />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/design/metas" element={
+              <ProtectedRoute>
+                <Layout>
+                  <DesignMetas />
+                </Layout>
+              </ProtectedRoute>
+            } />
             
             <Route path="*" element={<NotFound />} />
           </Routes>
