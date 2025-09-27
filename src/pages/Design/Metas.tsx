@@ -20,6 +20,7 @@ import {
   Calendar,
   Palette
 } from "lucide-react";
+import { GamificationWidget } from "@/components/GamificationWidget";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { format, startOfMonth, endOfMonth } from "date-fns";
@@ -351,6 +352,9 @@ export default function DesignMetas() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Gamification Widget */}
+      <GamificationWidget setor="design" />
 
       {/* Individual Designer Performance */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">

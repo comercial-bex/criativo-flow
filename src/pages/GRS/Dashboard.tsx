@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Calendar, Users, Clock, AlertCircle, TrendingUp, BarChart3, Plus, Send } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { GamificationWidget } from "@/components/GamificationWidget";
 
 interface Cliente {
   id: string;
@@ -370,6 +371,9 @@ export default function GRSDashboard() {
           </Card>
         ))}
       </div>
+
+      {/* Gamification Widget */}
+      <GamificationWidget setor="grs" />
 
       {/* Meus Clientes */}
       <Card>

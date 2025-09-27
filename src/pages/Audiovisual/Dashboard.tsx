@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Calendar, Video, Camera, Edit, Clock, Target, TrendingUp, CheckCircle } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { GamificationWidget } from "@/components/GamificationWidget";
 
 interface AudiovisualMeta {
   id: string;
@@ -212,6 +213,9 @@ export default function AudiovisualDashboard() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Gamification Widget */}
+      <GamificationWidget setor="audiovisual" />
 
       {/* Content Grid */}
       <div className="grid gap-6 lg:grid-cols-2">
