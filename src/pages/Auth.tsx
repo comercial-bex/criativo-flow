@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Separator } from '@/components/ui/separator';
+import { SocialLoginButtons } from '@/components/SocialLoginButtons';
 import { toast } from 'sonner';
 
 export default function Auth() {
@@ -77,12 +79,26 @@ export default function Auth() {
       <div className="w-full max-w-md space-y-6">
         <Card>
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl font-bold">ERP System</CardTitle>
+            <CardTitle className="text-2xl font-bold">Sistema BEX</CardTitle>
             <CardDescription>
-              Faça login ou crie sua conta para acessar o sistema
+              Acesse o sistema com sua conta social ou email
             </CardDescription>
           </CardHeader>
           <CardContent>
+            {/* Botões de Login Social */}
+            <div className="mb-6">
+              <SocialLoginButtons />
+            </div>
+            
+            <div className="relative mb-6">
+              <Separator />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="bg-background px-2 text-muted-foreground text-sm">
+                  ou continue com email
+                </span>
+              </div>
+            </div>
+
             <Tabs defaultValue="login" className="w-full">
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="login">Login</TabsTrigger>

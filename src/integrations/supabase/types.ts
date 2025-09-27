@@ -1634,6 +1634,128 @@ export type Database = {
         }
         Relationships: []
       }
+      social_auth_logs: {
+        Row: {
+          action: string
+          created_at: string
+          error_message: string | null
+          id: string
+          ip_address: unknown | null
+          provider: string
+          success: boolean
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          ip_address?: unknown | null
+          provider: string
+          success?: boolean
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          ip_address?: unknown | null
+          provider?: string
+          success?: boolean
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      social_integrations: {
+        Row: {
+          access_token: string
+          account_data: Json | null
+          account_name: string | null
+          created_at: string
+          id: string
+          is_active: boolean
+          permissions: Json | null
+          provider: string
+          provider_user_id: string
+          refresh_token: string | null
+          token_expires_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          access_token: string
+          account_data?: Json | null
+          account_name?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          permissions?: Json | null
+          provider: string
+          provider_user_id: string
+          refresh_token?: string | null
+          token_expires_at?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          access_token?: string
+          account_data?: Json | null
+          account_name?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          permissions?: Json | null
+          provider?: string
+          provider_user_id?: string
+          refresh_token?: string | null
+          token_expires_at?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      social_metrics: {
+        Row: {
+          created_at: string
+          id: string
+          integration_id: string
+          metric_date: string
+          metric_type: string
+          metric_value: number
+          raw_data: Json | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          integration_id: string
+          metric_date: string
+          metric_type: string
+          metric_value?: number
+          raw_data?: Json | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          integration_id?: string
+          metric_date?: string
+          metric_type?: string
+          metric_value?: number
+          raw_data?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "social_metrics_integration_id_fkey"
+            columns: ["integration_id"]
+            isOneToOne: false
+            referencedRelation: "social_integrations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tarefas: {
         Row: {
           anexos: Json | null
