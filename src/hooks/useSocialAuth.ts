@@ -1,11 +1,13 @@
 import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useClientContext } from '@/hooks/useClientContext';
 import { toast } from 'sonner';
 
 type SocialProvider = 'facebook' | 'google' | 'instagram';
 
 export function useSocialAuth() {
   const [loading, setLoading] = useState(false);
+  const { clienteId } = useClientContext();
 
   const signInWithProvider = useCallback(async (provider: SocialProvider) => {
     setLoading(true);
@@ -74,8 +76,14 @@ export function useSocialAuth() {
         return { error: new Error('User not authenticated') };
       }
 
-      // Aqui você pode adicionar lógica adicional para salvar tokens de integração
-      // após o OAuth bem-sucedido
+      if (!clienteId) {
+        toast.error('Selecione um cliente antes de conectar uma conta social');
+        return { error: new Error('Client not selected') };
+      }
+
+      // Store client context for OAuth callback
+      localStorage.setItem('oauth_client_id', clienteId);
+      localStorage.setItem('oauth_provider', provider);
       
       return await signInWithProvider(provider);
     } catch (error: any) {
@@ -83,7 +91,7 @@ export function useSocialAuth() {
       toast.error('Erro ao conectar conta social');
       return { error };
     }
-  }, [signInWithProvider]);
+  }, [signInWithProvider, clienteId]);
 
   return {
     loading,

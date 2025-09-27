@@ -37,7 +37,7 @@ serve(async (req) => {
     twentyFourHoursFromNow.setHours(twentyFourHoursFromNow.getHours() + 24);
 
     const { data: integrationsToRefresh, error: fetchError } = await supabase
-      .from('social_integrations')
+      .from('social_integrations_cliente')
       .select('*')
       .eq('is_active', true)
       .lt('token_expires_at', twentyFourHoursFromNow.toISOString())
@@ -119,7 +119,7 @@ serve(async (req) => {
 
         if (newTokenData) {
           const { error: updateError } = await supabase
-            .from('social_integrations')
+            .from('social_integrations_cliente')
             .update({
               ...newTokenData,
               updated_at: new Date().toISOString()

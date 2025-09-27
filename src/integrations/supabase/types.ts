@@ -1718,6 +1718,68 @@ export type Database = {
         }
         Relationships: []
       }
+      social_integrations_cliente: {
+        Row: {
+          access_token: string
+          account_data: Json | null
+          account_id: string
+          account_name: string | null
+          cliente_id: string
+          connected_by: string | null
+          created_at: string
+          id: string
+          is_active: boolean
+          permissions: Json | null
+          provider: string
+          provider_user_id: string
+          refresh_token: string | null
+          token_expires_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          access_token: string
+          account_data?: Json | null
+          account_id: string
+          account_name?: string | null
+          cliente_id: string
+          connected_by?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          permissions?: Json | null
+          provider: string
+          provider_user_id: string
+          refresh_token?: string | null
+          token_expires_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          access_token?: string
+          account_data?: Json | null
+          account_id?: string
+          account_name?: string | null
+          cliente_id?: string
+          connected_by?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          permissions?: Json | null
+          provider?: string
+          provider_user_id?: string
+          refresh_token?: string | null
+          token_expires_at?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "social_integrations_cliente_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       social_metrics: {
         Row: {
           created_at: string
@@ -1752,6 +1814,54 @@ export type Database = {
             columns: ["integration_id"]
             isOneToOne: false
             referencedRelation: "social_integrations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      social_metrics_cliente: {
+        Row: {
+          cliente_id: string
+          created_at: string
+          id: string
+          integration_id: string
+          metric_date: string
+          metric_type: string
+          metric_value: number
+          raw_data: Json | null
+        }
+        Insert: {
+          cliente_id: string
+          created_at?: string
+          id?: string
+          integration_id: string
+          metric_date: string
+          metric_type: string
+          metric_value: number
+          raw_data?: Json | null
+        }
+        Update: {
+          cliente_id?: string
+          created_at?: string
+          id?: string
+          integration_id?: string
+          metric_date?: string
+          metric_type?: string
+          metric_value?: number
+          raw_data?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "social_metrics_cliente_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "social_metrics_cliente_integration_id_fkey"
+            columns: ["integration_id"]
+            isOneToOne: false
+            referencedRelation: "social_integrations_cliente"
             referencedColumns: ["id"]
           },
         ]

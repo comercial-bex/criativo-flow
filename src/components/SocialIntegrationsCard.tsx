@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Facebook, Mail, Instagram, AlertCircle } from "lucide-react";
 import { useSocialIntegrations } from "@/hooks/useSocialIntegrations";
 import { useSocialAuth } from "@/hooks/useSocialAuth";
+import { useClientContext } from "@/hooks/useClientContext";
 import { OAuthStatusIndicator } from "@/components/OAuthStatusIndicator";
 
 const providerIcons = {
@@ -19,16 +20,48 @@ const providerLabels = {
   tiktok: 'TikTok'
 };
 
-export function SocialIntegrationsCard() {
-  const { integrations, loading, disconnectIntegration, hasIntegration } = useSocialIntegrations();
+interface SocialIntegrationsCardProps {
+  clienteId?: string;
+}
+
+export function SocialIntegrationsCard({ clienteId }: SocialIntegrationsCardProps) {
+  const { clienteId: contextClienteId, clienteName } = useClientContext();
+  const targetClienteId = clienteId || contextClienteId;
+  
+  const { 
+    integrations, 
+    loading, 
+    disconnectIntegration, 
+    hasIntegration,
+    getIntegrationsByProvider 
+  } = useSocialIntegrations(targetClienteId);
+  
   const { connectSocialAccount, loading: connectLoading } = useSocialAuth();
 
   const availableProviders = ['facebook', 'google', 'instagram'] as const;
 
   const handleConfigureProvider = (provider: string) => {
-    const supabaseUrl = `https://supabase.com/dashboard/project/${import.meta.env.VITE_SUPABASE_PROJECT_ID || 'xvpqgwbktpfodbuhwqhh'}/auth/providers`;
+    const supabaseUrl = `https://supabase.com/dashboard/project/xvpqgwbktpfodbuhwqhh/auth/providers`;
     window.open(supabaseUrl, '_blank');
   };
+
+  if (!targetClienteId) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <AlertCircle className="h-5 w-5" />
+            Integrações de Redes Sociais
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground">
+            Selecione um cliente para gerenciar as integrações sociais.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card>
@@ -36,9 +69,14 @@ export function SocialIntegrationsCard() {
         <CardTitle className="flex items-center gap-2">
           <AlertCircle className="h-5 w-5" />
           Integrações de Redes Sociais
+          {clienteName && (
+            <span className="text-sm font-normal text-muted-foreground ml-2">
+              - {clienteName}
+            </span>
+          )}
         </CardTitle>
         <CardDescription>
-          Conecte suas contas sociais para automatizar coleta de dados e agendamento
+          Conecte as contas sociais do cliente para automatizar coleta de dados e agendamento
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -71,7 +109,7 @@ export function SocialIntegrationsCard() {
             {integrations.length > 0 && (
               <div className="space-y-3">
                 <h4 className="font-medium text-sm text-muted-foreground">
-                  Contas Conectadas
+                  Contas Conectadas ({integrations.length})
                 </h4>
                 {integrations.map((integration) => {
                   const Icon = providerIcons[integration.provider as keyof typeof providerIcons];
@@ -88,6 +126,9 @@ export function SocialIntegrationsCard() {
                           </p>
                           <p className="text-sm text-muted-foreground">
                             {integration.account_name || integration.provider_user_id}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            ID: {integration.account_id}
                           </p>
                         </div>
                       </div>
@@ -116,22 +157,34 @@ export function SocialIntegrationsCard() {
                 Conectar Novas Contas
               </h4>
               {availableProviders.map((provider) => {
-                const isConnected = hasIntegration(provider);
+                const connectedAccounts = getIntegrationsByProvider(provider);
                 const Icon = providerIcons[provider];
                 
-                if (isConnected) return null;
-
                 return (
-                  <Button
+                  <div 
                     key={provider}
-                    variant="outline"
-                    className="w-full flex items-center gap-3 justify-start"
-                    onClick={() => connectSocialAccount(provider)}
-                    disabled={connectLoading}
+                    className="flex items-center justify-between p-3 border rounded-lg"
                   >
-                    <Icon className="h-5 w-5" />
-                    {connectLoading ? 'Conectando...' : `Conectar ${providerLabels[provider]}`}
-                  </Button>
+                    <div className="flex items-center gap-3">
+                      <Icon className="h-5 w-5" />
+                      <div>
+                        <span className="font-medium">{providerLabels[provider]}</span>
+                        {connectedAccounts.length > 0 && (
+                          <Badge variant="secondary" className="bg-green-100 text-green-800 ml-2">
+                            {connectedAccounts.length} conta(s)
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => connectSocialAccount(provider)}
+                      disabled={connectLoading}
+                    >
+                      {connectLoading ? 'Conectando...' : (connectedAccounts.length > 0 ? 'Adicionar Conta' : 'Conectar')}
+                    </Button>
+                  </div>
                 );
               })}
             </div>
@@ -139,9 +192,9 @@ export function SocialIntegrationsCard() {
             {integrations.length === 0 && (
               <div className="text-center py-6 text-muted-foreground">
                 <AlertCircle className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                <p>Nenhuma conta social conectada</p>
+                <p>Nenhuma conta social conectada para este cliente</p>
                 <p className="text-sm">
-                  Conecte suas redes sociais para começar a coletar dados automaticamente
+                  Conecte as redes sociais do cliente para começar a coletar dados automaticamente
                 </p>
               </div>
             )}
