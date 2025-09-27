@@ -1743,6 +1743,10 @@ export type Database = {
           updated_at: string
         }[]
       }
+      get_filtered_customers_list: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
       get_filtered_profile: {
         Args: { profile_id: string }
         Returns: Json

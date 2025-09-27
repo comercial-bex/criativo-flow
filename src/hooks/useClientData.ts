@@ -35,10 +35,9 @@ export function useClientData() {
     setError(null);
 
     try {
+      // Use secure database function that handles sensitive data filtering server-side
       const { data, error: fetchError } = await supabase
-        .from('clientes')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .rpc('get_filtered_customers_list');
 
       if (fetchError) {
         console.error('Erro ao buscar clientes:', fetchError);
@@ -46,29 +45,26 @@ export function useClientData() {
         return;
       }
 
-      // Apply security filtering based on user role
-      const filteredClientes = (data || []).map((cliente: any) => {
-        const hasFullAccess = role === 'admin' || cliente.responsavel_id === (supabase.auth.getUser().then(u => u.data.user?.id));
-        
-        // Filter sensitive data for limited access roles
-        if (!hasFullAccess && (role === 'gestor' || role === 'financeiro')) {
-          return {
-            ...cliente,
-            email: null, // Hide sensitive personal data
-            telefone: null,
-            cnpj_cpf: null,
-            endereco: null,
-            _hasSensitiveAccess: false
-          };
-        }
+      // The data is already filtered by the secure database function
+      const clientesData = Array.isArray(data) ? data : [];
+      
+      // Add the sensitive access flag based on what data is present
+      const clientesWithFlags: ClienteWithSensitiveFlag[] = clientesData.map((cliente: any) => ({
+        id: cliente.id,
+        nome: cliente.nome,
+        email: cliente.email,
+        telefone: cliente.telefone,
+        cnpj_cpf: cliente.cnpj_cpf,
+        endereco: cliente.endereco,
+        status: cliente.status,
+        responsavel_id: cliente.responsavel_id,
+        assinatura_id: cliente.assinatura_id,
+        created_at: cliente.created_at,
+        updated_at: cliente.updated_at,
+        _hasSensitiveAccess: !!(cliente.email || cliente.telefone || cliente.cnpj_cpf || cliente.endereco)
+      }));
 
-        return {
-          ...cliente,
-          _hasSensitiveAccess: true
-        };
-      });
-
-      setClientes(filteredClientes);
+      setClientes(clientesWithFlags);
     } catch (err) {
       console.error('Erro inesperado:', err);
       setError('Erro inesperado ao carregar dados');
@@ -145,36 +141,39 @@ export function useClientData() {
 
   const getClienteById = async (id: string): Promise<ClienteWithSensitiveFlag | null> => {
     try {
+      // Use secure database function that handles sensitive data filtering server-side
       const { data, error: fetchError } = await supabase
-        .from('clientes')
-        .select('*')
-        .eq('id', id)
-        .single();
+        .rpc('get_filtered_customer_data', { customer_id: id });
 
       if (fetchError) {
         console.error('Erro ao buscar cliente:', fetchError);
         return null;
       }
 
-      // Apply same security filtering for individual client fetch
-      const user = await supabase.auth.getUser();
-      const hasFullAccess = role === 'admin' || data.responsavel_id === user.data.user?.id;
-
-      if (!hasFullAccess && (role === 'gestor' || role === 'financeiro')) {
-        return {
-          ...data,
-          email: null,
-          telefone: null,
-          cnpj_cpf: null,
-          endereco: null,
-          _hasSensitiveAccess: false
-        };
+      if (!data) {
+        return null;
       }
 
-      return {
-        ...data,
-        _hasSensitiveAccess: true
+      // Type assertion since we know the structure from our database function
+      const rawData = data as any;
+      
+      // Add the sensitive access flag based on what data is present
+      const clienteData: ClienteWithSensitiveFlag = {
+        id: rawData.id,
+        nome: rawData.nome,
+        email: rawData.email,
+        telefone: rawData.telefone,
+        cnpj_cpf: rawData.cnpj_cpf,
+        endereco: rawData.endereco,
+        status: rawData.status,
+        responsavel_id: rawData.responsavel_id,
+        assinatura_id: rawData.assinatura_id,
+        created_at: rawData.created_at,
+        updated_at: rawData.updated_at,
+        _hasSensitiveAccess: !!(rawData.email || rawData.telefone || rawData.cnpj_cpf || rawData.endereco)
       };
+
+      return clienteData;
     } catch (err) {
       console.error('Erro inesperado ao buscar cliente:', err);
       return null;
