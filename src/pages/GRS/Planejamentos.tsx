@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Calendar, Search, Eye, FileText, Clock, CheckCircle, XCircle, Users } from "lucide-react";
+import { Calendar, Search, Eye, FileText, Clock, CheckCircle, XCircle, Users, Plus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 
@@ -123,8 +123,8 @@ export default function GRSPlanejamentos() {
           </h1>
           <p className="text-muted-foreground">Gerencie todos os planejamentos dos clientes</p>
         </div>
-        <Button onClick={() => navigate('/design/kanban')}>
-          <FileText className="h-4 w-4 mr-2" />
+        <Button onClick={() => navigate('/grs/dashboard')}>
+          <Plus className="h-4 w-4 mr-2" />
           Novo Planejamento
         </Button>
       </div>

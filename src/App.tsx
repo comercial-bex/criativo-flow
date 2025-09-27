@@ -193,6 +193,24 @@ function App() {
                   </ProtectedRoute>
                 } />
                 
+                <Route path="/grs/cliente/:clienteId/planejamentos" element={
+                  <ProtectedRoute requiredRole="grs">
+                    <Layout><GRSPlanejamentos /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/cliente/:clienteId/projetos" element={
+                  <ProtectedRoute>
+                    <Layout><ClienteProjetos /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/cliente/:clienteId/planejamento-visual/:projetoId" element={
+                  <ProtectedRoute requiredRole="cliente">
+                    <Layout><ClientePlanejamentoVisual /></Layout>
+                  </ProtectedRoute>
+                } />
+                
                 <Route path="/grs/planejamento-estrategico" element={
                   <ProtectedRoute requiredRole="grs">
                     <Layout><GRSPlanejamentoEstrategico /></Layout>
