@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Facebook, Mail, Instagram, AlertCircle } from "lucide-react";
 import { useSocialIntegrations } from "@/hooks/useSocialIntegrations";
 import { useSocialAuth } from "@/hooks/useSocialAuth";
+import { OAuthStatusIndicator } from "@/components/OAuthStatusIndicator";
 
 const providerIcons = {
   facebook: Facebook,
@@ -22,7 +23,12 @@ export function SocialIntegrationsCard() {
   const { integrations, loading, disconnectIntegration, hasIntegration } = useSocialIntegrations();
   const { connectSocialAccount, loading: connectLoading } = useSocialAuth();
 
-  const availableProviders = ['facebook', 'google'] as const;
+  const availableProviders = ['facebook', 'google', 'instagram'] as const;
+
+  const handleConfigureProvider = (provider: string) => {
+    const supabaseUrl = `https://supabase.com/dashboard/project/${import.meta.env.VITE_SUPABASE_PROJECT_ID || 'xvpqgwbktpfodbuhwqhh'}/auth/providers`;
+    window.open(supabaseUrl, '_blank');
+  };
 
   return (
     <Card>
@@ -36,6 +42,25 @@ export function SocialIntegrationsCard() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
+        {/* Status de Configuração OAuth */}
+        <div className="space-y-2">
+          <OAuthStatusIndicator 
+            provider="Facebook"
+            isConfigured={false} // TODO: Implementar verificação real
+            onConfigureClick={() => handleConfigureProvider('facebook')}
+          />
+          <OAuthStatusIndicator 
+            provider="Instagram"
+            isConfigured={false} // TODO: Implementar verificação real 
+            onConfigureClick={() => handleConfigureProvider('instagram')}
+          />
+          <OAuthStatusIndicator 
+            provider="Google"
+            isConfigured={false} // TODO: Implementar verificação real
+            onConfigureClick={() => handleConfigureProvider('google')}
+          />
+        </div>
+
         {loading ? (
           <div className="flex items-center justify-center py-8">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>

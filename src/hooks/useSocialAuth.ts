@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
-type SocialProvider = 'facebook' | 'google';
+type SocialProvider = 'facebook' | 'google' | 'instagram';
 
 export function useSocialAuth() {
   const [loading, setLoading] = useState(false);
@@ -13,19 +13,44 @@ export function useSocialAuth() {
     try {
       const redirectUrl = `${window.location.origin}/auth`;
       
+      let scopes = '';
+      
+      switch (provider) {
+        case 'facebook':
+          scopes = 'email,pages_show_list,pages_read_engagement,instagram_basic,instagram_manage_insights';
+          break;
+        case 'google':
+          scopes = 'email,profile,https://www.googleapis.com/auth/business.manage';
+          break;
+        case 'instagram':
+          scopes = 'user_profile,user_media';
+          break;
+        default:
+          scopes = 'email';
+      }
+
       const { error } = await supabase.auth.signInWithOAuth({
-        provider,
+        provider: provider === 'instagram' ? 'facebook' : provider, // Instagram usa OAuth do Facebook
         options: {
           redirectTo: redirectUrl,
-          scopes: provider === 'facebook' 
-            ? 'email,pages_show_list,pages_read_engagement,instagram_basic,instagram_manage_insights'
-            : 'email,profile,https://www.googleapis.com/auth/business.manage'
+          scopes
         }
       });
 
       if (error) {
         console.error(`Erro no login com ${provider}:`, error);
-        toast.error(`Erro no login com ${provider}: ${error.message}`);
+        
+        // Mensagens de erro mais específicas
+        let errorMessage = `Erro ao conectar com ${provider}`;
+        if (error.message?.includes('not enabled')) {
+          errorMessage = `${provider} não está configurado. Configure OAuth no painel do Supabase primeiro.`;
+        } else if (error.message?.includes('invalid_request')) {
+          errorMessage = `Configuração OAuth inválida para ${provider}. Verifique as configurações.`;
+        } else if (error.message) {
+          errorMessage = error.message;
+        }
+        
+        toast.error(errorMessage);
         return { error };
       }
 
