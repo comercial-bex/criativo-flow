@@ -64,6 +64,8 @@ import DesignCalendario from "./pages/Design/Calendario";
 import DesignMetas from "./pages/Design/Metas";
 import DesignBiblioteca from "./pages/Design/Biblioteca";
 import DesignAprovacoes from "./pages/Design/Aprovacoes";
+import Gamificacao from "./pages/Gamificacao";
+import GamificacaoAdmin from "./pages/GamificacaoAdmin";
 
 import AprovacaoJob from "./pages/AprovacaoJob";
 
@@ -171,6 +173,18 @@ function App() {
                 <Route path="/especialistas" element={
                   <ProtectedRoute module="especialistas">
                     <Layout><Especialistas /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/gamificacao" element={
+                  <ProtectedRoute>
+                    <Layout><Gamificacao /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/gamificacao/admin" element={
+                  <ProtectedRoute requiredRole="admin">
+                    <Layout><GamificacaoAdmin /></Layout>
                   </ProtectedRoute>
                 } />
                 

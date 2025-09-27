@@ -1,4 +1,4 @@
-import { Home, Users, FileText, DollarSign, Settings, MoreHorizontal, Calendar, BarChart3 } from 'lucide-react';
+import { Home, Users, FileText, DollarSign, Settings, MoreHorizontal, Calendar, BarChart3, Trophy } from 'lucide-react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -11,10 +11,10 @@ import {
 } from '@/components/ui/sheet';
 
 const mainNavItems = [
-  { title: 'Dashboard', url: '/dashboard', icon: Home },
+  { title: 'Início', url: '/dashboard', icon: Home },
+  { title: 'Ranking', url: '/gamificacao', icon: Trophy },
   { title: 'Clientes', url: '/clientes', icon: Users },
   { title: 'Projetos', url: '/cliente/projetos', icon: FileText },
-  { title: 'Financeiro', url: '/financeiro', icon: DollarSign },
   { title: 'Mais', url: '#', icon: MoreHorizontal, isMore: true },
 ];
 
