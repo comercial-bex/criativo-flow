@@ -212,13 +212,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "fk_captacoes_cliente"
-            columns: ["cliente_id"]
-            isOneToOne: false
-            referencedRelation: "secure_clientes"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "fk_captacoes_especialista"
             columns: ["especialista_id"]
             isOneToOne: false
@@ -446,13 +439,6 @@ export type Database = {
             referencedRelation: "clientes"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "fk_cliente"
-            columns: ["cliente_id"]
-            isOneToOne: false
-            referencedRelation: "secure_clientes"
-            referencedColumns: ["id"]
-          },
         ]
       }
       clientes: {
@@ -644,13 +630,6 @@ export type Database = {
             columns: ["cliente_id"]
             isOneToOne: false
             referencedRelation: "clientes"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "eventos_agenda_cliente_id_fkey"
-            columns: ["cliente_id"]
-            isOneToOne: false
-            referencedRelation: "secure_clientes"
             referencedColumns: ["id"]
           },
           {
@@ -948,13 +927,6 @@ export type Database = {
             referencedRelation: "clientes"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "orcamentos_cliente_id_fkey"
-            columns: ["cliente_id"]
-            isOneToOne: false
-            referencedRelation: "secure_clientes"
-            referencedColumns: ["id"]
-          },
         ]
       }
       planejamentos: {
@@ -1006,13 +978,6 @@ export type Database = {
             columns: ["cliente_id"]
             isOneToOne: false
             referencedRelation: "clientes"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "planejamentos_cliente_id_fkey"
-            columns: ["cliente_id"]
-            isOneToOne: false
-            referencedRelation: "secure_clientes"
             referencedColumns: ["id"]
           },
           {
@@ -1299,13 +1264,6 @@ export type Database = {
             columns: ["cliente_id"]
             isOneToOne: false
             referencedRelation: "clientes"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "projetos_cliente_id_fkey"
-            columns: ["cliente_id"]
-            isOneToOne: false
-            referencedRelation: "secure_clientes"
             referencedColumns: ["id"]
           },
           {
@@ -1610,13 +1568,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "transacoes_financeiras_cliente_id_fkey"
-            columns: ["cliente_id"]
-            isOneToOne: false
-            referencedRelation: "secure_clientes"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "transacoes_financeiras_projeto_id_fkey"
             columns: ["projeto_id"]
             isOneToOne: false
@@ -1656,63 +1607,7 @@ export type Database = {
       }
     }
     Views: {
-      secure_clientes: {
-        Row: {
-          assinatura_id: string | null
-          cnpj_cpf: string | null
-          created_at: string | null
-          email: string | null
-          endereco: string | null
-          id: string | null
-          nome: string | null
-          responsavel_id: string | null
-          status: Database["public"]["Enums"]["status_type"] | null
-          telefone: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          assinatura_id?: string | null
-          cnpj_cpf?: never
-          created_at?: string | null
-          email?: never
-          endereco?: never
-          id?: string | null
-          nome?: string | null
-          responsavel_id?: string | null
-          status?: Database["public"]["Enums"]["status_type"] | null
-          telefone?: never
-          updated_at?: string | null
-        }
-        Update: {
-          assinatura_id?: string | null
-          cnpj_cpf?: never
-          created_at?: string | null
-          email?: never
-          endereco?: never
-          id?: string | null
-          nome?: string | null
-          responsavel_id?: string | null
-          status?: Database["public"]["Enums"]["status_type"] | null
-          telefone?: never
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "clientes_responsavel_id_fkey"
-            columns: ["responsavel_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_clientes_assinatura"
-            columns: ["assinatura_id"]
-            isOneToOne: false
-            referencedRelation: "assinaturas"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
+      [_ in never]: never
     }
     Functions: {
       aprovar_especialista: {
