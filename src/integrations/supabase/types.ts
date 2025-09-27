@@ -1131,38 +1131,50 @@ export type Database = {
       }
       profiles: {
         Row: {
+          aprovado_por: string | null
           avatar_url: string | null
           created_at: string | null
+          data_aprovacao: string | null
           email: string
           especialidade:
             | Database["public"]["Enums"]["especialidade_type"]
             | null
           id: string
           nome: string
+          observacoes_aprovacao: string | null
+          status: string
           telefone: string | null
           updated_at: string | null
         }
         Insert: {
+          aprovado_por?: string | null
           avatar_url?: string | null
           created_at?: string | null
+          data_aprovacao?: string | null
           email: string
           especialidade?:
             | Database["public"]["Enums"]["especialidade_type"]
             | null
           id: string
           nome: string
+          observacoes_aprovacao?: string | null
+          status?: string
           telefone?: string | null
           updated_at?: string | null
         }
         Update: {
+          aprovado_por?: string | null
           avatar_url?: string | null
           created_at?: string | null
+          data_aprovacao?: string | null
           email?: string
           especialidade?:
             | Database["public"]["Enums"]["especialidade_type"]
             | null
           id?: string
           nome?: string
+          observacoes_aprovacao?: string | null
+          status?: string
           telefone?: string | null
           updated_at?: string | null
         }
@@ -1598,6 +1610,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      aprovar_especialista: {
+        Args: { especialista_id: string; observacao?: string }
+        Returns: boolean
+      }
       generate_content_with_openai: {
         Args: { prompt_text: string }
         Returns: string
@@ -1619,6 +1635,10 @@ export type Database = {
       }
       is_admin: {
         Args: { user_uuid: string }
+        Returns: boolean
+      }
+      rejeitar_especialista: {
+        Args: { especialista_id: string; observacao?: string }
         Returns: boolean
       }
     }

@@ -26,7 +26,7 @@ import Funcoes from "./pages/Configuracoes/Funcoes";
 import Perfil from "./pages/Perfil";
 import Relatorios from "./pages/Relatorios";
 import Planos from "./pages/Planos";
-import { Especialistas } from "./pages/Especialistas";
+import Especialistas from "./pages/Especialistas";
 
 // Role-specific pages
 import GRSDashboard from "./pages/GRS/Dashboard";

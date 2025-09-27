@@ -1,39 +1,46 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DataTable } from '@/components/DataTable';
-import { Badge } from '@/components/ui/badge';
-import { toast } from 'sonner';
-import { Plus, Edit, User, Briefcase } from 'lucide-react';
-import { useAuth } from '@/hooks/useAuth';
-import type { Database } from '@/integrations/supabase/types';
+import { toast } from '@/hooks/use-toast';
+import { Plus, Edit, Users, Palette, Camera, User, Clock, CheckCircle, XCircle, Pause } from 'lucide-react';
+import { Database } from '@/integrations/supabase/types';
+import { EspecialistaApprovalCard } from '@/components/EspecialistaApprovalCard';
+import { ApprovalActionsModal } from '@/components/ApprovalActionsModal';
+import { StatusBadgeEspecialista } from '@/components/StatusBadgeEspecialista';
+import { PermissionGate } from '@/components/PermissionGate';
 
 type Profile = Database['public']['Tables']['profiles']['Row'] & {
-  especialidade?: string;
+  status?: 'pendente_aprovacao' | 'aprovado' | 'rejeitado' | 'suspenso';
+  observacoes_aprovacao?: string;
+  data_aprovacao?: string;
+  aprovado_por?: string;
+};
+type UserRole = Database['public']['Enums']['user_role'];
+
+const especialidadeLabels = {
+  'grs': 'Gestão de Redes Sociais',
+  'design': 'Design',
+  'audiovisual': 'Audiovisual',
+  'atendimento': 'Atendimento',
+  'financeiro': 'Financeiro',
+  'gestor': 'Gestor'
 };
 
-type UserRole = Database['public']['Tables']['user_roles']['Row'];
-
-const especialidadeLabels: Record<string, string> = {
-  'videomaker': 'Videomaker',
-  'filmmaker': 'Filmmaker',
-  'design': 'Designer',
-  'gerente_redes_sociais': 'Gerente de Redes Sociais'
-};
-
-const roleLabels: Record<string, string> = {
+const roleLabels = {
   'admin': 'Administrador',
   'grs': 'GRS',
+  'design': 'Designer',
+  'audiovisual': 'Audiovisual',
   'atendimento': 'Atendimento',
-  'designer': 'Designer',
-  'filmmaker': 'Filmmaker',
-  'gestor': 'Gestor',
   'financeiro': 'Financeiro',
+  'gestor': 'Gestor',
   'cliente': 'Cliente'
 };
 
@@ -43,70 +50,140 @@ interface EspecialistaFormData {
   telefone: string;
   especialidade: string;
   role: string;
-  senha: string;
+  password: string;
 }
 
-export function Especialistas() {
-  const { user } = useAuth();
+interface ApprovalAction {
+  especialistaId: string;
+  especialistaNome: string;
+  action: 'approve' | 'reject' | 'suspend';
+}
+
+export default function Especialistas() {
+  const [especialistas, setEspecialistas] = useState<(Profile & { role?: UserRole })[]>([]);
   const [loading, setLoading] = useState(false);
-  const [especialistas, setEspecialistas] = useState<(Profile & { user_role?: UserRole })[]>([]);
+  const [approvalLoading, setApprovalLoading] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  
+  const [activeTab, setActiveTab] = useState('all');
+  const [approvalAction, setApprovalAction] = useState<ApprovalAction | null>(null);
   const [formData, setFormData] = useState<EspecialistaFormData>({
     nome: '',
     email: '',
     telefone: '',
     especialidade: '',
     role: '',
-    senha: ''
+    password: ''
   });
 
-  useEffect(() => {
-    fetchEspecialistas();
-  }, []);
-
-  const fetchEspecialistas = async () => {
+  const fetchEspecialistas = useCallback(async () => {
+    setLoading(true);
     try {
-      setLoading(true);
-      
-      // Buscar todos os perfis com suas especialidades e roles
+      // Buscar profiles
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('*');
 
-      if (profilesError) throw profilesError;
+      if (profilesError) {
+        throw profilesError;
+      }
 
       // Buscar roles dos usuários
-      const { data: roles, error: rolesError } = await supabase
+      const { data: userRoles, error: rolesError } = await supabase
         .from('user_roles')
-        .select('*');
+        .select('user_id, role');
 
-      if (rolesError) throw rolesError;
+      if (rolesError) {
+        throw rolesError;
+      }
 
       // Combinar dados
-      const profilesWithRoles = profiles?.map(profile => {
-        const userRole = roles?.find(role => role.user_id === profile.id);
+      const especialistasComRoles = profiles?.map(profile => {
+        const userRole = userRoles?.find(role => role.user_id === profile.id);
         return {
           ...profile,
-          user_role: userRole
+          role: userRole?.role
         };
       }) || [];
 
-      setEspecialistas(profilesWithRoles);
-    } catch (error) {
+      setEspecialistas(especialistasComRoles as any);
+    } catch (error: any) {
       console.error('Erro ao buscar especialistas:', error);
-      toast.error('Erro ao carregar especialistas');
+      toast({
+        title: "Erro",
+        description: "Erro ao carregar especialistas",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  const handleApprovalAction = useCallback(async (observacao?: string) => {
+    if (!approvalAction) return;
+
+    setApprovalLoading(true);
+    try {
+      const functionName = approvalAction.action === 'approve' ? 'aprovar_especialista' : 'rejeitar_especialista';
+      
+      if (approvalAction.action === 'suspend') {
+        // Para suspensão, atualizamos diretamente
+        const { error } = await supabase
+          .from('profiles')
+          .update({ 
+            status: 'suspenso',
+            observacoes_aprovacao: observacao,
+            data_aprovacao: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', approvalAction.especialistaId);
+
+        if (error) throw error;
+      } else {
+        // Para aprovar/rejeitar, usamos as funções do banco
+        const { error } = await supabase.rpc(functionName, {
+          especialista_id: approvalAction.especialistaId,
+          observacao: observacao || null
+        });
+
+        if (error) throw error;
+      }
+
+      await fetchEspecialistas();
+      
+      toast({
+        title: "Sucesso",
+        description: `Especialista ${
+          approvalAction.action === 'approve' ? 'aprovado' : 
+          approvalAction.action === 'reject' ? 'rejeitado' : 'suspenso'
+        } com sucesso`,
+      });
+    } catch (error: any) {
+      console.error('Erro na ação:', error);
+      toast({
+        title: "Erro",
+        description: error.message || "Erro ao processar ação",
+        variant: "destructive",
+      });
+    } finally {
+      setApprovalLoading(false);
+      setApprovalAction(null);
+    }
+  }, [approvalAction, fetchEspecialistas]);
+
+  useEffect(() => {
+    fetchEspecialistas();
+  }, [fetchEspecialistas]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!formData.nome || !formData.email || !formData.role) {
-      toast.error('Preencha todos os campos obrigatórios');
+      toast({
+        title: "Erro",
+        description: "Preencha todos os campos obrigatórios",
+        variant: "destructive",
+      });
       return;
     }
 
@@ -134,13 +211,16 @@ export function Especialistas() {
 
         if (roleError) throw roleError;
 
-        toast.success('Especialista atualizado com sucesso');
+        toast({
+          title: "Sucesso",
+          description: "Especialista atualizado com sucesso",
+        });
       } else {
         // Criar novo usuário usando Edge Function
         const { data: userData, error: userError } = await supabase.functions.invoke('create-user', {
           body: {
             email: formData.email,
-            password: formData.senha,
+            password: formData.password,
             nome: formData.nome,
             telefone: formData.telefone,
             especialidade: formData.especialidade,
@@ -150,7 +230,10 @@ export function Especialistas() {
 
         if (userError) throw userError;
 
-        toast.success('Especialista criado com sucesso');
+        toast({
+          title: "Sucesso",
+          description: "Especialista criado com sucesso",
+        });
       }
 
       setFormData({
@@ -159,300 +242,456 @@ export function Especialistas() {
         telefone: '',
         especialidade: '',
         role: '',
-        senha: ''
+        password: ''
       });
       setEditingId(null);
       setIsDialogOpen(false);
       fetchEspecialistas();
     } catch (error: any) {
       console.error('Erro ao salvar especialista:', error);
-      toast.error(error.message || 'Erro ao salvar especialista');
+      toast({
+        title: "Erro",
+        description: error.message || "Erro ao salvar especialista",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
   };
 
-  const handleEdit = (especialista: Profile & { user_role?: UserRole }) => {
+  const handleEdit = (especialista: Profile & { role?: UserRole }) => {
+    setEditingId(especialista.id);
     setFormData({
       nome: especialista.nome,
-      email: especialista.email,
+      email: especialista.email || '',
       telefone: especialista.telefone || '',
       especialidade: especialista.especialidade || '',
-      role: especialista.user_role?.role || '',
-      senha: ''
+      role: especialista.role || '',
+      password: ''
     });
-    setEditingId(especialista.id);
     setIsDialogOpen(true);
   };
 
+  // Filtrar especialistas por status
+  const filteredEspecialistas = especialistas.filter(especialista => {
+    if (activeTab === 'all') return true;
+    if (activeTab === 'pending') return especialista.status === 'pendente_aprovacao';
+    if (activeTab === 'approved') return especialista.status === 'aprovado';
+    if (activeTab === 'rejected') return especialista.status === 'rejeitado';
+    if (activeTab === 'suspended') return especialista.status === 'suspenso';
+    return true;
+  });
+
+  // Estatísticas
+  const stats = {
+    total: especialistas.length,
+    pending: especialistas.filter(e => e.status === 'pendente_aprovacao').length,
+    approved: especialistas.filter(e => e.status === 'aprovado').length,
+    rejected: especialistas.filter(e => e.status === 'rejeitado').length,
+    suspended: especialistas.filter(e => e.status === 'suspenso').length,
+  };
+
+  // Configuração das colunas da tabela
   const columns = [
     {
       key: 'nome',
       label: 'Nome',
-      header: 'Nome',
       accessorKey: 'nome',
+      header: 'Nome',
     },
     {
       key: 'email',
-      label: 'Email', 
-      header: 'Email',
+      label: 'E-mail',
       accessorKey: 'email',
+      header: 'E-mail',
     },
     {
       key: 'especialidade',
       label: 'Especialidade',
-      header: 'Especialidade',
       accessorKey: 'especialidade',
+      header: 'Especialidade',
       cell: ({ row }: any) => {
-        const especialidade = row.getValue('especialidade') as string;
-        return especialidade ? (
-          <Badge variant="secondary">
-            {especialidadeLabels[especialidade] || especialidade}
-          </Badge>
-        ) : (
-          <span className="text-muted-foreground">Não definida</span>
-        );
-      }
+        const especialidade = row.getValue('especialidade');
+        return especialidade ? especialidadeLabels[especialidade as keyof typeof especialidadeLabels] || especialidade : '-';
+      },
     },
     {
       key: 'role',
       label: 'Função',
+      accessorKey: 'role',
       header: 'Função',
-      accessorKey: 'user_role.role',
       cell: ({ row }: any) => {
-        const role = row.original.user_role?.role;
-        return role ? (
-          <Badge variant="outline">
-            {roleLabels[role] || role}
-          </Badge>
-        ) : (
-          <span className="text-muted-foreground">Sem função</span>
-        );
-      }
+        const role = row.getValue('role');
+        return role ? roleLabels[role as keyof typeof roleLabels] || role : '-';
+      },
+    },
+    {
+      key: 'status',
+      label: 'Status',
+      accessorKey: 'status',
+      header: 'Status',
+      cell: ({ row }: any) => {
+        const status = row.getValue('status') || 'aprovado';
+        return <StatusBadgeEspecialista status={status} />;
+      },
     },
     {
       key: 'actions',
       label: 'Ações',
-      header: 'Ações',
       id: 'actions',
-      cell: ({ row }: any) => (
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => handleEdit(row.original)}
-        >
-          <Edit className="h-4 w-4" />
-        </Button>
-      )
-    }
+      header: 'Ações',
+      cell: ({ row }: any) => {
+        const especialista = row.original;
+        return (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handleEdit(especialista)}
+          >
+            <Edit className="w-4 h-4" />
+          </Button>
+        );
+      },
+    },
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="container mx-auto p-6 space-y-6">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Especialistas</h1>
-          <p className="text-muted-foreground">
-            Gerencie os especialistas e suas competências
-          </p>
-        </div>
-
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button
-              onClick={() => {
-                setFormData({
-                  nome: '',
-                  email: '',
-                  telefone: '',
-                  especialidade: '',
-                  role: '',
-                  senha: ''
-                });
-                setEditingId(null);
-              }}
-            >
-              <Plus className="mr-2 h-4 w-4" />
-              Adicionar Especialista
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[500px]">
-            <DialogHeader>
-              <DialogTitle>
-                {editingId ? 'Editar Especialista' : 'Novo Especialista'}
-              </DialogTitle>
-            </DialogHeader>
-            
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="nome">Nome *</Label>
-                  <Input
-                    id="nome"
-                    value={formData.nome}
-                    onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
-                    placeholder="Nome completo"
-                    required
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email *</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    placeholder="email@exemplo.com"
-                    required
-                    disabled={!!editingId}
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="telefone">Telefone</Label>
-                  <Input
-                    id="telefone"
-                    value={formData.telefone}
-                    onChange={(e) => setFormData({ ...formData, telefone: e.target.value })}
-                    placeholder="(11) 99999-9999"
-                  />
-                </div>
-
-                {!editingId && (
+        <h1 className="text-3xl font-bold text-primary">Gestão de Especialistas</h1>
+        <PermissionGate module="especialistas" action="canCreate">
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button onClick={() => setEditingId(null)}>
+                <Plus className="w-4 h-4 mr-2" />
+                Adicionar Especialista
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[500px]">
+              <DialogHeader>
+                <DialogTitle>
+                  {editingId ? 'Editar Especialista' : 'Novo Especialista'}
+                </DialogTitle>
+              </DialogHeader>
+              
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="senha">Senha *</Label>
+                    <Label htmlFor="nome">Nome *</Label>
                     <Input
-                      id="senha"
-                      type="password"
-                      value={formData.senha}
-                      onChange={(e) => setFormData({ ...formData, senha: e.target.value })}
-                      placeholder="Digite a senha"
-                      required={!editingId}
+                      id="nome"
+                      value={formData.nome}
+                      onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
+                      placeholder="Nome completo"
+                      required
                     />
                   </div>
-                )}
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="especialidade">Especialidade</Label>
-                  <Select 
-                    value={formData.especialidade} 
-                    onValueChange={(value) => setFormData({ ...formData, especialidade: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione uma especialidade" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="videomaker">Videomaker</SelectItem>
-                      <SelectItem value="filmmaker">Filmmaker</SelectItem>
-                      <SelectItem value="design">Designer</SelectItem>
-                      <SelectItem value="gerente_redes_sociais">Gerente de Redes Sociais</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email *</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      placeholder="email@exemplo.com"
+                      required
+                      disabled={!!editingId}
+                    />
+                  </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="role">Função no Sistema *</Label>
-                  <Select 
-                    value={formData.role} 
-                    onValueChange={(value) => setFormData({ ...formData, role: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione uma função" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="admin">Administrador</SelectItem>
-                      <SelectItem value="grs">GRS</SelectItem>
-                      <SelectItem value="atendimento">Atendimento</SelectItem>
-                      <SelectItem value="designer">Designer</SelectItem>
-                      <SelectItem value="filmmaker">Filmmaker</SelectItem>
-                      <SelectItem value="gestor">Gestor</SelectItem>
-                      <SelectItem value="financeiro">Financeiro</SelectItem>
-                    </SelectContent>
-                  </Select>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="telefone">Telefone</Label>
+                    <Input
+                      id="telefone"
+                      value={formData.telefone}
+                      onChange={(e) => setFormData({ ...formData, telefone: e.target.value })}
+                      placeholder="(11) 99999-9999"
+                    />
+                  </div>
+
+                  {!editingId && (
+                    <div className="space-y-2">
+                      <Label htmlFor="password">Senha *</Label>
+                      <Input
+                        id="password"
+                        type="password"
+                        value={formData.password}
+                        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                        placeholder="Digite a senha"
+                        required={!editingId}
+                      />
+                    </div>
+                  )}
                 </div>
-              </div>
 
-              <div className="flex justify-end space-x-2 pt-4">
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  onClick={() => setIsDialogOpen(false)}
-                >
-                  Cancelar
-                </Button>
-                <Button type="submit" disabled={loading}>
-                  {loading ? 'Salvando...' : editingId ? 'Atualizar' : 'Criar'}
-                </Button>
-              </div>
-            </form>
-          </DialogContent>
-        </Dialog>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="especialidade">Especialidade</Label>
+                    <Select 
+                      value={formData.especialidade} 
+                      onValueChange={(value) => setFormData({ ...formData, especialidade: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione uma especialidade" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="grs">Gestão de Redes Sociais</SelectItem>
+                        <SelectItem value="design">Design</SelectItem>
+                        <SelectItem value="audiovisual">Audiovisual</SelectItem>
+                        <SelectItem value="atendimento">Atendimento</SelectItem>
+                        <SelectItem value="financeiro">Financeiro</SelectItem>
+                        <SelectItem value="gestor">Gestor</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="role">Função no Sistema *</Label>
+                    <Select 
+                      value={formData.role} 
+                      onValueChange={(value) => setFormData({ ...formData, role: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione uma função" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="admin">Administrador</SelectItem>
+                        <SelectItem value="grs">GRS</SelectItem>
+                        <SelectItem value="design">Designer</SelectItem>
+                        <SelectItem value="audiovisual">Audiovisual</SelectItem>
+                        <SelectItem value="atendimento">Atendimento</SelectItem>
+                        <SelectItem value="financeiro">Financeiro</SelectItem>
+                        <SelectItem value="gestor">Gestor</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="flex justify-end space-x-2 pt-4">
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={() => setIsDialogOpen(false)}
+                  >
+                    Cancelar
+                  </Button>
+                  <Button type="submit" disabled={loading}>
+                    {loading ? 'Salvando...' : editingId ? 'Atualizar' : 'Criar'}
+                  </Button>
+                </div>
+              </form>
+            </DialogContent>
+          </Dialog>
+        </PermissionGate>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      {/* Cards de estatísticas */}
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total de Especialistas</CardTitle>
-            <User className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Total</CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{especialistas.length}</div>
+            <div className="text-2xl font-bold">{stats.total}</div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Designers</CardTitle>
-            <Briefcase className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Pendentes</CardTitle>
+            <Clock className="h-4 w-4 text-yellow-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {especialistas.filter(e => e.especialidade === 'design').length}
-            </div>
+            <div className="text-2xl font-bold text-yellow-600">{stats.pending}</div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Videomakers</CardTitle>
-            <Briefcase className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Aprovados</CardTitle>
+            <CheckCircle className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {especialistas.filter(e => ['videomaker', 'filmmaker'].includes(e.especialidade || '')).length}
-            </div>
+            <div className="text-2xl font-bold text-green-600">{stats.approved}</div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Designers</CardTitle>
-            <Briefcase className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Rejeitados</CardTitle>
+            <XCircle className="h-4 w-4 text-red-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {especialistas.filter(e => e.especialidade === 'design').length}
-            </div>
+            <div className="text-2xl font-bold text-red-600">{stats.rejected}</div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Suspensos</CardTitle>
+            <Pause className="h-4 w-4 text-gray-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-gray-600">{stats.suspended}</div>
           </CardContent>
         </Card>
       </div>
 
+      {/* Área de aprovações com abas */}
       <Card>
         <CardHeader>
-          <CardTitle>Lista de Especialistas</CardTitle>
+          <CardTitle>Gerenciamento de Especialistas</CardTitle>
         </CardHeader>
         <CardContent>
-          <DataTable
-            columns={columns}
-            data={especialistas}
-          />
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="grid w-full grid-cols-5">
+              <TabsTrigger value="all">Todos ({stats.total})</TabsTrigger>
+              <TabsTrigger value="pending">Pendentes ({stats.pending})</TabsTrigger>
+              <TabsTrigger value="approved">Aprovados ({stats.approved})</TabsTrigger>
+              <TabsTrigger value="rejected">Rejeitados ({stats.rejected})</TabsTrigger>
+              <TabsTrigger value="suspended">Suspensos ({stats.suspended})</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="all" className="space-y-4">
+              <DataTable
+                columns={columns}
+                data={filteredEspecialistas}
+              />
+            </TabsContent>
+
+            <TabsContent value="pending" className="space-y-4">
+              {stats.pending === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <Clock className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                  <p>Nenhum especialista aguardando aprovação</p>
+                </div>
+              ) : (
+                <div className="grid gap-4">
+                  {filteredEspecialistas.map((especialista) => (
+                    <EspecialistaApprovalCard
+                      key={especialista.id}
+                      especialista={especialista}
+                      onApprove={(id) => setApprovalAction({
+                        especialistaId: id,
+                        especialistaNome: especialista.nome,
+                        action: 'approve'
+                      })}
+                      onReject={(id) => setApprovalAction({
+                        especialistaId: id,
+                        especialistaNome: especialista.nome,
+                        action: 'reject'
+                      })}
+                      onSuspend={(id) => setApprovalAction({
+                        especialistaId: id,
+                        especialistaNome: especialista.nome,
+                        action: 'suspend'
+                      })}
+                      isLoading={approvalLoading}
+                    />
+                  ))}
+                </div>
+              )}
+            </TabsContent>
+
+            <TabsContent value="approved" className="space-y-4">
+              <div className="grid gap-4">
+                {filteredEspecialistas.map((especialista) => (
+                  <EspecialistaApprovalCard
+                    key={especialista.id}
+                    especialista={especialista}
+                    onApprove={(id) => setApprovalAction({
+                      especialistaId: id,
+                      especialistaNome: especialista.nome,
+                      action: 'approve'
+                    })}
+                    onReject={(id) => setApprovalAction({
+                      especialistaId: id,
+                      especialistaNome: especialista.nome,
+                      action: 'reject'
+                    })}
+                    onSuspend={(id) => setApprovalAction({
+                      especialistaId: id,
+                      especialistaNome: especialista.nome,
+                      action: 'suspend'
+                    })}
+                    isLoading={approvalLoading}
+                  />
+                ))}
+              </div>
+            </TabsContent>
+
+            <TabsContent value="rejected" className="space-y-4">
+              <div className="grid gap-4">
+                {filteredEspecialistas.map((especialista) => (
+                  <EspecialistaApprovalCard
+                    key={especialista.id}
+                    especialista={especialista}
+                    onApprove={(id) => setApprovalAction({
+                      especialistaId: id,
+                      especialistaNome: especialista.nome,
+                      action: 'approve'
+                    })}
+                    onReject={(id) => setApprovalAction({
+                      especialistaId: id,
+                      especialistaNome: especialista.nome,
+                      action: 'reject'
+                    })}
+                    onSuspend={(id) => setApprovalAction({
+                      especialistaId: id,
+                      especialistaNome: especialista.nome,
+                      action: 'suspend'
+                    })}
+                    isLoading={approvalLoading}
+                  />
+                ))}
+              </div>
+            </TabsContent>
+
+            <TabsContent value="suspended" className="space-y-4">
+              <div className="grid gap-4">
+                {filteredEspecialistas.map((especialista) => (
+                  <EspecialistaApprovalCard
+                    key={especialista.id}
+                    especialista={especialista}
+                    onApprove={(id) => setApprovalAction({
+                      especialistaId: id,
+                      especialistaNome: especialista.nome,
+                      action: 'approve'
+                    })}
+                    onReject={(id) => setApprovalAction({
+                      especialistaId: id,
+                      especialistaNome: especialista.nome,
+                      action: 'reject'
+                    })}
+                    onSuspend={(id) => setApprovalAction({
+                      especialistaId: id,
+                      especialistaNome: especialista.nome,
+                      action: 'suspend'
+                    })}
+                    isLoading={approvalLoading}
+                  />
+                ))}
+              </div>
+            </TabsContent>
+          </Tabs>
         </CardContent>
       </Card>
+
+      {/* Modal de confirmação de ações */}
+      {approvalAction && (
+        <ApprovalActionsModal
+          isOpen={!!approvalAction}
+          onClose={() => setApprovalAction(null)}
+          onConfirm={handleApprovalAction}
+          especialistaNome={approvalAction.especialistaNome}
+          action={approvalAction.action}
+          isLoading={approvalLoading}
+        />
+      )}
     </div>
   );
 }
