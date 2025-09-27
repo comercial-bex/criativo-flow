@@ -13,6 +13,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { OnboardingForm } from '@/components/OnboardingForm';
+import { MobileClientCard } from '@/components/MobileClientCard';
+import { useDeviceType } from '@/hooks/useDeviceType';
 import { 
   Users, 
   Plus, 
@@ -39,6 +41,8 @@ interface Assinatura {
 
 const Clientes = () => {
   const navigate = useNavigate();
+  const deviceType = useDeviceType();
+  const isMobile = deviceType === 'mobile';
   const { 
     clientes, 
     loading, 
@@ -207,60 +211,63 @@ const Clientes = () => {
   }
 
   return (
-    <div className="p-6 space-y-8">
+    <div className={`${isMobile ? 'p-4 space-y-6' : 'p-6 space-y-8'}`}>
       <SectionHeader
         title="Clientes"
-        description="Gerencie informações e relacionamentos com clientes"
+        description={isMobile ? "Gerencie seus clientes" : "Gerencie informações e relacionamentos com clientes"}
         icon={Users}
         action={{
-          label: "Novo Cliente",
+          label: isMobile ? "Novo" : "Novo Cliente",
           onClick: () => setShowForm(true),
           icon: Plus
         }}
       />
 
-      {/* Filtros e Busca */}
-      <div className="flex flex-col sm:flex-row gap-4">
+      {/* Filtros e Busca - Mobile Optimized */}
+      <div className={`flex flex-col gap-4 ${isMobile ? 'space-y-3' : 'sm:flex-row'}`}>
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Pesquisar por nome, empresa ou email..."
+            placeholder={isMobile ? "Buscar clientes..." : "Pesquisar por nome, empresa ou email..."}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
+            className={`pl-10 ${isMobile ? 'h-12 text-base' : ''}`}
           />
         </div>
-        <Select value={sortBy} onValueChange={setSortBy}>
-          <SelectTrigger className="w-48">
-            <SelectValue placeholder="Ordenar por" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="created_at">Mais Recentes</SelectItem>
-            <SelectItem value="nome">Nome A-Z</SelectItem>
-            <SelectItem value="empresa">Empresa A-Z</SelectItem>
-            <SelectItem value="projetos">Mais Projetos</SelectItem>
-          </SelectContent>
-        </Select>
-        <Button variant="outline">
-          <Filter className="h-4 w-4 mr-2" />
-          Filtros
-        </Button>
+        <div className={`flex gap-3 ${isMobile ? 'flex-col' : ''}`}>
+          <Select value={sortBy} onValueChange={setSortBy}>
+            <SelectTrigger className={isMobile ? 'h-12' : 'w-48'}>
+              <SelectValue placeholder="Ordenar por" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="created_at">Mais Recentes</SelectItem>
+              <SelectItem value="nome">Nome A-Z</SelectItem>
+              <SelectItem value="empresa">Empresa A-Z</SelectItem>
+              <SelectItem value="projetos">Mais Projetos</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button variant="outline" className={isMobile ? 'h-12' : ''}>
+            <Filter className="h-4 w-4 mr-2" />
+            Filtros
+          </Button>
+        </div>
       </div>
 
-      {/* Formulário de Cadastro */}
+      {/* Formulário de Cadastro - Mobile Optimized */}
       <Dialog open={showForm} onOpenChange={setShowForm}>
-        <DialogContent className="sm:max-w-[700px]">
+        <DialogContent className={isMobile ? "" : "sm:max-w-[700px]"}>
           <DialogHeader>
-            <DialogTitle>Cadastrar Novo Cliente</DialogTitle>
+            <DialogTitle className={isMobile ? "text-lg" : ""}>Cadastrar Novo Cliente</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'}`}>
               <div className="space-y-2">
                 <Label htmlFor="nome">Nome / Razão Social</Label>
                 <Input
                   id="nome"
                   value={formData.nome}
                   onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
+                  className={isMobile ? "h-12 text-base" : ""}
                   required
                 />
               </div>
@@ -272,6 +279,7 @@ const Clientes = () => {
                   type="email"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  className={isMobile ? "h-12 text-base" : ""}
                   required
                 />
               </div>
@@ -282,6 +290,7 @@ const Clientes = () => {
                   id="telefone"
                   value={formData.telefone}
                   onChange={(e) => setFormData({ ...formData, telefone: e.target.value })}
+                  className={isMobile ? "h-12 text-base" : ""}
                 />
               </div>
 
@@ -291,6 +300,7 @@ const Clientes = () => {
                   id="cnpj_cpf"
                   value={formData.cnpj_cpf}
                   onChange={(e) => setFormData({ ...formData, cnpj_cpf: e.target.value })}
+                  className={isMobile ? "h-12 text-base" : ""}
                 />
               </div>
 
@@ -300,7 +310,7 @@ const Clientes = () => {
                   value={formData.status} 
                   onValueChange={(value) => setFormData({ ...formData, status: value as 'ativo' | 'inativo' | 'pendente' | 'arquivado' })}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className={isMobile ? "h-12" : ""}>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -318,7 +328,7 @@ const Clientes = () => {
                   value={formData.assinatura_id || 'none'} 
                   onValueChange={(value) => setFormData({ ...formData, assinatura_id: value === 'none' ? '' : value })}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className={isMobile ? "h-12" : ""}>
                     <SelectValue placeholder="Selecione um plano" />
                   </SelectTrigger>
                   <SelectContent>
@@ -339,14 +349,15 @@ const Clientes = () => {
                 id="endereco"
                 value={formData.endereco}
                 onChange={(e) => setFormData({ ...formData, endereco: e.target.value })}
+                className={isMobile ? "h-12 text-base" : ""}
               />
             </div>
 
-            <div className="flex gap-2 pt-4">
-              <Button type="submit">
+            <div className={`flex gap-2 pt-4 ${isMobile ? 'flex-col' : ''}`}>
+              <Button type="submit" className={isMobile ? "h-12 text-base" : ""}>
                 Cadastrar
               </Button>
-              <Button type="button" variant="outline" onClick={resetForm}>
+              <Button type="button" variant="outline" onClick={resetForm} className={isMobile ? "h-12 text-base" : ""}>
                 Cancelar
               </Button>
             </div>
@@ -354,99 +365,113 @@ const Clientes = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Grid de Clientes */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {/* Grid de Clientes - Responsive */}
+      <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'}`}>
         {filteredClientes.map((cliente) => (
-          <Card key={cliente.id} className="hover:shadow-lg transition-all duration-300">
-            <CardHeader className="pb-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <Avatar className="h-12 w-12">
-                    <AvatarFallback className="bg-primary/10 text-primary font-semibold">
-                      {cliente.nome.split(' ').map(n => n[0]).join('')}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <CardTitle className="text-lg">{cliente.nome}</CardTitle>
-                    <p className="text-sm text-muted-foreground">{getAssinaturaNome(cliente.assinatura_id)}</p>
+          isMobile ? (
+            <MobileClientCard
+              key={cliente.id}
+              cliente={cliente}
+              onEdit={() => navigate(`/clientes/${cliente.id}/editar`)}
+              onDelete={() => handleDelete(cliente.id)}
+              onOnboarding={() => handleOnboarding(cliente)}
+              getStatusColor={getStatusColor}
+              getStatusText={getStatusText}
+              getAssinaturaNome={getAssinaturaNome}
+              clienteTemAssinatura={clienteTemAssinatura}
+            />
+          ) : (
+            <Card key={cliente.id} className="hover:shadow-lg transition-all duration-300">
+              <CardHeader className="pb-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <Avatar className="h-12 w-12">
+                      <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+                        {cliente.nome.split(' ').map(n => n[0]).join('')}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <CardTitle className="text-lg">{cliente.nome}</CardTitle>
+                      <p className="text-sm text-muted-foreground">{getAssinaturaNome(cliente.assinatura_id)}</p>
+                    </div>
                   </div>
+                  <Badge className={getStatusColor(cliente.status)}>
+                    {getStatusText(cliente.status)}
+                  </Badge>
                 </div>
-                <Badge className={getStatusColor(cliente.status)}>
-                  {getStatusText(cliente.status)}
-                </Badge>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                {cliente.email && (
-                  <div className="flex items-center text-sm text-muted-foreground">
-                    <Mail className="h-4 w-4 mr-2" />
-                    {cliente.email}
-                  </div>
-                )}
-                {cliente.telefone && (
-                  <div className="flex items-center text-sm text-muted-foreground">
-                    <Phone className="h-4 w-4 mr-2" />
-                    {cliente.telefone}
-                  </div>
-                )}
-                {!cliente.email && !cliente.telefone && (
-                  <div className="text-sm text-muted-foreground italic">
-                    📊 Dados pessoais protegidos - acesso limitado
-                  </div>
-                )}
-                {cliente.endereco && (
-                  <div className="flex items-center text-sm text-muted-foreground">
-                    <MapPin className="h-4 w-4 mr-2" />
-                    {cliente.endereco}
-                  </div>
-                )}
-              </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  {cliente.email && (
+                    <div className="flex items-center text-sm text-muted-foreground">
+                      <Mail className="h-4 w-4 mr-2" />
+                      {cliente.email}
+                    </div>
+                  )}
+                  {cliente.telefone && (
+                    <div className="flex items-center text-sm text-muted-foreground">
+                      <Phone className="h-4 w-4 mr-2" />
+                      {cliente.telefone}
+                    </div>
+                  )}
+                  {!cliente.email && !cliente.telefone && (
+                    <div className="text-sm text-muted-foreground italic">
+                      📊 Dados pessoais protegidos - acesso limitado
+                    </div>
+                  )}
+                  {cliente.endereco && (
+                    <div className="flex items-center text-sm text-muted-foreground">
+                      <MapPin className="h-4 w-4 mr-2" />
+                      {cliente.endereco}
+                    </div>
+                  )}
+                </div>
 
-              <div className="flex space-x-2 pt-2">
-                <Button
-                  variant={clienteTemAssinatura(cliente) ? "default" : "secondary"}
-                  size="sm"
-                  onClick={() => handleOnboarding(cliente)}
-                  disabled={!clienteTemAssinatura(cliente)}
-                  title={!clienteTemAssinatura(cliente) ? 'Cliente precisa ter uma assinatura para acessar o onboarding' : ''}
-                >
-                  <Users className="h-4 w-4 mr-1" />
-                  {clienteTemAssinatura(cliente) ? "Onboarding" : "Sem Plano"}
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={() => navigate(`/clientes/${cliente.id}/editar`)}
-                >
-                  <Edit className="h-4 w-4 mr-1" />
-                  Editar
-                </Button>
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button variant="outline" size="sm">
-                      <Trash2 className="h-4 w-4 mr-1" />
-                      Excluir
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        Tem certeza que deseja excluir o cliente {cliente.nome}? Esta ação não pode ser desfeita.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                      <AlertDialogAction onClick={() => handleDelete(cliente.id)}>
+                <div className="flex space-x-2 pt-2">
+                  <Button
+                    variant={clienteTemAssinatura(cliente) ? "default" : "secondary"}
+                    size="sm"
+                    onClick={() => handleOnboarding(cliente)}
+                    disabled={!clienteTemAssinatura(cliente)}
+                    title={!clienteTemAssinatura(cliente) ? 'Cliente precisa ter uma assinatura para acessar o onboarding' : ''}
+                  >
+                    <Users className="h-4 w-4 mr-1" />
+                    {clienteTemAssinatura(cliente) ? "Onboarding" : "Sem Plano"}
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => navigate(`/clientes/${cliente.id}/editar`)}
+                  >
+                    <Edit className="h-4 w-4 mr-1" />
+                    Editar
+                  </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="outline" size="sm">
+                        <Trash2 className="h-4 w-4 mr-1" />
                         Excluir
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              </div>
-            </CardContent>
-          </Card>
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Tem certeza que deseja excluir o cliente {cliente.nome}? Esta ação não pode ser desfeita.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => handleDelete(cliente.id)}>
+                          Excluir
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
+              </CardContent>
+            </Card>
+          )
         ))}
       </div>
 

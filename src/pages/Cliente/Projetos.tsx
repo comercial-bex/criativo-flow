@@ -11,6 +11,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Search, Filter, FolderOpen, Users, BarChart3, Plus, Eye } from "lucide-react";
 import { SectionHeader } from "@/components/SectionHeader";
+import { MobileProjetoCard } from "@/components/MobileProjetoCard";
+import { useDeviceType } from "@/hooks/useDeviceType";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -393,6 +395,8 @@ function ProjetoForm({ onSuccess }: { onSuccess: () => void }) {
 
 export default function ClienteProjetos() {
   const navigate = useNavigate();
+  const deviceType = useDeviceType();
+  const isMobile = deviceType === 'mobile';
   const [clientes, setClientes] = useState<ClienteComProjetos[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -515,30 +519,30 @@ export default function ClienteProjetos() {
     });
 
   return (
-    <div className="space-y-6">
+    <div className={`${isMobile ? 'p-4 space-y-6' : 'p-6 space-y-6'}`}>
       <SectionHeader
-        title="Projetos por Cliente"
-        description="Visualize e gerencie todos os projetos organizados por cliente"
+        title={isMobile ? "Projetos" : "Projetos por Cliente"}
+        description={isMobile ? "Visualize e gerencie projetos" : "Visualize e gerencie todos os projetos organizados por cliente"}
         action={{
-          label: "Novo Projeto",
+          label: isMobile ? "Novo" : "Novo Projeto",
           onClick: () => setDialogOpen(true),
           icon: Plus
         }}
       />
 
-      {/* Filtros */}
-      <div className="flex flex-col sm:flex-row gap-4">
+      {/* Filtros - Mobile Optimized */}
+      <div className={`flex gap-4 ${isMobile ? 'flex-col space-y-3' : 'flex-col sm:flex-row'}`}>
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Buscar cliente..."
+            placeholder={isMobile ? "Buscar..." : "Buscar cliente..."}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
+            className={`pl-10 ${isMobile ? 'h-12 text-base' : ''}`}
           />
         </div>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-full sm:w-48">
+          <SelectTrigger className={isMobile ? 'h-12' : 'w-full sm:w-48'}>
             <Filter className="h-4 w-4 mr-2" />
             <SelectValue placeholder="Filtrar clientes" />
           </SelectTrigger>
@@ -548,26 +552,32 @@ export default function ClienteProjetos() {
         </Select>
       </div>
 
-      {/* Resumo Geral - Apenas clientes ativos */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      {/* Resumo Geral - Mobile Optimized */}
+      <div className={`grid gap-4 ${isMobile ? 'grid-cols-2' : 'grid-cols-1 md:grid-cols-4'}`}>
         <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2">
-              <Users className="h-5 w-5 text-primary" />
-              <div>
-                <p className="text-sm font-medium">Clientes Ativos</p>
-                <p className="text-2xl font-bold">{clientes.filter(c => c.status === 'ativo').length}</p>
+          <CardContent className={isMobile ? 'p-3' : 'p-4'}>
+            <div className={`flex items-center space-x-2 ${isMobile ? 'flex-col space-x-0 space-y-1' : ''}`}>
+              <Users className={`${isMobile ? 'h-6 w-6' : 'h-5 w-5'} text-primary`} />
+              <div className={isMobile ? 'text-center' : ''}>
+                <p className={`${isMobile ? 'text-xs' : 'text-sm'} font-medium`}>
+                  {isMobile ? 'Ativos' : 'Clientes Ativos'}
+                </p>
+                <p className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold`}>
+                  {clientes.filter(c => c.status === 'ativo').length}
+                </p>
               </div>
             </div>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2">
-              <FolderOpen className="h-5 w-5 text-blue-600" />
-              <div>
-                <p className="text-sm font-medium">Total Projetos</p>
-                <p className="text-2xl font-bold">
+          <CardContent className={isMobile ? 'p-3' : 'p-4'}>
+            <div className={`flex items-center space-x-2 ${isMobile ? 'flex-col space-x-0 space-y-1' : ''}`}>
+              <FolderOpen className={`${isMobile ? 'h-6 w-6' : 'h-5 w-5'} text-blue-600`} />
+              <div className={isMobile ? 'text-center' : ''}>
+                <p className={`${isMobile ? 'text-xs' : 'text-sm'} font-medium`}>
+                  {isMobile ? 'Total' : 'Total Projetos'}
+                </p>
+                <p className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold`}>
                   {clientes.filter(c => c.status === 'ativo').reduce((sum, cliente) => sum + cliente.totalProjetos, 0)}
                 </p>
               </div>
@@ -575,12 +585,14 @@ export default function ClienteProjetos() {
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2">
-              <BarChart3 className="h-5 w-5 text-green-600" />
-              <div>
-                <p className="text-sm font-medium">Projetos Ativos</p>
-                <p className="text-2xl font-bold">
+          <CardContent className={isMobile ? 'p-3' : 'p-4'}>
+            <div className={`flex items-center space-x-2 ${isMobile ? 'flex-col space-x-0 space-y-1' : ''}`}>
+              <BarChart3 className={`${isMobile ? 'h-6 w-6' : 'h-5 w-5'} text-green-600`} />
+              <div className={isMobile ? 'text-center' : ''}>
+                <p className={`${isMobile ? 'text-xs' : 'text-sm'} font-medium`}>
+                  {isMobile ? 'Ativos' : 'Projetos Ativos'}
+                </p>
+                <p className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold`}>
                   {clientes.filter(c => c.status === 'ativo').reduce((sum, cliente) => sum + cliente.statusCounts.ativo, 0)}
                 </p>
               </div>
@@ -588,12 +600,14 @@ export default function ClienteProjetos() {
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2">
-              <BarChart3 className="h-5 w-5 text-blue-600" />
-              <div>
-                <p className="text-sm font-medium">Projetos Concluídos</p>
-                <p className="text-2xl font-bold">
+          <CardContent className={isMobile ? 'p-3' : 'p-4'}>
+            <div className={`flex items-center space-x-2 ${isMobile ? 'flex-col space-x-0 space-y-1' : ''}`}>
+              <BarChart3 className={`${isMobile ? 'h-6 w-6' : 'h-5 w-5'} text-blue-600`} />
+              <div className={isMobile ? 'text-center' : ''}>
+                <p className={`${isMobile ? 'text-xs' : 'text-sm'} font-medium`}>
+                  {isMobile ? 'Feitos' : 'Projetos Concluídos'}
+                </p>
+                <p className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold`}>
                   {clientes.filter(c => c.status === 'ativo').reduce((sum, cliente) => sum + cliente.statusCounts.concluido, 0)}
                 </p>
               </div>
@@ -602,78 +616,93 @@ export default function ClienteProjetos() {
         </Card>
       </div>
 
-      {/* Tabela de Clientes e Projetos */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Clientes e Projetos</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Cliente</TableHead>
-                <TableHead className="text-center">Total Projetos</TableHead>
-                <TableHead className="text-center">Ativos</TableHead>
-                <TableHead className="text-center">Concluídos</TableHead>
-                <TableHead className="text-center">Pendentes</TableHead>
-                <TableHead className="text-center">Pausados</TableHead>
-                <TableHead>Status Cliente</TableHead>
-                <TableHead className="text-center">Ações</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredClientes.map((cliente) => (
-                <TableRow key={cliente.id} className="hover:bg-muted/50">
-                  <TableCell>
-                    <div>
-                      <p className="font-medium">{cliente.nome}</p>
-                      <p className="text-sm text-muted-foreground">{cliente.email}</p>
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-center font-medium">{cliente.totalProjetos}</TableCell>
-                  <TableCell className="text-center">
-                    <Badge variant="outline" className="bg-green-50 text-green-700">
-                      {cliente.statusCounts.ativo}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-center">
-                    <Badge variant="outline" className="bg-blue-50 text-blue-700">
-                      {cliente.statusCounts.concluido}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-center">
-                    <Badge variant="outline" className="bg-yellow-50 text-yellow-700">
-                      {cliente.statusCounts.pendente}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-center">
-                    <Badge variant="outline" className="bg-red-50 text-red-700">
-                      {cliente.statusCounts.pausado}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Badge className={getClienteStatusColor(cliente.status)}>
-                      {cliente.status.charAt(0).toUpperCase() + cliente.status.slice(1)}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-center">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-8 w-8 p-0"
-                    onClick={() => {
-                      goToClienteDetalhes(cliente);
-                    }}
-                    >
-                      <Eye className="h-4 w-4" />
-                    </Button>
-                  </TableCell>
+      {/* Conteúdo Principal - Mobile vs Desktop */}
+      {isMobile ? (
+        /* Mobile: Cards Layout */
+        <div className="space-y-4">
+          {filteredClientes.map((cliente) => (
+            <MobileProjetoCard
+              key={cliente.id}
+              cliente={cliente}
+              onViewDetails={() => goToClienteDetalhes(cliente)}
+              getStatusColor={getStatusColor}
+              getStatusText={getStatusText}
+              getClienteStatusColor={getClienteStatusColor}
+            />
+          ))}
+        </div>
+      ) : (
+        /* Desktop: Table Layout */
+        <Card>
+          <CardHeader>
+            <CardTitle>Clientes e Projetos</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Cliente</TableHead>
+                  <TableHead className="text-center">Total Projetos</TableHead>
+                  <TableHead className="text-center">Ativos</TableHead>
+                  <TableHead className="text-center">Concluídos</TableHead>
+                  <TableHead className="text-center">Pendentes</TableHead>
+                  <TableHead className="text-center">Pausados</TableHead>
+                  <TableHead>Status Cliente</TableHead>
+                  <TableHead className="text-center">Ações</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+              </TableHeader>
+              <TableBody>
+                {filteredClientes.map((cliente) => (
+                  <TableRow key={cliente.id} className="hover:bg-muted/50">
+                    <TableCell>
+                      <div>
+                        <p className="font-medium">{cliente.nome}</p>
+                        <p className="text-sm text-muted-foreground">{cliente.email}</p>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-center font-medium">{cliente.totalProjetos}</TableCell>
+                    <TableCell className="text-center">
+                      <Badge variant="outline" className="bg-green-50 text-green-700">
+                        {cliente.statusCounts.ativo}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <Badge variant="outline" className="bg-blue-50 text-blue-700">
+                        {cliente.statusCounts.concluido}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <Badge variant="outline" className="bg-yellow-50 text-yellow-700">
+                        {cliente.statusCounts.pendente}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <Badge variant="outline" className="bg-red-50 text-red-700">
+                        {cliente.statusCounts.pausado}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge className={getClienteStatusColor(cliente.status)}>
+                        {cliente.status.charAt(0).toUpperCase() + cliente.status.slice(1)}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0"
+                        onClick={() => goToClienteDetalhes(cliente)}
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      )}
 
       {filteredClientes.length === 0 && (
         <div className="text-center py-12">
@@ -681,11 +710,11 @@ export default function ClienteProjetos() {
         </div>
       )}
 
-      {/* Dialog para criar novo projeto */}
+      {/* Dialog para criar novo projeto - Mobile Optimized */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className={isMobile ? "" : "max-w-2xl"}>
           <DialogHeader>
-            <DialogTitle>Criar Novo Projeto</DialogTitle>
+            <DialogTitle className={isMobile ? "text-lg" : ""}>Criar Novo Projeto</DialogTitle>
             <DialogDescription>
               Crie um novo projeto para um cliente ativo
             </DialogDescription>
