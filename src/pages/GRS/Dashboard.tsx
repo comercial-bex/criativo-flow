@@ -13,6 +13,7 @@ import { Calendar, Users, Clock, AlertCircle, TrendingUp, BarChart3, Plus, Send 
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { GamificationWidget } from "@/components/GamificationWidget";
+import { SubMenuGRS } from "@/components/SubMenuGRS";
 
 interface Cliente {
   id: string;
@@ -258,9 +259,11 @@ export default function GRSDashboard() {
   };
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
+    <div className="space-y-6">
+      <SubMenuGRS />
+      <div className="p-6 space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
             <BarChart3 className="h-8 w-8 text-primary" />
@@ -420,6 +423,7 @@ export default function GRSDashboard() {
           </div>
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 }

@@ -7,6 +7,7 @@ import { Calendar, Users, Filter, Calendar as CalendarIcon, Grid3X3 } from "luci
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { InstagramPreview } from "@/components/InstagramPreview";
+import { SubMenuGRS } from "@/components/SubMenuGRS";
 
 interface Cliente {
   id: string;
@@ -138,9 +139,11 @@ export default function GRSCalendarioEditorial() {
   }
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
+    <div className="space-y-6">
+      <SubMenuGRS />
+      <div className="p-6 space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
             <CalendarIcon className="h-8 w-8 text-primary" />
@@ -351,6 +354,7 @@ export default function GRSCalendarioEditorial() {
           </DialogContent>
         </Dialog>
       )}
+      </div>
     </div>
   );
 }

@@ -233,7 +233,7 @@ function App() {
                   </ProtectedRoute>
                 } />
                 
-                <Route path="/grs/calendario" element={
+                <Route path="/grs/calendario-editorial" element={
                   <ProtectedRoute requiredRole="grs">
                     <Layout><GRSCalendarioEditorial /></Layout>
                   </ProtectedRoute>

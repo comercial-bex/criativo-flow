@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Calendar, Search, Eye, FileText, Clock, CheckCircle, XCircle, Users, Plus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import { SubMenuGRS } from "@/components/SubMenuGRS";
 
 interface Cliente {
   id: string;
@@ -113,9 +114,11 @@ export default function GRSPlanejamentos() {
   }
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
+    <div className="space-y-6">
+      <SubMenuGRS />
+      <div className="p-6 space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
             <FileText className="h-8 w-8 text-primary" />
@@ -280,6 +283,7 @@ export default function GRSPlanejamentos() {
           </CardContent>
         </Card>
       )}
+      </div>
     </div>
   );
 }
