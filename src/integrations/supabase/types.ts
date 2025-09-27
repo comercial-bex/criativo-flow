@@ -728,6 +728,213 @@ export type Database = {
           },
         ]
       }
+      gamificacao_conquistas: {
+        Row: {
+          created_at: string
+          id: string
+          mes_referencia: string
+          selo_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          mes_referencia?: string
+          selo_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          mes_referencia?: string
+          selo_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gamificacao_conquistas_selo_id_fkey"
+            columns: ["selo_id"]
+            isOneToOne: false
+            referencedRelation: "gamificacao_selos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      gamificacao_pontos: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          descricao: string | null
+          id: string
+          is_privado: boolean | null
+          mes_referencia: string
+          pontos: number
+          tipo_acao: Database["public"]["Enums"]["tipo_pontuacao"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          descricao?: string | null
+          id?: string
+          is_privado?: boolean | null
+          mes_referencia?: string
+          pontos: number
+          tipo_acao: Database["public"]["Enums"]["tipo_pontuacao"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          descricao?: string | null
+          id?: string
+          is_privado?: boolean | null
+          mes_referencia?: string
+          pontos?: number
+          tipo_acao?: Database["public"]["Enums"]["tipo_pontuacao"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      gamificacao_premios: {
+        Row: {
+          created_at: string
+          descricao: string | null
+          entregue: boolean | null
+          id: string
+          mes_referencia: string
+          nome: string
+          setor: Database["public"]["Enums"]["especialidade_gamificacao"]
+          valor_estimado: number | null
+          vencedor_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          descricao?: string | null
+          entregue?: boolean | null
+          id?: string
+          mes_referencia: string
+          nome: string
+          setor: Database["public"]["Enums"]["especialidade_gamificacao"]
+          valor_estimado?: number | null
+          vencedor_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          descricao?: string | null
+          entregue?: boolean | null
+          id?: string
+          mes_referencia?: string
+          nome?: string
+          setor?: Database["public"]["Enums"]["especialidade_gamificacao"]
+          valor_estimado?: number | null
+          vencedor_id?: string | null
+        }
+        Relationships: []
+      }
+      gamificacao_ranking: {
+        Row: {
+          created_at: string
+          id: string
+          is_vencedor: boolean | null
+          mes_referencia: string
+          pontos_totais: number
+          posicao: number
+          setor: Database["public"]["Enums"]["especialidade_gamificacao"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_vencedor?: boolean | null
+          mes_referencia?: string
+          pontos_totais: number
+          posicao: number
+          setor: Database["public"]["Enums"]["especialidade_gamificacao"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_vencedor?: boolean | null
+          mes_referencia?: string
+          pontos_totais?: number
+          posicao?: number
+          setor?: Database["public"]["Enums"]["especialidade_gamificacao"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      gamificacao_selos: {
+        Row: {
+          condicao: Json
+          created_at: string
+          descricao: string
+          icone: string
+          id: string
+          nome: string
+          setor: Database["public"]["Enums"]["especialidade_gamificacao"] | null
+        }
+        Insert: {
+          condicao: Json
+          created_at?: string
+          descricao: string
+          icone: string
+          id?: string
+          nome: string
+          setor?:
+            | Database["public"]["Enums"]["especialidade_gamificacao"]
+            | null
+        }
+        Update: {
+          condicao?: Json
+          created_at?: string
+          descricao?: string
+          icone?: string
+          id?: string
+          nome?: string
+          setor?:
+            | Database["public"]["Enums"]["especialidade_gamificacao"]
+            | null
+        }
+        Relationships: []
+      }
+      gamificacao_usuarios: {
+        Row: {
+          created_at: string
+          id: string
+          pontos_mes_atual: number
+          pontos_totais: number
+          posicao_ranking: number | null
+          selos_conquistados: Json | null
+          setor: Database["public"]["Enums"]["especialidade_gamificacao"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          pontos_mes_atual?: number
+          pontos_totais?: number
+          posicao_ranking?: number | null
+          selos_conquistados?: Json | null
+          setor: Database["public"]["Enums"]["especialidade_gamificacao"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          pontos_mes_atual?: number
+          pontos_totais?: number
+          posicao_ranking?: number | null
+          selos_conquistados?: Json | null
+          setor?: Database["public"]["Enums"]["especialidade_gamificacao"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       leads: {
         Row: {
           cargo: string | null
@@ -1614,6 +1821,16 @@ export type Database = {
         Args: { especialista_id: string; observacao?: string }
         Returns: boolean
       }
+      atualizar_pontuacao_gamificacao: {
+        Args: {
+          p_descricao?: string
+          p_is_privado?: boolean
+          p_pontos: number
+          p_tipo_acao: Database["public"]["Enums"]["tipo_pontuacao"]
+          p_user_id: string
+        }
+        Returns: boolean
+      }
       can_access_sensitive_customer_data: {
         Args: { customer_id: string }
         Returns: boolean
@@ -1667,6 +1884,7 @@ export type Database = {
       }
     }
     Enums: {
+      especialidade_gamificacao: "grs" | "design" | "audiovisual"
       especialidade_type:
         | "videomaker"
         | "filmmaker"
@@ -1687,6 +1905,21 @@ export type Database = {
         | "finalizado"
         | "reprovado"
       status_type: "ativo" | "inativo" | "pendente" | "arquivado"
+      tipo_pontuacao:
+        | "feedback_positivo"
+        | "entrega_prazo"
+        | "agendamento_prazo"
+        | "relatorio_entregue"
+        | "atraso_postagem"
+        | "meta_batida"
+        | "pacote_concluido"
+        | "entrega_antecipada"
+        | "aprovado_primeira"
+        | "material_reprovado"
+        | "video_entregue"
+        | "entregas_semanais"
+        | "video_aprovado"
+        | "video_reprovado"
       user_role:
         | "admin"
         | "atendimento"
@@ -1825,6 +2058,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      especialidade_gamificacao: ["grs", "design", "audiovisual"],
       especialidade_type: [
         "videomaker",
         "filmmaker",
@@ -1847,6 +2081,22 @@ export const Constants = {
         "reprovado",
       ],
       status_type: ["ativo", "inativo", "pendente", "arquivado"],
+      tipo_pontuacao: [
+        "feedback_positivo",
+        "entrega_prazo",
+        "agendamento_prazo",
+        "relatorio_entregue",
+        "atraso_postagem",
+        "meta_batida",
+        "pacote_concluido",
+        "entrega_antecipada",
+        "aprovado_primeira",
+        "material_reprovado",
+        "video_entregue",
+        "entregas_semanais",
+        "video_aprovado",
+        "video_reprovado",
+      ],
       user_role: [
         "admin",
         "atendimento",
