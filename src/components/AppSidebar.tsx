@@ -34,6 +34,7 @@ import React from "react"
 import { usePermissions, type ModulePermissions } from "@/hooks/usePermissions";
 import { UserProfileSection } from "./UserProfileSection";
 import { UserActionsModule } from "./UserActionsModule";
+import { SubMenuPlanejamentos } from "./SubMenuPlanejamentos";
 import { useState } from "react";
 
 import {
@@ -285,6 +286,19 @@ export function AppSidebar() {
           {getCurrentItems().map((item, index) => {
             const isItemActive = isActive(item.url);
             const Icon = item.icon;
+            
+            // Special handling for GRS Planejamentos submenu
+            if (role === 'grs' && item.title === 'Planejamentos') {
+              return (
+                <div 
+                  key={item.url}
+                  className="mb-1 animate-slide-in"
+                  style={{ animationDelay: `${index * 30}ms` }}
+                >
+                  <SubMenuPlanejamentos isActive={isItemActive} />
+                </div>
+              );
+            }
             
             return (
               <NavLink
