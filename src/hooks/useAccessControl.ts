@@ -37,8 +37,11 @@ export function useAccessControl() {
     // Clientes sempre têm acesso (não precisam de aprovação)
     if (role === 'cliente') return true;
     
-    // Outros roles precisam estar aprovados
-    return userProfile?.status === 'aprovado';
+    // Usuários aprovados têm acesso (mesmo sem role definido)
+    if (userProfile?.status === 'aprovado') return true;
+    
+    // Outros casos: negado
+    return false;
   };
 
   const isBlocked = () => {

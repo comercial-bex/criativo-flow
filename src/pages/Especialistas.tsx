@@ -9,12 +9,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DataTable } from '@/components/DataTable';
 import { toast } from '@/hooks/use-toast';
-import { Plus, Edit, Users, Palette, Camera, User, Clock, CheckCircle, XCircle, Pause } from 'lucide-react';
+import { Plus, Edit, Users, Palette, Camera, User, Clock, CheckCircle, XCircle, Pause, Eye, Trash2 } from 'lucide-react';
 import { Database } from '@/integrations/supabase/types';
 import { EspecialistaApprovalCard } from '@/components/EspecialistaApprovalCard';
 import { ApprovalActionsModal } from '@/components/ApprovalActionsModal';
 import { StatusBadgeEspecialista } from '@/components/StatusBadgeEspecialista';
 import { PermissionGate } from '@/components/PermissionGate';
+import { ViewEspecialistaModal } from '@/components/ViewEspecialistaModal';
+import { ConfirmDeleteModal } from '@/components/ConfirmDeleteModal';
 
 type Profile = Database['public']['Tables']['profiles']['Row'] & {
   status?: 'pendente_aprovacao' | 'aprovado' | 'rejeitado' | 'suspenso';
@@ -67,6 +69,9 @@ export default function Especialistas() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('all');
   const [approvalAction, setApprovalAction] = useState<ApprovalAction | null>(null);
+  const [viewEspecialista, setViewEspecialista] = useState<any>(null);
+  const [deleteEspecialista, setDeleteEspecialista] = useState<any>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
   const [formData, setFormData] = useState<EspecialistaFormData>({
     nome: '',
     email: '',
@@ -272,6 +277,42 @@ export default function Especialistas() {
     setIsDialogOpen(true);
   };
 
+  const handleView = (especialista: Profile & { role?: UserRole }) => {
+    setViewEspecialista(especialista);
+  };
+
+  const handleDelete = async () => {
+    if (!deleteEspecialista) return;
+
+    setDeleteLoading(true);
+    try {
+      // Deletar da tabela profiles (CASCADE irá deletar de user_roles também)
+      const { error } = await supabase
+        .from('profiles')
+        .delete()
+        .eq('id', deleteEspecialista.id);
+
+      if (error) throw error;
+
+      await fetchEspecialistas();
+      
+      toast({
+        title: "Sucesso",
+        description: "Especialista excluído com sucesso",
+      });
+    } catch (error: any) {
+      console.error('Erro ao excluir especialista:', error);
+      toast({
+        title: "Erro",
+        description: error.message || "Erro ao excluir especialista",
+        variant: "destructive",
+      });
+    } finally {
+      setDeleteLoading(false);
+      setDeleteEspecialista(null);
+    }
+  };
+
   // Filtrar especialistas por status
   const filteredEspecialistas = especialistas.filter(especialista => {
     if (activeTab === 'all') return true;
@@ -296,63 +337,47 @@ export default function Especialistas() {
     {
       key: 'nome',
       label: 'Nome',
-      accessorKey: 'nome',
-      header: 'Nome',
+      render: (value: any) => value || '-'
     },
     {
       key: 'email',
       label: 'E-mail',
-      accessorKey: 'email',
-      header: 'E-mail',
+      render: (value: any) => value || '-'
     },
     {
       key: 'especialidade',
       label: 'Especialidade',
-      accessorKey: 'especialidade',
-      header: 'Especialidade',
-      cell: ({ row }: any) => {
-        const especialidade = row.getValue('especialidade');
-        return especialidade ? especialidadeLabels[especialidade as keyof typeof especialidadeLabels] || especialidade : '-';
-      },
+      render: (value: any) => value ? especialidadeLabels[value as keyof typeof especialidadeLabels] || value : '-'
     },
     {
       key: 'role',
       label: 'Função',
-      accessorKey: 'role',
-      header: 'Função',
-      cell: ({ row }: any) => {
-        const role = row.getValue('role');
-        return role ? roleLabels[role as keyof typeof roleLabels] || role : '-';
-      },
+      render: (value: any) => value ? roleLabels[value as keyof typeof roleLabels] || value : '-'
     },
     {
       key: 'status',
       label: 'Status',
-      accessorKey: 'status',
-      header: 'Status',
-      cell: ({ row }: any) => {
-        const status = row.getValue('status') || 'aprovado';
-        return <StatusBadgeEspecialista status={status} />;
-      },
+      render: (value: any, row: any) => <StatusBadgeEspecialista status={value || 'aprovado'} />
+    }
+  ];
+
+  // Ações da tabela
+  const tableActions = [
+    {
+      label: "Ver",
+      onClick: handleView,
+      variant: 'outline' as const
     },
     {
-      key: 'actions',
-      label: 'Ações',
-      id: 'actions',
-      header: 'Ações',
-      cell: ({ row }: any) => {
-        const especialista = row.original;
-        return (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleEdit(especialista)}
-          >
-            <Edit className="w-4 h-4" />
-          </Button>
-        );
-      },
+      label: "Editar",
+      onClick: handleEdit,
+      variant: 'outline' as const
     },
+    {
+      label: "Excluir",
+      onClick: (especialista: any) => setDeleteEspecialista(especialista),
+      variant: 'destructive' as const
+    }
   ];
 
   return (
@@ -558,8 +583,12 @@ export default function Especialistas() {
 
             <TabsContent value="all" className="space-y-4">
               <DataTable
+                title="Especialistas"
                 columns={columns}
                 data={filteredEspecialistas}
+                actions={tableActions}
+                searchable={true}
+                emptyMessage="Nenhum especialista encontrado"
               />
             </TabsContent>
 
@@ -692,6 +721,20 @@ export default function Especialistas() {
           isLoading={approvalLoading}
         />
       )}
+
+      <ViewEspecialistaModal
+        isOpen={!!viewEspecialista}
+        onClose={() => setViewEspecialista(null)}
+        especialista={viewEspecialista}
+      />
+
+      <ConfirmDeleteModal
+        isOpen={!!deleteEspecialista}
+        onClose={() => setDeleteEspecialista(null)}
+        onConfirm={handleDelete}
+        especialistaNome={deleteEspecialista?.nome || ''}
+        isLoading={deleteLoading}
+      />
     </div>
   );
 }
