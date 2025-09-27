@@ -152,13 +152,13 @@ serve(async (req) => {
             error: 'Failed to refresh token'
           });
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error(`❌ Erro inesperado ao renovar ${integration.provider}:`, error);
         results.push({
           integration_id: integration.id,
           provider: integration.provider,
           success: false,
-          error: error.message
+          error: error?.message || 'Erro inesperado'
         });
       }
     }
@@ -178,12 +178,12 @@ serve(async (req) => {
       }
     );
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('❌ Erro geral na sincronização:', error);
     return new Response(
       JSON.stringify({
         success: false,
-        error: error.message
+        error: error?.message || 'Erro desconhecido'
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

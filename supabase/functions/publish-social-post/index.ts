@@ -113,12 +113,12 @@ serve(async (req) => {
           after: publishResult
         });
 
-      } catch (error) {
+      } catch (error: any) {
         console.error(`❌ Erro ao publicar no ${integration.provider}:`, error);
         results.push({
           platform: integration.provider,
           success: false,
-          error: error.message
+          error: error?.message || 'Erro desconhecido'
         });
       }
     }
@@ -138,12 +138,12 @@ serve(async (req) => {
       }
     );
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('❌ Erro geral na publicação:', error);
     return new Response(
       JSON.stringify({
         success: false,
-        error: error.message
+        error: error?.message || 'Erro desconhecido'
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -207,11 +207,11 @@ async function publishToFacebook(integration: any, postData: PostData): Promise<
         error: result.error?.message || 'Erro desconhecido'
       };
     }
-  } catch (error) {
+  } catch (error: any) {
     return {
       platform: 'facebook',
       success: false,
-      error: error.message
+      error: error?.message || 'Erro desconhecido'
     };
   }
 }
@@ -304,11 +304,11 @@ async function publishToInstagram(integration: any, postData: PostData): Promise
         error: publishResult.error?.message || 'Erro ao publicar'
       };
     }
-  } catch (error) {
+  } catch (error: any) {
     return {
       platform: 'instagram',
       success: false,
-      error: error.message
+      error: error?.message || 'Erro desconhecido'
     };
   }
 }
@@ -373,11 +373,11 @@ async function publishToLinkedIn(integration: any, postData: PostData): Promise<
         error: result.message || 'Erro desconhecido'
       };
     }
-  } catch (error) {
+  } catch (error: any) {
     return {
       platform: 'linkedin',
       success: false,
-      error: error.message
+      error: error?.message || 'Erro desconhecido'
     };
   }
 }
