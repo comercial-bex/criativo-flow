@@ -9,6 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Clock, Send, Image, Facebook, Instagram, Linkedin } from "lucide-react";
 import { useSocialIntegrations } from "@/hooks/useSocialIntegrations";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 interface SocialSchedulerProps {
@@ -50,7 +51,7 @@ export function SocialScheduler({ onSchedule }: SocialSchedulerProps) {
     }
   };
 
-  const handleSchedule = () => {
+  const handleSchedule = async () => {
     if (!postData.titulo || !postData.legenda || !postData.data_postagem) {
       toast.error("Preencha todos os campos obrigatórios");
       return;
@@ -61,28 +62,71 @@ export function SocialScheduler({ onSchedule }: SocialSchedulerProps) {
       return;
     }
 
-    const scheduledPost = {
-      ...postData,
-      data_hora: `${postData.data_postagem}T${postData.hora_postagem}:00`,
-      status: 'agendado'
-    };
+    try {
+      const scheduledDateTime = new Date(`${postData.data_postagem}T${postData.hora_postagem}:00`);
+      const now = new Date();
 
-    if (onSchedule) {
-      onSchedule(scheduledPost);
+      // Se a data é no futuro, agendar
+      if (scheduledDateTime > now) {
+        const scheduledPost = {
+          ...postData,
+          data_hora: scheduledDateTime.toISOString(),
+          status: 'agendado'
+        };
+
+        if (onSchedule) {
+          onSchedule(scheduledPost);
+        }
+
+        toast.success(`Post agendado para ${postData.platforms.length} plataforma${postData.platforms.length > 1 ? 's' : ''}`);
+      } else {
+        // Se a data é agora ou no passado, publicar imediatamente
+        toast.loading('Publicando post...', { id: 'publishing' });
+
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (!session) {
+          toast.error('Você precisa estar logado para publicar', { id: 'publishing' });
+          return;
+        }
+
+        const response = await supabase.functions.invoke('publish-social-post', {
+          body: postData,
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
+        });
+
+        if (response.error) {
+          toast.error(`Erro ao publicar: ${response.error.message}`, { id: 'publishing' });
+          return;
+        }
+
+        const result = response.data;
+        const successCount = result.results?.filter((r: any) => r.success).length || 0;
+        
+        if (successCount > 0) {
+          toast.success(`Post publicado em ${successCount}/${postData.platforms.length} plataforma${postData.platforms.length > 1 ? 's' : ''}!`, { id: 'publishing' });
+        } else {
+          toast.error('Falha ao publicar em todas as plataformas', { id: 'publishing' });
+        }
+      }
+      
+      // Reset form
+      setPostData({
+        titulo: "",
+        legenda: "",
+        data_postagem: "",
+        hora_postagem: "",
+        platforms: [],
+        formato: "post",
+        anexo_url: ""
+      });
+
+    } catch (error) {
+      console.error('Erro no agendamento/publicação:', error);
+      toast.error('Erro inesperado ao processar o post');
     }
-
-    toast.success(`Post agendado para ${postData.platforms.length} plataforma${postData.platforms.length > 1 ? 's' : ''}`);
-    
-    // Reset form
-    setPostData({
-      titulo: "",
-      legenda: "",
-      data_postagem: "",
-      hora_postagem: "",
-      platforms: [],
-      formato: "post",
-      anexo_url: ""
-    });
   };
 
   return (
