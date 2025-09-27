@@ -1648,11 +1648,6 @@ export type Database = {
         | "filmmaker"
         | "design"
         | "gerente_redes_sociais"
-        | "grs"
-        | "atendimento"
-        | "audiovisual"
-        | "financeiro"
-        | "gestor"
       priority_type: "baixa" | "media" | "alta" | "urgente"
       status_padrao:
         | "rascunho"
@@ -1806,11 +1801,6 @@ export const Constants = {
         "filmmaker",
         "design",
         "gerente_redes_sociais",
-        "grs",
-        "atendimento",
-        "audiovisual",
-        "financeiro",
-        "gestor",
       ],
       priority_type: ["baixa", "media", "alta", "urgente"],
       status_padrao: [
