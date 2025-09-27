@@ -27,12 +27,15 @@ type Profile = Database['public']['Tables']['profiles']['Row'] & {
 type UserRole = Database['public']['Enums']['user_role'];
 
 const especialidadeLabels = {
-  'grs': 'Gestão de Redes Sociais',
+  'gerente_redes_sociais': 'Gestão de Redes Sociais',
   'design': 'Design',
+  'videomaker': 'Videomaker',
+  'filmmaker': 'Filmmaker',
   'audiovisual': 'Audiovisual',
   'atendimento': 'Atendimento',
   'financeiro': 'Financeiro',
-  'gestor': 'Gestor'
+  'gestor': 'Gestor',
+  'grs': 'GRS'
 };
 
 const roleLabels = {
@@ -463,12 +466,15 @@ export default function Especialistas() {
                         <SelectValue placeholder="Selecione uma especialidade" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="grs">Gestão de Redes Sociais</SelectItem>
+                        <SelectItem value="gerente_redes_sociais">Gestão de Redes Sociais</SelectItem>
                         <SelectItem value="design">Design</SelectItem>
+                        <SelectItem value="videomaker">Videomaker</SelectItem>
+                        <SelectItem value="filmmaker">Filmmaker</SelectItem>
                         <SelectItem value="audiovisual">Audiovisual</SelectItem>
                         <SelectItem value="atendimento">Atendimento</SelectItem>
                         <SelectItem value="financeiro">Financeiro</SelectItem>
                         <SelectItem value="gestor">Gestor</SelectItem>
+                        <SelectItem value="grs">GRS</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
