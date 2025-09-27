@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,7 +16,7 @@ interface ProfileData {
   avatar_url?: string;
 }
 
-export default function Perfil() {
+function Perfil() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
@@ -34,13 +34,7 @@ export default function Perfil() {
     confirm: ''
   });
 
-  useEffect(() => {
-    if (user) {
-      loadProfile();
-    }
-  }, [user]);
-
-  const loadProfile = async () => {
+  const loadProfile = useCallback(async () => {
     if (!user) return;
     
     setLoading(true);
@@ -81,9 +75,16 @@ export default function Perfil() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user, toast]);
 
-  const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  useEffect(() => {
+    if (user) {
+      loadProfile();
+    }
+  }, [user, loadProfile]);
+
+
+  const handleAvatarUpload = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file || !user) return;
 
@@ -142,9 +143,9 @@ export default function Perfil() {
     } finally {
       setUploading(false);
     }
-  };
+  }, [user, toast]);
 
-  const handleSaveProfile = async () => {
+  const handleSaveProfile = useCallback(async () => {
     if (!user) return;
 
     // Validate required fields
@@ -194,9 +195,9 @@ export default function Perfil() {
     } finally {
       setSaving(false);
     }
-  };
+  }, [user, profile, toast]);
 
-  const handleChangePassword = async () => {
+  const handleChangePassword = useCallback(async () => {
     if (!passwords.new || !passwords.confirm) {
       toast({
         title: "Erro",
@@ -244,16 +245,16 @@ export default function Perfil() {
         variant: "destructive",
       });
     }
-  };
+  }, [passwords, toast]);
 
-  const getInitials = (name: string) => {
+  const getInitials = useMemo(() => (name: string) => {
     return name
       .split(' ')
       .map(n => n[0])
       .join('')
       .toUpperCase()
       .slice(0, 2);
-  };
+  }, []);
 
   if (loading) {
     return (
@@ -403,3 +404,5 @@ export default function Perfil() {
     </div>
   );
 }
+
+export default React.memo(Perfil);

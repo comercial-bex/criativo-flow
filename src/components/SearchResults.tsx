@@ -55,7 +55,7 @@ export function SearchResults({ results, isLoading, query, onResultClick }: Sear
 
   if (isLoading) {
     return (
-      <Card className="absolute top-full left-0 right-0 mt-1 z-50">
+      <Card className="fixed top-16 left-0 right-0 mt-1 z-60 mx-4">
         <CardContent className="p-4">
           <div className="animate-pulse space-y-3">
             {[1, 2, 3].map(i => (
@@ -77,7 +77,7 @@ export function SearchResults({ results, isLoading, query, onResultClick }: Sear
 
   if (results.length === 0) {
     return (
-      <Card className="absolute top-full left-0 right-0 mt-1 z-50">
+      <Card className="fixed top-16 left-0 right-0 mt-1 z-60 mx-4">
         <CardContent className="p-4">
           <p className="text-sm text-muted-foreground">
             Nenhum resultado encontrado para "{query}"
@@ -88,7 +88,7 @@ export function SearchResults({ results, isLoading, query, onResultClick }: Sear
   }
 
   return (
-    <Card className="absolute top-full left-0 right-0 mt-1 z-50 max-h-96 overflow-y-auto">
+    <Card className="fixed top-16 left-0 right-0 mt-1 z-60 mx-4 max-h-96 overflow-y-auto">
       <CardContent className="p-2">
         {results.map((result) => {
           const Icon = categoryIcons[result.category];
