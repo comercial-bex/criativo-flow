@@ -691,6 +691,29 @@ export function OnboardingForm({ isOpen, onClose, clienteId, cliente }: Onboardi
               </CardContent>
             </Card>
 
+            {/* Integração com Redes Sociais */}
+            <Card data-intro="social-integration">
+              <CardHeader>
+                <CardTitle className="text-lg">🔗 Conectar Redes Sociais</CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  Conecte suas redes sociais para facilitar o gerenciamento de conteúdo e métricas
+                </p>
+              </CardHeader>
+              <CardContent>
+                <SocialIntegrationsCard />
+                <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+                  <p className="text-sm text-blue-700">
+                    💡 <strong>Dica:</strong> Conectar suas redes sociais agora permitirá que você:
+                  </p>
+                  <ul className="text-sm text-blue-600 mt-2 ml-4 space-y-1">
+                    <li>• Agende posts automaticamente</li>
+                    <li>• Visualize métricas em tempo real</li>
+                    <li>• Gerencie múltiplas contas em um só lugar</li>
+                  </ul>
+                </div>
+              </CardContent>
+            </Card>
+
             {/* 7. Objetivos (Plano de Ação 6 meses) */}
             <Card>
               <CardHeader>

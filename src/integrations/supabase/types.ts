@@ -1756,6 +1756,60 @@ export type Database = {
           },
         ]
       }
+      social_post_queue: {
+        Row: {
+          anexo_url: string | null
+          attempts: number
+          created_at: string
+          error_message: string | null
+          formato: string
+          id: string
+          legenda: string
+          max_attempts: number
+          platforms: string[]
+          published_results: Json | null
+          scheduled_for: string
+          status: string
+          titulo: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          anexo_url?: string | null
+          attempts?: number
+          created_at?: string
+          error_message?: string | null
+          formato?: string
+          id?: string
+          legenda: string
+          max_attempts?: number
+          platforms: string[]
+          published_results?: Json | null
+          scheduled_for: string
+          status?: string
+          titulo: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          anexo_url?: string | null
+          attempts?: number
+          created_at?: string
+          error_message?: string | null
+          formato?: string
+          id?: string
+          legenda?: string
+          max_attempts?: number
+          platforms?: string[]
+          published_results?: Json | null
+          scheduled_for?: string
+          status?: string
+          titulo?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       tarefas: {
         Row: {
           anexos: Json | null
@@ -1999,6 +2053,10 @@ export type Database = {
       is_admin: {
         Args: { user_uuid: string }
         Returns: boolean
+      }
+      process_social_post_queue: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
       rejeitar_especialista: {
         Args: { especialista_id: string; observacao?: string }
