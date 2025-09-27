@@ -14,6 +14,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { GamificationWidget } from "@/components/GamificationWidget";
 import { SubMenuGRS } from "@/components/SubMenuGRS";
+import { SocialDashboardWidget } from "@/components/SocialDashboardWidget";
+import { CalendarWidget } from "@/components/CalendarWidget";
+import { InteractiveGuideButton } from "@/components/InteractiveGuideButton";
 
 interface Cliente {
   id: string;
@@ -271,6 +274,7 @@ export default function GRSDashboard() {
           </h1>
           <p className="text-muted-foreground">Gestão de Relacionamento com o Cliente</p>
         </div>
+        <InteractiveGuideButton />
         <div className="flex gap-2">
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
@@ -356,7 +360,9 @@ export default function GRSDashboard() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-6">
+        <SocialDashboardWidget />
+        <CalendarWidget />
         {summaryData.map((item, index) => (
           <Card key={index}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">

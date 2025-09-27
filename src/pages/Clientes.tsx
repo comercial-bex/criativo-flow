@@ -14,6 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { OnboardingForm } from '@/components/OnboardingForm';
 import { MobileClientCard } from '@/components/MobileClientCard';
+import { InteractiveGuideButton } from '@/components/InteractiveGuideButton';
 import { useDeviceType } from '@/hooks/useDeviceType';
 import { 
   Users, 
@@ -212,16 +213,19 @@ const Clientes = () => {
 
   return (
     <div className={`${isMobile ? 'p-4 space-y-6' : 'p-6 space-y-8'}`}>
-      <SectionHeader
-        title="Clientes"
-        description={isMobile ? "Gerencie seus clientes" : "Gerencie informações e relacionamentos com clientes"}
-        icon={Users}
-        action={{
-          label: isMobile ? "Novo" : "Novo Cliente",
-          onClick: () => setShowForm(true),
-          icon: Plus
-        }}
-      />
+      <div className="flex items-center justify-between">
+        <SectionHeader
+          title="Clientes"
+          description={isMobile ? "Gerencie seus clientes" : "Gerencie informações e relacionamentos com clientes"}
+          icon={Users}
+          action={{
+            label: isMobile ? "Novo" : "Novo Cliente",
+            onClick: () => setShowForm(true),
+            icon: Plus
+          }}
+        />
+        <InteractiveGuideButton />
+      </div>
 
       {/* Filtros e Busca - Mobile Optimized */}
       <div className={`flex flex-col gap-4 ${isMobile ? 'space-y-3' : 'sm:flex-row'}`}>
@@ -232,6 +236,7 @@ const Clientes = () => {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className={`pl-10 ${isMobile ? 'h-12 text-base' : ''}`}
+            data-intro="clientes-search"
           />
         </div>
         <div className={`flex gap-3 ${isMobile ? 'flex-col' : ''}`}>

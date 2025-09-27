@@ -1,3 +1,4 @@
+@import "intro.js/introjs.css";
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -62,6 +63,12 @@ All colors MUST be HSL.
 
     --radius: 0.75rem;
 
+    /* Interactive Guide Colors */
+    --guide-primary: 84 65% 47%;
+    --guide-overlay: 0 0% 0% / 0.5;
+    --guide-tooltip: 0 0% 100%;
+    --guide-tooltip-foreground: 0 0% 15%;
+
     /* Sidebar customizada BEX */
     --sidebar-background: 0 0% 11%;        /* #1D1D1D */
     --sidebar-foreground: 0 0% 85%;
@@ -110,6 +117,10 @@ All colors MUST be HSL.
     --sidebar-accent-foreground: 0 0% 85%;
     --sidebar-border: 0 0% 20%;
     --sidebar-ring: 84 65% 47%;
+
+    /* Interactive Guide Colors - Dark Mode */
+    --guide-tooltip: 0 0% 15%;
+    --guide-tooltip-foreground: 0 0% 85%;
   }
 }
 
@@ -177,5 +188,95 @@ All colors MUST be HSL.
   @keyframes pulseGlow {
     0%, 100% { box-shadow: 0 0 5px rgba(188, 241, 37, 0.3); }
     50% { box-shadow: 0 0 15px rgba(188, 241, 37, 0.6); }
+  }
+}
+
+/* Interactive Guide Customizations */
+.introjs-tooltip {
+  @apply bg-card border-border shadow-lg;
+  color: hsl(var(--card-foreground));
+  border: 1px solid hsl(var(--border));
+  border-radius: calc(var(--radius) * 1.5);
+  max-width: 350px;
+}
+
+.introjs-tooltiptext {
+  @apply text-card-foreground;
+  line-height: 1.5;
+}
+
+.introjs-tooltipbuttons {
+  @apply border-t border-border pt-3 mt-3;
+}
+
+.introjs-button {
+  @apply px-4 py-2 rounded-md font-medium transition-colors;
+  border: 1px solid hsl(var(--border));
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+}
+
+.introjs-nextbutton {
+  @apply bg-primary text-primary-foreground border-primary hover:bg-primary/90;
+}
+
+.introjs-prevbutton {
+  @apply bg-secondary text-secondary-foreground border-border hover:bg-secondary/80;
+}
+
+.introjs-skipbutton {
+  @apply text-muted-foreground hover:text-foreground;
+}
+
+.introjs-donebutton {
+  @apply bg-primary text-primary-foreground border-primary hover:bg-primary/90;
+}
+
+.introjs-overlay {
+  background: hsl(var(--guide-overlay));
+}
+
+.introjs-helperLayer {
+  border-radius: calc(var(--radius) * 0.5);
+}
+
+.introjs-progressbar {
+  @apply bg-primary;
+}
+
+.introjs-progress {
+  @apply bg-secondary;
+}
+
+/* Custom data attributes for interactive elements */
+[data-intro] {
+  position: relative;
+}
+
+[data-intro]:hover::after {
+  content: "💡";
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 20px;
+  height: 20px;
+  background: hsl(var(--primary));
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  animation: pulse 2s infinite;
+  z-index: 10;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 0.7;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.1);
   }
 }

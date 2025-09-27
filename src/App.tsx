@@ -351,8 +351,8 @@ function App() {
                   </ProtectedRoute>
                 } />
                 
-                <Route path="/cliente/editar" element={
-                  <ProtectedRoute requiredRole="cliente">
+                <Route path="/clientes/:clienteId/editar" element={
+                  <ProtectedRoute module="clientes">
                     <Layout><ClienteEditar /></Layout>
                   </ProtectedRoute>
                 } />
