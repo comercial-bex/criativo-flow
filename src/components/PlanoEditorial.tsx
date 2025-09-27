@@ -17,6 +17,7 @@ import { PostViewModal } from "@/components/PostViewModal";
 import { DataTable } from "@/components/DataTable";
 import { TableView } from "@/components/TableView";
 import { PostsContentView } from "@/components/PostsContentView";
+import { ListaPostsView } from "@/components/ListaPostsView";
 import { DndContext, closestCenter, DragEndEvent, DragStartEvent, DragOverlay, useDroppable } from "@dnd-kit/core";
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -308,6 +309,7 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
   const [draggedPost, setDraggedPost] = useState<any>(null);
   const [visualizacaoTabela, setVisualizacaoTabela] = useState(true);
   const [visualizacaoCalendario, setVisualizacaoCalendario] = useState(false);
+  const [visualizacaoLista, setVisualizacaoLista] = useState(false);
   const [salvandoPostsGerados, setSalvandoPostsGerados] = useState(false);
   const [showPostViewModal, setShowPostViewModal] = useState(false);
   const [selectedPostForView, setSelectedPostForView] = useState<any>(null);
@@ -2204,6 +2206,10 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
             <Users className="h-4 w-4" />
             Posicionamento
           </TabsTrigger>
+          <TabsTrigger value="conteudo" className="flex items-center gap-2">
+            <BookOpen className="h-4 w-4" />
+            Editorial
+          </TabsTrigger>
           <TabsTrigger value="datas-comemorativas" className="flex items-center gap-2">
             <Calendar className="h-4 w-4" />
             Datas
@@ -2211,10 +2217,6 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
           <TabsTrigger value="trafego-pago" className="flex items-center gap-2">
             <Sparkles className="h-4 w-4" />
             Tráfego
-          </TabsTrigger>
-          <TabsTrigger value="conteudo" className="flex items-center gap-2">
-            <BookOpen className="h-4 w-4" />
-            Editorial
           </TabsTrigger>
         </TabsList>
 
@@ -2522,6 +2524,259 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
 
         </TabsContent>
 
+        <TabsContent value="conteudo" className="space-y-4">
+          {clienteAssinatura && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Plano de Assinatura</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center gap-4">
+                  <Badge variant="secondary">{clienteAssinatura?.nome || 'Plano não definido'}</Badge>
+                  <span className="text-sm text-muted-foreground">
+                    {clienteAssinatura?.posts_mensais || 0} posts/mês
+                  </span>
+                  <span className="text-sm text-muted-foreground">
+                    Reels: {clienteAssinatura?.reels_suporte ? 'Sim' : 'Não'}
+                  </span>
+                  <span className="text-sm text-muted-foreground">
+                    Anúncios: {clienteAssinatura?.anuncios_facebook || clienteAssinatura?.anuncios_google ? 'Sim' : 'Não'}
+                  </span>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Geração de Conteúdo</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex gap-2">
+                <Button 
+                  onClick={gerarConteudoEditorial}
+                  disabled={gerando || !hasCompleteAnalysis()}
+                  className="flex-1"
+                >
+                  {gerando ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                  Gerar Conteúdo Editorial Completo
+                </Button>
+                
+              </div>
+                
+                {postsGerados.length > 0 && (
+                  <div className="flex flex-col items-end gap-3 p-4 bg-muted/50 rounded-lg border border-border">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Calendar className="w-4 h-4" />
+                      <span>
+                        {postsGerados.filter(p => p.status === 'temporario').length} temporários, {postsGerados.filter(p => p.status === 'aprovado').length} aprovados
+                      </span>
+                    </div>
+                    
+                    <div className="flex gap-2">
+                      <Button 
+                        variant="outline"
+                        onClick={() => setPostsGerados([])}
+                        disabled={salvandoPostsGerados}
+                        className="border-destructive/20 text-destructive hover:bg-destructive/10"
+                      >
+                        <X className="w-4 h-4 mr-2" />
+                        Limpar Tudo
+                      </Button>
+                      
+                      {postsGerados.filter(p => p.status === 'temporario').length > 0 && (
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button 
+                              disabled={salvandoPostsGerados}
+                              className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg"
+                            >
+                              {salvandoPostsGerados ? (
+                                <>
+                                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                  Salvando...
+                                </>
+                              ) : (
+                                <>
+                                  <Save className="w-4 h-4 mr-2" />
+                                  Salvar Posts no Calendário Editorial
+                                </>
+                              )}
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Confirmar salvamento</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Você está prestes a salvar {postsGerados.filter(p => p.status === 'temporario').length} posts temporários no planejamento editorial. 
+                                Os posts salvos permanecerão visíveis para acompanhamento do desenvolvimento.
+                                Tem certeza que deseja continuar?
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                              <AlertDialogAction 
+                                onClick={salvarPostsGerados}
+                                className="bg-emerald-600 hover:bg-emerald-700"
+                              >
+                                Sim, salvar posts pendentes
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      )}
+                    </div>
+                  </div>
+                )}
+              
+              {!hasCompleteAnalysis() && (
+                <p className="text-sm text-muted-foreground">
+                  Complete a missão, posicionamento e seleções para gerar conteúdo.
+                </p>
+              )}
+            </CardContent>
+          </Card>
+
+          {postsGerados.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  <span>Posts Gerados</span>
+                   <div className="flex gap-2">
+                     <Button
+                       variant={!visualizacaoCalendario && !visualizacaoLista ? "default" : "outline"}
+                       size="sm"
+                       onClick={() => {
+                         setVisualizacaoTabela(true);
+                         setVisualizacaoCalendario(false);
+                         setVisualizacaoLista(false);
+                       }}
+                     >
+                       Tabela
+                     </Button>
+                     <Button
+                       variant={visualizacaoLista ? "default" : "outline"}
+                       size="sm"
+                       onClick={() => {
+                         setVisualizacaoTabela(false);
+                         setVisualizacaoCalendario(false);
+                         setVisualizacaoLista(true);
+                       }}
+                     >
+                       Lista
+                     </Button>
+                     <Button
+                       variant={visualizacaoCalendario ? "default" : "outline"}
+                       size="sm"
+                       onClick={() => {
+                         setVisualizacaoTabela(false);
+                         setVisualizacaoCalendario(true);
+                         setVisualizacaoLista(false);
+                       }}
+                     >
+                       <Calendar className="h-4 w-4 mr-1" />
+                       Calendário
+                     </Button>
+                   </div>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                 {visualizacaoCalendario ? (
+                   <DndContext
+                     collisionDetection={closestCenter}
+                     onDragStart={handleDragStart}
+                     onDragEnd={handleDragEnd}
+                   >
+                     <SortableContext 
+                       items={[...posts, ...postsGerados].map(p => p.id)}
+                     >
+                       <div className="flex items-center justify-between mb-6">
+                         <div className="flex items-center gap-3">
+                           <Button variant="outline" size="sm" onClick={() => navigateMonth('prev')}>
+                             <ChevronLeft className="h-4 w-4" />
+                           </Button>
+                           <span className="text-lg font-semibold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                             {currentDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}
+                           </span>
+                           <Button variant="outline" size="sm" onClick={() => navigateMonth('next')}>
+                             <ChevronRight className="h-4 w-4" />
+                           </Button>
+                         </div>
+                         <Button 
+                           variant="outline" 
+                           size="sm" 
+                           onClick={() => setCalendarioExpanded(true)}
+                           className="bg-primary/5 hover:bg-primary/10 border-primary/20"
+                         >
+                           <Calendar className="h-4 w-4 mr-1" />
+                           Visualizar Completo
+                         </Button>
+                       </div>
+                       
+                       <div className="grid grid-cols-7 gap-1 mb-2 p-2 bg-muted/30 rounded-lg">
+                         {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map(day => (
+                           <div key={day} className="p-2 text-center text-xs font-bold text-muted-foreground uppercase tracking-wide">
+                             {day}
+                           </div>
+                         ))}
+                       </div>
+                       <div className="grid grid-cols-7 gap-1 p-2 bg-background border rounded-xl shadow-sm">
+                         {getDaysInMonth().map((day, index) => {
+                           const dayPosts = day ? getPostsForDay(day) : [];
+                           const dateStr = day ? `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}` : '';
+                           
+                           return (
+                             <DroppableDay
+                               key={index}
+                               day={day}
+                               dateStr={dateStr}
+                               dayPosts={dayPosts}
+                               onPreviewPost={onPreviewPost}
+                               getFormatIcon={getFormatIcon}
+                               atualizandoPost={atualizandoPost}
+                             />
+                           );
+                         })}
+                       </div>
+                     </SortableContext>
+                     <DragOverlay>
+                       {draggedPost ? (
+                         <div className="flex items-center gap-2 p-2 rounded-lg border border-primary bg-primary/10 shadow-lg">
+                           <span className="text-lg flex-shrink-0">{getFormatIcon(draggedPost.formato_postagem)}</span>
+                           <span className="flex-1 truncate text-sm font-medium text-foreground" title={draggedPost.titulo}>
+                             {draggedPost.titulo.length > 20 ? `${draggedPost.titulo.substring(0, 20)}...` : draggedPost.titulo}
+                           </span>
+                         </div>
+                       ) : null}
+                     </DragOverlay>
+                   </DndContext>
+                 ) : visualizacaoLista ? (
+                   <ListaPostsView
+                     posts={[...posts, ...postsGerados]}
+                     onPreviewPost={onPreviewPost}
+                   />
+                 ) : (
+                   <PostsContentView
+                     planejamentoId={planejamento.id}
+                     isTemp={true}
+                   />
+                 )}
+              </CardContent>
+            </Card>
+          )}
+
+            <CalendarioEditorial
+            isOpen={calendarioExpanded}
+            onClose={() => setCalendarioExpanded(false)}
+            posts={posts}
+            postsGerados={postsGerados}
+            onPostClick={onPreviewPost}
+            onPostsUpdate={(updatedPosts) => {
+              setPosts(updatedPosts);
+            }}
+          />
+        </TabsContent>
+
         <TabsContent value="datas-comemorativas" className="space-y-4">
           <Card>
             <CardHeader>
@@ -2726,242 +2981,6 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
               </div>
             </CardContent>
           </Card>
-        </TabsContent>
-
-        <TabsContent value="conteudo" className="space-y-4">
-          {clienteAssinatura && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Plano de Assinatura</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center gap-4">
-                  <Badge variant="secondary">{clienteAssinatura?.nome || 'Plano não definido'}</Badge>
-                  <span className="text-sm text-muted-foreground">
-                    {clienteAssinatura?.posts_mensais || 0} posts/mês
-                  </span>
-                  <span className="text-sm text-muted-foreground">
-                    Reels: {clienteAssinatura?.reels_suporte ? 'Sim' : 'Não'}
-                  </span>
-                  <span className="text-sm text-muted-foreground">
-                    Anúncios: {clienteAssinatura?.anuncios_facebook || clienteAssinatura?.anuncios_google ? 'Sim' : 'Não'}
-                  </span>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Geração de Conteúdo</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex gap-2">
-                <Button 
-                  onClick={gerarConteudoEditorial}
-                  disabled={gerando || !hasCompleteAnalysis()}
-                  className="flex-1"
-                >
-                  {gerando ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                  Gerar Conteúdo Editorial Completo
-                </Button>
-                
-              </div>
-                
-                {postsGerados.length > 0 && (
-                  <div className="flex flex-col items-end gap-3 p-4 bg-muted/50 rounded-lg border border-border">
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Calendar className="w-4 h-4" />
-                      <span>
-                        {postsGerados.filter(p => p.status === 'temporario').length} temporários, {postsGerados.filter(p => p.status === 'aprovado').length} aprovados
-                      </span>
-                    </div>
-                    
-                    <div className="flex gap-2">
-                      <Button 
-                        variant="outline"
-                        onClick={() => setPostsGerados([])}
-                        disabled={salvandoPostsGerados}
-                        className="border-destructive/20 text-destructive hover:bg-destructive/10"
-                      >
-                        <X className="w-4 h-4 mr-2" />
-                        Limpar Tudo
-                      </Button>
-                      
-                      {postsGerados.filter(p => p.status === 'temporario').length > 0 && (
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button 
-                              disabled={salvandoPostsGerados}
-                              className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg"
-                            >
-                              {salvandoPostsGerados ? (
-                                <>
-                                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                  Salvando...
-                                </>
-                              ) : (
-                                <>
-                                  <Save className="w-4 h-4 mr-2" />
-                                  Salvar Posts no Calendário Editorial
-                                </>
-                              )}
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Confirmar salvamento</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                Você está prestes a salvar {postsGerados.filter(p => p.status === 'temporario').length} posts temporários no planejamento editorial. 
-                                Os posts salvos permanecerão visíveis para acompanhamento do desenvolvimento.
-                                Tem certeza que deseja continuar?
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                              <AlertDialogAction 
-                                onClick={salvarPostsGerados}
-                                className="bg-emerald-600 hover:bg-emerald-700"
-                              >
-                                Sim, salvar posts pendentes
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                      )}
-                    </div>
-                  </div>
-                )}
-              
-              {!hasCompleteAnalysis() && (
-                <p className="text-sm text-muted-foreground">
-                  Complete a missão, posicionamento e seleções para gerar conteúdo.
-                </p>
-              )}
-            </CardContent>
-          </Card>
-
-          {postsGerados.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                  <span>Posts Gerados</span>
-                  <div className="flex gap-2">
-                    <Button
-                      variant={visualizacaoCalendario ? "outline" : "default"}
-                      size="sm"
-                      onClick={() => {
-                        setVisualizacaoTabela(true);
-                        setVisualizacaoCalendario(false);
-                      }}
-                    >
-                      Tabela
-                    </Button>
-                    <Button
-                      variant={visualizacaoCalendario ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => {
-                        setVisualizacaoTabela(false);
-                        setVisualizacaoCalendario(true);
-                      }}
-                    >
-                      <Calendar className="h-4 w-4 mr-1" />
-                      Calendário
-                    </Button>
-                  </div>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {visualizacaoCalendario ? (
-                  <DndContext
-                    collisionDetection={closestCenter}
-                    onDragStart={handleDragStart}
-                    onDragEnd={handleDragEnd}
-                  >
-                    <SortableContext 
-                      items={[...posts, ...postsGerados].map(p => p.id)}
-                    >
-                      <div className="flex items-center justify-between mb-6">
-                        <div className="flex items-center gap-3">
-                          <Button variant="outline" size="sm" onClick={() => navigateMonth('prev')}>
-                            <ChevronLeft className="h-4 w-4" />
-                          </Button>
-                          <span className="text-lg font-semibold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                            {currentDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}
-                          </span>
-                          <Button variant="outline" size="sm" onClick={() => navigateMonth('next')}>
-                            <ChevronRight className="h-4 w-4" />
-                          </Button>
-                        </div>
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          onClick={() => setCalendarioExpanded(true)}
-                          className="bg-primary/5 hover:bg-primary/10 border-primary/20"
-                        >
-                          <Calendar className="h-4 w-4 mr-1" />
-                          Visualizar Completo
-                        </Button>
-                      </div>
-                      
-                      <div className="grid grid-cols-7 gap-1 mb-2 p-2 bg-muted/30 rounded-lg">
-                        {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map(day => (
-                          <div key={day} className="p-2 text-center text-xs font-bold text-muted-foreground uppercase tracking-wide">
-                            {day}
-                          </div>
-                        ))}
-                      </div>
-                      <div className="grid grid-cols-7 gap-1 p-2 bg-background border rounded-xl shadow-sm">
-                        {getDaysInMonth().map((day, index) => {
-                          const dayPosts = day ? getPostsForDay(day) : [];
-                          const dateStr = day ? `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}` : '';
-                          
-                          return (
-                            <DroppableDay
-                              key={index}
-                              day={day}
-                              dateStr={dateStr}
-                              dayPosts={dayPosts}
-                              onPreviewPost={onPreviewPost}
-                              getFormatIcon={getFormatIcon}
-                              atualizandoPost={atualizandoPost}
-                            />
-                          );
-                        })}
-                      </div>
-                    </SortableContext>
-                    <DragOverlay>
-                      {draggedPost ? (
-                        <div className="flex items-center gap-2 p-2 rounded-lg border border-primary bg-primary/10 shadow-lg">
-                          <span className="text-lg flex-shrink-0">{getFormatIcon(draggedPost.formato_postagem)}</span>
-                          <span className="flex-1 truncate text-sm font-medium text-foreground" title={draggedPost.titulo}>
-                            {draggedPost.titulo.length > 20 ? `${draggedPost.titulo.substring(0, 20)}...` : draggedPost.titulo}
-                          </span>
-                        </div>
-                      ) : null}
-                    </DragOverlay>
-                  </DndContext>
-                ) : (
-                  <PostsContentView
-                    planejamentoId={planejamento.id}
-                    isTemp={true}
-                  />
-                )}
-              </CardContent>
-            </Card>
-          )}
-
-
-            <CalendarioEditorial
-            isOpen={calendarioExpanded}
-            onClose={() => setCalendarioExpanded(false)}
-            posts={posts}
-            postsGerados={postsGerados}
-            onPostClick={onPreviewPost}
-            onPostsUpdate={(updatedPosts) => {
-              setPosts(updatedPosts);
-            }}
-          />
         </TabsContent>
       </Tabs>
 
