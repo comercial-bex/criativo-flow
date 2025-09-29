@@ -29,10 +29,11 @@ serve(async (req) => {
 
     console.log('📝 Criando usuário:', { email, nome, especialidade, role });
 
-    // Create user with Supabase Auth Admin
+    // Create user with Supabase Auth Admin (without email confirmation)
     const { data: userData, error: userError } = await supabaseAdmin.auth.admin.createUser({
       email,
       password,
+      email_confirm: true, // Skip email confirmation for internal accounts
       user_metadata: {
         nome,
         telefone,
@@ -47,8 +48,30 @@ serve(async (req) => {
 
     console.log('✅ Usuário criado:', userData.user?.id);
 
-    // Insert user role
     if (userData.user) {
+      // Determine status based on role
+      const status = role === 'admin' ? 'aprovado' : 'pendente_aprovacao';
+      
+      // Create profile entry
+      const { error: profileError } = await supabaseAdmin
+        .from('profiles')
+        .insert({
+          id: userData.user.id,
+          nome: nome,
+          email: email,
+          telefone: telefone,
+          especialidade: especialidade,
+          status: status
+        });
+
+      if (profileError) {
+        console.error('❌ Erro ao criar perfil:', profileError);
+        throw profileError;
+      }
+
+      console.log('✅ Perfil criado com sucesso');
+
+      // Insert user role
       const { error: roleError } = await supabaseAdmin
         .from('user_roles')
         .insert({
