@@ -441,6 +441,64 @@ export type Database = {
           },
         ]
       }
+      cliente_usuarios: {
+        Row: {
+          ativo: boolean
+          cliente_id: string
+          created_at: string
+          criado_por: string | null
+          id: string
+          permissoes: Json | null
+          role_cliente: Database["public"]["Enums"]["cliente_role"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          ativo?: boolean
+          cliente_id: string
+          created_at?: string
+          criado_por?: string | null
+          id?: string
+          permissoes?: Json | null
+          role_cliente?: Database["public"]["Enums"]["cliente_role"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          ativo?: boolean
+          cliente_id?: string
+          created_at?: string
+          criado_por?: string | null
+          id?: string
+          permissoes?: Json | null
+          role_cliente?: Database["public"]["Enums"]["cliente_role"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cliente_usuarios_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cliente_usuarios_criado_por_fkey"
+            columns: ["criado_por"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cliente_usuarios_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clientes: {
         Row: {
           assinatura_id: string | null
@@ -2271,6 +2329,11 @@ export type Database = {
       }
     }
     Enums: {
+      cliente_role:
+        | "proprietario"
+        | "gerente_financeiro"
+        | "gestor_marketing"
+        | "social_media"
       especialidade_gamificacao: "grs" | "design" | "audiovisual"
       especialidade_type:
         | "videomaker"
@@ -2445,6 +2508,12 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      cliente_role: [
+        "proprietario",
+        "gerente_financeiro",
+        "gestor_marketing",
+        "social_media",
+      ],
       especialidade_gamificacao: ["grs", "design", "audiovisual"],
       especialidade_type: [
         "videomaker",

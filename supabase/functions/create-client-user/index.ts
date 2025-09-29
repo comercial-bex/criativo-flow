@@ -44,8 +44,10 @@ serve(async (req) => {
       );
     }
 
-    // Check if user already exists by checking profiles table first
+    // Check if user already exists by checking profiles table first, then auth
     let existingUser = null;
+    let existingProfile = null;
+    
     try {
       // First check if profile with this email exists
       const { data: profileData, error: profileError } = await supabaseAdmin
@@ -56,6 +58,7 @@ serve(async (req) => {
 
       if (!profileError && profileData) {
         console.log('Profile found for email:', email, 'User ID:', profileData.id);
+        existingProfile = profileData;
         
         // Get user from auth
         const { data: userData, error: userError } = await supabaseAdmin.auth.admin.getUserById(profileData.id);
@@ -63,15 +66,50 @@ serve(async (req) => {
           existingUser = userData.user;
           
           if (profileData.cliente_id === cliente_id) {
-            // User already linked to this client, just return credentials
-            console.log('User already linked to this client, returning success');
+            // User already linked to this client, just update password and add to cliente_usuarios
+            console.log('User already linked to this client, updating password');
+            
+            const { error: passwordError } = await supabaseAdmin.auth.admin.updateUserById(
+              existingUser.id, 
+              { password }
+            );
+            
+            if (passwordError) {
+              console.error('Error updating password:', passwordError);
+              return new Response(
+                JSON.stringify({ error: 'Erro ao atualizar senha do usuário existente' }),
+                { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+              );
+            }
+
+            // Ensure user is in cliente_usuarios table
+            const { error: clienteUsuarioError } = await supabaseAdmin
+              .from('cliente_usuarios')
+              .upsert({
+                cliente_id,
+                user_id: existingUser.id,
+                role_cliente: role === 'cliente' ? 'proprietario' : role,
+                permissoes: {
+                  "financeiro": {"ver": true, "editar": true},
+                  "marketing": {"ver": true, "aprovar": true}, 
+                  "projetos": {"ver": true, "criar": true, "editar": true},
+                  "relatorios": {"ver": true}
+                }
+              }, {
+                onConflict: 'cliente_id,user_id'
+              });
+
+            if (clienteUsuarioError) {
+              console.error('Error adding to cliente_usuarios:', clienteUsuarioError);
+            }
+            
             return new Response(
               JSON.stringify({ 
                 user: existingUser,
                 email: email,
-                password: password, // Return the provided password
+                password: password,
                 success: true,
-                message: 'Usuário já vinculado ao cliente!'
+                message: 'Usuário já vinculado ao cliente! Senha atualizada.'
               }),
               { 
                 status: 200, 
@@ -91,9 +129,22 @@ serve(async (req) => {
         }
       } else {
         console.log('No profile found for email:', email);
+        
+        // Check if user exists in auth but not in profiles (edge case)
+        try {
+          const { data: authUsers } = await supabaseAdmin.auth.admin.listUsers();
+          const authUser = authUsers.users?.find(u => u.email === email);
+          if (authUser) {
+            console.log('User exists in auth but not in profiles, will create profile');
+            existingUser = authUser;
+            // We'll create the profile below
+          }
+        } catch (authError) {
+          console.log('Error checking auth users:', authError);
+        }
       }
     } catch (error) {
-      console.log('No existing user found or error checking:', error);
+      console.log('Error in user verification:', error);
     }
 
     let userData;
@@ -178,11 +229,14 @@ serve(async (req) => {
     // Update or create profile with cliente_id
     const { error: profileError } = await supabaseAdmin
       .from('profiles')
-      .update({ 
+      .upsert({ 
+        id: userData.user!.id,
         cliente_id,
-        nome: nome // Update name as well
-      })
-      .eq('id', userData.user!.id);
+        nome: nome,
+        email: email
+      }, {
+        onConflict: 'id'
+      });
 
     if (profileError) {
       console.error('Error updating profile:', profileError);
@@ -190,6 +244,29 @@ serve(async (req) => {
         JSON.stringify({ error: profileError.message }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
+    }
+
+    // Add user to cliente_usuarios table
+    const { error: clienteUsuarioError } = await supabaseAdmin
+      .from('cliente_usuarios')
+      .upsert({
+        cliente_id,
+        user_id: userData.user!.id,
+        role_cliente: role === 'cliente' ? 'proprietario' : role,
+        permissoes: {
+          "financeiro": {"ver": true, "editar": true},
+          "marketing": {"ver": true, "aprovar": true}, 
+          "projetos": {"ver": true, "criar": true, "editar": true},
+          "relatorios": {"ver": true}
+        },
+        criado_por: null // Edge function context doesn't have auth.uid()
+      }, {
+        onConflict: 'cliente_id,user_id'
+      });
+
+    if (clienteUsuarioError) {
+      console.error('Error adding to cliente_usuarios:', clienteUsuarioError);
+      // Don't fail the request for this, just log it
     }
 
     console.log('Client user created successfully');
