@@ -7,9 +7,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Separator } from '@/components/ui/separator';
-import { SocialLoginButtons } from '@/components/SocialLoginButtons';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { PasswordResetModal } from '@/components/PasswordResetModal';
 import { TestClientUserCreation } from '@/components/TestClientUserCreation';
+import bexLogo from '@/assets/logo_bex_verde.png';
 
 import { toast } from 'sonner';
 
@@ -17,7 +18,9 @@ export default function Auth() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [nome, setNome] = useState('');
+  const [userType, setUserType] = useState('cliente');
   const [loading, setLoading] = useState(false);
+  const [showPasswordReset, setShowPasswordReset] = useState(false);
   
   const { signIn, signUp, user } = useAuth();
   const navigate = useNavigate();
@@ -84,26 +87,22 @@ export default function Auth() {
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <div className="w-full max-w-md space-y-6">
         <Card>
-          <CardHeader className="text-center">
-            <CardTitle className="text-2xl font-bold">Sistema BEX</CardTitle>
-            <CardDescription>
-              Acesse o sistema com sua conta social ou email
-            </CardDescription>
+          <CardHeader className="text-center space-y-4">
+            <div className="flex justify-center">
+              <img 
+                src={bexLogo} 
+                alt="BEX Logo" 
+                className="h-16 w-auto"
+              />
+            </div>
+            <div>
+              <CardTitle className="text-2xl font-bold text-primary">Sistema BEX</CardTitle>
+              <CardDescription>
+                Acesse o sistema de gestão da agência
+              </CardDescription>
+            </div>
           </CardHeader>
           <CardContent>
-            {/* Botões de Login Social */}
-            <div className="mb-6">
-              <SocialLoginButtons />
-            </div>
-            
-            <div className="relative mb-6">
-              <Separator />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span className="bg-background px-2 text-muted-foreground text-sm">
-                  ou continue com email
-                </span>
-              </div>
-            </div>
 
             <Tabs defaultValue="login" className="w-full">
               <TabsList className="grid w-full grid-cols-2">
@@ -135,16 +134,47 @@ export default function Auth() {
                       disabled={loading}
                     />
                   </div>
-                  <Button type="submit" className="w-full" disabled={loading}>
-                    {loading ? 'Entrando...' : 'Entrar'}
-                  </Button>
+                    <Button type="submit" className="w-full" disabled={loading}>
+                      {loading ? 'Entrando...' : 'Entrar'}
+                    </Button>
+                    <div className="text-center">
+                      <Button 
+                        type="button" 
+                        variant="link" 
+                        className="text-sm text-muted-foreground hover:text-primary"
+                        onClick={() => setShowPasswordReset(true)}
+                      >
+                        Esqueci minha senha
+                      </Button>
+                    </div>
                 </form>
               </TabsContent>
               
               <TabsContent value="signup">
                 <form onSubmit={handleSignUp} className="space-y-4">
+                  <div className="space-y-3">
+                    <Label>Tipo de Cadastro</Label>
+                    <RadioGroup 
+                      value={userType} 
+                      onValueChange={setUserType}
+                      className="flex flex-col space-y-2"
+                    >
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="cliente" id="cliente" />
+                        <Label htmlFor="cliente" className="text-sm font-normal">
+                          <span className="font-medium">Cliente</span> - Empresa que contrata serviços
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="colaborador" id="colaborador" />
+                        <Label htmlFor="colaborador" className="text-sm font-normal">
+                          <span className="font-medium">Colaborador</span> - Funcionário da agência
+                        </Label>
+                      </div>
+                    </RadioGroup>
+                  </div>
                   <div className="space-y-2">
-                    <Label htmlFor="signup-nome">Nome</Label>
+                    <Label htmlFor="signup-nome">Nome Completo</Label>
                     <Input
                       id="signup-nome"
                       type="text"
@@ -234,6 +264,11 @@ export default function Auth() {
         {/* Componente de Teste */}
         <TestClientUserCreation />
 
+        {/* Modal de Recuperação de Senha */}
+        <PasswordResetModal 
+          open={showPasswordReset} 
+          onOpenChange={setShowPasswordReset} 
+        />
       </div>
     </div>
   );
