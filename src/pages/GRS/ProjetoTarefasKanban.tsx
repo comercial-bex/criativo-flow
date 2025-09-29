@@ -343,7 +343,7 @@ export default function ProjetoTarefasKanban() {
       <CreateTaskModal
         open={showCreateModal}
         onOpenChange={setShowCreateModal}
-        onTaskCreate={handleCreateTask}
+        onTaskCreate={handleTaskCreate}
         projetoId={projetoId!}
       />
 

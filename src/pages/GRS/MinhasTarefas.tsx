@@ -32,7 +32,7 @@ interface MyTask extends TaskWithDeadline {
   horas_trabalhadas?: number;
   observacoes?: string;
   projetos?: {
-    titulo: string;
+    nome: string;
     clientes?: {
       nome: string;
     };
@@ -80,7 +80,7 @@ export default function MinhasTarefas() {
           *,
           responsavel:profiles!responsavel_id (nome),
           projetos!projeto_id (
-            titulo,
+            nome,
             clientes (nome)
           )
         `)
@@ -190,7 +190,7 @@ export default function MinhasTarefas() {
   const filteredTasks = tasks.filter(task => {
     const matchesSearch = searchTerm === '' || 
       task.titulo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      task.projetos?.titulo?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      task.projetos?.nome?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       task.projetos?.clientes?.nome?.toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesStatus = statusFilter === 'all' || task.status === statusFilter;
