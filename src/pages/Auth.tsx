@@ -18,6 +18,7 @@ export default function Auth() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [nome, setNome] = useState('');
+  const [empresa, setEmpresa] = useState('');
   const [userType, setUserType] = useState('cliente');
   const [loading, setLoading] = useState(false);
   const [showPasswordReset, setShowPasswordReset] = useState(false);
@@ -82,14 +83,21 @@ export default function Auth() {
     e.preventDefault();
     if (!mountedRef.current) return;
     
+    // Validação básica
     if (!email || !password || !nome) {
       toast.error('Por favor, preencha todos os campos');
       return;
     }
 
+    // Validação específica para clientes
+    if (userType === 'cliente' && !empresa) {
+      toast.error('Por favor, informe o nome da empresa');
+      return;
+    }
+
     setLoading(true);
     try {
-      const { error } = await signUp(email, password, nome);
+      const { error } = await signUp(email, password, nome, userType === 'cliente' ? empresa : undefined);
       
       // Check if component is still mounted before updating state
       if (!mountedRef.current) return;
@@ -213,6 +221,21 @@ export default function Auth() {
                       disabled={loading}
                     />
                   </div>
+                  
+                  {userType === 'cliente' && (
+                    <div className="space-y-2">
+                      <Label htmlFor="signup-empresa">Nome da Empresa</Label>
+                      <Input
+                        id="signup-empresa"
+                        type="text"
+                        value={empresa}
+                        onChange={(e) => setEmpresa(e.target.value)}
+                        placeholder="Nome da sua empresa"
+                        disabled={loading}
+                        required
+                      />
+                    </div>
+                  )}
                   <div className="space-y-2">
                     <Label htmlFor="signup-email">Email</Label>
                     <Input

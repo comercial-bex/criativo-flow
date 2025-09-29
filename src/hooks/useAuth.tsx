@@ -7,7 +7,7 @@ interface AuthContextType {
   session: Session | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
-  signUp: (email: string, password: string, nome: string) => Promise<{ error: any }>;
+  signUp: (email: string, password: string, nome: string, empresa?: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
 }
 
@@ -117,18 +117,53 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  const signUp = async (email: string, password: string, nome: string) => {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          nome: nome
+  const signUp = async (email: string, password: string, nome: string, empresa?: string) => {
+    try {
+      console.log('🔐 Auth: Iniciando cadastro para:', email, 'Empresa:', empresa);
+      
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            nome: nome
+          }
+        }
+      });
+      
+      if (error) {
+        console.error('🔐 Auth: Erro no cadastro:', error);
+        return { error };
+      }
+
+      // Se cadastro foi bem-sucedido e há uma empresa, criar lead
+      if (data.user && empresa) {
+        console.log('🔐 Auth: Criando lead para empresa:', empresa);
+        
+        const { error: leadError } = await supabase
+          .from('leads')
+          .insert({
+            nome: nome,
+            email: email,
+            empresa: empresa,
+            origem: 'cadastro_sistema',
+            status: 'pre_qualificacao',
+            observacoes: `Lead criado automaticamente durante cadastro de usuário cliente em ${new Date().toLocaleString('pt-BR')}`
+          });
+
+        if (leadError) {
+          console.error('🔐 Auth: Erro ao criar lead:', leadError);
+          // Não falha o cadastro se o lead não puder ser criado
+        } else {
+          console.log('🔐 Auth: Lead criado com sucesso');
         }
       }
-    });
-    
-    return { error };
+      
+      return { error: null };
+    } catch (error) {
+      console.error('🔐 Auth: Erro inesperado no cadastro:', error);
+      return { error: { message: 'Erro inesperado no cadastro' } };
+    }
   };
 
   const signOut = async () => {
