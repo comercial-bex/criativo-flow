@@ -17,6 +17,7 @@ import { MobileClientCard } from '@/components/MobileClientCard';
 import { ClientCard } from '@/components/ClientCard';
 import { ClientViewModal } from '@/components/ClientViewModal';
 import { ClientTableView } from '@/components/ClientTableView';
+import { CreateClientUserForm } from '@/components/CreateClientUserForm';
 import { ClientLogoUpload } from '@/components/ClientLogoUpload';
 import { InteractiveGuideButton } from '@/components/InteractiveGuideButton';
 import { CnpjSearch } from '@/components/CnpjSearch';
@@ -113,6 +114,37 @@ const Clientes = () => {
   useEffect(() => {
     fetchAssinaturas();
   }, []);
+
+  // Função para criar usuário específico da Agência Bex
+  const createAgenciaBexUser = async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke('create-client-user', {
+        body: {
+          email: 'comercial@agenciabex.com.br',
+          password: 'TempPass2024!',
+          nome: 'Comercial Agência Bex',
+          cliente_id: '8c4482fc-4aa1-422c-b1fc-6441c14b6d6a',
+          role: 'cliente'
+        }
+      });
+
+      if (error) {
+        console.error('Erro ao criar usuário:', error);
+        toast.error(`Erro ao criar usuário: ${error.message}`);
+        return;
+      }
+
+      if (data?.success) {
+        toast.success('✅ Usuário comercial@agenciabex.com.br criado com sucesso!');
+        toast.info(`🔑 Senha: TempPass2024!`);
+      } else {
+        toast.error(data?.error || 'Erro desconhecido');
+      }
+    } catch (error) {
+      console.error('Erro na requisição:', error);
+      toast.error('Erro na requisição');
+    }
+  };
 
   const fetchAssinaturas = async () => {
     try {
@@ -401,6 +433,13 @@ const Clientes = () => {
           <Button variant="outline" className={isMobile ? 'h-12' : ''}>
             <Filter className="h-4 w-4 mr-2" />
             Filtros
+          </Button>
+          <Button 
+            onClick={createAgenciaBexUser} 
+            className={`${isMobile ? 'h-12' : ''} bg-green-500 hover:bg-green-600 text-white`}
+          >
+            <Users className="h-4 w-4 mr-2" />
+            {isMobile ? 'Criar Bex' : 'Criar Usuário Bex'}
           </Button>
         </div>
       </div>
