@@ -537,6 +537,84 @@ export type Database = {
         }
         Relationships: []
       }
+      email_logs: {
+        Row: {
+          assunto: string
+          created_at: string
+          destinatario_email: string
+          destinatario_nome: string | null
+          enviado_por: string | null
+          erro_mensagem: string | null
+          id: string
+          resend_id: string | null
+          status: string
+          template_tipo: string
+          variaveis_utilizadas: Json | null
+        }
+        Insert: {
+          assunto: string
+          created_at?: string
+          destinatario_email: string
+          destinatario_nome?: string | null
+          enviado_por?: string | null
+          erro_mensagem?: string | null
+          id?: string
+          resend_id?: string | null
+          status?: string
+          template_tipo: string
+          variaveis_utilizadas?: Json | null
+        }
+        Update: {
+          assunto?: string
+          created_at?: string
+          destinatario_email?: string
+          destinatario_nome?: string | null
+          enviado_por?: string | null
+          erro_mensagem?: string | null
+          id?: string
+          resend_id?: string | null
+          status?: string
+          template_tipo?: string
+          variaveis_utilizadas?: Json | null
+        }
+        Relationships: []
+      }
+      email_templates: {
+        Row: {
+          assunto: string
+          ativo: boolean
+          conteudo_html: string
+          conteudo_texto: string | null
+          created_at: string
+          id: string
+          tipo: string
+          updated_at: string
+          variaveis_disponiveis: string[] | null
+        }
+        Insert: {
+          assunto: string
+          ativo?: boolean
+          conteudo_html: string
+          conteudo_texto?: string | null
+          created_at?: string
+          id?: string
+          tipo: string
+          updated_at?: string
+          variaveis_disponiveis?: string[] | null
+        }
+        Update: {
+          assunto?: string
+          ativo?: boolean
+          conteudo_html?: string
+          conteudo_texto?: string | null
+          created_at?: string
+          id?: string
+          tipo?: string
+          updated_at?: string
+          variaveis_disponiveis?: string[] | null
+        }
+        Relationships: []
+      }
       equipamentos: {
         Row: {
           created_at: string
