@@ -75,6 +75,7 @@ import Gamificacao from "./pages/Gamificacao";
 import GamificacaoAdmin from "./pages/GamificacaoAdmin";
 
 import AprovacaoJob from "./pages/AprovacaoJob";
+import AdminPainel from "./pages/Admin/Painel";
 
 const queryClient = new QueryClient();
 
@@ -430,6 +431,13 @@ function App() {
                 <Route path="/aprovacao-job" element={
                   <ProtectedRoute>
                     <Layout><AprovacaoJob /></Layout>
+                  </ProtectedRoute>
+                } />
+
+                {/* Admin routes */}
+                <Route path="/admin/painel" element={
+                  <ProtectedRoute requiredRole="admin">
+                    <Layout><AdminPainel /></Layout>
                   </ProtectedRoute>
                 } />
 

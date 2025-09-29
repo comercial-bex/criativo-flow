@@ -33,7 +33,9 @@ import {
   Send,
   XCircle,
   ChevronDown,
-  ChevronRight
+  ChevronRight,
+  Shield,
+  Activity
 } from "lucide-react"
 import { NavLink, useLocation } from "react-router-dom"
 import React from "react"
@@ -211,6 +213,18 @@ const modules = [
     permissions: ["grs"]
   },
   {
+    id: "admin",
+    title: "Admin",
+    icon: Shield,
+    items: [
+      { title: "Painel Admin", url: "/admin/painel", icon: Shield },
+      { title: "Usuários", url: "/admin/usuarios", icon: Users2 },
+      { title: "Logs do Sistema", url: "/admin/logs", icon: Activity },
+    ],
+    permissions: ["admin"],
+    roles: ["admin"]
+  },
+  {
     id: "configuracoes",
     title: "Configurações",
     icon: Settings,
@@ -245,7 +259,7 @@ export function AppSidebar() {
       case 'designer':
         return modules.filter(m => m.id === 'design');
       case 'admin':
-        return modules.filter(m => ['dashboard', 'administrativo', 'financeiro', 'crm'].includes(m.id));
+        return modules.filter(m => ['dashboard', 'administrativo', 'financeiro', 'crm', 'admin'].includes(m.id));
       case 'atendimento':
         return modules.filter(m => ['dashboard', 'crm', 'atendimento'].includes(m.id));
       case 'filmmaker':

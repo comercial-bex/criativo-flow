@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { SectionHeader } from "@/components/SectionHeader";
 import { ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { AdminClienteControls } from "@/components/AdminClienteControls";
 
 interface Cliente {
   id: string;
@@ -168,12 +169,15 @@ export default function ClienteEditar() {
         />
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Dados do Cliente</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Dados Básicos */}
+        <div className="lg:col-span-2">
+          <Card>
+            <CardHeader>
+              <CardTitle>Dados do Cliente</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="nome">Nome / Razão Social</Label>
@@ -262,21 +266,28 @@ export default function ClienteEditar() {
               />
             </div>
 
-            <div className="flex gap-2 pt-4">
-              <Button type="submit" disabled={loading}>
-                {loading ? "Salvando..." : "Atualizar Cliente"}
-              </Button>
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  onClick={() => navigate('/clientes')}
-                >
-                  Cancelar
-                </Button>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
+                <div className="flex gap-2 pt-4">
+                  <Button type="submit" disabled={loading}>
+                    {loading ? "Salvando..." : "Atualizar Cliente"}
+                  </Button>
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      onClick={() => navigate('/clientes')}
+                    >
+                      Cancelar
+                    </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Controles Administrativos */}
+        <div className="space-y-6">
+          <AdminClienteControls clienteId={clienteId!} clienteData={formData} />
+        </div>
+      </div>
     </div>
   );
 }
