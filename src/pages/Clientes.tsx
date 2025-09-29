@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useClientData, type Cliente } from '@/hooks/useClientData';
 import { supabase } from '@/integrations/supabase/client';
@@ -72,6 +72,9 @@ const Clientes = () => {
     createCliente, 
     deleteCliente 
   } = useClientData();
+  
+  // Add ref to track if component is mounted
+  const mountedRef = useRef(true);
   const [assinaturas, setAssinaturas] = useState<Assinatura[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('created_at');
@@ -113,10 +116,23 @@ const Clientes = () => {
 
   useEffect(() => {
     fetchAssinaturas();
+    
+    // Cleanup function to mark component as unmounted and close all dialogs
+    return () => {
+      mountedRef.current = false;
+      // Close all dialogs/modals when component unmounts
+      setShowForm(false);
+      setShowOnboarding(false);
+      setShowViewModal(false);
+      setShowCredentials(false);
+      setSelectedCliente(null);
+    };
   }, []);
 
   // Função para criar usuário específico da Agência Bex
   const createAgenciaBexUser = async () => {
+    if (!mountedRef.current) return;
+    
     try {
       const { data, error } = await supabase.functions.invoke('create-client-user', {
         body: {
@@ -127,6 +143,8 @@ const Clientes = () => {
           role: 'cliente'
         }
       });
+
+      if (!mountedRef.current) return;
 
       if (error) {
         console.error('Erro ao criar usuário:', error);
@@ -142,7 +160,9 @@ const Clientes = () => {
       }
     } catch (error) {
       console.error('Erro na requisição:', error);
-      toast.error('Erro na requisição');
+      if (mountedRef.current) {
+        toast.error('Erro na requisição');
+      }
     }
   };
 
@@ -154,7 +174,11 @@ const Clientes = () => {
         .order('nome');
 
       if (error) throw error;
-      setAssinaturas(data || []);
+      
+      // Only update state if component is still mounted
+      if (mountedRef.current) {
+        setAssinaturas(data || []);
+      }
     } catch (error) {
       console.error('Erro ao carregar assinaturas:', error);
     }
@@ -201,6 +225,9 @@ const Clientes = () => {
             }
           });
 
+          // Check if component is still mounted before updating state
+          if (!mountedRef.current) return;
+
           if (userError) {
             console.error('Erro ao criar usuário:', userError);
             toast.error('Cliente criado, mas houve erro ao criar conta de acesso');
@@ -215,10 +242,14 @@ const Clientes = () => {
           }
         } catch (userError) {
           console.error('Erro ao criar conta:', userError);
-          toast.error('Cliente criado, mas houve erro ao criar conta de acesso');
+          if (mountedRef.current) {
+            toast.error('Cliente criado, mas houve erro ao criar conta de acesso');
+          }
         }
       } else {
-        toast.success("Cliente cadastrado com sucesso!");
+        if (mountedRef.current) {
+          toast.success("Cliente cadastrado com sucesso!");
+        }
       }
 
       resetForm();
@@ -242,6 +273,8 @@ const Clientes = () => {
   }, []);
 
   const resetForm = () => {
+    if (!mountedRef.current) return;
+    
     setFormData({
       nome: "",
       razao_social: "",
@@ -277,11 +310,13 @@ const Clientes = () => {
   };
 
   const handleViewCliente = (cliente: Cliente) => {
+    if (!mountedRef.current) return;
     setSelectedCliente(cliente);
     setShowViewModal(true);
   };
 
   const handleEditFromView = () => {
+    if (!mountedRef.current) return;
     setShowViewModal(false);
     if (selectedCliente) {
       setFormData({
