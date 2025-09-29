@@ -14,6 +14,13 @@ export interface Cliente {
   assinatura_id?: string;
   created_at?: string;
   updated_at?: string;
+  // Novos campos CNPJ
+  razao_social?: string | null;
+  nome_fantasia?: string | null;
+  situacao_cadastral?: string | null;
+  cnae_principal?: string | null;
+  cnpj_fonte?: string | null;
+  cnpj_ultima_consulta?: string | null;
   // Campos para sistema de login
   email_login?: string;
   senha_temporaria?: string;

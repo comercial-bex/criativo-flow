@@ -15,6 +15,8 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { OnboardingForm } from '@/components/OnboardingForm';
 import { MobileClientCard } from '@/components/MobileClientCard';
 import { InteractiveGuideButton } from '@/components/InteractiveGuideButton';
+import { CnpjSearch } from '@/components/CnpjSearch';
+import type { CnpjData } from '@/hooks/useCnpjLookup';
 import { CredentialsModal } from '@/components/CredentialsModal';
 import { useDeviceType } from '@/hooks/useDeviceType';
 import { 
@@ -355,13 +357,26 @@ const Clientes = () => {
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="cnpj_cpf">CNPJ/CPF</Label>
-                <Input
-                  id="cnpj_cpf"
-                  value={formData.cnpj_cpf}
-                  onChange={(e) => setFormData({ ...formData, cnpj_cpf: e.target.value })}
-                  className={isMobile ? "h-12 text-base" : ""}
+              <div className="space-y-2 md:col-span-2">
+                <Label htmlFor="cnpj_cpf">CNPJ (Consulta Automática)</Label>
+                <CnpjSearch
+                  initialValue={formData.cnpj_cpf}
+                  onCnpjData={(data: CnpjData) => {
+                    setFormData({
+                      ...formData,
+                      cnpj_cpf: data.cnpj,
+                      nome: data.razao_social || formData.nome,
+                      endereco: data.endereco ? 
+                        `${data.endereco.logradouro || ''} ${data.endereco.numero || ''}, ${data.endereco.bairro || ''} - ${data.endereco.municipio || ''}/${data.endereco.uf || ''} - CEP: ${data.endereco.cep || ''}`.trim() 
+                        : formData.endereco,
+                      razao_social: data.razao_social,
+                      nome_fantasia: data.nome_fantasia,
+                      situacao_cadastral: data.situacao_cadastral,
+                      cnae_principal: data.cnae_principal,
+                      cnpj_fonte: 'cnpj_lookup',
+                      cnpj_ultima_consulta: new Date().toISOString()
+                    });
+                  }}
                 />
               </div>
 
