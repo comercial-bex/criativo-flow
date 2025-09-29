@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { SectionHeader } from '@/components/SectionHeader';
 import { ProjectStatusIndicator } from '@/components/ProjectStatusIndicator';
 import { supabase } from '@/integrations/supabase/client';
@@ -15,7 +16,10 @@ import {
   Package,
   Briefcase,
   Clock,
-  Target
+  Target,
+  Filter,
+  RefreshCw,
+  FileText
 } from 'lucide-react';
 import { ProjectWithTasks } from '@/utils/statusUtils';
 
@@ -27,18 +31,46 @@ interface Cliente {
   status: string;
 }
 
-interface Projeto extends ProjectWithTasks {
+interface Planejamento {
+  id: string;
+  titulo: string;
+  status: string;
+  mes_referencia: string;
+  data_envio_cliente: string | null;
+  data_aprovacao_cliente: string | null;
+  observacoes_cliente: string | null;
   cliente_id: string;
-  responsavel_id?: string;
-  data_inicio?: string;
-  data_fim?: string;
-  orcamento?: number;
-  tipo_projeto?: 'mensal' | 'avulso';
-  produto_contratado?: string;
-  descricao?: string;
   created_at: string;
   updated_at: string;
-  nome?: string; // Add nome field for compatibility
+}
+
+// Interface unificada para projetos e planejamentos
+interface ProjetoUnificado {
+  id: string;
+  titulo: string;
+  descricao?: string;
+  status: string;
+  cliente_id: string;
+  created_at: string;
+  updated_at: string;
+  tipo_fonte: 'projeto' | 'planejamento';
+  tipo_projeto: 'mensal' | 'avulso';
+  
+  // Campos específicos de projetos
+  data_inicio?: string;
+  data_fim?: string;
+  data_prazo?: string;
+  orcamento?: number;
+  produto_contratado?: string;
+  responsavel_id?: string;
+  progresso?: number;
+  tarefas?: any[];
+  
+  // Campos específicos de planejamentos
+  mes_referencia?: string;
+  data_envio_cliente?: string | null;
+  data_aprovacao_cliente?: string | null;
+  observacoes_cliente?: string | null;
 }
 
 export default function ClienteProjetosFluxo() {
@@ -46,13 +78,14 @@ export default function ClienteProjetosFluxo() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [cliente, setCliente] = useState<Cliente | null>(null);
-  const [projetos, setProjetos] = useState<Projeto[]>([]);
+  const [projetosUnificados, setProjetosUnificados] = useState<ProjetoUnificado[]>([]);
   const [loading, setLoading] = useState(true);
+  const [filtroTipo, setFiltroTipo] = useState<'todos' | 'recorrentes' | 'avulsos'>('todos');
 
   useEffect(() => {
     if (clienteId) {
       fetchClienteData();
-      fetchProjetos();
+      fetchProjetosUnificados();
     }
   }, [clienteId]);
 
@@ -76,9 +109,9 @@ export default function ClienteProjetosFluxo() {
     }
   };
 
-  const fetchProjetos = async () => {
+  const fetchProjetosUnificados = async () => {
     try {
-      // Buscar projetos com suas tarefas
+      // Buscar projetos
       const { data: projetosData, error: projetosError } = await supabase
         .from('projetos')
         .select(`
@@ -89,20 +122,60 @@ export default function ClienteProjetosFluxo() {
         .order('created_at', { ascending: false });
 
       if (projetosError) throw projetosError;
+
+      // Buscar planejamentos
+      const { data: planejamentosData, error: planejamentosError } = await supabase
+        .from('planejamentos')
+        .select('*')
+        .eq('cliente_id', clienteId)
+        .order('created_at', { ascending: false });
+
+      if (planejamentosError) throw planejamentosError;
+
+      // Unificar projetos
+      const projetosUnificados: ProjetoUnificado[] = [
+        ...(projetosData || []).map(projeto => ({
+          id: projeto.id,
+          titulo: projeto.nome || 'Projeto sem título',
+          descricao: projeto.descricao,
+          status: projeto.status,
+          cliente_id: projeto.cliente_id,
+          created_at: projeto.created_at,
+          updated_at: projeto.updated_at,
+          tipo_fonte: 'projeto' as const,
+          tipo_projeto: 'avulso' as const,
+          data_inicio: projeto.data_inicio,
+          data_fim: projeto.data_fim,
+          orcamento: projeto.orcamento,
+          responsavel_id: projeto.responsavel_id,
+          tarefas: projeto.tarefas
+        })),
+        ...(planejamentosData || []).map(planejamento => ({
+          id: planejamento.id,
+          titulo: planejamento.titulo,
+          descricao: planejamento.descricao,
+          status: planejamento.status,
+          cliente_id: planejamento.cliente_id,
+          created_at: planejamento.created_at,
+          updated_at: planejamento.updated_at,
+          tipo_fonte: 'planejamento' as const,
+          tipo_projeto: 'mensal' as const,
+          mes_referencia: planejamento.mes_referencia,
+          data_envio_cliente: planejamento.data_envio_cliente,
+          data_aprovacao_cliente: planejamento.data_aprovacao_cliente,
+          observacoes_cliente: planejamento.observacoes_cliente
+        }))
+      ];
+
+      // Ordenar por data de criação mais recente
+      projetosUnificados.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
       
-      // Transform data to match Projeto interface
-      const transformedProjetos = (projetosData || []).map(projeto => ({
-        ...projeto,
-        titulo: projeto.nome || 'Projeto sem título',
-        tipo_projeto: (projeto.nome && projeto.nome.toLowerCase().includes('mensal')) ? 'mensal' as const : 'avulso' as const
-      }));
-      
-      setProjetos(transformedProjetos);
+      setProjetosUnificados(projetosUnificados);
     } catch (error) {
-      console.error('Erro ao buscar projetos:', error);
+      console.error('Erro ao buscar dados:', error);
       toast({
         title: "Erro",
-        description: "Não foi possível carregar os projetos",
+        description: "Não foi possível carregar os dados",
         variant: "destructive",
       });
     } finally {
@@ -110,8 +183,12 @@ export default function ClienteProjetosFluxo() {
     }
   };
 
-  const handleAbrirTarefas = (projetoId: string) => {
-    navigate(`/grs/cliente/${clienteId}/projeto/${projetoId}/tarefas`);
+  const handleAbrirProjeto = (projeto: ProjetoUnificado) => {
+    if (projeto.tipo_fonte === 'projeto') {
+      navigate(`/grs/cliente/${clienteId}/projeto/${projeto.id}/tarefas`);
+    } else {
+      navigate(`/grs/planejamento/${projeto.id}`);
+    }
   };
 
   const handleCriarProjeto = () => {
@@ -121,6 +198,18 @@ export default function ClienteProjetosFluxo() {
       description: "Funcionalidade de criação de projeto em desenvolvimento",
     });
   };
+
+  // Filtrar projetos unificados
+  const projetosFiltrados = projetosUnificados.filter(projeto => {
+    if (filtroTipo === 'recorrentes') return projeto.tipo_projeto === 'mensal';
+    if (filtroTipo === 'avulsos') return projeto.tipo_projeto === 'avulso';
+    return true;
+  });
+
+  // Estatísticas
+  const totalProjetos = projetosUnificados.length;
+  const projetosRecorrentes = projetosUnificados.filter(p => p.tipo_projeto === 'mensal').length;
+  const projetosAvulsos = projetosUnificados.filter(p => p.tipo_projeto === 'avulso').length;
 
   if (loading) {
     return (
@@ -185,7 +274,15 @@ export default function ClienteProjetosFluxo() {
           <div className="flex items-center gap-6 text-sm text-muted-foreground">
             <div className="flex items-center gap-2">
               <Package className="h-4 w-4" />
-              <span>{projetos.length} projeto{projetos.length !== 1 ? 's' : ''}</span>
+              <span>{totalProjetos} projeto{totalProjetos !== 1 ? 's' : ''} total</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <RefreshCw className="h-4 w-4" />
+              <span>{projetosRecorrentes} recorrente{projetosRecorrentes !== 1 ? 's' : ''}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <FileText className="h-4 w-4" />
+              <span>{projetosAvulsos} avulso{projetosAvulsos !== 1 ? 's' : ''}</span>
             </div>
             {cliente.email && (
               <div className="flex items-center gap-2">
@@ -199,19 +296,39 @@ export default function ClienteProjetosFluxo() {
 
       {/* Lista de Projetos */}
       <div className="space-y-4">
-        <SectionHeader 
-          title="Projetos do Cliente"
-          description="Visualize e gerencie todos os projetos ativos"
-        />
+        <div className="flex items-center justify-between">
+          <SectionHeader 
+            title="Projetos do Cliente"
+            description="Visualize e gerencie todos os projetos e planejamentos"
+          />
+          <Select value={filtroTipo} onValueChange={(value: any) => setFiltroTipo(value)}>
+            <SelectTrigger className="w-48">
+              <Filter className="h-4 w-4 mr-2" />
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="todos">Todos os Tipos</SelectItem>
+              <SelectItem value="recorrentes">Recorrentes</SelectItem>
+              <SelectItem value="avulsos">Avulsos</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
         
-        {projetos.length === 0 ? (
+        {projetosFiltrados.length === 0 ? (
           <Card>
             <CardContent className="pt-6 text-center">
               <div className="space-y-4">
                 <Briefcase className="h-12 w-12 text-muted-foreground mx-auto" />
                 <div>
-                  <p className="text-lg font-medium">Nenhum projeto encontrado</p>
-                  <p className="text-muted-foreground">Este cliente ainda não possui projetos cadastrados.</p>
+                  <p className="text-lg font-medium">
+                    {filtroTipo === 'todos' ? 'Nenhum projeto encontrado' : `Nenhum projeto ${filtroTipo === 'recorrentes' ? 'recorrente' : 'avulso'} encontrado`}
+                  </p>
+                  <p className="text-muted-foreground">
+                    {filtroTipo === 'todos' 
+                      ? 'Este cliente ainda não possui projetos ou planejamentos cadastrados.' 
+                      : `Este cliente não possui projetos do tipo ${filtroTipo === 'recorrentes' ? 'recorrente' : 'avulso'}.`
+                    }
+                  </p>
                 </div>
                 <Button onClick={handleCriarProjeto}>
                   <Plus className="h-4 w-4 mr-2" />
@@ -222,8 +339,8 @@ export default function ClienteProjetosFluxo() {
           </Card>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-            {projetos.map((projeto) => (
-              <Card key={projeto.id} className="hover:shadow-lg transition-shadow">
+            {projetosFiltrados.map((projeto) => (
+              <Card key={`${projeto.tipo_fonte}-${projeto.id}`} className="hover:shadow-lg transition-shadow">
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between">
                     <div className="space-y-1">
@@ -232,7 +349,15 @@ export default function ClienteProjetosFluxo() {
                         <Badge variant={projeto.tipo_projeto === 'mensal' ? 'default' : 'secondary'}>
                           {projeto.tipo_projeto === 'mensal' ? 'Recorrente' : 'Avulso'}
                         </Badge>
-                        <ProjectStatusIndicator project={projeto} />
+                        <Badge variant="outline" className={projeto.tipo_fonte === 'planejamento' ? 'border-blue-500 text-blue-600' : 'border-green-500 text-green-600'}>
+                          {projeto.tipo_fonte === 'planejamento' ? 'Planejamento' : 'Projeto'}
+                        </Badge>
+                        <Badge variant={projeto.status === 'aprovado' ? 'default' : projeto.status === 'em_aprovacao' ? 'secondary' : 'outline'}>
+                          {projeto.status === 'aprovado' ? 'Aprovado' : 
+                           projeto.status === 'em_aprovacao' ? 'Em Aprovação' :
+                           projeto.status === 'rascunho' ? 'Rascunho' :
+                           projeto.status}
+                        </Badge>
                       </div>
                     </div>
                   </div>
@@ -246,6 +371,7 @@ export default function ClienteProjetosFluxo() {
                   )}
                   
                   <div className="space-y-2 text-sm">
+                    {/* Dados de projeto */}
                     {projeto.produto_contratado && (
                       <div className="flex items-center gap-2">
                         <Target className="h-4 w-4 text-muted-foreground" />
@@ -266,8 +392,24 @@ export default function ClienteProjetosFluxo() {
                         <span>Prazo: {new Date(projeto.data_fim).toLocaleDateString('pt-BR')}</span>
                       </div>
                     )}
+
+                    {/* Dados de planejamento */}
+                    {projeto.mes_referencia && (
+                      <div className="flex items-center gap-2">
+                        <Calendar className="h-4 w-4 text-muted-foreground" />
+                        <span>Referência: {new Date(projeto.mes_referencia).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}</span>
+                      </div>
+                    )}
+
+                    {projeto.data_envio_cliente && (
+                      <div className="flex items-center gap-2">
+                        <Clock className="h-4 w-4 text-muted-foreground" />
+                        <span>Enviado: {new Date(projeto.data_envio_cliente).toLocaleDateString('pt-BR')}</span>
+                      </div>
+                    )}
                   </div>
 
+                  {/* Contadores específicos por tipo */}
                   {projeto.tarefas && projeto.tarefas.length > 0 && (
                     <div className="pt-2 border-t">
                       <div className="flex items-center justify-between text-sm">
@@ -281,11 +423,19 @@ export default function ClienteProjetosFluxo() {
                     </div>
                   )}
 
+                  {projeto.observacoes_cliente && (
+                    <div className="pt-2 border-t">
+                      <p className="text-xs text-muted-foreground">
+                        <strong>Obs. Cliente:</strong> {projeto.observacoes_cliente.substring(0, 50)}...
+                      </p>
+                    </div>
+                  )}
+
                   <Button 
                     className="w-full" 
-                    onClick={() => handleAbrirTarefas(projeto.id)}
+                    onClick={() => handleAbrirProjeto(projeto)}
                   >
-                    Gerenciar Tarefas
+                    {projeto.tipo_fonte === 'planejamento' ? 'Ver Planejamento' : 'Gerenciar Tarefas'}
                   </Button>
                 </CardContent>
               </Card>
