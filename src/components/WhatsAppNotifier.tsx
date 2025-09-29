@@ -46,11 +46,20 @@ export function WhatsAppNotifier({ clienteNome, clienteTelefone, mensagem, trigg
   };
 
   const openWhatsApp = () => {
-    window.open(whatsappUrl, '_blank');
-    toast({
-      title: "WhatsApp aberto",
-      description: `Mensagem pronta para ${clienteNome}`,
-    });
+    try {
+      window.open(whatsappUrl, '_blank');
+      toast({
+        title: "WhatsApp aberto",
+        description: `Mensagem pronta para ${clienteNome}`,
+      });
+    } catch (error) {
+      // Fallback: copy message if browser blocks
+      copyToClipboard(mensagem);
+      toast({
+        title: "Mensagem copiada",
+        description: "Cole no WhatsApp manualmente",
+      });
+    }
   };
 
   const defaultTrigger = (

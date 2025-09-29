@@ -110,7 +110,9 @@ import {
   Sidebar,
   SidebarContent,
   SidebarTrigger,
+  useSidebar,
 } from "@/components/ui/sidebar"
+import { cn } from "@/lib/utils"
 
 // Modules structure for the new layout
 const modules = [
@@ -311,11 +313,22 @@ export function AppSidebar() {
     return currentModule?.items || [];
   };
 
+  const { state, open } = useSidebar();
+  
   return (
-    <Sidebar className="h-screen bg-bex-dark border-r border-bex-green/20" collapsible="none">
+    <Sidebar 
+      className={cn(
+        "h-screen bg-bex-dark border-r border-bex-green/20 transition-all duration-300 ease-in-out",
+        state === "collapsed" ? "w-[56px]" : "w-[280px]"
+      )} 
+      collapsible="icon"
+    >
       <div className="flex h-full">
-        {/* Left Column - Modules (Green) */}
-        <div className="w-16 bg-bex-green flex flex-col items-center py-4 space-y-2 animate-slide-in relative z-50">
+        {/* Left Column - Modules (Green) - Always visible */}
+        <div className={cn(
+          "bg-bex-green flex flex-col items-center py-4 space-y-2 animate-slide-in relative z-50",
+          state === "collapsed" ? "w-full" : "w-16"
+        )}>
           {visibleModules.map((module, index) => {
             const isSelected = selectedModule === module.id;
             const Icon = module.icon;
@@ -324,11 +337,12 @@ export function AppSidebar() {
               <button
                 key={module.id}
                 onClick={() => setSelectedModule(module.id)}
-                className={`w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-300 module-hover animate-fade-in ${
+                className={cn(
+                  "w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-300 module-hover animate-fade-in",
                   isSelected 
                     ? 'bg-bex-dark text-bex-green shadow-lg' 
                     : 'bg-bex-green/90 text-bex-dark hover:bg-white/90'
-                }`}
+                )}
                 style={{ animationDelay: `${index * 50}ms` }}
                 title={module.title}
               >
@@ -343,71 +357,68 @@ export function AppSidebar() {
           </div>
         </div>
 
-        {/* Right Column - Functions + User Profile (Dark) */}
-        <div className="flex-1 bg-bex-dark flex flex-col animate-scale-in relative z-40">
-          {/* Sidebar Controls */}
-          <div className="p-4 flex items-center justify-between border-b border-bex-green/20">
-            <SidebarTrigger className="text-bex-green hover:text-white hover:bg-bex-green/20 transition-colors" />
-          </div>
-          
-          {/* User Profile Section */}
-          <UserProfileSection />
+        {/* Right Column - Functions + User Profile (Dark) - Hidden when collapsed */}
+        {state === "expanded" && (
+          <div className="flex-1 bg-bex-dark flex flex-col animate-scale-in relative z-40">
+            {/* User Profile Section */}
+            <UserProfileSection />
 
-          {/* Active Module Highlight */}
-          {currentModule && (
-            <div className="px-4 py-3 mx-4 mb-4 bg-bex-green rounded-lg animate-fade-in hover-lift">
-              <div className="flex items-center text-bex-dark">
-                <currentModule.icon className="mr-2 h-4 w-4" />
-                <span className="font-medium text-sm">{currentModule.title}</span>
+            {/* Active Module Highlight */}
+            {currentModule && (
+              <div className="px-4 py-3 mx-4 mb-4 bg-bex-green rounded-lg animate-fade-in hover-lift">
+                <div className="flex items-center text-bex-dark">
+                  <currentModule.icon className="mr-2 h-4 w-4" />
+                  <span className="font-medium text-sm">{currentModule.title}</span>
+                </div>
               </div>
+            )}
+
+            {/* Navigation Items */}
+            <div className="flex-1 px-2 overflow-y-auto">
+              {getCurrentItems().map((item, index) => {
+                const isItemActive = isActive(item.url);
+                const Icon = item.icon;
+                
+                // Special handling for GRS hierarchical menu with submenus
+                if (role === 'grs' && (item as any).submenu) {
+                  return (
+                    <GRSMenuWithSubmenu 
+                      key={item.url}
+                      item={item}
+                      isActive={isItemActive}
+                      index={index}
+                    />
+                  );
+                }
+                
+                return (
+                  <NavLink
+                    key={item.url}
+                    to={item.url}
+                    className={`flex items-center px-4 py-3 mb-1 text-sm rounded-lg transition-all duration-300 hover-lift animate-slide-in ${
+                      isItemActive
+                        ? 'bg-sidebar-accent text-bex-green border-l-2 border-bex-green'
+                        : 'text-sidebar-foreground hover:bg-bex-green/10 hover:text-bex-green'
+                    }`}
+                    style={{ animationDelay: `${index * 30}ms` }}
+                  >
+                    <Icon className="mr-3 h-4 w-4" />
+                    <span>{item.title}</span>
+                    {item.url.includes('/ganhos') && (
+                      <span className="ml-auto text-xs bg-bex-green text-bex-dark px-2 py-1 rounded">→</span>
+                    )}
+                  </NavLink>
+                );
+              })}
             </div>
-          )}
 
-        {/* Navigation Items */}
-        <div className="flex-1 px-2">
-          {getCurrentItems().map((item, index) => {
-            const isItemActive = isActive(item.url);
-            const Icon = item.icon;
-            
-            // Special handling for GRS hierarchical menu with submenus
-            if (role === 'grs' && (item as any).submenu) {
-              return (
-                <GRSMenuWithSubmenu 
-                  key={item.url}
-                  item={item}
-                  isActive={isItemActive}
-                  index={index}
-                />
-              );
-            }
-            
-            return (
-              <NavLink
-                key={item.url}
-                to={item.url}
-                className={`flex items-center px-4 py-3 mb-1 text-sm rounded-lg transition-all duration-300 hover-lift animate-slide-in ${
-                  isItemActive
-                    ? 'bg-sidebar-accent text-bex-green border-l-2 border-bex-green'
-                    : 'text-sidebar-foreground hover:bg-bex-green/10 hover:text-bex-green'
-                }`}
-                style={{ animationDelay: `${index * 30}ms` }}
-              >
-                <Icon className="mr-3 h-4 w-4" />
-                <span>{item.title}</span>
-                {item.url.includes('/ganhos') && (
-                  <span className="ml-auto text-xs bg-bex-green text-bex-dark px-2 py-1 rounded">→</span>
-                )}
-              </NavLink>
-            );
-          })}
-        </div>
-
-        {/* Footer */}
-        <div className="p-4 text-center text-xs text-sidebar-foreground/50 border-t border-sidebar-border animate-fade-in">
-          <p>Agência Bex Ltda. Admin Dashboard</p>
-          <p>© 2025 Todos os Direitos Reservados</p>
-        </div>
-        </div>
+            {/* Footer */}
+            <div className="p-4 text-center text-xs text-sidebar-foreground/50 border-t border-sidebar-border animate-fade-in">
+              <p>Agência Bex Ltda. Admin Dashboard</p>
+              <p>© 2025 Todos os Direitos Reservados</p>
+            </div>
+          </div>
+        )}
       </div>
     </Sidebar>
   );
