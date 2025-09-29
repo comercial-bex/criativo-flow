@@ -45,6 +45,7 @@ import TrafegoDashboard from "./pages/Trafego/Dashboard";
 import FinanceiroDashboard from "./pages/Financeiro/Dashboard";
 import FornecedorDashboard from "./pages/Fornecedor/Dashboard";
 import GestorDashboard from "./pages/Gestor/Dashboard";
+import MinhasTarefas from "./pages/MinhasTarefas";
 
 // Client pages
 import ClientePainel from "./pages/Cliente/Painel";
@@ -275,6 +276,12 @@ function App() {
                 <Route path="/grs/relatorios" element={
                   <ProtectedRoute requiredRole="grs">
                     <Layout><GRSRelatorios /></Layout>
+                  </ProtectedRoute>
+                } />
+
+                <Route path="/minhas-tarefas" element={
+                  <ProtectedRoute>
+                    <Layout><MinhasTarefas /></Layout>
                   </ProtectedRoute>
                 } />
 
