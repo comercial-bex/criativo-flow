@@ -300,7 +300,7 @@ export function TarefasKanban({ planejamento, clienteId, projetoId }: TarefasKan
     try {
       // Buscar tarefas
       const { data: tarefasData, error: tarefasError } = await supabase
-        .from('tarefas')
+        .from('tarefas_projeto')
         .select('*')
         .eq('projeto_id', projetoId)
         .order('created_at', { ascending: false });
@@ -346,7 +346,7 @@ export function TarefasKanban({ planejamento, clienteId, projetoId }: TarefasKan
   const updateTarefaStatus = async (tarefaId: string, novoStatus: string) => {
     try {
       const { error } = await supabase
-        .from('tarefas')
+        .from('tarefas_projeto')
         .update({ status: novoStatus })
         .eq('id', tarefaId);
 
@@ -384,16 +384,15 @@ export function TarefasKanban({ planejamento, clienteId, projetoId }: TarefasKan
       setIsCreating(true);
 
       const { data, error } = await supabase
-        .from('tarefas')
+        .from('tarefas_projeto')
         .insert({
           projeto_id: projetoId,
           titulo: novaTarefa.titulo,
           descricao: novaTarefa.descricao || null,
-          prioridade: novaTarefa.prioridade as 'alta' | 'media' | 'baixa',
+          prioridade: novaTarefa.prioridade,
           data_prazo: novaTarefa.data_prazo || null,
           responsavel_id: novaTarefa.responsavel_id || null,
-          tipo: novaTarefa.tipo,
-          tempo_estimado: novaTarefa.tempo_estimado ? parseInt(novaTarefa.tempo_estimado) : null,
+          setor_responsavel: 'grs',
           status: 'backlog'
         })
         .select()
@@ -435,7 +434,7 @@ export function TarefasKanban({ planejamento, clienteId, projetoId }: TarefasKan
   const updateTarefa = async (tarefaId: string, updates: any) => {
     try {
       const { error } = await supabase
-        .from('tarefas')
+        .from('tarefas_projeto')
         .update(updates)
         .eq('id', tarefaId);
 

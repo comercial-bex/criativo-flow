@@ -37,6 +37,8 @@ import GRSPlanejamentoDetalhes from "./pages/GRS/PlanejamentoDetalhes";
 import GRSPlanejamentoEstrategico from "./pages/GRS/PlanejamentoEstrategico";
 import GRSCalendarioEditorial from "./pages/GRS/CalendarioEditorial";
 import GRSAprovacoes from "./pages/GRS/Aprovacoes";
+import GRSClienteProjetos from "./pages/GRS/ClienteProjetos";
+import GRSProjetoTarefas from "./pages/GRS/ProjetoTarefas";
 import AtendimentoInbox from "./pages/Atendimento/Inbox";
 import AtendimentoDashboard from "./pages/Atendimento/Dashboard";
 import TrafegoDashboard from "./pages/Trafego/Dashboard";
@@ -225,6 +227,18 @@ function App() {
                 <Route path="/grs/cliente/:clienteId/planejamentos" element={
                   <ProtectedRoute requiredRole="grs">
                     <Layout><GRSPlanejamentos /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/grs/cliente/:clienteId/projetos" element={
+                  <ProtectedRoute requiredRole="grs">
+                    <Layout><GRSClienteProjetos /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/grs/cliente/:clienteId/projeto/:projetoId/tarefas" element={
+                  <ProtectedRoute requiredRole="grs">
+                    <Layout><GRSProjetoTarefas /></Layout>
                   </ProtectedRoute>
                 } />
                 

@@ -471,9 +471,14 @@ export default function GRSDashboard() {
                     <Badge variant={getStatusVariant(cliente.status)}>
                       {getStatusText(cliente.status)}
                     </Badge>
-                    <Button size="sm" onClick={() => handleEntrarNoPlan(cliente)}>
-                      Entrar no Plano
-                    </Button>
+                    <div className="flex gap-1">
+                      <Button size="sm" onClick={() => handleEntrarNoPlan(cliente)} variant="outline">
+                        Planejamento
+                      </Button>
+                      <Button size="sm" onClick={() => navigate(`/grs/cliente/${cliente.id}/projetos`)}>
+                        Projetos
+                      </Button>
+                    </div>
                   </div>
                 </div>
               ))
