@@ -4,14 +4,22 @@ export default {
   darkMode: ["class"],
   content: ["./pages/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}", "./app/**/*.{ts,tsx}", "./src/**/*.{ts,tsx}"],
   prefix: "",
-  theme: {
-    container: {
-      center: true,
-      padding: "2rem",
-      screens: {
-        "2xl": "1400px",
+    theme: {
+      container: {
+        center: true,
+        padding: "2rem",
+        screens: {
+          "2xl": "1400px",
+        },
       },
-    },
+      screens: {
+        'mobile-small': '360px',
+        'mobile': '414px', 
+        'tablet': '768px',
+        'tablet-lg': '1024px',
+        'desktop': '1366px',
+        'desktop-lg': '1920px',
+      },
     extend: {
       colors: {
         border: "hsl(var(--border))",
