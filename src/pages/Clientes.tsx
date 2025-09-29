@@ -35,7 +35,16 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { toast } from 'sonner';
 
-// Cliente interface moved to useClientData hook
+// Extended form data interface with additional address fields
+interface FormData extends Partial<Cliente> {
+  logradouro?: string;
+  numero?: string;
+  complemento?: string;
+  bairro?: string;
+  cidade?: string;
+  uf?: string;
+  cep?: string;
+}
 
 interface Assinatura {
   id: string;
@@ -63,12 +72,23 @@ const Clientes = () => {
   const [selectedCliente, setSelectedCliente] = useState<Cliente | null>(null);
   const [showCredentials, setShowCredentials] = useState(false);
   const [credentials, setCredentials] = useState({ email: '', senha: '', nomeCliente: '' });
-  const [formData, setFormData] = useState<Partial<Cliente>>({
+  const [formData, setFormData] = useState<FormData>({
     nome: "",
+    razao_social: "",
+    nome_fantasia: "",
     email: "",
     telefone: "",
     cnpj_cpf: "",
+    situacao_cadastral: "",
+    cnae_principal: "",
     endereco: "",
+    logradouro: "",
+    numero: "",
+    complemento: "",
+    bairro: "",
+    cidade: "",
+    uf: "",
+    cep: "",
     status: "ativo",
     assinatura_id: "",
     email_login: "",
@@ -180,10 +200,21 @@ const Clientes = () => {
   const resetForm = () => {
     setFormData({
       nome: "",
+      razao_social: "",
+      nome_fantasia: "",
       email: "",
       telefone: "",
       cnpj_cpf: "",
+      situacao_cadastral: "",
+      cnae_principal: "",
       endereco: "",
+      logradouro: "",
+      numero: "",
+      complemento: "",
+      bairro: "",
+      cidade: "",
+      uf: "",
+      cep: "",
       status: "ativo",
       assinatura_id: "",
       email_login: "",
@@ -318,116 +349,283 @@ const Clientes = () => {
 
       {/* Formulário de Cadastro - Mobile Optimized */}
       <Dialog open={showForm} onOpenChange={setShowForm}>
-        <DialogContent className={isMobile ? "" : "sm:max-w-[700px]"}>
+        <DialogContent className={`${isMobile ? "max-h-[90vh] overflow-y-auto" : "sm:max-w-[800px] max-h-[90vh] overflow-y-auto"}`}>
           <DialogHeader>
             <DialogTitle className={isMobile ? "text-lg" : ""}>Cadastrar Novo Cliente</DialogTitle>
           </DialogHeader>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'}`}>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* CNPJ e Dados da Empresa */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-foreground border-b pb-2">Dados da Empresa</h3>
+              
               <div className="space-y-2">
-                <Label htmlFor="nome">Nome / Razão Social</Label>
-                <Input
-                  id="nome"
-                  value={formData.nome}
-                  onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
-                  className={isMobile ? "h-12 text-base" : ""}
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="email">E-mail</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className={isMobile ? "h-12 text-base" : ""}
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="telefone">Telefone</Label>
-                <Input
-                  id="telefone"
-                  value={formData.telefone}
-                  onChange={(e) => setFormData({ ...formData, telefone: e.target.value })}
-                  className={isMobile ? "h-12 text-base" : ""}
-                />
-              </div>
-
-              <div className="space-y-2 md:col-span-2">
-                <Label htmlFor="cnpj_cpf">CNPJ (Consulta Automática)</Label>
+                <Label htmlFor="cnpj_cpf">CNPJ (Consulta Automática) *</Label>
                 <CnpjSearch
                   initialValue={formData.cnpj_cpf}
                   onCnpjData={(data) => {
                     setFormData({
                       ...formData,
                       cnpj_cpf: data.cnpj,
-                      nome: data.razao_social || formData.nome,
+                      razao_social: data.razao_social || formData.razao_social,
+                      nome_fantasia: data.nome_fantasia || formData.nome_fantasia,
+                      nome: data.nome_fantasia || data.razao_social || formData.nome,
+                      situacao_cadastral: data.situacao_cadastral || formData.situacao_cadastral,
+                      cnae_principal: data.cnae_principal || formData.cnae_principal,
                       endereco: data.endereco ? 
                         `${data.endereco.logradouro || ''} ${data.endereco.numero || ''}, ${data.endereco.bairro || ''} - ${data.endereco.municipio || ''}/${data.endereco.uf || ''} - CEP: ${data.endereco.cep || ''}`.trim() 
-                        : formData.endereco
+                        : formData.endereco,
+                      logradouro: data.endereco?.logradouro || formData.logradouro,
+                      numero: data.endereco?.numero || formData.numero,
+                      bairro: data.endereco?.bairro || formData.bairro,
+                      cidade: data.endereco?.municipio || formData.cidade,
+                      uf: data.endereco?.uf || formData.uf,
+                      cep: data.endereco?.cep || formData.cep
                     });
                   }}
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="status">Status</Label>
-                <Select 
-                  value={formData.status} 
-                  onValueChange={(value) => setFormData({ ...formData, status: value as 'ativo' | 'inativo' | 'pendente' | 'arquivado' })}
-                >
-                  <SelectTrigger className={isMobile ? "h-12" : ""}>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="ativo">Ativo</SelectItem>
-                    <SelectItem value="inativo">Inativo</SelectItem>
-                    <SelectItem value="pendente">Pendente</SelectItem>
-                    <SelectItem value="arquivado">Arquivado</SelectItem>
-                  </SelectContent>
-                </Select>
+              <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'grid-cols-2'}`}>
+                <div className="space-y-2">
+                  <Label htmlFor="razao_social">Razão Social</Label>
+                  <Input
+                    id="razao_social"
+                    value={formData.razao_social}
+                    onChange={(e) => setFormData({ ...formData, razao_social: e.target.value })}
+                    className={`${isMobile ? "h-12 text-base" : ""} ${formData.razao_social ? "bg-muted/30" : ""}`}
+                    placeholder="Preenchido automaticamente"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="nome_fantasia">Nome Fantasia</Label>
+                  <Input
+                    id="nome_fantasia"
+                    value={formData.nome_fantasia}
+                    onChange={(e) => setFormData({ ...formData, nome_fantasia: e.target.value })}
+                    className={`${isMobile ? "h-12 text-base" : ""} ${formData.nome_fantasia ? "bg-muted/30" : ""}`}
+                    placeholder="Preenchido automaticamente"
+                  />
+                </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="assinatura">Plano de Assinatura</Label>
-                <Select 
-                  value={formData.assinatura_id || 'none'} 
-                  onValueChange={(value) => setFormData({ ...formData, assinatura_id: value === 'none' ? '' : value })}
-                >
-                  <SelectTrigger className={isMobile ? "h-12" : ""}>
-                    <SelectValue placeholder="Selecione um plano" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">Sem assinatura</SelectItem>
-                    {assinaturas.map((assinatura) => (
-                      <SelectItem key={assinatura.id} value={assinatura.id}>
-                        {assinatura.nome} - R$ {assinatura.preco.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Label htmlFor="nome">Nome de Exibição no Sistema *</Label>
+                <Input
+                  id="nome"
+                  value={formData.nome}
+                  onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
+                  className={isMobile ? "h-12 text-base" : ""}
+                  placeholder="Nome usado no sistema"
+                  required
+                />
+              </div>
+
+              <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'grid-cols-2'}`}>
+                <div className="space-y-2">
+                  <Label htmlFor="situacao_cadastral">Situação Cadastral</Label>
+                  <Input
+                    id="situacao_cadastral"
+                    value={formData.situacao_cadastral}
+                    className={`${isMobile ? "h-12 text-base" : ""} bg-muted/50`}
+                    readOnly
+                    placeholder="Preenchido automaticamente"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="cnae_principal">CNAE Principal</Label>
+                  <Input
+                    id="cnae_principal"
+                    value={formData.cnae_principal}
+                    className={`${isMobile ? "h-12 text-base" : ""} bg-muted/50`}
+                    readOnly
+                    placeholder="Preenchido automaticamente"
+                  />
+                </div>
               </div>
             </div>
 
+            {/* Contato */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-foreground border-b pb-2">Contato</h3>
+              
+              <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'grid-cols-2'}`}>
+                <div className="space-y-2">
+                  <Label htmlFor="email">E-mail *</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    className={isMobile ? "h-12 text-base" : ""}
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="telefone">Telefone</Label>
+                  <Input
+                    id="telefone"
+                    value={formData.telefone}
+                    onChange={(e) => setFormData({ ...formData, telefone: e.target.value })}
+                    className={isMobile ? "h-12 text-base" : ""}
+                    placeholder="(11) 99999-9999"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Endereço */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-foreground border-b pb-2">Endereço</h3>
+              
+              <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'grid-cols-3'}`}>
+                <div className={`space-y-2 ${isMobile ? 'col-span-1' : 'col-span-2'}`}>
+                  <Label htmlFor="logradouro">Logradouro</Label>
+                  <Input
+                    id="logradouro"
+                    value={formData.logradouro}
+                    onChange={(e) => setFormData({ ...formData, logradouro: e.target.value })}
+                    className={`${isMobile ? "h-12 text-base" : ""} ${formData.logradouro ? "bg-muted/30" : ""}`}
+                    placeholder="Rua, Avenida, etc."
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="numero">Número</Label>
+                  <Input
+                    id="numero"
+                    value={formData.numero}
+                    onChange={(e) => setFormData({ ...formData, numero: e.target.value })}
+                    className={`${isMobile ? "h-12 text-base" : ""} ${formData.numero ? "bg-muted/30" : ""}`}
+                    placeholder="123"
+                  />
+                </div>
+              </div>
+
+              <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'grid-cols-3'}`}>
+                <div className="space-y-2">
+                  <Label htmlFor="complemento">Complemento</Label>
+                  <Input
+                    id="complemento"
+                    value={formData.complemento}
+                    onChange={(e) => setFormData({ ...formData, complemento: e.target.value })}
+                    className={isMobile ? "h-12 text-base" : ""}
+                    placeholder="Sala, Apto, etc."
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="bairro">Bairro</Label>
+                  <Input
+                    id="bairro"
+                    value={formData.bairro}
+                    onChange={(e) => setFormData({ ...formData, bairro: e.target.value })}
+                    className={`${isMobile ? "h-12 text-base" : ""} ${formData.bairro ? "bg-muted/30" : ""}`}
+                    placeholder="Centro"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="cep">CEP</Label>
+                  <Input
+                    id="cep"
+                    value={formData.cep}
+                    onChange={(e) => setFormData({ ...formData, cep: e.target.value })}
+                    className={`${isMobile ? "h-12 text-base" : ""} ${formData.cep ? "bg-muted/30" : ""}`}
+                    placeholder="00000-000"
+                  />
+                </div>
+              </div>
+
+              <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'grid-cols-3'}`}>
+                <div className={`space-y-2 ${isMobile ? 'col-span-1' : 'col-span-2'}`}>
+                  <Label htmlFor="cidade">Cidade</Label>
+                  <Input
+                    id="cidade"
+                    value={formData.cidade}
+                    onChange={(e) => setFormData({ ...formData, cidade: e.target.value })}
+                    className={`${isMobile ? "h-12 text-base" : ""} ${formData.cidade ? "bg-muted/30" : ""}`}
+                    placeholder="São Paulo"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="uf">UF</Label>
+                  <Input
+                    id="uf"
+                    value={formData.uf}
+                    onChange={(e) => setFormData({ ...formData, uf: e.target.value.toUpperCase() })}
+                    className={`${isMobile ? "h-12 text-base" : ""} ${formData.uf ? "bg-muted/30" : ""}`}
+                    placeholder="SP"
+                    maxLength={2}
+                  />
+                </div>
+              </div>
+
               <div className="space-y-2">
-                <Label htmlFor="endereco">Endereço</Label>
+                <Label htmlFor="endereco">Endereço Completo</Label>
                 <Input
                   id="endereco"
                   value={formData.endereco}
                   onChange={(e) => setFormData({ ...formData, endereco: e.target.value })}
-                  className={isMobile ? "h-12 text-base" : ""}
+                  className={`${isMobile ? "h-12 text-base" : ""} bg-muted/30`}
+                  placeholder="Endereço completo (preenchido automaticamente)"
                 />
               </div>
+            </div>
 
-              {/* Seção de Credenciais de Acesso */}
-              <div className="col-span-full border-t pt-4 mt-4">
-                <h3 className="text-lg font-semibold mb-4">Credenciais de Acesso ao Sistema</h3>
-                
-                <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
+            {/* Configurações do Sistema */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-foreground border-b pb-2">Configurações do Sistema</h3>
+              
+              <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'grid-cols-2'}`}>
+                <div className="space-y-2">
+                  <Label htmlFor="status">Status</Label>
+                  <Select 
+                    value={formData.status} 
+                    onValueChange={(value) => setFormData({ ...formData, status: value as 'ativo' | 'inativo' | 'pendente' | 'arquivado' })}
+                  >
+                    <SelectTrigger className={isMobile ? "h-12" : ""}>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ativo">Ativo</SelectItem>
+                      <SelectItem value="inativo">Inativo</SelectItem>
+                      <SelectItem value="pendente">Pendente</SelectItem>
+                      <SelectItem value="arquivado">Arquivado</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="assinatura">Plano de Assinatura</Label>
+                  <Select 
+                    value={formData.assinatura_id || 'none'} 
+                    onValueChange={(value) => setFormData({ ...formData, assinatura_id: value === 'none' ? '' : value })}
+                  >
+                    <SelectTrigger className={isMobile ? "h-12" : ""}>
+                      <SelectValue placeholder="Selecione um plano" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Sem assinatura</SelectItem>
+                      {assinaturas.map((assinatura) => (
+                        <SelectItem key={assinatura.id} value={assinatura.id}>
+                          {assinatura.nome} - R$ {assinatura.preco.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
+
+            {/* Credenciais de Acesso */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-foreground border-b pb-2">Credenciais de Acesso ao Sistema</h3>
+              
+              <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'grid-cols-2'}`}>
                   <div className="space-y-2">
                     <Label htmlFor="email_login">Email de Login</Label>
                     <Input
@@ -490,8 +688,8 @@ const Clientes = () => {
                       </SelectContent>
                     </Select>
                   </div>
-                </div>
               </div>
+            </div>
 
             <div className={`flex gap-2 pt-4 ${isMobile ? 'flex-col' : ''}`}>
               <Button type="submit" className={isMobile ? "h-12 text-base" : ""}>
