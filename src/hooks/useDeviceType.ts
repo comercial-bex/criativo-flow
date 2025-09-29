@@ -18,15 +18,15 @@ export function useDeviceType(): DeviceType {
     const updateDeviceType = () => {
       const width = window.innerWidth;
       
-      if (width < BREAKPOINTS['mobile-small']) {
+      if (width <= BREAKPOINTS['mobile-small']) {
         setDeviceType('mobile-small');
-      } else if (width < BREAKPOINTS.mobile) {
+      } else if (width <= BREAKPOINTS.mobile) {
         setDeviceType('mobile');
-      } else if (width < BREAKPOINTS.tablet) {
+      } else if (width <= BREAKPOINTS.tablet) {
         setDeviceType('tablet');
-      } else if (width < BREAKPOINTS['tablet-large']) {
+      } else if (width <= BREAKPOINTS['tablet-large']) {
         setDeviceType('tablet-large');
-      } else if (width < BREAKPOINTS.desktop) {
+      } else if (width <= BREAKPOINTS.desktop) {
         setDeviceType('desktop');
       } else {
         setDeviceType('desktop-large');

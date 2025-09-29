@@ -47,8 +47,8 @@ export function ResponsiveLayout({ children }: ResponsiveLayoutProps) {
         className="min-h-screen w-full bg-background grid grid-cols-[auto_1fr]"
         data-sidebar={isDesktop ? "expanded" : "collapsed"}
       >
-        {/* Sidebar - Auto-collapse on smaller screens */}
-        <div className={`fixed left-0 top-0 h-screen z-40 ${isTablet && !isDesktop ? 'hidden' : ''}`}>
+        {/* Sidebar - Show on tablet and desktop */}
+        <div className="fixed left-0 top-0 h-screen z-40">
           <AppSidebar />
         </div>
         
@@ -62,8 +62,8 @@ export function ResponsiveLayout({ children }: ResponsiveLayoutProps) {
           <header className={`${
             isTablet ? 'h-14' : 'h-16'
           } flex items-center border-b bg-background/95 backdrop-blur-sm px-2 mobile:px-3 tablet:px-4 sticky top-0 z-50 shadow-sm`}>
-            <div className="flex items-center gap-2 mobile:gap-3 flex-1">
-              {!isDesktop && (
+          <div className="flex items-center gap-2 mobile:gap-3 flex-1">
+              {(isTablet && !isDesktop) && (
                 <SidebarTrigger className="hover:bg-muted/50 p-2 rounded-md transition-colors" />
               )}
               <GlobalHeader />
