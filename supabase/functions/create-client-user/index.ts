@@ -35,6 +35,30 @@ serve(async (req) => {
 
     console.log('Creating client user:', { email, nome, cliente_id, role });
 
+    // Validate required fields
+    if (!email || !password || !nome || !cliente_id || !role) {
+      console.error('Missing required fields');
+      return new Response(
+        JSON.stringify({ error: 'Todos os campos são obrigatórios' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Check if user already exists
+    const { data: existingUser, error: checkError } = await supabaseAdmin.auth.admin.listUsers();
+    if (checkError) {
+      console.error('Error checking existing users:', checkError);
+    } else {
+      const userExists = existingUser.users.find(user => user.email === email);
+      if (userExists) {
+        console.log('User already exists:', email);
+        return new Response(
+          JSON.stringify({ error: `Usuário com email ${email} já existe` }),
+          { status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    }
+
     // Create user in Supabase Auth (without email confirmation)
     const { data: userData, error: userError } = await supabaseAdmin.auth.admin.createUser({
       email,
@@ -46,7 +70,11 @@ serve(async (req) => {
     if (userError) {
       console.error('Error creating user:', userError);
       return new Response(
-        JSON.stringify({ error: userError.message }),
+        JSON.stringify({ 
+          error: userError.message === 'Database error creating new user' 
+            ? `Erro ao criar usuário: Email ${email} pode já estar em uso`
+            : userError.message 
+        }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -88,6 +116,9 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         user: userData.user,
+        email: email,
+        password: password,
+        success: true,
         message: 'Cliente criado com sucesso!'
       }),
       { 

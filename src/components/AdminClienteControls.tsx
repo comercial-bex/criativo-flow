@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { CredentialsModal } from "@/components/CredentialsModal";
 import { 
   Shield, 
   Key, 
@@ -52,6 +53,8 @@ export function AdminClienteControls({ clienteId, clienteData }: AdminClienteCon
   const [newPassword, setNewPassword] = useState("");
   const [newEmail, setNewEmail] = useState(clienteData.email || "");
   const [accountStatus, setAccountStatus] = useState(clienteData.status || "ativo");
+  const [showCredentials, setShowCredentials] = useState(false);
+  const [createdCredentials, setCreatedCredentials] = useState({ email: "", senha: "" });
 
   useEffect(() => {
     fetchAuthData();
@@ -166,7 +169,7 @@ export function AdminClienteControls({ clienteId, clienteData }: AdminClienteCon
 
     setLoading(true);
     try {
-      const tempPassword = Math.random().toString(36).slice(-8);
+      const tempPassword = Math.random().toString(36).slice(-8) + Math.floor(Math.random() * 100);
       
       const { data, error } = await supabase.functions.invoke('create-client-user', {
         body: {
@@ -178,12 +181,27 @@ export function AdminClienteControls({ clienteId, clienteData }: AdminClienteCon
         }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Create account error:', error);
+        throw error;
+      }
 
-      toast.success(`Conta criada! Senha temporária: ${tempPassword}`);
-      await fetchAuthData(); // Recarregar dados
+      if (data && data.success) {
+        // Set credentials for modal
+        setCreatedCredentials({
+          email: data.email,
+          senha: data.password
+        });
+        setShowCredentials(true);
+        
+        toast.success('Conta criada com sucesso!');
+        await fetchAuthData(); // Recarregar dados
+      } else {
+        throw new Error('Resposta inválida do servidor');
+      }
     } catch (error: any) {
-      toast.error('Erro ao criar conta: ' + error.message);
+      console.error('Error creating account:', error);
+      toast.error('Erro ao criar conta: ' + (error.message || 'Erro desconhecido'));
     } finally {
       setLoading(false);
     }
@@ -417,6 +435,15 @@ export function AdminClienteControls({ clienteId, clienteData }: AdminClienteCon
           </div>
         </CardContent>
       </Card>
+
+      {/* Modal de Credenciais */}
+      <CredentialsModal
+        open={showCredentials}
+        onOpenChange={setShowCredentials}
+        email={createdCredentials.email}
+        senha={createdCredentials.senha}
+        nomeCliente={clienteData.nome}
+      />
     </>
   );
 }
