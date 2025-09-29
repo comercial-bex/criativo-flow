@@ -14,6 +14,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { OnboardingForm } from '@/components/OnboardingForm';
 import { MobileClientCard } from '@/components/MobileClientCard';
+import { ClientCard } from '@/components/ClientCard';
+import { ClientViewModal } from '@/components/ClientViewModal';
+import { ClientTableView } from '@/components/ClientTableView';
+import { ClientLogoUpload } from '@/components/ClientLogoUpload';
 import { InteractiveGuideButton } from '@/components/InteractiveGuideButton';
 import { CnpjSearch } from '@/components/CnpjSearch';
 import type { CnpjData } from '@/hooks/useCnpjLookup';
@@ -30,7 +34,10 @@ import {
   MapPin,
   Calendar,
   Edit,
-  Trash2
+  Trash2,
+  Eye,
+  Grid3X3,
+  List
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { toast } from 'sonner';
@@ -72,6 +79,10 @@ const Clientes = () => {
   const [selectedCliente, setSelectedCliente] = useState<Cliente | null>(null);
   const [showCredentials, setShowCredentials] = useState(false);
   const [credentials, setCredentials] = useState({ email: '', senha: '', nomeCliente: '' });
+  const [viewMode, setViewMode] = useState<'card' | 'list'>(() => {
+    return (localStorage.getItem('clientsViewMode') as 'card' | 'list') || 'card';
+  });
+  const [showViewModal, setShowViewModal] = useState(false);
   const [formData, setFormData] = useState<FormData>({
     nome: "",
     razao_social: "",
@@ -94,7 +105,8 @@ const Clientes = () => {
     email_login: "",
     senha_temporaria: "",
     criar_conta: true,
-    status_conta: "ativo"
+    status_conta: "ativo",
+    logo_url: ""
   });
   const { toast: toastHook } = useToast();
 
@@ -220,9 +232,42 @@ const Clientes = () => {
       email_login: "",
       senha_temporaria: gerarSenha(),
       criar_conta: true,
-      status_conta: "ativo"
+      status_conta: "ativo",
+      logo_url: ""
     });
     setShowForm(false);
+  };
+
+  const toggleViewMode = () => {
+    const newMode = viewMode === 'card' ? 'list' : 'card';
+    setViewMode(newMode);
+    localStorage.setItem('clientsViewMode', newMode);
+  };
+
+  const handleViewCliente = (cliente: Cliente) => {
+    setSelectedCliente(cliente);
+    setShowViewModal(true);
+  };
+
+  const handleEditFromView = () => {
+    setShowViewModal(false);
+    if (selectedCliente) {
+      setFormData({
+        ...selectedCliente,
+        logradouro: "",
+        numero: "",
+        complemento: "",
+        bairro: "",
+        cidade: "",
+        uf: "",
+        cep: "",
+        email_login: selectedCliente.email || "",
+        senha_temporaria: gerarSenha(),
+        criar_conta: false,
+        status_conta: "ativo"
+      });
+      setShowForm(true);
+    }
   };
 
   const handleDelete = async (id: string) => {
@@ -340,6 +385,19 @@ const Clientes = () => {
               <SelectItem value="projetos">Mais Projetos</SelectItem>
             </SelectContent>
           </Select>
+          <Button variant="outline" onClick={toggleViewMode} className={isMobile ? 'h-12' : ''}>
+            {viewMode === 'card' ? (
+              <>
+                <List className="h-4 w-4 mr-2" />
+                Lista
+              </>
+            ) : (
+              <>
+                <Grid3X3 className="h-4 w-4 mr-2" />
+                Cartões
+              </>
+            )}
+          </Button>
           <Button variant="outline" className={isMobile ? 'h-12' : ''}>
             <Filter className="h-4 w-4 mr-2" />
             Filtros
@@ -444,6 +502,17 @@ const Clientes = () => {
                   />
                 </div>
               </div>
+            </div>
+
+            {/* Logo da Empresa */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-foreground border-b pb-2">Logo da Empresa</h3>
+              <ClientLogoUpload
+                currentLogo={formData.logo_url}
+                clientName={formData.nome || "Novo Cliente"}
+                onLogoChange={(logoUrl) => setFormData({ ...formData, logo_url: logoUrl || "" })}
+                size="lg"
+              />
             </div>
 
             {/* Contato */}
@@ -703,115 +772,51 @@ const Clientes = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Grid de Clientes - Responsive */}
-      <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'}`}>
-        {filteredClientes.map((cliente) => (
-          isMobile ? (
-            <MobileClientCard
-              key={cliente.id}
-              cliente={cliente}
-              onEdit={() => navigate(`/clientes/${cliente.id}/editar`)}
-              onDelete={() => handleDelete(cliente.id)}
-              onOnboarding={() => handleOnboarding(cliente)}
-              getStatusColor={getStatusColor}
-              getStatusText={getStatusText}
-              getAssinaturaNome={getAssinaturaNome}
-              clienteTemAssinatura={clienteTemAssinatura}
-            />
-          ) : (
-            <Card key={cliente.id} className="hover:shadow-lg transition-all duration-300">
-              <CardHeader className="pb-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <Avatar className="h-12 w-12">
-                      <AvatarFallback className="bg-primary/10 text-primary font-semibold">
-                        {cliente.nome.split(' ').map(n => n[0]).join('')}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <CardTitle className="text-lg">{cliente.nome}</CardTitle>
-                      <p className="text-sm text-muted-foreground">{getAssinaturaNome(cliente.assinatura_id)}</p>
-                    </div>
-                  </div>
-                  <Badge className={getStatusColor(cliente.status)}>
-                    {getStatusText(cliente.status)}
-                  </Badge>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  {cliente.email && (
-                    <div className="flex items-center text-sm text-muted-foreground">
-                      <Mail className="h-4 w-4 mr-2" />
-                      {cliente.email}
-                    </div>
-                  )}
-                  {cliente.telefone && (
-                    <div className="flex items-center text-sm text-muted-foreground">
-                      <Phone className="h-4 w-4 mr-2" />
-                      {cliente.telefone}
-                    </div>
-                  )}
-                  {!cliente.email && !cliente.telefone && (
-                    <div className="text-sm text-muted-foreground italic">
-                      📊 Dados pessoais protegidos - acesso limitado
-                    </div>
-                  )}
-                  {cliente.endereco && (
-                    <div className="flex items-center text-sm text-muted-foreground">
-                      <MapPin className="h-4 w-4 mr-2" />
-                      {cliente.endereco}
-                    </div>
-                  )}
-                </div>
-
-                <div className="flex space-x-2 pt-2">
-                  <Button
-                    variant={clienteTemAssinatura(cliente) ? "default" : "secondary"}
-                    size="sm"
-                    onClick={() => handleOnboarding(cliente)}
-                    disabled={!clienteTemAssinatura(cliente)}
-                    title={!clienteTemAssinatura(cliente) ? 'Cliente precisa ter uma assinatura para acessar o onboarding' : ''}
-                  >
-                    <Users className="h-4 w-4 mr-1" />
-                    {clienteTemAssinatura(cliente) ? "Onboarding" : "Sem Plano"}
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={() => navigate(`/clientes/${cliente.id}/editar`)}
-                  >
-                    <Edit className="h-4 w-4 mr-1" />
-                    Editar
-                  </Button>
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button variant="outline" size="sm">
-                        <Trash2 className="h-4 w-4 mr-1" />
-                        Excluir
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          Tem certeza que deseja excluir o cliente {cliente.nome}? Esta ação não pode ser desfeita.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                        <AlertDialogAction onClick={() => handleDelete(cliente.id)}>
-                          Excluir
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                </div>
-              </CardContent>
-            </Card>
-          )
-        ))}
-      </div>
+      {/* Grid de Clientes ou Lista - Responsive */}
+      {viewMode === 'list' ? (
+        <ClientTableView
+          clientes={filteredClientes}
+          onEdit={(cliente) => navigate(`/clientes/${cliente.id}/editar`)}
+          onDelete={(cliente) => handleDelete(cliente.id)}
+          onView={handleViewCliente}
+          onOnboarding={handleOnboarding}
+          getStatusColor={getStatusColor}
+          getStatusText={getStatusText}
+          getAssinaturaNome={getAssinaturaNome}
+          clienteTemAssinatura={clienteTemAssinatura}
+        />
+      ) : (
+        <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'}`}>
+          {filteredClientes.map((cliente) => (
+            isMobile ? (
+              <MobileClientCard
+                key={cliente.id}
+                cliente={cliente}
+                onEdit={() => navigate(`/clientes/${cliente.id}/editar`)}
+                onDelete={() => handleDelete(cliente.id)}
+                onOnboarding={() => handleOnboarding(cliente)}
+                getStatusColor={getStatusColor}
+                getStatusText={getStatusText}
+                getAssinaturaNome={getAssinaturaNome}
+                clienteTemAssinatura={clienteTemAssinatura}
+              />
+            ) : (
+              <ClientCard
+                key={cliente.id}
+                cliente={cliente}
+                onEdit={() => navigate(`/clientes/${cliente.id}/editar`)}
+                onDelete={() => handleDelete(cliente.id)}
+                onView={() => handleViewCliente(cliente)}
+                onOnboarding={() => handleOnboarding(cliente)}
+                getStatusColor={getStatusColor}
+                getStatusText={getStatusText}
+                getAssinaturaNome={getAssinaturaNome}
+                clienteTemAssinatura={clienteTemAssinatura}
+              />
+            )
+          ))}
+        </div>
+      )}
 
       {filteredClientes.length === 0 && clientes.length === 0 && (
         <Card>
@@ -828,6 +833,27 @@ const Clientes = () => {
           </CardContent>
         </Card>
       )}
+
+      {/* Modal de Visualização */}
+      <ClientViewModal
+        isOpen={showViewModal}
+        onClose={() => {
+          setShowViewModal(false);
+          setSelectedCliente(null);
+        }}
+        cliente={selectedCliente}
+        onEdit={handleEditFromView}
+        onOnboarding={() => {
+          setShowViewModal(false);
+          if (selectedCliente) {
+            handleOnboarding(selectedCliente);
+          }
+        }}
+        getStatusColor={getStatusColor}
+        getStatusText={getStatusText}
+        getAssinaturaNome={getAssinaturaNome}
+        clienteTemAssinatura={clienteTemAssinatura}
+      />
 
       {/* Modal de Credenciais */}
       <CredentialsModal

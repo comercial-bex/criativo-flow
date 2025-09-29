@@ -510,6 +510,7 @@ export type Database = {
           email: string | null
           endereco: string | null
           id: string
+          logo_url: string | null
           nome: string
           nome_fantasia: string | null
           razao_social: string | null
@@ -529,6 +530,7 @@ export type Database = {
           email?: string | null
           endereco?: string | null
           id?: string
+          logo_url?: string | null
           nome: string
           nome_fantasia?: string | null
           razao_social?: string | null
@@ -548,6 +550,7 @@ export type Database = {
           email?: string | null
           endereco?: string | null
           id?: string
+          logo_url?: string | null
           nome?: string
           nome_fantasia?: string | null
           razao_social?: string | null

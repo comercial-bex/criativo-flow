@@ -14,6 +14,8 @@ export interface Cliente {
   assinatura_id?: string;
   created_at?: string;
   updated_at?: string;
+  // Logo da empresa
+  logo_url?: string | null;
   // Novos campos CNPJ
   razao_social?: string | null;
   nome_fantasia?: string | null;
