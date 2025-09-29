@@ -267,51 +267,6 @@ export default function Auth() {
           </CardContent>
         </Card>
 
-        {/* Credenciais de Teste */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg font-semibold">Usuários de Teste</CardTitle>
-            <CardDescription>Use estas credenciais para acessar diferentes áreas do sistema</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-3">
-                <div className="p-3 border rounded-lg bg-muted/50">
-                  <p className="font-medium text-sm">Atendimento</p>
-                  <p className="text-xs text-muted-foreground">atendimento@teste.com</p>
-                  <p className="text-xs text-muted-foreground">Senha: 123456</p>
-                </div>
-                <div className="p-3 border rounded-lg bg-muted/50">
-                  <p className="font-medium text-sm">Tráfego</p>
-                  <p className="text-xs text-muted-foreground">trafego@teste.com</p>
-                  <p className="text-xs text-muted-foreground">Senha: 123456</p>
-                </div>
-                <div className="p-3 border rounded-lg bg-muted/50">
-                  <p className="font-medium text-sm">Financeiro</p>
-                  <p className="text-xs text-muted-foreground">financeiro@teste.com</p>
-                  <p className="text-xs text-muted-foreground">Senha: 123456</p>
-                </div>
-              </div>
-              <div className="space-y-3">
-                <div className="p-3 border rounded-lg bg-yellow-50 border-yellow-200">
-                  <p className="font-medium text-sm text-yellow-800">Agência Bex</p>
-                  <p className="text-xs text-yellow-700">comercial@agenciabex.com.br</p>
-                  <p className="text-xs text-yellow-700">Senha: TempPass2024!</p>
-                </div>
-                <div className="p-3 border rounded-lg bg-muted/50">
-                  <p className="font-medium text-sm">Fornecedor</p>
-                  <p className="text-xs text-muted-foreground">fornecedor@teste.com</p>
-                  <p className="text-xs text-muted-foreground">Senha: 123456</p>
-                </div>
-                <div className="p-3 border rounded-lg bg-muted/50">
-                  <p className="font-medium text-sm">Gestor</p>
-                  <p className="text-xs text-muted-foreground">gestor@teste.com</p>
-                  <p className="text-xs text-muted-foreground">Senha: 123456</p>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
 
         {/* Componente de Teste */}
         <TestClientUserCreation />
