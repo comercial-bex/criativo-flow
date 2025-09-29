@@ -259,7 +259,7 @@ export function AppSidebar() {
 
   // GRS specific items with hierarchical structure
   const grsItems = [
-    { title: "Dashboard", url: "/grs/dashboard", icon: BarChart3, type: "main" },
+    { title: "Dashboard", url: "/grs", icon: BarChart3, type: "main" },
     { title: "Planejamentos", url: "/grs/planejamentos", icon: FileText, type: "main", submenu: [
       { title: "Por Cliente", url: "/grs/planejamentos?view=cliente", icon: Users },
       { title: "Por Período", url: "/grs/planejamentos?view=periodo", icon: Calendar },
