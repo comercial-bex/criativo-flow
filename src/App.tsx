@@ -37,8 +37,8 @@ import GRSPlanejamentoDetalhes from "./pages/GRS/PlanejamentoDetalhes";
 import GRSPlanejamentoEstrategico from "./pages/GRS/PlanejamentoEstrategico";
 import GRSCalendarioEditorial from "./pages/GRS/CalendarioEditorial";
 import GRSAprovacoes from "./pages/GRS/Aprovacoes";
-import GRSClienteProjetos from "./pages/GRS/ClienteProjetos";
-import GRSProjetoTarefas from "./pages/GRS/ProjetoTarefas";
+import GRSClienteProjetos from "./pages/GRS/ClienteProjetosFluxo";
+import GRSProjetoTarefas from "./pages/GRS/ProjetoTarefasKanban";
 import AtendimentoInbox from "./pages/Atendimento/Inbox";
 import AtendimentoDashboard from "./pages/Atendimento/Dashboard";
 import TrafegoDashboard from "./pages/Trafego/Dashboard";
@@ -408,18 +408,22 @@ function App() {
                   </ProtectedRoute>
                 } />
                 
-                {/* Atendimento routes */}
-                <Route path="/atendimento/dashboard" element={
-                  <ProtectedRoute requiredRole="atendimento">
-                    <Layout><AtendimentoDashboard /></Layout>
-                  </ProtectedRoute>
-                } />
-                
-                <Route path="/atendimento/inbox" element={
-                  <ProtectedRoute requiredRole="atendimento">
+                {/* GRS integrated routes (formerly Atendimento) */}
+                <Route path="/grs/inbox" element={
+                  <ProtectedRoute requiredRole="grs">
                     <Layout><AtendimentoInbox /></Layout>
                   </ProtectedRoute>
                 } />
+                
+                <Route path="/grs/tarefas" element={
+                  <ProtectedRoute requiredRole="grs">
+                    <Layout><div>Minhas Tarefas GRS</div></Layout>
+                  </ProtectedRoute>
+                } />
+
+                {/* Legacy redirects */}
+                <Route path="/atendimento/inbox" element={<Navigate to="/grs/inbox" replace />} />
+                <Route path="/atendimento/dashboard" element={<Navigate to="/grs/dashboard" replace />} />
 
                 {/* Trafego routes */}
                 <Route path="/trafego/dashboard" element={

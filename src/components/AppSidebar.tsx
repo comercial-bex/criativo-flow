@@ -140,18 +140,6 @@ const modules = [
     permissions: ["crm", "clientes", "especialistas"]
   },
   {
-    id: "atendimento",
-    title: "Atendimento",
-    icon: HeadphonesIcon,
-    items: [
-      { title: "Atendimentos", url: "/atendimento/inbox", icon: Inbox },
-      { title: "Minhas Tarefas", url: "/atendimento/tarefas", icon: ClipboardCheck },
-      { title: "Mensagens", url: "/atendimento/mensagens", icon: FileText },
-    ],
-    permissions: ["atendimento"],
-    roles: ["atendimento", "admin"]
-  },
-  {
     id: "financeiro",
     title: "Financeiro",
     icon: DollarSign,
@@ -209,6 +197,8 @@ const modules = [
       { title: "Planejamentos", url: "/grs/planejamentos", icon: Calendar },
       { title: "Calendário Editorial", url: "/grs/calendario-editorial", icon: CalendarDays },
       { title: "Aprovações", url: "/grs/aprovacoes", icon: CheckCircle },
+      { title: "Inbox de Revisões", url: "/grs/inbox", icon: Inbox },
+      { title: "Minhas Tarefas", url: "/grs/tarefas", icon: ClipboardCheck },
       { title: "Relatórios", url: "/grs/relatorios", icon: TrendingUp },
     ],
     permissions: ["grs"]
@@ -274,7 +264,7 @@ export function AppSidebar() {
       case 'designer':
         return modules.filter(m => m.id === 'design');
       case 'atendimento':
-        return modules.filter(m => ['dashboard', 'crm', 'atendimento'].includes(m.id));
+        return modules.filter(m => ['dashboard', 'crm', 'grs'].includes(m.id));
       case 'filmmaker':
         return modules.filter(m => m.id === 'audiovisual');
       case 'financeiro':
@@ -305,6 +295,8 @@ export function AppSidebar() {
     { title: "Planejamentos", url: "/grs/planejamentos", icon: FileText },
     { title: "Calendário Editorial", url: "/grs/calendario-editorial", icon: CalendarDays },
     { title: "Aprovações", url: "/grs/aprovacoes", icon: ClipboardCheck },
+    { title: "Inbox de Revisões", url: "/grs/inbox", icon: Inbox },
+    { title: "Minhas Tarefas", url: "/grs/tarefas", icon: ClipboardCheck },
     { title: "Relatórios", url: "/grs/relatorios", icon: TrendingUp }
   ];
 
