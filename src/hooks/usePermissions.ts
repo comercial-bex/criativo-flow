@@ -22,6 +22,7 @@ export interface ModulePermissions {
   planos: PermissionActions;
   especialistas: PermissionActions;
   relatorios: PermissionActions;
+  inteligencia: PermissionActions;
 }
 
 interface RolePermission {
@@ -50,6 +51,7 @@ const ROLE_PERMISSIONS: Record<NonNullable<UserRole>, Partial<ModulePermissions>
     planos: { canView: true, canCreate: true, canEdit: true, canDelete: true },
     especialistas: { canView: true, canCreate: true, canEdit: true, canDelete: true },
     relatorios: { canView: true, canCreate: true, canEdit: true, canDelete: true },
+    inteligencia: { canView: true, canCreate: true, canEdit: true, canDelete: true },
   },
   grs: {
     dashboard: { canView: true, canCreate: false, canEdit: false, canDelete: false },
@@ -84,6 +86,7 @@ const ROLE_PERMISSIONS: Record<NonNullable<UserRole>, Partial<ModulePermissions>
     design: { canView: true, canCreate: false, canEdit: false, canDelete: false },
     relatorios: { canView: true, canCreate: false, canEdit: false, canDelete: false },
     especialistas: { canView: true, canCreate: true, canEdit: true, canDelete: false },
+    inteligencia: { canView: true, canCreate: false, canEdit: false, canDelete: false },
   },
   financeiro: {
     dashboard: { canView: true, canCreate: false, canEdit: false, canDelete: false },

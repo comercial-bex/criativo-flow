@@ -76,6 +76,7 @@ import GamificacaoAdmin from "./pages/GamificacaoAdmin";
 
 import AprovacaoJob from "./pages/AprovacaoJob";
 import AdminPainel from "./pages/Admin/Painel";
+import IntelligenceDashboard from "./components/IntelligenceDashboard";
 
 const queryClient = new QueryClient();
 
@@ -193,6 +194,12 @@ function App() {
                 <Route path="/gamificacao/admin" element={
                   <ProtectedRoute requiredRole="admin">
                     <Layout><GamificacaoAdmin /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/inteligencia" element={
+                  <ProtectedRoute module="inteligencia">
+                    <Layout><IntelligenceDashboard /></Layout>
                   </ProtectedRoute>
                 } />
                 

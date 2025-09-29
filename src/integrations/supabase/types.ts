@@ -616,6 +616,45 @@ export type Database = {
         }
         Relationships: []
       }
+      connector_status: {
+        Row: {
+          calls_this_hour: number | null
+          calls_today: number | null
+          connector_name: string
+          created_at: string | null
+          last_error_at: string | null
+          last_error_message: string | null
+          last_success_at: string | null
+          next_run_at: string | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          calls_this_hour?: number | null
+          calls_today?: number | null
+          connector_name: string
+          created_at?: string | null
+          last_error_at?: string | null
+          last_error_message?: string | null
+          last_success_at?: string | null
+          next_run_at?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          calls_this_hour?: number | null
+          calls_today?: number | null
+          connector_name?: string
+          created_at?: string | null
+          last_error_at?: string | null
+          last_error_message?: string | null
+          last_success_at?: string | null
+          next_run_at?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       conteudo_editorial: {
         Row: {
           conteudo_gerado: string | null
@@ -1128,6 +1167,166 @@ export type Database = {
           setor?: Database["public"]["Enums"]["especialidade_gamificacao"]
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      intelligence_alerts: {
+        Row: {
+          alert_type: string
+          cliente_id: string | null
+          conditions: Json
+          created_at: string | null
+          created_by: string | null
+          id: string
+          is_active: boolean | null
+          last_triggered_at: string | null
+          name: string
+          severity: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          alert_type: string
+          cliente_id?: string | null
+          conditions: Json
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_triggered_at?: string | null
+          name: string
+          severity?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          alert_type?: string
+          cliente_id?: string | null
+          conditions?: Json
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_triggered_at?: string | null
+          name?: string
+          severity?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "intelligence_alerts_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      intelligence_data: {
+        Row: {
+          content: string | null
+          data_type: string
+          external_id: string | null
+          id: string
+          keywords: string[] | null
+          metric_type: string | null
+          metric_value: number | null
+          published_at: string | null
+          raw_payload: Json | null
+          region: string | null
+          retrieved_at: string | null
+          source_id: string | null
+          title: string | null
+          url: string | null
+        }
+        Insert: {
+          content?: string | null
+          data_type: string
+          external_id?: string | null
+          id?: string
+          keywords?: string[] | null
+          metric_type?: string | null
+          metric_value?: number | null
+          published_at?: string | null
+          raw_payload?: Json | null
+          region?: string | null
+          retrieved_at?: string | null
+          source_id?: string | null
+          title?: string | null
+          url?: string | null
+        }
+        Update: {
+          content?: string | null
+          data_type?: string
+          external_id?: string | null
+          id?: string
+          keywords?: string[] | null
+          metric_type?: string | null
+          metric_value?: number | null
+          published_at?: string | null
+          raw_payload?: Json | null
+          region?: string | null
+          retrieved_at?: string | null
+          source_id?: string | null
+          title?: string | null
+          url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "intelligence_data_source_id_fkey"
+            columns: ["source_id"]
+            isOneToOne: false
+            referencedRelation: "intelligence_sources"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      intelligence_sources: {
+        Row: {
+          auth_key_env: string | null
+          created_at: string | null
+          endpoint_url: string
+          headers: Json | null
+          id: string
+          is_active: boolean | null
+          method: string | null
+          name: string
+          params: Json | null
+          rate_limit_per_hour: number | null
+          requires_auth: boolean | null
+          ttl_minutes: number | null
+          type: string
+          updated_at: string | null
+        }
+        Insert: {
+          auth_key_env?: string | null
+          created_at?: string | null
+          endpoint_url: string
+          headers?: Json | null
+          id?: string
+          is_active?: boolean | null
+          method?: string | null
+          name: string
+          params?: Json | null
+          rate_limit_per_hour?: number | null
+          requires_auth?: boolean | null
+          ttl_minutes?: number | null
+          type: string
+          updated_at?: string | null
+        }
+        Update: {
+          auth_key_env?: string | null
+          created_at?: string | null
+          endpoint_url?: string
+          headers?: Json | null
+          id?: string
+          is_active?: boolean | null
+          method?: string | null
+          name?: string
+          params?: Json | null
+          rate_limit_per_hour?: number | null
+          requires_auth?: boolean | null
+          ttl_minutes?: number | null
+          type?: string
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -2348,6 +2547,16 @@ export type Database = {
         }
         Returns: Json
       }
+      create_intelligence_alert: {
+        Args: {
+          p_cliente_id: string
+          p_message: string
+          p_severity?: string
+          p_source_reference?: Json
+          p_title: string
+        }
+        Returns: string
+      }
       generate_content_with_ai_v2: {
         Args: { content_type?: string; prompt_text: string }
         Returns: {
@@ -2410,6 +2619,14 @@ export type Database = {
       rejeitar_especialista: {
         Args: { especialista_id: string; observacao?: string }
         Returns: boolean
+      }
+      update_connector_status: {
+        Args: {
+          p_connector_name: string
+          p_error_message?: string
+          p_success: boolean
+        }
+        Returns: undefined
       }
       validate_user_for_login: {
         Args: { p_email: string }

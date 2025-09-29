@@ -35,7 +35,8 @@ import {
   ChevronDown,
   ChevronRight,
   Shield,
-  Activity
+  Activity,
+  Brain
 } from "lucide-react"
 import { NavLink, useLocation } from "react-router-dom"
 import React from "react"
@@ -213,6 +214,15 @@ const modules = [
     permissions: ["grs"]
   },
   {
+    id: "inteligencia",
+    title: "Inteligência",
+    icon: Brain,
+    items: [
+      { title: "Hub de Inteligência", url: "/inteligencia", icon: Brain },
+    ],
+    permissions: ["inteligencia"]
+  },
+  {
     id: "admin",
     title: "Admin",
     icon: Shield,
@@ -270,7 +280,7 @@ export function AppSidebar() {
       case 'financeiro':
         return modules.filter(m => ['dashboard', 'financeiro', 'administrativo'].includes(m.id));
       case 'gestor':
-        return modules.filter(m => ['dashboard', 'crm', 'configuracoes'].includes(m.id));
+        return modules.filter(m => ['dashboard', 'crm', 'configuracoes', 'inteligencia'].includes(m.id));
       case 'cliente':
         return []; // Clientes have separate navigation
       case 'trafego':
