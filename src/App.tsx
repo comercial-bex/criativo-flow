@@ -47,6 +47,8 @@ import FornecedorDashboard from "./pages/Fornecedor/Dashboard";
 import GestorDashboard from "./pages/Gestor/Dashboard";
 import MinhasTarefas from "./pages/MinhasTarefas";
 import TarefasUnificadasGRS from "./pages/GRS/TarefasUnificadas";
+import TarefasUnificadasDesign from "./pages/Design/TarefasUnificadas";
+import TarefasUnificadasAudiovisual from "./pages/Audiovisual/TarefasUnificadas";
 
 // Client pages
 import ClientePainel from "./pages/Cliente/Painel";
@@ -320,6 +322,12 @@ function App() {
                   </ProtectedRoute>
                 } />
                 
+                <Route path="/audiovisual/tarefas" element={
+                  <ProtectedRoute module="audiovisual">
+                    <Layout><TarefasUnificadasAudiovisual /></Layout>
+                  </ProtectedRoute>
+                } />
+                
                 <Route path="/audiovisual/projetos" element={
                   <ProtectedRoute module="audiovisual">
                     <Layout><AudiovisualProjetos /></Layout>
@@ -342,6 +350,12 @@ function App() {
                 <Route path="/design/dashboard" element={
                   <ProtectedRoute module="design">
                     <Layout><DesignDashboard /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/design/tarefas" element={
+                  <ProtectedRoute module="design">
+                    <Layout><TarefasUnificadasDesign /></Layout>
                   </ProtectedRoute>
                 } />
                 

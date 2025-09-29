@@ -8,6 +8,7 @@ import {
   CreditCard,
   UserCheck,
   Calendar,
+  CheckSquare,
   BarChart3,
   ClipboardCheck,
   Calculator,
@@ -168,6 +169,7 @@ const modules = [
     icon: Palette,
     items: [
       { title: "Dashboard Design", url: "/design/dashboard", icon: Palette },
+      { title: "Minhas Tarefas", url: "/design/tarefas", icon: CheckSquare },
       { title: "Kanban", url: "/design/kanban", icon: ClipboardCheck },
       { title: "Calendário", url: "/design/calendario", icon: Calendar },
       { title: "Biblioteca", url: "/design/biblioteca", icon: FolderOpen },
@@ -182,6 +184,7 @@ const modules = [
     icon: Video,
     items: [
       { title: "Dashboard AV", url: "/audiovisual/dashboard", icon: Video },
+      { title: "Minhas Tarefas", url: "/audiovisual/tarefas", icon: CheckSquare },
       { title: "Captações", url: "/audiovisual/captacoes", icon: Camera },
       { title: "Projetos AV", url: "/audiovisual/projetos", icon: Film },
       { title: "Equipamentos", url: "/audiovisual/equipamentos", icon: Settings },
