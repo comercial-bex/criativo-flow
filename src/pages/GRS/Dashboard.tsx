@@ -10,52 +10,50 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, Users, Clock, AlertCircle, TrendingUp, BarChart3, Plus, Send, Info, FileText, CheckCircle } from "lucide-react";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Calendar, Users, Clock, AlertCircle, TrendingUp, BarChart3, Plus, Send, Info, FileText, CheckCircle, Eye } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { GamificationWidget } from "@/components/GamificationWidget";
-import { ClientSelector } from "@/components/ClientSelector";
-import { SocialDashboardWidget } from "@/components/SocialDashboardWidget";
 import { CalendarWidget } from "@/components/CalendarWidget";
 import { InteractiveGuideButton } from "@/components/InteractiveGuideButton";
 import { SimpleHelpModal } from "@/components/SimpleHelpModal";
-import { ProjetoManager } from "@/components/ProjetoManager";
 import { TarefasPorSetor } from "@/components/TarefasPorSetor";
 
 interface Cliente {
   id: string;
   nome: string;
+  email: string;
   status: string;
 }
 
-interface Planejamento {
-  id: string;
-  titulo: string;
-  status: string;
-  mes_referencia: string;
-  clientes: Cliente;
+interface ClienteComProjetos extends Cliente {
+  totalProjetos: number;
+  projetosAtivos: number;
+  projetosConcluidos: number;
+  projetosPendentes: number;
+  projetosPausados: number;
 }
 
-interface DashboardStats {
-  total: number;
-  em_aprovacao: number;
-  reprovados: number;
-  prazos_semana: number;
+interface DashboardMetrics {
+  clientesAtivos: number;
+  totalProjetos: number;
+  projetosAtivos: number;
+  projetosConcluidos: number;
 }
 
 export default function GRSDashboard() {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [stats, setStats] = useState<DashboardStats>({
-    total: 0,
-    em_aprovacao: 0,
-    reprovados: 0,
-    prazos_semana: 0
+  const [metrics, setMetrics] = useState<DashboardMetrics>({
+    clientesAtivos: 0,
+    totalProjetos: 0,
+    projetosAtivos: 0,
+    projetosConcluidos: 0
   });
-  const [clientesAtivos, setClientesAtivos] = useState<any[]>([]);
+  const [clientesComProjetos, setClientesComProjetos] = useState<ClienteComProjetos[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
 
   // Form state for new planning
   const [formData, setFormData] = useState({
@@ -67,66 +65,76 @@ export default function GRSDashboard() {
   const [clientes, setClientes] = useState<Cliente[]>([]);
 
   useEffect(() => {
-    fetchDashboardData();
-    fetchClientes();
+    fetchClientesEProjetos();
   }, []);
 
-  const fetchDashboardData = async () => {
+  const fetchClientesEProjetos = async () => {
     try {
-      // Fetch planejamentos with client data
-      const { data: planejamentos, error } = await supabase
+      // Fetch clientes ativos
+      const { data: clientes, error: clientesError } = await supabase
+        .from('clientes')
+        .select('id, nome, email, status')
+        .eq('status', 'ativo')
+        .order('nome');
+
+      if (clientesError) throw clientesError;
+
+      // Fetch projetos
+      const { data: projetos, error: projetosError } = await supabase
+        .from('projetos')
+        .select('id, cliente_id, status');
+
+      if (projetosError) throw projetosError;
+
+      // Fetch planejamentos
+      const { data: planejamentos, error: planejamentosError } = await supabase
         .from('planejamentos')
-        .select(`
-          id,
-          titulo,
-          status,
-          mes_referencia,
-          clientes (
-            id,
-            nome,
-            status
-          )
-        `)
-        .order('created_at', { ascending: false });
+        .select('id, cliente_id, status');
 
-      if (error) throw error;
+      if (planejamentosError) throw planejamentosError;
 
-      // Calculate stats
-      const totalPlanejamentos = planejamentos?.length || 0;
-      const emAprovacao = planejamentos?.filter(p => p.status === 'em_aprovacao_final' || p.status === 'em_revisao').length || 0;
-      const reprovados = planejamentos?.filter(p => p.status === 'reprovado').length || 0;
-      
-      // Get current week's deadlines (mock for now)
-      const prazosEstaSemana = Math.floor(totalPlanejamentos * 0.3);
+      // Calculate metrics per client
+      const clientesComStats = clientes?.map(cliente => {
+        const projetosCliente = projetos?.filter(p => p.cliente_id === cliente.id) || [];
+        const planejamentosCliente = planejamentos?.filter(p => p.cliente_id === cliente.id) || [];
+        
+        const todosProjetos = [...projetosCliente, ...planejamentosCliente];
+        
+        return {
+          ...cliente,
+          totalProjetos: todosProjetos.length,
+          projetosAtivos: todosProjetos.filter(p => 
+            ['em_andamento', 'em_producao', 'iniciado'].includes(p.status)
+          ).length,
+          projetosConcluidos: todosProjetos.filter(p => 
+            ['concluido', 'finalizado', 'entregue'].includes(p.status)
+          ).length,
+          projetosPendentes: todosProjetos.filter(p => 
+            ['pendente', 'aguardando', 'em_aprovacao_final'].includes(p.status)
+          ).length,
+          projetosPausados: todosProjetos.filter(p => 
+            ['pausado', 'suspenso'].includes(p.status)
+          ).length,
+        };
+      }) || [];
 
-      setStats({
-        total: totalPlanejamentos,
-        em_aprovacao: emAprovacao,
-        reprovados: reprovados,
-        prazos_semana: prazosEstaSemana
+      setClientesComProjetos(clientesComStats);
+
+      // Calculate global metrics
+      const totalClientesAtivos = clientesComStats.length;
+      const totalProjetos = clientesComStats.reduce((acc, c) => acc + c.totalProjetos, 0);
+      const totalAtivos = clientesComStats.reduce((acc, c) => acc + c.projetosAtivos, 0);
+      const totalConcluidos = clientesComStats.reduce((acc, c) => acc + c.projetosConcluidos, 0);
+
+      setMetrics({
+        clientesAtivos: totalClientesAtivos,
+        totalProjetos: totalProjetos,
+        projetosAtivos: totalAtivos,
+        projetosConcluidos: totalConcluidos
       });
 
-      // Group by clients and get latest planning for each
-      const clientesMap = new Map();
-      planejamentos?.forEach(plan => {
-        if (plan.clientes && plan.clientes.status === 'ativo') {
-          const clienteId = plan.clientes.id;
-          if (!clientesMap.has(clienteId) || 
-              new Date(plan.mes_referencia) > new Date(clientesMap.get(clienteId).mes_referencia)) {
-            clientesMap.set(clienteId, {
-              id: clienteId,
-              nome: plan.clientes.nome,
-              planejamentoId: plan.id,
-              status: plan.status,
-              proximoMarco: getProximoMarco(plan.status)
-            });
-          }
-        }
-      });
-
-      setClientesAtivos(Array.from(clientesMap.values()).slice(0, 6));
     } catch (error) {
-      console.error('Erro ao carregar dados do dashboard:', error);
+      console.error('Erro ao carregar dados:', error);
       toast({
         title: "Erro ao carregar dados",
         description: "Não foi possível carregar os dados do dashboard",
@@ -141,7 +149,7 @@ export default function GRSDashboard() {
     try {
       const { data, error } = await supabase
         .from('clientes')
-        .select('id, nome, status')
+        .select('id, nome, email, status')
         .eq('status', 'ativo')
         .order('nome');
 
@@ -152,67 +160,51 @@ export default function GRSDashboard() {
     }
   };
 
-  const getProximoMarco = (status: string) => {
-    switch (status) {
-      case 'rascunho': return 'Finalizar planejamento';
-      case 'em_producao': return 'Aguardando aprovação';
-      case 'em_aprovacao_final': return 'Aprovação do cliente';
-      case 'reprovado': return 'Corrigir e reenviar';
-      case 'finalizado': return 'Executar plano';
-      default: return 'Verificar status';
-    }
-  };
-
-  const summaryData = [
+  const metricsData = [
     {
-      title: "Planejamentos do Mês",
-      value: stats.total.toString(),
-      icon: Calendar,
-      change: "+2 desde ontem",
+      title: "Clientes Ativos",
+      value: metrics.clientesAtivos.toString(),
+      icon: Users,
+      change: "Clientes em operação",
       color: "text-blue-600"
     },
     {
-      title: "Em Aprovação do Cliente",
-      value: stats.em_aprovacao.toString(),
+      title: "Total Projetos",
+      value: metrics.totalProjetos.toString(),
+      icon: FileText,
+      change: "Projetos + Planejamentos",
+      color: "text-green-600"
+    },
+    {
+      title: "Projetos Ativos",
+      value: metrics.projetosAtivos.toString(),
       icon: Clock,
-      change: "Aguardando feedback",
+      change: "Em andamento",
       color: "text-orange-500"
     },
     {
-      title: "Reprovados com Pendência",
-      value: stats.reprovados.toString(),
-      icon: AlertCircle,
-      change: "Requer atenção",
-      color: "text-red-500"
-    },
-    {
-      title: "Prazos Esta Semana",
-      value: stats.prazos_semana.toString(),
-      icon: TrendingUp,
-      change: "6 entregas importantes",
-      color: "text-green-600"
+      title: "Projetos Concluídos",
+      value: metrics.projetosConcluidos.toString(),
+      icon: CheckCircle,
+      change: "Finalizados com sucesso",
+      color: "text-emerald-600"
     }
   ];
 
   const getStatusVariant = (status: string) => {
     switch (status) {
-      case 'finalizado': return 'default';
-      case 'em_aprovacao_final': 
-      case 'em_revisao': return 'secondary';
-      case 'reprovado': return 'destructive';
-      case 'em_producao': return 'outline';
+      case 'ativo': return 'default';
+      case 'inativo': return 'secondary';
+      case 'suspenso': return 'destructive';
       default: return 'secondary';
     }
   };
 
   const getStatusText = (status: string) => {
     switch (status) {
-      case 'finalizado': return 'Finalizado';
-      case 'em_aprovacao_final': return 'Em Aprovação';
-      case 'em_revisao': return 'Em Revisão';
-      case 'reprovado': return 'Reprovado';
-      case 'em_producao': return 'Em Produção';
-      case 'rascunho': return 'Rascunho';
+      case 'ativo': return 'Ativo';
+      case 'inativo': return 'Inativo';
+      case 'suspenso': return 'Suspenso';
       default: return status;
     }
   };
@@ -247,7 +239,7 @@ export default function GRSDashboard() {
       });
       
       // Refresh data
-      fetchDashboardData();
+      fetchClientesEProjetos();
     } catch (error) {
       console.error('Erro ao criar planejamento:', error);
       toast({
@@ -258,28 +250,24 @@ export default function GRSDashboard() {
     }
   };
 
-  const handleEntrarNoPlan = (cliente: any) => {
-    if (cliente.planejamentoId) {
-      navigate(`/grs/planejamento/${cliente.planejamentoId}`);
-    } else {
-      navigate(`/grs/planejamentos`);
-    }
+  const handleVisualizarCliente = (clienteId: string) => {
+    navigate(`/grs/cliente/${clienteId}/projetos`);
   };
 
   const helpContent = {
     title: "Como usar o Dashboard GRS",
     sections: [
       {
-        title: "📊 Visão Geral",
-        content: "O Dashboard mostra um resumo de todos os planejamentos e atividades GRS. Use este espaço para ter uma visão rápida do progresso dos seus clientes."
+        title: "📊 Visão Geral Centrada no Cliente",
+        content: "O Dashboard apresenta uma tabela completa com todos os clientes ativos e suas estatísticas de projetos. Esta visão centralizada permite gerenciar todos os trabalhos de forma eficiente."
       },
       {
-        title: "🎯 Ações Rápidas",
-        content: "• Criar Planejamento: Inicie um novo projeto para um cliente\n• Ver Todos: Acesse a lista completa de planejamentos\n• Meus Clientes: Acompanhe o status de cada cliente"
+        title: "🎯 Métricas Unificadas",
+        content: "• Clientes Ativos: Total de clientes em operação\n• Total Projetos: Soma de projetos + planejamentos\n• Projetos Ativos: Trabalhos em andamento\n• Projetos Concluídos: Trabalhos finalizados"
       },
       {
-        title: "📈 Métricas",
-        content: "• Planejamentos do Mês: Total de projetos ativos\n• Em Aprovação: Aguardando retorno do cliente\n• Reprovados: Precisam de revisão\n• Prazos: Entregas importantes da semana"
+        title: "👁️ Ações por Cliente",
+        content: "Clique no ícone de visualizar para acessar todos os projetos e planejamentos do cliente em uma única tela unificada."
       }
     ]
   };
@@ -306,18 +294,11 @@ export default function GRSDashboard() {
         </div>
       </div>
 
-      {/* Client Selector */}
-      <ClientSelector 
-        onClientSelect={setSelectedClientId}
-        selectedClientId={selectedClientId}
-      />
-
       {/* Main Content with Tabs */}
       <Tabs defaultValue="overview" className="space-y-6">
         <TabsList>
-          <TabsTrigger value="overview">Visão Geral</TabsTrigger>
-          <TabsTrigger value="projetos">Projetos</TabsTrigger>
-          <TabsTrigger value="tarefas">Tarefas por Setor</TabsTrigger>
+          <TabsTrigger value="overview">Clientes e Projetos</TabsTrigger>
+          <TabsTrigger value="tarefas">Minhas Tarefas</TabsTrigger>
         </TabsList>
         
         <TabsContent value="overview" className="space-y-6">
@@ -328,7 +309,7 @@ export default function GRSDashboard() {
             <DialogTrigger asChild>
               <Button data-intro="criar-planejamento">
                 <Plus className="h-4 w-4 mr-2" />
-                Criar Planejamento
+                Novo Projeto
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-2xl">
@@ -400,22 +381,12 @@ export default function GRSDashboard() {
               </form>
             </DialogContent>
           </Dialog>
-          <Button variant="outline" onClick={() => navigate('/grs/planejamentos')} data-intro="ver-planejamentos">
-            <FileText className="h-4 w-4 mr-2" />
-            Ver Todos os Planejamentos
-          </Button>
-          <Button variant="outline" onClick={() => navigate('/grs/aprovacoes')} data-intro="aprovacoes-rapidas">
-            <CheckCircle className="h-4 w-4 mr-2" />
-            Aprovações Pendentes
-          </Button>
           </div>
         </div>
 
-      {/* Summary Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-6">
-        <SocialDashboardWidget />
-        <CalendarWidget />
-        {summaryData.map((item, index) => (
+      {/* Metrics Cards */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        {metricsData.map((item, index) => (
           <Card key={index}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
@@ -433,63 +404,98 @@ export default function GRSDashboard() {
         ))}
       </div>
 
-      {/* Gamification Widget */}
-      <GamificationWidget setor="grs" />
-
-      {/* Meus Clientes */}
+      {/* Tabela Clientes e Projetos */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Users className="h-5 w-5" />
-            Meus Clientes
+            Clientes e Projetos
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            {loading ? (
-              <div className="text-center py-8">Carregando...</div>
-            ) : clientesAtivos.length === 0 ? (
-              <div className="text-center py-8">
-                <p className="text-muted-foreground">Nenhum cliente ativo encontrado</p>
-              </div>
-            ) : (
-              clientesAtivos.map((cliente) => (
-                <div key={cliente.id} className="flex items-center justify-between p-4 border rounded-lg">
-                  <div className="flex items-center space-x-4">
-                    <Avatar>
-                      <AvatarImage src="" />
-                      <AvatarFallback>{cliente.nome.substring(0, 2).toUpperCase()}</AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <p className="text-sm font-medium leading-none">{cliente.nome}</p>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        Próximo: {cliente.proximoMarco}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Badge variant={getStatusVariant(cliente.status)}>
-                      {getStatusText(cliente.status)}
-                    </Badge>
-                    <div className="flex gap-1">
-                      <Button size="sm" onClick={() => handleEntrarNoPlan(cliente)} variant="outline">
-                        Planejamento
-                      </Button>
-                      <Button size="sm" onClick={() => navigate(`/grs/cliente/${cliente.id}/projetos`)}>
-                        Projetos
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
+          {loading ? (
+            <div className="text-center py-8">Carregando...</div>
+          ) : clientesComProjetos.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-muted-foreground">Nenhum cliente ativo encontrado</p>
+            </div>
+          ) : (
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Cliente</TableHead>
+                    <TableHead className="text-center">Total</TableHead>
+                    <TableHead className="text-center">Ativos</TableHead>
+                    <TableHead className="text-center">Concluídos</TableHead>
+                    <TableHead className="text-center">Pendentes</TableHead>
+                    <TableHead className="text-center">Pausados</TableHead>
+                    <TableHead className="text-center">Status Cliente</TableHead>
+                    <TableHead className="text-center">Ações</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {clientesComProjetos.map((cliente) => (
+                    <TableRow key={cliente.id}>
+                      <TableCell>
+                        <div className="flex items-center space-x-3">
+                          <Avatar className="h-8 w-8">
+                            <AvatarFallback className="text-xs">
+                              {cliente.nome.substring(0, 2).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <p className="font-medium">{cliente.nome}</p>
+                            <p className="text-sm text-muted-foreground">{cliente.email}</p>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <Badge variant="outline">{cliente.totalProjetos}</Badge>
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <Badge variant="default" className="bg-orange-100 text-orange-800 hover:bg-orange-200">
+                          {cliente.projetosAtivos}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <Badge variant="default" className="bg-green-100 text-green-800 hover:bg-green-200">
+                          {cliente.projetosConcluidos}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <Badge variant="default" className="bg-yellow-100 text-yellow-800 hover:bg-yellow-200">
+                          {cliente.projetosPendentes}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <Badge variant="default" className="bg-gray-100 text-gray-800 hover:bg-gray-200">
+                          {cliente.projetosPausados}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <Badge variant={getStatusVariant(cliente.status)}>
+                          {getStatusText(cliente.status)}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <Button 
+                          size="sm" 
+                          variant="ghost"
+                          onClick={() => handleVisualizarCliente(cliente.id)}
+                          className="h-8 w-8 p-0"
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
         </CardContent>
       </Card>
-        </TabsContent>
-        
-        <TabsContent value="projetos">
-          <ProjetoManager />
         </TabsContent>
         
         <TabsContent value="tarefas">

@@ -289,15 +289,12 @@ export function AppSidebar() {
     { title: "Aprovações", url: "/aprovacao-job", icon: Eye },
   ];
 
-  // GRS specific items - CLEAN VERSION (sem submenus)
+  // GRS specific items - CLEAN VERSION (sem submenus) - SIMPLIFIED UX
   const grsItems = [
     { title: "Dashboard", url: "/grs/dashboard", icon: BarChart3 },
-    { title: "Planejamentos", url: "/grs/planejamentos", icon: FileText },
-    { title: "Calendário Editorial", url: "/grs/calendario-editorial", icon: CalendarDays },
-    { title: "Aprovações", url: "/grs/aprovacoes", icon: ClipboardCheck },
-    { title: "Inbox de Revisões", url: "/grs/inbox", icon: Inbox },
     { title: "Minhas Tarefas", url: "/grs/tarefas", icon: ClipboardCheck },
-    { title: "Relatórios", url: "/grs/relatorios", icon: TrendingUp }
+    { title: "Mensagens", url: "/grs/inbox", icon: Inbox },
+    { title: "Calendário", url: "/grs/calendario-editorial", icon: CalendarDays }
   ];
 
   // Detect current module based on location
