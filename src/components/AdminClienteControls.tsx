@@ -8,6 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { CredentialsModal } from "@/components/CredentialsModal";
+import { SimplifiedAdminControls } from "@/components/SimplifiedAdminControls";
 import { 
   Shield, 
   Key, 
