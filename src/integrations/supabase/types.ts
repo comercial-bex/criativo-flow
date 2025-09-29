@@ -2750,6 +2750,50 @@ export type Database = {
           },
         ]
       }
+      user_access_logs: {
+        Row: {
+          action: string
+          created_at: string
+          email: string
+          error_message: string | null
+          id: string
+          ip_address: string | null
+          metadata: Json | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          email: string
+          error_message?: string | null
+          id?: string
+          ip_address?: string | null
+          metadata?: Json | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          email?: string
+          error_message?: string | null
+          id?: string
+          ip_address?: string | null
+          metadata?: Json | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_access_logs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string | null
@@ -2898,6 +2942,18 @@ export type Database = {
       is_admin: {
         Args: { user_uuid: string }
         Returns: boolean
+      }
+      log_user_access: {
+        Args: {
+          p_action?: string
+          p_email?: string
+          p_error_message?: string
+          p_ip_address?: string
+          p_metadata?: Json
+          p_user_agent?: string
+          p_user_id?: string
+        }
+        Returns: string
       }
       process_social_post_queue: {
         Args: Record<PropertyKey, never>
