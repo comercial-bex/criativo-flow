@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,9 +14,18 @@ interface PasswordResetModalProps {
 export function PasswordResetModal({ open, onOpenChange }: PasswordResetModalProps) {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
+  const mountedRef = useRef(true);
+
+  useEffect(() => {
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!mountedRef.current) return;
+    
     if (!email) {
       toast.error('Por favor, insira seu email');
       return;
@@ -28,6 +37,9 @@ export function PasswordResetModal({ open, onOpenChange }: PasswordResetModalPro
         redirectTo: `${window.location.origin}/auth?mode=reset`,
       });
 
+      // Check if component is still mounted before updating state
+      if (!mountedRef.current) return;
+
       if (error) {
         toast.error('Erro ao enviar email de recuperação: ' + error.message);
       } else {
@@ -36,9 +48,13 @@ export function PasswordResetModal({ open, onOpenChange }: PasswordResetModalPro
         setEmail('');
       }
     } catch (error) {
-      toast.error('Erro inesperado ao solicitar recuperação de senha');
+      if (mountedRef.current) {
+        toast.error('Erro inesperado ao solicitar recuperação de senha');
+      }
     } finally {
-      setLoading(false);
+      if (mountedRef.current) {
+        setLoading(false);
+      }
     }
   };
 

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -22,18 +22,29 @@ export default function Auth() {
   const [loading, setLoading] = useState(false);
   const [showPasswordReset, setShowPasswordReset] = useState(false);
   
+  // Add ref to track if component is mounted
+  const mountedRef = useRef(true);
+  
   const { signIn, signUp, user } = useAuth();
   const navigate = useNavigate();
 
   // Redirect if already authenticated
   useEffect(() => {
-    if (user) {
+    if (user && mountedRef.current) {
       navigate('/dashboard', { replace: true });
     }
+    
+    // Cleanup function
+    return () => {
+      mountedRef.current = false;
+      setShowPasswordReset(false);
+    };
   }, [user, navigate]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!mountedRef.current) return;
+    
     if (!email || !password) {
       toast.error('Por favor, preencha todos os campos');
       return;
@@ -43,6 +54,10 @@ export default function Auth() {
     try {
       console.log('🔐 UI: Tentando login para:', email);
       const { error } = await signIn(email, password);
+      
+      // Check if component is still mounted before updating state
+      if (!mountedRef.current) return;
+      
       if (error) {
         console.error('🔐 UI: Erro no login:', error);
         toast.error(error.message || 'Erro no login');
@@ -53,14 +68,20 @@ export default function Auth() {
       }
     } catch (error) {
       console.error('🔐 UI: Erro inesperado:', error);
-      toast.error('Erro inesperado no login');
+      if (mountedRef.current) {
+        toast.error('Erro inesperado no login');
+      }
     } finally {
-      setLoading(false);
+      if (mountedRef.current) {
+        setLoading(false);
+      }
     }
   };
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!mountedRef.current) return;
+    
     if (!email || !password || !nome) {
       toast.error('Por favor, preencha todos os campos');
       return;
@@ -69,6 +90,10 @@ export default function Auth() {
     setLoading(true);
     try {
       const { error } = await signUp(email, password, nome);
+      
+      // Check if component is still mounted before updating state
+      if (!mountedRef.current) return;
+      
       if (error) {
         toast.error('Erro no cadastro: ' + error.message);
       } else {
@@ -76,9 +101,13 @@ export default function Auth() {
         navigate('/dashboard');
       }
     } catch (error) {
-      toast.error('Erro inesperado no cadastro');
+      if (mountedRef.current) {
+        toast.error('Erro inesperado no cadastro');
+      }
     } finally {
-      setLoading(false);
+      if (mountedRef.current) {
+        setLoading(false);
+      }
     }
   };
 

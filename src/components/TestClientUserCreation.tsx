@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -8,8 +8,17 @@ import { toast } from 'sonner';
 export function TestClientUserCreation() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
+  const mountedRef = useRef(true);
+
+  useEffect(() => {
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
 
   const testUserCreation = async () => {
+    if (!mountedRef.current) return;
+    
     setLoading(true);
     setResult(null);
     
@@ -27,6 +36,9 @@ export function TestClientUserCreation() {
       });
 
       console.log('🧪 Test: Resposta da Edge Function:', { data, error });
+
+      // Check if component is still mounted before updating state
+      if (!mountedRef.current) return;
 
       if (error) {
         console.error('🧪 Test: Erro na Edge Function:', error);
@@ -47,14 +59,20 @@ export function TestClientUserCreation() {
       
     } catch (error) {
       console.error('🧪 Test: Erro inesperado:', error);
-      toast.error('Erro inesperado ao criar usuário');
-      setResult({ error: 'Erro inesperado' });
+      if (mountedRef.current) {
+        toast.error('Erro inesperado ao criar usuário');
+        setResult({ error: 'Erro inesperado' });
+      }
     } finally {
-      setLoading(false);
+      if (mountedRef.current) {
+        setLoading(false);
+      }
     }
   };
 
   const testUserValidation = async () => {
+    if (!mountedRef.current) return;
+    
     try {
       console.log('🧪 Test: Testando validação do usuário');
       
@@ -63,6 +81,9 @@ export function TestClientUserCreation() {
       });
 
       console.log('🧪 Test: Resultado da validação:', { data, error });
+      
+      // Check if component is still mounted before updating state
+      if (!mountedRef.current) return;
       
       if (error) {
         toast.error(`Erro na validação: ${error.message}`);
@@ -73,7 +94,9 @@ export function TestClientUserCreation() {
       
     } catch (error) {
       console.error('🧪 Test: Erro na validação:', error);
-      toast.error('Erro inesperado na validação');
+      if (mountedRef.current) {
+        toast.error('Erro inesperado na validação');
+      }
     }
   };
 
