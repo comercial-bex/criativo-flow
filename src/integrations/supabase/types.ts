@@ -2328,6 +2328,16 @@ export type Database = {
         Args: { customer_id: string }
         Returns: boolean
       }
+      create_client_user_sql: {
+        Args: {
+          p_cliente_id: string
+          p_email: string
+          p_nome: string
+          p_password: string
+          p_role?: string
+        }
+        Returns: Json
+      }
       generate_content_with_ai_v2: {
         Args: { content_type?: string; prompt_text: string }
         Returns: {
@@ -2386,6 +2396,10 @@ export type Database = {
       rejeitar_especialista: {
         Args: { especialista_id: string; observacao?: string }
         Returns: boolean
+      }
+      validate_user_for_login: {
+        Args: { p_email: string }
+        Returns: Json
       }
     }
     Enums: {

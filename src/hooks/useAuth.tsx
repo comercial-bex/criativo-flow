@@ -58,11 +58,63 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-    return { error };
+    try {
+      console.log('🔐 Auth: Iniciando login para', email);
+      
+      // SOLUÇÃO 2: Validar usuário antes do login usando função SQL
+      const { data: validationData, error: validationError } = await supabase.rpc(
+        'validate_user_for_login', 
+        { p_email: email }
+      );
+      
+      if (validationError) {
+        console.error('🔐 Auth: Erro na validação:', validationError);
+        return { error: { message: 'Erro ao validar usuário' } };
+      }
+      
+      const validation = validationData as any;
+      
+      if (!validation?.exists) {
+        console.log('🔐 Auth: Usuário não encontrado no sistema');
+        return { 
+          error: { 
+            message: 'Usuário não encontrado no sistema. Entre em contato com o administrador.' 
+          } 
+        };
+      }
+      
+      if (!validation?.has_client) {
+        console.log('🔐 Auth: Usuário não vinculado a cliente');
+        return { 
+          error: { 
+            message: 'Usuário existe mas não está vinculado a nenhum cliente.' 
+          } 
+        };
+      }
+      
+      console.log('🔐 Auth: Usuário validado:', validationData);
+      
+      // Proceder com o login
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      
+      if (error) {
+        console.error('🔐 Auth: Erro no login:', error);
+        if (error.message.includes('Invalid login credentials')) {
+          return { error: { message: 'Email ou senha incorretos' } };
+        }
+        return { error };
+      }
+      
+      console.log('🔐 Auth: Login realizado com sucesso');
+      return { error: null };
+      
+    } catch (error) {
+      console.error('🔐 Auth: Erro inesperado no login:', error);
+      return { error: { message: 'Erro inesperado no login' } };
+    }
   };
 
   const signUp = async (email: string, password: string, nome: string) => {

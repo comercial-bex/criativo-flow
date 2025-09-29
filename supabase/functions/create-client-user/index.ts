@@ -21,9 +21,20 @@ serve(async (req) => {
   }
 
   try {
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    console.log('🔧 Edge Function: create-client-user iniciada');
+    
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
+    if (!supabaseUrl || !supabaseServiceKey) {
+      console.error('🔧 Edge Function: Variáveis de ambiente não configuradas');
+      return new Response(
+        JSON.stringify({ error: 'Configuração do servidor incompleta' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    console.log('🔧 Edge Function: Conectando ao Supabase...');
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
       auth: {
         autoRefreshToken: false,
@@ -31,18 +42,34 @@ serve(async (req) => {
       },
     });
 
-    const { email, password, nome, cliente_id, role }: CreateClientUserRequest = await req.json();
-
-    console.log('Creating client user:', { email, nome, cliente_id, role });
+    console.log('🔧 Edge Function: Lendo dados da requisição...');
+    const requestBody = await req.json();
+    console.log('🔧 Edge Function: Dados recebidos:', { 
+      ...requestBody, 
+      password: '***OCULTA***' 
+    });
+    
+    const { email, password, nome, cliente_id, role }: CreateClientUserRequest = requestBody;
 
     // Validate required fields
     if (!email || !password || !nome || !cliente_id || !role) {
-      console.error('Missing required fields');
+      console.error('🔧 Edge Function: Campos obrigatórios ausentes');
       return new Response(
-        JSON.stringify({ error: 'Todos os campos são obrigatórios' }),
+        JSON.stringify({ 
+          error: 'Todos os campos são obrigatórios',
+          missing: {
+            email: !email,
+            password: !password,
+            nome: !nome,
+            cliente_id: !cliente_id,
+            role: !role
+          }
+        }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
+    console.log('🔧 Edge Function: Validação inicial OK');
 
     // Check if user already exists by checking profiles table first, then auth
     let existingUser = null;
@@ -171,6 +198,7 @@ serve(async (req) => {
       console.log('Password updated for existing user');
     } else {
       // Create new user in Supabase Auth (without email confirmation)
+      console.log('🔧 Edge Function: Criando novo usuário no Auth...');
       const { data: newUserData, error: userError } = await supabaseAdmin.auth.admin.createUser({
         email,
         password,
@@ -179,19 +207,59 @@ serve(async (req) => {
       });
 
       if (userError) {
-        console.error('Error creating user:', userError);
+        console.error('🔧 Edge Function: Erro ao criar usuário:', userError);
+        
+        // SOLUÇÃO 3: Se falhar a edge function, tentar função SQL de backup
+        if (userError.message.includes('Database error') || userError.message.includes('already')) {
+          console.log('🔧 Edge Function: Tentando função SQL de backup...');
+          try {
+            const { data: backupResult, error: backupError } = await supabaseAdmin.rpc(
+              'create_client_user_sql',
+              {
+                p_email: email,
+                p_password: password,
+                p_nome: nome,
+                p_cliente_id: cliente_id,
+                p_role: role
+              }
+            );
+            
+            if (backupError) {
+              console.error('🔧 Edge Function: Erro na função de backup:', backupError);
+            } else if (backupResult?.success) {
+              console.log('🔧 Edge Function: Usuário criado via backup SQL!');
+              return new Response(
+                JSON.stringify({ 
+                  success: true,
+                  email: email,
+                  password: password,
+                  message: 'Usuário criado com sucesso via backup SQL',
+                  method: 'sql_backup'
+                }),
+                { 
+                  status: 200, 
+                  headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+                }
+              );
+            }
+          } catch (backupError) {
+            console.error('🔧 Edge Function: Falha na tentativa de backup:', backupError);
+          }
+        }
+        
         return new Response(
           JSON.stringify({ 
             error: userError.message === 'Database error creating new user' 
               ? `Erro ao criar usuário: Email ${email} pode já estar em uso`
-              : userError.message 
+              : `Erro: ${userError.message}`,
+            details: userError
           }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
       userData = newUserData;
-      console.log('New user created successfully:', userData.user?.id);
+      console.log('🔧 Edge Function: Novo usuário criado com sucesso:', userData.user?.id);
     }
 
     // Insert user role (only if not exists)

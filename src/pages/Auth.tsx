@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { SocialLoginButtons } from '@/components/SocialLoginButtons';
+import { TestClientUserCreation } from '@/components/TestClientUserCreation';
 
 import { toast } from 'sonner';
 
@@ -37,14 +38,18 @@ export default function Auth() {
 
     setLoading(true);
     try {
+      console.log('🔐 UI: Tentando login para:', email);
       const { error } = await signIn(email, password);
       if (error) {
-        toast.error('Erro no login: ' + error.message);
+        console.error('🔐 UI: Erro no login:', error);
+        toast.error(error.message || 'Erro no login');
       } else {
+        console.log('🔐 UI: Login bem-sucedido, redirecionando...');
         toast.success('Login realizado com sucesso!');
         navigate('/dashboard');
       }
     } catch (error) {
+      console.error('🔐 UI: Erro inesperado:', error);
       toast.error('Erro inesperado no login');
     } finally {
       setLoading(false);
@@ -206,10 +211,10 @@ export default function Auth() {
                 </div>
               </div>
               <div className="space-y-3">
-                <div className="p-3 border rounded-lg bg-muted/50">
-                  <p className="font-medium text-sm">Cliente</p>
-                  <p className="text-xs text-muted-foreground">cliente@teste.com</p>
-                  <p className="text-xs text-muted-foreground">Senha: 123456</p>
+                <div className="p-3 border rounded-lg bg-yellow-50 border-yellow-200">
+                  <p className="font-medium text-sm text-yellow-800">Agência Bex</p>
+                  <p className="text-xs text-yellow-700">comercial@agenciabex.com.br</p>
+                  <p className="text-xs text-yellow-700">Senha: TempPass2024!</p>
                 </div>
                 <div className="p-3 border rounded-lg bg-muted/50">
                   <p className="font-medium text-sm">Fornecedor</p>
@@ -225,6 +230,9 @@ export default function Auth() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Componente de Teste */}
+        <TestClientUserCreation />
 
       </div>
     </div>
