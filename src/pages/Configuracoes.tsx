@@ -28,6 +28,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useUserRole } from '@/hooks/useUserRole';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useToast } from '@/hooks/use-toast';
+import { SecurityTestPanel } from '@/components/SecurityTestPanel';
 
 const Configuracoes = () => {
   const { toast } = useToast();
@@ -177,6 +178,8 @@ const Configuracoes = () => {
         </TabsContent>
 
         <TabsContent value="seguranca" className="space-y-6">
+          <SecurityTestPanel />
+          
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card>
               <CardHeader>

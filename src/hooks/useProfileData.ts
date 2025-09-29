@@ -55,9 +55,9 @@ export function useProfileData() {
             const { data: filteredProfile } = await supabase
               .rpc('get_filtered_profile', { profile_id: profileId.id });
             
-            if (filteredProfile) {
+            if (filteredProfile && typeof filteredProfile === 'object') {
               filteredProfiles.push({
-                ...filteredProfile,
+                ...(filteredProfile as unknown as Profile),
                 _hasFullAccess: false
               });
             }
@@ -111,12 +111,13 @@ export function useProfileData() {
       // Check if user has full access (admin or own profile)
       const currentUser = await supabase.auth.getUser();
       const currentUserId = currentUser.data.user?.id;
-      const isOwnProfile = filteredProfile.id === currentUserId;
+      const profileData = filteredProfile as unknown as Profile;
+      const isOwnProfile = profileData.id === currentUserId;
       const isAdmin = role === 'admin';
       const hasFullAccess = isOwnProfile || isAdmin;
 
       return {
-        ...filteredProfile,
+        ...profileData,
         _hasFullAccess: hasFullAccess
       };
     } catch (err) {
