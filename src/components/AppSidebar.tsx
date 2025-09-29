@@ -235,7 +235,9 @@ export function AppSidebar() {
   // Get visible modules based on permissions and role - PERSONALIZED BY ROLE
   const getVisibleModules = () => {
     // PHASE 1: PERSONALIZED SIDEBAR - Show only user's role module + profile + logout
-    switch (role) {
+    const role_str = role as string; // Cast to avoid TypeScript confusion
+    
+    switch (role_str) {
       case 'grs':
         return modules.filter(m => m.id === 'grs');
       case 'designer':
