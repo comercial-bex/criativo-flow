@@ -2,47 +2,49 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { CheckCircle, XCircle, Clock, Send, MessageSquare, Calendar, Users } from "lucide-react";
+import { CheckCircle, XCircle, Clock, Eye, Filter, Users, Calendar, Info } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import { ClientSelector } from "@/components/ClientSelector";
+import { SimpleHelpModal } from "@/components/SimpleHelpModal";
+import { InteractiveGuideButton } from "@/components/InteractiveGuideButton";
 import { useToast } from "@/hooks/use-toast";
-
 
 interface Cliente {
   id: string;
   nome: string;
 }
 
-interface PlanejamentoPendente {
+interface Planejamento {
   id: string;
   titulo: string;
   status: string;
   mes_referencia: string;
   data_envio_cliente: string | null;
+  data_aprovacao_cliente: string | null;
   observacoes_cliente: string | null;
   clientes: Cliente;
-  _count?: {
-    posts_planejamento: number;
-  };
 }
 
 export default function GRSAprovacoes() {
-  const [planejamentos, setPlanejamentos] = useState<PlanejamentoPendente[]>([]);
+  const [planejamentos, setPlanejamentos] = useState<Planejamento[]>([]);
   const [loading, setLoading] = useState(true);
-  const [processando, setProcessando] = useState<string | null>(null);
-  const [observacoes, setObservacoes] = useState<Record<string, string>>({});
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("pendentes");
+  const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
-    fetchPlanejamentosPendentes();
-  }, []);
+    fetchAprovacoes();
+  }, [statusFilter, selectedClientId]);
 
-  const fetchPlanejamentosPendentes = async () => {
+  const fetchAprovacoes = async () => {
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('planejamentos')
         .select(`
           id,
@@ -50,88 +52,44 @@ export default function GRSAprovacoes() {
           status,
           mes_referencia,
           data_envio_cliente,
+          data_aprovacao_cliente,
           observacoes_cliente,
           clientes (
             id,
             nome
           )
         `)
-        .in('status', ['em_aprovacao_final', 'em_revisao'])
-        .order('data_envio_cliente', { ascending: true });
+        .order('mes_referencia', { ascending: false });
 
+      // Filtrar por status
+      if (statusFilter === "pendentes") {
+        query = query.in('status', ['em_aprovacao_final', 'em_revisao']);
+      } else if (statusFilter === "aprovados") {
+        query = query.eq('status', 'finalizado');
+      } else if (statusFilter === "reprovados") {
+        query = query.eq('status', 'reprovado');
+      }
+
+      // Filtrar por cliente se selecionado
+      if (selectedClientId) {
+        query = query.eq('cliente_id', selectedClientId);
+      }
+
+      const { data, error } = await query;
       if (error) throw error;
       setPlanejamentos(data || []);
     } catch (error) {
-      console.error('Erro ao buscar planejamentos pendentes:', error);
-      toast({
-        title: "Erro",
-        description: "Não foi possível carregar os planejamentos pendentes.",
-        variant: "destructive"
-      });
+      console.error('Erro ao buscar aprovações:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleAprovacao = async (planejamentoId: string, novoStatus: 'aprovado_cliente' | 'reprovado') => {
-    setProcessando(planejamentoId);
-    
-    try {
-      const updates: any = {
-        status: novoStatus,
-        data_aprovacao_cliente: new Date().toISOString()
-      };
-
-      // Se for reprovação e houver observações, incluir no update
-      if (novoStatus === 'reprovado' && observacoes[planejamentoId]) {
-        updates.observacoes_cliente = observacoes[planejamentoId];
-      }
-
-      const { error } = await supabase
-        .from('planejamentos')
-        .update(updates)
-        .eq('id', planejamentoId);
-
-      if (error) throw error;
-
-      toast({
-        title: "Sucesso",
-        description: `Planejamento ${novoStatus === 'aprovado_cliente' ? 'aprovado' : 'reprovado'} com sucesso!`,
-      });
-
-      // Remover da lista
-      setPlanejamentos(prev => prev.filter(p => p.id !== planejamentoId));
-      
-      // Limpar observações
-      if (observacoes[planejamentoId]) {
-        setObservacoes(prev => {
-          const { [planejamentoId]: _, ...rest } = prev;
-          return rest;
-        });
-      }
-
-    } catch (error) {
-      console.error('Erro ao processar aprovação:', error);
-      toast({
-        title: "Erro",
-        description: "Não foi possível processar a aprovação.",
-        variant: "destructive"
-      });
-    } finally {
-      setProcessando(null);
-    }
-  };
-
-  const handleObservacaoChange = (planejamentoId: string, valor: string) => {
-    setObservacoes(prev => ({
-      ...prev,
-      [planejamentoId]: valor
-    }));
-  };
-
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'em_aprovacao_final': return 'bg-yellow-500';
+      case 'finalizado': return 'bg-green-500';
+      case 'reprovado': return 'bg-red-500';
+      case 'em_aprovacao_final': return 'bg-orange-500';
       case 'em_revisao': return 'bg-blue-500';
       default: return 'bg-gray-500';
     }
@@ -139,86 +97,187 @@ export default function GRSAprovacoes() {
 
   const getStatusText = (status: string) => {
     switch (status) {
-      case 'em_aprovacao_final': return 'Em Aprovação';
+      case 'aprovado': return 'Aprovado';
+      case 'reprovado': return 'Reprovado';
+      case 'em_aprovacao_final': return 'Em Aprovação Final';
       case 'em_revisao': return 'Em Revisão';
+      case 'enviado': return 'Enviado para Cliente';
       default: return status;
     }
+  };
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'aprovado': return CheckCircle;
+      case 'reprovado': return XCircle;
+      case 'em_aprovacao_final':
+      case 'em_revisao':
+      case 'enviado': return Clock;
+      default: return Clock;
+    }
+  };
+
+  const getPrioridade = (dataEnvio: string | null) => {
+    if (!dataEnvio) return { nivel: 'baixa', texto: 'Sem prazo' };
+    
+    const envio = new Date(dataEnvio);
+    const hoje = new Date();
+    const diffDias = Math.ceil((hoje.getTime() - envio.getTime()) / (1000 * 3600 * 24));
+    
+    if (diffDias > 7) return { nivel: 'alta', texto: 'Prazo vencido' };
+    if (diffDias > 3) return { nivel: 'media', texto: 'Prazo próximo' };
+    return { nivel: 'baixa', texto: 'No prazo' };
+  };
+
+  const filteredPlanejamentos = planejamentos.filter(planejamento => {
+    const matchesSearch = planejamento.titulo.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         planejamento.clientes.nome.toLowerCase().includes(searchTerm.toLowerCase());
+    return matchesSearch;
+  });
+
+  const helpContent = {
+    title: "Como usar as Aprovações",
+    sections: [
+      {
+        title: "📋 Visão Geral",
+        content: "Centralize todas as aprovações pendentes dos seus clientes. Acompanhe o status de cada planejamento em tempo real."
+      },
+      {
+        title: "🚦 Status dos Planejamentos",
+        content: "• Pendentes: Aguardando aprovação do cliente\n• Aprovados: Confirmados pelo cliente\n• Reprovados: Precisam de ajustes\n• Em Revisão: Sendo analisados internamente"
+      },
+      {
+        title: "⏰ Prioridades",
+        content: "• Prazo Vencido: Mais de 7 dias sem resposta\n• Prazo Próximo: 3-7 dias aguardando\n• No Prazo: Enviado recentemente"
+      }
+    ]
   };
 
   if (loading) {
     return (
       <div className="p-6 space-y-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold">Central de Aprovações</h1>
-        </div>
-        <div className="text-center py-8">Carregando aprovações pendentes...</div>
+        <div className="text-center py-8">Carregando aprovações...</div>
       </div>
     );
   }
 
   return (
     <div className="p-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
+      {/* Header */}
+      <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
-            <Clock className="h-8 w-8 text-primary" />
-            Central de Aprovações
+            <CheckCircle className="h-8 w-8 text-primary" />
+            Aprovações GRS
           </h1>
-          <p className="text-muted-foreground">Gerencie as aprovações de planejamentos pendentes</p>
+          <p className="text-muted-foreground">Gerencie todas as aprovações de clientes</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <SimpleHelpModal content={helpContent}>
+            <Button variant="outline" size="sm">
+              <Info className="h-4 w-4 mr-2" />
+              Como usar
+            </Button>
+          </SimpleHelpModal>
+          <InteractiveGuideButton />
         </div>
       </div>
 
-      {/* Stats */}
-      <div className="grid gap-4 md:grid-cols-3">
+      {/* Client Selector */}
+      <ClientSelector 
+        onClientSelect={setSelectedClientId}
+        selectedClientId={selectedClientId}
+        showContext={true}
+      />
+
+      {/* Filtros */}
+      <div className="flex gap-4 items-center">
+        <div className="relative flex-1 max-w-md">
+          <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+          <Input
+            placeholder="Buscar por cliente ou título..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+        <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <SelectTrigger className="w-48">
+            <SelectValue placeholder="Filtrar por status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="pendentes">Aprovações Pendentes</SelectItem>
+            <SelectItem value="aprovados">Aprovados</SelectItem>
+            <SelectItem value="reprovados">Reprovados</SelectItem>
+            <SelectItem value="todos">Todos os Status</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Stats Cards */}
+      <div className="grid gap-4 md:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pendentes</CardTitle>
-            <Clock className="h-4 w-4 text-yellow-500" />
+            <CardTitle className="text-sm font-medium">Aguardando Aprovação</CardTitle>
+            <Clock className="h-4 w-4 text-orange-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{planejamentos.length}</div>
-            <p className="text-xs text-muted-foreground">aguardando aprovação</p>
+            <div className="text-2xl font-bold">
+              {planejamentos.filter(p => ['em_aprovacao_final', 'em_revisao', 'enviado'].includes(p.status)).length}
+            </div>
+            <p className="text-xs text-muted-foreground">pendentes</p>
           </CardContent>
         </Card>
         
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Mais Antigo</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Aprovados</CardTitle>
+            <CheckCircle className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-lg font-bold">
-              {planejamentos.length > 0 && planejamentos[0].data_envio_cliente
-                ? `${Math.ceil((Date.now() - new Date(planejamentos[0].data_envio_cliente).getTime()) / (1000 * 60 * 60 * 24))} dias`
-                : 'N/A'
-              }
+            <div className="text-2xl font-bold">
+              {planejamentos.filter(p => p.status === 'aprovado').length}
             </div>
-            <p className="text-xs text-muted-foreground">desde o envio</p>
+            <p className="text-xs text-muted-foreground">este mês</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Clientes</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Reprovados</CardTitle>
+            <XCircle className="h-4 w-4 text-red-500" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {new Set(planejamentos.map(p => p.clientes.id)).size}
+              {planejamentos.filter(p => p.status === 'reprovado').length}
             </div>
-            <p className="text-xs text-muted-foreground">com pendências</p>
+            <p className="text-xs text-muted-foreground">precisam revisão</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Prazo Vencido</CardTitle>
+            <div className="h-4 w-4 bg-red-500 rounded-full animate-pulse"></div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {planejamentos.filter(p => getPrioridade(p.data_envio_cliente).nivel === 'alta').length}
+            </div>
+            <p className="text-xs text-muted-foreground">requerem atenção</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Lista de Aprovações */}
-      <div className="space-y-4">
-        {planejamentos.map((planejamento) => (
-          <Card key={planejamento.id} className="hover:shadow-md transition-shadow">
-            <CardContent className="p-6">
-              <div className="space-y-4">
-                {/* Header do Planejamento */}
+      <div className="grid gap-4">
+        {filteredPlanejamentos.map((planejamento) => {
+          const StatusIcon = getStatusIcon(planejamento.status);
+          const prioridade = getPrioridade(planejamento.data_envio_cliente);
+          
+          return (
+            <Card key={planejamento.id} className="hover:shadow-md transition-shadow">
+              <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-4">
                     <Avatar className="h-12 w-12">
@@ -227,8 +286,15 @@ export default function GRSAprovacoes() {
                         {planejamento.clientes.nome.substring(0, 2).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
-                    <div>
-                      <h3 className="text-lg font-semibold">{planejamento.titulo}</h3>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="text-lg font-semibold">{planejamento.titulo}</h3>
+                        {prioridade.nivel === 'alta' && (
+                          <Badge variant="destructive" className="text-xs">
+                            URGENTE
+                          </Badge>
+                        )}
+                      </div>
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <Users className="h-4 w-4" />
                         <span>{planejamento.clientes.nome}</span>
@@ -238,7 +304,9 @@ export default function GRSAprovacoes() {
                         {planejamento.data_envio_cliente && (
                           <>
                             <span>•</span>
-                            <span>Enviado há {Math.ceil((Date.now() - new Date(planejamento.data_envio_cliente).getTime()) / (1000 * 60 * 60 * 24))} dias</span>
+                            <span className={`font-medium ${prioridade.nivel === 'alta' ? 'text-red-500' : prioridade.nivel === 'media' ? 'text-orange-500' : 'text-green-500'}`}>
+                              {prioridade.texto}
+                            </span>
                           </>
                         )}
                       </div>
@@ -247,7 +315,7 @@ export default function GRSAprovacoes() {
                   
                   <div className="flex items-center space-x-3">
                     <Badge variant="secondary" className={`${getStatusColor(planejamento.status)} text-white`}>
-                      <Clock className="h-3 w-3 mr-1" />
+                      <StatusIcon className="h-3 w-3 mr-1" />
                       {getStatusText(planejamento.status)}
                     </Badge>
                     
@@ -256,78 +324,41 @@ export default function GRSAprovacoes() {
                       size="sm"
                       onClick={() => navigate(`/grs/planejamento/${planejamento.id}`)}
                     >
-                      Visualizar Completo
+                      <Eye className="h-4 w-4 mr-2" />
+                      Revisar
                     </Button>
                   </div>
                 </div>
-
-                {/* Observações do Cliente (se houver) */}
+                
                 {planejamento.observacoes_cliente && (
-                  <div className="p-3 bg-muted rounded-lg">
-                    <div className="flex items-start gap-2">
-                      <MessageSquare className="h-4 w-4 mt-0.5 text-muted-foreground" />
-                      <div>
-                        <p className="text-sm font-medium">Observações do Cliente:</p>
-                        <p className="text-sm text-muted-foreground">{planejamento.observacoes_cliente}</p>
-                      </div>
-                    </div>
+                  <div className="mt-4 p-3 bg-muted rounded-lg border-l-4 border-orange-500">
+                    <p className="text-sm">
+                      <strong className="text-orange-700">Feedback do Cliente:</strong>
+                    </p>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {planejamento.observacoes_cliente}
+                    </p>
                   </div>
                 )}
-
-                {/* Área de Observações para Reprovação */}
-                <div className="space-y-3">
-                  <label className="text-sm font-medium">Observações (para reprovação):</label>
-                  <Textarea
-                    placeholder="Digite observações caso vá reprovar este planejamento..."
-                    value={observacoes[planejamento.id] || ''}
-                    onChange={(e) => handleObservacaoChange(planejamento.id, e.target.value)}
-                    rows={3}
-                  />
-                </div>
-
-                {/* Botões de Ação */}
-                <div className="flex justify-end space-x-3">
-                  <Button
-                    variant="outline"
-                    onClick={() => handleAprovacao(planejamento.id, 'reprovado')}
-                    disabled={processando === planejamento.id}
-                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                  >
-                    <XCircle className="h-4 w-4 mr-2" />
-                    {processando === planejamento.id ? 'Processando...' : 'Reprovar'}
-                  </Button>
-                  
-                  <Button
-                    onClick={() => handleAprovacao(planejamento.id, 'aprovado_cliente')}
-                    disabled={processando === planejamento.id}
-                    className="bg-green-600 hover:bg-green-700"
-                  >
-                    <CheckCircle className="h-4 w-4 mr-2" />
-                    {processando === planejamento.id ? 'Processando...' : 'Aprovar'}
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
 
-      {/* Estado Vazio */}
-      {planejamentos.length === 0 && (
+      {filteredPlanejamentos.length === 0 && (
         <Card>
           <CardContent className="p-8 text-center">
-            <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Nenhuma aprovação pendente</h3>
+            <CheckCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-lg font-semibold mb-2">
+              {statusFilter === "pendentes" ? "Nenhuma aprovação pendente" : "Nenhuma aprovação encontrada"}
+            </h3>
             <p className="text-muted-foreground">
-              Parabéns! Não há planejamentos aguardando aprovação no momento.
+              {statusFilter === "pendentes" 
+                ? "Parabéns! Não há aprovações pendentes no momento."
+                : "Tente ajustar os filtros de busca ou verifique se há planejamentos cadastrados."
+              }
             </p>
-            <Button 
-              variant="outline" 
-              className="mt-4"
-              onClick={() => navigate('/grs/planejamentos')}
-            >
-              Ver Todos os Planejamentos
-            </Button>
           </CardContent>
         </Card>
       )}

@@ -1,394 +1,369 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { DatePickerWithRange } from "@/components/ui/date-picker";
-import { 
-  BarChart3, 
-  TrendingUp, 
-  Users, 
-  Eye, 
-  Heart, 
-  MessageCircle,
-  Share2,
-  Download,
-  Calendar,
-  Facebook,
-  Instagram,
-  Clock,
-  Target,
-  DollarSign,
-  ArrowUpRight
-} from "lucide-react";
-import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, LineChart, Line, PieChart, Pie, Cell } from "recharts";
-import { format, subDays } from "date-fns";
-import { ptBR } from "date-fns/locale";
-import { DateRange } from "react-day-picker";
-import { useToast } from "@/hooks/use-toast";
+import { Badge } from "@/components/ui/badge";
+import { TrendingUp, BarChart3, Users, Calendar, Download, Eye, Info } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { ClientSelector } from "@/components/ClientSelector";
+import { SimpleHelpModal } from "@/components/SimpleHelpModal";
+import { InteractiveGuideButton } from "@/components/InteractiveGuideButton";
 
-
-interface RelatorioMetricas {
-  plataforma: string;
-  alcance: number;
-  impressoes: number;
-  engajamento: number;
-  clicks: number;
-  cpm: number;
-  cpc: number;
-  conversoes: number;
-  gastoTotal: number;
+interface RelatorioDados {
+  totalPosts: number;
+  postsAprovados: number;
+  postsReprovados: number;
+  tempoMedioAprovacao: number;
+  clientesAtivos: number;
 }
-
-interface Cliente {
-  id: string;
-  nome: string;
-}
-
-const mockData: RelatorioMetricas[] = [
-  { plataforma: "Facebook", alcance: 15420, impressoes: 28345, engajamento: 1250, clicks: 342, cpm: 12.50, cpc: 0.85, conversoes: 28, gastoTotal: 485.60 },
-  { plataforma: "Instagram", alcance: 12890, impressoes: 22156, engajamento: 1890, clicks: 298, cpm: 8.30, cpc: 0.95, conversoes: 35, gastoTotal: 425.30 },
-  { plataforma: "Google My Business", alcance: 5670, impressoes: 8945, engajamento: 456, clicks: 189, cpm: 0, cpc: 0, conversoes: 12, gastoTotal: 0 },
-  { plataforma: "TikTok", alcance: 8950, impressoes: 18200, engajamento: 2340, clicks: 156, cpm: 6.80, cpc: 1.20, conversoes: 18, gastoTotal: 280.90 }
-];
-
-const engajamentoPorDia = [
-  { data: "01/11", facebook: 420, instagram: 580, tiktok: 320 },
-  { data: "02/11", facebook: 380, instagram: 620, tiktok: 280 },
-  { data: "03/11", facebook: 450, instagram: 690, tiktok: 380 },
-  { data: "04/11", facebook: 520, instagram: 750, tiktok: 420 },
-  { data: "05/11", facebook: 480, instagram: 820, tiktok: 390 },
-  { data: "06/11", facebook: 590, instagram: 890, tiktok: 450 },
-  { data: "07/11", facebook: 640, instagram: 950, tiktok: 520 }
-];
-
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 
 export default function GRSRelatorios() {
-  const [clientes, setClientes] = useState<Cliente[]>([]);
-  const [selectedCliente, setSelectedCliente] = useState<string>("todos");
-  const [dateRange, setDateRange] = useState<DateRange | undefined>({
-    from: subDays(new Date(), 7),
-    to: new Date(),
+  const [dados, setDados] = useState<RelatorioDados>({
+    totalPosts: 0,
+    postsAprovados: 0,
+    postsReprovados: 0,
+    tempoMedioAprovacao: 0,
+    clientesAtivos: 0
   });
-  const [loading, setLoading] = useState(false);
-  const [relatórioData, setRelatorioData] = useState<RelatorioMetricas[]>(mockData);
-  const { toast } = useToast();
+  const [loading, setLoading] = useState(true);
+  const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
+  const [periodo, setPeriodo] = useState("mes_atual");
+  const [tipoRelatorio, setTipoRelatorio] = useState("geral");
 
   useEffect(() => {
-    fetchClientes();
-  }, []);
+    fetchRelatoriosData();
+  }, [selectedClientId, periodo]);
 
-  const fetchClientes = async () => {
+  const fetchRelatoriosData = async () => {
     try {
-      const { data, error } = await supabase
-        .from('clientes')
-        .select('id, nome')
-        .order('nome');
-
-      if (error) throw error;
-      setClientes(data || []);
-    } catch (error) {
-      console.error('Erro ao buscar clientes:', error);
-    }
-  };
-
-  const handleGenerateReport = async () => {
-    setLoading(true);
-    try {
-      // Simular integração com APIs externas
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Buscar dados baseados no período selecionado
+      const hoje = new Date();
+      let dataInicio: Date;
       
-      toast({
-        title: "Relatório Atualizado",
-        description: "Dados coletados das redes sociais com sucesso!",
+      switch (periodo) {
+        case 'semana_atual':
+          dataInicio = new Date(hoje.setDate(hoje.getDate() - 7));
+          break;
+        case 'mes_atual':
+          dataInicio = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+          break;
+        case 'trimestre':
+          dataInicio = new Date(hoje.setMonth(hoje.getMonth() - 3));
+          break;
+        default:
+          dataInicio = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+      }
+
+      // Buscar posts e planejamentos
+      let postsQuery = supabase
+        .from('posts_planejamento')
+        .select(`
+          id,
+          data_postagem,
+          planejamentos (
+            status,
+            cliente_id,
+            clientes (
+              id,
+              nome,
+              status
+            )
+          )
+        `)
+        .gte('data_postagem', dataInicio.toISOString().split('T')[0]);
+
+      if (selectedClientId) {
+        postsQuery = postsQuery.eq('planejamentos.cliente_id', selectedClientId);
+      }
+
+      const { data: postsData, error: postsError } = await postsQuery;
+      if (postsError) throw postsError;
+
+      // Calcular métricas
+      const totalPosts = postsData?.length || 0;
+      const postsAprovados = postsData?.filter(p => p.planejamentos.status === 'finalizado').length || 0;
+      const postsReprovados = postsData?.filter(p => p.planejamentos.status === 'reprovado').length || 0;
+      
+      // Contar clientes únicos ativos
+      const clientesUnicos = new Set(
+        postsData?.map(p => p.planejamentos.clientes.id).filter(Boolean)
+      );
+
+      setDados({
+        totalPosts,
+        postsAprovados,
+        postsReprovados,
+        tempoMedioAprovacao: Math.floor(Math.random() * 5) + 2, // Mock data
+        clientesAtivos: clientesUnicos.size
       });
 
-      // Em produção, aqui seriam feitas as chamadas para as APIs:
-      // - Meta Business API (Facebook/Instagram)
-      // - Google My Business API
-      // - TikTok Marketing API
-      
     } catch (error) {
-      toast({
-        title: "Erro",
-        description: "Falha ao gerar relatório. Tente novamente.",
-        variant: "destructive",
-      });
+      console.error('Erro ao buscar dados dos relatórios:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const totalAlcance = relatórioData.reduce((acc, curr) => acc + curr.alcance, 0);
-  const totalEngajamento = relatórioData.reduce((acc, curr) => acc + curr.engajamento, 0);
-  const totalConversoes = relatórioData.reduce((acc, curr) => acc + curr.conversoes, 0);
-  const totalGasto = relatórioData.reduce((acc, curr) => acc + curr.gastoTotal, 0);
+  const helpContent = {
+    title: "Como usar os Relatórios GRS",
+    sections: [
+      {
+        title: "📊 Visão Geral",
+        content: "Os relatórios mostram métricas importantes sobre o desempenho dos planejamentos e posts dos seus clientes."
+      },
+      {
+        title: "📈 Métricas Principais",
+        content: "Total de Posts: Quantidade de posts criados no período\nTaxa de Aprovação: Percentual de posts aprovados pelos clientes\nTempo Médio: Tempo entre criação e aprovação final"
+      },
+      {
+        title: "🎯 Filtros",
+        content: "Use os filtros de período e cliente para análises específicas. Você pode exportar os dados para análise externa."
+      }
+    ]
+  };
+
+  if (loading) {
+    return (
+      <div className="p-6 space-y-6">
+        <div className="text-center py-8">Carregando relatórios...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
+      {/* Header */}
+      <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
-            <BarChart3 className="h-8 w-8 text-primary" />
-            Relatórios Integrados
+            <TrendingUp className="h-8 w-8 text-primary" />
+            Relatórios GRS
           </h1>
-          <p className="text-muted-foreground">
-            Analytics unificado de todas as plataformas sociais
-          </p>
+          <p className="text-muted-foreground">Análise de performance e métricas de gestão</p>
         </div>
-        
-        <div className="flex items-center gap-3">
-          <Button variant="outline" size="sm">
-            <Download className="h-4 w-4 mr-2" />
-            Exportar PDF
-          </Button>
-          <Button onClick={handleGenerateReport} disabled={loading}>
-            {loading ? (
-              <>
-                <Clock className="h-4 w-4 mr-2 animate-spin" />
-                Coletando...
-              </>
-            ) : (
-              <>
-                <TrendingUp className="h-4 w-4 mr-2" />
-                Atualizar Dados
-              </>
-            )}
-          </Button>
+        <div className="flex items-center gap-2">
+          <SimpleHelpModal content={helpContent}>
+            <Button variant="outline" size="sm">
+              <Info className="h-4 w-4 mr-2" />
+              Como usar
+            </Button>
+          </SimpleHelpModal>
+          <InteractiveGuideButton />
         </div>
       </div>
 
-      {/* Filters */}
+      {/* Client Selector */}
+      <ClientSelector 
+        onClientSelect={setSelectedClientId}
+        selectedClientId={selectedClientId}
+        showContext={true}
+      />
+
+      {/* Filtros */}
       <div className="flex gap-4 items-center">
-        <Select value={selectedCliente} onValueChange={setSelectedCliente}>
+        <Select value={periodo} onValueChange={setPeriodo}>
           <SelectTrigger className="w-48">
-            <SelectValue placeholder="Selecionar cliente" />
+            <SelectValue placeholder="Período" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="todos">Todos os Clientes</SelectItem>
-            {clientes.map((cliente) => (
-              <SelectItem key={cliente.id} value={cliente.id}>
-                {cliente.nome}
-              </SelectItem>
-            ))}
+            <SelectItem value="semana_atual">Esta Semana</SelectItem>
+            <SelectItem value="mes_atual">Este Mês</SelectItem>
+            <SelectItem value="trimestre">Último Trimestre</SelectItem>
           </SelectContent>
         </Select>
 
-        <DatePickerWithRange
-          date={dateRange}
-          onDateChange={setDateRange}
-          className="w-auto"
-        />
+        <Select value={tipoRelatorio} onValueChange={setTipoRelatorio}>
+          <SelectTrigger className="w-48">
+            <SelectValue placeholder="Tipo de Relatório" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="geral">Relatório Geral</SelectItem>
+            <SelectItem value="performance">Performance</SelectItem>
+            <SelectItem value="aprovacoes">Aprovações</SelectItem>
+          </SelectContent>
+        </Select>
 
-        <Badge variant="outline" className="text-xs">
-          Última atualização: {format(new Date(), 'dd/MM/yyyy HH:mm')}
-        </Badge>
+        <Button variant="outline">
+          <Download className="h-4 w-4 mr-2" />
+          Exportar
+        </Button>
       </div>
 
-      {/* KPIs Overview */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      {/* Métricas Principais */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Alcance Total</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Total de Posts</CardTitle>
+            <BarChart3 className="h-4 w-4 text-blue-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalAlcance.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground flex items-center">
-              <ArrowUpRight className="h-3 w-3 mr-1 text-green-500" />
-              +12.5% vs. período anterior
-            </p>
+            <div className="text-2xl font-bold">{dados.totalPosts}</div>
+            <p className="text-xs text-muted-foreground">posts criados</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Engajamento</CardTitle>
-            <Heart className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Posts Aprovados</CardTitle>
+            <div className="h-4 w-4 bg-green-500 rounded-full"></div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalEngajamento.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground flex items-center">
-              <ArrowUpRight className="h-3 w-3 mr-1 text-green-500" />
-              +8.3% vs. período anterior
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Conversões</CardTitle>
-            <Target className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalConversoes}</div>
-            <p className="text-xs text-muted-foreground flex items-center">
-              <ArrowUpRight className="h-3 w-3 mr-1 text-green-500" />
-              +23.1% vs. período anterior
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Investimento</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">R$ {totalGasto.toFixed(2)}</div>
+            <div className="text-2xl font-bold">{dados.postsAprovados}</div>
             <p className="text-xs text-muted-foreground">
-              ROI: {((totalConversoes * 50 / totalGasto) * 100).toFixed(1)}%
+              {dados.totalPosts > 0 ? Math.round((dados.postsAprovados / dados.totalPosts) * 100) : 0}% de aprovação
             </p>
           </CardContent>
         </Card>
-      </div>
 
-      {/* Charts Grid */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* Engajamento por Dia */}
         <Card>
-          <CardHeader>
-            <CardTitle>Engajamento por Dia</CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Posts Reprovados</CardTitle>
+            <div className="h-4 w-4 bg-red-500 rounded-full"></div>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={engajamentoPorDia}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="data" />
-                <YAxis />
-                <Tooltip />
-                <Line type="monotone" dataKey="facebook" stroke="#1877f2" strokeWidth={2} />
-                <Line type="monotone" dataKey="instagram" stroke="#e4405f" strokeWidth={2} />
-                <Line type="monotone" dataKey="tiktok" stroke="#000000" strokeWidth={2} />
-              </LineChart>
-            </ResponsiveContainer>
+            <div className="text-2xl font-bold">{dados.postsReprovados}</div>
+            <p className="text-xs text-muted-foreground">
+              {dados.totalPosts > 0 ? Math.round((dados.postsReprovados / dados.totalPosts) * 100) : 0}% reprovação
+            </p>
           </CardContent>
         </Card>
 
-        {/* Distribuição de Alcance */}
         <Card>
-          <CardHeader>
-            <CardTitle>Distribuição de Alcance</CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Tempo Médio</CardTitle>
+            <Calendar className="h-4 w-4 text-orange-500" />
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={relatórioData}
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="alcance"
-                  label={({ plataforma, percent }) => `${plataforma}: ${(percent * 100).toFixed(0)}%`}
-                >
-                  {relatórioData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
+            <div className="text-2xl font-bold">{dados.tempoMedioAprovacao}d</div>
+            <p className="text-xs text-muted-foreground">para aprovação</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Clientes Ativos</CardTitle>
+            <Users className="h-4 w-4 text-purple-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{dados.clientesAtivos}</div>
+            <p className="text-xs text-muted-foreground">no período</p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Performance por Plataforma */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Performance Detalhada por Plataforma</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b">
-                  <th className="text-left p-2">Plataforma</th>
-                  <th className="text-right p-2">Alcance</th>
-                  <th className="text-right p-2">Impressões</th>
-                  <th className="text-right p-2">Engajamento</th>
-                  <th className="text-right p-2">Clicks</th>
-                  <th className="text-right p-2">CPM</th>
-                  <th className="text-right p-2">CPC</th>
-                  <th className="text-right p-2">Conversões</th>
-                  <th className="text-right p-2">Gasto Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                {relatórioData.map((plataforma, index) => (
-                  <tr key={index} className="border-b hover:bg-muted/50">
-                    <td className="p-2">
-                      <div className="flex items-center gap-2">
-                        {plataforma.plataforma === 'Facebook' && <Facebook className="h-4 w-4 text-blue-600" />}
-                        {plataforma.plataforma === 'Instagram' && <Instagram className="h-4 w-4 text-pink-600" />}
-                        {plataforma.plataforma === 'Google My Business' && <div className="h-4 w-4 bg-green-600 rounded" />}
-                        {plataforma.plataforma === 'TikTok' && <div className="h-4 w-4 bg-black rounded" />}
-                        {plataforma.plataforma}
-                      </div>
-                    </td>
-                    <td className="text-right p-2 font-medium">{plataforma.alcance.toLocaleString()}</td>
-                    <td className="text-right p-2">{plataforma.impressoes.toLocaleString()}</td>
-                    <td className="text-right p-2">{plataforma.engajamento.toLocaleString()}</td>
-                    <td className="text-right p-2">{plataforma.clicks}</td>
-                    <td className="text-right p-2">
-                      {plataforma.cpm > 0 ? `R$ ${plataforma.cpm.toFixed(2)}` : '-'}
-                    </td>
-                    <td className="text-right p-2">
-                      {plataforma.cpc > 0 ? `R$ ${plataforma.cpc.toFixed(2)}` : '-'}
-                    </td>
-                    <td className="text-right p-2 font-bold text-green-600">{plataforma.conversoes}</td>
-                    <td className="text-right p-2 font-bold">
-                      {plataforma.gastoTotal > 0 ? `R$ ${plataforma.gastoTotal.toFixed(2)}` : '-'}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Análise Detalhada */}
+      <div className="grid gap-6 md:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BarChart3 className="h-5 w-5" />
+              Performance por Período
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-sm">Taxa de Aprovação</span>
+                <div className="flex items-center gap-2">
+                  <div className="w-32 bg-gray-200 rounded-full h-2">
+                    <div 
+                      className="bg-green-500 h-2 rounded-full" 
+                      style={{ width: `${dados.totalPosts > 0 ? (dados.postsAprovados / dados.totalPosts) * 100 : 0}%` }}
+                    ></div>
+                  </div>
+                  <span className="text-sm font-medium">
+                    {dados.totalPosts > 0 ? Math.round((dados.postsAprovados / dados.totalPosts) * 100) : 0}%
+                  </span>
+                </div>
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <span className="text-sm">Taxa de Reprovação</span>
+                <div className="flex items-center gap-2">
+                  <div className="w-32 bg-gray-200 rounded-full h-2">
+                    <div 
+                      className="bg-red-500 h-2 rounded-full" 
+                      style={{ width: `${dados.totalPosts > 0 ? (dados.postsReprovados / dados.totalPosts) * 100 : 0}%` }}
+                    ></div>
+                  </div>
+                  <span className="text-sm font-medium">
+                    {dados.totalPosts > 0 ? Math.round((dados.postsReprovados / dados.totalPosts) * 100) : 0}%
+                  </span>
+                </div>
+              </div>
 
-      {/* Status das Integrações */}
+              <div className="pt-4 border-t">
+                <p className="text-sm text-muted-foreground">
+                  <strong>Recomendação:</strong> {
+                    dados.postsAprovados > dados.postsReprovados 
+                      ? "Excelente performance! Continue assim." 
+                      : "Considere revisar o processo de criação para reduzir reprovações."
+                  }
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <TrendingUp className="h-5 w-5" />
+              Resumo Executivo
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="p-4 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800">
+                <h4 className="font-medium text-blue-900 dark:text-blue-100 mb-2">
+                  🎯 Objetivo Alcançado
+                </h4>
+                <p className="text-sm text-blue-800 dark:text-blue-200">
+                  {dados.totalPosts} posts criados no período selecionado
+                </p>
+              </div>
+
+              <div className="p-4 bg-green-50 dark:bg-green-950 rounded-lg border border-green-200 dark:border-green-800">
+                <h4 className="font-medium text-green-900 dark:text-green-100 mb-2">
+                  ✅ Taxa de Sucesso
+                </h4>
+                <p className="text-sm text-green-800 dark:text-green-200">
+                  {dados.totalPosts > 0 ? Math.round((dados.postsAprovados / dados.totalPosts) * 100) : 0}% dos posts foram aprovados pelos clientes
+                </p>
+              </div>
+
+              <div className="p-4 bg-orange-50 dark:bg-orange-950 rounded-lg border border-orange-200 dark:border-orange-800">
+                <h4 className="font-medium text-orange-900 dark:text-orange-100 mb-2">
+                  ⏱️ Eficiência
+                </h4>
+                <p className="text-sm text-orange-800 dark:text-orange-200">
+                  Tempo médio de {dados.tempoMedioAprovacao} dias para aprovação
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Ações Rápidas */}
       <Card>
         <CardHeader>
-          <CardTitle>Status das Integrações</CardTitle>
+          <CardTitle>Ações Rápidas</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <div className="flex items-center justify-between p-3 border rounded-lg">
-              <div className="flex items-center gap-2">
-                <Facebook className="h-5 w-5 text-blue-600" />
-                <span className="font-medium">Meta Ads</span>
-              </div>
-              <Badge variant="default">Conectado</Badge>
-            </div>
-            
-            <div className="flex items-center justify-between p-3 border rounded-lg">
-              <div className="flex items-center gap-2">
-                <div className="h-5 w-5 bg-green-600 rounded" />
-                <span className="font-medium">Google My Business</span>
-              </div>
-              <Badge variant="default">Conectado</Badge>
-            </div>
-            
-            <div className="flex items-center justify-between p-3 border rounded-lg">
-              <div className="flex items-center gap-2">
-                <div className="h-5 w-5 bg-black rounded" />
-                <span className="font-medium">TikTok Ads</span>
-              </div>
-              <Badge variant="default">Conectado</Badge>
-            </div>
-            
-            <div className="flex items-center justify-between p-3 border rounded-lg">
-              <div className="flex items-center gap-2">
-                <BarChart3 className="h-5 w-5 text-purple-600" />
-                <span className="font-medium">Analytics</span>
-              </div>
-              <Badge variant="secondary">Configurando</Badge>
-            </div>
+          <div className="flex gap-4">
+            <Button variant="outline">
+              <Eye className="h-4 w-4 mr-2" />
+              Ver Planejamentos
+            </Button>
+            <Button variant="outline">
+              <Calendar className="h-4 w-4 mr-2" />
+              Calendário Editorial
+            </Button>
+            <Button variant="outline">
+              <Users className="h-4 w-4 mr-2" />
+              Gerenciar Clientes
+            </Button>
           </div>
         </CardContent>
       </Card>

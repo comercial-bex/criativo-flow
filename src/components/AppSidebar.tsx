@@ -202,8 +202,9 @@ const modules = [
     items: [
       { title: "Dashboard", url: "/grs/dashboard", icon: BarChart3 },
       { title: "Planejamentos", url: "/grs/planejamentos", icon: Calendar },
-      { title: "Aprovações", url: "/grs/aprovacoes", icon: CheckCircle },
       { title: "Calendário Editorial", url: "/grs/calendario-editorial", icon: CalendarDays },
+      { title: "Aprovações", url: "/grs/aprovacoes", icon: CheckCircle },
+      { title: "Relatórios", url: "/grs/relatorios", icon: TrendingUp },
     ],
     permissions: ["grs"]
   },
@@ -257,34 +258,13 @@ export function AppSidebar() {
     { title: "Aprovações", url: "/aprovacao-job", icon: Eye },
   ];
 
-  // GRS specific items with hierarchical structure
+  // GRS specific items - CLEAN VERSION (sem submenus)
   const grsItems = [
-    { title: "Dashboard", url: "/grs", icon: BarChart3, type: "main" },
-    { title: "Planejamentos", url: "/grs/planejamentos", icon: FileText, type: "main", submenu: [
-      { title: "Por Cliente", url: "/grs/planejamentos?view=cliente", icon: Users },
-      { title: "Por Período", url: "/grs/planejamentos?view=periodo", icon: Calendar },
-      { title: "Novo Planejamento", url: "/grs/planejamentos/novo", icon: Plus }
-    ]},
-    { title: "Aprovações", url: "/grs/aprovacoes", icon: ClipboardCheck, type: "main", submenu: [
-      { title: "Pendentes", url: "/grs/aprovacoes?status=pendente", icon: Clock },
-      { title: "Aprovados", url: "/grs/aprovacoes?status=aprovado", icon: CheckCircle },
-      { title: "Reprovados", url: "/grs/aprovacoes?status=reprovado", icon: XCircle }
-    ]},
-    { title: "Calendário Editorial", url: "/grs/calendario-editorial", icon: CalendarDays, type: "main", submenu: [
-      { title: "Visão Mensal", url: "/grs/calendario-editorial?view=mensal", icon: Calendar },
-      { title: "Cronograma", url: "/grs/calendario-editorial?view=cronograma", icon: BarChart3 },
-      { title: "Metas", url: "/grs/calendario-editorial?view=metas", icon: Target }
-    ]},
-    { title: "Agendamento Social", url: "/grs/agendamento-social", icon: Send, type: "main", submenu: [
-      { title: "Instagram", url: "/grs/agendamento-social?platform=instagram", icon: Globe },
-      { title: "Facebook", url: "/grs/agendamento-social?platform=facebook", icon: Globe },
-      { title: "Fila de Posts", url: "/grs/agendamento-social?view=queue", icon: Clock }
-    ]},
-    { title: "Relatórios", url: "/grs/relatorios", icon: TrendingUp, type: "main", submenu: [
-      { title: "Performance", url: "/grs/relatorios?type=performance", icon: BarChart3 },
-      { title: "Por Cliente", url: "/grs/relatorios?type=cliente", icon: Users },
-      { title: "Métricas", url: "/grs/relatorios?type=metricas", icon: TrendingUp }
-    ]}
+    { title: "Dashboard", url: "/grs/dashboard", icon: BarChart3 },
+    { title: "Planejamentos", url: "/grs/planejamentos", icon: FileText },
+    { title: "Calendário Editorial", url: "/grs/calendario-editorial", icon: CalendarDays },
+    { title: "Aprovações", url: "/grs/aprovacoes", icon: ClipboardCheck },
+    { title: "Relatórios", url: "/grs/relatorios", icon: TrendingUp }
   ];
 
   // Detect current module based on location

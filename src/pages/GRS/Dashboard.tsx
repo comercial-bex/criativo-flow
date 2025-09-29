@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calendar, Users, Clock, AlertCircle, TrendingUp, BarChart3, Plus, Send } from "lucide-react";
+import { Calendar, Users, Clock, AlertCircle, TrendingUp, BarChart3, Plus, Send, Info, FileText, CheckCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { GamificationWidget } from "@/components/GamificationWidget";
@@ -17,6 +17,7 @@ import { ClientSelector } from "@/components/ClientSelector";
 import { SocialDashboardWidget } from "@/components/SocialDashboardWidget";
 import { CalendarWidget } from "@/components/CalendarWidget";
 import { InteractiveGuideButton } from "@/components/InteractiveGuideButton";
+import { SimpleHelpModal } from "@/components/SimpleHelpModal";
 
 interface Cliente {
   id: string;
@@ -262,6 +263,24 @@ export default function GRSDashboard() {
     }
   };
 
+  const helpContent = {
+    title: "Como usar o Dashboard GRS",
+    sections: [
+      {
+        title: "📊 Visão Geral",
+        content: "O Dashboard mostra um resumo de todos os planejamentos e atividades GRS. Use este espaço para ter uma visão rápida do progresso dos seus clientes."
+      },
+      {
+        title: "🎯 Ações Rápidas",
+        content: "• Criar Planejamento: Inicie um novo projeto para um cliente\n• Ver Todos: Acesse a lista completa de planejamentos\n• Meus Clientes: Acompanhe o status de cada cliente"
+      },
+      {
+        title: "📈 Métricas",
+        content: "• Planejamentos do Mês: Total de projetos ativos\n• Em Aprovação: Aguardando retorno do cliente\n• Reprovados: Precisam de revisão\n• Prazos: Entregas importantes da semana"
+      }
+    ]
+  };
+
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
@@ -271,9 +290,17 @@ export default function GRSDashboard() {
             <BarChart3 className="h-8 w-8 text-primary" />
             Dashboard GRS
           </h1>
-          <p className="text-muted-foreground">Gestão de Relacionamento com o Cliente</p>
+          <p className="text-muted-foreground">Gestão de Relacionamento com o Cliente - Visão geral completa</p>
         </div>
-        <InteractiveGuideButton />
+        <div className="flex items-center gap-2">
+          <SimpleHelpModal content={helpContent}>
+            <Button variant="outline" size="sm" data-intro="dashboard-help">
+              <Info className="h-4 w-4 mr-2" />
+              Como usar
+            </Button>
+          </SimpleHelpModal>
+          <InteractiveGuideButton />
+        </div>
       </div>
 
       {/* Client Selector */}
@@ -286,7 +313,7 @@ export default function GRSDashboard() {
           <div className="flex gap-2">
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
-              <Button>
+              <Button data-intro="criar-planejamento">
                 <Plus className="h-4 w-4 mr-2" />
                 Criar Planejamento
               </Button>
@@ -360,9 +387,13 @@ export default function GRSDashboard() {
               </form>
             </DialogContent>
           </Dialog>
-          <Button variant="outline" onClick={() => navigate('/grs/planejamentos')}>
-            <Send className="h-4 w-4 mr-2" />
+          <Button variant="outline" onClick={() => navigate('/grs/planejamentos')} data-intro="ver-planejamentos">
+            <FileText className="h-4 w-4 mr-2" />
             Ver Todos os Planejamentos
+          </Button>
+          <Button variant="outline" onClick={() => navigate('/grs/aprovacoes')} data-intro="aprovacoes-rapidas">
+            <CheckCircle className="h-4 w-4 mr-2" />
+            Aprovações Pendentes
           </Button>
           </div>
         </div>
