@@ -502,39 +502,57 @@ export type Database = {
       clientes: {
         Row: {
           assinatura_id: string | null
+          cnae_principal: string | null
           cnpj_cpf: string | null
+          cnpj_fonte: string | null
+          cnpj_ultima_consulta: string | null
           created_at: string | null
           email: string | null
           endereco: string | null
           id: string
           nome: string
+          nome_fantasia: string | null
+          razao_social: string | null
           responsavel_id: string | null
+          situacao_cadastral: string | null
           status: Database["public"]["Enums"]["status_type"] | null
           telefone: string | null
           updated_at: string | null
         }
         Insert: {
           assinatura_id?: string | null
+          cnae_principal?: string | null
           cnpj_cpf?: string | null
+          cnpj_fonte?: string | null
+          cnpj_ultima_consulta?: string | null
           created_at?: string | null
           email?: string | null
           endereco?: string | null
           id?: string
           nome: string
+          nome_fantasia?: string | null
+          razao_social?: string | null
           responsavel_id?: string | null
+          situacao_cadastral?: string | null
           status?: Database["public"]["Enums"]["status_type"] | null
           telefone?: string | null
           updated_at?: string | null
         }
         Update: {
           assinatura_id?: string | null
+          cnae_principal?: string | null
           cnpj_cpf?: string | null
+          cnpj_fonte?: string | null
+          cnpj_ultima_consulta?: string | null
           created_at?: string | null
           email?: string | null
           endereco?: string | null
           id?: string
           nome?: string
+          nome_fantasia?: string | null
+          razao_social?: string | null
           responsavel_id?: string | null
+          situacao_cadastral?: string | null
           status?: Database["public"]["Enums"]["status_type"] | null
           telefone?: string | null
           updated_at?: string | null
@@ -555,6 +573,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      cnpj_consultas: {
+        Row: {
+          cnpj: string
+          created_at: string
+          dados_brasil_api: Json | null
+          dados_receita_ws: Json | null
+          data_consulta: string
+          data_situacao: string | null
+          fonte_utilizada: string
+          id: string
+          situacao_cadastral: string | null
+          updated_at: string
+        }
+        Insert: {
+          cnpj: string
+          created_at?: string
+          dados_brasil_api?: Json | null
+          dados_receita_ws?: Json | null
+          data_consulta?: string
+          data_situacao?: string | null
+          fonte_utilizada: string
+          id?: string
+          situacao_cadastral?: string | null
+          updated_at?: string
+        }
+        Update: {
+          cnpj?: string
+          created_at?: string
+          dados_brasil_api?: Json | null
+          dados_receita_ws?: Json | null
+          data_consulta?: string
+          data_situacao?: string | null
+          fonte_utilizada?: string
+          id?: string
+          situacao_cadastral?: string | null
+          updated_at?: string
+        }
+        Relationships: []
       }
       conteudo_editorial: {
         Row: {
