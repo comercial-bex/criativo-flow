@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { TaskKanbanBoard } from '@/components/TaskKanbanBoard';
 import { ProjectStatusIndicator } from '@/components/ProjectStatusIndicator';
+import { CreateTaskModal } from '@/components/CreateTaskModal';
+import { TaskDetailsModal } from '@/components/TaskDetailsModal';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { 
@@ -60,6 +62,9 @@ export default function ProjetoTarefasKanban() {
   const [projeto, setProjeto] = useState<Projeto | null>(null);
   const [tarefas, setTarefas] = useState<Tarefa[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [selectedTask, setSelectedTask] = useState<Tarefa | null>(null);
+  const [showTaskDetails, setShowTaskDetails] = useState(false);
 
   useEffect(() => {
     if (clienteId && projetoId) {
@@ -158,12 +163,42 @@ export default function ProjetoTarefasKanban() {
     }
   };
 
-  const handleTaskCreate = () => {
-    // TODO: Implement task creation modal
-    toast({
-      title: "Em desenvolvimento", 
-      description: "Funcionalidade de criação de tarefa em desenvolvimento",
-    });
+  const handleTaskCreate = async (taskData: any) => {
+    try {
+      const { data, error } = await supabase
+        .from('tarefas_projeto')
+        .insert(taskData)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      fetchData();
+      return data;
+    } catch (error) {
+      console.error('Erro ao criar tarefa:', error);
+      throw error;
+    }
+  };
+
+  const handleTaskUpdate = async (taskId: string, updates: any) => {
+    try {
+      const { error } = await supabase
+        .from('tarefas_projeto')
+        .update(updates)
+        .eq('id', taskId);
+
+      if (error) throw error;
+
+      setTarefas(tarefas.map(t => 
+        t.id === taskId ? { ...t, ...updates } : t
+      ));
+      
+      fetchData();
+    } catch (error) {
+      console.error('Erro ao atualizar tarefa:', error);
+      throw error;
+    }
   };
 
   const handleTaskClick = (task: Tarefa) => {
@@ -296,12 +331,29 @@ export default function ProjetoTarefasKanban() {
           <CardTitle>Quadro de Tarefas</CardTitle>
         </CardHeader>
         <CardContent>
-          <TaskKanbanBoard
-            tasks={tarefas}
-            onTaskMove={handleTaskMove}
-            onTaskCreate={handleTaskCreate}
-            onTaskClick={handleTaskClick}
-          />
+        <TaskKanbanBoard
+          tasks={tarefas}
+          onTaskMove={handleTaskMove}
+          onTaskCreate={handleTaskCreate}
+          onTaskClick={handleTaskClick}
+          projetoId={projetoId!}
+        />
+
+      {/* Create Task Modal */}
+      <CreateTaskModal
+        open={showCreateModal}
+        onOpenChange={setShowCreateModal}
+        onTaskCreate={handleCreateTask}
+        projetoId={projetoId!}
+      />
+
+      {/* Task Details Modal */}
+      <TaskDetailsModal
+        open={showTaskDetails}
+        onOpenChange={setShowTaskDetails}
+        task={selectedTask}
+        onTaskUpdate={handleTaskUpdate}
+      />
         </CardContent>
       </Card>
     </div>

@@ -37,8 +37,9 @@ interface KanbanColumn {
 interface TaskKanbanBoardProps {
   tasks: KanbanTask[];
   onTaskMove: (taskId: string, newStatus: string) => void;
-  onTaskCreate: () => void;
+  onTaskCreate: (status?: string) => void;
   onTaskClick: (task: KanbanTask) => void;
+  projetoId: string;
 }
 
 function SortableTaskCard({ task, onTaskClick }: { task: KanbanTask; onTaskClick: (task: KanbanTask) => void }) {
@@ -199,7 +200,7 @@ function KanbanColumnComponent({
   );
 }
 
-export function TaskKanbanBoard({ tasks, onTaskMove, onTaskCreate, onTaskClick }: TaskKanbanBoardProps) {
+export function TaskKanbanBoard({ tasks, onTaskMove, onTaskCreate, onTaskClick, projetoId }: TaskKanbanBoardProps) {
   const [activeTask, setActiveTask] = useState<KanbanTask | null>(null);
 
   // Organize tasks into columns
