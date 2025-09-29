@@ -80,13 +80,70 @@ export function CreateClientUserForm({ clientes }: CreateClientUserFormProps) {
     setPassword(password);
   };
 
+  // Função para criar o usuário específico da Agência Bex
+  const createAgenciaBexUser = async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('create-client-user', {
+        body: { 
+          email: 'comercial@agenciabex.com.br',
+          password: 'TempPass2024!',
+          nome: 'Comercial Agência Bex',
+          cliente_id: '8c4482fc-4aa1-422c-b1fc-6441c14b6d6a',
+          role: 'cliente'
+        }
+      });
+
+      if (error) {
+        console.error('Erro ao criar usuário da Agência Bex:', error);
+        toast.error(`Erro ao criar usuário: ${error.message}`);
+        return;
+      }
+
+      if (data?.success) {
+        toast.success('Usuário comercial@agenciabex.com.br criado com sucesso!');
+        toast.info('Email: comercial@agenciabex.com.br | Senha: TempPass2024!');
+      } else {
+        toast.error(data?.error || 'Erro ao criar usuário');
+      }
+      
+    } catch (error) {
+      console.error('Erro ao criar usuário da Agência Bex:', error);
+      toast.error('Erro ao criar usuário. Tente novamente.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <Card className="w-full max-w-md">
-      <CardHeader>
-        <CardTitle>Criar Usuário Cliente</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
+    <div className="space-y-6">
+      {/* Botão de ação rápida para Agência Bex */}
+      <Card className="w-full max-w-md bg-yellow-50 border-yellow-200">
+        <CardHeader>
+          <CardTitle className="text-yellow-800">Ação Rápida - Agência Bex</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Button 
+            onClick={createAgenciaBexUser}
+            className="w-full bg-yellow-600 hover:bg-yellow-700 text-white"
+            disabled={loading}
+          >
+            {loading ? 'Criando...' : 'Criar comercial@agenciabex.com.br'}
+          </Button>
+          <p className="text-sm text-yellow-700 mt-2">
+            Email: comercial@agenciabex.com.br<br/>
+            Senha: TempPass2024!
+          </p>
+        </CardContent>
+      </Card>
+
+      {/* Formulário geral */}
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <CardTitle>Criar Usuário Cliente</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <Label htmlFor="email">Email</Label>
             <Input
@@ -147,8 +204,9 @@ export function CreateClientUserForm({ clientes }: CreateClientUserFormProps) {
           <Button type="submit" disabled={loading} className="w-full">
             {loading ? 'Criando...' : 'Criar Usuário'}
           </Button>
-        </form>
-      </CardContent>
-    </Card>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
   );
 }
