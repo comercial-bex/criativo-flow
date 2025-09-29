@@ -52,6 +52,7 @@ export function CreateClientUserForm({ clientes }: CreateClientUserFormProps) {
 
       if (data?.success) {
         toast.success('Usuário criado com sucesso!');
+        toast.info('O usuário ficará pendente até a aprovação do administrador.');
         toast.info(`Email: ${data.email} | Senha: ${data.password}`);
         
         // Limpar formulário
@@ -102,6 +103,7 @@ export function CreateClientUserForm({ clientes }: CreateClientUserFormProps) {
 
       if (data?.success) {
         toast.success('Usuário comercial@agenciabex.com.br criado com sucesso!');
+        toast.info('O usuário ficará pendente até a aprovação do administrador.');
         toast.info('Email: comercial@agenciabex.com.br | Senha: TempPass2024!');
       } else {
         toast.error(data?.error || 'Erro ao criar usuário');
