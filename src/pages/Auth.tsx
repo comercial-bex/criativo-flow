@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { PasswordResetModal } from '@/components/PasswordResetModal';
-import { TestClientUserCreation } from '@/components/TestClientUserCreation';
+
 import bexLogo from '@/assets/logo_bex_verde.png';
 
 import { toast } from 'sonner';
@@ -268,8 +268,6 @@ export default function Auth() {
         </Card>
 
 
-        {/* Componente de Teste */}
-        <TestClientUserCreation />
 
         {/* Modal de Recuperação de Senha */}
         <PasswordResetModal 
