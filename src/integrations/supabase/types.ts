@@ -163,6 +163,75 @@ export type Database = {
         }
         Relationships: []
       }
+      briefings: {
+        Row: {
+          anexos: string[] | null
+          call_to_action: string | null
+          cliente_id: string
+          contexto_estrategico: string | null
+          created_at: string | null
+          descricao: string | null
+          formato_postagem: string | null
+          hashtags: string | null
+          id: string
+          objetivo_postagem: string | null
+          observacoes: string | null
+          publico_alvo: string | null
+          tarefa_id: string
+          titulo: string
+          updated_at: string | null
+        }
+        Insert: {
+          anexos?: string[] | null
+          call_to_action?: string | null
+          cliente_id: string
+          contexto_estrategico?: string | null
+          created_at?: string | null
+          descricao?: string | null
+          formato_postagem?: string | null
+          hashtags?: string | null
+          id?: string
+          objetivo_postagem?: string | null
+          observacoes?: string | null
+          publico_alvo?: string | null
+          tarefa_id: string
+          titulo: string
+          updated_at?: string | null
+        }
+        Update: {
+          anexos?: string[] | null
+          call_to_action?: string | null
+          cliente_id?: string
+          contexto_estrategico?: string | null
+          created_at?: string | null
+          descricao?: string | null
+          formato_postagem?: string | null
+          hashtags?: string | null
+          id?: string
+          objetivo_postagem?: string | null
+          observacoes?: string | null
+          publico_alvo?: string | null
+          tarefa_id?: string
+          titulo?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "briefings_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "briefings_tarefa_id_fkey"
+            columns: ["tarefa_id"]
+            isOneToOne: false
+            referencedRelation: "tarefas_projeto"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       captacoes_agenda: {
         Row: {
           cliente_id: string | null
@@ -1386,6 +1455,57 @@ export type Database = {
           },
         ]
       }
+      logs_atividade: {
+        Row: {
+          acao: string
+          cliente_id: string
+          data_hora: string | null
+          descricao: string
+          entidade_id: string
+          entidade_tipo: string
+          id: string
+          metadata: Json | null
+          usuario_id: string
+        }
+        Insert: {
+          acao: string
+          cliente_id: string
+          data_hora?: string | null
+          descricao: string
+          entidade_id: string
+          entidade_tipo: string
+          id?: string
+          metadata?: Json | null
+          usuario_id: string
+        }
+        Update: {
+          acao?: string
+          cliente_id?: string
+          data_hora?: string | null
+          descricao?: string
+          entidade_id?: string
+          entidade_tipo?: string
+          id?: string
+          metadata?: Json | null
+          usuario_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "logs_atividade_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "logs_atividade_usuario_id_fkey"
+            columns: ["usuario_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notificacoes: {
         Row: {
           created_at: string
@@ -2457,7 +2577,11 @@ export type Database = {
       tarefas_projeto: {
         Row: {
           anexos: string[] | null
+          aprovacao_status: string | null
+          aprovado_por: string | null
+          briefing_obrigatorio: boolean | null
           created_at: string
+          data_aprovacao: string | null
           data_inicio: string | null
           data_prazo: string | null
           dependencias: string[] | null
@@ -2466,17 +2590,23 @@ export type Database = {
           horas_trabalhadas: number | null
           id: string
           observacoes: string | null
+          observacoes_aprovacao: string | null
           prioridade: string
           projeto_id: string
           responsavel_id: string | null
           setor_responsavel: string
           status: string
+          tipo_tarefa: string | null
           titulo: string
           updated_at: string
         }
         Insert: {
           anexos?: string[] | null
+          aprovacao_status?: string | null
+          aprovado_por?: string | null
+          briefing_obrigatorio?: boolean | null
           created_at?: string
+          data_aprovacao?: string | null
           data_inicio?: string | null
           data_prazo?: string | null
           dependencias?: string[] | null
@@ -2485,17 +2615,23 @@ export type Database = {
           horas_trabalhadas?: number | null
           id?: string
           observacoes?: string | null
+          observacoes_aprovacao?: string | null
           prioridade?: string
           projeto_id: string
           responsavel_id?: string | null
           setor_responsavel: string
           status?: string
+          tipo_tarefa?: string | null
           titulo: string
           updated_at?: string
         }
         Update: {
           anexos?: string[] | null
+          aprovacao_status?: string | null
+          aprovado_por?: string | null
+          briefing_obrigatorio?: boolean | null
           created_at?: string
+          data_aprovacao?: string | null
           data_inicio?: string | null
           data_prazo?: string | null
           dependencias?: string[] | null
@@ -2504,15 +2640,24 @@ export type Database = {
           horas_trabalhadas?: number | null
           id?: string
           observacoes?: string | null
+          observacoes_aprovacao?: string | null
           prioridade?: string
           projeto_id?: string
           responsavel_id?: string | null
           setor_responsavel?: string
           status?: string
+          tipo_tarefa?: string | null
           titulo?: string
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "tarefas_projeto_aprovado_por_fkey"
+            columns: ["aprovado_por"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "tarefas_projeto_projeto_id_fkey"
             columns: ["projeto_id"]
@@ -2684,6 +2829,18 @@ export type Database = {
           p_severity?: string
           p_source_reference?: Json
           p_title: string
+        }
+        Returns: string
+      }
+      criar_log_atividade: {
+        Args: {
+          p_acao: string
+          p_cliente_id: string
+          p_descricao: string
+          p_entidade_id: string
+          p_entidade_tipo: string
+          p_metadata?: Json
+          p_usuario_id: string
         }
         Returns: string
       }
