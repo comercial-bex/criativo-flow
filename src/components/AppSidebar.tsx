@@ -282,7 +282,7 @@ export function AppSidebar() {
       case 'gestor':
         return modules.filter(m => ['dashboard', 'crm', 'configuracoes', 'inteligencia'].includes(m.id));
       case 'cliente':
-        return modules.filter(m => m.id === 'dashboard'); // Clientes veem dashboard
+        return []; // Clientes have separate navigation
       case 'trafego':
         return modules.filter(m => m.id === 'dashboard');
       case 'fornecedor':
@@ -329,8 +329,8 @@ export function AppSidebar() {
 
   // Get current module items or fallback items based on role
   const getCurrentItems = () => {
-    if (role === 'cliente' && selectedModule === 'dashboard') {
-      return clientItems; // Show client items when dashboard is selected
+    if (role === 'cliente') {
+      return clientItems;
     }
     
     if (role === 'grs') {

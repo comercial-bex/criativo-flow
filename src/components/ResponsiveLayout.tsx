@@ -4,7 +4,6 @@ import { GlobalHeader } from "@/components/GlobalHeader";
 import { BottomNavigation } from "@/components/BottomNavigation";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { useDeviceType } from "@/hooks/useDeviceType";
-import { useUserRole } from "@/hooks/useUserRole";
 
 interface ResponsiveLayoutProps {
   children: React.ReactNode;
@@ -12,31 +11,19 @@ interface ResponsiveLayoutProps {
 
 export function ResponsiveLayout({ children }: ResponsiveLayoutProps) {
   const deviceType = useDeviceType();
-  const { role } = useUserRole();
-  
-  // DEBUG: Log para verificar detecção completa
-  console.log('🖥️ Layout Detection:', { deviceType, role, width: window.innerWidth });
-  
-  // ADMIN OVERRIDE: Admin sempre vê versão desktop
-  const forceDesktop = role === 'admin';
-  const isMobile = !forceDesktop && (deviceType === 'mobile-small' || deviceType === 'mobile');
-  const isTablet = !forceDesktop && (deviceType === 'tablet' || deviceType === 'tablet-lg');
-  const isDesktop = forceDesktop || (deviceType === 'desktop' || deviceType === 'desktop-lg');
+  const isMobile = deviceType === 'mobile';
+  const isTablet = deviceType === 'tablet';
 
   if (isMobile) {
     return (
       <div className="min-h-screen flex flex-col w-full bg-background">
-        {/* Mobile Header - Responsive */}
-        <header className={`${
-          deviceType === 'mobile-small' ? 'h-12' : 'h-14'
-        } flex items-center border-b bg-background px-2 mobile:px-4 sticky top-0 z-50`}>
+        {/* Mobile Header - Compacto */}
+        <header className="h-14 flex items-center border-b bg-background px-4 sticky top-0 z-50">
           <GlobalHeader />
         </header>
         
         {/* Mobile Content */}
-        <main className={`flex-1 overflow-auto bg-muted/20 pb-20 ${
-          deviceType === 'mobile-small' ? 'px-2' : 'px-4'
-        }`}>
+        <main className="flex-1 overflow-auto bg-muted/20 pb-20">
           {children}
         </main>
         
@@ -50,39 +37,32 @@ export function ResponsiveLayout({ children }: ResponsiveLayoutProps) {
   }
 
   return (
-    <SidebarProvider defaultOpen={isDesktop}>
+    <SidebarProvider defaultOpen={true}>
       <div 
         className="min-h-screen w-full bg-background grid grid-cols-[auto_1fr]"
-        data-sidebar={isDesktop ? "expanded" : "collapsed"}
+        data-sidebar="expanded"
       >
-        {/* Sidebar - Show on tablet and desktop */}
+        {/* Fixed Sidebar - Always visible on desktop */}
         <div className="fixed left-0 top-0 h-screen z-40">
           <AppSidebar />
         </div>
         
         {/* Main Content Area */}
         <div 
-          className={`flex flex-col min-h-screen transition-all duration-300 ease-in-out ${
-            isDesktop ? 'ml-[var(--sidebar-width,280px)]' : isTablet ? 'ml-0' : 'ml-0'
-          }`}
+          className="flex flex-col min-h-screen transition-[margin-left] duration-300 ease-in-out sidebar-transition"
+          style={{ marginLeft: 'var(--sidebar-width, 280px)' }}
         >
-          {/* Responsive Header */}
-          <header className={`${
-            isTablet ? 'h-14' : 'h-16'
-          } flex items-center border-b bg-background/95 backdrop-blur-sm px-2 mobile:px-3 tablet:px-4 sticky top-0 z-50 shadow-sm`}>
-          <div className="flex items-center gap-2 mobile:gap-3 flex-1">
-              {(isTablet && !isDesktop) && (
-                <SidebarTrigger className="hover:bg-muted/50 p-2 rounded-md transition-colors" />
-              )}
+          {/* Fixed Header */}
+          <header className={`${isTablet ? 'h-14' : 'h-16'} flex items-center border-b bg-background/95 backdrop-blur-sm px-4 sticky top-0 z-50 shadow-sm`}>
+            <div className="flex items-center gap-3 flex-1">
+              <SidebarTrigger className="hover:bg-muted/50 p-2 rounded-md transition-colors" />
               <GlobalHeader />
             </div>
           </header>
           
           {/* Scrollable Content */}
           <main className="flex-1 overflow-y-auto bg-muted/20 relative">
-            <div className={`container mx-auto ${
-              isTablet ? 'p-4' : 'p-6'
-            }`}>
+            <div className="container mx-auto p-4">
               {children}
             </div>
           </main>
