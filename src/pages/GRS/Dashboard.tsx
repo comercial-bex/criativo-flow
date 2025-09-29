@@ -300,7 +300,8 @@ export default function GRSDashboard() {
             </Button>
           </SimpleHelpModal>
           <InteractiveGuideButton />
-        </div>
+          </TabsContent>
+        </Tabs>
       </div>
 
       {/* Client Selector */}
