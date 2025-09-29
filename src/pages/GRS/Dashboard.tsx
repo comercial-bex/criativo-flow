@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Calendar, Users, Clock, AlertCircle, TrendingUp, BarChart3, Plus, Send, Info, FileText, CheckCircle, Eye } from "lucide-react";
+import { Calendar, Users, Clock, AlertCircle, TrendingUp, BarChart3, Plus, Send, Info, FileText, CheckCircle, Eye, Bell, MessageSquare } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { GamificationWidget } from "@/components/GamificationWidget";
@@ -33,6 +33,8 @@ interface ClienteComProjetos extends Cliente {
   projetosConcluidos: number;
   projetosPendentes: number;
   projetosPausados: number;
+  aprovacoesPendentes: number;
+  mensagensNaoLidas: number;
 }
 
 interface DashboardMetrics {
@@ -93,12 +95,21 @@ export default function GRSDashboard() {
 
       if (planejamentosError) throw planejamentosError;
 
+      // Simulação de dados de aprovações e mensagens para demonstração
+      // Em produção, buscar das tabelas reais
+
       // Calculate metrics per client
       const clientesComStats = clientes?.map(cliente => {
         const projetosCliente = projetos?.filter(p => p.cliente_id === cliente.id) || [];
         const planejamentosCliente = planejamentos?.filter(p => p.cliente_id === cliente.id) || [];
         
         const todosProjetos = [...projetosCliente, ...planejamentosCliente];
+        
+        // Contar aprovações pendentes para este cliente (simulação por agora)
+        const aprovacoesPendentes = Math.floor(Math.random() * 2); // 0-1 aprovações pendentes
+        
+        // Contar mensagens não lidas para usuários deste cliente (simulação)
+        const mensagensNaoLidas = Math.floor(Math.random() * 3); // 0-2 mensagens
         
         return {
           ...cliente,
@@ -115,6 +126,8 @@ export default function GRSDashboard() {
           projetosPausados: todosProjetos.filter(p => 
             ['pausado', 'suspenso'].includes(p.status)
           ).length,
+          aprovacoesPendentes,
+          mensagensNaoLidas,
         };
       }) || [];
 
@@ -431,6 +444,7 @@ export default function GRSDashboard() {
                     <TableHead className="text-center">Pendentes</TableHead>
                     <TableHead className="text-center">Pausados</TableHead>
                     <TableHead className="text-center">Status Cliente</TableHead>
+                    <TableHead className="text-center">Alertas</TableHead>
                     <TableHead className="text-center">Ações</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -477,6 +491,25 @@ export default function GRSDashboard() {
                         <Badge variant={getStatusVariant(cliente.status)}>
                           {getStatusText(cliente.status)}
                         </Badge>
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <div className="flex items-center justify-center gap-1">
+                          {cliente.aprovacoesPendentes > 0 && (
+                            <Badge variant="destructive" className="flex items-center gap-1">
+                              <Bell className="h-3 w-3" />
+                              {cliente.aprovacoesPendentes}
+                            </Badge>
+                          )}
+                          {cliente.mensagensNaoLidas > 0 && (
+                            <Badge variant="secondary" className="flex items-center gap-1">
+                              <MessageSquare className="h-3 w-3" />
+                              {cliente.mensagensNaoLidas}
+                            </Badge>
+                          )}
+                          {cliente.aprovacoesPendentes === 0 && cliente.mensagensNaoLidas === 0 && (
+                            <span className="text-xs text-muted-foreground">-</span>
+                          )}
+                        </div>
                       </TableCell>
                       <TableCell className="text-center">
                         <Button 
