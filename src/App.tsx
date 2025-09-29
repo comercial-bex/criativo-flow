@@ -46,6 +46,7 @@ import FinanceiroDashboard from "./pages/Financeiro/Dashboard";
 import FornecedorDashboard from "./pages/Fornecedor/Dashboard";
 import GestorDashboard from "./pages/Gestor/Dashboard";
 import MinhasTarefas from "./pages/MinhasTarefas";
+import TarefasUnificadasGRS from "./pages/GRS/TarefasUnificadas";
 
 // Client pages
 import ClientePainel from "./pages/Cliente/Painel";
@@ -79,6 +80,8 @@ import GamificacaoAdmin from "./pages/GamificacaoAdmin";
 
 import AprovacaoJob from "./pages/AprovacaoJob";
 import AdminPainel from "./pages/Admin/Painel";
+import AdminTarefas from "./pages/Admin/Tarefas";
+import ClienteTarefas from "./pages/Cliente/Tarefas";
 import IntelligenceDashboard from "./components/IntelligenceDashboard";
 
 const queryClient = new QueryClient();
@@ -415,6 +418,12 @@ function App() {
                   </ProtectedRoute>
                 } />
                 
+                <Route path="/cliente/tarefas" element={
+                  <ProtectedRoute requiredRole="cliente">
+                    <Layout><ClienteTarefas /></Layout>
+                  </ProtectedRoute>
+                } />
+                
                 {/* GRS integrated routes (formerly Atendimento) */}
                 <Route path="/grs/inbox" element={
                   <ProtectedRoute requiredRole="grs">
@@ -424,7 +433,7 @@ function App() {
                 
                 <Route path="/grs/tarefas" element={
                   <ProtectedRoute requiredRole="grs">
-                    <Layout><div>Minhas Tarefas GRS</div></Layout>
+                    <Layout><TarefasUnificadasGRS /></Layout>
                   </ProtectedRoute>
                 } />
 
@@ -470,6 +479,12 @@ function App() {
                 <Route path="/admin/painel" element={
                   <ProtectedRoute requiredRole="admin">
                     <Layout><AdminPainel /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/admin/tarefas" element={
+                  <ProtectedRoute requiredRole="admin">
+                    <Layout><AdminTarefas /></Layout>
                   </ProtectedRoute>
                 } />
 

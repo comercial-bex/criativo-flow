@@ -218,6 +218,7 @@ const modules = [
     icon: Shield,
     items: [
       { title: "Painel Admin", url: "/admin/painel", icon: Shield },
+      { title: "Todas as Tarefas", url: "/admin/tarefas", icon: ClipboardCheck },
       { title: "Usuários", url: "/admin/usuarios", icon: Users2 },
       { title: "Logs do Sistema", url: "/admin/logs", icon: Activity },
     ],
@@ -286,6 +287,7 @@ export function AppSidebar() {
   const clientItems = [
     { title: "Meu Painel", url: "/cliente/painel", icon: Home },
     { title: "Meus Projetos", url: "/cliente/projetos", icon: Briefcase },
+    { title: "Minhas Tarefas", url: "/cliente/tarefas", icon: ClipboardCheck },
     { title: "Aprovações", url: "/aprovacao-job", icon: Eye },
   ];
 
