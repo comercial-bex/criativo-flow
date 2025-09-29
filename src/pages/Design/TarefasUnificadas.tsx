@@ -250,23 +250,34 @@ export default function TarefasUnificadasDesign() {
 
       if (error) throw error;
 
-      // Buscar dados relacionados
-      const { data: taskWithRelations } = await supabase
-        .from('tarefas_projeto')
-        .select(`
-          *,
-          profiles:responsavel_id(nome),
-          clientes:cliente_id(nome),
-          projetos:projeto_id(titulo)
-        `)
-        .eq('id', data.id)
-        .single();
+      // Buscar nomes relacionados separadamente
+      let responsavel_nome = '';
+      let cliente_nome = '';
 
-      const processedTask = {
-        ...taskWithRelations,
-        responsavel_nome: taskWithRelations?.profiles?.nome,
-        cliente_nome: taskWithRelations?.clientes?.nome,
-        projeto_nome: taskWithRelations?.projetos?.titulo
+      if (data.responsavel_id) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('nome')
+          .eq('id', data.responsavel_id)
+          .single();
+        responsavel_nome = profile?.nome || '';
+      }
+
+      if (newTask.cliente_id) {
+        const { data: cliente } = await supabase
+          .from('clientes')
+          .select('nome')
+          .eq('id', newTask.cliente_id)
+          .single();
+        cliente_nome = cliente?.nome || '';
+      }
+
+      const processedTask: DesignTask = {
+        ...data,
+        prioridade: data.prioridade as 'baixa' | 'media' | 'alta',
+        responsavel_nome,
+        cliente_nome,
+        observacoes: data.observacoes || ''
       };
 
       setTasks(prev => [processedTask, ...prev]);
