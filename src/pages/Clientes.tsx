@@ -339,19 +339,9 @@ const Clientes = () => {
 
   const handleDelete = async (id: string) => {
     try {
-      const { error } = await supabase
-        .from('clientes')
-        .delete()
-        .eq('id', id);
-
-      if (error) {
-        console.error('Erro ao excluir cliente:', error);
-        toast.error('Erro ao excluir cliente');
-        return;
-      }
-
+      // Usar o hook useClientData que já tem verificações de permissão
+      await deleteCliente(id);
       toast.success("Cliente removido com sucesso!");
-      await fetchClientes();
     } catch (error) {
       console.error('Erro ao excluir cliente:', error);
       toast.error('Erro ao excluir cliente');

@@ -286,11 +286,13 @@ export default function Especialistas() {
 
     setDeleteLoading(true);
     try {
-      // Deletar da tabela profiles (CASCADE irá deletar de user_roles também)
-      const { error } = await supabase
-        .from('profiles')
-        .delete()
-        .eq('id', deleteEspecialista.id);
+      // Usar edge function para deletar com verificações adequadas
+      const { error } = await supabase.functions.invoke('admin-user-management', {
+        body: { 
+          action: 'delete-user', 
+          user_id: deleteEspecialista.id 
+        }
+      });
 
       if (error) throw error;
 

@@ -61,6 +61,8 @@ export function SimplifiedAdminControls({ clienteId, clienteData }: SimplifiedAd
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [manualPassword, setManualPassword] = useState(false);
   const [newEmail, setNewEmail] = useState(
     clienteData.email || 
     clienteData.nome?.toLowerCase().replace(/\s+/g, '').replace(/[^a-z0-9]/g, '') + '@cliente.com' || 
@@ -138,10 +140,28 @@ export function SimplifiedAdminControls({ clienteId, clienteData }: SimplifiedAd
       return;
     }
 
+    // Validar senha manual se habilitada
+    if (manualPassword) {
+      if (!newPassword.trim()) {
+        toast.error("Senha é obrigatória");
+        return;
+      }
+      if (newPassword !== confirmPassword) {
+        toast.error("Senhas não coincidem");
+        return;
+      }
+      if (newPassword.length < 8) {
+        toast.error("Senha deve ter pelo menos 8 caracteres");
+        return;
+      }
+    }
+
     setLoading(true);
     try {
-      const generatedPassword = generateStrongPassword();
-      setNewPassword(generatedPassword);
+      const finalPassword = manualPassword ? newPassword : generateStrongPassword();
+      if (!manualPassword) {
+        setNewPassword(finalPassword);
+      }
       
       console.log('🔧 SimplifiedControls: Criando conta para cliente:', {
         email: newEmail,
@@ -155,7 +175,7 @@ export function SimplifiedAdminControls({ clienteId, clienteData }: SimplifiedAd
       const { data, error } = await supabase.functions.invoke('create-client-user', {
         body: {
           email: newEmail,
-          password: generatedPassword,
+          password: finalPassword,
           nome: clienteData.nome,
           cliente_id: clienteId,
           role: 'cliente'
@@ -182,7 +202,7 @@ export function SimplifiedAdminControls({ clienteId, clienteData }: SimplifiedAd
         
         setCreatedCredentials({
           email: data.email || newEmail,
-          senha: data.password || generatedPassword
+          senha: data.password || finalPassword
         });
         setShowCredentials(true);
         setStep('complete');
@@ -399,24 +419,108 @@ export function SimplifiedAdminControls({ clienteId, clienteData }: SimplifiedAd
           {step === 'password' && (
             <div className="space-y-4">
               <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                <h4 className="font-medium text-green-900 mb-2">🔑 Passo 2: Gerar Senha</h4>
-                <p className="text-sm text-green-700">A senha será gerada automaticamente com alta segurança</p>
+                <h4 className="font-medium text-green-900 mb-2">🔑 Passo 2: Definir Senha</h4>
+                <p className="text-sm text-green-700">Escolha entre gerar automaticamente ou definir manualmente</p>
               </div>
               
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <Label className="text-sm font-medium">Senha será gerada automaticamente</Label>
-                  <Badge variant="outline" className="bg-green-50 text-green-700">
-                    Segura
-                  </Badge>
+              <div className="space-y-4">
+                <div className="flex items-center space-x-3">
+                  <input
+                    type="radio"
+                    id="auto-password"
+                    checked={!manualPassword}
+                    onChange={() => {
+                      setManualPassword(false);
+                      setNewPassword("");
+                      setConfirmPassword("");
+                    }}
+                    className="h-4 w-4 text-primary"
+                  />
+                  <Label htmlFor="auto-password" className="text-sm font-medium cursor-pointer">
+                    Gerar automaticamente (recomendado)
+                  </Label>
                 </div>
                 
-                <div className="p-3 bg-muted/30 rounded border text-sm text-muted-foreground">
-                  ✓ 10 caracteres<br />
-                  ✓ Letras maiúsculas e minúsculas<br />
-                  ✓ Números e símbolos<br />
-                  ✓ Copiada automaticamente
+                <div className="flex items-center space-x-3">
+                  <input
+                    type="radio"
+                    id="manual-password"
+                    checked={manualPassword}
+                    onChange={() => setManualPassword(true)}
+                    className="h-4 w-4 text-primary"
+                  />
+                  <Label htmlFor="manual-password" className="text-sm font-medium cursor-pointer">
+                    Definir senha manualmente
+                  </Label>
                 </div>
+
+                {!manualPassword && (
+                  <div className="p-3 bg-muted/30 rounded border text-sm text-muted-foreground">
+                    ✓ 10 caracteres<br />
+                    ✓ Letras maiúsculas e minúsculas<br />
+                    ✓ Números e símbolos<br />
+                    ✓ Copiada automaticamente
+                  </div>
+                )}
+
+                {manualPassword && (
+                  <div className="space-y-3">
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium">Nova Senha *</Label>
+                      <div className="relative">
+                        <Input
+                          type={showPassword ? "text" : "password"}
+                          value={newPassword}
+                          onChange={(e) => setNewPassword(e.target.value)}
+                          placeholder="Mínimo 8 caracteres"
+                          className="pr-10"
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 p-0"
+                          onClick={() => setShowPassword(!showPassword)}
+                        >
+                          {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </Button>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium">Confirmar Senha *</Label>
+                      <Input
+                        type={showPassword ? "text" : "password"}
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        placeholder="Digite a senha novamente"
+                      />
+                    </div>
+                    
+                    {newPassword && (
+                      <div className="text-xs space-y-1">
+                        <div className={`flex items-center ${newPassword.length >= 8 ? 'text-green-600' : 'text-red-600'}`}>
+                          {newPassword.length >= 8 ? '✓' : '✗'} Pelo menos 8 caracteres
+                        </div>
+                        <div className={`flex items-center ${/[A-Z]/.test(newPassword) ? 'text-green-600' : 'text-red-600'}`}>
+                          {/[A-Z]/.test(newPassword) ? '✓' : '✗'} Letra maiúscula
+                        </div>
+                        <div className={`flex items-center ${/[a-z]/.test(newPassword) ? 'text-green-600' : 'text-red-600'}`}>
+                          {/[a-z]/.test(newPassword) ? '✓' : '✗'} Letra minúscula
+                        </div>
+                        <div className={`flex items-center ${/\d/.test(newPassword) ? 'text-green-600' : 'text-red-600'}`}>
+                          {/\d/.test(newPassword) ? '✓' : '✗'} Número
+                        </div>
+                      </div>
+                    )}
+                    
+                    {confirmPassword && newPassword !== confirmPassword && (
+                      <div className="text-xs text-red-600">
+                        ✗ Senhas não coincidem
+                      </div>
+                    )}
+                  </div>
+                )}
                 
                 <div className="flex gap-2 pt-2">
                   <Button 
@@ -428,7 +532,7 @@ export function SimplifiedAdminControls({ clienteId, clienteData }: SimplifiedAd
                   </Button>
                   <Button 
                     onClick={handleCreateAccount}
-                    disabled={loading}
+                    disabled={loading || (manualPassword && (!newPassword || newPassword !== confirmPassword || newPassword.length < 8))}
                     className="flex-1"
                   >
                     {loading ? (

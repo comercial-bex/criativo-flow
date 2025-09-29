@@ -75,21 +75,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const validation = validationData as any;
       
       if (!validation?.exists) {
-        console.log('🔐 Auth: Usuário não encontrado no sistema');
-        return { 
-          error: { 
-            message: 'Usuário não encontrado no sistema. Entre em contato com o administrador.' 
-          } 
-        };
-      }
-      
-      if (!validation?.has_client && !validation?.is_admin_role) {
-        console.log('🔐 Auth: Usuário não vinculado a cliente');
-        return { 
-          error: { 
-            message: 'Usuário existe mas não está vinculado a nenhum cliente.' 
-          } 
-        };
+        console.log('🔐 Auth: Usuário não encontrado no sistema, tentando login direto');
+        // Permitir tentativa de login direto - pode ser conta auth sem profile
+      } else {
+        // Se é role administrativa, permitir sempre
+        if (validation?.is_admin_role) {
+          console.log('🔐 Auth: Role administrativa detectada');
+        } else if (!validation?.has_client && validation?.role === 'cliente') {
+          console.warn('🔐 Auth: Cliente sem vínculo, mas permitindo login para configuração');
+          // Permitir login mesmo sem vínculo para que admin possa configurar depois
+        }
       }
       
       console.log('🔐 Auth: Usuário validado:', validationData);
