@@ -51,7 +51,7 @@ export function AdminClienteControls({ clienteId, clienteData }: AdminClienteCon
   const [authData, setAuthData] = useState<ClienteAuthData | null>(null);
   const [loading, setLoading] = useState(false);
   const [newPassword, setNewPassword] = useState("");
-  const [newEmail, setNewEmail] = useState(clienteData.email || "");
+  const [newEmail, setNewEmail] = useState(clienteData.email || clienteData.nome?.toLowerCase().replace(/\s+/g, '') + '@cliente.com' || "");
   const [accountStatus, setAccountStatus] = useState(clienteData.status || "ativo");
   const [showCredentials, setShowCredentials] = useState(false);
   const [createdCredentials, setCreatedCredentials] = useState({ email: "", senha: "" });
@@ -174,12 +174,14 @@ export function AdminClienteControls({ clienteId, clienteData }: AdminClienteCon
                           Math.random().toString(36).slice(-8).toUpperCase() + 
                           Math.floor(Math.random() * 100);
       
-      console.log('Attempting to create account with:', {
+      console.log('🔧 AdminControls: Criando conta para cliente:', {
         email: newEmail,
         nome: clienteData.nome,
         cliente_id: clienteId,
         role: 'cliente'
       });
+      
+      toast.info('Criando conta de acesso...', { duration: 2000 });
       
       const { data, error } = await supabase.functions.invoke('create-client-user', {
         body: {
@@ -191,40 +193,50 @@ export function AdminClienteControls({ clienteId, clienteData }: AdminClienteCon
         }
       });
 
-      console.log('Response from edge function:', { data, error });
+      console.log('🔧 AdminControls: Resposta da Edge Function:', { data, error });
 
       if (error) {
-        console.error('Create account error:', error);
-        if (error.message?.includes('409')) {
+        console.error('🔧 AdminControls: Erro na criação:', error);
+        
+        if (error.message?.includes('409') || error.message?.includes('já está vinculado')) {
           toast.error('Email já existe. Use a opção de reset de senha ou escolha outro email.');
+        } else if (error.message?.includes('Database error')) {
+          toast.error('Erro no banco de dados. Tente novamente em alguns segundos.');
         } else {
-          toast.error('Erro ao criar conta: ' + error.message);
+          toast.error('Erro ao criar conta: ' + (error.message || 'Erro desconhecido'));
         }
         return;
       }
 
-      if (data && data.success) {
+      if (data?.success) {
+        console.log('🔧 AdminControls: Conta criada com sucesso via', data.method || 'auth API');
+        
         // Set credentials for modal
         setCreatedCredentials({
-          email: data.email,
-          senha: data.password
+          email: data.email || newEmail,
+          senha: data.password || tempPassword
         });
         setShowCredentials(true);
         
-        if (data.message?.includes('já vinculado')) {
-          toast.success('Email reutilizado! Senha atualizada.');
+        if (data.message?.includes('já vinculado') || data.message?.includes('backup SQL')) {
+          toast.success(data.message || 'Conta criada via backup!');
         } else {
           toast.success('Conta criada com sucesso!');
         }
         
+        // Update email field if needed
+        if (data.email && data.email !== newEmail) {
+          setNewEmail(data.email);
+        }
+        
         await fetchAuthData(); // Recarregar dados
       } else {
-        console.error('Invalid response:', data);
-        toast.error('Resposta inválida do servidor');
+        console.error('🔧 AdminControls: Resposta inválida:', data);
+        toast.error('Falha na criação da conta. Verifique os logs.');
       }
     } catch (error: any) {
-      console.error('Error creating account:', error);
-      toast.error('Erro ao criar conta: ' + (error.message || 'Erro desconhecido'));
+      console.error('🔧 AdminControls: Erro inesperado:', error);
+      toast.error('Erro inesperado: ' + (error.message || 'Tente novamente'));
     } finally {
       setLoading(false);
     }
@@ -339,21 +351,35 @@ export function AdminClienteControls({ clienteId, clienteData }: AdminClienteCon
               <p className="text-sm text-gray-500">
                 Este cliente não possui conta de acesso
               </p>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="mt-2"
-                onClick={handleCreateAccount}
-                disabled={loading || !clienteData.email}
-              >
-                <Shield className="h-4 w-4 mr-2" />
-                Criar Conta de Acesso
-              </Button>
-              {!clienteData.email && (
-                <p className="text-xs text-red-500 mt-1">
-                  Email do cliente é obrigatório
-                </p>
-              )}
+              
+              <div className="space-y-3 mt-3">
+                <div className="text-left">
+                  <Label className="text-xs">Email para a conta:</Label>
+                  <Input
+                    value={newEmail}
+                    onChange={(e) => setNewEmail(e.target.value)}
+                    placeholder="email@exemplo.com"
+                    className="mt-1"
+                    disabled={loading}
+                  />
+                </div>
+                
+                <Button 
+                  size="sm" 
+                  className="w-full"
+                  onClick={handleCreateAccount}
+                  disabled={loading || !newEmail.trim()}
+                >
+                  <Shield className="h-4 w-4 mr-2" />
+                  {loading ? 'Criando...' : 'Criar Conta de Acesso'}
+                </Button>
+                
+                {!newEmail.trim() && (
+                  <p className="text-xs text-amber-600">
+                    Digite o email para criar a conta
+                  </p>
+                )}
+              </div>
             </div>
           )}
         </CardContent>

@@ -197,7 +197,43 @@ serve(async (req) => {
       
       console.log('Password updated for existing user');
     } else {
-      // Create new user in Supabase Auth (without email confirmation)
+      // Try SQL backup function first (more reliable)
+      console.log('🔧 Edge Function: Tentando criar usuário via SQL backup...');
+      try {
+        const { data: backupResult, error: backupError } = await supabaseAdmin.rpc(
+          'create_client_user_sql',
+          {
+            p_email: email,
+            p_password: password,
+            p_nome: nome,
+            p_cliente_id: cliente_id,
+            p_role: role
+          }
+        );
+        
+        if (!backupError && backupResult?.success) {
+          console.log('🔧 Edge Function: Usuário criado via SQL backup!');
+          return new Response(
+            JSON.stringify({ 
+              success: true,
+              email: email,
+              password: password,
+              message: 'Usuário criado com sucesso via SQL backup',
+              method: 'sql_backup'
+            }),
+            { 
+              status: 200, 
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+            }
+          );
+        } else {
+          console.log('🔧 Edge Function: SQL backup não conseguiu criar, tentando Auth API...');
+        }
+      } catch (backupError) {
+        console.log('🔧 Edge Function: Erro no backup SQL, tentando Auth API:', backupError);
+      }
+
+      // Create new user in Supabase Auth (fallback method)
       console.log('🔧 Edge Function: Criando novo usuário no Auth...');
       const { data: newUserData, error: userError } = await supabaseAdmin.auth.admin.createUser({
         email,
@@ -208,44 +244,6 @@ serve(async (req) => {
 
       if (userError) {
         console.error('🔧 Edge Function: Erro ao criar usuário:', userError);
-        
-        // SOLUÇÃO 3: Se falhar a edge function, tentar função SQL de backup
-        if (userError.message.includes('Database error') || userError.message.includes('already')) {
-          console.log('🔧 Edge Function: Tentando função SQL de backup...');
-          try {
-            const { data: backupResult, error: backupError } = await supabaseAdmin.rpc(
-              'create_client_user_sql',
-              {
-                p_email: email,
-                p_password: password,
-                p_nome: nome,
-                p_cliente_id: cliente_id,
-                p_role: role
-              }
-            );
-            
-            if (backupError) {
-              console.error('🔧 Edge Function: Erro na função de backup:', backupError);
-            } else if (backupResult?.success) {
-              console.log('🔧 Edge Function: Usuário criado via backup SQL!');
-              return new Response(
-                JSON.stringify({ 
-                  success: true,
-                  email: email,
-                  password: password,
-                  message: 'Usuário criado com sucesso via backup SQL',
-                  method: 'sql_backup'
-                }),
-                { 
-                  status: 200, 
-                  headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-                }
-              );
-            }
-          } catch (backupError) {
-            console.error('🔧 Edge Function: Falha na tentativa de backup:', backupError);
-          }
-        }
         
         return new Response(
           JSON.stringify({ 
