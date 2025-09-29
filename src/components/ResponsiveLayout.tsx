@@ -4,6 +4,7 @@ import { GlobalHeader } from "@/components/GlobalHeader";
 import { BottomNavigation } from "@/components/BottomNavigation";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { useDeviceType } from "@/hooks/useDeviceType";
+import { useUserRole } from "@/hooks/useUserRole";
 
 interface ResponsiveLayoutProps {
   children: React.ReactNode;
@@ -11,9 +12,16 @@ interface ResponsiveLayoutProps {
 
 export function ResponsiveLayout({ children }: ResponsiveLayoutProps) {
   const deviceType = useDeviceType();
-  const isMobile = deviceType === 'mobile-small' || deviceType === 'mobile';
-  const isTablet = deviceType === 'tablet' || deviceType === 'tablet-lg';
-  const isDesktop = deviceType === 'desktop' || deviceType === 'desktop-lg';
+  const { role } = useUserRole();
+  
+  // DEBUG: Log para verificar detecção completa
+  console.log('🖥️ Layout Detection:', { deviceType, role, width: window.innerWidth });
+  
+  // ADMIN OVERRIDE: Admin sempre vê versão desktop
+  const forceDesktop = role === 'admin';
+  const isMobile = !forceDesktop && (deviceType === 'mobile-small' || deviceType === 'mobile');
+  const isTablet = !forceDesktop && (deviceType === 'tablet' || deviceType === 'tablet-lg');
+  const isDesktop = forceDesktop || (deviceType === 'desktop' || deviceType === 'desktop-lg');
 
   if (isMobile) {
     return (

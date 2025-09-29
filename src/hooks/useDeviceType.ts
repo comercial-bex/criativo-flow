@@ -18,18 +18,30 @@ export function useDeviceType(): DeviceType {
     const updateDeviceType = () => {
       const width = window.innerWidth;
       
-      if (width < BREAKPOINTS.mobile) {
-        setDeviceType('mobile-small');
-      } else if (width < BREAKPOINTS.tablet) {
-        setDeviceType('mobile');
-      } else if (width < BREAKPOINTS['tablet-lg']) {
-        setDeviceType('tablet');
-      } else if (width < BREAKPOINTS.desktop) {
-        setDeviceType('tablet-lg');
-      } else if (width < BREAKPOINTS['desktop-lg']) {
-        setDeviceType('desktop');
-      } else {
+      // DEBUG: Log para verificar detecção
+      console.log('🔍 Device Detection:', { 
+        width, 
+        breakpoints: BREAKPOINTS,
+        detected: width >= BREAKPOINTS['desktop-lg'] ? 'desktop-lg' :
+                 width >= BREAKPOINTS.desktop ? 'desktop' :
+                 width >= BREAKPOINTS['tablet-lg'] ? 'tablet-lg' :
+                 width >= BREAKPOINTS.tablet ? 'tablet' :
+                 width >= BREAKPOINTS.mobile ? 'mobile' : 'mobile-small'
+      });
+      
+      // Lógica corrigida: verificar de maior para menor
+      if (width >= BREAKPOINTS['desktop-lg']) {
         setDeviceType('desktop-lg');
+      } else if (width >= BREAKPOINTS.desktop) {
+        setDeviceType('desktop');
+      } else if (width >= BREAKPOINTS['tablet-lg']) {
+        setDeviceType('tablet-lg');
+      } else if (width >= BREAKPOINTS.tablet) {
+        setDeviceType('tablet');
+      } else if (width >= BREAKPOINTS.mobile) {
+        setDeviceType('mobile');
+      } else {
+        setDeviceType('mobile-small');
       }
     };
 
