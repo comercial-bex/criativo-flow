@@ -69,8 +69,46 @@ serve(async (req) => {
       );
     }
 
-    console.log('🔧 Edge Function: Validação inicial OK');
+    console.log('🔧 Edge Function: Validação inicial OK, tentando SQL direto...');
 
+    // Try SQL direct function first (more reliable)
+    try {
+      const { data: backupResult, error: backupError } = await supabaseAdmin.rpc(
+        'create_client_user_direct',
+        {
+          p_email: email,
+          p_password: password,
+          p_nome: nome,
+          p_cliente_id: cliente_id,
+          p_role: role
+        }
+      );
+      
+      if (!backupError && backupResult?.success) {
+        console.log('🔧 Edge Function: Usuário criado via SQL direto!');
+        return new Response(
+          JSON.stringify({ 
+            success: true,
+            email: backupResult.email,
+            password: backupResult.password,
+            message: backupResult.message,
+            method: backupResult.method
+          }),
+          { 
+            status: 200, 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          }
+        );
+      } else {
+        console.log('🔧 Edge Function: SQL direto falhou:', backupError);
+      }
+    } catch (backupError) {
+      console.log('🔧 Edge Function: Erro no SQL direto:', backupError);
+    }
+
+    // If SQL direct fails, try to create via Auth API
+    console.log('🔧 Edge Function: Tentando via Auth API...');
+    
     // Check if user already exists by checking profiles table first, then auth
     let existingUser = null;
     let existingProfile = null;
@@ -93,7 +131,7 @@ serve(async (req) => {
           existingUser = userData.user;
           
           if (profileData.cliente_id === cliente_id) {
-            // User already linked to this client, just update password and add to cliente_usuarios
+            // User already linked to this client, just update password
             console.log('User already linked to this client, updating password');
             
             const { error: passwordError } = await supabaseAdmin.auth.admin.updateUserById(
@@ -107,27 +145,6 @@ serve(async (req) => {
                 JSON.stringify({ error: 'Erro ao atualizar senha do usuário existente' }),
                 { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
               );
-            }
-
-            // Ensure user is in cliente_usuarios table
-            const { error: clienteUsuarioError } = await supabaseAdmin
-              .from('cliente_usuarios')
-              .upsert({
-                cliente_id,
-                user_id: existingUser.id,
-                role_cliente: role === 'cliente' ? 'proprietario' : role,
-                permissoes: {
-                  "financeiro": {"ver": true, "editar": true},
-                  "marketing": {"ver": true, "aprovar": true}, 
-                  "projetos": {"ver": true, "criar": true, "editar": true},
-                  "relatorios": {"ver": true}
-                }
-              }, {
-                onConflict: 'cliente_id,user_id'
-              });
-
-            if (clienteUsuarioError) {
-              console.error('Error adding to cliente_usuarios:', clienteUsuarioError);
             }
             
             return new Response(
@@ -156,19 +173,6 @@ serve(async (req) => {
         }
       } else {
         console.log('No profile found for email:', email);
-        
-        // Check if user exists in auth but not in profiles (edge case)
-        try {
-          const { data: authUsers } = await supabaseAdmin.auth.admin.listUsers();
-          const authUser = authUsers.users?.find(u => u.email === email);
-          if (authUser) {
-            console.log('User exists in auth but not in profiles, will create profile');
-            existingUser = authUser;
-            // We'll create the profile below
-          }
-        } catch (authError) {
-          console.log('Error checking auth users:', authError);
-        }
       }
     } catch (error) {
       console.log('Error in user verification:', error);
@@ -197,37 +201,7 @@ serve(async (req) => {
       
       console.log('Password updated for existing user');
     } else {
-      // Try direct SQL function first (more reliable)
-      console.log('🔧 Edge Function: Tentando criar usuário via SQL direto...');
-      try {
-        const { data: directResult, error: directError } = await supabaseAdmin.rpc(
-          'create_client_user_direct',
-          {
-            p_email: email,
-            p_password: password,
-            p_nome: nome,
-            p_cliente_id: cliente_id,
-            p_role: role
-          }
-        );
-        
-        if (!directError && directResult?.success) {
-          console.log('🔧 Edge Function: Usuário criado via SQL direto!');
-          return new Response(
-            JSON.stringify(directResult),
-            { 
-              status: 200, 
-              headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-            }
-          );
-        } else {
-          console.log('🔧 Edge Function: SQL direto falhou, tentando SQL backup...');
-        }
-      } catch (directError) {
-        console.log('🔧 Edge Function: Erro no SQL direto, tentando SQL backup:', directError);
-      }
-
-      // Create new user in Supabase Auth (fallback method)
+      // Create new user in Supabase Auth
       console.log('🔧 Edge Function: Criando novo usuário no Auth...');
       const { data: newUserData, error: userError } = await supabaseAdmin.auth.admin.createUser({
         email,
@@ -304,29 +278,6 @@ serve(async (req) => {
         JSON.stringify({ error: profileError.message }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
-    }
-
-    // Add user to cliente_usuarios table
-    const { error: clienteUsuarioError } = await supabaseAdmin
-      .from('cliente_usuarios')
-      .upsert({
-        cliente_id,
-        user_id: userData.user!.id,
-        role_cliente: role === 'cliente' ? 'proprietario' : role,
-        permissoes: {
-          "financeiro": {"ver": true, "editar": true},
-          "marketing": {"ver": true, "aprovar": true}, 
-          "projetos": {"ver": true, "criar": true, "editar": true},
-          "relatorios": {"ver": true}
-        },
-        criado_por: null // Edge function context doesn't have auth.uid()
-      }, {
-        onConflict: 'cliente_id,user_id'
-      });
-
-    if (clienteUsuarioError) {
-      console.error('Error adding to cliente_usuarios:', clienteUsuarioError);
-      // Don't fail the request for this, just log it
     }
 
     console.log('Client user created successfully');
