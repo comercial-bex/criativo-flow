@@ -35,19 +35,15 @@ interface Cliente {
 interface Projeto {
   id: string;
   cliente_id: string | null;
-  titulo: string;
+  nome: string;
   descricao: string | null;
-  status: string;
-  prioridade: string;
+  status: string | null;
   data_inicio: string | null;
-  data_prazo: string | null;
-  created_by: string | null;
-  responsavel_grs_id: string | null;
-  responsavel_atendimento_id: string | null;
-  orcamento_estimado: number | null;
-  progresso: number;
-  created_at: string;
-  updated_at: string;
+  data_fim: string | null;
+  orcamento: number | null;
+  responsavel_id: string | null;
+  created_at: string | null;
+  updated_at: string | null;
   profiles?: {
     nome: string;
   };
@@ -65,15 +61,13 @@ export default function ClienteProjetos() {
   const [profiles, setProfiles] = useState<any[]>([]);
   
   const [formData, setFormData] = useState({
-    titulo: '',
+    nome: '',
     descricao: '',
-    status: 'planejamento',
-    prioridade: 'media',
+    status: 'ativo',
     data_inicio: '',
-    data_prazo: '',
-    orcamento_estimado: '',
-    responsavel_grs_id: '',
-    responsavel_atendimento_id: ''
+    data_fim: '',
+    orcamento: '',
+    responsavel_id: ''
   });
 
   useEffect(() => {
@@ -110,7 +104,7 @@ export default function ClienteProjetos() {
         .from('projetos')
         .select(`
           *,
-          profiles:created_by (nome)
+          profiles:responsavel_id (nome)
         `)
         .eq('cliente_id', clienteId)
         .order('created_at', { ascending: false });
@@ -150,17 +144,14 @@ export default function ClienteProjetos() {
         .from('projetos')
         .insert({
           cliente_id: clienteId,
-          titulo: formData.titulo,
+          nome: formData.nome,
           descricao: formData.descricao,
           status: formData.status,
-          prioridade: formData.prioridade,
           data_inicio: formData.data_inicio || null,
-          data_prazo: formData.data_prazo || null,
-          orcamento_estimado: formData.orcamento_estimado ? parseFloat(formData.orcamento_estimado) : null,
-          responsavel_grs_id: formData.responsavel_grs_id || null,
-          responsavel_atendimento_id: formData.responsavel_atendimento_id || null,
-          progresso: 0
-        });
+          data_fim: formData.data_fim || null,
+          orcamento: formData.orcamento ? parseFloat(formData.orcamento) : null,
+          responsavel_id: formData.responsavel_id || null
+        } as any);
 
       if (error) throw error;
 
@@ -171,15 +162,13 @@ export default function ClienteProjetos() {
 
       setDialogOpen(false);
       setFormData({
-        titulo: '',
+        nome: '',
         descricao: '',
-        status: 'planejamento',
-        prioridade: 'media',
+        status: 'ativo',
         data_inicio: '',
-        data_prazo: '',
-        orcamento_estimado: '',
-        responsavel_grs_id: '',
-        responsavel_atendimento_id: ''
+        data_fim: '',
+        orcamento: '',
+        responsavel_id: ''
       });
       
       fetchProjetos();
@@ -193,37 +182,20 @@ export default function ClienteProjetos() {
     }
   };
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (status: string | null) => {
     const statusConfig = {
-      planejamento: { color: 'bg-blue-100 text-blue-800 border-blue-200', icon: <Target className="h-3 w-3" /> },
-      em_andamento: { color: 'bg-yellow-100 text-yellow-800 border-yellow-200', icon: <PlayCircle className="h-3 w-3" /> },
-      concluido: { color: 'bg-green-100 text-green-800 border-green-200', icon: <CheckCircle2 className="h-3 w-3" /> },
-      pausado: { color: 'bg-gray-100 text-gray-800 border-gray-200', icon: <Clock className="h-3 w-3" /> },
-      cancelado: { color: 'bg-red-100 text-red-800 border-red-200', icon: <AlertCircle className="h-3 w-3" /> }
+      ativo: { color: 'bg-green-100 text-green-800 border-green-200', icon: <Target className="h-3 w-3" /> },
+      inativo: { color: 'bg-gray-100 text-gray-800 border-gray-200', icon: <PlayCircle className="h-3 w-3" /> },
+      pendente: { color: 'bg-yellow-100 text-yellow-800 border-yellow-200', icon: <Clock className="h-3 w-3" /> },
+      arquivado: { color: 'bg-red-100 text-red-800 border-red-200', icon: <AlertCircle className="h-3 w-3" /> }
     };
 
-    const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.planejamento;
+    const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.ativo;
     
     return (
       <Badge className={`${config.color} border font-medium`}>
         {config.icon}
-        <span className="ml-1 capitalize">{status.replace('_', ' ')}</span>
-      </Badge>
-    );
-  };
-
-  const getPrioridadeBadge = (prioridade: string) => {
-    const prioridadeConfig = {
-      alta: { color: 'bg-red-100 text-red-800 border-red-200', icon: '🔴' },
-      media: { color: 'bg-yellow-100 text-yellow-800 border-yellow-200', icon: '🟡' },
-      baixa: { color: 'bg-green-100 text-green-800 border-green-200', icon: '🟢' }
-    };
-
-    const config = prioridadeConfig[prioridade as keyof typeof prioridadeConfig] || prioridadeConfig.media;
-    
-    return (
-      <Badge className={`${config.color} border font-medium text-xs`}>
-        {config.icon} {prioridade}
+        <span className="ml-1 capitalize">{status || 'Ativo'}</span>
       </Badge>
     );
   };
@@ -272,11 +244,11 @@ export default function ClienteProjetos() {
             <form onSubmit={handleCreateProjeto} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="titulo">Título do Projeto</Label>
+                  <Label htmlFor="nome">Nome do Projeto</Label>
                   <Input
-                    id="titulo"
-                    value={formData.titulo}
-                    onChange={(e) => setFormData({ ...formData, titulo: e.target.value })}
+                    id="nome"
+                    value={formData.nome}
+                    onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
                     placeholder="Ex: Planejamento Mensal Janeiro"
                     required
                   />
@@ -288,9 +260,10 @@ export default function ClienteProjetos() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="planejamento">Planejamento</SelectItem>
-                      <SelectItem value="em_andamento">Em Andamento</SelectItem>
-                      <SelectItem value="pausado">Pausado</SelectItem>
+                      <SelectItem value="ativo">Ativo</SelectItem>
+                      <SelectItem value="inativo">Inativo</SelectItem>
+                      <SelectItem value="pendente">Pendente</SelectItem>
+                      <SelectItem value="arquivado">Arquivado</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -307,20 +280,7 @@ export default function ClienteProjetos() {
                 />
               </div>
 
-              <div className="grid grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="prioridade">Prioridade</Label>
-                  <Select value={formData.prioridade} onValueChange={(value) => setFormData({ ...formData, prioridade: value })}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="alta">Alta</SelectItem>
-                      <SelectItem value="media">Média</SelectItem>
-                      <SelectItem value="baixa">Baixa</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+              <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="data_inicio">Data Início</Label>
                   <Input
@@ -331,25 +291,25 @@ export default function ClienteProjetos() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="data_prazo">Data Prazo</Label>
+                  <Label htmlFor="data_fim">Data Fim</Label>
                   <Input
-                    id="data_prazo"
+                    id="data_fim"
                     type="date"
-                    value={formData.data_prazo}
-                    onChange={(e) => setFormData({ ...formData, data_prazo: e.target.value })}
+                    value={formData.data_fim}
+                    onChange={(e) => setFormData({ ...formData, data_fim: e.target.value })}
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="responsavel_grs">Responsável GRS</Label>
-                  <Select value={formData.responsavel_grs_id} onValueChange={(value) => setFormData({ ...formData, responsavel_grs_id: value })}>
+                  <Label htmlFor="responsavel_id">Responsável</Label>
+                  <Select value={formData.responsavel_id} onValueChange={(value) => setFormData({ ...formData, responsavel_id: value })}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Selecionar GRS" />
+                      <SelectValue placeholder="Selecionar responsável" />
                     </SelectTrigger>
                     <SelectContent>
-                      {profiles.filter(p => p.especialidade === 'grs').map((profile) => (
+                      {profiles.map((profile) => (
                         <SelectItem key={profile.id} value={profile.id}>
                           {profile.nome}
                         </SelectItem>
@@ -358,13 +318,13 @@ export default function ClienteProjetos() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="orcamento_estimado">Orçamento Estimado (R$)</Label>
+                  <Label htmlFor="orcamento">Orçamento (R$)</Label>
                   <Input
-                    id="orcamento_estimado"
+                    id="orcamento"
                     type="number"
                     step="0.01"
-                    value={formData.orcamento_estimado}
-                    onChange={(e) => setFormData({ ...formData, orcamento_estimado: e.target.value })}
+                    value={formData.orcamento}
+                    onChange={(e) => setFormData({ ...formData, orcamento: e.target.value })}
                     placeholder="0,00"
                   />
                 </div>
@@ -410,7 +370,7 @@ export default function ClienteProjetos() {
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between gap-2">
                   <CardTitle className="text-lg font-semibold line-clamp-2">
-                    {projeto.titulo}
+                    {projeto.nome}
                   </CardTitle>
                   <div className="flex gap-1">
                     {getStatusBadge(projeto.status)}
@@ -425,25 +385,18 @@ export default function ClienteProjetos() {
               
               <CardContent className="space-y-4">
                 <div className="flex items-center gap-2">
-                  {getPrioridadeBadge(projeto.prioridade)}
-                  {projeto.orcamento_estimado && (
+                  {projeto.orcamento && (
                     <Badge variant="outline" className="text-xs">
-                      R$ {projeto.orcamento_estimado.toLocaleString('pt-BR')}
+                      R$ {projeto.orcamento.toLocaleString('pt-BR')}
                     </Badge>
                   )}
                 </div>
 
-                {/* Progresso */}
+                {/* Status do projeto */}
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">Progresso</span>
-                    <span className="text-sm text-muted-foreground">{projeto.progresso}%</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div 
-                      className="bg-primary h-2 rounded-full transition-all duration-300"
-                      style={{ width: `${projeto.progresso}%` }}
-                    />
+                    <span className="text-sm font-medium">Status</span>
+                    <span className="text-sm text-muted-foreground">{projeto.status || 'Ativo'}</span>
                   </div>
                 </div>
 
@@ -455,10 +408,10 @@ export default function ClienteProjetos() {
                       <span>Início: {format(new Date(projeto.data_inicio), 'dd/MM/yy')}</span>
                     </div>
                   )}
-                  {projeto.data_prazo && (
+                  {projeto.data_fim && (
                     <div className="flex items-center gap-1">
                       <Clock className="h-3 w-3" />
-                      <span>Prazo: {format(new Date(projeto.data_prazo), 'dd/MM/yy')}</span>
+                      <span>Fim: {format(new Date(projeto.data_fim), 'dd/MM/yy')}</span>
                     </div>
                   )}
                 </div>

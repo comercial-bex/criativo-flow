@@ -26,19 +26,15 @@ interface Cliente {
 interface Projeto {
   id: string;
   cliente_id: string | null;
-  titulo: string;
+  nome: string;
   descricao: string | null;
-  status: string;
-  prioridade: string;
+  status: string | null;
   data_inicio: string | null;
-  data_prazo: string | null;
-  created_by: string | null;
-  responsavel_grs_id: string | null;
-  responsavel_atendimento_id: string | null;
-  orcamento_estimado: number | null;
-  progresso: number;
-  created_at: string;
-  updated_at: string;
+  data_fim: string | null;
+  orcamento: number | null;
+  responsavel_id: string | null;
+  created_at: string | null;
+  updated_at: string | null;
   profiles?: {
     nome: string;
   };
@@ -76,7 +72,7 @@ export default function ProjetoTarefas() {
         .from('projetos')
         .select(`
           *,
-          profiles:created_by (nome)
+          profiles:responsavel_id (nome)
         `)
         .eq('id', projetoId)
         .single();
@@ -96,36 +92,20 @@ export default function ProjetoTarefas() {
     }
   };
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (status: string | null) => {
     const statusConfig = {
-      planejamento: { color: 'bg-blue-100 text-blue-800 border-blue-200', icon: <Target className="h-3 w-3" /> },
-      em_andamento: { color: 'bg-yellow-100 text-yellow-800 border-yellow-200', icon: <Activity className="h-3 w-3" /> },
-      concluido: { color: 'bg-green-100 text-green-800 border-green-200', icon: <BarChart3 className="h-3 w-3" /> },
-      pausado: { color: 'bg-gray-100 text-gray-800 border-gray-200', icon: <Settings className="h-3 w-3" /> }
+      ativo: { color: 'bg-green-100 text-green-800 border-green-200', icon: <Target className="h-3 w-3" /> },
+      inativo: { color: 'bg-gray-100 text-gray-800 border-gray-200', icon: <Activity className="h-3 w-3" /> },
+      pendente: { color: 'bg-yellow-100 text-yellow-800 border-yellow-200', icon: <BarChart3 className="h-3 w-3" /> },
+      arquivado: { color: 'bg-red-100 text-red-800 border-red-200', icon: <Settings className="h-3 w-3" /> }
     };
 
-    const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.planejamento;
+    const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.ativo;
     
     return (
       <Badge className={`${config.color} border font-medium`}>
         {config.icon}
-        <span className="ml-1 capitalize">{status.replace('_', ' ')}</span>
-      </Badge>
-    );
-  };
-
-  const getPrioridadeBadge = (prioridade: string) => {
-    const prioridadeConfig = {
-      alta: { color: 'bg-red-100 text-red-800 border-red-200', icon: '🔴' },
-      media: { color: 'bg-yellow-100 text-yellow-800 border-yellow-200', icon: '🟡' },
-      baixa: { color: 'bg-green-100 text-green-800 border-green-200', icon: '🟢' }
-    };
-
-    const config = prioridadeConfig[prioridade as keyof typeof prioridadeConfig] || prioridadeConfig.media;
-    
-    return (
-      <Badge className={`${config.color} border font-medium text-xs`}>
-        {config.icon} {prioridade}
+        <span className="ml-1 capitalize">{status || 'Ativo'}</span>
       </Badge>
     );
   };
@@ -178,7 +158,7 @@ export default function ProjetoTarefas() {
             {cliente.nome}
           </Button>
           <span>/</span>
-          <span className="font-medium text-foreground">{projeto.titulo}</span>
+          <span className="font-medium text-foreground">{projeto.nome}</span>
         </div>
 
         {/* Cabeçalho do Projeto */}
@@ -186,31 +166,24 @@ export default function ProjetoTarefas() {
           <CardHeader>
             <div className="flex items-start justify-between">
               <div className="space-y-2">
-                <CardTitle className="text-2xl">{projeto.titulo}</CardTitle>
+                <CardTitle className="text-2xl">{projeto.nome}</CardTitle>
                 {projeto.descricao && (
                   <p className="text-muted-foreground">{projeto.descricao}</p>
                 )}
               </div>
               <div className="flex items-center gap-2">
                 {getStatusBadge(projeto.status)}
-                {getPrioridadeBadge(projeto.prioridade)}
               </div>
             </div>
           </CardHeader>
           
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              {/* Progresso */}
+              {/* Status */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Progresso</span>
-                  <span className="text-sm text-muted-foreground">{projeto.progresso}%</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div 
-                    className="bg-primary h-2 rounded-full transition-all duration-300"
-                    style={{ width: `${projeto.progresso}%` }}
-                  />
+                  <span className="text-sm font-medium">Status</span>
+                  <span className="text-sm text-muted-foreground">{projeto.status || 'Ativo'}</span>
                 </div>
               </div>
 
@@ -230,13 +203,13 @@ export default function ProjetoTarefas() {
               </div>
 
               <div className="space-y-2">
-                {projeto.data_prazo && (
+                {projeto.data_fim && (
                   <div className="flex items-center gap-2 text-sm">
                     <Calendar className="h-4 w-4 text-muted-foreground" />
                     <div>
-                      <p className="font-medium">Prazo</p>
+                      <p className="font-medium">Fim</p>
                       <p className="text-muted-foreground">
-                        {format(new Date(projeto.data_prazo), 'dd/MM/yyyy', { locale: ptBR })}
+                        {format(new Date(projeto.data_fim), 'dd/MM/yyyy', { locale: ptBR })}
                       </p>
                     </div>
                   </div>
@@ -245,13 +218,13 @@ export default function ProjetoTarefas() {
 
               {/* Orçamento */}
               <div className="space-y-2">
-                {projeto.orcamento_estimado && (
+                {projeto.orcamento && (
                   <div className="flex items-center gap-2 text-sm">
                     <BarChart3 className="h-4 w-4 text-muted-foreground" />
                     <div>
                       <p className="font-medium">Orçamento</p>
                       <p className="text-muted-foreground">
-                        R$ {projeto.orcamento_estimado.toLocaleString('pt-BR')}
+                        R$ {projeto.orcamento.toLocaleString('pt-BR')}
                       </p>
                     </div>
                   </div>
@@ -263,7 +236,7 @@ export default function ProjetoTarefas() {
             {projeto.profiles && (
               <div className="flex items-center gap-2 text-sm mt-4 pt-4 border-t">
                 <User className="h-4 w-4 text-muted-foreground" />
-                <span className="text-muted-foreground">Criado por:</span>
+                <span className="text-muted-foreground">Responsável:</span>
                 <span className="font-medium">{projeto.profiles.nome}</span>
               </div>
             )}
