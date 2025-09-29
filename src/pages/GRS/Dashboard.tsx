@@ -263,27 +263,24 @@ export default function GRSDashboard() {
   };
 
   return (
-    <GRSProvider>
-      <div className="p-6 space-y-6">
-        <GRSBreadcrumb />
-        
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
-              <BarChart3 className="h-8 w-8 text-primary" />
-              Dashboard GRS
-            </h1>
-            <p className="text-muted-foreground">Gestão de Relacionamento com o Cliente</p>
-          </div>
-          <InteractiveGuideButton />
+    <div className="p-6 space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
+            <BarChart3 className="h-8 w-8 text-primary" />
+            Dashboard GRS
+          </h1>
+          <p className="text-muted-foreground">Gestão de Relacionamento com o Cliente</p>
         </div>
+        <InteractiveGuideButton />
+      </div>
 
-        {/* Client Selector */}
-        <ClientSelector 
-          onClientSelect={setSelectedClientId}
-          selectedClientId={selectedClientId}
-        />
+      {/* Client Selector */}
+      <ClientSelector 
+        onClientSelect={setSelectedClientId}
+        selectedClientId={selectedClientId}
+      />
 
         <div className="flex items-center justify-between">
           <div className="flex gap-2">
@@ -440,7 +437,6 @@ export default function GRSDashboard() {
           </div>
         </CardContent>
       </Card>
-      </div>
-    </GRSProvider>
+    </div>
   );
 }
