@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { SocialLoginButtons } from '@/components/SocialLoginButtons';
+import { CreateTestUsersButton } from '@/components/CreateTestUsersButton';
 import { toast } from 'sonner';
 
 export default function Auth() {
@@ -176,6 +177,16 @@ export default function Auth() {
                 </form>
               </TabsContent>
             </Tabs>
+          </CardContent>
+        </Card>
+
+        {/* Botão para criar usuários de teste (apenas para desenvolvimento) */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm text-muted-foreground">Desenvolvimento</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <CreateTestUsersButton />
           </CardContent>
         </Card>
 
