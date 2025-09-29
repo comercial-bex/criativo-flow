@@ -197,25 +197,29 @@ export default function Especialistas() {
       setLoading(true);
 
       if (editingId) {
-        // Atualizar especialista existente
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .update({
-            nome: formData.nome,
-            telefone: formData.telefone,
-            especialidade: formData.especialidade as any || null
-          })
-          .eq('id', editingId);
+        // Atualizar especialista existente usando edge function
+        const { data: response, error } = await supabase.functions.invoke('manage-specialist', {
+          body: {
+            action: 'update-specialist',
+            especialistaData: {
+              id: editingId,
+              nome: formData.nome,
+              telefone: formData.telefone,
+              especialidade: formData.especialidade,
+              role: formData.role
+            }
+          }
+        });
 
-        if (profileError) throw profileError;
+        if (error) {
+          console.error('❌ Erro da edge function:', error);
+          throw new Error(error.message || 'Erro ao atualizar especialista');
+        }
 
-        // Atualizar role
-        const { error: roleError } = await supabase
-          .from('user_roles')
-          .update({ role: formData.role as any })
-          .eq('user_id', editingId);
-
-        if (roleError) throw roleError;
+        if (!response?.success) {
+          console.error('❌ Resposta da edge function indica falha:', response);
+          throw new Error(response?.error || 'Erro ao atualizar especialista');
+        }
 
         toast({
           title: "Sucesso",
