@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { PasswordInput } from '@/components/ui/password-input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -22,6 +23,7 @@ export default function Auth() {
   const [userType, setUserType] = useState('cliente');
   const [loading, setLoading] = useState(false);
   const [showPasswordReset, setShowPasswordReset] = useState(false);
+  const [isPasswordValid, setIsPasswordValid] = useState(false);
   
   // Add ref to track if component is mounted
   const mountedRef = useRef(true);
@@ -35,12 +37,21 @@ export default function Auth() {
       navigate('/dashboard', { replace: true });
     }
     
-    // Cleanup function
+  // Cleanup function
     return () => {
       mountedRef.current = false;
       setShowPasswordReset(false);
     };
   }, [user, navigate]);
+
+  // Reset form when switching tabs
+  const handleTabChange = (value: string) => {
+    setEmail('');
+    setPassword('');
+    setNome('');
+    setEmpresa('');
+    setIsPasswordValid(false);
+  };
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -86,6 +97,12 @@ export default function Auth() {
     // Validação básica
     if (!email || !password || !nome) {
       toast.error('Por favor, preencha todos os campos');
+      return;
+    }
+
+    // Validação de senha forte
+    if (!isPasswordValid) {
+      toast.error('Por favor, crie uma senha que atenda todos os requisitos de segurança');
       return;
     }
 
@@ -141,7 +158,7 @@ export default function Auth() {
           </CardHeader>
           <CardContent>
 
-            <Tabs defaultValue="login" className="w-full">
+            <Tabs defaultValue="login" className="w-full" onValueChange={handleTabChange}>
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="login">Login</TabsTrigger>
                 <TabsTrigger value="signup">Cadastro</TabsTrigger>
@@ -249,16 +266,17 @@ export default function Auth() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="signup-password">Senha</Label>
-                    <Input
+                    <PasswordInput
                       id="signup-password"
-                      type="password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      placeholder="Sua senha"
+                      placeholder="Crie uma senha segura"
                       disabled={loading}
+                      showRequirements={true}
+                      onValidityChange={setIsPasswordValid}
                     />
                   </div>
-                  <Button type="submit" className="w-full" disabled={loading}>
+                  <Button type="submit" className="w-full" disabled={loading || !isPasswordValid}>
                     {loading ? 'Cadastrando...' : 'Cadastrar'}
                   </Button>
                 </form>
