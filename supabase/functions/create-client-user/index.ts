@@ -44,63 +44,144 @@ serve(async (req) => {
       );
     }
 
-    // Check if user already exists
-    const { data: existingUser, error: checkError } = await supabaseAdmin.auth.admin.listUsers();
-    if (checkError) {
-      console.error('Error checking existing users:', checkError);
-    } else {
-      const userExists = existingUser.users.find(user => user.email === email);
-      if (userExists) {
-        console.log('User already exists:', email);
+    // Check if user already exists by checking profiles table first
+    let existingUser = null;
+    try {
+      // First check if profile with this email exists
+      const { data: profileData, error: profileError } = await supabaseAdmin
+        .from('profiles')
+        .select('id, cliente_id, nome, email')
+        .eq('email', email)
+        .single();
+
+      if (!profileError && profileData) {
+        console.log('Profile found for email:', email, 'User ID:', profileData.id);
+        
+        // Get user from auth
+        const { data: userData, error: userError } = await supabaseAdmin.auth.admin.getUserById(profileData.id);
+        if (!userError && userData.user) {
+          existingUser = userData.user;
+          
+          if (profileData.cliente_id === cliente_id) {
+            // User already linked to this client, just return credentials
+            console.log('User already linked to this client, returning success');
+            return new Response(
+              JSON.stringify({ 
+                user: existingUser,
+                email: email,
+                password: password, // Return the provided password
+                success: true,
+                message: 'Usuário já vinculado ao cliente!'
+              }),
+              { 
+                status: 200, 
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+              }
+            );
+          } else if (profileData.cliente_id) {
+            // User linked to different client
+            return new Response(
+              JSON.stringify({ error: `Email ${email} já está vinculado a outro cliente` }),
+              { status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            );
+          }
+          
+          // User exists but not linked to any client, we'll link them below
+          console.log('User exists but not linked to client, will link them');
+        }
+      } else {
+        console.log('No profile found for email:', email);
+      }
+    } catch (error) {
+      console.log('No existing user found or error checking:', error);
+    }
+
+    let userData;
+    
+    if (existingUser) {
+      // Use existing user
+      userData = { user: existingUser };
+      console.log('Using existing user:', existingUser.id);
+      
+      // Reset password for existing user
+      const { error: passwordError } = await supabaseAdmin.auth.admin.updateUserById(
+        existingUser.id, 
+        { password }
+      );
+      
+      if (passwordError) {
+        console.error('Error updating password:', passwordError);
         return new Response(
-          JSON.stringify({ error: `Usuário com email ${email} já existe` }),
-          { status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          JSON.stringify({ error: 'Erro ao atualizar senha do usuário existente' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
-    }
-
-    // Create user in Supabase Auth (without email confirmation)
-    const { data: userData, error: userError } = await supabaseAdmin.auth.admin.createUser({
-      email,
-      password,
-      email_confirm: true, // Skip email confirmation
-      user_metadata: { nome }
-    });
-
-    if (userError) {
-      console.error('Error creating user:', userError);
-      return new Response(
-        JSON.stringify({ 
-          error: userError.message === 'Database error creating new user' 
-            ? `Erro ao criar usuário: Email ${email} pode já estar em uso`
-            : userError.message 
-        }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    console.log('User created successfully:', userData.user?.id);
-
-    // Insert user role
-    const { error: roleError } = await supabaseAdmin
-      .from('user_roles')
-      .insert({
-        user_id: userData.user!.id,
-        role: role
+      
+      console.log('Password updated for existing user');
+    } else {
+      // Create new user in Supabase Auth (without email confirmation)
+      const { data: newUserData, error: userError } = await supabaseAdmin.auth.admin.createUser({
+        email,
+        password,
+        email_confirm: true, // Skip email confirmation
+        user_metadata: { nome }
       });
 
-    if (roleError) {
-      console.error('Error creating user role:', roleError);
-      return new Response(
-        JSON.stringify({ error: roleError.message }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      if (userError) {
+        console.error('Error creating user:', userError);
+        return new Response(
+          JSON.stringify({ 
+            error: userError.message === 'Database error creating new user' 
+              ? `Erro ao criar usuário: Email ${email} pode já estar em uso`
+              : userError.message 
+          }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      userData = newUserData;
+      console.log('New user created successfully:', userData.user?.id);
     }
 
-    // Update profile with cliente_id
+    // Insert user role (only if not exists)
+    const { data: existingRole, error: checkRoleError } = await supabaseAdmin
+      .from('user_roles')
+      .select('id')
+      .eq('user_id', userData.user!.id)
+      .eq('role', role)
+      .single();
+
+    if (checkRoleError && checkRoleError.code !== 'PGRST116') {
+      console.error('Error checking existing role:', checkRoleError);
+    }
+
+    if (!existingRole) {
+      const { error: roleError } = await supabaseAdmin
+        .from('user_roles')
+        .insert({
+          user_id: userData.user!.id,
+          role: role
+        });
+
+      if (roleError) {
+        console.error('Error creating user role:', roleError);
+        return new Response(
+          JSON.stringify({ error: roleError.message }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      console.log('User role created');
+    } else {
+      console.log('User role already exists');
+    }
+
+    // Update or create profile with cliente_id
     const { error: profileError } = await supabaseAdmin
       .from('profiles')
-      .update({ cliente_id })
+      .update({ 
+        cliente_id,
+        nome: nome // Update name as well
+      })
       .eq('id', userData.user!.id);
 
     if (profileError) {

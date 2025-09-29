@@ -162,18 +162,28 @@ export function AdminClienteControls({ clienteId, clienteData }: AdminClienteCon
   };
 
   const handleCreateAccount = async () => {
-    if (!clienteData.email) {
-      toast.error('Email do cliente é obrigatório');
+    if (!newEmail.trim()) {
+      toast.error("Email é obrigatório");
       return;
     }
 
     setLoading(true);
     try {
-      const tempPassword = Math.random().toString(36).slice(-8) + Math.floor(Math.random() * 100);
+      // Generate strong password
+      const tempPassword = Math.random().toString(36).slice(-8) + 
+                          Math.random().toString(36).slice(-8).toUpperCase() + 
+                          Math.floor(Math.random() * 100);
+      
+      console.log('Attempting to create account with:', {
+        email: newEmail,
+        nome: clienteData.nome,
+        cliente_id: clienteId,
+        role: 'cliente'
+      });
       
       const { data, error } = await supabase.functions.invoke('create-client-user', {
         body: {
-          email: clienteData.email,
+          email: newEmail,
           password: tempPassword,
           nome: clienteData.nome,
           cliente_id: clienteId,
@@ -181,9 +191,16 @@ export function AdminClienteControls({ clienteId, clienteData }: AdminClienteCon
         }
       });
 
+      console.log('Response from edge function:', { data, error });
+
       if (error) {
         console.error('Create account error:', error);
-        throw error;
+        if (error.message?.includes('409')) {
+          toast.error('Email já existe. Use a opção de reset de senha ou escolha outro email.');
+        } else {
+          toast.error('Erro ao criar conta: ' + error.message);
+        }
+        return;
       }
 
       if (data && data.success) {
@@ -194,10 +211,16 @@ export function AdminClienteControls({ clienteId, clienteData }: AdminClienteCon
         });
         setShowCredentials(true);
         
-        toast.success('Conta criada com sucesso!');
+        if (data.message?.includes('já vinculado')) {
+          toast.success('Email reutilizado! Senha atualizada.');
+        } else {
+          toast.success('Conta criada com sucesso!');
+        }
+        
         await fetchAuthData(); // Recarregar dados
       } else {
-        throw new Error('Resposta inválida do servidor');
+        console.error('Invalid response:', data);
+        toast.error('Resposta inválida do servidor');
       }
     } catch (error: any) {
       console.error('Error creating account:', error);
