@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -75,7 +75,7 @@ export function useCnpjLookup() {
     return cleanCnpj.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
   };
 
-  const lookupCnpj = async (cnpj: string): Promise<CnpjLookupResult> => {
+  const lookupCnpj = useCallback(async (cnpj: string): Promise<CnpjLookupResult> => {
     setLoading(true);
     
     try {
@@ -181,7 +181,7 @@ export function useCnpjLookup() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast]);
 
   return {
     loading,

@@ -147,6 +147,8 @@ serve(async (req) => {
 
     if (insertError) {
       console.error('Erro ao salvar consulta CNPJ:', insertError);
+    } else {
+      console.log('Consulta CNPJ salva com sucesso');
     }
 
     return new Response(
@@ -163,8 +165,13 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('Erro inesperado:', error);
+    console.error('Stack trace:', (error as Error)?.stack || 'No stack trace');
     return new Response(
-      JSON.stringify({ error: 'Erro interno do servidor' }),
+      JSON.stringify({ 
+        success: false,
+        error: 'Erro interno do servidor',
+        details: (error as Error)?.message || 'Erro desconhecido'
+      }),
       { 
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }

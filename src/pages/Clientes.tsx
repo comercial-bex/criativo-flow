@@ -361,20 +361,14 @@ const Clientes = () => {
                 <Label htmlFor="cnpj_cpf">CNPJ (Consulta Automática)</Label>
                 <CnpjSearch
                   initialValue={formData.cnpj_cpf}
-                  onCnpjData={(data: CnpjData) => {
+                  onCnpjData={(data) => {
                     setFormData({
                       ...formData,
                       cnpj_cpf: data.cnpj,
                       nome: data.razao_social || formData.nome,
                       endereco: data.endereco ? 
                         `${data.endereco.logradouro || ''} ${data.endereco.numero || ''}, ${data.endereco.bairro || ''} - ${data.endereco.municipio || ''}/${data.endereco.uf || ''} - CEP: ${data.endereco.cep || ''}`.trim() 
-                        : formData.endereco,
-                      razao_social: data.razao_social,
-                      nome_fantasia: data.nome_fantasia,
-                      situacao_cadastral: data.situacao_cadastral,
-                      cnae_principal: data.cnae_principal,
-                      cnpj_fonte: 'cnpj_lookup',
-                      cnpj_ultima_consulta: new Date().toISOString()
+                        : formData.endereco
                     });
                   }}
                 />
