@@ -1,14 +1,14 @@
 import { useState, useEffect } from 'react';
 
-export type DeviceType = 'mobile-small' | 'mobile' | 'tablet' | 'tablet-large' | 'desktop' | 'desktop-large';
+export type DeviceType = 'mobile-small' | 'mobile' | 'tablet' | 'tablet-lg' | 'desktop' | 'desktop-lg';
 
 const BREAKPOINTS = {
   'mobile-small': 360,
   mobile: 414,
   tablet: 768,
-  'tablet-large': 1024,
+  'tablet-lg': 1024,
   desktop: 1366,
-  'desktop-large': 1920,
+  'desktop-lg': 1920,
 } as const;
 
 export function useDeviceType(): DeviceType {
@@ -18,18 +18,18 @@ export function useDeviceType(): DeviceType {
     const updateDeviceType = () => {
       const width = window.innerWidth;
       
-      if (width <= BREAKPOINTS['mobile-small']) {
+      if (width < BREAKPOINTS.mobile) {
         setDeviceType('mobile-small');
-      } else if (width <= BREAKPOINTS.mobile) {
+      } else if (width < BREAKPOINTS.tablet) {
         setDeviceType('mobile');
-      } else if (width <= BREAKPOINTS.tablet) {
+      } else if (width < BREAKPOINTS['tablet-lg']) {
         setDeviceType('tablet');
-      } else if (width <= BREAKPOINTS['tablet-large']) {
-        setDeviceType('tablet-large');
-      } else if (width <= BREAKPOINTS.desktop) {
+      } else if (width < BREAKPOINTS.desktop) {
+        setDeviceType('tablet-lg');
+      } else if (width < BREAKPOINTS['desktop-lg']) {
         setDeviceType('desktop');
       } else {
-        setDeviceType('desktop-large');
+        setDeviceType('desktop-lg');
       }
     };
 
@@ -49,12 +49,12 @@ export function useIsMobile(): boolean {
 
 export function useIsTablet(): boolean {
   const deviceType = useDeviceType();
-  return deviceType === 'tablet' || deviceType === 'tablet-large';
+  return deviceType === 'tablet' || deviceType === 'tablet-lg';
 }
 
 export function useIsDesktop(): boolean {
   const deviceType = useDeviceType();
-  return deviceType === 'desktop' || deviceType === 'desktop-large';
+  return deviceType === 'desktop' || deviceType === 'desktop-lg';
 }
 
 export function useIsMobileSmall(): boolean {
@@ -64,10 +64,10 @@ export function useIsMobileSmall(): boolean {
 
 export function useIsTabletLarge(): boolean {
   const deviceType = useDeviceType();
-  return deviceType === 'tablet-large';
+  return deviceType === 'tablet-lg';
 }
 
 export function useIsDesktopLarge(): boolean {
   const deviceType = useDeviceType();
-  return deviceType === 'desktop-large';
+  return deviceType === 'desktop-lg';
 }

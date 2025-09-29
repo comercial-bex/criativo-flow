@@ -12,8 +12,8 @@ interface ResponsiveLayoutProps {
 export function ResponsiveLayout({ children }: ResponsiveLayoutProps) {
   const deviceType = useDeviceType();
   const isMobile = deviceType === 'mobile-small' || deviceType === 'mobile';
-  const isTablet = deviceType === 'tablet' || deviceType === 'tablet-large';
-  const isDesktop = deviceType === 'desktop' || deviceType === 'desktop-large';
+  const isTablet = deviceType === 'tablet' || deviceType === 'tablet-lg';
+  const isDesktop = deviceType === 'desktop' || deviceType === 'desktop-lg';
 
   if (isMobile) {
     return (

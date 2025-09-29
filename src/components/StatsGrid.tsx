@@ -36,10 +36,10 @@ export function StatsGrid({ stats, columns, className = '' }: StatsGridProps) {
         return 1;
       case 'tablet':
         return Math.min(maxCols, 2);
-      case 'tablet-large':
+      case 'tablet-lg':
         return Math.min(maxCols, 3);
       case 'desktop':
-      case 'desktop-large':
+      case 'desktop-lg':
         return maxCols;
       default:
         return Math.min(maxCols, 2);
