@@ -33,48 +33,58 @@ export function useProfileData() {
     setError(null);
 
     try {
-      const { data, error: fetchError } = await supabase
-        .from('profiles')
-        .select('*')
-        .order('created_at', { ascending: false });
+      // For team roles (gestor, atendimento, grs), use the filtered function
+      // For admins and users viewing their own profile, use direct table access
+      if (role === 'gestor' || role === 'atendimento' || role === 'grs') {
+        // Get all profile IDs first, then fetch filtered data for each
+        const { data: profileIds, error: idsError } = await supabase
+          .from('profiles')
+          .select('id')
+          .order('created_at', { ascending: false });
 
-      if (fetchError) {
-        console.error('Erro ao buscar perfis:', fetchError);
-        setError('Erro ao carregar dados dos perfis');
-        return;
-      }
-
-      // Apply security filtering based on user role and relationship
-      const currentUser = await supabase.auth.getUser();
-      const currentUserId = currentUser.data.user?.id;
-
-      const filteredProfiles = (data || []).map((profile: any) => {
-        const isOwnProfile = profile.id === currentUserId;
-        const isAdmin = role === 'admin';
-        const hasFullAccess = isOwnProfile || isAdmin;
-        
-        // Filter sensitive data for limited access roles
-        if (!hasFullAccess && (role === 'gestor' || role === 'atendimento' || role === 'grs')) {
-          return {
-            id: profile.id,
-            nome: profile.nome,
-            especialidade: profile.especialidade,
-            avatar_url: profile.avatar_url,
-            created_at: profile.created_at,
-            // Hide sensitive personal data
-            email: null,
-            telefone: null,
-            _hasFullAccess: false
-          };
+        if (idsError) {
+          console.error('Erro ao buscar IDs dos perfis:', idsError);
+          setError('Erro ao carregar dados dos perfis');
+          return;
         }
 
-        return {
+        // Fetch filtered profile data using the security definer function
+        const filteredProfiles = [];
+        if (profileIds) {
+          for (const profileId of profileIds) {
+            const { data: filteredProfile } = await supabase
+              .rpc('get_filtered_profile', { profile_id: profileId.id });
+            
+            if (filteredProfile) {
+              filteredProfiles.push({
+                ...filteredProfile,
+                _hasFullAccess: false
+              });
+            }
+          }
+        }
+        
+        setProfiles(filteredProfiles);
+      } else {
+        // For admins and users viewing their own profile, use direct access
+        const { data, error: fetchError } = await supabase
+          .from('profiles')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (fetchError) {
+          console.error('Erro ao buscar perfis:', fetchError);
+          setError('Erro ao carregar dados dos perfis');
+          return;
+        }
+
+        const profilesWithAccess = (data || []).map((profile: any) => ({
           ...profile,
           _hasFullAccess: true
-        };
-      });
+        }));
 
-      setProfiles(filteredProfiles);
+        setProfiles(profilesWithAccess);
+      }
     } catch (err) {
       console.error('Erro inesperado:', err);
       setError('Erro inesperado ao carregar dados');
@@ -85,40 +95,29 @@ export function useProfileData() {
 
   const getProfileById = async (id: string): Promise<ProfileWithAccessFlag | null> => {
     try {
-      const { data, error: fetchError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', id)
-        .single();
+      // Use the security definer function for secure profile access
+      const { data: filteredProfile, error: fetchError } = await supabase
+        .rpc('get_filtered_profile', { profile_id: id });
 
       if (fetchError) {
         console.error('Erro ao buscar perfil:', fetchError);
         return null;
       }
 
-      // Apply same security filtering for individual profile fetch
+      if (!filteredProfile) {
+        return null;
+      }
+
+      // Check if user has full access (admin or own profile)
       const currentUser = await supabase.auth.getUser();
       const currentUserId = currentUser.data.user?.id;
-      const isOwnProfile = data.id === currentUserId;
+      const isOwnProfile = filteredProfile.id === currentUserId;
       const isAdmin = role === 'admin';
       const hasFullAccess = isOwnProfile || isAdmin;
 
-      if (!hasFullAccess && (role === 'gestor' || role === 'atendimento' || role === 'grs')) {
-        return {
-          id: data.id,
-          nome: data.nome,
-          especialidade: data.especialidade,
-          avatar_url: data.avatar_url,
-          created_at: data.created_at,
-          email: null,
-          telefone: null,
-          _hasFullAccess: false
-        };
-      }
-
       return {
-        ...data,
-        _hasFullAccess: true
+        ...filteredProfile,
+        _hasFullAccess: hasFullAccess
       };
     } catch (err) {
       console.error('Erro inesperado ao buscar perfil:', err);
