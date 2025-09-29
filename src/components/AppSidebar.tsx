@@ -232,23 +232,36 @@ export function AppSidebar() {
     return location.pathname.startsWith(path);
   };
 
-  // Get visible modules based on permissions and role
+  // Get visible modules based on permissions and role - PERSONALIZED BY ROLE
   const getVisibleModules = () => {
-    return modules.filter(module => {
-      // Check role restrictions first
-      if (module.roles && !module.roles.includes(role)) {
-        return false;
-      }
-      
-      // Check permissions - only check valid module permissions
-      return module.permissions.some(permission => {
-        const validPermissions = ['dashboard', 'clientes', 'crm', 'financeiro', 'administrativo', 'audiovisual', 'design', 'grs', 'configuracoes', 'planos', 'especialistas', 'relatorios'] as const;
-        if (validPermissions.includes(permission as any)) {
-          return hasModuleAccess(permission as keyof ModulePermissions);
-        }
-        return false;
-      });
-    });
+    // PHASE 1: PERSONALIZED SIDEBAR - Show only user's role module + profile + logout
+    switch (role) {
+      case 'grs':
+        return modules.filter(m => m.id === 'grs');
+      case 'design':
+      case 'designer':
+        return modules.filter(m => m.id === 'design');
+      case 'administrativo':
+      case 'admin':
+        return modules.filter(m => ['dashboard', 'administrativo', 'financeiro', 'crm'].includes(m.id));
+      case 'atendimento':
+        return modules.filter(m => ['dashboard', 'crm', 'atendimento'].includes(m.id));
+      case 'audiovisual':
+      case 'filmmaker':
+        return modules.filter(m => m.id === 'audiovisual');
+      case 'financeiro':
+        return modules.filter(m => ['dashboard', 'financeiro', 'administrativo'].includes(m.id));
+      case 'gestor':
+        return modules.filter(m => ['dashboard', 'crm', 'configuracoes'].includes(m.id));
+      case 'cliente':
+        return []; // Clientes have separate navigation
+      case 'trafego':
+        return modules.filter(m => m.id === 'dashboard');
+      case 'fornecedor':
+        return modules.filter(m => m.id === 'dashboard');
+      default:
+        return modules.filter(m => m.id === 'dashboard');
+    }
   };
 
   // Client-specific items for role 'cliente'

@@ -11,6 +11,7 @@ import { useNavigate } from "react-router-dom";
 import { ClientSelector } from "@/components/ClientSelector";
 import { SimpleHelpModal } from "@/components/SimpleHelpModal";
 import { InteractiveGuideButton } from "@/components/InteractiveGuideButton";
+import { WhatsAppNotifier } from "@/components/WhatsAppNotifier";
 import { useToast } from "@/hooks/use-toast";
 
 interface Cliente {
@@ -26,7 +27,9 @@ interface Planejamento {
   data_envio_cliente: string | null;
   data_aprovacao_cliente: string | null;
   observacoes_cliente: string | null;
-  clientes: Cliente;
+  clientes: Cliente & {
+    telefone?: string;
+  };
 }
 
 export default function GRSAprovacoes() {
@@ -56,7 +59,8 @@ export default function GRSAprovacoes() {
           observacoes_cliente,
           clientes (
             id,
-            nome
+            nome,
+            telefone
           )
         `)
         .order('mes_referencia', { ascending: false });
@@ -127,6 +131,31 @@ export default function GRSAprovacoes() {
     if (diffDias > 7) return { nivel: 'alta', texto: 'Prazo vencido' };
     if (diffDias > 3) return { nivel: 'media', texto: 'Prazo próximo' };
     return { nivel: 'baixa', texto: 'No prazo' };
+  };
+
+  const getWhatsAppMessage = (planejamento: Planejamento) => {
+    const mesFormatado = new Date(planejamento.mes_referencia).toLocaleDateString('pt-BR', { 
+      month: 'long', 
+      year: 'numeric' 
+    });
+    
+    if (planejamento.status === 'reprovado') {
+      return `Olá ${planejamento.clientes.nome}! 👋
+
+Seu planejamento de ${mesFormatado} foi analisado e precisa de alguns ajustes.
+
+📝 Feedback: ${planejamento.observacoes_cliente || 'Vamos alinhar os detalhes juntos'}
+
+Podemos conversar para alinhar as mudanças? Estamos aqui para entregar exatamente o que você precisa! 🚀`;
+    }
+    
+    return `Olá ${planejamento.clientes.nome}! 👋
+
+Seu planejamento de ${mesFormatado} está pronto para aprovação! 📋✨
+
+🔗 Acesse seu painel para revisar: [LINK_DO_SISTEMA]
+
+Qualquer dúvida, estamos aqui para ajudar! 💚`;
   };
 
   const filteredPlanejamentos = planejamentos.filter(planejamento => {
@@ -318,6 +347,13 @@ export default function GRSAprovacoes() {
                       <StatusIcon className="h-3 w-3 mr-1" />
                       {getStatusText(planejamento.status)}
                     </Badge>
+                    
+                    {/* PHASE 2: WHATSAPP SEMI-AUTOMATIC */}
+                    <WhatsAppNotifier
+                      clienteNome={planejamento.clientes.nome}
+                      clienteTelefone={planejamento.clientes.telefone}
+                      mensagem={getWhatsAppMessage(planejamento)}
+                    />
                     
                     <Button 
                       variant="outline" 

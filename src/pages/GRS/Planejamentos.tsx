@@ -9,6 +9,8 @@ import { Calendar, Search, Eye, FileText, Clock, CheckCircle, XCircle, Users, Pl
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { ClientSelector } from "@/components/ClientSelector";
+import { WhatsAppNotifier } from "@/components/WhatsAppNotifier";
+import { AIContentGenerator } from "@/components/AIContentGenerator";
 
 interface Cliente {
   id: string;
@@ -23,7 +25,9 @@ interface Planejamento {
   data_envio_cliente: string | null;
   data_aprovacao_cliente: string | null;
   observacoes_cliente: string | null;
-  clientes: Cliente;
+  clientes: Cliente & {
+    telefone?: string;
+  };
 }
 
 export default function GRSPlanejamentos() {
@@ -52,7 +56,8 @@ export default function GRSPlanejamentos() {
           observacoes_cliente,
           clientes (
             id,
-            nome
+            nome,
+            telefone
           )
         `)
         .order('mes_referencia', { ascending: false });
@@ -96,6 +101,21 @@ export default function GRSPlanejamentos() {
     }
   };
 
+  const getWhatsAppMessage = (planejamento: Planejamento) => {
+    const mesFormatado = new Date(planejamento.mes_referencia).toLocaleDateString('pt-BR', { 
+      month: 'long', 
+      year: 'numeric' 
+    });
+    
+    return `Olá ${planejamento.clientes.nome}! 👋
+
+Seu planejamento de ${mesFormatado} está sendo preparado com todo carinho! 📋✨
+
+Status atual: ${getStatusText(planejamento.status)}
+
+Em breve você receberá para aprovação. Estamos criando algo incrível para sua marca! 🚀💚`;
+  };
+
   const filteredPlanejamentos = planejamentos.filter(planejamento => {
     const matchesSearch = planejamento.titulo.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          planejamento.clientes.nome.toLowerCase().includes(searchTerm.toLowerCase());
@@ -126,10 +146,23 @@ export default function GRSPlanejamentos() {
           </h1>
           <p className="text-muted-foreground">Gerencie todos os planejamentos dos clientes</p>
         </div>
-        <Button onClick={() => navigate('/grs/dashboard')}>
-          <Plus className="h-4 w-4 mr-2" />
-          Novo Planejamento
-        </Button>
+        <div className="flex gap-2">
+          {/* PHASE 3: AI CONTENT GENERATION */}
+          <AIContentGenerator
+            type="post"
+            onContentGenerated={(content) => console.log('Conteúdo gerado:', content)}
+            trigger={
+              <Button variant="outline">
+                <Plus className="h-4 w-4 mr-2" />
+                ✨ Gerar Post com IA
+              </Button>
+            }
+          />
+          <Button onClick={() => navigate('/grs/dashboard')}>
+            <Plus className="h-4 w-4 mr-2" />
+            Novo Planejamento
+          </Button>
+        </div>
       </div>
 
       {/* Client Selector */}
@@ -250,6 +283,13 @@ export default function GRSPlanejamentos() {
                       <StatusIcon className="h-3 w-3 mr-1" />
                       {getStatusText(planejamento.status)}
                     </Badge>
+                    
+                    {/* WHATSAPP NOTIFICATION */}
+                    <WhatsAppNotifier
+                      clienteNome={planejamento.clientes.nome}
+                      clienteTelefone={planejamento.clientes.telefone}
+                      mensagem={getWhatsAppMessage(planejamento)}
+                    />
                     
                     <Button 
                       variant="outline" 
