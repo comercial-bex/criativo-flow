@@ -33,6 +33,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Plus, 
   Phone, 
@@ -47,189 +48,15 @@ import {
   Download,
   BarChart3,
   Activity,
-  DollarSign
+  DollarSign,
+  Search,
+  Filter,
+  MoreVertical,
+  Eye,
+  Edit3,
+  Trash2
  } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-
-// Componente de formulário para novo projeto
-function ProjetoForm() {
-  const [formData, setFormData] = useState({
-    nome: '',
-    descricao: '',
-    cliente_id: '',
-    valor: '',
-    data_inicio: '',
-    data_fim: '',
-    tipo: 'desenvolvimento'
-  });
-  const [clientes, setClientes] = useState<any[]>([]);
-  const { toast } = useToast();
-
-  useEffect(() => {
-    fetchClientes();
-  }, []);
-
-  const fetchClientes = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('clientes')
-        .select('id, nome, status')
-        .eq('status', 'ativo')
-        .order('nome');
-
-      if (error) throw error;
-      setClientes(data || []);
-    } catch (error) {
-      console.error('Erro ao carregar clientes:', error);
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    try {
-      const { error } = await supabase
-        .from('projetos')
-        .insert({
-          nome: formData.nome,
-          descricao: formData.descricao,
-          cliente_id: formData.cliente_id,
-          orcamento: formData.valor ? parseFloat(formData.valor) : null,
-          data_inicio: formData.data_inicio || null,
-          data_fim: formData.data_fim || null,
-          status: 'ativo'
-        });
-
-      if (error) throw error;
-
-      toast({
-        title: "Projeto criado com sucesso!",
-        description: "O novo projeto foi adicionado ao sistema",
-      });
-
-      setFormData({
-        nome: '',
-        descricao: '',
-        cliente_id: '',
-        valor: '',
-        data_inicio: '',
-        data_fim: '',
-        tipo: 'desenvolvimento'
-      });
-    } catch (error) {
-      console.error('Erro ao criar projeto:', error);
-      toast({
-        title: "Erro ao criar projeto",
-        description: "Não foi possível criar o projeto",
-        variant: "destructive",
-      });
-    }
-  };
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="nome">Nome do Projeto</Label>
-          <Input
-            id="nome"
-            value={formData.nome}
-            onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
-            placeholder="Ex: Website Institucional"
-            required
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="cliente">Cliente</Label>
-          <Select 
-            value={formData.cliente_id} 
-            onValueChange={(value) => setFormData({ ...formData, cliente_id: value })}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Selecione um cliente" />
-            </SelectTrigger>
-            <SelectContent>
-              {clientes.map((cliente) => (
-                <SelectItem key={cliente.id} value={cliente.id}>
-                  {cliente.nome}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="valor">Valor do Projeto (R$)</Label>
-          <Input
-            id="valor"
-            type="number"
-            step="0.01"
-            value={formData.valor}
-            onChange={(e) => setFormData({ ...formData, valor: e.target.value })}
-            placeholder="0,00"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="tipo">Tipo de Projeto</Label>
-          <Select 
-            value={formData.tipo} 
-            onValueChange={(value) => setFormData({ ...formData, tipo: value })}
-          >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="desenvolvimento">Desenvolvimento</SelectItem>
-              <SelectItem value="design">Design</SelectItem>
-              <SelectItem value="marketing">Marketing</SelectItem>
-              <SelectItem value="branding">Branding</SelectItem>
-              <SelectItem value="consultoria">Consultoria</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="data_inicio">Data de Início</Label>
-          <Input
-            id="data_inicio"
-            type="date"
-            value={formData.data_inicio}
-            onChange={(e) => setFormData({ ...formData, data_inicio: e.target.value })}
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="data_fim">Data de Término</Label>
-          <Input
-            id="data_fim"
-            type="date"
-            value={formData.data_fim}
-            onChange={(e) => setFormData({ ...formData, data_fim: e.target.value })}
-          />
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="descricao">Descrição do Projeto</Label>
-        <Textarea
-          id="descricao"
-          value={formData.descricao}
-          onChange={(e) => setFormData({ ...formData, descricao: e.target.value })}
-          placeholder="Descreva o escopo e objetivos do projeto..."
-          rows={3}
-        />
-      </div>
-
-      <div className="flex gap-2 pt-4">
-        <Button type="submit" className="flex-1">
-          Criar Projeto
-        </Button>
-      </div>
-    </form>
-  );
-}
 
 interface Lead {
   id: string;
@@ -242,18 +69,54 @@ interface Lead {
   status: string;
   valor_estimado: number;
   observacoes: string;
+  responsavel_id: string;
   created_at: string;
 }
 
 const statusOptions = [
-  { value: 'pre_qualificacao', label: 'Pré-qualificação', color: 'bg-gray-100 text-gray-800' },
-  { value: 'proposta', label: 'Proposta', color: 'bg-blue-100 text-blue-800' },
-  { value: 'negociacao', label: 'Negociação', color: 'bg-yellow-100 text-yellow-800' },
-  { value: 'fechado', label: 'Fechado', color: 'bg-green-100 text-green-800' },
-  { value: 'perdido', label: 'Perdido', color: 'bg-red-100 text-red-800' }
+  { 
+    value: 'pre_qualificacao', 
+    label: 'Pré-qualificação', 
+    color: 'hsl(var(--muted))',
+    bgColor: 'bg-muted/50',
+    textColor: 'text-muted-foreground',
+    count: 0 
+  },
+  { 
+    value: 'proposta', 
+    label: 'Proposta', 
+    color: 'hsl(var(--primary))',
+    bgColor: 'bg-primary/10',
+    textColor: 'text-primary',
+    count: 0 
+  },
+  { 
+    value: 'negociacao', 
+    label: 'Negociação', 
+    color: 'hsl(var(--warning))',
+    bgColor: 'bg-warning/10',
+    textColor: 'text-warning',
+    count: 0 
+  },
+  { 
+    value: 'fechado', 
+    label: 'Fechado', 
+    color: 'hsl(var(--success))',
+    bgColor: 'bg-success/10',
+    textColor: 'text-success',
+    count: 0 
+  },
+  { 
+    value: 'perdido', 
+    label: 'Perdido', 
+    color: 'hsl(var(--destructive))',
+    bgColor: 'bg-destructive/10',
+    textColor: 'text-destructive',
+    count: 0 
+  }
 ];
 
-// Componente para card arrastável
+// Componente de card aprimorado com preview no hover
 interface DraggableCardProps {
   lead: Lead;
   updateLeadStatus: (leadId: string, newStatus: string) => void;
@@ -281,38 +144,71 @@ function DraggableCard({ lead, updateLeadStatus }: DraggableCardProps) {
       style={style}
       {...attributes}
       {...listeners}
-      className="mb-3"
+      className="group mb-3"
     >
-      <Card className="cursor-grab active:cursor-grabbing hover:shadow-md transition-all duration-200 animate-fade-in">
-        <CardHeader className="pb-3">
+      <Card className="cursor-grab active:cursor-grabbing hover:shadow-lg transition-all duration-300 animate-fade-in border-l-4 border-l-primary/30 hover:border-l-primary">
+        <CardHeader className="pb-3 space-y-2">
           <div className="flex justify-between items-start">
-            <div>
-              <CardTitle className="text-sm font-medium">{lead.nome}</CardTitle>
-              <p className="text-xs text-muted-foreground mt-1">{lead.empresa}</p>
+            <div className="flex-1">
+              <CardTitle className="text-base font-semibold leading-tight">{lead.nome}</CardTitle>
+              <p className="text-sm text-muted-foreground mt-1 flex items-center">
+                <Building className="h-3 w-3 mr-1" />
+                {lead.empresa || 'Sem empresa'}
+              </p>
             </div>
-            <Badge variant="outline" className="text-xs">
-              {lead.origem}
-            </Badge>
+            <div className="flex flex-col items-end space-y-1">
+              <Badge variant="outline" className="text-xs">
+                {lead.origem}
+              </Badge>
+              <Button variant="ghost" size="sm" className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                <MoreVertical className="h-3 w-3" />
+              </Button>
+            </div>
           </div>
         </CardHeader>
-        <CardContent className="pt-0 space-y-2">
-          <div className="flex items-center text-xs text-muted-foreground">
-            <DollarSign className="h-3 w-3 mr-1" />
-            R$ {(lead.valor_estimado || 0).toLocaleString('pt-BR')}
+        <CardContent className="pt-0 space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center text-sm font-medium text-success">
+              <DollarSign className="h-4 w-4 mr-1" />
+              R$ {(lead.valor_estimado || 0).toLocaleString('pt-BR')}
+            </div>
+            <div className="text-xs text-muted-foreground">
+              {new Date(lead.created_at).toLocaleDateString('pt-BR')}
+            </div>
           </div>
-          <div className="flex items-center text-xs text-muted-foreground">
-            <User className="h-3 w-3 mr-1" />
-            {lead.email}
+          
+          <div className="space-y-2">
+            {lead.email && (
+              <div className="flex items-center text-xs text-muted-foreground">
+                <Mail className="h-3 w-3 mr-2 flex-shrink-0" />
+                <span className="truncate">{lead.email}</span>
+              </div>
+            )}
+            {lead.telefone && (
+              <div className="flex items-center text-xs text-muted-foreground">
+                <Phone className="h-3 w-3 mr-2 flex-shrink-0" />
+                <span>{lead.telefone}</span>
+              </div>
+            )}
           </div>
-          <div className="flex items-center text-xs text-muted-foreground">
-            <Calendar className="h-3 w-3 mr-1" />
-            {new Date(lead.created_at).toLocaleDateString('pt-BR')}
-          </div>
+          
           {lead.observacoes && (
-            <p className="text-xs text-muted-foreground mt-2 line-clamp-2">
+            <div className="mt-3 p-2 bg-muted/30 rounded text-xs text-muted-foreground line-clamp-2">
               {lead.observacoes}
-            </p>
+            </div>
           )}
+          
+          {/* Ações rápidas que aparecem no hover */}
+          <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity pt-2">
+            <Button variant="ghost" size="sm" className="h-7 px-2 text-xs">
+              <Eye className="h-3 w-3 mr-1" />
+              Ver
+            </Button>
+            <Button variant="ghost" size="sm" className="h-7 px-2 text-xs">
+              <Edit3 className="h-3 w-3 mr-1" />
+              Editar
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </div>
@@ -324,11 +220,14 @@ const CRM = () => {
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterOrigin, setFilterOrigin] = useState('all');
   const [stats, setStats] = useState({
     totalLeads: 0,
     newLeads: 0,
     conversions: 0,
-    conversionRate: 0
+    conversionRate: 0,
+    totalValue: 0
   });
   const [formData, setFormData] = useState({
     nome: '',
@@ -336,7 +235,7 @@ const CRM = () => {
     telefone: '',
     empresa: '',
     cargo: '',
-    origem: '',
+    origem: 'website',
     valor_estimado: '',
     observacoes: ''
   });
@@ -368,12 +267,15 @@ const CRM = () => {
       const newThisMonth = data?.filter(lead => 
         new Date(lead.created_at) >= new Date(new Date().getFullYear(), new Date().getMonth(), 1)
       ).length || 0;
+      const totalValue = data?.reduce((sum, lead) => sum + (lead.valor_estimado || 0), 0) || 0;
+      const conversions = data?.filter(lead => lead.status === 'fechado').length || 0;
       
       setStats({
         totalLeads: total,
         newLeads: newThisMonth,
-        conversions: Math.floor(total * 0.3), // Simulado
-        conversionRate: total > 0 ? 30 : 0 // Simulado
+        conversions: conversions,
+        conversionRate: total > 0 ? Math.round((conversions / total) * 100) : 0,
+        totalValue: totalValue
       });
     } catch (error) {
       console.error('Erro ao carregar leads:', error);
@@ -395,7 +297,8 @@ const CRM = () => {
         .from('leads')
         .insert({
           ...formData,
-          valor_estimado: formData.valor_estimado ? parseFloat(formData.valor_estimado) : null
+          valor_estimado: formData.valor_estimado ? parseFloat(formData.valor_estimado) : null,
+          status: 'pre_qualificacao'
         });
 
       if (error) throw error;
@@ -412,7 +315,7 @@ const CRM = () => {
         telefone: '',
         empresa: '',
         cargo: '',
-        origem: '',
+        origem: 'website',
         valor_estimado: '',
         observacoes: ''
       });
@@ -471,12 +374,20 @@ const CRM = () => {
     }
   };
 
-  const getStatusInfo = (status: string) => {
-    return statusOptions.find(s => s.value === status) || statusOptions[0];
-  };
+  // Filtrar leads
+  const filteredLeads = leads.filter(lead => {
+    const matchesSearch = !searchTerm || 
+      lead.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      lead.empresa.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      lead.email.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesOrigin = filterOrigin === 'all' || lead.origem === filterOrigin;
+    
+    return matchesSearch && matchesOrigin;
+  });
 
   const groupedLeads = statusOptions.reduce((acc, status) => {
-    acc[status.value] = leads.filter(lead => lead.status === status.value);
+    acc[status.value] = filteredLeads.filter(lead => lead.status === status.value);
     return acc;
   }, {} as Record<string, Lead[]>);
 
@@ -487,15 +398,15 @@ const CRM = () => {
       icon: Users,
       description: "Leads cadastrados",
       trend: { value: "12%", isPositive: true },
-      color: "bg-blue-100 text-blue-600"
+      color: "bg-primary/10 text-primary"
     },
     {
-      title: "Novos Leads",
+      title: "Novos este Mês",
       value: stats.newLeads,
       icon: UserPlus,
       description: "Este mês",
       trend: { value: "8%", isPositive: true },
-      color: "bg-green-100 text-green-600"
+      color: "bg-success/10 text-success"
     },
     {
       title: "Conversões",
@@ -503,59 +414,68 @@ const CRM = () => {
       icon: Target,
       description: "Leads convertidos",
       trend: { value: "5%", isPositive: true },
-      color: "bg-purple-100 text-purple-600"
+      color: "bg-warning/10 text-warning"
     },
     {
-      title: "Taxa de Conversão",
+      title: "Taxa Conversão",
       value: `${stats.conversionRate}%`,
       icon: TrendingUp,
-      description: "Média mensal",
+      description: "Média geral",
       trend: { value: "2%", isPositive: true },
-      color: "bg-orange-100 text-orange-600"
+      color: "bg-chart-1/10 text-chart-1"
+    },
+    {
+      title: "Valor Pipeline",
+      value: `R$ ${stats.totalValue.toLocaleString('pt-BR')}`,
+      icon: DollarSign,
+      description: "Valor total estimado",
+      trend: { value: "15%", isPositive: true },
+      color: "bg-chart-2/10 text-chart-2"
     }
   ];
 
   const quickActions = [
     {
       title: "Pipeline de Vendas",
-      description: "Visualizar funil completo de vendas",
+      description: "Visualizar funil completo",
       icon: BarChart3,
       onClick: () => toast({ title: "Em desenvolvimento" }),
-      color: "bg-blue-100 text-blue-600"
+      color: "bg-primary/10 text-primary"
     },
     {
       title: "Relatórios",
-      description: "Análise de performance e métricas",
+      description: "Análise de performance",
       icon: Download,
       onClick: () => toast({ title: "Em desenvolvimento" }),
-      color: "bg-green-100 text-green-600"
+      color: "bg-success/10 text-success"
     },
     {
       title: "Automações",
-      description: "Configurar fluxos automáticos",
+      description: "Configurar fluxos",
       icon: Activity,
       onClick: () => toast({ title: "Em desenvolvimento" }),
-      color: "bg-purple-100 text-purple-600"
+      color: "bg-warning/10 text-warning"
     }
   ];
 
   if (loading) {
     return (
-      <div className="p-6">
+      <div className="p-6 animate-fade-in">
         <div className="animate-pulse space-y-6">
           <div className="h-8 bg-muted rounded w-1/3"></div>
-          <div className="grid grid-cols-4 gap-6">
-            {[...Array(4)].map((_, i) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+            {[...Array(5)].map((_, i) => (
               <div key={i} className="h-32 bg-muted rounded"></div>
             ))}
           </div>
+          <div className="h-96 bg-muted rounded"></div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="p-6 space-y-8">
+    <div className="p-6 space-y-8 animate-fade-in">
       <SectionHeader
         title="CRM & Leads"
         description="Gerencie leads, contatos e oportunidades de negócio"
@@ -570,217 +490,190 @@ const CRM = () => {
 
       <StatsGrid stats={statsData} />
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 space-y-6">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-xl font-semibold">Funil de Vendas</h3>
-          </div>
+      <Tabs defaultValue="kanban" className="space-y-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <TabsList>
+            <TabsTrigger value="kanban">Funil Kanban</TabsTrigger>
+            <TabsTrigger value="list">Lista Completa</TabsTrigger>
+          </TabsList>
           
-          {/* Kanban Board */}
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCorners}
-            onDragStart={handleDragStart}
-            onDragEnd={handleDragEnd}
-          >
-            <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 min-h-[600px]">
-              {/* Pré-qualificação */}
-              <div className="bg-gray-50 rounded-lg p-4 min-h-[600px] flex flex-col">
-                <div className="flex justify-between items-center mb-4">
-                  <h4 className="font-semibold text-sm text-gray-700">Pré-qualificação</h4>
-                  <Badge variant="secondary" className="text-xs">
-                    {groupedLeads['pre_qualificacao']?.length || 0}
-                  </Badge>
-                </div>
-                
-                <SortableContext
-                  items={groupedLeads['pre_qualificacao']?.map(lead => lead.id) || []}
-                  strategy={verticalListSortingStrategy}
-                  id="pre_qualificacao"
-                >
-                  <div className="flex-1 space-y-2">
-                    {groupedLeads['pre_qualificacao']?.map((lead) => (
-                      <DraggableCard 
-                        key={lead.id} 
-                        lead={lead} 
-                        updateLeadStatus={updateLeadStatus}
-                      />
-                    ))}
-                  </div>
-                </SortableContext>
-              </div>
-
-              {/* Proposta */}
-              <div className="bg-blue-50 rounded-lg p-4 min-h-[600px] flex flex-col">
-                <div className="flex justify-between items-center mb-4">
-                  <h4 className="font-semibold text-sm text-gray-700">Proposta</h4>
-                  <Badge variant="secondary" className="text-xs">
-                    {groupedLeads['proposta']?.length || 0}
-                  </Badge>
-                </div>
-                
-                <SortableContext
-                  items={groupedLeads['proposta']?.map(lead => lead.id) || []}
-                  strategy={verticalListSortingStrategy}
-                  id="proposta"
-                >
-                  <div className="flex-1 space-y-2">
-                    {groupedLeads['proposta']?.map((lead) => (
-                      <DraggableCard 
-                        key={lead.id} 
-                        lead={lead} 
-                        updateLeadStatus={updateLeadStatus}
-                      />
-                    ))}
-                  </div>
-                </SortableContext>
-              </div>
-
-              {/* Negociação */}
-              <div className="bg-yellow-50 rounded-lg p-4 min-h-[600px] flex flex-col">
-                <div className="flex justify-between items-center mb-4">
-                  <h4 className="font-semibold text-sm text-gray-700">Negociação</h4>
-                  <Badge variant="secondary" className="text-xs">
-                    {groupedLeads['negociacao']?.length || 0}
-                  </Badge>
-                </div>
-                
-                <SortableContext
-                  items={groupedLeads['negociacao']?.map(lead => lead.id) || []}
-                  strategy={verticalListSortingStrategy}
-                  id="negociacao"
-                >
-                  <div className="flex-1 space-y-2">
-                    {groupedLeads['negociacao']?.map((lead) => (
-                      <DraggableCard 
-                        key={lead.id} 
-                        lead={lead} 
-                        updateLeadStatus={updateLeadStatus}
-                      />
-                    ))}
-                  </div>
-                </SortableContext>
-              </div>
-
-              {/* Fechado */}
-              <div className="bg-green-50 rounded-lg p-4 min-h-[600px] flex flex-col">
-                <div className="flex justify-between items-center mb-4">
-                  <h4 className="font-semibold text-sm text-gray-700">Fechado</h4>
-                  <Badge variant="secondary" className="text-xs">
-                    {groupedLeads['fechado']?.length || 0}
-                  </Badge>
-                </div>
-                
-                <SortableContext
-                  items={groupedLeads['fechado']?.map(lead => lead.id) || []}
-                  strategy={verticalListSortingStrategy}
-                  id="fechado"
-                >
-                  <div className="flex-1 space-y-2">
-                    {groupedLeads['fechado']?.map((lead) => (
-                      <DraggableCard 
-                        key={lead.id} 
-                        lead={lead} 
-                        updateLeadStatus={updateLeadStatus}
-                      />
-                    ))}
-                  </div>
-                </SortableContext>
-              </div>
-
-              {/* Perdido */}
-              <div className="bg-red-50 rounded-lg p-4 min-h-[600px] flex flex-col">
-                <div className="flex justify-between items-center mb-4">
-                  <h4 className="font-semibold text-sm text-gray-700">Perdido</h4>
-                  <Badge variant="secondary" className="text-xs">
-                    {groupedLeads['perdido']?.length || 0}
-                  </Badge>
-                </div>
-                
-                <SortableContext
-                  items={groupedLeads['perdido']?.map(lead => lead.id) || []}
-                  strategy={verticalListSortingStrategy}
-                  id="perdido"
-                >
-                  <div className="flex-1 space-y-2">
-                    {groupedLeads['perdido']?.map((lead) => (
-                      <DraggableCard 
-                        key={lead.id} 
-                        lead={lead} 
-                        updateLeadStatus={updateLeadStatus}
-                      />
-                    ))}
-                  </div>
-                </SortableContext>
-              </div>
+          {/* Filtros e busca */}
+          <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar leads..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 w-full sm:w-64"
+              />
             </div>
-            
-            <DragOverlay>
-              {activeId ? (
-                <DraggableCard 
-                  lead={leads.find(l => l.id === activeId)!} 
-                  updateLeadStatus={updateLeadStatus}
-                />
-              ) : null}
-            </DragOverlay>
-          </DndContext>
+            <Select value={filterOrigin} onValueChange={setFilterOrigin}>
+              <SelectTrigger className="w-full sm:w-40">
+                <Filter className="h-4 w-4 mr-2" />
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas as origens</SelectItem>
+                <SelectItem value="website">Website</SelectItem>
+                <SelectItem value="indicacao">Indicação</SelectItem>
+                <SelectItem value="marketing">Marketing</SelectItem>
+                <SelectItem value="evento">Evento</SelectItem>
+                <SelectItem value="telefone">Telefone</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
-        <div className="space-y-6">
-          <FeatureCard
-            title="Performance do Mês"
-            description="Resumo das principais métricas"
-            icon={BarChart3}
-            badge="Atualizado"
-          >
-            <div className="space-y-3">
-              <div className="flex justify-between text-sm">
-                <span>Meta de Conversão</span>
-                <span className="font-medium">30%</span>
-              </div>
-              <div className="w-full bg-muted rounded-full h-2">
-                <div className="bg-primary h-2 rounded-full" style={{width: `${stats.conversionRate}%`}}></div>
-              </div>
-              <div className="text-xs text-muted-foreground">
-                {stats.conversions} de {stats.totalLeads} leads convertidos
-              </div>
+        <TabsContent value="kanban" className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2">
+              {/* Kanban Board Melhorado */}
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCorners}
+                onDragStart={handleDragStart}
+                onDragEnd={handleDragEnd}
+              >
+                <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 min-h-[700px]">
+                  {statusOptions.map((status) => (
+                    <div 
+                      key={status.value}
+                      className={`${status.bgColor} rounded-xl p-4 min-h-[700px] flex flex-col border-2 border-transparent hover:border-border/50 transition-all duration-200`}
+                    >
+                      <div className="flex justify-between items-center mb-4 pb-3 border-b border-border/20">
+                        <div>
+                          <h4 className={`font-semibold text-sm ${status.textColor}`}>
+                            {status.label}
+                          </h4>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {groupedLeads[status.value]?.length || 0} leads
+                          </p>
+                        </div>
+                        <Badge 
+                          variant="secondary" 
+                          className={`${status.bgColor} ${status.textColor} border-0`}
+                        >
+                          {groupedLeads[status.value]?.length || 0}
+                        </Badge>
+                      </div>
+                      
+                      <SortableContext
+                        items={groupedLeads[status.value]?.map(lead => lead.id) || []}
+                        strategy={verticalListSortingStrategy}
+                        id={status.value}
+                      >
+                        <div className="flex-1 space-y-3">
+                          {groupedLeads[status.value]?.map((lead) => (
+                            <DraggableCard 
+                              key={lead.id} 
+                              lead={lead} 
+                              updateLeadStatus={updateLeadStatus}
+                            />
+                          ))}
+                          {groupedLeads[status.value]?.length === 0 && (
+                            <div className="flex flex-col items-center justify-center py-12 text-center">
+                              <div className="rounded-full bg-muted/50 p-3 mb-3">
+                                <Users className="h-6 w-6 text-muted-foreground" />
+                              </div>
+                              <p className="text-sm text-muted-foreground">
+                                Nenhum lead nesta etapa
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      </SortableContext>
+                    </div>
+                  ))}
+                </div>
+                
+                <DragOverlay>
+                  {activeId ? (
+                    <DraggableCard 
+                      lead={leads.find(l => l.id === activeId)!} 
+                      updateLeadStatus={updateLeadStatus}
+                    />
+                  ) : null}
+                </DragOverlay>
+              </DndContext>
             </div>
-          </FeatureCard>
 
-          <FeatureCard
-            title="Próximos Follow-ups"
-            description="Agenda de contatos importantes"
-            icon={Calendar}
-            actionLabel="Ver Agenda"
-            onAction={() => toast({ title: "Em desenvolvimento" })}
-          >
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span>Hoje</span>
-                <Badge variant="outline">3</Badge>
-              </div>
-              <div className="flex justify-between">
-                <span>Esta semana</span>
-                <Badge variant="outline">12</Badge>
-              </div>
-              <div className="flex justify-between">
-                <span>Próxima semana</span>
-                <Badge variant="outline">8</Badge>
-              </div>
+            <div className="space-y-6">
+              <FeatureCard
+                title="Performance do Mês"
+                description="Resumo das principais métricas"
+                icon={BarChart3}
+                badge="Atualizado"
+              >
+                <div className="space-y-4">
+                  <div className="flex justify-between text-sm">
+                    <span>Meta de Conversão</span>
+                    <span className="font-medium">30%</span>
+                  </div>
+                  <div className="w-full bg-muted rounded-full h-3">
+                    <div 
+                      className="bg-primary h-3 rounded-full transition-all duration-500" 
+                      style={{width: `${Math.min(stats.conversionRate, 100)}%`}}
+                    ></div>
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    {stats.conversions} de {stats.totalLeads} leads convertidos
+                  </div>
+                </div>
+              </FeatureCard>
+
+              <FeatureCard
+                title="Valor do Pipeline"
+                description="Oportunidades em andamento"
+                icon={DollarSign}
+                actionLabel="Ver Detalhes"
+                onAction={() => toast({ title: "Em desenvolvimento" })}
+              >
+                <div className="space-y-3">
+                  {statusOptions.slice(0, 4).map((status) => {
+                    const statusLeads = groupedLeads[status.value] || [];
+                    const statusValue = statusLeads.reduce((sum, lead) => sum + (lead.valor_estimado || 0), 0);
+                    return (
+                      <div key={status.value} className="flex justify-between text-sm">
+                        <span className={status.textColor}>{status.label}</span>
+                        <span className="font-medium">
+                          R$ {statusValue.toLocaleString('pt-BR')}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </FeatureCard>
+
+              <QuickActions 
+                actions={quickActions}
+                title="Ações Rápidas"
+              />
             </div>
-          </FeatureCard>
+          </div>
+        </TabsContent>
 
-          <QuickActions 
-            actions={quickActions}
-            title="Ações Rápidas"
-            columns={3}
-          />
-        </div>
-      </div>
+        <TabsContent value="list">
+          <Card>
+            <CardHeader>
+              <CardTitle>Lista de Leads</CardTitle>
+              <CardDescription>
+                Visualização em tabela de todos os leads cadastrados
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center py-12 text-muted-foreground">
+                <BarChart3 className="h-12 w-12 mx-auto mb-4" />
+                <p>Visualização em lista em desenvolvimento</p>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
 
       {/* Dialog para criar lead */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>Criar Novo Lead</DialogTitle>
             <DialogDescription>
@@ -788,43 +681,76 @@ const CRM = () => {
             </DialogDescription>
           </DialogHeader>
           
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="nome">Nome *</Label>
-              <Input
-                id="nome"
-                value={formData.nome}
-                onChange={(e) => setFormData({...formData, nome: e.target.value})}
-                required
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                value={formData.email}
-                onChange={(e) => setFormData({...formData, email: e.target.value})}
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="telefone">Telefone</Label>
-              <Input
-                id="telefone"
-                value={formData.telefone}
-                onChange={(e) => setFormData({...formData, telefone: e.target.value})}
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="empresa">Empresa</Label>
-              <Input
-                id="empresa"
-                value={formData.empresa}
-                onChange={(e) => setFormData({...formData, empresa: e.target.value})}
-              />
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="nome">Nome Completo *</Label>
+                <Input
+                  id="nome"
+                  value={formData.nome}
+                  onChange={(e) => setFormData({...formData, nome: e.target.value})}
+                  placeholder="João Silva"
+                  required
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="empresa">Empresa</Label>
+                <Input
+                  id="empresa"
+                  value={formData.empresa}
+                  onChange={(e) => setFormData({...formData, empresa: e.target.value})}
+                  placeholder="Empresa LTDA"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => setFormData({...formData, email: e.target.value})}
+                  placeholder="joao@empresa.com"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="telefone">Telefone</Label>
+                <Input
+                  id="telefone"
+                  value={formData.telefone}
+                  onChange={(e) => setFormData({...formData, telefone: e.target.value})}
+                  placeholder="(11) 99999-9999"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="cargo">Cargo</Label>
+                <Input
+                  id="cargo"
+                  value={formData.cargo}
+                  onChange={(e) => setFormData({...formData, cargo: e.target.value})}
+                  placeholder="Diretor de Marketing"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="origem">Origem do Lead</Label>
+                <Select value={formData.origem} onValueChange={(value) => setFormData({...formData, origem: value})}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="website">Website</SelectItem>
+                    <SelectItem value="indicacao">Indicação</SelectItem>
+                    <SelectItem value="marketing">Marketing Digital</SelectItem>
+                    <SelectItem value="evento">Evento</SelectItem>
+                    <SelectItem value="telefone">Contato Telefônico</SelectItem>
+                    <SelectItem value="rede_social">Redes Sociais</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
             
             <div className="space-y-2">
@@ -835,6 +761,7 @@ const CRM = () => {
                 step="0.01"
                 value={formData.valor_estimado}
                 onChange={(e) => setFormData({...formData, valor_estimado: e.target.value})}
+                placeholder="0,00"
               />
             </div>
             
@@ -844,12 +771,20 @@ const CRM = () => {
                 id="observacoes"
                 value={formData.observacoes}
                 onChange={(e) => setFormData({...formData, observacoes: e.target.value})}
+                placeholder="Informações adicionais sobre o lead..."
+                rows={3}
               />
             </div>
             
-            <Button type="submit" className="w-full">
-              Criar Lead
-            </Button>
+            <div className="flex gap-3 pt-4">
+              <Button type="button" variant="outline" onClick={() => setDialogOpen(false)} className="flex-1">
+                Cancelar
+              </Button>
+              <Button type="submit" className="flex-1">
+                <Plus className="h-4 w-4 mr-2" />
+                Criar Lead
+              </Button>
+            </div>
           </form>
         </DialogContent>
       </Dialog>
