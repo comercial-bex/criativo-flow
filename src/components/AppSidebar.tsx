@@ -248,18 +248,21 @@ export function AppSidebar() {
     return location.pathname.startsWith(path);
   };
 
-  // Get visible modules based on permissions and role - PERSONALIZED BY ROLE
+  // Get visible modules based on permissions and role - MODO DEUS PARA ADMIN
   const getVisibleModules = () => {
-    // PHASE 1: PERSONALIZED SIDEBAR - Show only user's role module + profile + logout
-    const role_str = role as string; // Cast to avoid TypeScript confusion
+    const role_str = role as string;
     
+    // 🔥 MODO DEUS: Admin vê TODOS os módulos sem restrição
+    if (role_str === 'admin') {
+      return modules; // ACESSO TOTAL - TODOS OS MÓDULOS
+    }
+    
+    // Outros roles mantêm as restrições normais
     switch (role_str) {
       case 'grs':
         return modules.filter(m => m.id === 'grs');
       case 'designer':
         return modules.filter(m => m.id === 'design');
-      case 'admin':
-        return modules.filter(m => ['dashboard', 'administrativo', 'financeiro', 'crm', 'admin'].includes(m.id));
       case 'atendimento':
         return modules.filter(m => ['dashboard', 'crm', 'atendimento'].includes(m.id));
       case 'filmmaker':
@@ -377,12 +380,19 @@ export function AppSidebar() {
             {/* User Profile Section */}
             <UserProfileSection />
 
-            {/* Active Module Highlight */}
+            {/* Active Module Highlight + Admin Badge */}
             {currentModule && (
               <div className="px-4 py-3 mx-4 mb-4 bg-bex-green rounded-lg animate-fade-in hover-lift">
-                <div className="flex items-center text-bex-dark">
-                  <currentModule.icon className="mr-2 h-4 w-4" />
-                  <span className="font-medium text-sm">{currentModule.title}</span>
+                <div className="flex items-center justify-between text-bex-dark">
+                  <div className="flex items-center">
+                    <currentModule.icon className="mr-2 h-4 w-4" />
+                    <span className="font-medium text-sm">{currentModule.title}</span>
+                  </div>
+                  {role === 'admin' && (
+                    <span className="text-xs bg-orange-500 text-white px-2 py-1 rounded font-bold">
+                      ADMIN
+                    </span>
+                  )}
                 </div>
               </div>
             )}

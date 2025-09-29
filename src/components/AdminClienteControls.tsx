@@ -158,6 +158,37 @@ export function AdminClienteControls({ clienteId, clienteData }: AdminClienteCon
     }
   };
 
+  const handleCreateAccount = async () => {
+    if (!clienteData.email) {
+      toast.error('Email do cliente é obrigatório');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const tempPassword = Math.random().toString(36).slice(-8);
+      
+      const { data, error } = await supabase.functions.invoke('create-client-user', {
+        body: {
+          email: clienteData.email,
+          password: tempPassword,
+          nome: clienteData.nome,
+          cliente_id: clienteId,
+          role: 'cliente'
+        }
+      });
+
+      if (error) throw error;
+
+      toast.success(`Conta criada! Senha temporária: ${tempPassword}`);
+      await fetchAuthData(); // Recarregar dados
+    } catch (error: any) {
+      toast.error('Erro ao criar conta: ' + error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleDeleteAccount = async () => {
     if (!authData?.auth_user_id) {
       toast.error('Usuário não encontrado');
@@ -267,10 +298,21 @@ export function AdminClienteControls({ clienteId, clienteData }: AdminClienteCon
               <p className="text-sm text-gray-500">
                 Este cliente não possui conta de acesso
               </p>
-              <Button variant="outline" size="sm" className="mt-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="mt-2"
+                onClick={handleCreateAccount}
+                disabled={loading || !clienteData.email}
+              >
                 <Shield className="h-4 w-4 mr-2" />
                 Criar Conta de Acesso
               </Button>
+              {!clienteData.email && (
+                <p className="text-xs text-red-500 mt-1">
+                  Email do cliente é obrigatório
+                </p>
+              )}
             </div>
           )}
         </CardContent>

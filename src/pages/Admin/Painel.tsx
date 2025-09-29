@@ -3,33 +3,22 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { SectionHeader } from "@/components/SectionHeader";
-import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
-  Users, 
   Shield, 
-  Activity, 
-  AlertTriangle,
-  Search,
-  UserX,
-  RefreshCw,
-  Key,
-  Trash2,
-  Eye,
-  EyeOff,
+  Users, 
+  Search, 
+  UserPlus, 
+  Settings, 
+  Activity,
+  Filter,
   Download,
-  Filter
+  AlertTriangle,
+  Brain,
+  BarChart3
 } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import {
   Select,
   SelectContent,
@@ -37,172 +26,98 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
+import { AIAnalyticsDashboard } from "@/components/AIAnalyticsDashboard";
 
 interface AdminUser {
   id: string;
   nome: string;
   email: string;
-  telefone?: string;
   status: string;
   created_at: string;
-  user_roles?: { role: string }[];
-  clientes?: { nome: string };
-  last_sign_in_at?: string;
+  user_roles?: Array<{ role: string }>;
 }
 
-interface AdminStats {
-  totalUsers: number;
-  activeUsers: number;
-  pendingUsers: number;
-  adminUsers: number;
-  onlineUsers: number;
+interface UserStats {
+  total: number;
+  admins: number;
+  clientes: number;
+  especialistas: number;
+  pendentes: number;
 }
 
 export default function AdminPainel() {
   const [users, setUsers] = useState<AdminUser[]>([]);
-  const [stats, setStats] = useState<AdminStats>({
-    totalUsers: 0,
-    activeUsers: 0,
-    pendingUsers: 0,
-    adminUsers: 0,
-    onlineUsers: 0
-  });
-  const [loading, setLoading] = useState(false);
+  const [filteredUsers, setFilteredUsers] = useState<AdminUser[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [roleFilter, setRoleFilter] = useState("all");
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
-  const [showActions, setShowActions] = useState(false);
-  const [newPassword, setNewPassword] = useState("");
+  const [filterRole, setFilterRole] = useState("all");
+  const [filterStatus, setFilterStatus] = useState("all");
+  const [stats, setStats] = useState<UserStats>({
+    total: 0,
+    admins: 0,
+    clientes: 0,
+    especialistas: 0,
+    pendentes: 0
+  });
 
   useEffect(() => {
     fetchUsers();
-    fetchStats();
-  }, [roleFilter, statusFilter, searchTerm]);
+  }, []);
+
+  useEffect(() => {
+    filterUsers();
+  }, [users, searchTerm, filterRole, filterStatus]);
 
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      const filters = {
-        role: roleFilter !== 'all' ? roleFilter : undefined,
-        status: statusFilter !== 'all' ? statusFilter : undefined,
-        search: searchTerm || undefined
-      };
-
       const { data, error } = await supabase.functions.invoke('admin-user-management', {
-        body: { action: 'list', filters }
+        body: { action: 'list' }
       });
 
       if (error) throw error;
-      
-      setUsers(data.users || []);
+
+      const usersData = data.users || [];
+      setUsers(usersData);
+      calculateStats(usersData);
     } catch (error: any) {
       console.error('Error fetching users:', error);
-      toast.error('Erro ao carregar usuários');
+      toast.error('Erro ao carregar usuários: ' + error.message);
     } finally {
       setLoading(false);
     }
   };
 
-  const fetchStats = async () => {
-    try {
-      const { data: profilesData } = await supabase
-        .from('profiles')
-        .select('status, user_roles(role)');
-
-      if (profilesData) {
-        const totalUsers = profilesData.length;
-        const activeUsers = profilesData.filter(p => p.status === 'aprovado').length;
-        const pendingUsers = profilesData.filter(p => p.status === 'pendente_aprovacao').length;
-        const adminUsers = profilesData.filter(p => 
-          p.user_roles?.some((r: any) => r.role === 'admin')
-        ).length;
-
-        setStats({
-          totalUsers,
-          activeUsers,
-          pendingUsers,
-          adminUsers,
-          onlineUsers: 0 // Would need real-time tracking
-        });
-      }
-    } catch (error) {
-      console.error('Error fetching stats:', error);
-    }
+  const calculateStats = (usersData: AdminUser[]) => {
+    const stats: UserStats = {
+      total: usersData.length,
+      admins: usersData.filter(u => u.user_roles?.[0]?.role === 'admin').length,
+      clientes: usersData.filter(u => u.user_roles?.[0]?.role === 'cliente').length,
+      especialistas: usersData.filter(u => ['grs', 'designer', 'filmmaker'].includes(u.user_roles?.[0]?.role || '')).length,
+      pendentes: usersData.filter(u => u.status === 'pendente_aprovacao').length
+    };
+    setStats(stats);
   };
 
-  const handleResetPassword = async (userId: string) => {
-    if (!newPassword) {
-      toast.error('Digite uma nova senha');
-      return;
+  const filterUsers = () => {
+    let filtered = users;
+
+    if (searchTerm) {
+      filtered = filtered.filter(user => 
+        user.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.email.toLowerCase().includes(searchTerm.toLowerCase())
+      );
     }
 
-    try {
-      const { error } = await supabase.functions.invoke('admin-user-management', {
-        body: { 
-          action: 'reset-password', 
-          user_id: userId, 
-          new_password: newPassword 
-        }
-      });
-
-      if (error) throw error;
-      
-      toast.success('Senha alterada com sucesso');
-      setNewPassword("");
-      setSelectedUser(null);
-    } catch (error: any) {
-      toast.error('Erro ao alterar senha');
-    }
-  };
-
-  const handleForceLogout = async (userId: string) => {
-    try {
-      const { error } = await supabase.functions.invoke('admin-user-management', {
-        body: { action: 'force-logout', user_id: userId }
-      });
-
-      if (error) throw error;
-      
-      toast.success('Usuário desconectado com sucesso');
-    } catch (error: any) {
-      toast.error('Erro ao desconectar usuário');
-    }
-  };
-
-  const handleUpdateStatus = async (userId: string, status: string) => {
-    try {
-      const { error } = await supabase.functions.invoke('admin-user-management', {
-        body: { action: 'update-status', user_id: userId, status }
-      });
-
-      if (error) throw error;
-      
-      toast.success('Status atualizado com sucesso');
-      fetchUsers();
-    } catch (error: any) {
-      toast.error('Erro ao atualizar status');
-    }
-  };
-
-  const handleDeleteUser = async (userId: string) => {
-    if (!confirm('Tem certeza que deseja excluir este usuário? Esta ação não pode ser desfeita.')) {
-      return;
+    if (filterRole !== "all") {
+      filtered = filtered.filter(user => user.user_roles?.[0]?.role === filterRole);
     }
 
-    try {
-      const { error } = await supabase.functions.invoke('admin-user-management', {
-        body: { action: 'delete-user', user_id: userId }
-      });
-
-      if (error) throw error;
-      
-      toast.success('Usuário excluído com sucesso');
-      fetchUsers();
-    } catch (error: any) {
-      toast.error('Erro ao excluir usuário');
+    if (filterStatus !== "all") {
+      filtered = filtered.filter(user => user.status === filterStatus);
     }
+
+    setFilteredUsers(filtered);
   };
 
   const getStatusColor = (status: string) => {
@@ -220,266 +135,223 @@ export default function AdminPainel() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="container mx-auto p-6 space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <SectionHeader
-          title="PAINEL ADMINISTRATIVO"
-          description="Controle total do sistema - Modo Deus Ativado"
-        />
-        <Badge variant="destructive" className="animate-pulse">
-          <Shield className="h-3 w-3 mr-1" />
-          ADMIN MODE
-        </Badge>
-      </div>
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-        <Card>
-          <CardContent className="flex items-center p-6">
-            <Users className="h-8 w-8 text-blue-500" />
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Total Usuários</p>
-              <p className="text-2xl font-bold">{stats.totalUsers}</p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="flex items-center p-6">
-            <Activity className="h-8 w-8 text-green-500" />
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Ativos</p>
-              <p className="text-2xl font-bold text-green-600">{stats.activeUsers}</p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="flex items-center p-6">
-            <AlertTriangle className="h-8 w-8 text-yellow-500" />
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Pendentes</p>
-              <p className="text-2xl font-bold text-yellow-600">{stats.pendingUsers}</p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="flex items-center p-6">
-            <Shield className="h-8 w-8 text-purple-500" />
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Admins</p>
-              <p className="text-2xl font-bold text-purple-600">{stats.adminUsers}</p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="flex items-center p-6">
-            <div className="h-8 w-8 bg-green-500 rounded-full animate-pulse" />
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Online</p>
-              <p className="text-2xl font-bold text-green-600">{stats.onlineUsers}</p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Filters */}
-      <Card>
+      <Card className="border-orange-200 bg-gradient-to-r from-orange-50 to-red-50">
         <CardHeader>
-          <CardTitle className="flex items-center">
-            <Filter className="h-5 w-5 mr-2" />
-            Filtros e Busca
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="space-y-2">
-              <Label>Buscar</Label>
-              <div className="relative">
-                <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
-                <Input
-                  placeholder="Nome ou email..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-8"
-                />
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <Shield className="h-8 w-8 text-orange-600 mr-3" />
+              <div>
+                <CardTitle className="text-2xl text-orange-800">PAINEL ADMINISTRATIVO</CardTitle>
+                <p className="text-orange-700">Controle total do sistema + IA</p>
               </div>
             </div>
-
-            <div className="space-y-2">
-              <Label>Role</Label>
-              <Select value={roleFilter} onValueChange={setRoleFilter}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos</SelectItem>
-                  <SelectItem value="admin">Admin</SelectItem>
-                  <SelectItem value="grs">GRS</SelectItem>
-                  <SelectItem value="designer">Designer</SelectItem>
-                  <SelectItem value="atendimento">Atendimento</SelectItem>
-                  <SelectItem value="cliente">Cliente</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Status</Label>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos</SelectItem>
-                  <SelectItem value="aprovado">Aprovado</SelectItem>
-                  <SelectItem value="pendente_aprovacao">Pendente</SelectItem>
-                  <SelectItem value="rejeitado">Rejeitado</SelectItem>
-                  <SelectItem value="suspenso">Suspenso</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Ações</Label>
-              <div className="flex gap-2">
-                <Button size="sm" onClick={fetchUsers}>
-                  <RefreshCw className="h-4 w-4" />
-                </Button>
-                <Button size="sm" variant="outline">
-                  <Download className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
+            <Badge variant="destructive" className="text-sm">
+              <AlertTriangle className="h-4 w-4 mr-1" />
+              MODO DEUS
+            </Badge>
           </div>
-        </CardContent>
+        </CardHeader>
       </Card>
 
-      {/* Users Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Usuários do Sistema</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {loading ? (
-            <div className="text-center py-8">
-              <p>Carregando usuários...</p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {users.map((user) => (
-                <div key={user.id} className="flex items-center justify-between p-4 border rounded-lg">
-                  <div className="flex items-center space-x-4">
-                    <div className={`w-3 h-3 rounded-full ${getStatusColor(user.status)}`} />
-                    <div>
-                      <p className="font-medium">{user.nome}</p>
-                      <p className="text-sm text-gray-500">{user.email}</p>
-                      <div className="flex items-center space-x-2 mt-1">
-                        <Badge variant="secondary" className="text-xs">
-                          {getRoleText(user)}
-                        </Badge>
-                        <Badge variant="outline" className="text-xs">
+      {/* Tabs para organizar funcionalidades */}
+      <Tabs defaultValue="analytics" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="analytics" className="flex items-center">
+            <Brain className="h-4 w-4 mr-2" />
+            Analytics IA
+          </TabsTrigger>
+          <TabsTrigger value="users" className="flex items-center">
+            <Users className="h-4 w-4 mr-2" />
+            Usuários
+          </TabsTrigger>
+          <TabsTrigger value="system" className="flex items-center">
+            <Settings className="h-4 w-4 mr-2" />
+            Sistema
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="analytics">
+          <AIAnalyticsDashboard />
+        </TabsContent>
+
+        <TabsContent value="users">
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+            <Card>
+              <CardContent className="flex items-center p-6">
+                <Users className="h-8 w-8 text-blue-500" />
+                <div className="ml-3">
+                  <p className="text-sm font-medium text-gray-600">Total</p>
+                  <p className="text-2xl font-bold">{stats.total}</p>
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="flex items-center p-6">
+                <Shield className="h-8 w-8 text-red-500" />
+                <div className="ml-3">
+                  <p className="text-sm font-medium text-gray-600">Admins</p>
+                  <p className="text-2xl font-bold">{stats.admins}</p>
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="flex items-center p-6">
+                <Users className="h-8 w-8 text-green-500" />
+                <div className="ml-3">
+                  <p className="text-sm font-medium text-gray-600">Clientes</p>
+                  <p className="text-2xl font-bold">{stats.clientes}</p>
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="flex items-center p-6">
+                <Settings className="h-8 w-8 text-purple-500" />
+                <div className="ml-3">
+                  <p className="text-sm font-medium text-gray-600">Especialistas</p>
+                  <p className="text-2xl font-bold">{stats.especialistas}</p>
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="flex items-center p-6">
+                <AlertTriangle className="h-8 w-8 text-yellow-500" />
+                <div className="ml-3">
+                  <p className="text-sm font-medium text-gray-600">Pendentes</p>
+                  <p className="text-2xl font-bold">{stats.pendentes}</p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Filters and Search */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Filter className="h-5 w-5 mr-2" />
+                Filtros de Usuários
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex gap-4 mb-4">
+                <div className="flex-1">
+                  <Input
+                    placeholder="Buscar por nome ou email..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full"
+                  />
+                </div>
+                <Select value={filterRole} onValueChange={setFilterRole}>
+                  <SelectTrigger className="w-48">
+                    <SelectValue placeholder="Filtrar por role" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos os roles</SelectItem>
+                    <SelectItem value="admin">Admin</SelectItem>
+                    <SelectItem value="cliente">Cliente</SelectItem>
+                    <SelectItem value="grs">GRS</SelectItem>
+                    <SelectItem value="designer">Designer</SelectItem>
+                    <SelectItem value="filmmaker">Filmmaker</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select value={filterStatus} onValueChange={setFilterStatus}>
+                  <SelectTrigger className="w-48">
+                    <SelectValue placeholder="Filtrar por status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos os status</SelectItem>
+                    <SelectItem value="aprovado">Aprovado</SelectItem>
+                    <SelectItem value="pendente_aprovacao">Pendente</SelectItem>
+                    <SelectItem value="rejeitado">Rejeitado</SelectItem>
+                    <SelectItem value="suspenso">Suspenso</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Button onClick={fetchUsers} variant="outline">
+                  <Search className="h-4 w-4 mr-2" />
+                  Atualizar
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Users Table */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle>Lista de Usuários ({filteredUsers.length})</CardTitle>
+                <div className="flex gap-2">
+                  <Button size="sm" variant="outline">
+                    <Download className="h-4 w-4 mr-2" />
+                    Exportar
+                  </Button>
+                  <Button size="sm">
+                    <UserPlus className="h-4 w-4 mr-2" />
+                    Novo Usuário
+                  </Button>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {loading ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div>
+                  <span className="ml-3">Carregando usuários...</span>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {filteredUsers.map((user) => (
+                    <div key={user.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
+                      <div className="flex items-center space-x-4">
+                        <div className={`w-3 h-3 rounded-full ${getStatusColor(user.status)}`}></div>
+                        <div>
+                          <h4 className="font-medium">{user.nome}</h4>
+                          <p className="text-sm text-gray-500">{user.email}</p>
+                        </div>
+                        <Badge variant="outline">{getRoleText(user)}</Badge>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Badge variant={user.status === 'aprovado' ? 'default' : 'secondary'}>
                           {user.status}
                         </Badge>
-                        {user.clientes && (
-                          <Badge variant="outline" className="text-xs">
-                            {user.clientes.nome}
-                          </Badge>
-                        )}
+                        <Button size="sm" variant="outline">
+                          <Settings className="h-4 w-4" />
+                        </Button>
                       </div>
                     </div>
-                  </div>
-
-                  <div className="flex items-center space-x-2">
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <Button size="sm" variant="outline" onClick={() => setSelectedUser(user)}>
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="max-w-2xl">
-                        <DialogHeader>
-                          <DialogTitle>Controles Administrativos - {user.nome}</DialogTitle>
-                          <DialogDescription>
-                            Gerencie o usuário com poderes administrativos
-                          </DialogDescription>
-                        </DialogHeader>
-                        
-                        <div className="space-y-6">
-                          {/* User Info */}
-                          <div className="grid grid-cols-2 gap-4">
-                            <div>
-                              <Label>Email</Label>
-                              <p className="text-sm">{user.email}</p>
-                            </div>
-                            <div>
-                              <Label>Status</Label>
-                              <Select
-                                value={user.status}
-                                onValueChange={(value) => handleUpdateStatus(user.id, value)}
-                              >
-                                <SelectTrigger>
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="aprovado">Aprovado</SelectItem>
-                                  <SelectItem value="pendente_aprovacao">Pendente</SelectItem>
-                                  <SelectItem value="rejeitado">Rejeitado</SelectItem>
-                                  <SelectItem value="suspenso">Suspenso</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
-                          </div>
-
-                          {/* Reset Password */}
-                          <div className="space-y-2">
-                            <Label>Nova Senha</Label>
-                            <div className="flex gap-2">
-                              <Input
-                                type="password"
-                                placeholder="Digite nova senha..."
-                                value={newPassword}
-                                onChange={(e) => setNewPassword(e.target.value)}
-                              />
-                              <Button onClick={() => handleResetPassword(user.id)}>
-                                <Key className="h-4 w-4 mr-2" />
-                                Alterar
-                              </Button>
-                            </div>
-                          </div>
-
-                          {/* Actions */}
-                          <div className="flex gap-2">
-                            <Button 
-                              variant="destructive" 
-                              size="sm"
-                              onClick={() => handleForceLogout(user.id)}
-                            >
-                              <UserX className="h-4 w-4 mr-2" />
-                              Desconectar
-                            </Button>
-                            
-                            <Button 
-                              variant="destructive" 
-                              size="sm"
-                              onClick={() => handleDeleteUser(user.id)}
-                            >
-                              <Trash2 className="h-4 w-4 mr-2" />
-                              Excluir Usuário
-                            </Button>
-                          </div>
-                        </div>
-                      </DialogContent>
-                    </Dialog>
-                  </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="system">
+          <Card>
+            <CardHeader>
+              <CardTitle>Ferramentas do Sistema</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <Button variant="outline" className="h-20 flex flex-col">
+                  <BarChart3 className="h-6 w-6 mb-2" />
+                  Relatórios
+                </Button>
+                <Button variant="outline" className="h-20 flex flex-col">
+                  <Download className="h-6 w-6 mb-2" />
+                  Backup
+                </Button>
+                <Button variant="outline" className="h-20 flex flex-col">
+                  <Activity className="h-6 w-6 mb-2" />
+                  Logs
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
