@@ -2328,6 +2328,16 @@ export type Database = {
         Args: { customer_id: string }
         Returns: boolean
       }
+      create_client_user_direct: {
+        Args: {
+          p_cliente_id: string
+          p_email: string
+          p_nome: string
+          p_password: string
+          p_role?: string
+        }
+        Returns: Json
+      }
       create_client_user_sql: {
         Args: {
           p_cliente_id: string

@@ -197,11 +197,11 @@ serve(async (req) => {
       
       console.log('Password updated for existing user');
     } else {
-      // Try SQL backup function first (more reliable)
-      console.log('🔧 Edge Function: Tentando criar usuário via SQL backup...');
+      // Try direct SQL function first (more reliable)
+      console.log('🔧 Edge Function: Tentando criar usuário via SQL direto...');
       try {
-        const { data: backupResult, error: backupError } = await supabaseAdmin.rpc(
-          'create_client_user_sql',
+        const { data: directResult, error: directError } = await supabaseAdmin.rpc(
+          'create_client_user_direct',
           {
             p_email: email,
             p_password: password,
@@ -211,26 +211,20 @@ serve(async (req) => {
           }
         );
         
-        if (!backupError && backupResult?.success) {
-          console.log('🔧 Edge Function: Usuário criado via SQL backup!');
+        if (!directError && directResult?.success) {
+          console.log('🔧 Edge Function: Usuário criado via SQL direto!');
           return new Response(
-            JSON.stringify({ 
-              success: true,
-              email: email,
-              password: password,
-              message: 'Usuário criado com sucesso via SQL backup',
-              method: 'sql_backup'
-            }),
+            JSON.stringify(directResult),
             { 
               status: 200, 
               headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
             }
           );
         } else {
-          console.log('🔧 Edge Function: SQL backup não conseguiu criar, tentando Auth API...');
+          console.log('🔧 Edge Function: SQL direto falhou, tentando SQL backup...');
         }
-      } catch (backupError) {
-        console.log('🔧 Edge Function: Erro no backup SQL, tentando Auth API:', backupError);
+      } catch (directError) {
+        console.log('🔧 Edge Function: Erro no SQL direto, tentando SQL backup:', directError);
       }
 
       // Create new user in Supabase Auth (fallback method)
