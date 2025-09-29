@@ -281,40 +281,39 @@ export function AdminClienteControls({ clienteId, clienteData }: AdminClienteCon
         </CardHeader>
       </Card>
 
-      {/* Credenciais de Acesso */}
+      {/* Credenciais de Acesso - Simplificado */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center">
             <Key className="h-4 w-4 mr-2" />
-            Credenciais de Acesso
+            Conta de Acesso
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           {authData ? (
-            <>
-              <div className="space-y-2">
-                <Label>Email de Login</Label>
-                <Input
-                  value={newEmail}
-                  onChange={(e) => setNewEmail(e.target.value)}
-                  placeholder="email@exemplo.com"
-                />
-                <p className="text-xs text-gray-500">
-                  Email atual: {authData.email}
-                </p>
+            <div className="space-y-4">
+              {/* Status visual da conta */}
+              <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
+                <div>
+                  <p className="font-medium text-green-800">✓ Conta Ativa</p>
+                  <p className="text-sm text-green-600">{authData.email}</p>
+                </div>
+                <Badge variant="outline" className="bg-green-100 text-green-700">
+                  {accountStatus === 'aprovado' ? 'Ativo' : accountStatus}
+                </Badge>
               </div>
 
+              {/* Ações rápidas */}
               <div className="space-y-2">
-                <Label>Nova Senha</Label>
                 <div className="flex gap-2">
                   <Input
                     type="password"
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
-                    placeholder="Digite nova senha..."
+                    placeholder="Nova senha..."
+                    className="flex-1"
                   />
                   <Button 
-                    type="button" 
                     variant="outline" 
                     size="sm"
                     onClick={generateRandomPassword}
@@ -327,10 +326,13 @@ export function AdminClienteControls({ clienteId, clienteData }: AdminClienteCon
                   disabled={!newPassword || loading}
                   size="sm"
                   className="w-full"
+                  variant="outline"
                 >
                   Alterar Senha
                 </Button>
               </div>
+
+              <Separator />
 
               <div className="space-y-2">
                 <Label>Status da Conta</Label>
@@ -345,16 +347,22 @@ export function AdminClienteControls({ clienteId, clienteData }: AdminClienteCon
                   </SelectContent>
                 </Select>
               </div>
-            </>
+            </div>
           ) : (
-            <div className="text-center py-4">
-              <p className="text-sm text-gray-500">
-                Este cliente não possui conta de acesso
-              </p>
+            <div className="space-y-4">
+              {/* Status visual sem conta */}
+              <div className="flex items-center justify-center p-4 bg-gray-50 border border-gray-200 rounded-lg">
+                <div className="text-center">
+                  <Settings className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                  <p className="font-medium text-gray-600">Sem conta de acesso</p>
+                  <p className="text-sm text-gray-500">Cliente não pode acessar o painel</p>
+                </div>
+              </div>
               
-              <div className="space-y-3 mt-3">
-                <div className="text-left">
-                  <Label className="text-xs">Email para a conta:</Label>
+              {/* Formulário de criação simplificado */}
+              <div className="space-y-3">
+                <div>
+                  <Label className="text-sm font-medium">Email para a conta</Label>
                   <Input
                     value={newEmail}
                     onChange={(e) => setNewEmail(e.target.value)}
@@ -365,20 +373,17 @@ export function AdminClienteControls({ clienteId, clienteData }: AdminClienteCon
                 </div>
                 
                 <Button 
-                  size="sm" 
                   className="w-full"
                   onClick={handleCreateAccount}
                   disabled={loading || !newEmail.trim()}
                 >
-                  <Shield className="h-4 w-4 mr-2" />
-                  {loading ? 'Criando...' : 'Criar Conta de Acesso'}
+                  <Key className="h-4 w-4 mr-2" />
+                  {loading ? 'Criando conta...' : 'Gerar Conta de Acesso'}
                 </Button>
                 
-                {!newEmail.trim() && (
-                  <p className="text-xs text-amber-600">
-                    Digite o email para criar a conta
-                  </p>
-                )}
+                <p className="text-xs text-center text-muted-foreground">
+                  🔄 Conta ficará pendente para aprovação em /especialistas
+                </p>
               </div>
             </div>
           )}

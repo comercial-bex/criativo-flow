@@ -112,10 +112,20 @@ export function CredentialsModal({ open, onOpenChange, email, senha, nomeCliente
             </div>
           </div>
 
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+            <p className="text-sm text-blue-800">
+              📋 <strong>Próximos passos:</strong>
+            </p>
+            <ol className="text-sm text-blue-700 mt-1 ml-4 list-decimal space-y-1">
+              <li>Copie ou envie as credenciais ao cliente</li>
+              <li>Aprove o usuário em <strong>/especialistas</strong></li>
+              <li>Cliente poderá acessar o painel</li>
+            </ol>
+          </div>
+
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
             <p className="text-sm text-yellow-800">
-              ⚠️ <strong>Importante:</strong> Essas credenciais serão exibidas apenas uma vez. 
-              Certifique-se de copiá-las ou enviá-las ao cliente agora.
+              ⚠️ <strong>Importante:</strong> Essas credenciais serão exibidas apenas uma vez.
             </p>
           </div>
 
@@ -127,6 +137,19 @@ export function CredentialsModal({ open, onOpenChange, email, senha, nomeCliente
             <Button onClick={shareWhatsApp} variant="outline" className="flex-1">
               <MessageCircle className="h-4 w-4 mr-2" />
               WhatsApp
+            </Button>
+          </div>
+
+          <div className="text-center pt-2">
+            <Button
+              variant="link"
+              onClick={() => {
+                window.open('/especialistas', '_blank');
+                onOpenChange(false);
+              }}
+              className="text-sm text-blue-600"
+            >
+              🚀 Ir para Aprovações (/especialistas)
             </Button>
           </div>
 
