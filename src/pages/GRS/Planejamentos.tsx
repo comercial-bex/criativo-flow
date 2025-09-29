@@ -8,7 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Calendar, Search, Eye, FileText, Clock, CheckCircle, XCircle, Users, Plus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
-import { SubMenuGRS } from "@/components/SubMenuGRS";
+import { ClientSelector } from "@/components/ClientSelector";
 
 interface Cliente {
   id: string;
@@ -31,6 +31,7 @@ export default function GRSPlanejamentos() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("todos");
+  const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -99,7 +100,8 @@ export default function GRSPlanejamentos() {
     const matchesSearch = planejamento.titulo.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          planejamento.clientes.nome.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === "todos" || planejamento.status === statusFilter;
-    return matchesSearch && matchesStatus;
+    const matchesClient = !selectedClientId || planejamento.clientes.id === selectedClientId;
+    return matchesSearch && matchesStatus && matchesClient;
   });
 
   if (loading) {
@@ -114,9 +116,7 @@ export default function GRSPlanejamentos() {
   }
 
   return (
-    <div className="space-y-6">
-      <SubMenuGRS />
-      <div className="p-6 space-y-6">
+    <div className="p-6 space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
         <div>
@@ -131,6 +131,12 @@ export default function GRSPlanejamentos() {
           Novo Planejamento
         </Button>
       </div>
+
+      {/* Client Selector */}
+      <ClientSelector 
+        onClientSelect={setSelectedClientId}
+        selectedClientId={selectedClientId}
+      />
 
       {/* Filters */}
       <div className="flex gap-4 items-center">
@@ -283,7 +289,6 @@ export default function GRSPlanejamentos() {
           </CardContent>
         </Card>
       )}
-      </div>
     </div>
   );
 }

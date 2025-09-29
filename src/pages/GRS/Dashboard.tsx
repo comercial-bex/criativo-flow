@@ -13,7 +13,7 @@ import { Calendar, Users, Clock, AlertCircle, TrendingUp, BarChart3, Plus, Send 
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { GamificationWidget } from "@/components/GamificationWidget";
-import { SubMenuGRS } from "@/components/SubMenuGRS";
+import { ClientSelector } from "@/components/ClientSelector";
 import { SocialDashboardWidget } from "@/components/SocialDashboardWidget";
 import { CalendarWidget } from "@/components/CalendarWidget";
 import { InteractiveGuideButton } from "@/components/InteractiveGuideButton";
@@ -51,6 +51,7 @@ export default function GRSDashboard() {
   const [clientesAtivos, setClientesAtivos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
 
   // Form state for new planning
   const [formData, setFormData] = useState({
@@ -262,9 +263,7 @@ export default function GRSDashboard() {
   };
 
   return (
-    <div className="space-y-6">
-      <SubMenuGRS />
-      <div className="p-6 space-y-6">
+    <div className="p-6 space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
         <div>
@@ -275,8 +274,17 @@ export default function GRSDashboard() {
           <p className="text-muted-foreground">Gestão de Relacionamento com o Cliente</p>
         </div>
         <InteractiveGuideButton />
-        <div className="flex gap-2">
-          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        </div>
+
+        {/* Client Selector */}
+        <ClientSelector 
+          onClientSelect={setSelectedClientId}
+          selectedClientId={selectedClientId}
+        />
+
+        <div className="flex items-center justify-between">
+          <div className="flex gap-2">
+            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
               <Button>
                 <Plus className="h-4 w-4 mr-2" />
@@ -356,8 +364,8 @@ export default function GRSDashboard() {
             <Send className="h-4 w-4 mr-2" />
             Ver Todos os Planejamentos
           </Button>
+          </div>
         </div>
-      </div>
 
       {/* Summary Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-6">
@@ -429,7 +437,6 @@ export default function GRSDashboard() {
           </div>
         </CardContent>
       </Card>
-      </div>
     </div>
   );
 }

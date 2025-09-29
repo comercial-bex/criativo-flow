@@ -7,7 +7,7 @@ import { Calendar, Users, Filter, Calendar as CalendarIcon, Grid3X3 } from "luci
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { InstagramPreview } from "@/components/InstagramPreview";
-import { SubMenuGRS } from "@/components/SubMenuGRS";
+import { ClientSelector } from "@/components/ClientSelector";
 
 interface Cliente {
   id: string;
@@ -33,7 +33,7 @@ export default function GRSCalendarioEditorial() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedCliente, setSelectedCliente] = useState<string>("todos");
+  const [selectedCliente, setSelectedCliente] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<"calendario" | "lista">("calendario");
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [selectedMonth, setSelectedMonth] = useState(new Date());
@@ -71,7 +71,7 @@ export default function GRSCalendarioEditorial() {
         .lte('data_postagem', endOfMonth.toISOString().split('T')[0])
         .order('data_postagem', { ascending: true });
 
-      if (selectedCliente !== "todos") {
+      if (selectedCliente) {
         postsQuery = postsQuery.eq('planejamentos.cliente_id', selectedCliente);
       }
 
@@ -139,9 +139,7 @@ export default function GRSCalendarioEditorial() {
   }
 
   return (
-    <div className="space-y-6">
-      <SubMenuGRS />
-      <div className="p-6 space-y-6">
+    <div className="p-6 space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
         <div>
@@ -172,21 +170,14 @@ export default function GRSCalendarioEditorial() {
         </div>
       </div>
 
+      {/* Client Selector */}
+      <ClientSelector 
+        onClientSelect={setSelectedCliente}
+        selectedClientId={selectedCliente}
+      />
+
       {/* Filters */}
       <div className="flex gap-4 items-center">
-        <Select value={selectedCliente} onValueChange={setSelectedCliente}>
-          <SelectTrigger className="w-48">
-            <SelectValue placeholder="Filtrar por cliente" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="todos">Todos os Clientes</SelectItem>
-            {clientes.map((cliente) => (
-              <SelectItem key={cliente.id} value={cliente.id}>
-                {cliente.nome}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
 
         <div className="flex items-center gap-2">
           <Filter className="h-4 w-4 text-muted-foreground" />
@@ -354,7 +345,6 @@ export default function GRSCalendarioEditorial() {
           </DialogContent>
         </Dialog>
       )}
-      </div>
     </div>
   );
 }

@@ -27,15 +27,84 @@ import {
   Users2,
   CalendarDays,
   CheckCircle,
-  Globe
+  Globe,
+  Clock,
+  Plus,
+  Send,
+  XCircle,
+  ChevronDown,
+  ChevronRight
 } from "lucide-react"
 import { NavLink, useLocation } from "react-router-dom"
 import React from "react"
 import { usePermissions, type ModulePermissions } from "@/hooks/usePermissions";
 import { UserProfileSection } from "./UserProfileSection";
 import { UserActionsModule } from "./UserActionsModule";
-import { SubMenuPlanejamentos } from "./SubMenuPlanejamentos";
 import { useState } from "react";
+
+// GRS Menu Component with Submenu
+function GRSMenuWithSubmenu({ item, isActive, index }: { item: any; isActive: boolean; index: number }) {
+  const [isExpanded, setIsExpanded] = useState(isActive);
+  const Icon = item.icon;
+  const location = useLocation();
+  
+  React.useEffect(() => {
+    if (isActive) {
+      setIsExpanded(true);
+    }
+  }, [isActive]);
+
+  return (
+    <div 
+      className="mb-1 animate-slide-in"
+      style={{ animationDelay: `${index * 30}ms` }}
+    >
+      {/* Main Menu Item */}
+      <button
+        onClick={() => setIsExpanded(!isExpanded)}
+        className={`w-full flex items-center px-4 py-3 text-sm rounded-lg transition-all duration-300 hover-lift ${
+          isActive
+            ? 'bg-sidebar-accent text-bex-green border-l-2 border-bex-green'
+            : 'text-sidebar-foreground hover:bg-bex-green/10 hover:text-bex-green'
+        }`}
+      >
+        <Icon className="mr-3 h-4 w-4" />
+        <span className="flex-1 text-left">{item.title}</span>
+        {isExpanded ? 
+          <ChevronDown className="h-3 w-3" /> : 
+          <ChevronRight className="h-3 w-3" />
+        }
+      </button>
+      
+      {/* Submenu */}
+      {isExpanded && item.submenu && (
+        <div className="ml-6 mt-2 space-y-1">
+          {item.submenu.map((subItem: any, subIndex: number) => {
+            const SubIcon = subItem.icon;
+            const isSubActive = location.pathname === subItem.url || 
+                                location.pathname.startsWith(subItem.url);
+            
+            return (
+              <NavLink
+                key={subItem.url}
+                to={subItem.url}
+                className={`flex items-center px-3 py-2 text-xs rounded-md transition-all duration-300 animate-fade-in ${
+                  isSubActive
+                    ? 'bg-bex-green/20 text-bex-green'
+                    : 'text-sidebar-foreground/80 hover:bg-bex-green/10 hover:text-bex-green'
+                }`}
+                style={{ animationDelay: `${(index + subIndex) * 20}ms` }}
+              >
+                <SubIcon className="mr-2 h-3 w-3" />
+                <span>{subItem.title}</span>
+              </NavLink>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
 
 import {
   Sidebar,
@@ -188,13 +257,34 @@ export function AppSidebar() {
     { title: "Aprovações", url: "/aprovacao-job", icon: Eye },
   ];
 
-  // GRS specific items
+  // GRS specific items with hierarchical structure
   const grsItems = [
-    { title: "Dashboard GRS", url: "/grs/dashboard", icon: BarChart3 },
-    { title: "Planejamentos", url: "/grs/planejamentos", icon: FileText },
-    { title: "Planejamento Estratégico", url: "/grs/planejamento-estrategico", icon: Target },
-    { title: "Calendário Editorial", url: "/grs/calendario", icon: Calendar },
-    { title: "Aprovações", url: "/grs/aprovacoes", icon: ClipboardCheck },
+    { title: "Dashboard", url: "/grs/dashboard", icon: BarChart3, type: "main" },
+    { title: "Planejamentos", url: "/grs/planejamentos", icon: FileText, type: "main", submenu: [
+      { title: "Por Cliente", url: "/grs/planejamentos?view=cliente", icon: Users },
+      { title: "Por Período", url: "/grs/planejamentos?view=periodo", icon: Calendar },
+      { title: "Novo Planejamento", url: "/grs/planejamentos/novo", icon: Plus }
+    ]},
+    { title: "Aprovações", url: "/grs/aprovacoes", icon: ClipboardCheck, type: "main", submenu: [
+      { title: "Pendentes", url: "/grs/aprovacoes?status=pendente", icon: Clock },
+      { title: "Aprovados", url: "/grs/aprovacoes?status=aprovado", icon: CheckCircle },
+      { title: "Reprovados", url: "/grs/aprovacoes?status=reprovado", icon: XCircle }
+    ]},
+    { title: "Calendário Editorial", url: "/grs/calendario-editorial", icon: CalendarDays, type: "main", submenu: [
+      { title: "Visão Mensal", url: "/grs/calendario-editorial?view=mensal", icon: Calendar },
+      { title: "Cronograma", url: "/grs/calendario-editorial?view=cronograma", icon: BarChart3 },
+      { title: "Metas", url: "/grs/calendario-editorial?view=metas", icon: Target }
+    ]},
+    { title: "Agendamento Social", url: "/grs/agendamento-social", icon: Send, type: "main", submenu: [
+      { title: "Instagram", url: "/grs/agendamento-social?platform=instagram", icon: Globe },
+      { title: "Facebook", url: "/grs/agendamento-social?platform=facebook", icon: Globe },
+      { title: "Fila de Posts", url: "/grs/agendamento-social?view=queue", icon: Clock }
+    ]},
+    { title: "Relatórios", url: "/grs/relatorios", icon: TrendingUp, type: "main", submenu: [
+      { title: "Performance", url: "/grs/relatorios?type=performance", icon: BarChart3 },
+      { title: "Por Cliente", url: "/grs/relatorios?type=cliente", icon: Users },
+      { title: "Métricas", url: "/grs/relatorios?type=metricas", icon: TrendingUp }
+    ]}
   ];
 
   // Detect current module based on location
@@ -287,16 +377,15 @@ export function AppSidebar() {
             const isItemActive = isActive(item.url);
             const Icon = item.icon;
             
-            // Special handling for GRS Planejamentos submenu
-            if (role === 'grs' && item.title === 'Planejamentos') {
+            // Special handling for GRS hierarchical menu with submenus
+            if (role === 'grs' && (item as any).submenu) {
               return (
-                <div 
+                <GRSMenuWithSubmenu 
                   key={item.url}
-                  className="mb-1 animate-slide-in"
-                  style={{ animationDelay: `${index * 30}ms` }}
-                >
-                  <SubMenuPlanejamentos isActive={isItemActive} />
-                </div>
+                  item={item}
+                  isActive={isItemActive}
+                  index={index}
+                />
               );
             }
             

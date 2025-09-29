@@ -13,7 +13,7 @@ import { DetalhesPlano } from "@/components/DetalhesPlano";
 import { TarefasKanban } from "@/components/TarefasKanban";
 import PlanoEditorial from "@/components/PlanoEditorial";
 import { InstagramPreview } from "@/components/InstagramPreview";
-import { SubMenuGRS } from "@/components/SubMenuGRS";
+
 
 interface Cliente {
   id: string;
@@ -166,9 +166,7 @@ export default function GRSPlanejamentoDetalhes() {
   const StatusIcon = getStatusIcon(planejamento.status);
 
   return (
-    <div className="space-y-6">
-      <SubMenuGRS />
-      <div className="p-6 space-y-6">
+    <div className="p-6 space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
@@ -300,7 +298,6 @@ export default function GRSPlanejamentoDetalhes() {
           </DialogContent>
         </Dialog>
       )}
-      </div>
     </div>
   );
 }

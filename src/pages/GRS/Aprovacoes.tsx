@@ -8,7 +8,7 @@ import { CheckCircle, XCircle, Clock, Send, MessageSquare, Calendar, Users } fro
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
-import { SubMenuGRS } from "@/components/SubMenuGRS";
+
 
 interface Cliente {
   id: string;
@@ -157,9 +157,7 @@ export default function GRSAprovacoes() {
   }
 
   return (
-    <div className="space-y-6">
-      <SubMenuGRS />
-      <div className="p-6 space-y-6">
+    <div className="p-6 space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
         <div>
@@ -333,7 +331,6 @@ export default function GRSAprovacoes() {
           </CardContent>
         </Card>
       )}
-      </div>
     </div>
   );
 }

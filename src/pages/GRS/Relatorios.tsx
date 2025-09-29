@@ -27,7 +27,7 @@ import { ptBR } from "date-fns/locale";
 import { DateRange } from "react-day-picker";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { SubMenuGRS } from "@/components/SubMenuGRS";
+
 
 interface RelatorioMetricas {
   plataforma: string;
@@ -127,9 +127,7 @@ export default function GRSRelatorios() {
   const totalGasto = relatórioData.reduce((acc, curr) => acc + curr.gastoTotal, 0);
 
   return (
-    <div className="space-y-6">
-      <SubMenuGRS />
-      <div className="p-6 space-y-6">
+    <div className="p-6 space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
         <div>
@@ -394,7 +392,6 @@ export default function GRSRelatorios() {
           </div>
         </CardContent>
       </Card>
-      </div>
     </div>
   );
 }
