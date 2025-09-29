@@ -83,7 +83,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         };
       }
       
-      if (!validation?.has_client) {
+      if (!validation?.has_client && !validation?.is_admin_role) {
         console.log('🔐 Auth: Usuário não vinculado a cliente');
         return { 
           error: { 
