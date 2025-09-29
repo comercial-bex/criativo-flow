@@ -15,6 +15,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { OnboardingForm } from '@/components/OnboardingForm';
 import { MobileClientCard } from '@/components/MobileClientCard';
 import { InteractiveGuideButton } from '@/components/InteractiveGuideButton';
+import { CredentialsModal } from '@/components/CredentialsModal';
 import { useDeviceType } from '@/hooks/useDeviceType';
 import { 
   Users, 
@@ -58,6 +59,8 @@ const Clientes = () => {
   const [showForm, setShowForm] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [selectedCliente, setSelectedCliente] = useState<Cliente | null>(null);
+  const [showCredentials, setShowCredentials] = useState(false);
+  const [credentials, setCredentials] = useState({ email: '', senha: '', nomeCliente: '' });
   const [formData, setFormData] = useState<Partial<Cliente>>({
     nome: "",
     email: "",
@@ -65,7 +68,11 @@ const Clientes = () => {
     cnpj_cpf: "",
     endereco: "",
     status: "ativo",
-    assinatura_id: ""
+    assinatura_id: "",
+    email_login: "",
+    senha_temporaria: "",
+    criar_conta: true,
+    status_conta: "ativo"
   });
   const { toast: toastHook } = useToast();
 
@@ -107,7 +114,7 @@ const Clientes = () => {
         assinatura_id: (formData.assinatura_id && formData.assinatura_id !== 'none') ? formData.assinatura_id : undefined
       };
 
-      const { error } = await createCliente(clienteData);
+      const { data: novoCliente, error } = await createCliente(clienteData);
 
       if (error) {
         console.error('Erro ao criar cliente:', error);
@@ -115,13 +122,58 @@ const Clientes = () => {
         return;
       }
 
-      toast.success("Cliente cadastrado com sucesso!");
+      // Se deve criar conta de acesso
+      if (formData.criar_conta && formData.email_login && novoCliente) {
+        try {
+          const { data: userData, error: userError } = await supabase.functions.invoke('create-client-user', {
+            body: {
+              email: formData.email_login,
+              password: formData.senha_temporaria,
+              nome: formData.nome,
+              cliente_id: novoCliente.id,
+              role: 'cliente'
+            }
+          });
+
+          if (userError) {
+            console.error('Erro ao criar usuário:', userError);
+            toast.error('Cliente criado, mas houve erro ao criar conta de acesso');
+          } else {
+            // Mostrar credenciais em modal
+            setCredentials({
+              email: formData.email_login,
+              senha: formData.senha_temporaria!,
+              nomeCliente: formData.nome!
+            });
+            setShowCredentials(true);
+          }
+        } catch (userError) {
+          console.error('Erro ao criar conta:', userError);
+          toast.error('Cliente criado, mas houve erro ao criar conta de acesso');
+        }
+      } else {
+        toast.success("Cliente cadastrado com sucesso!");
+      }
+
       resetForm();
     } catch (error) {
       console.error('Erro ao salvar cliente:', error);
       toast.error('Erro ao salvar cliente');
     }
   };
+
+  // Função para gerar senha aleatória
+  const gerarSenha = () => {
+    const chars = 'ABCDEFGH23456789';
+    return Array.from({length: 8}, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+  };
+
+  // Gerar senha automaticamente quando componente carrega
+  useEffect(() => {
+    if (!formData.senha_temporaria) {
+      setFormData(prev => ({ ...prev, senha_temporaria: gerarSenha() }));
+    }
+  }, []);
 
   const resetForm = () => {
     setFormData({
@@ -131,7 +183,11 @@ const Clientes = () => {
       cnpj_cpf: "",
       endereco: "",
       status: "ativo",
-      assinatura_id: ""
+      assinatura_id: "",
+      email_login: "",
+      senha_temporaria: gerarSenha(),
+      criar_conta: true,
+      status_conta: "ativo"
     });
     setShowForm(false);
   };
@@ -348,15 +404,85 @@ const Clientes = () => {
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="endereco">Endereço</Label>
-              <Input
-                id="endereco"
-                value={formData.endereco}
-                onChange={(e) => setFormData({ ...formData, endereco: e.target.value })}
-                className={isMobile ? "h-12 text-base" : ""}
-              />
-            </div>
+              <div className="space-y-2">
+                <Label htmlFor="endereco">Endereço</Label>
+                <Input
+                  id="endereco"
+                  value={formData.endereco}
+                  onChange={(e) => setFormData({ ...formData, endereco: e.target.value })}
+                  className={isMobile ? "h-12 text-base" : ""}
+                />
+              </div>
+
+              {/* Seção de Credenciais de Acesso */}
+              <div className="col-span-full border-t pt-4 mt-4">
+                <h3 className="text-lg font-semibold mb-4">Credenciais de Acesso ao Sistema</h3>
+                
+                <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="email_login">Email de Login</Label>
+                    <Input
+                      id="email_login"
+                      type="email"
+                      value={formData.email_login}
+                      onChange={(e) => setFormData({ ...formData, email_login: e.target.value })}
+                      className={isMobile ? "h-12 text-base" : ""}
+                      placeholder="Email para acesso ao sistema"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="senha_temporaria">Senha Temporária</Label>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setFormData({ ...formData, senha_temporaria: gerarSenha() })}
+                      >
+                        Gerar Nova
+                      </Button>
+                    </div>
+                    <Input
+                      id="senha_temporaria"
+                      value={formData.senha_temporaria}
+                      onChange={(e) => setFormData({ ...formData, senha_temporaria: e.target.value })}
+                      className={isMobile ? "h-12 text-base" : ""}
+                      placeholder="Senha gerada automaticamente"
+                    />
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      id="criar_conta"
+                      checked={formData.criar_conta}
+                      onChange={(e) => setFormData({ ...formData, criar_conta: e.target.checked })}
+                      className="h-4 w-4"
+                    />
+                    <Label htmlFor="criar_conta" className="text-sm">
+                      Criar conta de acesso ao sistema
+                    </Label>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="status_conta">Status da Conta</Label>
+                    <Select 
+                      value={formData.status_conta} 
+                      onValueChange={(value) => setFormData({ ...formData, status_conta: value })}
+                    >
+                      <SelectTrigger className={isMobile ? "h-12" : ""}>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="ativo">Ativo</SelectItem>
+                        <SelectItem value="bloqueado">Bloqueado</SelectItem>
+                        <SelectItem value="pendente">Pendente</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </div>
 
             <div className={`flex gap-2 pt-4 ${isMobile ? 'flex-col' : ''}`}>
               <Button type="submit" className={isMobile ? "h-12 text-base" : ""}>
@@ -495,6 +621,15 @@ const Clientes = () => {
           </CardContent>
         </Card>
       )}
+
+      {/* Modal de Credenciais */}
+      <CredentialsModal
+        open={showCredentials}
+        onOpenChange={setShowCredentials}
+        email={credentials.email}
+        senha={credentials.senha}
+        nomeCliente={credentials.nomeCliente}
+      />
 
       {/* Modal de Onboarding */}
       {selectedCliente && (

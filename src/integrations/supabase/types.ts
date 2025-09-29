@@ -1418,6 +1418,7 @@ export type Database = {
         Row: {
           aprovado_por: string | null
           avatar_url: string | null
+          cliente_id: string | null
           created_at: string | null
           data_aprovacao: string | null
           email: string
@@ -1434,6 +1435,7 @@ export type Database = {
         Insert: {
           aprovado_por?: string | null
           avatar_url?: string | null
+          cliente_id?: string | null
           created_at?: string | null
           data_aprovacao?: string | null
           email: string
@@ -1450,6 +1452,7 @@ export type Database = {
         Update: {
           aprovado_por?: string | null
           avatar_url?: string | null
+          cliente_id?: string | null
           created_at?: string | null
           data_aprovacao?: string | null
           email?: string
@@ -1463,7 +1466,15 @@ export type Database = {
           telefone?: string | null
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       projeto_especialistas: {
         Row: {

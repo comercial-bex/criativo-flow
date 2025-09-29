@@ -14,6 +14,11 @@ export interface Cliente {
   assinatura_id?: string;
   created_at?: string;
   updated_at?: string;
+  // Campos para sistema de login
+  email_login?: string;
+  senha_temporaria?: string;
+  criar_conta?: boolean;
+  status_conta?: string;
 }
 
 interface ClienteWithSensitiveFlag extends Cliente {
