@@ -238,15 +238,12 @@ export function AppSidebar() {
     switch (role) {
       case 'grs':
         return modules.filter(m => m.id === 'grs');
-      case 'design':
       case 'designer':
         return modules.filter(m => m.id === 'design');
-      case 'administrativo':
       case 'admin':
         return modules.filter(m => ['dashboard', 'administrativo', 'financeiro', 'crm'].includes(m.id));
       case 'atendimento':
         return modules.filter(m => ['dashboard', 'crm', 'atendimento'].includes(m.id));
-      case 'audiovisual':
       case 'filmmaker':
         return modules.filter(m => m.id === 'audiovisual');
       case 'financeiro':

@@ -25,13 +25,30 @@ serve(async (req) => {
       throw new Error('Prompt is required');
     }
 
-    console.log('Generating content with OpenAI for type:', type);
+    console.log('🤖 AI Content Generation Request:', { prompt, type });
 
-    // Determinar se deve retornar JSON estruturado
-    const shouldReturnJSON = type === 'json' || prompt.toLowerCase().includes('calendario editorial') || prompt.toLowerCase().includes('posts');
+    // Determine if we need structured JSON output
+    const shouldReturnJSON = type === 'json' || type === 'hashtags' || prompt.toLowerCase().includes('calendario editorial') || prompt.toLowerCase().includes('posts');
 
-    // System message baseado no tipo
-    let systemMessage = 'Você é um assistente especializado em marketing digital e criação de conteúdo.';
+    // Build system message based on content type
+    let systemMessage = 'Você é um especialista em marketing digital e criação de conteúdo para redes sociais.';
+    
+    switch (type) {
+      case 'post':
+        systemMessage += ' Crie posts criativos e envolventes para redes sociais, sempre com call-to-action.';
+        break;
+      case 'legenda':
+        systemMessage += ' Crie legendas cativantes para fotos e vídeos, com emojis apropriados e hashtags relevantes.';
+        break;
+      case 'hashtags':
+        systemMessage += ' Gere hashtags relevantes e populares. Retorne uma lista de hashtags separadas por espaço.';
+        break;
+      case 'swot':
+        systemMessage += ' Realize análises SWOT profissionais e detalhadas em formato estruturado.';
+        break;
+      default:
+        systemMessage += ' Crie conteúdo profissional e relevante para marketing digital.';
+    }
     
     if (shouldReturnJSON) {
       systemMessage = `Você é um especialista em marketing digital. Sempre responda APENAS com JSON válido seguindo esta estrutura exata para calendário editorial:
@@ -86,9 +103,13 @@ IMPORTANTE:
     }
 
     const data = await response.json();
-    const generatedText = data.choices[0].message.content;
+    let generatedText = data.choices[0]?.message?.content;
 
-    console.log('Generated content length:', generatedText.length);
+    if (!generatedText) {
+      throw new Error('No content generated from OpenAI');
+    }
+
+    console.log('✅ Content generated successfully, length:', generatedText.length);
 
     if (shouldReturnJSON) {
       try {
@@ -153,10 +174,27 @@ IMPORTANTE:
       }
     }
 
-    // Retorno para texto simples
+    // Return for simple text or hashtags
+    if (type === 'hashtags') {
+      // Clean hashtag formatting
+      const hashtags = generatedText
+        .split(/[\s,\n]+/)
+        .filter((tag: string) => tag.trim().startsWith('#'))
+        .join(' ');
+      
+      return new Response(JSON.stringify({ 
+        content: hashtags || generatedText,
+        type,
+        success: true
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Return for simple text
     return new Response(JSON.stringify({ 
-      generatedText,
-      type: 'text',
+      content: generatedText,
+      type,
       success: true
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

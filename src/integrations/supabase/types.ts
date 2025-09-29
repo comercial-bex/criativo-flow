@@ -2199,6 +2199,14 @@ export type Database = {
         Args: { customer_id: string }
         Returns: boolean
       }
+      generate_content_with_ai_v2: {
+        Args: { content_type?: string; prompt_text: string }
+        Returns: {
+          content: string
+          success: boolean
+          type: string
+        }[]
+      }
       generate_content_with_openai: {
         Args: { prompt_text: string }
         Returns: string
