@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar, Users, Clock, AlertCircle, TrendingUp, BarChart3, Plus, Send, Info, FileText, CheckCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -18,6 +19,8 @@ import { SocialDashboardWidget } from "@/components/SocialDashboardWidget";
 import { CalendarWidget } from "@/components/CalendarWidget";
 import { InteractiveGuideButton } from "@/components/InteractiveGuideButton";
 import { SimpleHelpModal } from "@/components/SimpleHelpModal";
+import { ProjetoManager } from "@/components/ProjetoManager";
+import { TarefasPorSetor } from "@/components/TarefasPorSetor";
 
 interface Cliente {
   id: string;
@@ -300,8 +303,7 @@ export default function GRSDashboard() {
             </Button>
           </SimpleHelpModal>
           <InteractiveGuideButton />
-          </TabsContent>
-        </Tabs>
+        </div>
       </div>
 
       {/* Client Selector */}
@@ -309,6 +311,16 @@ export default function GRSDashboard() {
         onClientSelect={setSelectedClientId}
         selectedClientId={selectedClientId}
       />
+
+      {/* Main Content with Tabs */}
+      <Tabs defaultValue="overview" className="space-y-6">
+        <TabsList>
+          <TabsTrigger value="overview">Visão Geral</TabsTrigger>
+          <TabsTrigger value="projetos">Projetos</TabsTrigger>
+          <TabsTrigger value="tarefas">Tarefas por Setor</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="overview" className="space-y-6">
 
         <div className="flex items-center justify-between">
           <div className="flex gap-2">
@@ -469,6 +481,16 @@ export default function GRSDashboard() {
           </div>
         </CardContent>
       </Card>
+        </TabsContent>
+        
+        <TabsContent value="projetos">
+          <ProjetoManager />
+        </TabsContent>
+        
+        <TabsContent value="tarefas">
+          <TarefasPorSetor />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
