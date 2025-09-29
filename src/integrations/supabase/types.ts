@@ -1831,6 +1831,61 @@ export type Database = {
           },
         ]
       }
+      projeto_status_historico: {
+        Row: {
+          alterado_por: string | null
+          created_at: string
+          id: string
+          observacao: string | null
+          projeto_id: string | null
+          status_anterior: string | null
+          status_novo: string
+          tarefa_id: string | null
+        }
+        Insert: {
+          alterado_por?: string | null
+          created_at?: string
+          id?: string
+          observacao?: string | null
+          projeto_id?: string | null
+          status_anterior?: string | null
+          status_novo: string
+          tarefa_id?: string | null
+        }
+        Update: {
+          alterado_por?: string | null
+          created_at?: string
+          id?: string
+          observacao?: string | null
+          projeto_id?: string | null
+          status_anterior?: string | null
+          status_novo?: string
+          tarefa_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "projeto_status_historico_alterado_por_fkey"
+            columns: ["alterado_por"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "projeto_status_historico_projeto_id_fkey"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "projetos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "projeto_status_historico_tarefa_id_fkey"
+            columns: ["tarefa_id"]
+            isOneToOne: false
+            referencedRelation: "tarefas_projeto"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       projetos: {
         Row: {
           cliente_id: string | null
@@ -2393,6 +2448,81 @@ export type Database = {
           {
             foreignKeyName: "tarefas_solicitante_id_fkey"
             columns: ["solicitante_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tarefas_projeto: {
+        Row: {
+          anexos: string[] | null
+          created_at: string
+          data_inicio: string | null
+          data_prazo: string | null
+          dependencias: string[] | null
+          descricao: string | null
+          horas_estimadas: number | null
+          horas_trabalhadas: number | null
+          id: string
+          observacoes: string | null
+          prioridade: string
+          projeto_id: string
+          responsavel_id: string | null
+          setor_responsavel: string
+          status: string
+          titulo: string
+          updated_at: string
+        }
+        Insert: {
+          anexos?: string[] | null
+          created_at?: string
+          data_inicio?: string | null
+          data_prazo?: string | null
+          dependencias?: string[] | null
+          descricao?: string | null
+          horas_estimadas?: number | null
+          horas_trabalhadas?: number | null
+          id?: string
+          observacoes?: string | null
+          prioridade?: string
+          projeto_id: string
+          responsavel_id?: string | null
+          setor_responsavel: string
+          status?: string
+          titulo: string
+          updated_at?: string
+        }
+        Update: {
+          anexos?: string[] | null
+          created_at?: string
+          data_inicio?: string | null
+          data_prazo?: string | null
+          dependencias?: string[] | null
+          descricao?: string | null
+          horas_estimadas?: number | null
+          horas_trabalhadas?: number | null
+          id?: string
+          observacoes?: string | null
+          prioridade?: string
+          projeto_id?: string
+          responsavel_id?: string | null
+          setor_responsavel?: string
+          status?: string
+          titulo?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tarefas_projeto_projeto_id_fkey"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "projetos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tarefas_projeto_responsavel_id_fkey"
+            columns: ["responsavel_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
