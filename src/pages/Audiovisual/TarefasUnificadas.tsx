@@ -329,7 +329,9 @@ const TarefasUnificadasAudiovisual: React.FC = () => {
         <CreateTaskModal
           open={showCreateModal}
           onOpenChange={(open) => !open && setShowCreateModal(false)}
-          onSubmit={handleTaskCreate}
+          onTaskCreate={handleTaskCreate}
+          projetoId="audiovisual-tasks"
+          defaultStatus="roteiro"
         />
       )}
     </div>
