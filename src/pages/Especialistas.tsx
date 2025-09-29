@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -15,6 +15,7 @@ import { EspecialistaApprovalCard } from '@/components/EspecialistaApprovalCard'
 import { ApprovalActionsModal } from '@/components/ApprovalActionsModal';
 import { StatusBadgeEspecialista } from '@/components/StatusBadgeEspecialista';
 import { PermissionGate } from '@/components/PermissionGate';
+import { PermissionWrapper } from '@/components/PermissionWrapper';
 import { ViewEspecialistaModal } from '@/components/ViewEspecialistaModal';
 import { ConfirmDeleteModal } from '@/components/ConfirmDeleteModal';
 
@@ -373,12 +374,22 @@ export default function Especialistas() {
     {
       label: "Editar",
       onClick: handleEdit,
-      variant: 'outline' as const
+      variant: 'outline' as const,
+      wrapper: (action: ReactNode) => (
+        <PermissionWrapper module="especialistas" action="canEdit" showErrorToast>
+          {action}
+        </PermissionWrapper>
+      )
     },
     {
       label: "Excluir",
       onClick: (especialista: any) => setDeleteEspecialista(especialista),
-      variant: 'destructive' as const
+      variant: 'destructive' as const,
+      wrapper: (action: ReactNode) => (
+        <PermissionWrapper module="especialistas" action="canDelete" showErrorToast>
+          {action}
+        </PermissionWrapper>
+      )
     }
   ];
 

@@ -17,6 +17,7 @@ import { MobileClientCard } from '@/components/MobileClientCard';
 import { ClientCard } from '@/components/ClientCard';
 import { ClientViewModal } from '@/components/ClientViewModal';
 import { ClientTableView } from '@/components/ClientTableView';
+import { PermissionWrapper } from '@/components/PermissionWrapper';
 
 import { ClientLogoUpload } from '@/components/ClientLogoUpload';
 import { InteractiveGuideButton } from '@/components/InteractiveGuideButton';

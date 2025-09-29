@@ -230,9 +230,26 @@ export function SimplifiedAdminControls({ clienteId, clienteData }: SimplifiedAd
       return;
     }
 
-    if (!newPassword) {
-      const generatedPassword = generateStrongPassword();
-      setNewPassword(generatedPassword);
+    // Usar senha manual se habilitada, senão gerar nova
+    const finalPassword = manualPassword && newPassword ? newPassword : generateStrongPassword();
+    if (!manualPassword) {
+      setNewPassword(finalPassword);
+    }
+
+    // Validar senha manual se habilitada
+    if (manualPassword) {
+      if (!newPassword.trim()) {
+        toast.error("Senha é obrigatória");
+        return;
+      }
+      if (newPassword !== confirmPassword) {
+        toast.error("Senhas não coincidem");
+        return;
+      }
+      if (newPassword.length < 8) {
+        toast.error("Senha deve ter pelo menos 8 caracteres");
+        return;
+      }
     }
 
     setLoading(true);
@@ -241,7 +258,7 @@ export function SimplifiedAdminControls({ clienteId, clienteData }: SimplifiedAd
         body: { 
           action: 'reset-password', 
           user_id: authData.id, 
-          new_password: newPassword 
+          new_password: finalPassword 
         }
       });
 
@@ -249,12 +266,14 @@ export function SimplifiedAdminControls({ clienteId, clienteData }: SimplifiedAd
       
       setCreatedCredentials({
         email: authData.email || newEmail,
-        senha: newPassword
+        senha: finalPassword
       });
       setShowCredentials(true);
       
       toast.success('Senha alterada com sucesso!');
       setNewPassword("");
+      setConfirmPassword("");
+      setManualPassword(false);
     } catch (error: any) {
       toast.error('Erro ao alterar senha: ' + error.message);
     } finally {
