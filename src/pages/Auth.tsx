@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { SocialLoginButtons } from '@/components/SocialLoginButtons';
-import { CreateTestUsersButton } from '@/components/CreateTestUsersButton';
+
 import { toast } from 'sonner';
 
 export default function Auth() {
@@ -180,13 +180,49 @@ export default function Auth() {
           </CardContent>
         </Card>
 
-        {/* Botão para criar usuários de teste (apenas para desenvolvimento) */}
+        {/* Credenciais de Teste */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm text-muted-foreground">Desenvolvimento</CardTitle>
+            <CardTitle className="text-lg font-semibold">Usuários de Teste</CardTitle>
+            <CardDescription>Use estas credenciais para acessar diferentes áreas do sistema</CardDescription>
           </CardHeader>
           <CardContent>
-            <CreateTestUsersButton />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-3">
+                <div className="p-3 border rounded-lg bg-muted/50">
+                  <p className="font-medium text-sm">Atendimento</p>
+                  <p className="text-xs text-muted-foreground">atendimento@teste.com</p>
+                  <p className="text-xs text-muted-foreground">Senha: 123456</p>
+                </div>
+                <div className="p-3 border rounded-lg bg-muted/50">
+                  <p className="font-medium text-sm">Tráfego</p>
+                  <p className="text-xs text-muted-foreground">trafego@teste.com</p>
+                  <p className="text-xs text-muted-foreground">Senha: 123456</p>
+                </div>
+                <div className="p-3 border rounded-lg bg-muted/50">
+                  <p className="font-medium text-sm">Financeiro</p>
+                  <p className="text-xs text-muted-foreground">financeiro@teste.com</p>
+                  <p className="text-xs text-muted-foreground">Senha: 123456</p>
+                </div>
+              </div>
+              <div className="space-y-3">
+                <div className="p-3 border rounded-lg bg-muted/50">
+                  <p className="font-medium text-sm">Cliente</p>
+                  <p className="text-xs text-muted-foreground">cliente@teste.com</p>
+                  <p className="text-xs text-muted-foreground">Senha: 123456</p>
+                </div>
+                <div className="p-3 border rounded-lg bg-muted/50">
+                  <p className="font-medium text-sm">Fornecedor</p>
+                  <p className="text-xs text-muted-foreground">fornecedor@teste.com</p>
+                  <p className="text-xs text-muted-foreground">Senha: 123456</p>
+                </div>
+                <div className="p-3 border rounded-lg bg-muted/50">
+                  <p className="font-medium text-sm">Gestor</p>
+                  <p className="text-xs text-muted-foreground">gestor@teste.com</p>
+                  <p className="text-xs text-muted-foreground">Senha: 123456</p>
+                </div>
+              </div>
+            </div>
           </CardContent>
         </Card>
 

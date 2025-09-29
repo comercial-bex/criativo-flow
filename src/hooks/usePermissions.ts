@@ -95,6 +95,17 @@ const ROLE_PERMISSIONS: Record<NonNullable<UserRole>, Partial<ModulePermissions>
   cliente: {
     dashboard: { canView: true, canCreate: false, canEdit: false, canDelete: false },
   },
+  trafego: {
+    dashboard: { canView: true, canCreate: false, canEdit: false, canDelete: false },
+    clientes: { canView: true, canCreate: false, canEdit: false, canDelete: false },
+    financeiro: { canView: true, canCreate: false, canEdit: false, canDelete: false },
+    relatorios: { canView: true, canCreate: false, canEdit: false, canDelete: false },
+  },
+  fornecedor: {
+    dashboard: { canView: true, canCreate: false, canEdit: false, canDelete: false },
+    clientes: { canView: true, canCreate: false, canEdit: false, canDelete: false },
+    financeiro: { canView: true, canCreate: false, canEdit: false, canDelete: false },
+  },
 };
 
 const DEFAULT_PERMISSIONS: PermissionActions = {
@@ -219,7 +230,13 @@ export function usePermissions() {
         defaultRoute = '/grs/dashboard';
         break;
       case 'atendimento':
-        defaultRoute = '/atendimento/inbox';
+        defaultRoute = '/atendimento/dashboard';
+        break;
+      case 'trafego':
+        defaultRoute = '/trafego/dashboard';
+        break;
+      case 'fornecedor':
+        defaultRoute = '/fornecedor/dashboard';
         break;
       case 'designer':
         defaultRoute = '/design/dashboard';
@@ -228,10 +245,10 @@ export function usePermissions() {
         defaultRoute = '/audiovisual/dashboard';
         break;
       case 'gestor':
-        defaultRoute = '/dashboard';
+        defaultRoute = '/gestor/dashboard';
         break;
       case 'financeiro':
-        defaultRoute = '/financeiro';
+        defaultRoute = '/financeiro/dashboard';
         break;
       case 'cliente':
         defaultRoute = '/cliente/painel';

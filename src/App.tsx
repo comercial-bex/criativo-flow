@@ -38,6 +38,11 @@ import GRSPlanejamentoEstrategico from "./pages/GRS/PlanejamentoEstrategico";
 import GRSCalendarioEditorial from "./pages/GRS/CalendarioEditorial";
 import GRSAprovacoes from "./pages/GRS/Aprovacoes";
 import AtendimentoInbox from "./pages/Atendimento/Inbox";
+import AtendimentoDashboard from "./pages/Atendimento/Dashboard";
+import TrafegoDashboard from "./pages/Trafego/Dashboard";
+import FinanceiroDashboard from "./pages/Financeiro/Dashboard";
+import FornecedorDashboard from "./pages/Fornecedor/Dashboard";
+import GestorDashboard from "./pages/Gestor/Dashboard";
 
 // Client pages
 import ClientePainel from "./pages/Cliente/Painel";
@@ -381,10 +386,44 @@ function App() {
                   </ProtectedRoute>
                 } />
                 
-                {/* Service routes */}
+                {/* Atendimento routes */}
+                <Route path="/atendimento/dashboard" element={
+                  <ProtectedRoute requiredRole="atendimento">
+                    <Layout><AtendimentoDashboard /></Layout>
+                  </ProtectedRoute>
+                } />
+                
                 <Route path="/atendimento/inbox" element={
                   <ProtectedRoute requiredRole="atendimento">
                     <Layout><AtendimentoInbox /></Layout>
+                  </ProtectedRoute>
+                } />
+
+                {/* Trafego routes */}
+                <Route path="/trafego/dashboard" element={
+                  <ProtectedRoute requiredRole="trafego">
+                    <Layout><TrafegoDashboard /></Layout>
+                  </ProtectedRoute>
+                } />
+
+                {/* Financeiro routes */}
+                <Route path="/financeiro/dashboard" element={
+                  <ProtectedRoute requiredRole="financeiro">
+                    <Layout><FinanceiroDashboard /></Layout>
+                  </ProtectedRoute>
+                } />
+
+                {/* Fornecedor routes */}
+                <Route path="/fornecedor/dashboard" element={
+                  <ProtectedRoute requiredRole="fornecedor">
+                    <Layout><FornecedorDashboard /></Layout>
+                  </ProtectedRoute>
+                } />
+
+                {/* Gestor routes */}
+                <Route path="/gestor/dashboard" element={
+                  <ProtectedRoute requiredRole="gestor">
+                    <Layout><GestorDashboard /></Layout>
                   </ProtectedRoute>
                 } />
                 

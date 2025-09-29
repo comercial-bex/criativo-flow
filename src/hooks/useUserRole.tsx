@@ -11,6 +11,8 @@ export type UserRole =
   | 'gestor' 
   | 'financeiro' 
   | 'cliente'
+  | 'trafego'
+  | 'fornecedor'
   | null;
 
 export function useUserRole() {
