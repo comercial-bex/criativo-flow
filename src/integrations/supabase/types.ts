@@ -2384,6 +2384,10 @@ export type Database = {
         Args: { profile_id: string }
         Returns: Json
       }
+      get_masked_social_integration: {
+        Args: { integration_id: string }
+        Returns: Json
+      }
       get_user_role: {
         Args: { user_uuid: string }
         Returns: Database["public"]["Enums"]["user_role"]
