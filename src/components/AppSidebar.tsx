@@ -37,7 +37,8 @@ import {
   ChevronRight,
   Shield,
   Activity,
-  Brain
+  Brain,
+  Trophy
 } from "lucide-react"
 import { NavLink, useLocation } from "react-router-dom"
 import React from "react"
@@ -292,6 +293,7 @@ export function AppSidebar() {
     { title: "Meus Projetos", url: "/cliente/projetos", icon: Briefcase },
     { title: "Minhas Tarefas", url: "/cliente/tarefas", icon: ClipboardCheck },
     { title: "Aprovações", url: "/aprovacao-job", icon: Eye },
+    { title: "Meu Perfil", url: "/perfil", icon: UserCheck },
   ];
 
   // GRS specific items - CLEAN VERSION (sem submenus) - SIMPLIFIED UX
@@ -299,7 +301,27 @@ export function AppSidebar() {
     { title: "Dashboard", url: "/grs/dashboard", icon: BarChart3 },
     { title: "Minhas Tarefas", url: "/grs/tarefas", icon: ClipboardCheck },
     { title: "Mensagens", url: "/grs/inbox", icon: Inbox },
-    { title: "Calendário", url: "/grs/calendario-editorial", icon: CalendarDays }
+    { title: "Calendário", url: "/grs/calendario-editorial", icon: CalendarDays },
+    { title: "Gamificação", url: "/gamificacao", icon: Trophy },
+    { title: "Meu Perfil", url: "/perfil", icon: UserCheck },
+  ];
+
+  // Designer specific items
+  const designerItems = [
+    { title: "Dashboard", url: "/design/dashboard", icon: Palette },
+    { title: "Minhas Tarefas", url: "/design/tarefas", icon: CheckSquare },
+    { title: "Kanban", url: "/design/kanban", icon: ClipboardCheck },
+    { title: "Gamificação", url: "/gamificacao", icon: Trophy },
+    { title: "Meu Perfil", url: "/perfil", icon: UserCheck },
+  ];
+
+  // Filmmaker specific items
+  const filmmakerItems = [
+    { title: "Dashboard", url: "/audiovisual/dashboard", icon: Video },
+    { title: "Minhas Tarefas", url: "/audiovisual/tarefas", icon: CheckSquare },
+    { title: "Captações", url: "/audiovisual/captacoes", icon: Camera },
+    { title: "Gamificação", url: "/gamificacao", icon: Trophy },
+    { title: "Meu Perfil", url: "/perfil", icon: UserCheck },
   ];
 
   // Detect current module based on location
@@ -329,6 +351,14 @@ export function AppSidebar() {
     
     if (role === 'grs') {
       return grsItems;
+    }
+
+    if (role === 'designer') {
+      return designerItems;
+    }
+
+    if (role === 'filmmaker') {
+      return filmmakerItems;
     }
     
     return currentModule?.items || [];

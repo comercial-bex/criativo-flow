@@ -1,17 +1,21 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
+import { useUserRole } from '@/hooks/useUserRole';
 
 export function SmartRedirect() {
   const { user, loading: authLoading } = useAuth();
+  const { role, loading: roleLoading } = useUserRole();
   const navigate = useNavigate();
   const location = useLocation();
+  const [isFirstAccess, setIsFirstAccess] = useState(false);
 
   useEffect(() => {
     console.log('🔄 SmartRedirect: Auth loading:', authLoading, 'User:', !!user, 'Path:', location.pathname);
 
-    // Emergency timeout - much shorter
+    // Emergency timeout
     const emergencyTimeout = setTimeout(() => {
       console.log('🚨 SmartRedirect: Emergency timeout - forcing navigation');
       if (!user) {
@@ -21,9 +25,9 @@ export function SmartRedirect() {
       }
     }, 3000);
 
-    // Wait for auth to load
-    if (authLoading) {
-      console.log('🔄 SmartRedirect: Auth still loading, waiting...');
+    // Wait for auth and role to load
+    if (authLoading || roleLoading) {
+      console.log('🔄 SmartRedirect: Still loading...');
       return () => clearTimeout(emergencyTimeout);
     }
 
@@ -36,14 +40,50 @@ export function SmartRedirect() {
       return;
     }
 
-    // If authenticated and on root path, go to dashboard
-    if (location.pathname === '/' || location.pathname === '/index') {
-      console.log('🔄 SmartRedirect: On root path, redirecting to dashboard');
-      navigate('/dashboard', { replace: true });
-    }
+    // Check if this is the first access (email confirmation redirect)
+    const checkFirstAccess = async () => {
+      if (location.pathname === '/perfil' && user) {
+        // User came from email confirmation
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('avatar_url, telefone')
+          .eq('id', user.id)
+          .single();
+
+        // If profile is incomplete, this is first access
+        if (!profile?.avatar_url && !profile?.telefone) {
+          setIsFirstAccess(true);
+          return;
+        }
+      }
+
+      // Normal redirect logic based on role
+      if (location.pathname === '/' || location.pathname === '/index') {
+        if (role === 'cliente') {
+          navigate('/cliente/painel', { replace: true });
+        } else if (role && ['grs', 'designer', 'filmmaker'].includes(role)) {
+          // Check if first login for collaborators
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('avatar_url, telefone')
+            .eq('id', user.id)
+            .single();
+
+          if (!profile?.avatar_url && !profile?.telefone) {
+            navigate('/perfil', { replace: true });
+          } else {
+            navigate('/dashboard', { replace: true });
+          }
+        } else {
+          navigate('/dashboard', { replace: true });
+        }
+      }
+    };
+
+    checkFirstAccess();
 
     return () => clearTimeout(emergencyTimeout);
-  }, [user, authLoading, navigate, location.pathname]);
+  }, [user, authLoading, roleLoading, role, navigate, location.pathname]);
 
   return null;
 }

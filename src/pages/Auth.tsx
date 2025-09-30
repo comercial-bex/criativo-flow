@@ -24,6 +24,7 @@ export default function Auth() {
   const [loading, setLoading] = useState(false);
   const [showPasswordReset, setShowPasswordReset] = useState(false);
   const [isPasswordValid, setIsPasswordValid] = useState(false);
+  const [signupSuccess, setSignupSuccess] = useState(false);
   
   // Add ref to track if component is mounted
   const mountedRef = useRef(true);
@@ -122,8 +123,9 @@ export default function Auth() {
       if (error) {
         toast.error('Erro no cadastro: ' + error.message);
       } else {
-        toast.success('Cadastro realizado com sucesso!');
-        navigate('/dashboard');
+        // Show success message about email confirmation
+        setSignupSuccess(true);
+        toast.success('Conta criada! Verifique seu email para confirmar.');
       }
     } catch (error) {
       if (mountedRef.current) {
@@ -157,6 +159,26 @@ export default function Auth() {
             </div>
           </CardHeader>
           <CardContent>
+            {/* Success Message after Signup */}
+            {signupSuccess && (
+              <div className="mb-4 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                <h3 className="font-semibold text-green-800 dark:text-green-200 mb-2">
+                  ✅ Conta criada com sucesso!
+                </h3>
+                <p className="text-sm text-green-700 dark:text-green-300">
+                  Para ativar seu acesso, <strong>verifique o e-mail que você cadastrou</strong> e clique no link de confirmação. 
+                  Isso garante mais segurança para você e sua empresa.
+                </p>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="mt-3"
+                  onClick={() => setSignupSuccess(false)}
+                >
+                  Entendi, fazer login
+                </Button>
+              </div>
+            )}
 
             <Tabs defaultValue="login" className="w-full" onValueChange={handleTabChange}>
               <TabsList className="grid w-full grid-cols-2">

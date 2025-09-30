@@ -61,7 +61,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       console.log('🔐 Auth: Iniciando login para', email);
       
-      // SOLUÇÃO 2: Validar usuário antes do login usando função SQL
+      // Validar usuário antes do login
       const { data: validationData, error: validationError } = await supabase.rpc(
         'validate_user_for_login', 
         { p_email: email }
@@ -69,25 +69,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       
       if (validationError) {
         console.error('🔐 Auth: Erro na validação:', validationError);
-        return { error: { message: 'Erro ao validar usuário' } };
       }
       
       const validation = validationData as any;
       
       if (!validation?.exists) {
         console.log('🔐 Auth: Usuário não encontrado no sistema, tentando login direto');
-        // Permitir tentativa de login direto - pode ser conta auth sem profile
       } else {
-        // Se é role administrativa, permitir sempre
         if (validation?.is_admin_role) {
           console.log('🔐 Auth: Role administrativa detectada');
         } else if (!validation?.has_client && validation?.role === 'cliente') {
           console.warn('🔐 Auth: Cliente sem vínculo, mas permitindo login para configuração');
-          // Permitir login mesmo sem vínculo para que admin possa configurar depois
         }
       }
-      
-      console.log('🔐 Auth: Usuário validado:', validationData);
       
       // Proceder com o login
       const { error } = await supabase.auth.signInWithPassword({
@@ -97,9 +91,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       
       if (error) {
         console.error('🔐 Auth: Erro no login:', error);
+        
+        // Check if it's an email confirmation error
+        if (error.message.includes('Email not confirmed')) {
+          return { 
+            error: { 
+              message: 'Você ainda não confirmou seu e-mail. Verifique sua caixa de entrada ou spam para liberar seu acesso.' 
+            } 
+          };
+        }
+        
         if (error.message.includes('Invalid login credentials')) {
           return { error: { message: 'Email ou senha incorretos' } };
         }
+        
         return { error };
       }
       
@@ -121,8 +126,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         password,
         options: {
           data: {
-            nome: nome
-          }
+            nome: nome,
+            empresa: empresa
+          },
+          emailRedirectTo: `${window.location.origin}/perfil`
         }
       });
       
@@ -148,12 +155,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
         if (leadError) {
           console.error('🔐 Auth: Erro ao criar lead:', leadError);
-          // Não falha o cadastro se o lead não puder ser criado
         } else {
           console.log('🔐 Auth: Lead criado com sucesso');
         }
       }
       
+      console.log('🔐 Auth: Cadastro realizado - aguardando confirmação de email');
       return { error: null };
     } catch (error) {
       console.error('🔐 Auth: Erro inesperado no cadastro:', error);
