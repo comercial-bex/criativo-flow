@@ -24,6 +24,44 @@ interface CnpjData {
   cnae_principal?: string;
 }
 
+// Função utilitária para processar datas de forma segura
+function parseDate(dateString: string | null | undefined): string | null {
+  if (!dateString) return null;
+  
+  try {
+    // Tentar diferentes formatos de data
+    let parsedDate: Date | null = null;
+    
+    // Formato: DD/MM/YYYY
+    if (dateString.includes('/')) {
+      const [day, month, year] = dateString.split('/');
+      parsedDate = new Date(`${year}-${month}-${day}`);
+    }
+    // Formato: YYYY-MM-DD
+    else if (dateString.includes('-')) {
+      parsedDate = new Date(dateString);
+    }
+    // Formato: DDMMYYYY
+    else if (dateString.length === 8) {
+      const day = dateString.substring(0, 2);
+      const month = dateString.substring(2, 4);
+      const year = dateString.substring(4, 8);
+      parsedDate = new Date(`${year}-${month}-${day}`);
+    }
+    
+    // Validar se a data é válida
+    if (parsedDate && !isNaN(parsedDate.getTime())) {
+      return parsedDate.toISOString().split('T')[0];
+    }
+    
+    console.log(`Data inválida ou não reconhecida: ${dateString}`);
+    return null;
+  } catch (error) {
+    console.log(`Erro ao processar data: ${dateString}`, error);
+    return null;
+  }
+}
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -115,8 +153,11 @@ serve(async (req) => {
 
     if (brasilApiData && receitaWsData) {
       // Comparar datas de situação para escolher o mais recente
-      const dataBrasil = new Date(brasilApiData.data_situacao_cadastral || '1900-01-01');
-      const dataReceita = new Date(receitaWsData.data_situacao || '1900-01-01');
+      const dataBrasilStr = brasilApiData.data_situacao_cadastral || '1900-01-01';
+      const dataReceitaStr = receitaWsData.data_situacao || '1900-01-01';
+      
+      const dataBrasil = new Date(parseDate(dataBrasilStr) || '1900-01-01');
+      const dataReceita = new Date(parseDate(dataReceitaStr) || '1900-01-01');
       
       if (dataBrasil >= dataReceita) {
         dadosFinais = processarBrasilApi(brasilApiData);
@@ -133,7 +174,11 @@ serve(async (req) => {
       fonteUtilizada = 'receitaws';
     }
 
-    // Salvar consulta no banco
+    console.log('Dados finais processados:', JSON.stringify(dadosFinais, null, 2));
+
+    // Salvar consulta no banco com tratamento seguro de data
+    const dataSituacaoProcessada = parseDate(dadosFinais.data_situacao);
+    
     const { error: insertError } = await supabaseClient
       .from('cnpj_consultas')
       .insert({
@@ -142,7 +187,7 @@ serve(async (req) => {
         dados_receita_ws: receitaWsData,
         fonte_utilizada: fonteUtilizada,
         situacao_cadastral: dadosFinais.situacao_cadastral,
-        data_situacao: dadosFinais.data_situacao ? new Date(dadosFinais.data_situacao).toISOString().split('T')[0] : null
+        data_situacao: dataSituacaoProcessada
       });
 
     if (insertError) {
