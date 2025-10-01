@@ -6,8 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { Loader2, Upload, User, Mail, Lock, Save } from 'lucide-react';
+import { Loader2, User, Lock, Save } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { ImageUploadWithCrop } from '@/components/ImageUploadWithCrop';
 
 interface ProfileData {
   nome: string;
@@ -84,50 +85,34 @@ function Perfil() {
   }, [user, loadProfile]);
 
 
-  const handleAvatarUpload = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file || !user) return;
-
-    // Validar formato
-    const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
-    if (!validTypes.includes(file.type)) {
-      toast({
-        title: "Formato inválido",
-        description: "Apenas arquivos JPG, PNG ou WEBP são aceitos",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Validar tamanho (5MB max)
-    if (file.size > 5 * 1024 * 1024) {
-      toast({
-        title: "Arquivo muito grande",
-        description: "O arquivo deve ter no máximo 5MB",
-        variant: "destructive",
-      });
-      return;
-    }
+  const handleAvatarCropped = useCallback(async (blob: Blob) => {
+    if (!user) return;
 
     setUploading(true);
     try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${user.id}/avatar.${fileExt}`;
+      const fileName = `${user.id}/avatar.jpg`;
 
       // Upload para storage
       const { error: uploadError } = await supabase.storage
         .from('avatars')
-        .upload(fileName, file, { upsert: true });
+        .upload(fileName, blob, { upsert: true });
 
       if (uploadError) throw uploadError;
 
-      // Obter URL pública
+      // Obter URL pública com timestamp para forçar atualização
       const { data: { publicUrl } } = supabase.storage
         .from('avatars')
         .getPublicUrl(fileName);
 
-      // Atualizar perfil
-      setProfile(prev => ({ ...prev, avatar_url: publicUrl }));
+      const newAvatarUrl = `${publicUrl}?t=${Date.now()}`;
+
+      // Atualizar perfil no estado e no banco
+      setProfile(prev => ({ ...prev, avatar_url: newAvatarUrl }));
+
+      await supabase
+        .from('profiles')
+        .update({ avatar_url: newAvatarUrl })
+        .eq('id', user.id);
 
       toast({
         title: "Sucesso",
@@ -282,36 +267,31 @@ function Perfil() {
           </CardHeader>
           <CardContent className="space-y-6">
             {/* Avatar */}
-            <div className="flex items-center gap-4">
-              <Avatar className="h-20 w-20">
-                <AvatarImage src={profile.avatar_url} />
-                <AvatarFallback className="text-lg">
-                  {profile.nome ? getInitials(profile.nome) : 'U'}
-                </AvatarFallback>
-              </Avatar>
-              <div>
-                <Label htmlFor="avatar-upload" className="cursor-pointer">
-                  <Button variant="outline" disabled={uploading} asChild>
-                    <span>
-                      {uploading ? (
-                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                      ) : (
-                        <Upload className="h-4 w-4 mr-2" />
-                      )}
-                      Alterar Avatar
-                    </span>
-                  </Button>
-                </Label>
-                <input
-                  id="avatar-upload"
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp"
-                  onChange={handleAvatarUpload}
-                  className="hidden"
+            <div className="flex flex-col md:flex-row gap-6">
+              <div className="flex flex-col items-center gap-3">
+                <Avatar className="h-24 w-24">
+                  <AvatarImage src={profile.avatar_url} />
+                  <AvatarFallback className="text-lg">
+                    {profile.nome ? getInitials(profile.nome) : 'U'}
+                  </AvatarFallback>
+                </Avatar>
+                {uploading && (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Carregando...
+                  </div>
+                )}
+              </div>
+              
+              <div className="flex-1">
+                <ImageUploadWithCrop
+                  currentImageUrl={profile.avatar_url}
+                  onImageCropped={handleAvatarCropped}
+                  aspect={1}
+                  maxSize={2}
+                  recommendedSize="400x400px"
+                  uploadType="avatar"
                 />
-                <p className="text-sm text-muted-foreground mt-1">
-                  JPG, PNG ou WEBP. Máximo 5MB.
-                </p>
               </div>
             </div>
 
