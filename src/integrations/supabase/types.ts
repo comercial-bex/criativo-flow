@@ -14,6 +14,129 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_cache: {
+        Row: {
+          cache_key: string
+          created_at: string
+          expires_at: string
+          id: string
+          model_used: string | null
+          prompt_hash: string
+          response_data: Json
+          tokens_used: number | null
+        }
+        Insert: {
+          cache_key: string
+          created_at?: string
+          expires_at: string
+          id?: string
+          model_used?: string | null
+          prompt_hash: string
+          response_data: Json
+          tokens_used?: number | null
+        }
+        Update: {
+          cache_key?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          model_used?: string | null
+          prompt_hash?: string
+          response_data?: Json
+          tokens_used?: number | null
+        }
+        Relationships: []
+      }
+      aprovacoes_cliente: {
+        Row: {
+          anexo_url: string | null
+          cliente_id: string
+          created_at: string
+          decided_at: string | null
+          decidido_por: string | null
+          descricao: string | null
+          id: string
+          motivo_reprovacao: string | null
+          projeto_id: string | null
+          solicitado_por: string
+          status: string
+          tarefa_id: string | null
+          tipo: string
+          titulo: string
+          updated_at: string
+        }
+        Insert: {
+          anexo_url?: string | null
+          cliente_id: string
+          created_at?: string
+          decided_at?: string | null
+          decidido_por?: string | null
+          descricao?: string | null
+          id?: string
+          motivo_reprovacao?: string | null
+          projeto_id?: string | null
+          solicitado_por: string
+          status?: string
+          tarefa_id?: string | null
+          tipo: string
+          titulo: string
+          updated_at?: string
+        }
+        Update: {
+          anexo_url?: string | null
+          cliente_id?: string
+          created_at?: string
+          decided_at?: string | null
+          decidido_por?: string | null
+          descricao?: string | null
+          id?: string
+          motivo_reprovacao?: string | null
+          projeto_id?: string | null
+          solicitado_por?: string
+          status?: string
+          tarefa_id?: string | null
+          tipo?: string
+          titulo?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aprovacoes_cliente_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "aprovacoes_cliente_decidido_por_fkey"
+            columns: ["decidido_por"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "aprovacoes_cliente_projeto_id_fkey"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "projetos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "aprovacoes_cliente_solicitado_por_fkey"
+            columns: ["solicitado_por"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "aprovacoes_cliente_tarefa_id_fkey"
+            columns: ["tarefa_id"]
+            isOneToOne: false
+            referencedRelation: "tarefas_projeto"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       assinatura_logs: {
         Row: {
           created_at: string
@@ -952,6 +1075,68 @@ export type Database = {
           },
         ]
       }
+      exportacoes: {
+        Row: {
+          arquivo_url: string
+          cliente_id: string
+          created_at: string
+          gerado_por: string
+          id: string
+          plano_id: string | null
+          tipo: string
+          titulo: string
+        }
+        Insert: {
+          arquivo_url: string
+          cliente_id: string
+          created_at?: string
+          gerado_por: string
+          id?: string
+          plano_id?: string | null
+          tipo: string
+          titulo: string
+        }
+        Update: {
+          arquivo_url?: string
+          cliente_id?: string
+          created_at?: string
+          gerado_por?: string
+          id?: string
+          plano_id?: string | null
+          tipo?: string
+          titulo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exportacoes_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exportacoes_gerado_por_fkey"
+            columns: ["gerado_por"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exportacoes_plano_id_fkey"
+            columns: ["plano_id"]
+            isOneToOne: false
+            referencedRelation: "planos_estrategicos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exportacoes_plano_id_fkey"
+            columns: ["plano_id"]
+            isOneToOne: false
+            referencedRelation: "vw_planos_publicos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       faq_suporte: {
         Row: {
           ativo: boolean
@@ -1715,6 +1900,139 @@ export type Database = {
           {
             foreignKeyName: "planejamentos_responsavel_grs_id_fkey"
             columns: ["responsavel_grs_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      planos_estrategicos: {
+        Row: {
+          analise_swot: Json | null
+          cliente_id: string
+          created_at: string
+          created_by: string | null
+          dados_onboarding: Json | null
+          id: string
+          missao: string | null
+          origem_ia: boolean | null
+          periodo_fim: string
+          periodo_inicio: string
+          titulo: string
+          updated_at: string
+          valores: string[] | null
+          visao: string | null
+        }
+        Insert: {
+          analise_swot?: Json | null
+          cliente_id: string
+          created_at?: string
+          created_by?: string | null
+          dados_onboarding?: Json | null
+          id?: string
+          missao?: string | null
+          origem_ia?: boolean | null
+          periodo_fim: string
+          periodo_inicio: string
+          titulo: string
+          updated_at?: string
+          valores?: string[] | null
+          visao?: string | null
+        }
+        Update: {
+          analise_swot?: Json | null
+          cliente_id?: string
+          created_at?: string
+          created_by?: string | null
+          dados_onboarding?: Json | null
+          id?: string
+          missao?: string | null
+          origem_ia?: boolean | null
+          periodo_fim?: string
+          periodo_inicio?: string
+          titulo?: string
+          updated_at?: string
+          valores?: string[] | null
+          visao?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "planos_estrategicos_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "planos_estrategicos_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      planos_objetivos: {
+        Row: {
+          created_at: string
+          descricao: string | null
+          id: string
+          iniciativas: string[] | null
+          kpis: string[] | null
+          objetivo: string
+          ordem: number | null
+          plano_id: string
+          prazo_conclusao: string | null
+          responsavel_id: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          descricao?: string | null
+          id?: string
+          iniciativas?: string[] | null
+          kpis?: string[] | null
+          objetivo: string
+          ordem?: number | null
+          plano_id: string
+          prazo_conclusao?: string | null
+          responsavel_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          descricao?: string | null
+          id?: string
+          iniciativas?: string[] | null
+          kpis?: string[] | null
+          objetivo?: string
+          ordem?: number | null
+          plano_id?: string
+          prazo_conclusao?: string | null
+          responsavel_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "planos_objetivos_plano_id_fkey"
+            columns: ["plano_id"]
+            isOneToOne: false
+            referencedRelation: "planos_estrategicos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "planos_objetivos_plano_id_fkey"
+            columns: ["plano_id"]
+            isOneToOne: false
+            referencedRelation: "vw_planos_publicos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "planos_objetivos_responsavel_id_fkey"
+            columns: ["responsavel_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
@@ -2835,7 +3153,103 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      vw_planos_publicos: {
+        Row: {
+          cliente_id: string | null
+          created_at: string | null
+          id: string | null
+          missao: string | null
+          periodo_fim: string | null
+          periodo_inicio: string | null
+          titulo: string | null
+          updated_at: string | null
+          valores: string[] | null
+          visao: string | null
+        }
+        Insert: {
+          cliente_id?: string | null
+          created_at?: string | null
+          id?: string | null
+          missao?: string | null
+          periodo_fim?: string | null
+          periodo_inicio?: string | null
+          titulo?: string | null
+          updated_at?: string | null
+          valores?: string[] | null
+          visao?: string | null
+        }
+        Update: {
+          cliente_id?: string | null
+          created_at?: string | null
+          id?: string | null
+          missao?: string | null
+          periodo_fim?: string | null
+          periodo_inicio?: string | null
+          titulo?: string | null
+          updated_at?: string | null
+          valores?: string[] | null
+          visao?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "planos_estrategicos_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vw_planos_publicos_itens: {
+        Row: {
+          descricao: string | null
+          id: string | null
+          iniciativas: string[] | null
+          kpis: string[] | null
+          objetivo: string | null
+          ordem: number | null
+          plano_id: string | null
+          prazo_conclusao: string | null
+          responsavel_nome: string | null
+          status: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "planos_objetivos_plano_id_fkey"
+            columns: ["plano_id"]
+            isOneToOne: false
+            referencedRelation: "planos_estrategicos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "planos_objetivos_plano_id_fkey"
+            columns: ["plano_id"]
+            isOneToOne: false
+            referencedRelation: "vw_planos_publicos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vw_produtividade_7d: {
+        Row: {
+          lead_time_medio_dias: number | null
+          responsavel_id: string | null
+          responsavel_nome: string | null
+          setor_responsavel: string | null
+          tarefas_concluidas: number | null
+          tarefas_criadas: number | null
+          tarefas_vencidas: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tarefas_projeto_responsavel_id_fkey"
+            columns: ["responsavel_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       aprovar_especialista: {

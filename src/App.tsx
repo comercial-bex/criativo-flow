@@ -59,6 +59,9 @@ import ClienteProjetoDetalhes from "./pages/Cliente/ProjetoDetalhes";
 import ClientePlanejamentoVisual from "./pages/Cliente/PlanejamentoVisual";
 import ClienteEditar from "./pages/Cliente/Editar";
 import ClientePerfil from "./pages/Cliente/Perfil";
+import ClienteAprovacoes from "./pages/Cliente/Aprovacoes";
+import ClientePlanos from "./pages/Cliente/Planos";
+import ClienteExportacoes from "./pages/Cliente/Exportacoes";
 
 // Administrative pages
 import AdminDashboard from "./pages/Administrativo/Dashboard";
@@ -449,6 +452,24 @@ function App() {
                 <Route path="/cliente/tarefas" element={
                   <ProtectedRoute requiredRole="cliente">
                     <Layout><ClienteTarefas /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/cliente/aprovacoes" element={
+                  <ProtectedRoute requiredRole="cliente">
+                    <Layout><ClienteAprovacoes /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/cliente/planos" element={
+                  <ProtectedRoute requiredRole="cliente">
+                    <Layout><ClientePlanos /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/cliente/exportacoes" element={
+                  <ProtectedRoute requiredRole="cliente">
+                    <Layout><ClienteExportacoes /></Layout>
                   </ProtectedRoute>
                 } />
                 
