@@ -93,15 +93,15 @@ serve(async (req) => {
     console.log('✅ Usuário criado:', userData.user?.id);
 
     if (userData.user) {
-      // Create profile entry with pendente_aprovacao status
+      // FASE 4: Create profile entry with cliente_id (CRÍTICO para painel funcionar)
       const { error: profileError } = await supabaseAdmin
         .from('profiles')
         .insert({
           id: userData.user.id,
           nome: nome,
           email: email,
-          cliente_id: cliente_id,
-          status: 'pendente_aprovacao' // Clientes sempre ficam pendentes para aprovação
+          cliente_id: cliente_id, // GARANTIR que cliente_id seja salvo
+          status: 'aprovado' // Clientes criados via sistema são aprovados automaticamente
         });
 
       if (profileError) {

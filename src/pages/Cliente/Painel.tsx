@@ -29,6 +29,41 @@ export default function ClientePainel() {
     );
   }
 
+  // FASE 4: Empty state quando usuário não tem cliente_id vinculado
+  if (!clientProfile?.cliente_id) {
+    return (
+      <div className="p-6 space-y-6 max-w-6xl mx-auto">
+        <Card className="border-warning/50">
+          <CardContent className="p-12 text-center">
+            <Clock className="h-16 w-16 mx-auto mb-4 text-warning" />
+            <h2 className="text-2xl font-bold mb-2">Conta em Configuração</h2>
+            <p className="text-muted-foreground mb-4">
+              Sua conta está sendo configurada pela nossa equipe.
+              Em breve você terá acesso a todos os recursos!
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Se você acredita que isso é um erro, entre em contato com nosso suporte.
+            </p>
+            <div className="flex gap-2 justify-center mt-6">
+              <Button 
+                variant="outline"
+                onClick={() => navigate('/atendimento/inbox')}
+              >
+                Abrir Chamado
+              </Button>
+              <Button 
+                className="bg-green-600 hover:bg-green-700"
+                onClick={() => window.open('https://wa.me/5511999999999', '_blank')}
+              >
+                WhatsApp
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="p-6 space-y-6 max-w-6xl mx-auto">
       <div className="text-center space-y-2">

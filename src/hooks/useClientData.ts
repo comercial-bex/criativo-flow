@@ -122,16 +122,21 @@ export function useClientData() {
 
   const deleteCliente = async (id: string) => {
     try {
+      // FASE 2: Atualizar estado local imediatamente para feedback visual instantâneo
+      setClientes(prev => prev.filter(cliente => cliente.id !== id));
+
       const { error: deleteError } = await supabase
         .from('clientes')
         .delete()
         .eq('id', id);
 
       if (deleteError) {
+        // Se houver erro, reverter o estado local
+        await fetchClientes();
         throw new Error(deleteError.message);
       }
 
-      // Refresh the list with secure data
+      // Confirmar exclusão com refetch
       await fetchClientes();
       
       return { error: null };

@@ -69,7 +69,8 @@ export function useClientDashboard() {
   };
 
   const fetchDashboardCounts = async () => {
-    if (!user || !clientProfile?.cliente_id) return;
+    // FASE 4: Correção - aceitar NULL em cliente_id temporariamente
+    if (!user) return;
 
     try {
       // Planejamentos pendentes de aprovação
@@ -115,7 +116,8 @@ export function useClientDashboard() {
   };
 
   const fetchTimeline = async () => {
-    if (!user || !clientProfile?.cliente_id) return;
+    // FASE 4: Correção - aceitar NULL em cliente_id temporariamente
+    if (!user) return;
 
     try {
       const agora = new Date();

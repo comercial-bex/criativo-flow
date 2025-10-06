@@ -274,8 +274,7 @@ const Clientes = () => {
   }, []);
 
   const resetForm = () => {
-    if (!mountedRef.current) return;
-    
+    // FASE 3: Remover verificação mountedRef para evitar travamento de modais
     setFormData({
       nome: "",
       razao_social: "",
@@ -311,13 +310,13 @@ const Clientes = () => {
   };
 
   const handleViewCliente = (cliente: Cliente) => {
-    if (!mountedRef.current) return;
+    // FASE 3: Remover verificação mountedRef para evitar travamento de modais
     setSelectedCliente(cliente);
     setShowViewModal(true);
   };
 
   const handleEditFromView = () => {
-    if (!mountedRef.current) return;
+    // FASE 3: Remover verificação mountedRef para evitar travamento de modais
     setShowViewModal(false);
     if (selectedCliente) {
       setFormData({
