@@ -33,7 +33,7 @@ interface TarefasPorSetorProps {
 export function TarefasPorSetor({ showAllSectors = true }: TarefasPorSetorProps) {
   const { tarefas, loading, fetchTarefasPorSetor } = useProjetos();
   const [setorAtivo, setSetorAtivo] = useState('design');
-  const [filtroStatus, setFiltroStatus] = useState<string>('');
+  const [filtroStatus, setFiltroStatus] = useState<string>('all'); // Mudado de '' para 'all'
   const [pesquisa, setPesquisa] = useState('');
   const [tarefasFiltradas, setTarefasFiltradas] = useState<TarefaProjeto[]>([]);
 
@@ -46,8 +46,8 @@ export function TarefasPorSetor({ showAllSectors = true }: TarefasPorSetorProps)
       filtered = filtered.filter(tarefa => tarefa.setor_responsavel === setorAtivo);
     }
 
-    // Filtrar por status
-    if (filtroStatus) {
+    // Filtrar por status (ignorar se for 'all')
+    if (filtroStatus && filtroStatus !== 'all') {
       filtered = filtered.filter(tarefa => tarefa.status === filtroStatus);
     }
 
@@ -135,8 +135,8 @@ export function TarefasPorSetor({ showAllSectors = true }: TarefasPorSetorProps)
             <SelectTrigger className="w-full sm:w-[180px]">
               <SelectValue placeholder="Filtrar por status" />
             </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="">Todos os status</SelectItem>
+            <SelectContent className="bg-popover z-50">
+              <SelectItem value="all">Todos os status</SelectItem>
               {STATUS_OPTIONS.map((status) => (
                 <SelectItem key={status.value} value={status.value}>
                   {status.label}
