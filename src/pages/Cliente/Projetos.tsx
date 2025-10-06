@@ -15,6 +15,7 @@ import { MobileProjetoCard } from "@/components/MobileProjetoCard";
 import { useDeviceType } from "@/hooks/useDeviceType";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface Projeto {
   id: string;
@@ -205,6 +206,7 @@ const getClienteStatusColor = (status: string) => {
 
 // Componente de formulário para novo projeto
 function ProjetoForm({ onSuccess }: { onSuccess: () => void }) {
+  const queryClient = useQueryClient();
   const [formData, setFormData] = useState({
     nome: '',
     descricao: '',
@@ -271,11 +273,9 @@ function ProjetoForm({ onSuccess }: { onSuccess: () => void }) {
         tipo: 'desenvolvimento'
       });
       
-      // Recarregar dados após criar projeto
+      // Invalidar queries específicas ao invés de reload
+      queryClient.invalidateQueries({ queryKey: ['projetos'] });
       onSuccess();
-      setTimeout(() => {
-        window.location.reload(); // Força atualização da página
-      }, 1000);
     } catch (error) {
       console.error('Erro ao criar projeto:', error);
       toast({

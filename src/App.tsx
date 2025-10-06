@@ -92,7 +92,21 @@ import IntelligenceDashboard from "./components/IntelligenceDashboard";
 import GRSAgenda from "./pages/GRS/Agenda";
 import Aprovacoes from "./pages/Aprovacoes";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
+      refetchOnMount: false,
+      retry: 0,
+      staleTime: 5 * 60 * 1000, // 5 minutos
+    },
+    mutations: {
+      // Evitar invalidação global automática
+      onSuccess: () => {},
+    },
+  },
+});
 
 function App() {
   // Move PublicRoute inside App component so it has access to AuthProvider context

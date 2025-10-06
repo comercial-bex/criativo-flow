@@ -36,11 +36,12 @@ interface TimelineInteligenteProps {
   limitarItens?: number;
 }
 
-export function TimelineInteligente({ clienteId, limitarItens = 20 }: TimelineInteligenteProps) {
+export function TimelineInteligente({ clienteId, limitarItens: initialLimit = 20 }: TimelineInteligenteProps) {
   const [logs, setLogs] = useState<LogAtividade[]>([]);
   const [loading, setLoading] = useState(true);
   const [filtroAcao, setFiltroAcao] = useState<string>('todas');
   const [filtroTipo, setFiltroTipo] = useState<string>('todos');
+  const [limitarItens, setLimitarItens] = useState(initialLimit);
 
   useEffect(() => {
     fetchLogs();
@@ -254,7 +255,7 @@ export function TimelineInteligente({ clienteId, limitarItens = 20 }: TimelineIn
 
       {logs.length >= limitarItens && (
         <div className="text-center">
-          <Button variant="outline" onClick={() => window.location.reload()}>
+          <Button variant="outline" onClick={() => setLimitarItens(prev => prev + 10)}>
             <Filter className="h-4 w-4 mr-2" />
             Carregar mais atividades
           </Button>

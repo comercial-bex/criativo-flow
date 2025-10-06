@@ -31,7 +31,8 @@ export const CarrosselBriefingModal = ({ open, onOpenChange, projetoId, onTaskCr
     observacoes: ''
   });
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     if (!formData.titulo || !formData.objetivo) {
       toast({
         title: "Campos obrigatórios",
@@ -97,7 +98,7 @@ export const CarrosselBriefingModal = ({ open, onOpenChange, projetoId, onTaskCr
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" forceMount>
         <DialogHeader>
           <DialogTitle>📚 Novo Carrossel</DialogTitle>
         </DialogHeader>
