@@ -118,15 +118,9 @@ const Clientes = () => {
   useEffect(() => {
     fetchAssinaturas();
     
-    // Cleanup function to mark component as unmounted and close all dialogs
+    // Cleanup function to mark component as unmounted
     return () => {
       mountedRef.current = false;
-      // Close all dialogs/modals when component unmounts
-      setShowForm(false);
-      setShowOnboarding(false);
-      setShowViewModal(false);
-      setShowCredentials(false);
-      setSelectedCliente(null);
     };
   }, []);
 
@@ -274,7 +268,8 @@ const Clientes = () => {
   }, []);
 
   const resetForm = () => {
-    // FASE 3: Remover verificação mountedRef para evitar travamento de modais
+    if (!mountedRef.current) return;
+    
     setFormData({
       nome: "",
       razao_social: "",
@@ -310,30 +305,33 @@ const Clientes = () => {
   };
 
   const handleViewCliente = (cliente: Cliente) => {
-    // FASE 3: Remover verificação mountedRef para evitar travamento de modais
+    if (!mountedRef.current) return;
     setSelectedCliente(cliente);
     setShowViewModal(true);
   };
 
   const handleEditFromView = () => {
-    // FASE 3: Remover verificação mountedRef para evitar travamento de modais
+    if (!mountedRef.current) return;
     setShowViewModal(false);
     if (selectedCliente) {
-      setFormData({
-        ...selectedCliente,
-        logradouro: "",
-        numero: "",
-        complemento: "",
-        bairro: "",
-        cidade: "",
-        uf: "",
-        cep: "",
-        email_login: selectedCliente.email || "",
-        senha_temporaria: gerarSenha(),
-        criar_conta: false,
-        status_conta: "ativo"
-      });
-      setShowForm(true);
+      setTimeout(() => {
+        if (!mountedRef.current) return;
+        setFormData({
+          ...selectedCliente,
+          logradouro: "",
+          numero: "",
+          complemento: "",
+          bairro: "",
+          cidade: "",
+          uf: "",
+          cep: "",
+          email_login: selectedCliente.email || "",
+          senha_temporaria: gerarSenha(),
+          criar_conta: false,
+          status_conta: "ativo"
+        });
+        setShowForm(true);
+      }, 100);
     }
   };
 
@@ -349,6 +347,7 @@ const Clientes = () => {
   };
 
   const handleOnboarding = (cliente: Cliente) => {
+    if (!mountedRef.current) return;
     if (!clienteTemAssinatura(cliente)) {
       toast.error('Cliente precisa ter uma assinatura para acessar o onboarding');
       return;
