@@ -2975,6 +2975,10 @@ export type Database = {
         Args: { p_email: string }
         Returns: Json
       }
+      vincular_usuarios_clientes: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
     }
     Enums: {
       cliente_role:
