@@ -89,6 +89,8 @@ import AdminPainel from "./pages/Admin/Painel";
 import AdminTarefas from "./pages/Admin/Tarefas";
 import ClienteTarefas from "./pages/Cliente/Tarefas";
 import IntelligenceDashboard from "./components/IntelligenceDashboard";
+import GRSAgenda from "./pages/GRS/Agenda";
+import Aprovacoes from "./pages/Aprovacoes";
 
 const queryClient = new QueryClient();
 
@@ -483,6 +485,18 @@ function App() {
                 <Route path="/grs/tarefas" element={
                   <ProtectedRoute requiredRole="grs">
                     <Layout><TarefasUnificadasGRS /></Layout>
+                  </ProtectedRoute>
+                } />
+
+                <Route path="/grs/agenda" element={
+                  <ProtectedRoute requiredRole="grs">
+                    <Layout><GRSAgenda /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/aprovacoes" element={
+                  <ProtectedRoute allowedRoles={['admin', 'gestor', 'grs']}>
+                    <Layout><Aprovacoes /></Layout>
                   </ProtectedRoute>
                 } />
 
