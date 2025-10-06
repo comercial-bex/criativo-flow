@@ -157,10 +157,9 @@ export function EspecialistasSelector({ value, onChange }: EspecialistasSelector
             onValueChange={(val) => handleSelectChange('designer', val)}
           >
             <SelectTrigger id="designer">
-              <SelectValue placeholder="Selecione um designer (opcional)" />
+              <SelectValue placeholder="Nenhum selecionado" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Nenhum</SelectItem>
               {getEspecialistasByType('designer').map((esp) => (
                 <SelectItem key={esp.id} value={esp.id}>
                   {esp.nome}
@@ -178,10 +177,9 @@ export function EspecialistasSelector({ value, onChange }: EspecialistasSelector
             onValueChange={(val) => handleSelectChange('filmmaker', val)}
           >
             <SelectTrigger id="filmmaker">
-              <SelectValue placeholder="Selecione um filmmaker (opcional)" />
+              <SelectValue placeholder="Nenhum selecionado" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Nenhum</SelectItem>
               {getEspecialistasByType('filmmaker').map((esp) => (
                 <SelectItem key={esp.id} value={esp.id}>
                   {esp.nome}
