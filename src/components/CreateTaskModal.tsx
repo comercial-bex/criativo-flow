@@ -69,7 +69,17 @@ export function CreateTaskModal({
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault(); // CRÍTICO: Previne reload da página
+    
+    if (!formData.titulo.trim() || !formData.setor_responsavel) {
+      toast({
+        title: "Campos obrigatórios",
+        description: "Preencha o título e o setor responsável.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -96,18 +106,23 @@ export function CreateTaskModal({
 
       await onTaskCreate(taskData);
       
+      // Fecha o modal ANTES do toast para UX mais fluida
+      onOpenChange(false);
+      
+      // Toast de sucesso com ícone
       toast({
-        title: "Tarefa criada com sucesso!",
-        description: "A nova tarefa foi adicionada ao projeto.",
+        title: "✅ Tarefa criada com sucesso!",
+        description: `A tarefa "${formData.titulo}" foi adicionada ao projeto.`,
       });
 
-      resetForm();
-      onOpenChange(false);
-    } catch (error) {
+      // Reset após fechar (cleanup)
+      setTimeout(() => resetForm(), 300);
+      
+    } catch (error: any) {
       console.error('Erro ao criar tarefa:', error);
       toast({
-        title: "Erro ao criar tarefa",
-        description: "Não foi possível criar a tarefa. Tente novamente.",
+        title: "❌ Erro ao criar tarefa",
+        description: error?.message || "Não foi possível criar a tarefa. Tente novamente.",
         variant: "destructive",
       });
     } finally {

@@ -9,9 +9,11 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { UniversalKanbanBoard, moduleConfigurations } from '@/components/UniversalKanbanBoard';
 import { TrelloStyleTaskModal } from '@/components/TrelloStyleTaskModal';
+import { AudiovisualScheduleModal } from '@/components/AudiovisualScheduleModal';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
+import { useOperationalPermissions } from '@/hooks/useOperationalPermissions';
 import { 
   Plus, 
   Target, 
@@ -20,7 +22,8 @@ import {
   TrendingUp,
   Filter,
   Calendar,
-  BarChart3
+  BarChart3,
+  Video
 } from 'lucide-react';
 
 interface GRSTask {
@@ -55,6 +58,7 @@ export default function TarefasUnificadasGRS() {
   const [loading, setLoading] = useState(true);
   const [selectedTask, setSelectedTask] = useState<GRSTask | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
   const [createColumnId, setCreateColumnId] = useState<string>('');
   const [newTask, setNewTask] = useState({
     titulo: '',
@@ -69,6 +73,7 @@ export default function TarefasUnificadasGRS() {
 
   const { user } = useAuth();
   const { toast } = useToast();
+  const { permissions, loading: permissionsLoading } = useOperationalPermissions();
 
   useEffect(() => {
     fetchData();
@@ -189,7 +194,9 @@ export default function TarefasUnificadasGRS() {
     setIsCreateModalOpen(true);
   };
 
-  const createTask = async () => {
+  const createTask = async (e?: React.FormEvent) => {
+    e?.preventDefault(); // CRÍTICO: Previne reload
+    
     if (!newTask.titulo.trim()) {
       toast({
         title: "Erro",
@@ -222,7 +229,6 @@ export default function TarefasUnificadasGRS() {
       // Buscar nomes relacionados separadamente
       let responsavel_nome = '';
       let cliente_nome = '';
-      let projeto_nome = '';
 
       if (data.responsavel_id) {
         const { data: profile } = await supabase
@@ -252,30 +258,33 @@ export default function TarefasUnificadasGRS() {
 
       setTasks(prev => [processedTask, ...prev]);
       
-      // Reset form
-      setNewTask({
-        titulo: '',
-        descricao: '',
-        prioridade: 'media',
-        data_prazo: '',
-        responsavel_id: '',
-        cliente_id: '',
-        projeto_id: '',
-        horas_estimadas: ''
+      // Fechar modal antes do toast
+      setIsCreateModalOpen(false);
+      
+      toast({
+        title: "✅ Tarefa criada com sucesso!",
+        description: `A tarefa "${newTask.titulo}" foi adicionada.`,
       });
       
-      setIsCreateModalOpen(false);
+      // Reset após fechar
+      setTimeout(() => {
+        setNewTask({
+          titulo: '',
+          descricao: '',
+          prioridade: 'media',
+          data_prazo: '',
+          responsavel_id: '',
+          cliente_id: '',
+          projeto_id: '',
+          horas_estimadas: ''
+        });
+      }, 300);
 
-      toast({
-        title: "Sucesso",
-        description: "Tarefa criada com sucesso!",
-      });
-
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao criar tarefa:', error);
       toast({
-        title: "Erro",
-        description: "Erro ao criar tarefa.",
+        title: "❌ Erro ao criar tarefa",
+        description: error?.message || "Erro ao criar tarefa.",
         variant: "destructive",
       });
     }
@@ -349,13 +358,25 @@ export default function TarefasUnificadasGRS() {
           <p className="text-muted-foreground">Planejamento estratégico e gestão de redes sociais</p>
         </div>
         
-        <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
-          <DialogTrigger asChild>
-            <Button onClick={() => handleTaskCreate()}>
-              <Plus className="h-4 w-4 mr-2" />
-              Nova Tarefa
-            </Button>
-          </DialogTrigger>
+        <div className="flex gap-2">
+          {permissions.showCreateButton && (
+            <>
+              <Button 
+                variant="outline" 
+                onClick={() => setIsScheduleModalOpen(true)}
+                className="gap-2"
+              >
+                <Video className="h-4 w-4" />
+                Agendar Captação
+              </Button>
+              
+              <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
+                <DialogTrigger asChild>
+                  <Button onClick={() => handleTaskCreate()}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Nova Tarefa
+                  </Button>
+                </DialogTrigger>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
               <DialogTitle>Nova Tarefa GRS</DialogTitle>
@@ -456,14 +477,24 @@ export default function TarefasUnificadasGRS() {
                 <Button variant="outline" onClick={() => setIsCreateModalOpen(false)}>
                   Cancelar
                 </Button>
-                <Button onClick={createTask}>
+                <Button onClick={() => createTask()}>
                   Criar Tarefa
                 </Button>
               </div>
             </div>
           </DialogContent>
         </Dialog>
+            </>
+          )}
+        </div>
       </div>
+      
+      {/* Modal de Agendamento Audiovisual */}
+      <AudiovisualScheduleModal
+        open={isScheduleModalOpen}
+        onOpenChange={setIsScheduleModalOpen}
+        onScheduleCreated={fetchData}
+      />
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
