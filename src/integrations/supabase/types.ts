@@ -1661,6 +1661,7 @@ export type Database = {
           id: string
           mes_referencia: string
           observacoes_cliente: string | null
+          projeto_id: string | null
           responsavel_grs_id: string | null
           status: Database["public"]["Enums"]["status_padrao"] | null
           titulo: string
@@ -1675,6 +1676,7 @@ export type Database = {
           id?: string
           mes_referencia: string
           observacoes_cliente?: string | null
+          projeto_id?: string | null
           responsavel_grs_id?: string | null
           status?: Database["public"]["Enums"]["status_padrao"] | null
           titulo: string
@@ -1689,6 +1691,7 @@ export type Database = {
           id?: string
           mes_referencia?: string
           observacoes_cliente?: string | null
+          projeto_id?: string | null
           responsavel_grs_id?: string | null
           status?: Database["public"]["Enums"]["status_padrao"] | null
           titulo?: string
@@ -1700,6 +1703,13 @@ export type Database = {
             columns: ["cliente_id"]
             isOneToOne: false
             referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "planejamentos_projeto_id_fkey"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "projetos"
             referencedColumns: ["id"]
           },
           {

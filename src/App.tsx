@@ -48,6 +48,7 @@ import GestorDashboard from "./pages/Gestor/Dashboard";
 import MinhasTarefas from "./pages/MinhasTarefas";
 import TarefasUnificadasGRS from "./pages/GRS/TarefasUnificadas";
 import TarefasUnificadasDesign from "./pages/Design/TarefasUnificadas";
+import EspecialistaDashboard from "./pages/Especialista/Dashboard";
 import TarefasUnificadasAudiovisual from "./pages/Audiovisual/TarefasUnificadas";
 
 // Client pages
@@ -293,6 +294,19 @@ function App() {
                 <Route path="/grs/agendamento-social" element={
                   <ProtectedRoute requiredRole="grs">
                     <Layout><GRSAgendamentoSocial /></Layout>
+                  </ProtectedRoute>
+                } />
+
+                <Route path="/grs/projeto/:projetoId/tarefas" element={
+                  <ProtectedRoute requiredRole="grs">
+                    <Layout><GRSProjetoTarefas /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                {/* Especialista routes */}
+                <Route path="/especialista/dashboard" element={
+                  <ProtectedRoute>
+                    <Layout><EspecialistaDashboard /></Layout>
                   </ProtectedRoute>
                 } />
                 

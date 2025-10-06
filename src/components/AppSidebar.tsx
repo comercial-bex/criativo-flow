@@ -299,6 +299,7 @@ export function AppSidebar() {
   // GRS specific items - CLEAN VERSION (sem submenus) - SIMPLIFIED UX
   const grsItems = [
     { title: "Dashboard", url: "/grs/dashboard", icon: BarChart3 },
+    { title: "Meus Projetos", url: "/especialista/dashboard", icon: Briefcase },
     { title: "Minhas Tarefas", url: "/grs/tarefas", icon: ClipboardCheck },
     { title: "Mensagens", url: "/grs/inbox", icon: Inbox },
     { title: "Calendário", url: "/grs/calendario-editorial", icon: CalendarDays },
@@ -308,6 +309,7 @@ export function AppSidebar() {
 
   // Designer specific items
   const designerItems = [
+    { title: "Meus Projetos", url: "/especialista/dashboard", icon: Briefcase },
     { title: "Dashboard", url: "/design/dashboard", icon: Palette },
     { title: "Minhas Tarefas", url: "/design/tarefas", icon: CheckSquare },
     { title: "Kanban", url: "/design/kanban", icon: ClipboardCheck },
@@ -317,6 +319,7 @@ export function AppSidebar() {
 
   // Filmmaker specific items
   const filmmakerItems = [
+    { title: "Meus Projetos", url: "/especialista/dashboard", icon: Briefcase },
     { title: "Dashboard", url: "/audiovisual/dashboard", icon: Video },
     { title: "Minhas Tarefas", url: "/audiovisual/tarefas", icon: CheckSquare },
     { title: "Captações", url: "/audiovisual/captacoes", icon: Camera },

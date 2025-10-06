@@ -19,6 +19,7 @@ import { CalendarWidget } from "@/components/CalendarWidget";
 import { InteractiveGuideButton } from "@/components/InteractiveGuideButton";
 import { SimpleHelpModal } from "@/components/SimpleHelpModal";
 import { TarefasPorSetor } from "@/components/TarefasPorSetor";
+import { CreatePlanejamentoModal } from "@/components/CreatePlanejamentoModal";
 
 interface Cliente {
   id: string;
@@ -56,15 +57,6 @@ export default function GRSDashboard() {
   const [clientesComProjetos, setClientesComProjetos] = useState<ClienteComProjetos[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
-
-  // Form state for new planning
-  const [formData, setFormData] = useState({
-    titulo: "",
-    cliente_id: "",
-    mes_referencia: "",
-    descricao: ""
-  });
-  const [clientes, setClientes] = useState<Cliente[]>([]);
 
   useEffect(() => {
     fetchClientesEProjetos();
@@ -158,20 +150,6 @@ export default function GRSDashboard() {
     }
   };
 
-  const fetchClientes = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('clientes')
-        .select('id, nome, email, status')
-        .eq('status', 'ativo')
-        .order('nome');
-
-      if (error) throw error;
-      setClientes(data || []);
-    } catch (error) {
-      console.error('Erro ao carregar clientes:', error);
-    }
-  };
 
   const metricsData = [
     {
@@ -222,46 +200,6 @@ export default function GRSDashboard() {
     }
   };
 
-  const handleCreatePlanejamento = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    try {
-      const { error } = await supabase
-        .from('planejamentos')
-        .insert({
-          titulo: formData.titulo,
-          cliente_id: formData.cliente_id,
-          mes_referencia: formData.mes_referencia,
-          descricao: formData.descricao,
-          status: 'rascunho'
-        });
-
-      if (error) throw error;
-
-      toast({
-        title: "Planejamento criado com sucesso!",
-        description: "O novo planejamento foi adicionado ao sistema",
-      });
-
-      setDialogOpen(false);
-      setFormData({
-        titulo: "",
-        cliente_id: "",
-        mes_referencia: "",
-        descricao: ""
-      });
-      
-      // Refresh data
-      fetchClientesEProjetos();
-    } catch (error) {
-      console.error('Erro ao criar planejamento:', error);
-      toast({
-        title: "Erro ao criar planejamento",
-        description: "Não foi possível criar o planejamento",
-        variant: "destructive",
-      });
-    }
-  };
 
   const handleVisualizarCliente = (clienteId: string) => {
     navigate(`/grs/cliente/${clienteId}/projetos`);
@@ -318,84 +256,19 @@ export default function GRSDashboard() {
 
         <div className="flex items-center justify-between">
           <div className="flex gap-2">
-            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-            <DialogTrigger asChild>
-              <Button data-intro="criar-planejamento">
-                <Plus className="h-4 w-4 mr-2" />
-                Novo Projeto
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-2xl">
-              <DialogHeader>
-                <DialogTitle>Novo Planejamento</DialogTitle>
-                <DialogDescription>
-                  Crie um novo planejamento para o cliente selecionado
-                </DialogDescription>
-              </DialogHeader>
-              <form onSubmit={handleCreatePlanejamento} className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="titulo">Título do Planejamento</Label>
-                    <Input
-                      id="titulo"
-                      value={formData.titulo}
-                      onChange={(e) => setFormData({ ...formData, titulo: e.target.value })}
-                      placeholder="Ex: Planejamento Janeiro 2024"
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="cliente">Cliente</Label>
-                    <Select 
-                      value={formData.cliente_id} 
-                      onValueChange={(value) => setFormData({ ...formData, cliente_id: value })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione um cliente" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {clientes.map((cliente) => (
-                          <SelectItem key={cliente.id} value={cliente.id}>
-                            {cliente.nome}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="mes_referencia">Mês de Referência</Label>
-                    <Input
-                      id="mes_referencia"
-                      type="date"
-                      value={formData.mes_referencia}
-                      onChange={(e) => setFormData({ ...formData, mes_referencia: e.target.value })}
-                      required
-                    />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="descricao">Descrição</Label>
-                  <Textarea
-                    id="descricao"
-                    value={formData.descricao}
-                    onChange={(e) => setFormData({ ...formData, descricao: e.target.value })}
-                    placeholder="Descreva os objetivos e escopo do planejamento..."
-                    rows={3}
-                  />
-                </div>
-                <div className="flex gap-2 pt-4">
-                  <Button type="submit" className="flex-1">
-                    Criar Planejamento
-                  </Button>
-                  <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
-                    Cancelar
-                  </Button>
-                </div>
-              </form>
-            </DialogContent>
-          </Dialog>
+            <Button onClick={() => setDialogOpen(true)} data-intro="criar-planejamento">
+              <Plus className="h-4 w-4 mr-2" />
+              Novo Projeto
+            </Button>
           </div>
         </div>
+
+        {/* Modal de Criação usando o componente atualizado */}
+        <CreatePlanejamentoModal
+          open={dialogOpen}
+          onOpenChange={setDialogOpen}
+          onSuccess={() => fetchClientesEProjetos()}
+        />
 
       {/* Metrics Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">

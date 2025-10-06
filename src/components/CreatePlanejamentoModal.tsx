@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { EspecialistasSelector } from "./EspecialistasSelector";
 
 interface Cliente {
   id: string;
@@ -33,7 +34,13 @@ export function CreatePlanejamentoModal({
     titulo: "",
     cliente_id: clienteId || "",
     mes_referencia: "",
-    descricao: ""
+    descricao: "",
+    especialistas: {
+      grs_id: null as string | null,
+      designer_id: null as string | null,
+      filmmaker_id: null as string | null,
+      gerente_id: null as string | null
+    }
   });
 
   useEffect(() => {
@@ -62,17 +69,35 @@ export function CreatePlanejamentoModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validar que GRS foi selecionado
+    if (!formData.especialistas.grs_id) {
+      toast({
+        title: "GRS obrigatório",
+        description: "Você deve selecionar um GRS responsável pelo projeto",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setLoading(true);
     
     try {
+      // Criar descrição com metadata dos especialistas
+      const descricaoComMetadata = JSON.stringify({
+        descricao_original: formData.descricao,
+        especialistas: formData.especialistas
+      });
+
       const { error } = await supabase
         .from('planejamentos')
         .insert({
           titulo: formData.titulo,
           cliente_id: formData.cliente_id,
           mes_referencia: formData.mes_referencia,
-          descricao: formData.descricao,
-          status: 'rascunho'
+          descricao: descricaoComMetadata,
+          status: 'rascunho',
+          responsavel_grs_id: formData.especialistas.grs_id
         });
 
       if (error) throw error;
@@ -87,7 +112,13 @@ export function CreatePlanejamentoModal({
         titulo: "",
         cliente_id: clienteId || "",
         mes_referencia: "",
-        descricao: ""
+        descricao: "",
+        especialistas: {
+          grs_id: null,
+          designer_id: null,
+          filmmaker_id: null,
+          gerente_id: null
+        }
       });
       
       onSuccess();
@@ -164,6 +195,15 @@ export function CreatePlanejamentoModal({
               rows={3}
             />
           </div>
+
+          {/* Seleção de Especialistas */}
+          <div className="pt-4 border-t">
+            <EspecialistasSelector
+              value={formData.especialistas}
+              onChange={(especialistas) => setFormData({ ...formData, especialistas })}
+            />
+          </div>
+
           <div className="flex gap-2 pt-4">
             <Button type="submit" className="flex-1" disabled={loading}>
               {loading ? "Criando..." : "Criar Planejamento"}
