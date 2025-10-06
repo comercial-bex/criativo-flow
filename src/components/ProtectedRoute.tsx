@@ -9,13 +9,15 @@ interface ProtectedRouteProps {
   module?: keyof import('@/hooks/usePermissions').ModulePermissions;
   action?: keyof import('@/hooks/usePermissions').PermissionActions;
   requiredRole?: import('@/hooks/useUserRole').UserRole;
+  allowedRoles?: import('@/hooks/useUserRole').UserRole[];
 }
 
 export function ProtectedRoute({ 
   children, 
   module, 
   action = 'canView', 
-  requiredRole 
+  requiredRole,
+  allowedRoles
 }: ProtectedRouteProps) {
   const { user, loading: authLoading } = useAuth();
   const { role, loading: permissionsLoading, canPerformAction, hasModuleAccess } = usePermissions();
@@ -60,9 +62,14 @@ export function ProtectedRoute({
     return <>{children}</>;
   }
 
-  // Check specific role requirement
+  // Check specific role requirement (single or multiple)
   if (requiredRole && role !== requiredRole) {
     console.log('🛡️ ProtectedRoute: Role check failed', { required: requiredRole, actual: role });
+    return <Navigate to="/unauthorized" replace />;
+  }
+
+  if (allowedRoles && allowedRoles.length > 0 && !allowedRoles.includes(role!)) {
+    console.log('🛡️ ProtectedRoute: Allowed roles check failed', { allowedRoles, actual: role });
     return <Navigate to="/unauthorized" replace />;
   }
 
