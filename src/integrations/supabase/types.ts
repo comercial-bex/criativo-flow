@@ -307,6 +307,80 @@ export type Database = {
         }
         Relationships: []
       }
+      brand_assets: {
+        Row: {
+          cliente_id: string
+          created_at: string | null
+          created_by: string
+          file_path: string
+          file_url: string | null
+          id: string
+          metadata: Json | null
+          mime_type: string | null
+          nome: string
+          tamanho_kb: number | null
+          tipo: string
+          updated_at: string | null
+        }
+        Insert: {
+          cliente_id: string
+          created_at?: string | null
+          created_by: string
+          file_path: string
+          file_url?: string | null
+          id?: string
+          metadata?: Json | null
+          mime_type?: string | null
+          nome: string
+          tamanho_kb?: number | null
+          tipo: string
+          updated_at?: string | null
+        }
+        Update: {
+          cliente_id?: string
+          created_at?: string | null
+          created_by?: string
+          file_path?: string
+          file_url?: string | null
+          id?: string
+          metadata?: Json | null
+          mime_type?: string | null
+          nome?: string
+          tamanho_kb?: number | null
+          tipo?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "brand_assets_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "brand_assets_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "vw_client_metrics"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "brand_assets_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "brand_assets_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "vw_client_metrics"
+            referencedColumns: ["responsavel_id"]
+          },
+        ]
+      }
       briefings: {
         Row: {
           anexos: string[] | null
@@ -1073,6 +1147,7 @@ export type Database = {
           id: string
           plataforma: string
           projeto_id: string | null
+          secrets_cipher: string | null
           senha_cipher: string
           updated_at: string
           updated_by: string | null
@@ -1087,6 +1162,7 @@ export type Database = {
           id?: string
           plataforma: string
           projeto_id?: string | null
+          secrets_cipher?: string | null
           senha_cipher: string
           updated_at?: string
           updated_by?: string | null
@@ -1101,6 +1177,7 @@ export type Database = {
           id?: string
           plataforma?: string
           projeto_id?: string | null
+          secrets_cipher?: string | null
           senha_cipher?: string
           updated_at?: string
           updated_by?: string | null
@@ -3738,6 +3815,44 @@ export type Database = {
         }
         Relationships: []
       }
+      vw_credenciais_por_categoria: {
+        Row: {
+          categoria: string | null
+          categoria_label: string | null
+          cliente_id: string | null
+          extra: Json | null
+          id: string | null
+          plataforma: string | null
+          projeto_id: string | null
+          total_na_categoria: number | null
+          updated_at: string | null
+          updated_by_nome: string | null
+          usuario_login: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "credenciais_cliente_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "credenciais_cliente_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "vw_client_metrics"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "credenciais_cliente_projeto_id_fkey"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "projetos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       vw_planos_publicos: {
         Row: {
           cliente_id: string | null
@@ -3942,20 +4057,33 @@ export type Database = {
       fn_cred_reveal: {
         Args: { p_cred_id: string; p_motivo?: string }
         Returns: {
+          secrets_plain: Json
           senha_plain: string
         }[]
       }
       fn_cred_save: {
-        Args: {
-          p_categoria: string
-          p_cliente_id: string
-          p_cred_id?: string
-          p_extra_json?: Json
-          p_plataforma: string
-          p_projeto_id: string
-          p_senha_plain: string
-          p_usuario_login: string
-        }
+        Args:
+          | {
+              p_categoria: string
+              p_cliente_id: string
+              p_cred_id?: string
+              p_extra_json?: Json
+              p_plataforma: string
+              p_projeto_id: string
+              p_secrets_json?: Json
+              p_senha_plain: string
+              p_usuario_login: string
+            }
+          | {
+              p_categoria: string
+              p_cliente_id: string
+              p_cred_id?: string
+              p_extra_json?: Json
+              p_plataforma: string
+              p_projeto_id: string
+              p_senha_plain: string
+              p_usuario_login: string
+            }
         Returns: string
       }
       generate_content_with_ai_v2: {

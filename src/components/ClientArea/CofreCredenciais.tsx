@@ -66,12 +66,54 @@ interface Credencial {
 }
 
 const CATEGORIAS = [
-  { value: 'social', label: 'Redes Sociais' },
-  { value: 'email', label: 'E-mail' },
-  { value: 'dominio', label: 'Domínio/Hosting' },
-  { value: 'ads', label: 'Anúncios' },
-  { value: 'outros', label: 'Outros' },
+  { value: 'social', label: 'Redes Sociais', icon: '👥' },
+  { value: 'ads', label: 'Anúncios', icon: '📢' },
+  { value: 'email_workspace', label: 'E-mail / Workspace', icon: '📧' },
+  { value: 'dominio_dns', label: 'Domínio / DNS', icon: '🌐' },
+  { value: 'hosting_cdn', label: 'Hosting / CDN', icon: '☁️' },
+  { value: 'site_cms', label: 'Site / CMS', icon: '🖥️' },
+  { value: 'analytics', label: 'Analytics', icon: '📊' },
+  { value: 'tagmanager', label: 'Tag Manager', icon: '🏷️' },
+  { value: 'mensageria', label: 'Mensageria', icon: '💬' },
+  { value: 'outros', label: 'Outros', icon: '🔧' },
 ];
+
+// Presets de campos por plataforma
+const PLATFORM_PRESETS: Record<string, {
+  fields: string[];
+  placeholders: Record<string, string>;
+}> = {
+  'Instagram': {
+    fields: ['handle', 'url_perfil', 'backup_2fa'],
+    placeholders: {
+      handle: '@empresa',
+      url_perfil: 'instagram.com/empresa',
+      backup_2fa: 'Códigos de backup ou e-mail de recuperação'
+    }
+  },
+  'Meta Ads': {
+    fields: ['account_id', 'bm_id', 'pixel_id'],
+    placeholders: {
+      account_id: 'ID da Conta de Anúncios',
+      bm_id: 'ID do Business Manager',
+      pixel_id: 'Pixel(s) instalado(s)'
+    }
+  },
+  'Google Ads': {
+    fields: ['customer_id', 'conversion_id'],
+    placeholders: {
+      customer_id: 'CID (Customer ID)',
+      conversion_id: 'ID de conversão'
+    }
+  },
+  'GA4': {
+    fields: ['measurement_id', 'property_id'],
+    placeholders: {
+      measurement_id: 'G-XXXXXXXXXX',
+      property_id: 'ID da propriedade'
+    }
+  },
+};
 
 export function CofreCredenciais({ clienteId, projetoId }: CofreCredenciaisProps) {
   const [editModalOpen, setEditModalOpen] = useState(false);
@@ -85,7 +127,10 @@ export function CofreCredenciais({ clienteId, projetoId }: CofreCredenciaisProps
     plataforma: '',
     usuario_login: '',
     senha: '',
+    secrets: '',  // Tokens/API keys (criptografados separadamente)
     notas: '',
+    // Campos dinâmicos da plataforma
+    extra: {} as Record<string, string>,
   });
 
   const queryClient = useQueryClient();
@@ -106,6 +151,16 @@ export function CofreCredenciais({ clienteId, projetoId }: CofreCredenciaisProps
   // Salvar/Atualizar credencial
   const saveMutation = useMutation({
     mutationFn: async (values: typeof formData) => {
+      // Preparar secrets_json (tokens/API keys)
+      let secretsJson = {};
+      if (values.secrets && values.secrets.trim()) {
+        try {
+          secretsJson = JSON.parse(values.secrets);
+        } catch {
+          secretsJson = { raw_text: values.secrets }; // Se não for JSON válido, salvar como texto
+        }
+      }
+
       const { data, error } = await supabase.rpc('fn_cred_save', {
         p_cliente_id: clienteId,
         p_projeto_id: projetoId || null,
@@ -113,7 +168,8 @@ export function CofreCredenciais({ clienteId, projetoId }: CofreCredenciaisProps
         p_plataforma: values.plataforma,
         p_usuario_login: values.usuario_login,
         p_senha_plain: values.senha,
-        p_extra_json: { notas: values.notas },
+        p_extra_json: { notas: values.notas, ...values.extra },
+        p_secrets_json: secretsJson,
         p_cred_id: selectedCred?.id || null,
       });
       if (error) throw error;
@@ -128,6 +184,7 @@ export function CofreCredenciais({ clienteId, projetoId }: CofreCredenciaisProps
   });
 
   // Revelar senha
+  const [revealedSecrets, setRevealedSecrets] = useState<any>(null);
   const revealMutation = useMutation({
     mutationFn: async ({ credId, motivo }: { credId: string; motivo: string }) => {
       const { data, error } = await supabase.rpc('fn_cred_reveal', {
@@ -135,17 +192,19 @@ export function CofreCredenciais({ clienteId, projetoId }: CofreCredenciaisProps
         p_motivo: motivo,
       });
       if (error) throw error;
-      return data[0]?.senha_plain;
+      return data[0]; // Retorna { senha_plain, secrets_plain }
     },
-    onSuccess: (senha) => {
-      setRevealedPassword(senha);
+    onSuccess: (result) => {
+      setRevealedPassword(result.senha_plain);
+      setRevealedSecrets(result.secrets_plain);
       setPasswordVisible(true);
       queryClient.invalidateQueries({ queryKey: ['logs'] });
 
-      // Auto-hide após 30s e limpar clipboard
+      // Auto-hide após 30s
       setTimeout(() => {
         setPasswordVisible(false);
         setRevealedPassword(null);
+        setRevealedSecrets(null);
       }, 30000);
     },
   });
@@ -179,7 +238,9 @@ export function CofreCredenciais({ clienteId, projetoId }: CofreCredenciaisProps
       plataforma: '',
       usuario_login: '',
       senha: '',
+      secrets: '',
       notas: '',
+      extra: {},
     });
     setSelectedCred(null);
   };
@@ -191,7 +252,9 @@ export function CofreCredenciais({ clienteId, projetoId }: CofreCredenciaisProps
       plataforma: cred.plataforma,
       usuario_login: cred.usuario_login,
       senha: '', // Não pré-preencher senha
+      secrets: '',
       notas: cred.extra?.notas || '',
+      extra: cred.extra || {},
     });
     setEditModalOpen(true);
   };

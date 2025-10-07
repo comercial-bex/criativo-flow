@@ -1,4 +1,6 @@
 import { CofreCredenciais } from "./CofreCredenciais";
+import { ClientProfileCard } from "./ClientProfileCard";
+import { BrandIdentityCard } from "./BrandIdentityCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { usePermissions } from "@/hooks/usePermissions";
 
@@ -10,8 +12,10 @@ interface DetalhesTabProps {
 export function DetalhesTab({ clienteId, projetoId }: DetalhesTabProps) {
   const { role } = usePermissions();
 
-  // Atendimento não vê o cofre
+  // RBAC granular
+  const canEditProfile = role === 'admin' || role === 'gestor';
   const canViewVault = role === 'admin' || role === 'gestor';
+  const canViewBrandIdentity = role === 'admin' || role === 'gestor' || role === 'grs';
 
   return (
     <div className="p-6 space-y-6">
@@ -62,22 +66,18 @@ export function DetalhesTab({ clienteId, projetoId }: DetalhesTabProps) {
         </Card>
       </div>
 
-      {/* Cofre de Credenciais (apenas Admin/Gestor) */}
+      {/* Perfil do Cliente */}
+      <ClientProfileCard clienteId={clienteId} />
+
+      {/* Identidade Visual (Admin/Gestor/GRS) */}
+      {canViewBrandIdentity && (
+        <BrandIdentityCard clienteId={clienteId} />
+      )}
+
+      {/* Cofre de Credenciais (Admin/Gestor) */}
       {canViewVault && (
         <CofreCredenciais clienteId={clienteId} projetoId={projetoId} />
       )}
-
-      {/* Informações do Cliente */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Informações do Cliente</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground">
-            Detalhes adicionais serão exibidos aqui...
-          </p>
-        </CardContent>
-      </Card>
     </div>
   );
 }
