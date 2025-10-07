@@ -3465,6 +3465,16 @@ export type Database = {
         }
         Returns: string
       }
+      find_orphan_auth_users: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          auth_user_id: string
+          created_at: string
+          email: string
+          has_profile: boolean
+          user_metadata: Json
+        }[]
+      }
       fn_cred_get_metadata: {
         Args: { p_cliente_id: string; p_projeto_id?: string }
         Returns: {
