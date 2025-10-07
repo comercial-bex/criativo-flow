@@ -886,6 +886,80 @@ export type Database = {
         }
         Relationships: []
       }
+      credenciais_cliente: {
+        Row: {
+          categoria: string
+          cliente_id: string
+          created_at: string
+          created_by: string | null
+          extra: Json | null
+          id: string
+          plataforma: string
+          projeto_id: string | null
+          senha_cipher: string
+          updated_at: string
+          updated_by: string | null
+          usuario_login: string
+        }
+        Insert: {
+          categoria: string
+          cliente_id: string
+          created_at?: string
+          created_by?: string | null
+          extra?: Json | null
+          id?: string
+          plataforma: string
+          projeto_id?: string | null
+          senha_cipher: string
+          updated_at?: string
+          updated_by?: string | null
+          usuario_login: string
+        }
+        Update: {
+          categoria?: string
+          cliente_id?: string
+          created_at?: string
+          created_by?: string | null
+          extra?: Json | null
+          id?: string
+          plataforma?: string
+          projeto_id?: string | null
+          senha_cipher?: string
+          updated_at?: string
+          updated_by?: string | null
+          usuario_login?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "credenciais_cliente_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "credenciais_cliente_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "credenciais_cliente_projeto_id_fkey"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "projetos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "credenciais_cliente_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       email_logs: {
         Row: {
           assunto: string
@@ -3309,6 +3383,43 @@ export type Database = {
           p_entidade_tipo: string
           p_metadata?: Json
           p_usuario_id: string
+        }
+        Returns: string
+      }
+      fn_cred_get_metadata: {
+        Args: { p_cliente_id: string; p_projeto_id?: string }
+        Returns: {
+          categoria: string
+          cliente_id: string
+          created_at: string
+          created_by: string
+          created_by_nome: string
+          extra: Json
+          id: string
+          plataforma: string
+          projeto_id: string
+          updated_at: string
+          updated_by: string
+          updated_by_nome: string
+          usuario_login: string
+        }[]
+      }
+      fn_cred_reveal: {
+        Args: { p_cred_id: string; p_motivo?: string }
+        Returns: {
+          senha_plain: string
+        }[]
+      }
+      fn_cred_save: {
+        Args: {
+          p_categoria: string
+          p_cliente_id: string
+          p_cred_id?: string
+          p_extra_json?: Json
+          p_plataforma: string
+          p_projeto_id: string
+          p_senha_plain: string
+          p_usuario_login: string
         }
         Returns: string
       }
