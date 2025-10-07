@@ -321,9 +321,8 @@ const Clientes = () => {
   };
 
   const handleViewCliente = (cliente: Cliente) => {
-    if (!mountedRef.current) return;
-    setSelectedCliente(cliente);
-    setShowViewModal(true);
+    // Navegar para a página de detalhes do cliente
+    navigate(`/clients/${cliente.id}/timeline`);
   };
 
   const handleEditFromView = () => {

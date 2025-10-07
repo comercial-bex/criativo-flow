@@ -92,6 +92,18 @@ import IntelligenceDashboard from "./components/IntelligenceDashboard";
 import GRSAgenda from "./pages/GRS/Agenda";
 import Aprovacoes from "./pages/Aprovacoes";
 
+// Client Details Pages
+import ClientDetails from "./pages/ClientDetails";
+import TimelinePage from "./pages/ClientDetails/TimelinePage";
+import DetailsPage from "./pages/ClientDetails/DetailsPage";
+import ContactsPage from "./pages/ClientDetails/ContactsPage";
+import ProjectsPage from "./pages/ClientDetails/ProjectsPage";
+import FilesPage from "./pages/ClientDetails/FilesPage";
+import RequestsPage from "./pages/ClientDetails/RequestsPage";
+import ContractsPage from "./pages/ClientDetails/ContractsPage";
+import FinancePage from "./pages/ClientDetails/FinancePage";
+import NotesPage from "./pages/ClientDetails/NotesPage";
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -164,6 +176,24 @@ function App() {
                     <Layout><Clientes /></Layout>
                   </ProtectedRoute>
                 } />
+                
+                {/* Client Details Routes (nested) */}
+                <Route path="/clients/:clientId" element={
+                  <ProtectedRoute module="clientes">
+                    <Layout><ClientDetails /></Layout>
+                  </ProtectedRoute>
+                }>
+                  <Route index element={<TimelinePage />} />
+                  <Route path="timeline" element={<TimelinePage />} />
+                  <Route path="details" element={<DetailsPage />} />
+                  <Route path="contacts" element={<ContactsPage />} />
+                  <Route path="projects" element={<ProjectsPage />} />
+                  <Route path="files" element={<FilesPage />} />
+                  <Route path="requests" element={<RequestsPage />} />
+                  <Route path="contracts" element={<ContractsPage />} />
+                  <Route path="finance" element={<FinancePage />} />
+                  <Route path="notes" element={<NotesPage />} />
+                </Route>
                 
                 <Route path="/financeiro" element={
                   <ProtectedRoute module="financeiro">
