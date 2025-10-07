@@ -886,6 +886,85 @@ export type Database = {
         }
         Relationships: []
       }
+      contratos: {
+        Row: {
+          arquivo_assinado_url: string | null
+          arquivo_url: string | null
+          assinado_em: string | null
+          assinado_por: string | null
+          cliente_id: string
+          created_at: string
+          criado_por: string | null
+          data_fim: string | null
+          data_inicio: string | null
+          descricao: string | null
+          id: string
+          status: string
+          tipo: string
+          titulo: string
+          updated_at: string
+          valor_mensal: number | null
+        }
+        Insert: {
+          arquivo_assinado_url?: string | null
+          arquivo_url?: string | null
+          assinado_em?: string | null
+          assinado_por?: string | null
+          cliente_id: string
+          created_at?: string
+          criado_por?: string | null
+          data_fim?: string | null
+          data_inicio?: string | null
+          descricao?: string | null
+          id?: string
+          status?: string
+          tipo: string
+          titulo: string
+          updated_at?: string
+          valor_mensal?: number | null
+        }
+        Update: {
+          arquivo_assinado_url?: string | null
+          arquivo_url?: string | null
+          assinado_em?: string | null
+          assinado_por?: string | null
+          cliente_id?: string
+          created_at?: string
+          criado_por?: string | null
+          data_fim?: string | null
+          data_inicio?: string | null
+          descricao?: string | null
+          id?: string
+          status?: string
+          tipo?: string
+          titulo?: string
+          updated_at?: string
+          valor_mensal?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contratos_assinado_por_fkey"
+            columns: ["assinado_por"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contratos_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contratos_criado_por_fkey"
+            columns: ["criado_por"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       credenciais_cliente: {
         Row: {
           categoria: string
