@@ -97,6 +97,10 @@ serve(async (req) => {
 
       try {
         // FASE 4: Create profile entry with cliente_id (CRÍTICO para painel funcionar)
+        // IMPORTANTE: Usuários clientes SEMPRE têm:
+        // - cliente_id preenchido (vincula ao cliente)
+        // - especialidade NULL (não são especialistas)
+        // - status 'aprovado' (criados via sistema já aprovados)
         const { error: profileError } = await supabaseAdmin
           .from('profiles')
           .insert({
@@ -104,6 +108,7 @@ serve(async (req) => {
             nome: nome,
             email: email,
             cliente_id: cliente_id, // GARANTIR que cliente_id seja salvo
+            especialidade: null, // GARANTIR que especialidade seja NULL
             status: 'aprovado' // Clientes criados via sistema são aprovados automaticamente
           });
 

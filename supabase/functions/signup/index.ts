@@ -76,6 +76,18 @@ serve(async (req) => {
       );
     }
 
+    // VALIDAÇÃO CRÍTICA: Não permitir cliente_id e especialidade simultaneamente
+    if (metadata.cliente_id && metadata.especialidade) {
+      console.error('🔐 Signup: Conflito cliente_id + especialidade');
+      return new Response(
+        JSON.stringify({ 
+          error: 'INVALID_METADATA',
+          message: 'Usuário não pode ser cliente e especialista simultaneamente' 
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     console.log('🔐 Signup: Criando usuário:', { email, nome: metadata.nome, role });
 
     // FASE 1: Criar usuário no Auth
@@ -124,6 +136,9 @@ serve(async (req) => {
 
     try {
       // FASE 2: Criar perfil
+      // IMPORTANTE: especialidade e cliente_id são mutuamente exclusivos
+      // - Se é CLIENTE: cliente_id preenchido, especialidade NULL
+      // - Se é ESPECIALISTA: especialidade preenchida, cliente_id NULL
       const { error: profileError } = await supabaseAdmin
         .from('profiles')
         .insert({
@@ -131,8 +146,8 @@ serve(async (req) => {
           nome: metadata.nome,
           email: email,
           telefone: metadata.telefone,
-          especialidade: metadata.especialidade,
-          cliente_id: metadata.cliente_id,
+          especialidade: metadata.especialidade || null,
+          cliente_id: metadata.cliente_id || null,
           status: role === 'admin' ? 'aprovado' : 'pendente_aprovacao'
         });
 
