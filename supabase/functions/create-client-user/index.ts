@@ -14,6 +14,92 @@ interface CreateClientUserRequest {
   role: string;
 }
 
+// Helper functions
+async function createProfile(supabaseAdmin: any, userId: string, nome: string, email: string, cliente_id: string) {
+  const { error } = await supabaseAdmin
+    .from('profiles')
+    .insert({
+      id: userId,
+      nome,
+      email,
+      cliente_id,
+      especialidade: null,
+      status: 'aprovado'
+    });
+  
+  if (error) throw error;
+  console.log('✅ Perfil criado');
+}
+
+async function createRole(supabaseAdmin: any, userId: string, role: string) {
+  const { error } = await supabaseAdmin
+    .from('user_roles')
+    .insert({ user_id: userId, role });
+  
+  if (error) throw error;
+  console.log('✅ Role criado');
+}
+
+async function upsertRole(supabaseAdmin: any, userId: string, role: string) {
+  const { error } = await supabaseAdmin
+    .from('user_roles')
+    .upsert(
+      { user_id: userId, role },
+      { onConflict: 'user_id,role' }
+    );
+  
+  if (error) throw error;
+  console.log('✅ Role garantido');
+}
+
+async function createClienteUsuario(supabaseAdmin: any, userId: string, cliente_id: string, role: string) {
+  const permissoes = {
+    financeiro: { ver: true, editar: true },
+    marketing: { ver: true, aprovar: true },
+    projetos: { ver: true, criar: true, editar: true },
+    relatorios: { ver: true }
+  };
+
+  const { error } = await supabaseAdmin
+    .from('cliente_usuarios')
+    .insert({
+      user_id: userId,
+      cliente_id,
+      role_cliente: role === 'cliente' ? 'proprietario' : role,
+      permissoes,
+      ativo: true
+    });
+
+  if (error && error.code !== '23505') { // Ignore duplicate key errors
+    throw error;
+  }
+  console.log('✅ Cliente-usuário vinculado');
+}
+
+async function upsertClienteUsuario(supabaseAdmin: any, userId: string, cliente_id: string, role: string) {
+  const permissoes = {
+    financeiro: { ver: true, editar: true },
+    marketing: { ver: true, aprovar: true },
+    projetos: { ver: true, criar: true, editar: true },
+    relatorios: { ver: true }
+  };
+
+  const { error } = await supabaseAdmin
+    .from('cliente_usuarios')
+    .upsert({
+      user_id: userId,
+      cliente_id,
+      role_cliente: role === 'cliente' ? 'proprietario' : role,
+      permissoes,
+      ativo: true
+    }, {
+      onConflict: 'cliente_id,user_id'
+    });
+
+  if (error) throw error;
+  console.log('✅ Cliente-usuário garantido');
+}
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -69,103 +155,165 @@ serve(async (req) => {
       );
     }
 
-    console.log('📝 Criando usuário cliente:', { email, nome, cliente_id, role });
+    console.log('📝 Processando usuário cliente:', { email, nome, cliente_id, role });
 
-    // Create user with Supabase Auth Admin (without email confirmation)
-    const { data: userData, error: userError } = await supabaseAdmin.auth.admin.createUser({
-      email,
-      password,
-      email_confirm: true, // Skip email confirmation for client accounts
-      user_metadata: {
-        nome,
-        cliente_id
+    // PASSO 1: Verificar se usuário existe no Auth
+    const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers();
+    const existingUser = existingUsers?.users.find((u: any) => u.email === email);
+
+    if (existingUser) {
+      console.log('👤 Usuário já existe no Auth:', existingUser.id);
+      
+      // PASSO 2: Verificar se perfil existe
+      const { data: existingProfile } = await supabaseAdmin
+        .from('profiles')
+        .select('*')
+        .eq('id', existingUser.id)
+        .maybeSingle();
+      
+      if (!existingProfile) {
+        console.log('🔄 RECUPERAÇÃO: Perfil ausente, criando...');
+        
+        try {
+          // Criar perfil para usuário órfão
+          await createProfile(supabaseAdmin, existingUser.id, nome, email, cliente_id);
+          await createRole(supabaseAdmin, existingUser.id, role);
+          await createClienteUsuario(supabaseAdmin, existingUser.id, cliente_id, role);
+          
+          // Atualizar senha se fornecida
+          if (password) {
+            await supabaseAdmin.auth.admin.updateUserById(existingUser.id, { 
+              password,
+              email_confirm: true 
+            });
+          }
+          
+          console.log('✅ Usuário recuperado e configurado com sucesso');
+          
+          return new Response(
+            JSON.stringify({ 
+              user: existingUser,
+              email: email,
+              password: password,
+              success: true,
+              message: '✅ Usuário recuperado e configurado com sucesso!',
+              recovery: true
+            }),
+            { 
+              status: 200, 
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+            }
+          );
+        } catch (error) {
+          console.error('❌ Erro na recuperação:', error);
+          throw error;
+        }
+      } else {
+        console.log('♻️ ATUALIZAÇÃO: Perfil existe, atualizando dados...');
+        
+        try {
+          // Atualizar perfil existente
+          await supabaseAdmin
+            .from('profiles')
+            .update({ 
+              nome, 
+              cliente_id,
+              status: 'aprovado',
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', existingUser.id);
+          
+          // Atualizar senha
+          if (password) {
+            await supabaseAdmin.auth.admin.updateUserById(existingUser.id, { 
+              password 
+            });
+          }
+          
+          // Garantir role e cliente_usuarios existem
+          await upsertRole(supabaseAdmin, existingUser.id, role);
+          await upsertClienteUsuario(supabaseAdmin, existingUser.id, cliente_id, role);
+          
+          console.log('✅ Usuário atualizado com sucesso');
+          
+          return new Response(
+            JSON.stringify({ 
+              user: existingUser,
+              email: email,
+              password: password,
+              success: true,
+              message: '♻️ Usuário atualizado com sucesso!',
+              updated: true
+            }),
+            { 
+              status: 200, 
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+            }
+          );
+        } catch (error) {
+          console.error('❌ Erro na atualização:', error);
+          throw error;
+        }
       }
-    });
+    } else {
+      // PASSO 3: Criar novo usuário (fluxo original)
+      console.log('➕ Criando novo usuário...');
+      
+      const { data: userData, error: userError } = await supabaseAdmin.auth.admin.createUser({
+        email,
+        password,
+        email_confirm: true,
+        user_metadata: {
+          nome,
+          cliente_id
+        }
+      });
 
-    if (userError) {
-      console.error('❌ Erro ao criar usuário:', userError);
-      return new Response(
-        JSON.stringify({ error: userError.message }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+      if (userError) {
+        console.error('❌ Erro ao criar usuário:', userError);
+        return new Response(
+          JSON.stringify({ error: userError.message }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
 
-    console.log('✅ Usuário criado:', userData.user?.id);
+      console.log('✅ Usuário criado:', userData.user?.id);
 
-    if (userData.user) {
-      const userId = userData.user.id;
+      if (userData.user) {
+        const userId = userData.user.id;
 
-      try {
-        // FASE 4: Create profile entry with cliente_id (CRÍTICO para painel funcionar)
-        // IMPORTANTE: Usuários clientes SEMPRE têm:
-        // - cliente_id preenchido (vincula ao cliente)
-        // - especialidade NULL (não são especialistas)
-        // - status 'aprovado' (criados via sistema já aprovados)
-        const { error: profileError } = await supabaseAdmin
-          .from('profiles')
-          .insert({
-            id: userId,
-            nome: nome,
-            email: email,
-            cliente_id: cliente_id, // GARANTIR que cliente_id seja salvo
-            especialidade: null, // GARANTIR que especialidade seja NULL
-            status: 'aprovado' // Clientes criados via sistema são aprovados automaticamente
-          });
-
-        if (profileError) {
-          console.error('❌ Erro ao criar perfil:', profileError);
+        try {
+          await createProfile(supabaseAdmin, userId, nome, email, cliente_id);
+          await createRole(supabaseAdmin, userId, role);
+          await createClienteUsuario(supabaseAdmin, userId, cliente_id, role);
+          
+          console.log('✅ Novo cliente criado com sucesso');
+        } catch (error) {
+          console.error('❌ Erro crítico, executando rollback');
           
           // ROLLBACK: Delete user from Auth
           await supabaseAdmin.auth.admin.deleteUser(userId);
           console.log('🔄 Rollback: Usuário deletado do Auth');
           
-          throw profileError;
+          throw error;
         }
-
-        console.log('✅ Perfil criado com sucesso');
-
-        // Insert user role
-        const { error: roleError } = await supabaseAdmin
-          .from('user_roles')
-          .insert({
-            user_id: userId,
-            role: role
-          });
-
-        if (roleError) {
-          console.error('❌ Erro ao inserir role:', roleError);
-          
-          // ROLLBACK: Delete profile and user
-          await supabaseAdmin.from('profiles').delete().eq('id', userId);
-          await supabaseAdmin.auth.admin.deleteUser(userId);
-          console.log('🔄 Rollback: Perfil e usuário deletados');
-          
-          throw roleError;
-        }
-
-        console.log('✅ Role inserido com sucesso');
-      } catch (error) {
-        // Ensure rollback happened
-        console.error('❌ Erro crítico, rollback executado');
-        throw error;
       }
+
+      return new Response(
+        JSON.stringify({ 
+          user: userData.user,
+          email: email,
+          password: password,
+          success: true,
+          message: '✅ Cliente criado com sucesso!',
+          created: true
+        }),
+        { 
+          status: 200, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
     }
-
-    console.log('✅ Cliente criado com sucesso');
-
-    return new Response(
-      JSON.stringify({ 
-        user: userData.user,
-        email: email,
-        password: password,
-        success: true,
-        message: 'Cliente criado com sucesso! Aguardando aprovação do administrador.'
-      }),
-      { 
-        status: 200, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      }
-    );
 
   } catch (error) {
     console.error('Error in create-client-user function:', error);

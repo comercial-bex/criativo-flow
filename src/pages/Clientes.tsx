@@ -143,20 +143,36 @@ const Clientes = () => {
 
       if (error) {
         console.error('Erro ao criar usuário:', error);
-        toast.error(`Erro ao criar usuário: ${error.message}`);
+        
+        // Mensagens mais específicas
+        if (error.message?.includes('email_exists') || error.message?.includes('already been registered')) {
+          toast.error('Email já cadastrado - tentando recuperar usuário...');
+          toast.info('A edge function tentará recuperar automaticamente');
+        } else {
+          toast.error(`Erro: ${error.message}`);
+        }
         return;
       }
 
       if (data?.success) {
-        toast.success('✅ Usuário comercial@agenciabex.com.br criado com sucesso!');
-        toast.info(`🔑 Senha: TempPass2024!`);
+        // Mensagens diferentes dependendo do tipo de operação
+        if (data.recovery) {
+          toast.success('✅ Usuário órfão recuperado com sucesso!');
+          toast.info('Perfil foi criado e vinculado ao Auth existente');
+        } else if (data.updated) {
+          toast.success('♻️ Usuário existente atualizado!');
+          toast.info('Dados e senha foram atualizados');
+        } else {
+          toast.success('✅ Usuário criado com sucesso!');
+        }
+        toast.info(`📧 Email: comercial@agenciabex.com.br | 🔑 Senha: TempPass2024!`);
       } else {
         toast.error(data?.error || 'Erro desconhecido');
       }
     } catch (error) {
       console.error('Erro na requisição:', error);
       if (mountedRef.current) {
-        toast.error('Erro na requisição');
+        toast.error('Erro inesperado ao criar usuário');
       }
     }
   };
