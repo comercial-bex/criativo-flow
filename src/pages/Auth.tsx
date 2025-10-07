@@ -92,7 +92,7 @@ export default function Auth() {
   };
 
   const handleSignUp = async (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault(); // ⚡ ANTI-REFRESH CRÍTICO
     if (!mountedRef.current) return;
     
     // Validação básica
@@ -114,22 +114,105 @@ export default function Auth() {
     }
 
     setLoading(true);
+    
     try {
-      const { error } = await signUp(email, password, nome, userType === 'cliente' ? empresa : undefined);
+      console.log('🔐 UI: Tentando signup via Edge Function...');
       
-      // Check if component is still mounted before updating state
+      // PRIORIDADE 1: Tentar Edge Function
+      const response = await fetch(
+        `https://xvpqgwbktpfodbuhwqhh.supabase.co/functions/v1/signup`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2cHFnd2JrdHBmb2RidWh3cWhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc1NDA0MzUsImV4cCI6MjA3MzExNjQzNX0.slj0vNEGfgTFv_vB_4ieLH1zuHSP_A6dAZsMmHVWnto',
+            'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2cHFnd2JrdHBmb2RidWh3cWhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc1NDA0MzUsImV4cCI6MjA3MzExNjQzNX0.slj0vNEGfgTFv_vB_4ieLH1zuHSP_A6dAZsMmHVWnto'
+          },
+          body: JSON.stringify({
+            email,
+            password,
+            metadata: {
+              nome,
+              empresa: userType === 'cliente' ? empresa : undefined
+            },
+            role: userType === 'cliente' ? 'cliente' : 'colaborador'
+          })
+        }
+      );
+
+      const data = await response.json();
+
       if (!mountedRef.current) return;
-      
-      if (error) {
-        toast.error('Erro no cadastro: ' + error.message);
-      } else {
-        // Show success message about email confirmation
-        setSignupSuccess(true);
-        toast.success('Conta criada! Verifique seu email para confirmar.');
+
+      if (!response.ok) {
+        console.error('🔐 UI: Erro na Edge Function:', data);
+        
+        // Mensagens específicas baseadas no erro
+        if (data.error === 'EMAIL_EXISTS') {
+          toast.error('Este email já está cadastrado no sistema');
+          setLoading(false);
+          return;
+        }
+        
+        if (data.error === 'MISSING_CREDENTIALS') {
+          toast.error('Email e senha são obrigatórios');
+          setLoading(false);
+          return;
+        }
+
+        if (data.error === 'MISSING_NAME') {
+          toast.error('Nome é obrigatório');
+          setLoading(false);
+          return;
+        }
+
+        // FALLBACK: Tentar método tradicional se não for email duplicado
+        console.log('🔐 UI: Tentando fallback via signUp...');
+        const { error: fallbackError } = await signUp(
+          email, 
+          password, 
+          nome, 
+          userType === 'cliente' ? empresa : undefined
+        );
+
+        if (fallbackError) {
+          toast.error('Erro no cadastro: ' + (data.message || fallbackError.message));
+          setLoading(false);
+          return;
+        }
       }
+
+      // Sucesso!
+      console.log('✅ UI: Signup bem-sucedido!');
+      setSignupSuccess(true);
+      toast.success('Conta criada com sucesso!');
+      
+      // Criar lead se for cliente
+      if (userType === 'cliente' && empresa) {
+        try {
+          await supabase.from('leads').insert({
+            nome,
+            email,
+            empresa,
+            origem: 'signup',
+            status: 'pre_qualificacao'
+          });
+          console.log('✅ UI: Lead criado');
+        } catch (leadError) {
+          console.warn('⚠️ UI: Erro ao criar lead (não crítico):', leadError);
+        }
+      }
+
+      // Limpar formulário
+      setEmail('');
+      setPassword('');
+      setNome('');
+      setEmpresa('');
+
     } catch (error) {
+      console.error('🔐 UI: Erro inesperado:', error);
       if (mountedRef.current) {
-        toast.error('Erro inesperado no cadastro');
+        toast.error('Erro inesperado no cadastro. Por favor, tente novamente.');
       }
     } finally {
       if (mountedRef.current) {

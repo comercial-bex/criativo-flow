@@ -93,38 +93,57 @@ serve(async (req) => {
     console.log('✅ Usuário criado:', userData.user?.id);
 
     if (userData.user) {
-      // FASE 4: Create profile entry with cliente_id (CRÍTICO para painel funcionar)
-      const { error: profileError } = await supabaseAdmin
-        .from('profiles')
-        .insert({
-          id: userData.user.id,
-          nome: nome,
-          email: email,
-          cliente_id: cliente_id, // GARANTIR que cliente_id seja salvo
-          status: 'aprovado' // Clientes criados via sistema são aprovados automaticamente
-        });
+      const userId = userData.user.id;
 
-      if (profileError) {
-        console.error('❌ Erro ao criar perfil:', profileError);
-        throw profileError;
+      try {
+        // FASE 4: Create profile entry with cliente_id (CRÍTICO para painel funcionar)
+        const { error: profileError } = await supabaseAdmin
+          .from('profiles')
+          .insert({
+            id: userId,
+            nome: nome,
+            email: email,
+            cliente_id: cliente_id, // GARANTIR que cliente_id seja salvo
+            status: 'aprovado' // Clientes criados via sistema são aprovados automaticamente
+          });
+
+        if (profileError) {
+          console.error('❌ Erro ao criar perfil:', profileError);
+          
+          // ROLLBACK: Delete user from Auth
+          await supabaseAdmin.auth.admin.deleteUser(userId);
+          console.log('🔄 Rollback: Usuário deletado do Auth');
+          
+          throw profileError;
+        }
+
+        console.log('✅ Perfil criado com sucesso');
+
+        // Insert user role
+        const { error: roleError } = await supabaseAdmin
+          .from('user_roles')
+          .insert({
+            user_id: userId,
+            role: role
+          });
+
+        if (roleError) {
+          console.error('❌ Erro ao inserir role:', roleError);
+          
+          // ROLLBACK: Delete profile and user
+          await supabaseAdmin.from('profiles').delete().eq('id', userId);
+          await supabaseAdmin.auth.admin.deleteUser(userId);
+          console.log('🔄 Rollback: Perfil e usuário deletados');
+          
+          throw roleError;
+        }
+
+        console.log('✅ Role inserido com sucesso');
+      } catch (error) {
+        // Ensure rollback happened
+        console.error('❌ Erro crítico, rollback executado');
+        throw error;
       }
-
-      console.log('✅ Perfil criado com sucesso');
-
-      // Insert user role
-      const { error: roleError } = await supabaseAdmin
-        .from('user_roles')
-        .insert({
-          user_id: userData.user.id,
-          role: role
-        });
-
-      if (roleError) {
-        console.error('❌ Erro ao inserir role:', roleError);
-        throw roleError;
-      }
-
-      console.log('✅ Role inserido com sucesso');
     }
 
     console.log('✅ Cliente criado com sucesso');
