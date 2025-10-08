@@ -128,6 +128,7 @@ export type Database = {
           decided_at: string | null
           decidido_por: string | null
           descricao: string | null
+          hash_publico: string | null
           id: string
           motivo_reprovacao: string | null
           projeto_id: string | null
@@ -136,6 +137,7 @@ export type Database = {
           tarefa_id: string | null
           tipo: string
           titulo: string
+          trace_id: string | null
           updated_at: string
         }
         Insert: {
@@ -145,6 +147,7 @@ export type Database = {
           decided_at?: string | null
           decidido_por?: string | null
           descricao?: string | null
+          hash_publico?: string | null
           id?: string
           motivo_reprovacao?: string | null
           projeto_id?: string | null
@@ -153,6 +156,7 @@ export type Database = {
           tarefa_id?: string | null
           tipo: string
           titulo: string
+          trace_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -162,6 +166,7 @@ export type Database = {
           decided_at?: string | null
           decidido_por?: string | null
           descricao?: string | null
+          hash_publico?: string | null
           id?: string
           motivo_reprovacao?: string | null
           projeto_id?: string | null
@@ -170,6 +175,7 @@ export type Database = {
           tarefa_id?: string | null
           tipo?: string
           titulo?: string
+          trace_id?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -2394,6 +2400,7 @@ export type Database = {
           entidade_tipo: string
           id: string
           metadata: Json | null
+          trace_id: string | null
           usuario_id: string
         }
         Insert: {
@@ -2405,6 +2412,7 @@ export type Database = {
           entidade_tipo: string
           id?: string
           metadata?: Json | null
+          trace_id?: string | null
           usuario_id: string
         }
         Update: {
@@ -2416,6 +2424,7 @@ export type Database = {
           entidade_tipo?: string
           id?: string
           metadata?: Json | null
+          trace_id?: string | null
           usuario_id?: string
         }
         Relationships: [
@@ -4260,11 +4269,13 @@ export type Database = {
           data_prazo: string | null
           dependencias: string[] | null
           descricao: string | null
+          grs_action_id: string | null
           horas_estimadas: number | null
           horas_trabalhadas: number | null
           id: string
           observacoes: string | null
           observacoes_aprovacao: string | null
+          origem: string | null
           prioridade: string
           projeto_id: string
           responsavel_id: string | null
@@ -4272,6 +4283,7 @@ export type Database = {
           status: string
           tipo_tarefa: string | null
           titulo: string
+          trace_id: string | null
           updated_at: string
         }
         Insert: {
@@ -4285,11 +4297,13 @@ export type Database = {
           data_prazo?: string | null
           dependencias?: string[] | null
           descricao?: string | null
+          grs_action_id?: string | null
           horas_estimadas?: number | null
           horas_trabalhadas?: number | null
           id?: string
           observacoes?: string | null
           observacoes_aprovacao?: string | null
+          origem?: string | null
           prioridade?: string
           projeto_id: string
           responsavel_id?: string | null
@@ -4297,6 +4311,7 @@ export type Database = {
           status?: string
           tipo_tarefa?: string | null
           titulo: string
+          trace_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -4310,11 +4325,13 @@ export type Database = {
           data_prazo?: string | null
           dependencias?: string[] | null
           descricao?: string | null
+          grs_action_id?: string | null
           horas_estimadas?: number | null
           horas_trabalhadas?: number | null
           id?: string
           observacoes?: string | null
           observacoes_aprovacao?: string | null
+          origem?: string | null
           prioridade?: string
           projeto_id?: string
           responsavel_id?: string | null
@@ -4322,6 +4339,7 @@ export type Database = {
           status?: string
           tipo_tarefa?: string | null
           titulo?: string
+          trace_id?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -4338,6 +4356,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "vw_client_metrics"
             referencedColumns: ["responsavel_id"]
+          },
+          {
+            foreignKeyName: "tarefas_projeto_grs_action_id_fkey"
+            columns: ["grs_action_id"]
+            isOneToOne: false
+            referencedRelation: "planejamentos"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "tarefas_projeto_projeto_id_fkey"
@@ -4834,6 +4859,35 @@ export type Database = {
               p_usuario_login: string
             }
         Returns: string
+      }
+      fn_criar_aprovacao_cliente: {
+        Args: {
+          p_cliente_id: string
+          p_descricao?: string
+          p_referencia_id: string
+          p_referencia_tipo: string
+          p_titulo: string
+          p_trace_id?: string
+        }
+        Returns: Json
+      }
+      fn_criar_tarefa_de_planejamento: {
+        Args: {
+          p_data_prazo?: string
+          p_descricao: string
+          p_especialista_id: string
+          p_planejamento_id: string
+          p_prioridade?: string
+          p_projeto_id: string
+          p_setor: string
+          p_titulo: string
+          p_trace_id?: string
+        }
+        Returns: string
+      }
+      fn_validar_vinculo_projeto_cliente: {
+        Args: { p_projeto_id: string }
+        Returns: Json
       }
       generate_content_with_ai_v2: {
         Args: { content_type?: string; prompt_text: string }

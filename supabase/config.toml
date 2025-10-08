@@ -58,3 +58,6 @@ verify_jwt = false
 
 [functions.generate-contract-clauses]
 verify_jwt = false
+
+[functions.event-bus]
+verify_jwt = false
