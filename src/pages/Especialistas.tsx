@@ -17,6 +17,7 @@ import { StatusBadgeEspecialista } from '@/components/StatusBadgeEspecialista';
 import { PermissionGate } from '@/components/PermissionGate';
 import { PermissionWrapper } from '@/components/PermissionWrapper';
 import { ViewEspecialistaModal } from '@/components/ViewEspecialistaModal';
+import { ViewClienteModal } from '@/components/ViewClienteModal';
 import { ConfirmDeleteModal } from '@/components/ConfirmDeleteModal';
 
 type Profile = Database['public']['Tables']['profiles']['Row'] & {
@@ -739,11 +740,20 @@ export default function Especialistas() {
         />
       )}
 
-      <ViewEspecialistaModal
-        isOpen={!!viewEspecialista}
-        onClose={() => setViewEspecialista(null)}
-        especialista={viewEspecialista}
-      />
+      {/* Renderização condicional: Modal de Cliente ou Especialista */}
+      {viewEspecialista?.cliente_id ? (
+        <ViewClienteModal
+          isOpen={!!viewEspecialista}
+          onClose={() => setViewEspecialista(null)}
+          cliente={viewEspecialista}
+        />
+      ) : (
+        <ViewEspecialistaModal
+          isOpen={!!viewEspecialista}
+          onClose={() => setViewEspecialista(null)}
+          especialista={viewEspecialista}
+        />
+      )}
 
       <ConfirmDeleteModal
         isOpen={!!deleteEspecialista}
