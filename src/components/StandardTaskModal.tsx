@@ -10,24 +10,24 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { 
   Save, Eye, Paperclip, Sparkles, Send, Copy, Archive, 
-  Clock, User, Calendar, Tag, AlertCircle, CheckCircle2,
-  FileText, MessageSquare, History, Image as ImageIcon
+  Clock, AlertCircle
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTaskTimer } from '@/hooks/useTaskTimer';
 import { getStatusPrazoClasses, getPrioridadeConfig, getStatusConfig } from '@/utils/tarefaUtils';
-import { Tarefa, TipoTarefa, StatusTarefa, PrioridadeTarefa } from '@/types/tarefa';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { Tarefa, TipoTarefa } from '@/types/tarefa';
+import { useTarefas } from '@/hooks/useTarefas';
+import { TaskExecutorSelector } from '@/components/TaskExecutorSelector';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 interface StandardTaskModalProps {
   isOpen: boolean;
   onClose: () => void;
   task: Tarefa | null;
-  onUpdate?: (taskId: string, updates: Partial<Tarefa>) => void;
+  onUpdate?: (task: Tarefa) => void;
   profiles?: any[];
 }
 
@@ -40,13 +40,22 @@ export function StandardTaskModal({
 }: StandardTaskModalProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [activeTab, setActiveTab] = useState('resumo');
-  const [formData, setFormData] = useState<Partial<Tarefa>>({});
+  const [formData, setFormData] = useState<any>({});
+  const [anexos, setAnexos] = useState<any[]>([]);
   
+  const { toast } = useToast();
+  const { updateTarefa, createTarefa } = useTarefas({ projetoId: task?.projeto_id });
   const { timeRemaining, status: statusPrazo, formattedTime, isUrgent } = useTaskTimer(task?.prazo_executor);
 
   useEffect(() => {
     if (task) {
       setFormData(task);
+      // Carregar anexos
+      supabase
+        .from('anexo')
+        .select('*')
+        .eq('tarefa_id', task.id)
+        .then(({ data }) => setAnexos(data || []));
     }
   }, [task]);
 
@@ -56,11 +65,44 @@ export function StandardTaskModal({
   const statusConfig = getStatusConfig(task.status);
   const prazoClasses = getStatusPrazoClasses(statusPrazo);
 
-  const handleSave = () => {
-    if (onUpdate && task.id) {
-      onUpdate(task.id, formData);
+  const handleSave = async () => {
+    if (task?.id) {
+      await updateTarefa(task.id, formData);
+      toast({ title: 'Tarefa atualizada com sucesso' });
       setIsEditing(false);
+      if (onUpdate) onUpdate({ ...task, ...formData } as Tarefa);
     }
+  };
+
+  const handleVisualizarPreview = () => setActiveTab('preview');
+  const handleAnexos = () => setActiveTab('anexos');
+  
+  const handleEnviarAprovacao = async () => {
+    if (!task?.id) return;
+    await supabase.from('aprovacao_tarefa').insert({
+      tarefa_id: task.id,
+      status_aprovacao: 'pendente'
+    });
+    toast({ title: 'Enviado para aprovação do cliente' });
+  };
+
+  const handleDuplicar = async () => {
+    if (!task) return;
+    const { id, created_at, updated_at, titulo, ...resto } = task;
+    await createTarefa({
+      ...resto,
+      titulo: `${titulo} (cópia)`,
+      status: 'backlog'
+    });
+    toast({ title: 'Tarefa duplicada' });
+    onClose();
+  };
+
+  const handleArquivar = async () => {
+    if (!task?.id) return;
+    await updateTarefa(task.id, { status: 'cancelado' });
+    toast({ title: 'Tarefa arquivada' });
+    onClose();
   };
 
   const tipoLabels: Record<TipoTarefa, string> = {
@@ -77,7 +119,6 @@ export function StandardTaskModal({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-6xl max-h-[90vh] p-0 overflow-hidden">
-        {/* Header com Título e Metadados */}
         <DialogHeader className="px-6 pt-6 pb-4 space-y-4">
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1 space-y-2">
@@ -99,26 +140,28 @@ export function StandardTaskModal({
                 <Badge className={statusConfig.color}>
                   {statusConfig.icon} {statusConfig.label}
                 </Badge>
-                
-                {task.prazo_executor && (
-                  <Badge className={cn("font-mono", prazoClasses.badge)}>
-                    <Clock className="h-3 w-3 mr-1" />
-                    {formattedTime}
-                  </Badge>
-                )}
               </div>
             </div>
 
-            {task.executor_id && (
-              <div className="text-sm text-muted-foreground">
-                <div className="flex items-center gap-2">
-                  <Avatar className="h-8 w-8">
-                    <AvatarFallback>EX</AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <div className="font-medium">Executor</div>
-                    <div className="text-xs">{task.executor_area}</div>
-                  </div>
+            {task.prazo_executor && (
+              <div className={cn(
+                "flex items-center gap-2 px-3 py-2 rounded-md",
+                prazoClasses.bg
+              )}>
+                <Clock className={cn(
+                  "h-4 w-4",
+                  isUrgent && "animate-pulse"
+                )} />
+                <div className="flex flex-col">
+                  <span className={cn("text-xs font-semibold", prazoClasses.text)}>
+                    {statusPrazo === 'vermelho' && '🔴 VENCIDO'}
+                    {statusPrazo === 'amarelo' && '🟡 ATENÇÃO'}
+                    {statusPrazo === 'verde' && '🟢 NO PRAZO'}
+                    {statusPrazo === 'cinza' && '⚪ SEM PRAZO'}
+                  </span>
+                  <span className={cn("font-mono text-sm", prazoClasses.text)}>
+                    {formattedTime}
+                  </span>
                 </div>
               </div>
             )}
@@ -139,144 +182,69 @@ export function StandardTaskModal({
         {/* Barra de Ações */}
         <div className="px-6 py-3 bg-muted/50 flex items-center gap-2 overflow-x-auto">
           <Button size="sm" onClick={handleSave} disabled={!isEditing}>
-            <Save className="h-4 w-4 mr-2" />
+            <Save className="h-4 w-4" />
             Salvar
           </Button>
-          <Button size="sm" variant="outline">
-            <Eye className="h-4 w-4 mr-2" />
+          <Button size="sm" variant="outline" onClick={handleVisualizarPreview}>
+            <Eye className="h-4 w-4" />
             Visualizar
           </Button>
-          <Button size="sm" variant="outline">
-            <Paperclip className="h-4 w-4 mr-2" />
-            Anexos
+          <Button size="sm" variant="outline" onClick={handleAnexos}>
+            <Paperclip className="h-4 w-4" />
+            Anexos ({anexos.length})
           </Button>
-          <Button size="sm" variant="outline">
-            <Sparkles className="h-4 w-4 mr-2" />
-            Gerar com IA
+          <Button size="sm" variant="outline" disabled>
+            <Sparkles className="h-4 w-4" />
+            Gerar IA
           </Button>
-          <Button size="sm" variant="outline">
-            <Send className="h-4 w-4 mr-2" />
+          <Button size="sm" variant="outline" onClick={handleEnviarAprovacao}>
+            <Send className="h-4 w-4" />
             Enviar Aprovação
           </Button>
-          <Separator orientation="vertical" className="h-6" />
-          <Button size="sm" variant="ghost">
-            <Copy className="h-4 w-4 mr-2" />
+          <Button size="sm" variant="outline" onClick={handleDuplicar}>
+            <Copy className="h-4 w-4" />
             Duplicar
           </Button>
-          <Button size="sm" variant="ghost">
-            <Archive className="h-4 w-4 mr-2" />
+          <Button size="sm" variant="outline" onClick={handleArquivar}>
+            <Archive className="h-4 w-4" />
             Arquivar
           </Button>
         </div>
 
         <Separator />
 
-        {/* Conteúdo com Abas */}
         <ScrollArea className="flex-1 px-6">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="w-full justify-start">
-              <TabsTrigger value="resumo" className="gap-2">
-                <FileText className="h-4 w-4" />
-                Resumo
-              </TabsTrigger>
-              <TabsTrigger value="conteudo" className="gap-2">
-                <MessageSquare className="h-4 w-4" />
-                Conteúdo
-              </TabsTrigger>
-              <TabsTrigger value="anexos" className="gap-2">
-                <Paperclip className="h-4 w-4" />
-                Anexos
-              </TabsTrigger>
-              <TabsTrigger value="preview" className="gap-2">
-                <Eye className="h-4 w-4" />
-                Preview
-              </TabsTrigger>
-              <TabsTrigger value="aprovacao" className="gap-2">
-                <CheckCircle2 className="h-4 w-4" />
-                Aprovação
-              </TabsTrigger>
-              <TabsTrigger value="historico" className="gap-2">
-                <History className="h-4 w-4" />
-                Histórico
-              </TabsTrigger>
+              <TabsTrigger value="resumo">Resumo</TabsTrigger>
+              <TabsTrigger value="conteudo">Conteúdo</TabsTrigger>
+              <TabsTrigger value="anexos">Anexos</TabsTrigger>
+              <TabsTrigger value="preview">Preview</TabsTrigger>
+              <TabsTrigger value="aprovacao">Aprovação</TabsTrigger>
+              <TabsTrigger value="historico">Histórico</TabsTrigger>
             </TabsList>
 
-            {/* Aba Resumo */}
-            <TabsContent value="resumo" className="space-y-6 py-6">
-              <div className="grid grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <div>
-                    <Label className="text-xs text-muted-foreground">Tipo de Tarefa</Label>
-                    <p className="text-sm font-medium">{tipoLabels[task.tipo]}</p>
-                  </div>
-
-                  <div>
-                    <Label className="text-xs text-muted-foreground">Responsável</Label>
-                    <div className="flex items-center gap-2 mt-1">
-                      <Avatar className="h-6 w-6">
-                        <AvatarFallback>R</AvatarFallback>
-                      </Avatar>
-                      <span className="text-sm">Responsável Geral</span>
-                    </div>
-                  </div>
-
-                  <div>
-                    <Label className="text-xs text-muted-foreground">Executor</Label>
-                    {task.executor_area && task.executor_id ? (
-                      <div className="space-y-2 mt-1">
-                        <Badge variant="outline">{task.executor_area}</Badge>
-                        <div className="flex items-center gap-2">
-                          <Avatar className="h-6 w-6">
-                            <AvatarFallback>E</AvatarFallback>
-                          </Avatar>
-                          <span className="text-sm">Nome do Executor</span>
-                        </div>
-                        {task.prazo_executor && (
-                          <div className={cn("flex items-center gap-2 text-sm", prazoClasses.text)}>
-                            <Clock className="h-4 w-4" />
-                            Prazo: {format(new Date(task.prazo_executor), 'PPp', { locale: ptBR })}
-                          </div>
-                        )}
-                      </div>
-                    ) : (
-                      <p className="text-sm text-muted-foreground">Não atribuído</p>
-                    )}
-                  </div>
+            <TabsContent value="resumo" className="space-y-4 py-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>Tipo de Tarefa</Label>
+                  <p className="text-sm mt-1">{tipoLabels[task.tipo]}</p>
                 </div>
-
-                <div className="space-y-4">
-                  <div>
-                    <Label className="text-xs text-muted-foreground">Data Entrega</Label>
-                    <p className="text-sm">
-                      {task.data_entrega_prevista 
-                        ? format(new Date(task.data_entrega_prevista), 'PPP', { locale: ptBR })
-                        : 'Não definida'
-                      }
-                    </p>
-                  </div>
-
-                  <div>
-                    <Label className="text-xs text-muted-foreground">Data Publicação</Label>
-                    <p className="text-sm">
-                      {task.data_publicacao 
-                        ? format(new Date(task.data_publicacao), 'PPP', { locale: ptBR })
-                        : 'Não agendada'
-                      }
-                    </p>
-                  </div>
-
-                  <div>
-                    <Label className="text-xs text-muted-foreground">Canais</Label>
-                    <div className="flex flex-wrap gap-1 mt-1">
-                      {task.canais?.map((canal) => (
-                        <Badge key={canal} variant="secondary" className="text-xs">
-                          {canal}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
+                <div>
+                  <Label>Prioridade</Label>
+                  <p className="text-sm mt-1">{task.prioridade || 'média'}</p>
                 </div>
               </div>
+
+              <TaskExecutorSelector
+                executorArea={formData.executor_area}
+                executorId={formData.executor_id}
+                prazoExecutor={formData.prazo_executor}
+                onExecutorAreaChange={(area: any) => setFormData({ ...formData, executor_area: area, executor_id: null })}
+                onExecutorIdChange={(id: any) => setFormData({ ...formData, executor_id: id })}
+                onPrazoChange={(prazo: any) => setFormData({ ...formData, prazo_executor: prazo })}
+                disabled={!isEditing}
+              />
 
               <Separator />
 
@@ -296,151 +264,330 @@ export function StandardTaskModal({
                 )}
               </div>
 
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 gap-4 pt-4 border-t">
                 <div>
-                  <Label className="text-xs text-muted-foreground">Público-Alvo</Label>
-                  <p className="text-sm mt-1">{task.publico_alvo || '-'}</p>
+                  <Label>Criado em</Label>
+                  <p className="text-sm">{task.created_at ? new Date(task.created_at).toLocaleString() : '-'}</p>
                 </div>
                 <div>
-                  <Label className="text-xs text-muted-foreground">Tom de Voz</Label>
-                  <p className="text-sm mt-1">{task.tom_voz || '-'}</p>
-                </div>
-                <div>
-                  <Label className="text-xs text-muted-foreground">CTA</Label>
-                  <p className="text-sm mt-1">{task.cta || '-'}</p>
+                  <Label>Atualizado em</Label>
+                  <p className="text-sm">{task.updated_at ? new Date(task.updated_at).toLocaleString() : '-'}</p>
                 </div>
               </div>
             </TabsContent>
 
-            {/* Aba Conteúdo - Campos condicionais por tipo */}
-            <TabsContent value="conteudo" className="space-y-6 py-6">
+            <TabsContent value="conteudo" className="space-y-4 py-4">
               <div className="p-4 bg-muted rounded-lg">
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm">
                   Campos específicos para <strong>{tipoLabels[task.tipo]}</strong>
                 </p>
               </div>
               
+              {/* Roteiro Reels */}
               {task.tipo === 'roteiro_reels' && (
                 <div className="space-y-4">
                   <div>
-                    <Label>Roteiro</Label>
-                    <Textarea rows={6} placeholder="Escreva o roteiro aqui..." />
+                    <Label>Objetivo do Reels</Label>
+                    <Textarea 
+                      value={formData.objetivo || ''}
+                      onChange={(e) => setFormData({ ...formData, objetivo: e.target.value })}
+                      placeholder="Ex: Aumentar engajamento, educar audiência..."
+                      rows={3}
+                      disabled={!isEditing}
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label>Formato</Label>
+                      <Select
+                        value={formData.formato || ''}
+                        onValueChange={(v) => setFormData({ ...formData, formato: v })}
+                        disabled={!isEditing}
+                      >
+                        <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="15s">15 segundos</SelectItem>
+                          <SelectItem value="30s">30 segundos</SelectItem>
+                          <SelectItem value="60s">60 segundos</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label>Duração (seg)</Label>
+                      <Input 
+                        type="number" 
+                        value={formData.duracao || ''}
+                        onChange={(e) => setFormData({ ...formData, duracao: e.target.value })}
+                        disabled={!isEditing}
+                      />
+                    </div>
                   </div>
                   <div>
-                    <Label>Duração</Label>
-                    <Input placeholder="Ex: 30 segundos" />
+                    <Label>Referências</Label>
+                    <Textarea 
+                      value={formData.referencias || ''}
+                      onChange={(e) => setFormData({ ...formData, referencias: e.target.value })}
+                      placeholder="Links de vídeos inspiração..."
+                      rows={3}
+                      disabled={!isEditing}
+                    />
+                  </div>
+                  <div>
+                    <Label>Observações</Label>
+                    <Textarea 
+                      value={formData.observacoes || ''}
+                      onChange={(e) => setFormData({ ...formData, observacoes: e.target.value })}
+                      rows={2}
+                      disabled={!isEditing}
+                    />
                   </div>
                 </div>
               )}
 
+              {/* Criativo Card / Carrossel */}
               {(task.tipo === 'criativo_card' || task.tipo === 'criativo_carrossel') && (
                 <div className="space-y-4">
+                  {task.tipo === 'criativo_carrossel' && (
+                    <div>
+                      <Label>Número de Slides</Label>
+                      <Input 
+                        type="number" 
+                        min="2"
+                        max="10"
+                        value={formData.num_slides || 5}
+                        onChange={(e) => setFormData({ ...formData, num_slides: parseInt(e.target.value) })}
+                        disabled={!isEditing}
+                      />
+                    </div>
+                  )}
                   <div>
-                    <Label>Texto Principal</Label>
-                    <Textarea rows={3} placeholder="Headline/título principal" />
+                    <Label>Mensagem-Chave</Label>
+                    <Textarea 
+                      value={formData.mensagem_chave || ''}
+                      onChange={(e) => setFormData({ ...formData, mensagem_chave: e.target.value })}
+                      placeholder="Principal mensagem..."
+                      rows={3}
+                      disabled={!isEditing}
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label>Dimensões</Label>
+                      <Input 
+                        value={formData.dimensoes || '1080x1080'}
+                        onChange={(e) => setFormData({ ...formData, dimensoes: e.target.value })}
+                        placeholder="Ex: 1080x1080"
+                        disabled={!isEditing}
+                      />
+                    </div>
+                    <div>
+                      <Label>Cores Sugeridas</Label>
+                      <Input 
+                        value={formData.cores || ''}
+                        onChange={(e) => setFormData({ ...formData, cores: e.target.value })}
+                        placeholder="Ex: #FF5733, #C70039"
+                        disabled={!isEditing}
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Planejamento Estratégico */}
+              {task.tipo === 'planejamento_estrategico' && (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label>Período Início</Label>
+                      <Input 
+                        type="date"
+                        value={formData.periodo_inicio || ''}
+                        onChange={(e) => setFormData({ ...formData, periodo_inicio: e.target.value })}
+                        disabled={!isEditing}
+                      />
+                    </div>
+                    <div>
+                      <Label>Período Fim</Label>
+                      <Input 
+                        type="date"
+                        value={formData.periodo_fim || ''}
+                        onChange={(e) => setFormData({ ...formData, periodo_fim: e.target.value })}
+                        disabled={!isEditing}
+                      />
+                    </div>
                   </div>
                   <div>
-                    <Label>Texto Secundário</Label>
-                    <Textarea rows={2} placeholder="Descrição ou subtítulo" />
+                    <Label>Objetivos Estratégicos</Label>
+                    <Textarea 
+                      value={formData.objetivos || ''}
+                      onChange={(e) => setFormData({ ...formData, objetivos: e.target.value })}
+                      rows={4}
+                      disabled={!isEditing}
+                    />
                   </div>
                   <div>
-                    <Label>Cores</Label>
-                    <Input placeholder="Ex: #FF5733, #33FF57" />
+                    <Label>Orçamento Estimado (R$)</Label>
+                    <Input 
+                      type="number"
+                      value={formData.orcamento || ''}
+                      onChange={(e) => setFormData({ ...formData, orcamento: e.target.value })}
+                      disabled={!isEditing}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Datas Comemorativas */}
+              {task.tipo === 'datas_comemorativas' && (
+                <div className="space-y-4">
+                  <div>
+                    <Label>Data Comemorativa</Label>
+                    <Input 
+                      type="date"
+                      value={formData.data_comemorativa || ''}
+                      onChange={(e) => setFormData({ ...formData, data_comemorativa: e.target.value })}
+                      disabled={!isEditing}
+                    />
+                  </div>
+                  <div>
+                    <Label>Tema</Label>
+                    <Input 
+                      value={formData.tema || ''}
+                      onChange={(e) => setFormData({ ...formData, tema: e.target.value })}
+                      placeholder="Ex: Dia das Mães, Black Friday..."
+                      disabled={!isEditing}
+                    />
+                  </div>
+                  <div>
+                    <Label>Contexto</Label>
+                    <Textarea 
+                      value={formData.contexto || ''}
+                      onChange={(e) => setFormData({ ...formData, contexto: e.target.value })}
+                      rows={3}
+                      disabled={!isEditing}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Tráfego Pago */}
+              {task.tipo === 'trafego_pago' && (
+                <div className="space-y-4">
+                  <div>
+                    <Label>Plataforma</Label>
+                    <Select
+                      value={formData.plataforma_ads || ''}
+                      onValueChange={(v) => setFormData({ ...formData, plataforma_ads: v })}
+                      disabled={!isEditing}
+                    >
+                      <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="facebook">Facebook Ads</SelectItem>
+                        <SelectItem value="google">Google Ads</SelectItem>
+                        <SelectItem value="instagram">Instagram Ads</SelectItem>
+                        <SelectItem value="linkedin">LinkedIn Ads</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label>Orçamento Diário (R$)</Label>
+                    <Input 
+                      type="number"
+                      value={formData.orcamento_diario || ''}
+                      onChange={(e) => setFormData({ ...formData, orcamento_diario: e.target.value })}
+                      disabled={!isEditing}
+                    />
+                  </div>
+                  <div>
+                    <Label>Objetivo da Campanha</Label>
+                    <Textarea 
+                      value={formData.objetivo_campanha || ''}
+                      onChange={(e) => setFormData({ ...formData, objetivo_campanha: e.target.value })}
+                      rows={3}
+                      disabled={!isEditing}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Contrato */}
+              {task.tipo === 'contrato' && (
+                <div className="space-y-4">
+                  <div>
+                    <Label>Tipo de Contrato</Label>
+                    <Input 
+                      value={formData.tipo_contrato || ''}
+                      onChange={(e) => setFormData({ ...formData, tipo_contrato: e.target.value })}
+                      placeholder="Ex: Prestação de Serviços, Parceria..."
+                      disabled={!isEditing}
+                    />
+                  </div>
+                  <div>
+                    <Label>Partes Envolvidas</Label>
+                    <Textarea 
+                      value={formData.partes_contrato || ''}
+                      onChange={(e) => setFormData({ ...formData, partes_contrato: e.target.value })}
+                      rows={2}
+                      disabled={!isEditing}
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label>Vigência Início</Label>
+                      <Input 
+                        type="date"
+                        value={formData.vigencia_inicio || ''}
+                        onChange={(e) => setFormData({ ...formData, vigencia_inicio: e.target.value })}
+                        disabled={!isEditing}
+                      />
+                    </div>
+                    <div>
+                      <Label>Vigência Fim</Label>
+                      <Input 
+                        type="date"
+                        value={formData.vigencia_fim || ''}
+                        onChange={(e) => setFormData({ ...formData, vigencia_fim: e.target.value })}
+                        disabled={!isEditing}
+                      />
+                    </div>
                   </div>
                 </div>
               )}
             </TabsContent>
 
-            {/* Aba Anexos */}
-            <TabsContent value="anexos" className="space-y-4 py-6">
-              <div className="border-2 border-dashed rounded-lg p-8 text-center">
-                <ImageIcon className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <p className="text-sm text-muted-foreground">
-                  Arraste arquivos aqui ou clique para fazer upload
-                </p>
-                <Button variant="outline" size="sm" className="mt-4">
-                  Selecionar Arquivos
-                </Button>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Anexos Existentes</Label>
-                <p className="text-sm text-muted-foreground">Nenhum anexo ainda</p>
-              </div>
+            <TabsContent value="anexos" className="space-y-4 py-4">
+              <p className="text-sm text-muted-foreground">
+                {anexos.length === 0 ? 'Nenhum anexo ainda' : `${anexos.length} anexo(s)`}
+              </p>
             </TabsContent>
 
-            {/* Aba Preview */}
-            <TabsContent value="preview" className="py-6">
+            <TabsContent value="preview" className="py-4">
               <div className="border rounded-lg p-8 bg-muted/20 min-h-[400px] flex items-center justify-center">
-                <div className="text-center">
-                  <Eye className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-                  <p className="text-muted-foreground">Preview será exibido aqui</p>
-                </div>
+                <p className="text-muted-foreground">Preview será exibido aqui</p>
               </div>
             </TabsContent>
 
-            {/* Aba Aprovação */}
-            <TabsContent value="aprovacao" className="space-y-4 py-6">
-              <div className="p-4 bg-yellow-50 dark:bg-yellow-950 border border-yellow-200 dark:border-yellow-800 rounded-lg">
-                <p className="text-sm text-yellow-800 dark:text-yellow-200">
-                  Status de aprovação: <strong>Pendente</strong>
-                </p>
-              </div>
-
-              <div>
-                <Label>Comentários de Aprovação</Label>
-                <Textarea rows={4} placeholder="Adicione comentários sobre a aprovação..." className="mt-2" />
-              </div>
-
-              <div className="flex gap-2">
-                <Button className="flex-1" variant="default">
-                  <CheckCircle2 className="h-4 w-4 mr-2" />
-                  Aprovar
-                </Button>
-                <Button className="flex-1" variant="outline">
-                  Solicitar Ajustes
-                </Button>
-                <Button className="flex-1" variant="destructive">
-                  Reprovar
-                </Button>
-              </div>
+            <TabsContent value="aprovacao" className="space-y-4 py-4">
+              <p className="text-sm">Sistema de aprovação em desenvolvimento</p>
             </TabsContent>
 
-            {/* Aba Histórico */}
-            <TabsContent value="historico" className="py-6">
-              <div className="space-y-4">
-                <div className="flex gap-3">
-                  <Avatar className="h-8 w-8">
-                    <AvatarFallback>U</AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium">Usuário</span>
-                      <span className="text-xs text-muted-foreground">
-                        {task.created_at && format(new Date(task.created_at), 'PPp', { locale: ptBR })}
-                      </span>
-                    </div>
-                    <p className="text-sm text-muted-foreground">Tarefa criada</p>
-                  </div>
-                </div>
-              </div>
+            <TabsContent value="historico" className="py-4">
+              <p className="text-sm text-muted-foreground">Histórico de alterações</p>
             </TabsContent>
           </Tabs>
         </ScrollArea>
 
-        {/* Footer com Toggle Edição */}
         <div className="px-6 py-3 border-t flex justify-between items-center">
           <Button 
             variant="ghost" 
             size="sm"
             onClick={() => setIsEditing(!isEditing)}
           >
-            {isEditing ? 'Cancelar Edição' : 'Editar Tarefa'}
+            {isEditing ? 'Cancelar Edição' : 'Editar'}
           </Button>
-          
-          <div className="text-xs text-muted-foreground">
-            Última atualização: {task.updated_at && format(new Date(task.updated_at), 'PPp', { locale: ptBR })}
-          </div>
+          <span className="text-xs text-muted-foreground">
+            Última atualização: {task.updated_at ? new Date(task.updated_at).toLocaleString() : '-'}
+          </span>
         </div>
       </DialogContent>
     </Dialog>
