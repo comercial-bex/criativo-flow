@@ -38,20 +38,12 @@ export function ResponsiveLayout({ children }: ResponsiveLayoutProps) {
 
   return (
     <SidebarProvider defaultOpen={true}>
-      <div 
-        className="min-h-screen w-screen bg-background grid grid-cols-[auto_1fr] overflow-x-hidden"
-        data-sidebar="expanded"
-      >
-        {/* Fixed Sidebar - Always visible on desktop */}
-        <div className="fixed left-0 top-0 h-screen z-40">
-          <AppSidebar />
-        </div>
+      <div className="min-h-screen w-full bg-background flex overflow-x-hidden">
+        {/* Sidebar - Flows naturally */}
+        <AppSidebar />
         
         {/* Main Content Area */}
-        <div 
-          className="flex flex-col min-h-screen transition-[margin-left] duration-300 ease-in-out sidebar-transition"
-          style={{ marginLeft: 'var(--sidebar-width, 280px)' }}
-        >
+        <div className="flex flex-col min-h-screen flex-1">
           {/* Fixed Header */}
           <header className={`${isTablet ? 'h-14' : 'h-16'} flex items-center border-b bg-background/95 backdrop-blur-sm px-4 sticky top-0 z-50 shadow-sm`}>
             <div className="flex items-center gap-3 flex-1">
