@@ -323,6 +323,15 @@ export function StandardTaskModal({
                     </div>
                   </div>
                   <div>
+                    <Label>Tom de Voz</Label>
+                    <Input 
+                      value={formData.tom_voz || ''}
+                      onChange={(e) => setFormData({ ...formData, tom_voz: e.target.value })}
+                      placeholder="Ex: Casual, profissional, humorístico..."
+                      disabled={!isEditing}
+                    />
+                  </div>
+                  <div>
                     <Label>Referências</Label>
                     <Textarea 
                       value={formData.referencias || ''}
@@ -347,6 +356,16 @@ export function StandardTaskModal({
               {/* Criativo Card / Carrossel */}
               {(task.tipo === 'criativo_card' || task.tipo === 'criativo_carrossel') && (
                 <div className="space-y-4">
+                  <div>
+                    <Label>Objetivo</Label>
+                    <Textarea 
+                      value={formData.objetivo || ''}
+                      onChange={(e) => setFormData({ ...formData, objetivo: e.target.value })}
+                      placeholder="Objetivo principal da arte..."
+                      rows={2}
+                      disabled={!isEditing}
+                    />
+                  </div>
                   {task.tipo === 'criativo_carrossel' && (
                     <div>
                       <Label>Número de Slides</Label>
@@ -360,6 +379,15 @@ export function StandardTaskModal({
                       />
                     </div>
                   )}
+                  <div>
+                    <Label>Público-Alvo</Label>
+                    <Input 
+                      value={formData.publico_alvo || ''}
+                      onChange={(e) => setFormData({ ...formData, publico_alvo: e.target.value })}
+                      placeholder="Ex: Jovens 18-25, empresários, mães..."
+                      disabled={!isEditing}
+                    />
+                  </div>
                   <div>
                     <Label>Mensagem-Chave</Label>
                     <Textarea 
@@ -381,7 +409,7 @@ export function StandardTaskModal({
                       />
                     </div>
                     <div>
-                      <Label>Cores Sugeridas</Label>
+                      <Label>{task.tipo === 'criativo_carrossel' ? 'Cores Sugeridas' : 'Cores'}</Label>
                       <Input 
                         value={formData.cores || ''}
                         onChange={(e) => setFormData({ ...formData, cores: e.target.value })}
@@ -390,52 +418,82 @@ export function StandardTaskModal({
                       />
                     </div>
                   </div>
+                  <div>
+                    <Label>Observações</Label>
+                    <Textarea 
+                      value={formData.observacoes || ''}
+                      onChange={(e) => setFormData({ ...formData, observacoes: e.target.value })}
+                      placeholder="Observações adicionais..."
+                      rows={2}
+                      disabled={!isEditing}
+                    />
+                  </div>
                 </div>
               )}
 
               {/* Planejamento Estratégico */}
-              {task.tipo === 'planejamento_estrategico' && (
-                <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label>Período Início</Label>
-                      <Input 
-                        type="date"
-                        value={formData.periodo_inicio || ''}
-                        onChange={(e) => setFormData({ ...formData, periodo_inicio: e.target.value })}
-                        disabled={!isEditing}
-                      />
-                    </div>
-                    <div>
-                      <Label>Período Fim</Label>
-                      <Input 
-                        type="date"
-                        value={formData.periodo_fim || ''}
-                        onChange={(e) => setFormData({ ...formData, periodo_fim: e.target.value })}
-                        disabled={!isEditing}
-                      />
-                    </div>
-                  </div>
+            {task.tipo === 'planejamento_estrategico' && (
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label>Objetivos Estratégicos</Label>
-                    <Textarea 
-                      value={formData.objetivos || ''}
-                      onChange={(e) => setFormData({ ...formData, objetivos: e.target.value })}
-                      rows={4}
+                    <Label>Período Início</Label>
+                    <Input 
+                      type="date"
+                      value={formData.periodo_inicio || ''}
+                      onChange={(e) => setFormData({ ...formData, periodo_inicio: e.target.value })}
                       disabled={!isEditing}
                     />
                   </div>
                   <div>
-                    <Label>Orçamento Estimado (R$)</Label>
+                    <Label>Período Fim</Label>
                     <Input 
-                      type="number"
-                      value={formData.orcamento || ''}
-                      onChange={(e) => setFormData({ ...formData, orcamento: e.target.value })}
+                      type="date"
+                      value={formData.periodo_fim || ''}
+                      onChange={(e) => setFormData({ ...formData, periodo_fim: e.target.value })}
                       disabled={!isEditing}
                     />
                   </div>
                 </div>
-              )}
+                <div>
+                  <Label>Objetivos Estratégicos</Label>
+                  <Textarea 
+                    value={formData.objetivos || ''}
+                    onChange={(e) => setFormData({ ...formData, objetivos: e.target.value })}
+                    placeholder="Descreva os principais objetivos estratégicos..."
+                    rows={4}
+                    disabled={!isEditing}
+                  />
+                </div>
+                <div>
+                  <Label>KPIs (Indicadores-Chave)</Label>
+                  <Textarea 
+                    value={formData.kpis || ''}
+                    onChange={(e) => setFormData({ ...formData, kpis: e.target.value })}
+                    placeholder="Ex: Aumentar engajamento em 20%, 1000 novos seguidores..."
+                    rows={3}
+                    disabled={!isEditing}
+                  />
+                </div>
+                <div>
+                  <Label>Canais de Divulgação</Label>
+                  <Input 
+                    value={formData.canais || ''}
+                    onChange={(e) => setFormData({ ...formData, canais: e.target.value })}
+                    placeholder="Ex: Instagram, Facebook, LinkedIn, Google Ads..."
+                    disabled={!isEditing}
+                  />
+                </div>
+                <div>
+                  <Label>Orçamento Estimado (R$)</Label>
+                  <Input 
+                    type="number"
+                    value={formData.orcamento || ''}
+                    onChange={(e) => setFormData({ ...formData, orcamento: e.target.value })}
+                    disabled={!isEditing}
+                  />
+                </div>
+              </div>
+            )}
 
               {/* Datas Comemorativas */}
               {task.tipo === 'datas_comemorativas' && (
