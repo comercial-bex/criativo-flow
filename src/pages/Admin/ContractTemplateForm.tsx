@@ -7,12 +7,182 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useNavigate, useParams } from "react-router-dom";
 import { useContractTemplates } from "@/hooks/useContractTemplates";
 import { smartToast } from "@/lib/smart-toast";
-import { ArrowLeft, Save, Upload, FileText, Copy, Eye, EyeOff } from "lucide-react";
+import { ArrowLeft, Save, FileText, Copy, Eye, EyeOff, Bold, Italic, Strikethrough, List, ListOrdered, Table2, Plus, Trash2, Quote, Minus, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
+import { Table } from '@tiptap/extension-table';
+import { TableRow } from '@tiptap/extension-table-row';
+import { TableCell } from '@tiptap/extension-table-cell';
+import { TableHeader } from '@tiptap/extension-table-header';
 import { UploadPDF } from "@/components/Admin/UploadPDF";
+import { 
+  AlertDialog, 
+  AlertDialogAction, 
+  AlertDialogCancel, 
+  AlertDialogContent, 
+  AlertDialogDescription, 
+  AlertDialogFooter, 
+  AlertDialogHeader, 
+  AlertDialogTitle 
+} from "@/components/ui/alert-dialog";
+
+// Toolbar do Editor
+const EditorToolbar = ({ editor }: { editor: any }) => {
+  if (!editor) return null;
+  
+  return (
+    <div className="border-b bg-muted/50 p-2 flex flex-wrap gap-1 sticky top-0 z-10">
+      {/* Formatação de texto */}
+      <Button
+        type="button"
+        variant={editor.isActive('bold') ? 'default' : 'ghost'}
+        size="sm"
+        onClick={() => editor.chain().focus().toggleBold().run()}
+        className="h-8 px-2"
+      >
+        <Bold className="h-4 w-4" />
+      </Button>
+      
+      <Button
+        type="button"
+        variant={editor.isActive('italic') ? 'default' : 'ghost'}
+        size="sm"
+        onClick={() => editor.chain().focus().toggleItalic().run()}
+        className="h-8 px-2"
+      >
+        <Italic className="h-4 w-4" />
+      </Button>
+      
+      <Button
+        type="button"
+        variant={editor.isActive('strike') ? 'default' : 'ghost'}
+        size="sm"
+        onClick={() => editor.chain().focus().toggleStrike().run()}
+        className="h-8 px-2"
+      >
+        <Strikethrough className="h-4 w-4" />
+      </Button>
+      
+      <div className="w-px h-6 bg-border mx-1" />
+      
+      {/* Headings */}
+      <Button
+        type="button"
+        variant={editor.isActive('heading', { level: 1 }) ? 'default' : 'ghost'}
+        size="sm"
+        onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
+        className="h-8 px-2"
+      >
+        H1
+      </Button>
+      
+      <Button
+        type="button"
+        variant={editor.isActive('heading', { level: 2 }) ? 'default' : 'ghost'}
+        size="sm"
+        onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+        className="h-8 px-2"
+      >
+        H2
+      </Button>
+      
+      <Button
+        type="button"
+        variant={editor.isActive('heading', { level: 3 }) ? 'default' : 'ghost'}
+        size="sm"
+        onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
+        className="h-8 px-2"
+      >
+        H3
+      </Button>
+      
+      <div className="w-px h-6 bg-border mx-1" />
+      
+      {/* Listas */}
+      <Button
+        type="button"
+        variant={editor.isActive('bulletList') ? 'default' : 'ghost'}
+        size="sm"
+        onClick={() => editor.chain().focus().toggleBulletList().run()}
+        className="h-8 px-2"
+      >
+        <List className="h-4 w-4" />
+      </Button>
+      
+      <Button
+        type="button"
+        variant={editor.isActive('orderedList') ? 'default' : 'ghost'}
+        size="sm"
+        onClick={() => editor.chain().focus().toggleOrderedList().run()}
+        className="h-8 px-2"
+      >
+        <ListOrdered className="h-4 w-4" />
+      </Button>
+      
+      <div className="w-px h-6 bg-border mx-1" />
+      
+      {/* Tabelas */}
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}
+        className="h-8 px-2"
+      >
+        <Table2 className="h-4 w-4" />
+      </Button>
+      
+      {editor.isActive('table') && (
+        <>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => editor.chain().focus().addRowAfter().run()}
+            className="h-8 px-2"
+          >
+            <Plus className="h-3 w-3" />
+          </Button>
+          
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => editor.chain().focus().deleteRow().run()}
+            className="h-8 px-2"
+          >
+            <Trash2 className="h-3 w-3" />
+          </Button>
+        </>
+      )}
+      
+      <div className="w-px h-6 bg-border mx-1" />
+      
+      {/* Outros */}
+      <Button
+        type="button"
+        variant={editor.isActive('blockquote') ? 'default' : 'ghost'}
+        size="sm"
+        onClick={() => editor.chain().focus().toggleBlockquote().run()}
+        className="h-8 px-2"
+      >
+        <Quote className="h-4 w-4" />
+      </Button>
+      
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        onClick={() => editor.chain().focus().setHorizontalRule().run()}
+        className="h-8 px-2"
+      >
+        <Minus className="h-4 w-4" />
+      </Button>
+    </div>
+  );
+};
 
 export default function ContractTemplateForm() {
   const navigate = useNavigate();
@@ -51,15 +221,39 @@ export default function ContractTemplateForm() {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [showMergeTags, setShowMergeTags] = useState(true);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [showItemsTabelaWarning, setShowItemsTabelaWarning] = useState(false);
+  const [previousHtml, setPreviousHtml] = useState("");
   
   // TipTap editor
   const editor = useEditor({
     extensions: [
       StarterKit,
+      Table.configure({ 
+        resizable: true,
+        HTMLAttributes: {
+          class: 'border-collapse border border-gray-300',
+        },
+      }),
+      TableRow,
+      TableCell,
+      TableHeader,
     ],
     content: formData.corpo_html,
     onUpdate: ({ editor }) => {
       const html = editor.getHTML();
+      const hadItemsTable = previousHtml.includes('{{itens_tabela}}');
+      const hasItemsTable = html.includes('{{itens_tabela}}');
+      
+      // Se tinha e não tem mais, alertar
+      if (hadItemsTable && !hasItemsTable) {
+        setShowItemsTabelaWarning(true);
+        // Reverter temporariamente
+        editor.commands.setContent(previousHtml);
+        return;
+      }
+      
+      setPreviousHtml(html);
       setFormData(prev => ({
         ...prev,
         corpo_html: html,
@@ -145,8 +339,14 @@ export default function ContractTemplateForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.nome || !formData.corpo_html) {
-      smartToast.error("Preencha todos os campos obrigatórios");
+    // Validações
+    if (!formData.nome.trim()) {
+      smartToast.error("Nome obrigatório", "Digite um nome para o template");
+      return;
+    }
+    
+    if (!formData.corpo_html || formData.corpo_html === '<p></p>') {
+      smartToast.error("Conteúdo obrigatório", "O template não pode estar vazio");
       return;
     }
     
@@ -159,6 +359,8 @@ export default function ContractTemplateForm() {
           id: templateId,
         });
         smartToast.success("Template atualizado com sucesso");
+        setSaveSuccess(true);
+        setTimeout(() => setSaveSuccess(false), 2000);
       } else {
         await createTemplate({
           nome: formData.nome,
@@ -168,9 +370,8 @@ export default function ContractTemplateForm() {
           arquivo_original_url: formData.arquivo_original_url,
         });
         smartToast.success("Template criado com sucesso");
+        navigate("/admin/contratos/templates");
       }
-      
-      navigate("/admin/contratos/templates");
     } catch (error: any) {
       smartToast.error("Erro ao salvar template", error.message);
     } finally {
@@ -182,9 +383,22 @@ export default function ContractTemplateForm() {
     if (!templateId) return;
     
     try {
-      await duplicateTemplate(templateId);
-      smartToast.success("Template duplicado com sucesso");
-      navigate("/admin/contratos/templates");
+      const template = await fetchTemplate(templateId);
+      if (template) {
+        // Adicionar " (Cópia)" ao nome
+        const newName = `${template.nome} (Cópia)`;
+        
+        await createTemplate({
+          nome: newName,
+          categoria: template.categoria,
+          tipo_original: template.tipo_original,
+          corpo_html: template.corpo_html,
+          arquivo_original_url: template.arquivo_original_url || "",
+        });
+        
+        smartToast.success("Template duplicado com sucesso");
+        navigate("/admin/contratos/templates");
+      }
     } catch (error: any) {
       smartToast.error("Erro ao duplicar template", error.message);
     }
@@ -205,8 +419,10 @@ export default function ContractTemplateForm() {
             <ArrowLeft className="mr-2 h-4 w-4" />
             Voltar
           </Button>
-          <h1 className="text-3xl font-bold">
+          <h1 className="text-3xl font-bold flex items-center gap-3">
             {isEditMode ? "Editar Modelo de Contrato" : "Novo Modelo de Contrato"}
+            {loading && <Badge variant="secondary" className="animate-pulse">Salvando...</Badge>}
+            {saveSuccess && <Badge variant="default" className="bg-green-600">✓ Salvo</Badge>}
           </h1>
         </div>
         <div className="flex gap-2">
@@ -294,8 +510,9 @@ export default function ContractTemplateForm() {
               <CardHeader>
                 <CardTitle>Editor de Template</CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="border rounded-lg p-4 min-h-[400px] prose max-w-none">
+              <CardContent className="p-0">
+                <EditorToolbar editor={editor} />
+                <div className="border-t p-4 min-h-[400px] prose max-w-none">
                   <EditorContent editor={editor} />
                 </div>
               </CardContent>
@@ -395,6 +612,47 @@ export default function ContractTemplateForm() {
             )}
           </div>
         </div>
+        
+        {/* Dialog de Confirmação - Remoção de {{itens_tabela}} */}
+        <AlertDialog open={showItemsTabelaWarning} onOpenChange={setShowItemsTabelaWarning}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle className="flex items-center gap-2">
+                <AlertCircle className="h-5 w-5 text-yellow-600" />
+                Atenção: Remoção de Tag Crítica
+              </AlertDialogTitle>
+              <AlertDialogDescription className="space-y-2">
+                <p>Você está removendo a tag <code className="bg-muted px-1 py-0.5 rounded">&#123;&#123;itens_tabela&#125;&#125;</code></p>
+                <p className="font-semibold">Esta tag é essencial para contratos que possuem múltiplos itens/produtos.</p>
+                <p>Tem certeza que deseja continuar?</p>
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => {
+                // Manter HTML anterior
+                editor?.commands.setContent(previousHtml);
+              }}>
+                Cancelar
+              </AlertDialogCancel>
+              <AlertDialogAction 
+                onClick={() => {
+                  // Confirmar remoção
+                  const newHtml = editor?.getHTML() || "";
+                  setPreviousHtml(newHtml);
+                  setFormData(prev => ({
+                    ...prev,
+                    corpo_html: newHtml,
+                    variaveis_disponiveis: detectMergeTags(newHtml)
+                  }));
+                  setShowItemsTabelaWarning(false);
+                }}
+                className="bg-yellow-600 hover:bg-yellow-700"
+              >
+                Confirmar Remoção
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </form>
     </div>
   );
