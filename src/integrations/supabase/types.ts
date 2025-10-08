@@ -120,6 +120,111 @@ export type Database = {
         }
         Relationships: []
       }
+      anexo: {
+        Row: {
+          arquivo_url: string
+          created_at: string | null
+          hash_publico: string | null
+          id: string
+          legenda: string | null
+          tarefa_id: string
+          tipo: Database["public"]["Enums"]["tipo_anexo_enum"] | null
+          trace_id: string | null
+          updated_at: string | null
+          versao: number | null
+        }
+        Insert: {
+          arquivo_url: string
+          created_at?: string | null
+          hash_publico?: string | null
+          id?: string
+          legenda?: string | null
+          tarefa_id: string
+          tipo?: Database["public"]["Enums"]["tipo_anexo_enum"] | null
+          trace_id?: string | null
+          updated_at?: string | null
+          versao?: number | null
+        }
+        Update: {
+          arquivo_url?: string
+          created_at?: string | null
+          hash_publico?: string | null
+          id?: string
+          legenda?: string | null
+          tarefa_id?: string
+          tipo?: Database["public"]["Enums"]["tipo_anexo_enum"] | null
+          trace_id?: string | null
+          updated_at?: string | null
+          versao?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "anexo_tarefa_id_fkey"
+            columns: ["tarefa_id"]
+            isOneToOne: false
+            referencedRelation: "tarefa"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      aprovacao_tarefa: {
+        Row: {
+          aprovado_por: string | null
+          comentarios: string | null
+          created_at: string | null
+          data_aprovacao: string | null
+          id: string
+          status_aprovacao:
+            | Database["public"]["Enums"]["status_aprovacao_enum"]
+            | null
+          tarefa_id: string
+        }
+        Insert: {
+          aprovado_por?: string | null
+          comentarios?: string | null
+          created_at?: string | null
+          data_aprovacao?: string | null
+          id?: string
+          status_aprovacao?:
+            | Database["public"]["Enums"]["status_aprovacao_enum"]
+            | null
+          tarefa_id: string
+        }
+        Update: {
+          aprovado_por?: string | null
+          comentarios?: string | null
+          created_at?: string | null
+          data_aprovacao?: string | null
+          id?: string
+          status_aprovacao?:
+            | Database["public"]["Enums"]["status_aprovacao_enum"]
+            | null
+          tarefa_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aprovacao_tarefa_aprovado_por_fkey"
+            columns: ["aprovado_por"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "aprovacao_tarefa_aprovado_por_fkey"
+            columns: ["aprovado_por"]
+            isOneToOne: false
+            referencedRelation: "vw_client_metrics"
+            referencedColumns: ["responsavel_id"]
+          },
+          {
+            foreignKeyName: "aprovacao_tarefa_tarefa_id_fkey"
+            columns: ["tarefa_id"]
+            isOneToOne: false
+            referencedRelation: "tarefa"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       aprovacoes_cliente: {
         Row: {
           anexo_url: string | null
@@ -533,6 +638,60 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "tarefas_projeto"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      campanha: {
+        Row: {
+          ativo: boolean | null
+          cliente_id: string | null
+          created_at: string | null
+          data_fim: string | null
+          data_inicio: string | null
+          id: string
+          nome: string
+          objetivo: string | null
+          orcamento: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          ativo?: boolean | null
+          cliente_id?: string | null
+          created_at?: string | null
+          data_fim?: string | null
+          data_inicio?: string | null
+          id?: string
+          nome: string
+          objetivo?: string | null
+          orcamento?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          ativo?: boolean | null
+          cliente_id?: string | null
+          created_at?: string | null
+          data_fim?: string | null
+          data_inicio?: string | null
+          id?: string
+          nome?: string
+          objetivo?: string | null
+          orcamento?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campanha_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campanha_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "vw_client_metrics"
+            referencedColumns: ["cliente_id"]
           },
         ]
       }
@@ -2390,6 +2549,55 @@ export type Database = {
           },
         ]
       }
+      log_atividade_tarefa: {
+        Row: {
+          acao: string
+          actor_id: string | null
+          criado_em: string | null
+          detalhe: Json | null
+          id: string
+          tarefa_id: string
+        }
+        Insert: {
+          acao: string
+          actor_id?: string | null
+          criado_em?: string | null
+          detalhe?: Json | null
+          id?: string
+          tarefa_id: string
+        }
+        Update: {
+          acao?: string
+          actor_id?: string | null
+          criado_em?: string | null
+          detalhe?: Json | null
+          id?: string
+          tarefa_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "log_atividade_tarefa_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "log_atividade_tarefa_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "vw_client_metrics"
+            referencedColumns: ["responsavel_id"]
+          },
+          {
+            foreignKeyName: "log_atividade_tarefa_tarefa_id_fkey"
+            columns: ["tarefa_id"]
+            isOneToOne: false
+            referencedRelation: "tarefa"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       logs_atividade: {
         Row: {
           acao: string
@@ -3204,6 +3412,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      produto: {
+        Row: {
+          ativo: boolean | null
+          checklist_padrao: Json | null
+          created_at: string | null
+          id: string
+          nome: string
+          sku: string | null
+          sla_padrao: number | null
+          time_responsavel: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          ativo?: boolean | null
+          checklist_padrao?: Json | null
+          created_at?: string | null
+          id?: string
+          nome: string
+          sku?: string | null
+          sla_padrao?: number | null
+          time_responsavel?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          ativo?: boolean | null
+          checklist_padrao?: Json | null
+          created_at?: string | null
+          id?: string
+          nome?: string
+          sku?: string | null
+          sla_padrao?: number | null
+          time_responsavel?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
       }
       produto_componentes: {
         Row: {
@@ -4170,6 +4414,244 @@ export type Database = {
         }
         Relationships: []
       }
+      tarefa: {
+        Row: {
+          area: Database["public"]["Enums"]["area_enum"][] | null
+          campanha_id: string | null
+          canais: Database["public"]["Enums"]["canal_enum"][] | null
+          cliente_id: string | null
+          created_at: string | null
+          created_by: string | null
+          cta: string | null
+          data_entrega_prevista: string | null
+          data_inicio_prevista: string | null
+          data_publicacao: string | null
+          descricao: string | null
+          executor_area:
+            | Database["public"]["Enums"]["executor_area_enum"]
+            | null
+          executor_id: string | null
+          grs_action_id: string | null
+          id: string
+          kpis: Json | null
+          origem: string | null
+          prazo_executor: string | null
+          prioridade: Database["public"]["Enums"]["prioridade_enum"] | null
+          produto_id: string | null
+          projeto_id: string | null
+          publico_alvo: string | null
+          responsavel_id: string | null
+          status: Database["public"]["Enums"]["status_tarefa_enum"] | null
+          tags: string[] | null
+          tipo: Database["public"]["Enums"]["tipo_tarefa_enum"]
+          titulo: string
+          tom_voz: string | null
+          trace_id: string | null
+          updated_at: string | null
+          updated_by: string | null
+        }
+        Insert: {
+          area?: Database["public"]["Enums"]["area_enum"][] | null
+          campanha_id?: string | null
+          canais?: Database["public"]["Enums"]["canal_enum"][] | null
+          cliente_id?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          cta?: string | null
+          data_entrega_prevista?: string | null
+          data_inicio_prevista?: string | null
+          data_publicacao?: string | null
+          descricao?: string | null
+          executor_area?:
+            | Database["public"]["Enums"]["executor_area_enum"]
+            | null
+          executor_id?: string | null
+          grs_action_id?: string | null
+          id?: string
+          kpis?: Json | null
+          origem?: string | null
+          prazo_executor?: string | null
+          prioridade?: Database["public"]["Enums"]["prioridade_enum"] | null
+          produto_id?: string | null
+          projeto_id?: string | null
+          publico_alvo?: string | null
+          responsavel_id?: string | null
+          status?: Database["public"]["Enums"]["status_tarefa_enum"] | null
+          tags?: string[] | null
+          tipo?: Database["public"]["Enums"]["tipo_tarefa_enum"]
+          titulo: string
+          tom_voz?: string | null
+          trace_id?: string | null
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Update: {
+          area?: Database["public"]["Enums"]["area_enum"][] | null
+          campanha_id?: string | null
+          canais?: Database["public"]["Enums"]["canal_enum"][] | null
+          cliente_id?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          cta?: string | null
+          data_entrega_prevista?: string | null
+          data_inicio_prevista?: string | null
+          data_publicacao?: string | null
+          descricao?: string | null
+          executor_area?:
+            | Database["public"]["Enums"]["executor_area_enum"]
+            | null
+          executor_id?: string | null
+          grs_action_id?: string | null
+          id?: string
+          kpis?: Json | null
+          origem?: string | null
+          prazo_executor?: string | null
+          prioridade?: Database["public"]["Enums"]["prioridade_enum"] | null
+          produto_id?: string | null
+          projeto_id?: string | null
+          publico_alvo?: string | null
+          responsavel_id?: string | null
+          status?: Database["public"]["Enums"]["status_tarefa_enum"] | null
+          tags?: string[] | null
+          tipo?: Database["public"]["Enums"]["tipo_tarefa_enum"]
+          titulo?: string
+          tom_voz?: string | null
+          trace_id?: string | null
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tarefa_campanha_id_fkey"
+            columns: ["campanha_id"]
+            isOneToOne: false
+            referencedRelation: "campanha"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tarefa_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tarefa_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "vw_client_metrics"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "tarefa_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tarefa_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "vw_client_metrics"
+            referencedColumns: ["responsavel_id"]
+          },
+          {
+            foreignKeyName: "tarefa_executor_id_fkey"
+            columns: ["executor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tarefa_executor_id_fkey"
+            columns: ["executor_id"]
+            isOneToOne: false
+            referencedRelation: "vw_client_metrics"
+            referencedColumns: ["responsavel_id"]
+          },
+          {
+            foreignKeyName: "tarefa_produto_id_fkey"
+            columns: ["produto_id"]
+            isOneToOne: false
+            referencedRelation: "produto"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tarefa_projeto_id_fkey"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "projetos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tarefa_responsavel_id_fkey"
+            columns: ["responsavel_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tarefa_responsavel_id_fkey"
+            columns: ["responsavel_id"]
+            isOneToOne: false
+            referencedRelation: "vw_client_metrics"
+            referencedColumns: ["responsavel_id"]
+          },
+          {
+            foreignKeyName: "tarefa_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tarefa_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "vw_client_metrics"
+            referencedColumns: ["responsavel_id"]
+          },
+        ]
+      }
+      tarefa_conteudo: {
+        Row: {
+          bloco_json: Json | null
+          created_at: string | null
+          id: string
+          publicado: boolean | null
+          tarefa_id: string
+          updated_at: string | null
+          versao: number | null
+        }
+        Insert: {
+          bloco_json?: Json | null
+          created_at?: string | null
+          id?: string
+          publicado?: boolean | null
+          tarefa_id: string
+          updated_at?: string | null
+          versao?: number | null
+        }
+        Update: {
+          bloco_json?: Json | null
+          created_at?: string | null
+          id?: string
+          publicado?: boolean | null
+          tarefa_id?: string
+          updated_at?: string | null
+          versao?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tarefa_conteudo_tarefa_id_fkey"
+            columns: ["tarefa_id"]
+            isOneToOne: false
+            referencedRelation: "tarefa"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tarefas: {
         Row: {
           anexos: Json | null
@@ -4885,6 +5367,19 @@ export type Database = {
         }
         Returns: string
       }
+      fn_log_tarefa: {
+        Args: {
+          p_acao: string
+          p_actor_id: string
+          p_detalhe?: Json
+          p_tarefa_id: string
+        }
+        Returns: string
+      }
+      fn_tarefa_status_prazo: {
+        Args: { p_tarefa_id: string }
+        Returns: string
+      }
       fn_validar_vinculo_projeto_cliente: {
         Args: { p_projeto_id: string }
         Returns: Json
@@ -4986,6 +5481,22 @@ export type Database = {
       }
     }
     Enums: {
+      area_enum:
+        | "GRS"
+        | "Design"
+        | "Audiovisual"
+        | "Social"
+        | "Midia_Paga"
+        | "Adm"
+      canal_enum:
+        | "Instagram"
+        | "TikTok"
+        | "Facebook"
+        | "YouTube"
+        | "Site"
+        | "GoogleAds"
+        | "MetaAds"
+        | "Outros"
       cliente_role:
         | "proprietario"
         | "gerente_financeiro"
@@ -5002,7 +5513,10 @@ export type Database = {
         | "audiovisual"
         | "financeiro"
         | "gestor"
+      executor_area_enum: "Audiovisual" | "Criativo"
+      prioridade_enum: "baixa" | "media" | "alta" | "critica"
       priority_type: "baixa" | "media" | "alta" | "urgente"
+      status_aprovacao_enum: "pendente" | "aprovado" | "ajustes" | "reprovado"
       status_padrao:
         | "rascunho"
         | "em_revisao"
@@ -5011,7 +5525,29 @@ export type Database = {
         | "em_aprovacao_final"
         | "finalizado"
         | "reprovado"
+      status_tarefa_enum:
+        | "backlog"
+        | "briefing"
+        | "em_producao"
+        | "em_revisao"
+        | "aprovacao_cliente"
+        | "aprovado"
+        | "agendado"
+        | "publicado"
+        | "pausado"
+        | "cancelado"
       status_type: "ativo" | "inativo" | "pendente" | "arquivado"
+      tipo_anexo_enum:
+        | "referencia"
+        | "briefing"
+        | "logo"
+        | "paleta"
+        | "roteiro"
+        | "psd_ai"
+        | "raw_video"
+        | "planilha"
+        | "contrato"
+        | "outro"
       tipo_pontuacao:
         | "feedback_positivo"
         | "entrega_prazo"
@@ -5027,6 +5563,15 @@ export type Database = {
         | "entregas_semanais"
         | "video_aprovado"
         | "video_reprovado"
+      tipo_tarefa_enum:
+        | "planejamento_estrategico"
+        | "roteiro_reels"
+        | "criativo_card"
+        | "criativo_carrossel"
+        | "datas_comemorativas"
+        | "trafego_pago"
+        | "contrato"
+        | "outro"
       user_role:
         | "admin"
         | "atendimento"
@@ -5165,6 +5710,24 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      area_enum: [
+        "GRS",
+        "Design",
+        "Audiovisual",
+        "Social",
+        "Midia_Paga",
+        "Adm",
+      ],
+      canal_enum: [
+        "Instagram",
+        "TikTok",
+        "Facebook",
+        "YouTube",
+        "Site",
+        "GoogleAds",
+        "MetaAds",
+        "Outros",
+      ],
       cliente_role: [
         "proprietario",
         "gerente_financeiro",
@@ -5183,7 +5746,10 @@ export const Constants = {
         "financeiro",
         "gestor",
       ],
+      executor_area_enum: ["Audiovisual", "Criativo"],
+      prioridade_enum: ["baixa", "media", "alta", "critica"],
       priority_type: ["baixa", "media", "alta", "urgente"],
+      status_aprovacao_enum: ["pendente", "aprovado", "ajustes", "reprovado"],
       status_padrao: [
         "rascunho",
         "em_revisao",
@@ -5193,7 +5759,31 @@ export const Constants = {
         "finalizado",
         "reprovado",
       ],
+      status_tarefa_enum: [
+        "backlog",
+        "briefing",
+        "em_producao",
+        "em_revisao",
+        "aprovacao_cliente",
+        "aprovado",
+        "agendado",
+        "publicado",
+        "pausado",
+        "cancelado",
+      ],
       status_type: ["ativo", "inativo", "pendente", "arquivado"],
+      tipo_anexo_enum: [
+        "referencia",
+        "briefing",
+        "logo",
+        "paleta",
+        "roteiro",
+        "psd_ai",
+        "raw_video",
+        "planilha",
+        "contrato",
+        "outro",
+      ],
       tipo_pontuacao: [
         "feedback_positivo",
         "entrega_prazo",
@@ -5209,6 +5799,16 @@ export const Constants = {
         "entregas_semanais",
         "video_aprovado",
         "video_reprovado",
+      ],
+      tipo_tarefa_enum: [
+        "planejamento_estrategico",
+        "roteiro_reels",
+        "criativo_card",
+        "criativo_carrossel",
+        "datas_comemorativas",
+        "trafego_pago",
+        "contrato",
+        "outro",
       ],
       user_role: [
         "admin",
