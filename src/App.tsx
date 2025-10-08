@@ -67,6 +67,8 @@ import ClienteExportacoes from "./pages/Cliente/Exportacoes";
 import AdminDashboard from "./pages/Administrativo/Dashboard";
 import Orcamentos from "./pages/Administrativo/Orcamentos";
 import Propostas from "./pages/Administrativo/Propostas";
+import Contratos from "./pages/Admin/Contratos";
+import ContratoForm from "./pages/Admin/ContratoForm";
 
 // Audiovisual pages
 import AudiovisualDashboard from "./pages/Audiovisual/Dashboard";
@@ -375,6 +377,24 @@ function App() {
                 <Route path="/administrativo/propostas" element={
                   <ProtectedRoute module="administrativo">
                     <Layout><Propostas /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/admin/contratos" element={
+                  <ProtectedRoute module="administrativo">
+                    <Layout><Contratos /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/admin/contratos/new" element={
+                  <ProtectedRoute module="administrativo">
+                    <Layout><ContratoForm /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/admin/contratos/:id" element={
+                  <ProtectedRoute module="administrativo">
+                    <Layout><ContratoForm /></Layout>
                   </ProtectedRoute>
                 } />
                 
