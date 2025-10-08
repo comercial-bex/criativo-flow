@@ -39,7 +39,7 @@ export function ResponsiveLayout({ children }: ResponsiveLayoutProps) {
   return (
     <SidebarProvider defaultOpen={true}>
       <div 
-        className="min-h-screen w-full bg-background grid grid-cols-[auto_1fr]"
+        className="min-h-screen w-screen bg-background grid grid-cols-[auto_1fr] overflow-x-hidden"
         data-sidebar="expanded"
       >
         {/* Fixed Sidebar - Always visible on desktop */}
