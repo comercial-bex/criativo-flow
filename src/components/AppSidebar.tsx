@@ -41,7 +41,8 @@ import {
   Brain,
   Trophy,
   Package,
-  FileType
+  FileType,
+  Bell
 } from "lucide-react"
 import { NavLink, useLocation } from "react-router-dom"
 import React from "react"
@@ -228,6 +229,7 @@ const modules = [
     icon: Shield,
     items: [
       { title: "Painel Admin", url: "/admin/painel", icon: Shield },
+      { title: "Central de Notificações", url: "/admin/central-notificacoes", icon: Bell },
       { title: "Todas as Tarefas", url: "/admin/tarefas", icon: ClipboardCheck },
       { title: "Usuários", url: "/admin/usuarios", icon: Users2 },
       { title: "Logs do Sistema", url: "/admin/logs", icon: Activity },

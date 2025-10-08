@@ -100,6 +100,7 @@ import GamificacaoAdmin from "./pages/GamificacaoAdmin";
 import AprovacaoJob from "./pages/AprovacaoJob";
 import AdminPainel from "./pages/Admin/Painel";
 import AdminTarefas from "./pages/Admin/Tarefas";
+import CentralNotificacoes from "./pages/Admin/CentralNotificacoes";
 import ClienteTarefas from "./pages/Cliente/Tarefas";
 import IntelligenceDashboard from "./components/IntelligenceDashboard";
 import GRSAgenda from "./pages/GRS/Agenda";
@@ -698,6 +699,12 @@ function App() {
                 <Route path="/admin/tarefas" element={
                   <ProtectedRoute requiredRole="admin">
                     <Layout><AdminTarefas /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/admin/central-notificacoes" element={
+                  <ProtectedRoute requiredRole="admin">
+                    <Layout><CentralNotificacoes /></Layout>
                   </ProtectedRoute>
                 } />
 
