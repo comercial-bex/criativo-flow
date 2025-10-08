@@ -1037,60 +1037,201 @@ export type Database = {
         }
         Relationships: []
       }
+      contrato_itens: {
+        Row: {
+          contrato_id: string | null
+          created_at: string | null
+          descricao: string
+          id: string
+          imposto_percent: number | null
+          ordem: number | null
+          preco_unitario: number
+          produto_id: string | null
+          quantidade: number
+          subtotal_item: number | null
+          unidade: string | null
+        }
+        Insert: {
+          contrato_id?: string | null
+          created_at?: string | null
+          descricao: string
+          id?: string
+          imposto_percent?: number | null
+          ordem?: number | null
+          preco_unitario: number
+          produto_id?: string | null
+          quantidade?: number
+          subtotal_item?: number | null
+          unidade?: string | null
+        }
+        Update: {
+          contrato_id?: string | null
+          created_at?: string | null
+          descricao?: string
+          id?: string
+          imposto_percent?: number | null
+          ordem?: number | null
+          preco_unitario?: number
+          produto_id?: string | null
+          quantidade?: number
+          subtotal_item?: number | null
+          unidade?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contrato_itens_contrato_id_fkey"
+            columns: ["contrato_id"]
+            isOneToOne: false
+            referencedRelation: "contratos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contrato_itens_produto_id_fkey"
+            columns: ["produto_id"]
+            isOneToOne: false
+            referencedRelation: "produtos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contrato_templates: {
+        Row: {
+          ativo: boolean | null
+          categoria: string | null
+          corpo_html: string
+          created_at: string | null
+          id: string
+          nome: string
+          updated_at: string | null
+          variaveis_disponiveis: Json | null
+        }
+        Insert: {
+          ativo?: boolean | null
+          categoria?: string | null
+          corpo_html: string
+          created_at?: string | null
+          id?: string
+          nome: string
+          updated_at?: string | null
+          variaveis_disponiveis?: Json | null
+        }
+        Update: {
+          ativo?: boolean | null
+          categoria?: string | null
+          corpo_html?: string
+          created_at?: string | null
+          id?: string
+          nome?: string
+          updated_at?: string | null
+          variaveis_disponiveis?: Json | null
+        }
+        Relationships: []
+      }
       contratos: {
         Row: {
+          anexo_pdf_url: string | null
           arquivo_assinado_url: string | null
           arquivo_url: string | null
           assinado_em: string | null
           assinado_por: string | null
           cliente_id: string
+          condicoes_comerciais: string | null
+          confidencialidade: boolean | null
           created_at: string
+          created_by: string | null
           criado_por: string | null
           data_fim: string | null
           data_inicio: string | null
           descricao: string | null
+          escopo: string | null
+          foro: string | null
           id: string
+          numero: string | null
+          projeto_id: string | null
+          proposta_id: string | null
+          propriedade_intelectual: string | null
+          reajuste_indice: string | null
+          renovacao: string | null
+          rescisao: string | null
+          sla: string | null
           status: string
           tipo: string
           titulo: string
           updated_at: string
+          updated_by: string | null
+          valor_avulso: number | null
           valor_mensal: number | null
+          valor_recorrente: number | null
         }
         Insert: {
+          anexo_pdf_url?: string | null
           arquivo_assinado_url?: string | null
           arquivo_url?: string | null
           assinado_em?: string | null
           assinado_por?: string | null
           cliente_id: string
+          condicoes_comerciais?: string | null
+          confidencialidade?: boolean | null
           created_at?: string
+          created_by?: string | null
           criado_por?: string | null
           data_fim?: string | null
           data_inicio?: string | null
           descricao?: string | null
+          escopo?: string | null
+          foro?: string | null
           id?: string
+          numero?: string | null
+          projeto_id?: string | null
+          proposta_id?: string | null
+          propriedade_intelectual?: string | null
+          reajuste_indice?: string | null
+          renovacao?: string | null
+          rescisao?: string | null
+          sla?: string | null
           status?: string
           tipo: string
           titulo: string
           updated_at?: string
+          updated_by?: string | null
+          valor_avulso?: number | null
           valor_mensal?: number | null
+          valor_recorrente?: number | null
         }
         Update: {
+          anexo_pdf_url?: string | null
           arquivo_assinado_url?: string | null
           arquivo_url?: string | null
           assinado_em?: string | null
           assinado_por?: string | null
           cliente_id?: string
+          condicoes_comerciais?: string | null
+          confidencialidade?: boolean | null
           created_at?: string
+          created_by?: string | null
           criado_por?: string | null
           data_fim?: string | null
           data_inicio?: string | null
           descricao?: string | null
+          escopo?: string | null
+          foro?: string | null
           id?: string
+          numero?: string | null
+          projeto_id?: string | null
+          proposta_id?: string | null
+          propriedade_intelectual?: string | null
+          reajuste_indice?: string | null
+          renovacao?: string | null
+          rescisao?: string | null
+          sla?: string | null
           status?: string
           tipo?: string
           titulo?: string
           updated_at?: string
+          updated_by?: string | null
+          valor_avulso?: number | null
           valor_mensal?: number | null
+          valor_recorrente?: number | null
         }
         Relationships: [
           {
@@ -1122,6 +1263,20 @@ export type Database = {
             referencedColumns: ["cliente_id"]
           },
           {
+            foreignKeyName: "contratos_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contratos_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "vw_client_metrics"
+            referencedColumns: ["responsavel_id"]
+          },
+          {
             foreignKeyName: "contratos_criado_por_fkey"
             columns: ["criado_por"]
             isOneToOne: false
@@ -1131,6 +1286,34 @@ export type Database = {
           {
             foreignKeyName: "contratos_criado_por_fkey"
             columns: ["criado_por"]
+            isOneToOne: false
+            referencedRelation: "vw_client_metrics"
+            referencedColumns: ["responsavel_id"]
+          },
+          {
+            foreignKeyName: "contratos_projeto_id_fkey"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "projetos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contratos_proposta_id_fkey"
+            columns: ["proposta_id"]
+            isOneToOne: false
+            referencedRelation: "propostas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contratos_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contratos_updated_by_fkey"
+            columns: ["updated_by"]
             isOneToOne: false
             referencedRelation: "vw_client_metrics"
             referencedColumns: ["responsavel_id"]
@@ -1556,6 +1739,96 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      faturas: {
+        Row: {
+          cliente_id: string | null
+          comprovante_url: string | null
+          contrato_id: string | null
+          created_at: string | null
+          descricao: string
+          id: string
+          numero: string | null
+          observacoes: string | null
+          pago_em: string | null
+          projeto_id: string | null
+          proposta_id: string | null
+          status: string | null
+          updated_at: string | null
+          valor: number
+          vencimento: string
+        }
+        Insert: {
+          cliente_id?: string | null
+          comprovante_url?: string | null
+          contrato_id?: string | null
+          created_at?: string | null
+          descricao: string
+          id?: string
+          numero?: string | null
+          observacoes?: string | null
+          pago_em?: string | null
+          projeto_id?: string | null
+          proposta_id?: string | null
+          status?: string | null
+          updated_at?: string | null
+          valor: number
+          vencimento: string
+        }
+        Update: {
+          cliente_id?: string | null
+          comprovante_url?: string | null
+          contrato_id?: string | null
+          created_at?: string | null
+          descricao?: string
+          id?: string
+          numero?: string | null
+          observacoes?: string | null
+          pago_em?: string | null
+          projeto_id?: string | null
+          proposta_id?: string | null
+          status?: string | null
+          updated_at?: string | null
+          valor?: number
+          vencimento?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "faturas_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "faturas_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "vw_client_metrics"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "faturas_contrato_id_fkey"
+            columns: ["contrato_id"]
+            isOneToOne: false
+            referencedRelation: "contratos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "faturas_projeto_id_fkey"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "projetos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "faturas_proposta_id_fkey"
+            columns: ["proposta_id"]
+            isOneToOne: false
+            referencedRelation: "propostas"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       financeiro_previsao: {
         Row: {
@@ -2231,10 +2504,15 @@ export type Database = {
           desconto_percentual: number | null
           descricao: string | null
           id: string
+          imposto_percent: number | null
           orcamento_id: string
+          ordem: number | null
           preco_unitario: number
+          produto_id: string | null
           produto_servico: string
           quantidade: number
+          subtotal_item: number | null
+          unidade: string | null
           updated_at: string
           valor_total: number
         }
@@ -2243,10 +2521,15 @@ export type Database = {
           desconto_percentual?: number | null
           descricao?: string | null
           id?: string
+          imposto_percent?: number | null
           orcamento_id: string
+          ordem?: number | null
           preco_unitario: number
+          produto_id?: string | null
           produto_servico: string
           quantidade?: number
+          subtotal_item?: number | null
+          unidade?: string | null
           updated_at?: string
           valor_total: number
         }
@@ -2255,10 +2538,15 @@ export type Database = {
           desconto_percentual?: number | null
           descricao?: string | null
           id?: string
+          imposto_percent?: number | null
           orcamento_id?: string
+          ordem?: number | null
           preco_unitario?: number
+          produto_id?: string | null
           produto_servico?: string
           quantidade?: number
+          subtotal_item?: number | null
+          unidade?: string | null
           updated_at?: string
           valor_total?: number
         }
@@ -2270,54 +2558,97 @@ export type Database = {
             referencedRelation: "orcamentos"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "orcamento_itens_produto_id_fkey"
+            columns: ["produto_id"]
+            isOneToOne: false
+            referencedRelation: "produtos"
+            referencedColumns: ["id"]
+          },
         ]
       }
       orcamentos: {
         Row: {
           cliente_id: string | null
+          condicoes_pagamento: string | null
+          contato_email: string | null
+          contato_nome: string | null
+          contato_tel: string | null
           created_at: string
+          created_by: string | null
           data_validade: string
           desconto_percentual: number | null
           desconto_valor: number | null
           descricao: string | null
           id: string
+          impostos: number | null
+          notas_internas: string | null
+          numero: string | null
           observacoes: string | null
+          outros: number | null
+          projeto_id: string | null
           responsavel_id: string | null
           status: string
+          subtotal: number | null
           titulo: string
           updated_at: string
+          updated_by: string | null
           valor_final: number
           valor_total: number
         }
         Insert: {
           cliente_id?: string | null
+          condicoes_pagamento?: string | null
+          contato_email?: string | null
+          contato_nome?: string | null
+          contato_tel?: string | null
           created_at?: string
+          created_by?: string | null
           data_validade: string
           desconto_percentual?: number | null
           desconto_valor?: number | null
           descricao?: string | null
           id?: string
+          impostos?: number | null
+          notas_internas?: string | null
+          numero?: string | null
           observacoes?: string | null
+          outros?: number | null
+          projeto_id?: string | null
           responsavel_id?: string | null
           status?: string
+          subtotal?: number | null
           titulo: string
           updated_at?: string
+          updated_by?: string | null
           valor_final?: number
           valor_total?: number
         }
         Update: {
           cliente_id?: string | null
+          condicoes_pagamento?: string | null
+          contato_email?: string | null
+          contato_nome?: string | null
+          contato_tel?: string | null
           created_at?: string
+          created_by?: string | null
           data_validade?: string
           desconto_percentual?: number | null
           desconto_valor?: number | null
           descricao?: string | null
           id?: string
+          impostos?: number | null
+          notas_internas?: string | null
+          numero?: string | null
           observacoes?: string | null
+          outros?: number | null
+          projeto_id?: string | null
           responsavel_id?: string | null
           status?: string
+          subtotal?: number | null
           titulo?: string
           updated_at?: string
+          updated_by?: string | null
           valor_final?: number
           valor_total?: number
         }
@@ -2335,6 +2666,82 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "vw_client_metrics"
             referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "orcamentos_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orcamentos_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "vw_client_metrics"
+            referencedColumns: ["responsavel_id"]
+          },
+          {
+            foreignKeyName: "orcamentos_projeto_id_fkey"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "projetos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orcamentos_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orcamentos_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "vw_client_metrics"
+            referencedColumns: ["responsavel_id"]
+          },
+        ]
+      }
+      pagamentos: {
+        Row: {
+          comprovante_url: string | null
+          created_at: string | null
+          data_pagamento: string
+          fatura_id: string | null
+          id: string
+          metodo: string | null
+          observacoes: string | null
+          valor: number
+        }
+        Insert: {
+          comprovante_url?: string | null
+          created_at?: string | null
+          data_pagamento: string
+          fatura_id?: string | null
+          id?: string
+          metodo?: string | null
+          observacoes?: string | null
+          valor: number
+        }
+        Update: {
+          comprovante_url?: string | null
+          created_at?: string | null
+          data_pagamento?: string
+          fatura_id?: string | null
+          id?: string
+          metodo?: string | null
+          observacoes?: string | null
+          valor?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pagamentos_fatura_id_fkey"
+            columns: ["fatura_id"]
+            isOneToOne: false
+            referencedRelation: "faturas"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -2716,6 +3123,96 @@ export type Database = {
           },
         ]
       }
+      produto_componentes: {
+        Row: {
+          id: string
+          produto_filho_id: string | null
+          produto_pai_id: string | null
+          quantidade: number | null
+        }
+        Insert: {
+          id?: string
+          produto_filho_id?: string | null
+          produto_pai_id?: string | null
+          quantidade?: number | null
+        }
+        Update: {
+          id?: string
+          produto_filho_id?: string | null
+          produto_pai_id?: string | null
+          quantidade?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "produto_componentes_produto_filho_id_fkey"
+            columns: ["produto_filho_id"]
+            isOneToOne: false
+            referencedRelation: "produtos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "produto_componentes_produto_pai_id_fkey"
+            columns: ["produto_pai_id"]
+            isOneToOne: false
+            referencedRelation: "produtos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      produtos: {
+        Row: {
+          ativo: boolean | null
+          categoria: string | null
+          created_at: string | null
+          custo: number | null
+          descricao: string | null
+          id: string
+          imposto_percent: number | null
+          lead_time_dias: number | null
+          nome: string
+          observacoes: string | null
+          preco_padrao: number
+          sku: string
+          tipo: string | null
+          unidade: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          ativo?: boolean | null
+          categoria?: string | null
+          created_at?: string | null
+          custo?: number | null
+          descricao?: string | null
+          id?: string
+          imposto_percent?: number | null
+          lead_time_dias?: number | null
+          nome: string
+          observacoes?: string | null
+          preco_padrao: number
+          sku: string
+          tipo?: string | null
+          unidade?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          ativo?: boolean | null
+          categoria?: string | null
+          created_at?: string | null
+          custo?: number | null
+          descricao?: string | null
+          id?: string
+          imposto_percent?: number | null
+          lead_time_dias?: number | null
+          nome?: string
+          observacoes?: string | null
+          preco_padrao?: number
+          sku?: string
+          tipo?: string | null
+          unidade?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           aprovado_por: string | null
@@ -3027,62 +3524,231 @@ export type Database = {
           },
         ]
       }
+      proposta_itens: {
+        Row: {
+          created_at: string | null
+          desconto_percent: number | null
+          descricao: string
+          id: string
+          imposto_percent: number | null
+          ordem: number | null
+          preco_unitario: number
+          produto_id: string | null
+          proposta_id: string | null
+          quantidade: number
+          subtotal_item: number | null
+          unidade: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          desconto_percent?: number | null
+          descricao: string
+          id?: string
+          imposto_percent?: number | null
+          ordem?: number | null
+          preco_unitario: number
+          produto_id?: string | null
+          proposta_id?: string | null
+          quantidade?: number
+          subtotal_item?: number | null
+          unidade?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          desconto_percent?: number | null
+          descricao?: string
+          id?: string
+          imposto_percent?: number | null
+          ordem?: number | null
+          preco_unitario?: number
+          produto_id?: string | null
+          proposta_id?: string | null
+          quantidade?: number
+          subtotal_item?: number | null
+          unidade?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "proposta_itens_produto_id_fkey"
+            columns: ["produto_id"]
+            isOneToOne: false
+            referencedRelation: "produtos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "proposta_itens_proposta_id_fkey"
+            columns: ["proposta_id"]
+            isOneToOne: false
+            referencedRelation: "propostas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       propostas: {
         Row: {
           assinatura_data: string | null
           assinatura_status: string
           assinatura_url: string | null
+          cliente_id: string | null
+          condicoes_pagamento: string | null
+          contato_email: string | null
+          contato_nome: string | null
+          contato_tel: string | null
           created_at: string
+          created_by: string | null
           data_envio: string | null
+          descontos: number | null
           id: string
+          impostos: number | null
           link_publico: string | null
+          multas_juros: string | null
+          notas_internas: string | null
+          numero: string | null
+          observacoes_cliente: string | null
           orcamento_id: string
+          outros: number | null
           pdf_assinado_path: string | null
           pdf_path: string | null
+          projeto_id: string | null
+          reajuste: string | null
           responsavel_id: string | null
+          subtotal: number | null
           titulo: string
+          total: number | null
           updated_at: string
+          updated_by: string | null
+          validade: string | null
+          versao: number | null
           visualizado_em: string | null
         }
         Insert: {
           assinatura_data?: string | null
           assinatura_status?: string
           assinatura_url?: string | null
+          cliente_id?: string | null
+          condicoes_pagamento?: string | null
+          contato_email?: string | null
+          contato_nome?: string | null
+          contato_tel?: string | null
           created_at?: string
+          created_by?: string | null
           data_envio?: string | null
+          descontos?: number | null
           id?: string
+          impostos?: number | null
           link_publico?: string | null
+          multas_juros?: string | null
+          notas_internas?: string | null
+          numero?: string | null
+          observacoes_cliente?: string | null
           orcamento_id: string
+          outros?: number | null
           pdf_assinado_path?: string | null
           pdf_path?: string | null
+          projeto_id?: string | null
+          reajuste?: string | null
           responsavel_id?: string | null
+          subtotal?: number | null
           titulo: string
+          total?: number | null
           updated_at?: string
+          updated_by?: string | null
+          validade?: string | null
+          versao?: number | null
           visualizado_em?: string | null
         }
         Update: {
           assinatura_data?: string | null
           assinatura_status?: string
           assinatura_url?: string | null
+          cliente_id?: string | null
+          condicoes_pagamento?: string | null
+          contato_email?: string | null
+          contato_nome?: string | null
+          contato_tel?: string | null
           created_at?: string
+          created_by?: string | null
           data_envio?: string | null
+          descontos?: number | null
           id?: string
+          impostos?: number | null
           link_publico?: string | null
+          multas_juros?: string | null
+          notas_internas?: string | null
+          numero?: string | null
+          observacoes_cliente?: string | null
           orcamento_id?: string
+          outros?: number | null
           pdf_assinado_path?: string | null
           pdf_path?: string | null
+          projeto_id?: string | null
+          reajuste?: string | null
           responsavel_id?: string | null
+          subtotal?: number | null
           titulo?: string
+          total?: number | null
           updated_at?: string
+          updated_by?: string | null
+          validade?: string | null
+          versao?: number | null
           visualizado_em?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "propostas_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "propostas_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "vw_client_metrics"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "propostas_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "propostas_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "vw_client_metrics"
+            referencedColumns: ["responsavel_id"]
+          },
           {
             foreignKeyName: "propostas_orcamento_id_fkey"
             columns: ["orcamento_id"]
             isOneToOne: false
             referencedRelation: "orcamentos"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "propostas_projeto_id_fkey"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "projetos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "propostas_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "propostas_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "vw_client_metrics"
+            referencedColumns: ["responsavel_id"]
           },
         ]
       }
@@ -4096,6 +4762,10 @@ export type Database = {
       }
       generate_content_with_openai: {
         Args: { prompt_text: string }
+        Returns: string
+      }
+      gerar_numero_documento: {
+        Args: { ano: number; tipo: string }
         Returns: string
       }
       get_filtered_customer_data: {
