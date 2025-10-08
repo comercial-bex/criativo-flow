@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useProdutos } from "@/hooks/useProdutos";
+import { useProdutosFinanceiro } from "@/hooks/useProdutosFinanceiro";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Trash2, Search, GripVertical } from "lucide-react";
+import { Plus, Trash2, Search, GripVertical, Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
   Command,
@@ -33,6 +34,7 @@ interface ItemSelectorProps {
   onChange: (items: Item[]) => void;
   showDesconto?: boolean;
   showImposto?: boolean;
+  clienteId?: string;
 }
 
 export default function ItemSelector({
@@ -40,11 +42,45 @@ export default function ItemSelector({
   onChange,
   showDesconto = true,
   showImposto = false,
+  clienteId,
 }: ItemSelectorProps) {
   const { produtos } = useProdutos();
+  const { fetchTempDataByCliente, markAsUsed } = useProdutosFinanceiro();
   const [searchOpen, setSearchOpen] = useState(false);
+  const [produtosSugeridos, setProdutosSugeridos] = useState<any[]>([]);
 
   const produtosAtivos = produtos?.filter((p) => p.ativo) || [];
+
+  useEffect(() => {
+    if (clienteId) {
+      loadProdutosSugeridos();
+    }
+  }, [clienteId]);
+
+  const loadProdutosSugeridos = async () => {
+    if (!clienteId) return;
+    try {
+      const data = await fetchTempDataByCliente(clienteId);
+      setProdutosSugeridos(data);
+    } catch (error) {
+      console.error("Erro ao carregar produtos sugeridos:", error);
+    }
+  };
+
+  const addItemFromSugestao = (sugestao: any) => {
+    const newItem: Item = {
+      produto_id: sugestao.produto_id,
+      descricao: sugestao.produto_nome,
+      quantidade: 1,
+      unidade: "unidade",
+      preco_unitario: sugestao.valor_unitario || 0,
+      desconto_percent: 0,
+      imposto_percent: 0,
+      subtotal_item: sugestao.valor_unitario || 0,
+      ordem: items.length,
+    };
+    onChange([...items, newItem]);
+  };
 
   const addProduto = (produto: any) => {
     const newItem: Item = {
@@ -128,6 +164,23 @@ export default function ItemSelector({
         <div className="flex items-center justify-between">
           <CardTitle>Itens</CardTitle>
           <div className="flex gap-2">
+            {produtosSugeridos.length > 0 && (
+              <div className="mr-auto flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-primary" />
+                <span className="text-sm text-muted-foreground">Produtos recentes do cliente:</span>
+                {produtosSugeridos.slice(0, 3).map((sugestao) => (
+                  <Button
+                    key={sugestao.id}
+                    variant="outline"
+                    size="sm"
+                    onClick={() => addItemFromSugestao(sugestao)}
+                  >
+                    <Plus className="w-3 h-3 mr-1" />
+                    {sugestao.produto_nome}
+                  </Button>
+                ))}
+              </div>
+            )}
             <Popover open={searchOpen} onOpenChange={setSearchOpen}>
               <PopoverTrigger asChild>
                 <Button variant="outline" size="sm">

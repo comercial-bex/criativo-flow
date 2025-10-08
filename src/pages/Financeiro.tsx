@@ -16,6 +16,9 @@ import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { ProdutoSelector } from "@/components/Financeiro/ProdutoSelector";
+import { CadastroProdutoRapido } from "@/components/Financeiro/CadastroProdutoRapido";
+import { useProdutosFinanceiro } from "@/hooks/useProdutosFinanceiro";
 
 interface CategoriaFinanceira {
   id: string;
@@ -65,6 +68,9 @@ export default function Financeiro() {
   const [editingTransaction, setEditingTransaction] = useState<TransacaoFinanceira | null>(null);
   const { toast } = useToast();
 
+  const [modalCadastroRapido, setModalCadastroRapido] = useState(false);
+  const { produtosDisponiveis, createTempData } = useProdutosFinanceiro();
+  
   const [novaTransacao, setNovaTransacao] = useState({
     titulo: "",
     descricao: "",
@@ -76,6 +82,7 @@ export default function Financeiro() {
     categoria_id: "",
     cliente_id: "",
     projeto_id: "",
+    produto_id: "",
     observacoes: ""
   });
 
@@ -161,6 +168,7 @@ export default function Financeiro() {
         categoria_id: novaTransacao.categoria_id || null,
         cliente_id: novaTransacao.cliente_id || null,
         projeto_id: novaTransacao.projeto_id || null,
+        produto_id: novaTransacao.produto_id || null,
         observacoes: novaTransacao.observacoes?.trim() || null
       };
 
@@ -177,11 +185,29 @@ export default function Financeiro() {
           description: "Transação atualizada com sucesso!"
         });
       } else {
-        const { error } = await supabase
+        const { data: novaTransacaoData, error } = await supabase
           .from("transacoes_financeiras")
-          .insert([transacaoData]);
+          .insert([transacaoData])
+          .select()
+          .single();
 
         if (error) throw error;
+
+        // Sincronização automática com módulo administrativo
+        if (novaTransacao.produto_id && novaTransacao.cliente_id) {
+          const produtoInfo = produtosDisponiveis.find(p => p.id === novaTransacao.produto_id);
+          
+          if (produtoInfo) {
+            createTempData({
+              cliente_id: novaTransacao.cliente_id,
+              produto_id: produtoInfo.id,
+              produto_nome: produtoInfo.nome,
+              valor_unitario: produtoInfo.preco_padrao,
+              categoria: produtoInfo.categoria || undefined,
+              descricao_curta: produtoInfo.descricao || undefined,
+            });
+          }
+        }
 
         toast({
           title: "Sucesso",
@@ -213,6 +239,7 @@ export default function Financeiro() {
       categoria_id: "",
       cliente_id: "",
       projeto_id: "",
+      produto_id: "",
       observacoes: ""
     });
     setEditingTransaction(null);
@@ -231,6 +258,7 @@ export default function Financeiro() {
       categoria_id: transacao.categoria_id || "",
       cliente_id: transacao.cliente_id || "",
       projeto_id: transacao.projeto_id || "",
+      produto_id: "",
       observacoes: transacao.observacoes || ""
     });
     setIsDialogOpen(true);
@@ -541,6 +569,25 @@ export default function Financeiro() {
                 </Select>
               </div>
 
+              <div className="grid grid-cols-4 items-start gap-4">
+                <Label className="text-right pt-3">Produto/Serviço</Label>
+                <div className="col-span-3">
+                  <ProdutoSelector
+                    value={novaTransacao.produto_id}
+                    onChange={(produtoId, produtoData) => {
+                      setNovaTransacao({ ...novaTransacao, produto_id: produtoId || "" });
+                      if (produtoData && !novaTransacao.valor) {
+                        setNovaTransacao(prev => ({
+                          ...prev,
+                          valor: produtoData.preco_padrao.toString()
+                        }));
+                      }
+                    }}
+                    onCreateNew={() => setModalCadastroRapido(true)}
+                  />
+                </div>
+              </div>
+
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="data_vencimento" className="text-right">
                   Data Vencimento
@@ -632,6 +679,15 @@ export default function Financeiro() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        <CadastroProdutoRapido
+          open={modalCadastroRapido}
+          onOpenChange={setModalCadastroRapido}
+          onSuccess={(produtoId) => {
+            setNovaTransacao({ ...novaTransacao, produto_id: produtoId });
+            fetchData();
+          }}
+        />
       </div>
 
       {/* Filtros */}

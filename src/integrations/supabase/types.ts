@@ -14,6 +14,79 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_temp_data: {
+        Row: {
+          categoria: string | null
+          cliente_id: string
+          created_at: string
+          created_by: string | null
+          descricao_curta: string | null
+          id: string
+          metadata: Json | null
+          origem: string
+          produto_id: string
+          produto_nome: string
+          used_at: string | null
+          used_in_document_id: string | null
+          used_in_document_type: string | null
+          valor_unitario: number
+        }
+        Insert: {
+          categoria?: string | null
+          cliente_id: string
+          created_at?: string
+          created_by?: string | null
+          descricao_curta?: string | null
+          id?: string
+          metadata?: Json | null
+          origem?: string
+          produto_id: string
+          produto_nome: string
+          used_at?: string | null
+          used_in_document_id?: string | null
+          used_in_document_type?: string | null
+          valor_unitario: number
+        }
+        Update: {
+          categoria?: string | null
+          cliente_id?: string
+          created_at?: string
+          created_by?: string | null
+          descricao_curta?: string | null
+          id?: string
+          metadata?: Json | null
+          origem?: string
+          produto_id?: string
+          produto_nome?: string
+          used_at?: string | null
+          used_in_document_id?: string | null
+          used_in_document_type?: string | null
+          valor_unitario?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_temp_data_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "admin_temp_data_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "vw_client_metrics"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "admin_temp_data_produto_id_fkey"
+            columns: ["produto_id"]
+            isOneToOne: false
+            referencedRelation: "produtos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ai_cache: {
         Row: {
           cache_key: string
@@ -4299,6 +4372,7 @@ export type Database = {
           descricao: string | null
           id: string
           observacoes: string | null
+          produto_id: string | null
           projeto_id: string | null
           responsavel_id: string | null
           status: string
@@ -4316,6 +4390,7 @@ export type Database = {
           descricao?: string | null
           id?: string
           observacoes?: string | null
+          produto_id?: string | null
           projeto_id?: string | null
           responsavel_id?: string | null
           status?: string
@@ -4333,6 +4408,7 @@ export type Database = {
           descricao?: string | null
           id?: string
           observacoes?: string | null
+          produto_id?: string | null
           projeto_id?: string | null
           responsavel_id?: string | null
           status?: string
@@ -4362,6 +4438,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "vw_client_metrics"
             referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "transacoes_financeiras_produto_id_fkey"
+            columns: ["produto_id"]
+            isOneToOne: false
+            referencedRelation: "produtos"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "transacoes_financeiras_projeto_id_fkey"

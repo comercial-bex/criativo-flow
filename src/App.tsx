@@ -21,6 +21,8 @@ import CRM from "./pages/CRM";
 import Clientes from "./pages/Clientes";
 import Financeiro from "./pages/Financeiro";
 import CategoriasFinanceiras from "./pages/CategoriasFinanceiras";
+import ProdutosFinanceiro from "./pages/Financeiro/Produtos";
+import ProdutoHistorico from "./pages/Financeiro/ProdutoHistorico";
 import Configuracoes from "./pages/Configuracoes";
 import Funcoes from "./pages/Configuracoes/Funcoes";
 import Perfil from "./pages/Perfil";
@@ -213,6 +215,18 @@ function App() {
                 <Route path="/categorias-financeiras" element={
                   <ProtectedRoute module="financeiro">
                     <Layout><CategoriasFinanceiras /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/financeiro/produtos" element={
+                  <ProtectedRoute module="financeiro">
+                    <Layout><ProdutosFinanceiro /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/financeiro/produtos/:id/historico" element={
+                  <ProtectedRoute module="financeiro">
+                    <Layout><ProdutoHistorico /></Layout>
                   </ProtectedRoute>
                 } />
                 

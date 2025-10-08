@@ -39,7 +39,8 @@ import {
   Shield,
   Activity,
   Brain,
-  Trophy
+  Trophy,
+  Package
 } from "lucide-react"
 import { NavLink, useLocation } from "react-router-dom"
 import React from "react"
@@ -150,6 +151,7 @@ const modules = [
       { title: "Financeiro", url: "/financeiro", icon: DollarSign },
       { title: "Planos", url: "/planos", icon: CreditCard },
       { title: "Categorias", url: "/categorias-financeiras", icon: FileText },
+      { title: "Produtos", url: "/financeiro/produtos", icon: Package },
       { title: "Meus Ganhos", url: "/financeiro/ganhos", icon: TrendingUp },
     ],
     permissions: ["financeiro"]
