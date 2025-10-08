@@ -401,13 +401,13 @@ function App() {
                 
                 <Route path="/admin/contratos/:id" element={
                   <ProtectedRoute module="administrativo">
-                    <Layout><ContratoForm /></Layout>
+                    <Layout><ContratoDetails /></Layout>
                   </ProtectedRoute>
                 } />
                 
-                <Route path="/admin/contratos/details/:id" element={
+                <Route path="/admin/contratos/:id/edit" element={
                   <ProtectedRoute module="administrativo">
-                    <Layout><ContratoDetails /></Layout>
+                    <Layout><ContratoForm /></Layout>
                   </ProtectedRoute>
                 } />
                 

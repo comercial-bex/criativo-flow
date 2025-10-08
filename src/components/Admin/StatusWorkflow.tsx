@@ -2,13 +2,14 @@ import { CheckCircle, Circle, Clock, FileSignature, FileCheck } from "lucide-rea
 import { cn } from "@/lib/utils";
 
 interface StatusWorkflowProps {
-  currentStatus: "rascunho" | "enviado" | "assinado" | "cancelado" | "vigente";
+  currentStatus: "rascunho" | "aprovacao_interna" | "enviado_assinatura" | "assinado" | "vigente" | "encerrado" | "cancelado";
   type?: "contrato" | "proposta";
 }
 
 const contratoSteps = [
   { key: "rascunho", label: "Rascunho", icon: Circle },
-  { key: "enviado", label: "Enviado", icon: Clock },
+  { key: "aprovacao_interna", label: "Aprovação", icon: Clock },
+  { key: "enviado_assinatura", label: "Enviado", icon: Clock },
   { key: "assinado", label: "Assinado", icon: FileSignature },
   { key: "vigente", label: "Vigente", icon: FileCheck },
 ];
@@ -22,9 +23,12 @@ const propostaSteps = [
 const statusOrder: Record<string, number> = {
   rascunho: 0,
   pendente: 0,
+  aprovacao_interna: 1,
+  enviado_assinatura: 2,
   enviado: 1,
-  assinado: 2,
-  vigente: 3,
+  assinado: 3,
+  vigente: 4,
+  encerrado: -1,
   cancelado: -1,
 };
 
@@ -32,11 +36,11 @@ export function StatusWorkflow({ currentStatus, type = "contrato" }: StatusWorkf
   const steps = type === "contrato" ? contratoSteps : propostaSteps;
   const currentOrder = statusOrder[currentStatus];
 
-  if (currentStatus === "cancelado") {
+  if (currentStatus === "encerrado" || currentStatus === "cancelado") {
     return (
       <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4 text-center">
         <p className="text-sm font-medium text-destructive">
-          ❌ Cancelado
+          ❌ {currentStatus === "encerrado" ? "Encerrado" : "Cancelado"}
         </p>
       </div>
     );

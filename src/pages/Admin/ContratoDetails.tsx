@@ -27,18 +27,20 @@ import { useState } from "react";
 
 const statusColors: Record<string, string> = {
   rascunho: "bg-muted text-muted-foreground",
-  enviado: "bg-info/10 text-info border-info/20",
+  aprovacao_interna: "bg-yellow-100 text-yellow-800",
+  enviado_assinatura: "bg-blue-100 text-blue-800",
   assinado: "bg-warning/10 text-warning border-warning/20",
   vigente: "bg-success/10 text-success border-success/20",
-  cancelado: "bg-destructive/10 text-destructive border-destructive/20",
+  encerrado: "bg-destructive/10 text-destructive border-destructive/20",
 };
 
 const statusLabels: Record<string, string> = {
   rascunho: "Rascunho",
-  enviado: "Enviado",
+  aprovacao_interna: "Aprovação Interna",
+  enviado_assinatura: "Enviado p/ Assinatura",
   assinado: "Assinado",
   vigente: "Vigente",
-  cancelado: "Cancelado",
+  encerrado: "Encerrado",
 };
 
 export default function ContratoDetails() {
@@ -406,7 +408,7 @@ export default function ContratoDetails() {
                   </p>
                 )}
               </Card>
-            ) : contrato.status === "assinado" || contrato.status === "enviado" ? (
+            ) : contrato.status === "assinado" || contrato.status === "enviado_assinatura" ? (
               <div>
                 <h3 className="text-lg font-semibold mb-4">Upload do Contrato Assinado</h3>
                 <UploadPDF

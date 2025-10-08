@@ -24,15 +24,18 @@ export function ContratosTab({ clienteId }: ContratosTabProps) {
   const stats = {
     total: contracts.length,
     rascunho: contracts.filter((c) => c.status === "rascunho").length,
-    enviado: contracts.filter((c) => c.status === "enviado").length,
+    enviado: contracts.filter((c) => c.status === "enviado_assinatura").length,
     assinado: contracts.filter((c) => c.status === "assinado").length,
   };
 
   const getStatusBadge = (status: string) => {
     const variants = {
       rascunho: { variant: "secondary" as const, label: "Rascunho", className: "" },
-      enviado: { variant: "default" as const, label: "Enviado", className: "" },
+      aprovacao_interna: { variant: "default" as const, label: "Aprovação Interna", className: "" },
+      enviado_assinatura: { variant: "default" as const, label: "Enviado p/ Assinatura", className: "" },
       assinado: { variant: "outline" as const, label: "Assinado", className: "bg-green-500/10 text-green-700" },
+      vigente: { variant: "outline" as const, label: "Vigente", className: "bg-emerald-500/10 text-emerald-700" },
+      encerrado: { variant: "outline" as const, label: "Encerrado", className: "bg-red-500/10 text-red-700" },
       cancelado: { variant: "outline" as const, label: "Cancelado", className: "bg-red-500/10 text-red-700" },
     };
     const config = variants[status as keyof typeof variants] || variants.rascunho;
@@ -157,7 +160,7 @@ export function ContratosTab({ clienteId }: ContratosTabProps) {
                       Baixar
                     </Button>
                   )}
-                  {contract.status === "enviado" && (
+                  {contract.status === "enviado_assinatura" && (
                     <Button
                       size="sm"
                       variant="outline"

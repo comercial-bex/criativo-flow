@@ -14,6 +14,7 @@ import {
   Calculator,
   Briefcase,
   Signature,
+  FileSignature,
   Video,
   Camera,
   Film,
@@ -161,6 +162,7 @@ const modules = [
       { title: "Dashboard Admin", url: "/administrativo/dashboard", icon: Briefcase },
       { title: "Orçamentos", url: "/administrativo/orcamentos", icon: Calculator },
       { title: "Propostas", url: "/administrativo/propostas", icon: Signature },
+      { title: "Contratos", url: "/admin/contratos", icon: FileSignature },
     ],
     permissions: ["administrativo"]
   },
