@@ -10,28 +10,15 @@ import {
   Target,
   BarChart3,
   Settings,
-  Activity,
-  Image as ImageIcon,
-  BookOpen,
-  Video,
-  FileText,
-  Palette,
-  Sparkles,
-  MessageSquare
+  Activity
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { TarefasKanban } from "@/components/TarefasKanban";
-import { CardBriefingModal } from "@/components/briefings/CardBriefingModal";
-import { CarrosselBriefingModal } from "@/components/briefings/CarrosselBriefingModal";
-import { VTBriefingModal } from "@/components/briefings/VTBriefingModal";
-import { RoteiroBriefingModal } from "@/components/briefings/RoteiroBriefingModal";
-import { LogoBriefingModal } from "@/components/briefings/LogoBriefingModal";
-import { IdentidadeBriefingModal } from "@/components/briefings/IdentidadeBriefingModal";
-import { PostSocialBriefingModal } from "@/components/briefings/PostSocialBriefingModal";
-import { AudiovisualScheduleModal } from "@/components/AudiovisualScheduleModal";
+import { CreateTaskDropdown } from "@/components/CreateTaskDropdown";
+import { TaskFilters } from "@/components/TaskFilters";
 
 interface Cliente {
   id: string;
@@ -63,23 +50,7 @@ export default function ProjetoTarefas() {
   const [cliente, setCliente] = useState<Cliente | null>(null);
   const [projeto, setProjeto] = useState<Projeto | null>(null);
   const [loading, setLoading] = useState(true);
-  
-  const [cardModalOpen, setCardModalOpen] = useState(false);
-  const [carrosselModalOpen, setCarrosselModalOpen] = useState(false);
-  const [vtModalOpen, setVtModalOpen] = useState(false);
-  const [roteiroModalOpen, setRoteiroModalOpen] = useState(false);
-  const [logoModalOpen, setLogoModalOpen] = useState(false);
-  const [identidadeModalOpen, setIdentidadeModalOpen] = useState(false);
-  const [postSocialModalOpen, setPostSocialModalOpen] = useState(false);
-  const [audiovisualModalOpen, setAudiovisualModalOpen] = useState(false);
-
-  const handleTaskCreated = () => {
-    fetchData();
-  };
-
-  const handleNeedsCaptacao = () => {
-    setAudiovisualModalOpen(true);
-  };
+  const [filters, setFilters] = useState({});
 
   useEffect(() => {
     if (clienteId && projetoId) {
@@ -89,7 +60,6 @@ export default function ProjetoTarefas() {
 
   const fetchData = async () => {
     try {
-      // Buscar cliente
       const { data: clienteData, error: clienteError } = await supabase
         .from('clientes')
         .select('id, nome')
@@ -99,7 +69,6 @@ export default function ProjetoTarefas() {
       if (clienteError) throw clienteError;
       setCliente(clienteData);
 
-      // Buscar projeto
       const { data: projetoData, error: projetoError } = await supabase
         .from('projetos')
         .select(`
@@ -168,7 +137,7 @@ export default function ProjetoTarefas() {
 
   return (
     <div className="space-y-6">
-      {/* Header com breadcrumbs */}
+      {/* Header */}
       <div className="space-y-4">
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Button 
@@ -211,7 +180,6 @@ export default function ProjetoTarefas() {
           
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              {/* Status */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium">Status</span>
@@ -219,7 +187,6 @@ export default function ProjetoTarefas() {
                 </div>
               </div>
 
-              {/* Datas */}
               <div className="space-y-2">
                 {projeto.data_inicio && (
                   <div className="flex items-center gap-2 text-sm">
@@ -248,7 +215,6 @@ export default function ProjetoTarefas() {
                 )}
               </div>
 
-              {/* Orçamento */}
               <div className="space-y-2">
                 {projeto.orcamento && (
                   <div className="flex items-center gap-2 text-sm">
@@ -264,7 +230,6 @@ export default function ProjetoTarefas() {
               </div>
             </div>
 
-            {/* Responsável */}
             {projeto.profiles && (
               <div className="flex items-center gap-2 text-sm mt-4 pt-4 border-t">
                 <User className="h-4 w-4 text-muted-foreground" />
@@ -276,77 +241,16 @@ export default function ProjetoTarefas() {
         </Card>
       </div>
 
-      {/* Quick Actions */}
-      <Card className="bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5" />
-            Criar Demanda Rápida
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <Button 
-              onClick={() => setCardModalOpen(true)} 
-              variant="outline"
-              className="h-20 flex-col gap-2"
-            >
-              <ImageIcon className="h-5 w-5" />
-              <span>Card</span>
-            </Button>
-            <Button 
-              onClick={() => setCarrosselModalOpen(true)} 
-              variant="outline"
-              className="h-20 flex-col gap-2"
-            >
-              <BookOpen className="h-5 w-5" />
-              <span>Carrossel</span>
-            </Button>
-            <Button 
-              onClick={() => setVtModalOpen(true)} 
-              variant="outline"
-              className="h-20 flex-col gap-2"
-            >
-              <Video className="h-5 w-5" />
-              <span>VT</span>
-            </Button>
-            <Button 
-              onClick={() => setRoteiroModalOpen(true)} 
-              variant="outline"
-              className="h-20 flex-col gap-2"
-            >
-              <FileText className="h-5 w-5" />
-              <span>Roteiro</span>
-            </Button>
-            <Button 
-              onClick={() => setLogoModalOpen(true)} 
-              variant="outline"
-              className="h-20 flex-col gap-2"
-            >
-              <Palette className="h-5 w-5" />
-              <span>Logo</span>
-            </Button>
-            <Button 
-              onClick={() => setIdentidadeModalOpen(true)} 
-              variant="outline"
-              className="h-20 flex-col gap-2"
-            >
-              <Sparkles className="h-5 w-5" />
-              <span>Identidade</span>
-            </Button>
-            <Button 
-              onClick={() => setPostSocialModalOpen(true)} 
-              variant="outline"
-              className="h-20 flex-col gap-2"
-            >
-              <MessageSquare className="h-5 w-5" />
-              <span>Post Social</span>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Filtros e Ações */}
+      <div className="flex items-center justify-between">
+        <CreateTaskDropdown 
+          projetoId={projetoId!} 
+          onTaskCreated={fetchData}
+        />
+      </div>
 
-      {/* Kanban Board de Tarefas */}
+
+      {/* Kanban Board */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-semibold">Gestão de Tarefas</h2>
@@ -359,61 +263,9 @@ export default function ProjetoTarefas() {
           planejamento={{ id: projeto.id }}
           clienteId={clienteId!}
           projetoId={projetoId!}
+          filters={filters}
         />
       </div>
-
-      {/* Modals */}
-      <CardBriefingModal
-        open={cardModalOpen}
-        onOpenChange={setCardModalOpen}
-        projetoId={projetoId!}
-        onTaskCreated={handleTaskCreated}
-        onNeedsCaptacao={handleNeedsCaptacao}
-      />
-      <CarrosselBriefingModal
-        open={carrosselModalOpen}
-        onOpenChange={setCarrosselModalOpen}
-        projetoId={projetoId!}
-        onTaskCreated={handleTaskCreated}
-        onNeedsCaptacao={handleNeedsCaptacao}
-      />
-      <VTBriefingModal
-        open={vtModalOpen}
-        onOpenChange={setVtModalOpen}
-        projetoId={projetoId!}
-        onTaskCreated={handleTaskCreated}
-        onNeedsCaptacao={handleNeedsCaptacao}
-      />
-      <RoteiroBriefingModal
-        open={roteiroModalOpen}
-        onOpenChange={setRoteiroModalOpen}
-        projetoId={projetoId!}
-        onTaskCreated={handleTaskCreated}
-      />
-      <LogoBriefingModal
-        open={logoModalOpen}
-        onOpenChange={setLogoModalOpen}
-        projetoId={projetoId!}
-        onTaskCreated={handleTaskCreated}
-      />
-      <IdentidadeBriefingModal
-        open={identidadeModalOpen}
-        onOpenChange={setIdentidadeModalOpen}
-        projetoId={projetoId!}
-        onTaskCreated={handleTaskCreated}
-      />
-      <PostSocialBriefingModal
-        open={postSocialModalOpen}
-        onOpenChange={setPostSocialModalOpen}
-        projetoId={projetoId!}
-        onTaskCreated={handleTaskCreated}
-      />
-      <AudiovisualScheduleModal
-        open={audiovisualModalOpen}
-        onOpenChange={setAudiovisualModalOpen}
-        clienteId={clienteId}
-        onScheduleCreated={handleTaskCreated}
-      />
     </div>
   );
 }

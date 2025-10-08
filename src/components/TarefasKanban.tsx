@@ -38,6 +38,7 @@ interface TarefasKanbanProps {
   };
   clienteId: string;
   projetoId: string;
+  filters?: any;
 }
 
 interface Tarefa {

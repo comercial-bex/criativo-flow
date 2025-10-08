@@ -38,7 +38,7 @@ export function StandardTaskModal({
   onUpdate,
   profiles = []
 }: StandardTaskModalProps) {
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditing, setIsEditing] = useState(!task?.id); // Auto-edit mode se nova tarefa
   const [activeTab, setActiveTab] = useState('resumo');
   const [formData, setFormData] = useState<any>({});
   const [anexos, setAnexos] = useState<any[]>([]);
@@ -50,12 +50,13 @@ export function StandardTaskModal({
   useEffect(() => {
     if (task) {
       setFormData(task);
-      // Carregar anexos
-      supabase
-        .from('anexo')
-        .select('*')
-        .eq('tarefa_id', task.id)
-        .then(({ data }) => setAnexos(data || []));
+      if (task.id) {
+        supabase
+          .from('anexo')
+          .select('*')
+          .eq('tarefa_id', task.id)
+          .then(({ data }) => setAnexos(data || []));
+      }
     }
   }, [task]);
 
@@ -71,6 +72,11 @@ export function StandardTaskModal({
       toast({ title: 'Tarefa atualizada com sucesso' });
       setIsEditing(false);
       if (onUpdate) onUpdate({ ...task, ...formData } as Tarefa);
+    } else {
+      // Criar nova tarefa
+      const newTask = await createTarefa(formData);
+      toast({ title: 'Tarefa criada com sucesso' });
+      onClose();
     }
   };
 
@@ -489,6 +495,274 @@ export function StandardTaskModal({
                     type="number"
                     value={formData.orcamento || ''}
                     onChange={(e) => setFormData({ ...formData, orcamento: e.target.value })}
+                    disabled={!isEditing}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Datas Comemorativas */}
+            {task.tipo === 'datas_comemorativas' && (
+              <div className="space-y-4">
+                <div>
+                  <Label>Data Comemorativa</Label>
+                  <Input 
+                    value={formData.data_comemorativa || ''}
+                    onChange={(e) => setFormData({ ...formData, data_comemorativa: e.target.value })}
+                    placeholder="Ex: Dia das Mães, Natal, Black Friday..."
+                    disabled={!isEditing}
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label>Data do Evento</Label>
+                    <Input 
+                      type="date"
+                      value={formData.data_evento || ''}
+                      onChange={(e) => setFormData({ ...formData, data_evento: e.target.value })}
+                      disabled={!isEditing}
+                    />
+                  </div>
+                  <div>
+                    <Label>Formato da Campanha</Label>
+                    <Select
+                      value={formData.formato_campanha || ''}
+                      onValueChange={(v) => setFormData({ ...formData, formato_campanha: v })}
+                      disabled={!isEditing}
+                    >
+                      <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="post_simples">Post Simples</SelectItem>
+                        <SelectItem value="carrossel">Carrossel</SelectItem>
+                        <SelectItem value="reels">Reels</SelectItem>
+                        <SelectItem value="stories">Stories</SelectItem>
+                        <SelectItem value="campanha_completa">Campanha Completa</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div>
+                  <Label>Mensagem Principal</Label>
+                  <Textarea 
+                    value={formData.mensagem_principal || ''}
+                    onChange={(e) => setFormData({ ...formData, mensagem_principal: e.target.value })}
+                    placeholder="Mensagem a ser comunicada..."
+                    rows={3}
+                    disabled={!isEditing}
+                  />
+                </div>
+                <div>
+                  <Label>Call to Action (CTA)</Label>
+                  <Input 
+                    value={formData.cta || ''}
+                    onChange={(e) => setFormData({ ...formData, cta: e.target.value })}
+                    placeholder="Ex: Compre agora, Saiba mais, Garanta o seu..."
+                    disabled={!isEditing}
+                  />
+                </div>
+                <div>
+                  <Label>Observações</Label>
+                  <Textarea 
+                    value={formData.observacoes || ''}
+                    onChange={(e) => setFormData({ ...formData, observacoes: e.target.value })}
+                    rows={2}
+                    disabled={!isEditing}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Tráfego Pago */}
+            {task.tipo === 'trafego_pago' && (
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label>Plataforma</Label>
+                    <Select
+                      value={formData.plataforma || ''}
+                      onValueChange={(v) => setFormData({ ...formData, plataforma: v })}
+                      disabled={!isEditing}
+                    >
+                      <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="google_ads">Google Ads</SelectItem>
+                        <SelectItem value="meta_ads">Meta Ads (Facebook/Instagram)</SelectItem>
+                        <SelectItem value="tiktok_ads">TikTok Ads</SelectItem>
+                        <SelectItem value="linkedin_ads">LinkedIn Ads</SelectItem>
+                        <SelectItem value="youtube_ads">YouTube Ads</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label>Tipo de Campanha</Label>
+                    <Select
+                      value={formData.tipo_campanha || ''}
+                      onValueChange={(v) => setFormData({ ...formData, tipo_campanha: v })}
+                      disabled={!isEditing}
+                    >
+                      <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="awareness">Reconhecimento de Marca</SelectItem>
+                        <SelectItem value="trafego">Tráfego</SelectItem>
+                        <SelectItem value="engajamento">Engajamento</SelectItem>
+                        <SelectItem value="conversao">Conversão</SelectItem>
+                        <SelectItem value="leads">Geração de Leads</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label>Orçamento Diário (R$)</Label>
+                    <Input 
+                      type="number"
+                      value={formData.orcamento_diario || ''}
+                      onChange={(e) => setFormData({ ...formData, orcamento_diario: e.target.value })}
+                      placeholder="Ex: 50.00"
+                      disabled={!isEditing}
+                    />
+                  </div>
+                  <div>
+                    <Label>Orçamento Total (R$)</Label>
+                    <Input 
+                      type="number"
+                      value={formData.orcamento_total || ''}
+                      onChange={(e) => setFormData({ ...formData, orcamento_total: e.target.value })}
+                      placeholder="Ex: 1500.00"
+                      disabled={!isEditing}
+                    />
+                  </div>
+                </div>
+                <div>
+                  <Label>Público-Alvo</Label>
+                  <Textarea 
+                    value={formData.publico_alvo || ''}
+                    onChange={(e) => setFormData({ ...formData, publico_alvo: e.target.value })}
+                    placeholder="Descrição do público (idade, localização, interesses...)"
+                    rows={3}
+                    disabled={!isEditing}
+                  />
+                </div>
+                <div>
+                  <Label>Palavras-Chave / Segmentação</Label>
+                  <Textarea 
+                    value={formData.palavras_chave || ''}
+                    onChange={(e) => setFormData({ ...formData, palavras_chave: e.target.value })}
+                    placeholder="Palavras-chave ou critérios de segmentação..."
+                    rows={2}
+                    disabled={!isEditing}
+                  />
+                </div>
+                <div>
+                  <Label>Objetivo da Campanha</Label>
+                  <Textarea 
+                    value={formData.objetivo_campanha || ''}
+                    onChange={(e) => setFormData({ ...formData, objetivo_campanha: e.target.value })}
+                    placeholder="Ex: Aumentar vendas em 30%, gerar 100 leads qualificados..."
+                    rows={3}
+                    disabled={!isEditing}
+                  />
+                </div>
+                <div>
+                  <Label>Observações</Label>
+                  <Textarea 
+                    value={formData.observacoes || ''}
+                    onChange={(e) => setFormData({ ...formData, observacoes: e.target.value })}
+                    rows={2}
+                    disabled={!isEditing}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Contrato */}
+            {task.tipo === 'contrato' && (
+              <div className="space-y-4">
+                <div>
+                  <Label>Tipo de Contrato</Label>
+                  <Select
+                    value={formData.tipo_contrato || ''}
+                    onValueChange={(v) => setFormData({ ...formData, tipo_contrato: v })}
+                    disabled={!isEditing}
+                  >
+                    <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="prestacao_servico">Prestação de Serviço</SelectItem>
+                      <SelectItem value="assinatura">Assinatura/Recorrente</SelectItem>
+                      <SelectItem value="projeto">Projeto Único</SelectItem>
+                      <SelectItem value="parceria">Parceria</SelectItem>
+                      <SelectItem value="confidencialidade">Confidencialidade (NDA)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label>Data de Início</Label>
+                    <Input 
+                      type="date"
+                      value={formData.data_inicio_contrato || ''}
+                      onChange={(e) => setFormData({ ...formData, data_inicio_contrato: e.target.value })}
+                      disabled={!isEditing}
+                    />
+                  </div>
+                  <div>
+                    <Label>Data de Término</Label>
+                    <Input 
+                      type="date"
+                      value={formData.data_fim_contrato || ''}
+                      onChange={(e) => setFormData({ ...formData, data_fim_contrato: e.target.value })}
+                      disabled={!isEditing}
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label>Valor Mensal (R$)</Label>
+                    <Input 
+                      type="number"
+                      value={formData.valor_mensal || ''}
+                      onChange={(e) => setFormData({ ...formData, valor_mensal: e.target.value })}
+                      placeholder="Ex: 5000.00"
+                      disabled={!isEditing}
+                    />
+                  </div>
+                  <div>
+                    <Label>Valor Total (R$)</Label>
+                    <Input 
+                      type="number"
+                      value={formData.valor_total || ''}
+                      onChange={(e) => setFormData({ ...formData, valor_total: e.target.value })}
+                      placeholder="Ex: 60000.00"
+                      disabled={!isEditing}
+                    />
+                  </div>
+                </div>
+                <div>
+                  <Label>Escopo do Contrato</Label>
+                  <Textarea 
+                    value={formData.escopo_contrato || ''}
+                    onChange={(e) => setFormData({ ...formData, escopo_contrato: e.target.value })}
+                    placeholder="Descrição detalhada dos serviços/produtos inclusos..."
+                    rows={4}
+                    disabled={!isEditing}
+                  />
+                </div>
+                <div>
+                  <Label>Condições Comerciais</Label>
+                  <Textarea 
+                    value={formData.condicoes_comerciais || ''}
+                    onChange={(e) => setFormData({ ...formData, condicoes_comerciais: e.target.value })}
+                    placeholder="Forma de pagamento, reajustes, rescisão..."
+                    rows={3}
+                    disabled={!isEditing}
+                  />
+                </div>
+                <div>
+                  <Label>Observações</Label>
+                  <Textarea 
+                    value={formData.observacoes || ''}
+                    onChange={(e) => setFormData({ ...formData, observacoes: e.target.value })}
+                    rows={2}
                     disabled={!isEditing}
                   />
                 </div>
