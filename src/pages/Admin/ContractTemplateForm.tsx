@@ -12,10 +12,6 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
-import { Table } from '@tiptap/extension-table';
-import { TableRow } from '@tiptap/extension-table-row';
-import { TableCell } from '@tiptap/extension-table-cell';
-import { TableHeader } from '@tiptap/extension-table-header';
 import { UploadPDF } from "@/components/Admin/UploadPDF";
 
 export default function ContractTemplateForm() {
@@ -60,10 +56,6 @@ export default function ContractTemplateForm() {
   const editor = useEditor({
     extensions: [
       StarterKit,
-      Table.configure({ resizable: true }),
-      TableRow,
-      TableCell,
-      TableHeader,
     ],
     content: formData.corpo_html,
     onUpdate: ({ editor }) => {
