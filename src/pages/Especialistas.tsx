@@ -86,10 +86,11 @@ export default function Especialistas() {
   const fetchEspecialistas = useCallback(async () => {
     setLoading(true);
     try {
-      // Buscar profiles
+      // Buscar profiles (apenas especialistas, não clientes)
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
-        .select('*');
+        .select('*')
+        .not('especialidade', 'is', null);
 
       if (profilesError) {
         throw profilesError;
