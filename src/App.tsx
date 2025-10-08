@@ -72,6 +72,8 @@ import Propostas from "./pages/Administrativo/Propostas";
 import Contratos from "./pages/Admin/Contratos";
 import ContratoForm from "./pages/Admin/ContratoForm";
 import ContratoDetails from "./pages/Admin/ContratoDetails";
+import ContractTemplates from "./pages/Admin/ContractTemplates";
+import ContractTemplateForm from "./pages/Admin/ContractTemplateForm";
 import OrcamentoDetails from "./pages/Admin/OrcamentoDetails";
 import PropostaDetails from "./pages/Admin/PropostaDetails";
 import PropostaView from "./pages/Public/PropostaView";
@@ -404,6 +406,25 @@ function App() {
                 <Route path="/admin/contratos" element={
                   <ProtectedRoute module="administrativo">
                     <Layout><Contratos /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                {/* Templates DEVEM vir ANTES de /admin/contratos/:id */}
+                <Route path="/admin/contratos/templates" element={
+                  <ProtectedRoute module="administrativo">
+                    <Layout><ContractTemplates /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/admin/contratos/templates/new" element={
+                  <ProtectedRoute module="administrativo">
+                    <Layout><ContractTemplateForm /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/admin/contratos/templates/:templateId" element={
+                  <ProtectedRoute module="administrativo">
+                    <Layout><ContractTemplateForm /></Layout>
                   </ProtectedRoute>
                 } />
                 

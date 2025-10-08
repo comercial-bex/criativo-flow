@@ -40,7 +40,8 @@ import {
   Activity,
   Brain,
   Trophy,
-  Package
+  Package,
+  FileType
 } from "lucide-react"
 import { NavLink, useLocation } from "react-router-dom"
 import React from "react"
@@ -165,6 +166,7 @@ const modules = [
       { title: "Orçamentos", url: "/administrativo/orcamentos", icon: Calculator },
       { title: "Propostas", url: "/administrativo/propostas", icon: Signature },
       { title: "Contratos", url: "/admin/contratos", icon: FileSignature },
+      { title: "Modelos de Contrato", url: "/admin/contratos/templates", icon: FileType },
     ],
     permissions: ["administrativo"]
   },

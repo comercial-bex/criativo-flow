@@ -13,7 +13,8 @@ import { useDraft } from "@/hooks/useDraft";
 import { usePermissions } from "@/hooks/usePermissions";
 import { supabase } from "@/integrations/supabase/client";
 import { smartToast } from "@/lib/smart-toast";
-import { ArrowLeft, Save, Trash2, AlertCircle } from "lucide-react";
+import { ArrowLeft, Save, Trash2, AlertCircle, Sparkles, Download } from "lucide-react";
+import { useDebounce } from "@/hooks/use-debounce";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -41,7 +42,9 @@ export default function ContratoForm() {
   const [projetos, setProjetos] = useState<any[]>([]);
   const [templates, setTemplates] = useState<any[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>("");
   const [loading, setLoading] = useState(false);
+  const [loadingIA, setLoadingIA] = useState(false);
   const [deleteDialog, setDeleteDialog] = useState(false);
   const [currentContract, setCurrentContract] = useState<any>(null);
   
@@ -174,8 +177,64 @@ export default function ContratoForm() {
   };
 
   const handleTemplateSelect = (templateId: string) => {
+    setSelectedTemplateId(templateId);
     const template = templates.find(t => t.id === templateId);
     setSelectedTemplate(template);
+  };
+  
+  const handleGerarComIA = async () => {
+    if (!formData.cliente_id) {
+      smartToast.error("Selecione um cliente primeiro");
+      return;
+    }
+    
+    setLoadingIA(true);
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-contract-clauses', {
+        body: {
+          cliente: cliente,
+          servicos: [
+            { nome: formData.descricao || "Serviços de Marketing Digital" }
+          ],
+          tipo_contrato: formData.tipo,
+          valor_estimado: formData.valor_mensal || formData.valor_avulso || 0,
+        }
+      });
+      
+      if (error) throw error;
+      
+      if (data?.clausulas) {
+        const clausulas = data.clausulas;
+        
+        setFormData(prev => ({
+          ...prev,
+          escopo: clausulas.escopo || prev.escopo,
+          sla: clausulas.sla || prev.sla,
+          propriedade_intelectual: clausulas.propriedade_intelectual || prev.propriedade_intelectual,
+          rescisao: clausulas.rescisao || prev.rescisao,
+          foro: clausulas.foro || prev.foro,
+        }));
+        
+        // Log de atividade
+        const user = (await supabase.auth.getUser()).data.user;
+        await supabase.rpc("criar_log_atividade", {
+          p_cliente_id: formData.cliente_id,
+          p_usuario_id: user?.id,
+          p_acao: "gerar_clausulas_ia",
+          p_entidade_tipo: "contrato",
+          p_entidade_id: id || "novo",
+          p_descricao: "Cláusulas geradas automaticamente com IA",
+          p_metadata: { modelo: "gemini-2.5-flash" },
+        });
+        
+        smartToast.success("Cláusulas geradas com sucesso", "Revise e ajuste conforme necessário");
+      }
+    } catch (error: any) {
+      smartToast.error("Erro ao gerar cláusulas", error.message);
+    } finally {
+      setLoadingIA(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -269,22 +328,60 @@ export default function ContratoForm() {
   };
 
   const cliente = clientes.find(c => c.id === formData.cliente_id);
+  
+  // Debounce para preview em tempo real
+  const debouncedFormData = useDebounce(formData, 400);
+  
   const previewData = {
+    contrato_numero: currentContract?.numero || "XXXX/2025",
     cliente_nome: cliente?.nome || "[Cliente]",
     cliente_cnpj: cliente?.cnpj_cpf || "[CNPJ]",
     cliente_endereco: cliente?.endereco || "[Endereço]",
-    escopo: formData.escopo || "[Escopo do serviço]",
-    valor_total: `R$ ${(formData.valor_mensal || formData.valor_avulso || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
-    condicoes_pagamento: formData.condicoes_comerciais || "[Condições de pagamento]",
-    data_inicio: formData.data_inicio || "[Data início]",
-    data_fim: formData.data_fim || "[Data fim]",
-    renovacao: formData.renovacao || "nenhuma",
-    rescisao: formData.rescisao || "[Condições de rescisão]",
-    foro: formData.foro || "[Foro]",
+    cliente_email: cliente?.email || "[Email]",
+    escopo: debouncedFormData.escopo || "[Escopo do serviço]",
+    sla: debouncedFormData.sla || "[SLA]",
+    valor_total: `R$ ${(debouncedFormData.valor_mensal || debouncedFormData.valor_avulso || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
+    valor_mensal: `R$ ${(debouncedFormData.valor_mensal || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
+    condicoes_pagamento: debouncedFormData.condicoes_comerciais || "[Condições de pagamento]",
+    data_inicio: debouncedFormData.data_inicio || "[Data início]",
+    data_fim: debouncedFormData.data_fim || "[Data fim]",
+    renovacao: debouncedFormData.renovacao || "nenhuma",
+    rescisao: debouncedFormData.rescisao || "[Condições de rescisão]",
+    foro: debouncedFormData.foro || "[Foro]",
+    propriedade_intelectual: debouncedFormData.propriedade_intelectual || "[Propriedade Intelectual]",
     data_atual: new Date().toLocaleDateString('pt-BR'),
   };
 
   const previewHtml = selectedTemplate ? renderizarTemplate(selectedTemplate.corpo_html, previewData) : "";
+  
+  const handleBaixarPDF = () => {
+    if (!previewHtml) {
+      smartToast.error("Selecione um template primeiro");
+      return;
+    }
+    
+    // Abrir em nova aba para imprimir como PDF
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>${formData.titulo || 'Contrato'}</title>
+          <style>
+            body { font-family: Arial, sans-serif; padding: 40px; }
+            @media print { body { padding: 20px; } }
+          </style>
+        </head>
+        <body>
+          ${previewHtml}
+        </body>
+        </html>
+      `);
+      printWindow.document.close();
+      printWindow.print();
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -444,7 +541,18 @@ export default function ContratoForm() {
           <TabsContent value="escopo" forceMount className="data-[state=inactive]:hidden space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle>Escopo do Serviço</CardTitle>
+                <div className="flex items-center justify-between">
+                  <CardTitle>Escopo do Serviço</CardTitle>
+                  <Button 
+                    type="button"
+                    onClick={handleGerarComIA}
+                    disabled={loadingIA || !formData.cliente_id}
+                    size="sm"
+                  >
+                    <Sparkles className="mr-2 h-4 w-4" />
+                    {loadingIA ? "Gerando..." : "Gerar com IA"}
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
@@ -612,40 +720,81 @@ export default function ContratoForm() {
           </TabsContent>
 
           {/* Aba Preview */}
-          <TabsContent value="preview" forceMount className="data-[state=inactive]:hidden space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Preview do Contrato</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <Label>Template</Label>
-                  <Select onValueChange={handleTemplateSelect}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione um template" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {templates.map((template) => (
-                        <SelectItem key={template.id} value={template.id}>
-                          {template.nome} - {template.categoria}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {previewHtml ? (
-                  <div 
-                    className="prose max-w-none p-6 bg-background border rounded-lg"
-                    dangerouslySetInnerHTML={{ __html: previewHtml }}
-                  />
-                ) : (
-                  <div className="text-center p-12 bg-muted rounded-lg">
-                    <p className="text-muted-foreground">Selecione um template para visualizar o preview</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+          <TabsContent value="preview" forceMount className="data-[state=inactive]:hidden">
+            <div className="grid grid-cols-3 gap-6">
+              {/* Coluna Esquerda - Controles */}
+              <div className="space-y-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-sm">Template</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div>
+                      <Label>Selecionar Template</Label>
+                      <Select value={selectedTemplateId} onValueChange={handleTemplateSelect}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione um template" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {templates.map((template) => (
+                            <SelectItem key={template.id} value={template.id}>
+                              {template.nome}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <Button 
+                      type="button"
+                      onClick={handleBaixarPDF}
+                      disabled={!previewHtml}
+                      className="w-full"
+                    >
+                      <Download className="mr-2 h-4 w-4" />
+                      Baixar PDF
+                    </Button>
+                    
+                    {selectedTemplate && (
+                      <Button 
+                        type="button"
+                        variant="outline"
+                        onClick={() => navigate(`/admin/contratos/templates/${selectedTemplate.id}`)}
+                        className="w-full"
+                      >
+                        Editar Template
+                      </Button>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+              
+              {/* Coluna Direita - Preview */}
+              <div className="col-span-2">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Preview em Tempo Real</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {previewHtml ? (
+                      <div className="relative">
+                        <div className="absolute top-4 right-4 bg-yellow-500/20 text-yellow-700 px-3 py-1 rounded text-xs font-bold z-10">
+                          PRÉVIA
+                        </div>
+                        <div 
+                          className="prose max-w-none p-6 bg-background border rounded-lg min-h-[600px]"
+                          dangerouslySetInnerHTML={{ __html: previewHtml }}
+                        />
+                      </div>
+                    ) : (
+                      <div className="text-center p-12 bg-muted rounded-lg min-h-[600px] flex items-center justify-center">
+                        <p className="text-muted-foreground">Selecione um template para visualizar o preview</p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
           </TabsContent>
         </Tabs>
 
