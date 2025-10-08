@@ -62,9 +62,7 @@ export function ResponsiveLayout({ children }: ResponsiveLayoutProps) {
           
           {/* Scrollable Content */}
           <main className="flex-1 overflow-y-auto bg-muted/20 relative">
-            <div className="container mx-auto p-4">
-              {children}
-            </div>
+            {children}
           </main>
         </div>
         
