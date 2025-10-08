@@ -72,6 +72,10 @@ import ContratoForm from "./pages/Admin/ContratoForm";
 import ContratoDetails from "./pages/Admin/ContratoDetails";
 import OrcamentoDetails from "./pages/Admin/OrcamentoDetails";
 import PropostaDetails from "./pages/Admin/PropostaDetails";
+import PropostaView from "./pages/Public/PropostaView";
+import Produtos from "./pages/Admin/Produtos";
+import ProdutoForm from "./components/Admin/ProdutoForm";
+import ProdutoDetails from "./pages/Admin/ProdutoDetails";
 
 // Audiovisual pages
 import AudiovisualDashboard from "./pages/Audiovisual/Dashboard";
@@ -418,6 +422,32 @@ function App() {
                     <Layout><PropostaDetails /></Layout>
                   </ProtectedRoute>
                 } />
+                
+                <Route path="/admin/produtos" element={
+                  <ProtectedRoute module="administrativo">
+                    <Layout><Produtos /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/admin/produtos/new" element={
+                  <ProtectedRoute module="administrativo">
+                    <Layout><ProdutoForm /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/admin/produtos/:id" element={
+                  <ProtectedRoute module="administrativo">
+                    <Layout><ProdutoDetails /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/admin/produtos/:id/edit" element={
+                  <ProtectedRoute module="administrativo">
+                    <Layout><ProdutoForm /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/public/proposta/:link_publico" element={<PropostaView />} />
                 
                 {/* Audiovisual routes */}
                 <Route path="/audiovisual/dashboard" element={
