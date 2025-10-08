@@ -38,7 +38,12 @@ interface TarefasKanbanProps {
   };
   clienteId: string;
   projetoId: string;
-  filters?: any;
+  filters?: {
+    tipo?: string;
+    prioridade?: string;
+    responsavel_id?: string;
+    search?: string;
+  };
 }
 
 interface Tarefa {
@@ -53,6 +58,7 @@ interface Tarefa {
   tempo_estimado?: number;
   created_at?: string;
   anexos?: any;
+  [key: string]: any;
 }
 
 interface Profile {
@@ -275,7 +281,7 @@ function TarefaCard({ tarefa, profiles, onUpdateStatus, onEditTarefa }: TarefaCa
   );
 }
 
-export function TarefasKanban({ planejamento, clienteId, projetoId }: TarefasKanbanProps) {
+export function TarefasKanban({ planejamento, clienteId, projetoId, filters }: TarefasKanbanProps) {
   const [tarefas, setTarefas] = useState<Tarefa[]>([]);
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
@@ -295,7 +301,7 @@ export function TarefasKanban({ planejamento, clienteId, projetoId }: TarefasKan
 
   useEffect(() => {
     fetchData();
-  }, [projetoId]);
+  }, [projetoId, filters]);
 
   const fetchData = async () => {
     try {
@@ -347,8 +353,8 @@ export function TarefasKanban({ planejamento, clienteId, projetoId }: TarefasKan
   const updateTarefaStatus = async (tarefaId: string, novoStatus: string) => {
     try {
       const { error } = await supabase
-        .from('tarefas_projeto')
-        .update({ status: novoStatus })
+        .from('tarefa')
+        .update({ status: novoStatus as any })
         .eq('id', tarefaId);
 
       if (error) throw error;
@@ -385,17 +391,17 @@ export function TarefasKanban({ planejamento, clienteId, projetoId }: TarefasKan
       setIsCreating(true);
 
       const { data, error } = await supabase
-        .from('tarefas_projeto')
+        .from('tarefa')
         .insert({
           projeto_id: projetoId,
           titulo: novaTarefa.titulo,
           descricao: novaTarefa.descricao || null,
-          prioridade: novaTarefa.prioridade,
+          prioridade: novaTarefa.prioridade as any,
           data_prazo: novaTarefa.data_prazo || null,
           responsavel_id: novaTarefa.responsavel_id || null,
-          setor_responsavel: 'grs',
-          status: 'backlog'
-        })
+          setor: 'grs' as any,
+          status: 'backlog' as any
+        } as any)
         .select()
         .single();
 
@@ -435,7 +441,7 @@ export function TarefasKanban({ planejamento, clienteId, projetoId }: TarefasKan
   const updateTarefa = async (tarefaId: string, updates: any) => {
     try {
       const { error } = await supabase
-        .from('tarefas_projeto')
+        .from('tarefa')
         .update(updates)
         .eq('id', tarefaId);
 
