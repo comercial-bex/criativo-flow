@@ -69,6 +69,9 @@ import Orcamentos from "./pages/Administrativo/Orcamentos";
 import Propostas from "./pages/Administrativo/Propostas";
 import Contratos from "./pages/Admin/Contratos";
 import ContratoForm from "./pages/Admin/ContratoForm";
+import ContratoDetails from "./pages/Admin/ContratoDetails";
+import OrcamentoDetails from "./pages/Admin/OrcamentoDetails";
+import PropostaDetails from "./pages/Admin/PropostaDetails";
 
 // Audiovisual pages
 import AudiovisualDashboard from "./pages/Audiovisual/Dashboard";
@@ -395,6 +398,24 @@ function App() {
                 <Route path="/admin/contratos/:id" element={
                   <ProtectedRoute module="administrativo">
                     <Layout><ContratoForm /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/admin/contratos/details/:id" element={
+                  <ProtectedRoute module="administrativo">
+                    <Layout><ContratoDetails /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/admin/orcamentos/:id" element={
+                  <ProtectedRoute module="administrativo">
+                    <Layout><OrcamentoDetails /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/admin/propostas/:id" element={
+                  <ProtectedRoute module="administrativo">
+                    <Layout><PropostaDetails /></Layout>
                   </ProtectedRoute>
                 } />
                 
