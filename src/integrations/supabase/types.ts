@@ -2528,6 +2528,732 @@ export type Database = {
         }
         Relationships: []
       }
+      inventario_alugueis: {
+        Row: {
+          caucao_forma: string | null
+          caucao_valor: number | null
+          cliente_id: string | null
+          contato: string
+          created_at: string | null
+          data_devolucao_prevista: string
+          data_devolucao_real: string | null
+          data_retirada: string
+          desconto: number | null
+          email: string | null
+          financeiro_status: string | null
+          id: string
+          itens: Json
+          observacoes: string | null
+          operacional_status: string | null
+          telefone: string | null
+          termo_assinado_id: string | null
+          total: number
+          trace_id: string | null
+        }
+        Insert: {
+          caucao_forma?: string | null
+          caucao_valor?: number | null
+          cliente_id?: string | null
+          contato: string
+          created_at?: string | null
+          data_devolucao_prevista: string
+          data_devolucao_real?: string | null
+          data_retirada: string
+          desconto?: number | null
+          email?: string | null
+          financeiro_status?: string | null
+          id?: string
+          itens: Json
+          observacoes?: string | null
+          operacional_status?: string | null
+          telefone?: string | null
+          termo_assinado_id?: string | null
+          total: number
+          trace_id?: string | null
+        }
+        Update: {
+          caucao_forma?: string | null
+          caucao_valor?: number | null
+          cliente_id?: string | null
+          contato?: string
+          created_at?: string | null
+          data_devolucao_prevista?: string
+          data_devolucao_real?: string | null
+          data_retirada?: string
+          desconto?: number | null
+          email?: string | null
+          financeiro_status?: string | null
+          id?: string
+          itens?: Json
+          observacoes?: string | null
+          operacional_status?: string | null
+          telefone?: string | null
+          termo_assinado_id?: string | null
+          total?: number
+          trace_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventario_alugueis_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventario_alugueis_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "vw_client_metrics"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "inventario_alugueis_termo_assinado_id_fkey"
+            columns: ["termo_assinado_id"]
+            isOneToOne: false
+            referencedRelation: "inventario_termos_assinados"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inventario_categorias: {
+        Row: {
+          ativo: boolean | null
+          created_at: string | null
+          descricao: string | null
+          icone: string | null
+          id: string
+          nome: string
+          updated_at: string | null
+        }
+        Insert: {
+          ativo?: boolean | null
+          created_at?: string | null
+          descricao?: string | null
+          icone?: string | null
+          id?: string
+          nome: string
+          updated_at?: string | null
+        }
+        Update: {
+          ativo?: boolean | null
+          created_at?: string | null
+          descricao?: string | null
+          icone?: string | null
+          id?: string
+          nome?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      inventario_imagens: {
+        Row: {
+          id: string
+          item_id: string | null
+          legenda: string | null
+          tipo: string
+          uploaded_at: string | null
+          url: string
+        }
+        Insert: {
+          id?: string
+          item_id?: string | null
+          legenda?: string | null
+          tipo: string
+          uploaded_at?: string | null
+          url: string
+        }
+        Update: {
+          id?: string
+          item_id?: string | null
+          legenda?: string | null
+          tipo?: string
+          uploaded_at?: string | null
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventario_imagens_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "inventario_itens"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inventario_itens: {
+        Row: {
+          ativo: boolean | null
+          atualizado_por: string | null
+          caucao_sugerida: number | null
+          condicao: string | null
+          created_at: string | null
+          criado_por: string | null
+          data_aquisicao: string | null
+          eh_multiunidade: boolean | null
+          fornecedor: string | null
+          garantia_ate: string | null
+          habilitar_aluguel: boolean | null
+          id: string
+          identificacao_interna: string
+          localizacao_atual: string | null
+          modelo_id: string | null
+          numero_serie: string | null
+          observacoes: string | null
+          politica_multa_dano: string | null
+          preco_diaria: number | null
+          preco_meio_periodo: number | null
+          quantidade_total: number | null
+          taxa_atraso_dia: number | null
+          updated_at: string | null
+          valor_aquisicao: number | null
+          vida_util_meses: number | null
+        }
+        Insert: {
+          ativo?: boolean | null
+          atualizado_por?: string | null
+          caucao_sugerida?: number | null
+          condicao?: string | null
+          created_at?: string | null
+          criado_por?: string | null
+          data_aquisicao?: string | null
+          eh_multiunidade?: boolean | null
+          fornecedor?: string | null
+          garantia_ate?: string | null
+          habilitar_aluguel?: boolean | null
+          id?: string
+          identificacao_interna: string
+          localizacao_atual?: string | null
+          modelo_id?: string | null
+          numero_serie?: string | null
+          observacoes?: string | null
+          politica_multa_dano?: string | null
+          preco_diaria?: number | null
+          preco_meio_periodo?: number | null
+          quantidade_total?: number | null
+          taxa_atraso_dia?: number | null
+          updated_at?: string | null
+          valor_aquisicao?: number | null
+          vida_util_meses?: number | null
+        }
+        Update: {
+          ativo?: boolean | null
+          atualizado_por?: string | null
+          caucao_sugerida?: number | null
+          condicao?: string | null
+          created_at?: string | null
+          criado_por?: string | null
+          data_aquisicao?: string | null
+          eh_multiunidade?: boolean | null
+          fornecedor?: string | null
+          garantia_ate?: string | null
+          habilitar_aluguel?: boolean | null
+          id?: string
+          identificacao_interna?: string
+          localizacao_atual?: string | null
+          modelo_id?: string | null
+          numero_serie?: string | null
+          observacoes?: string | null
+          politica_multa_dano?: string | null
+          preco_diaria?: number | null
+          preco_meio_periodo?: number | null
+          quantidade_total?: number | null
+          taxa_atraso_dia?: number | null
+          updated_at?: string | null
+          valor_aquisicao?: number | null
+          vida_util_meses?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventario_itens_atualizado_por_fkey"
+            columns: ["atualizado_por"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventario_itens_atualizado_por_fkey"
+            columns: ["atualizado_por"]
+            isOneToOne: false
+            referencedRelation: "vw_client_metrics"
+            referencedColumns: ["responsavel_id"]
+          },
+          {
+            foreignKeyName: "inventario_itens_criado_por_fkey"
+            columns: ["criado_por"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventario_itens_criado_por_fkey"
+            columns: ["criado_por"]
+            isOneToOne: false
+            referencedRelation: "vw_client_metrics"
+            referencedColumns: ["responsavel_id"]
+          },
+          {
+            foreignKeyName: "inventario_itens_modelo_id_fkey"
+            columns: ["modelo_id"]
+            isOneToOne: false
+            referencedRelation: "inventario_modelos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inventario_manutencoes: {
+        Row: {
+          anexos: Json | null
+          created_at: string | null
+          custo_estimado: number | null
+          custo_final: number | null
+          data_fim: string | null
+          data_inicio: string | null
+          descricao: string
+          fornecedor: string | null
+          id: string
+          item_id: string | null
+          status: string | null
+          tipo: string
+          unidade_id: string | null
+        }
+        Insert: {
+          anexos?: Json | null
+          created_at?: string | null
+          custo_estimado?: number | null
+          custo_final?: number | null
+          data_fim?: string | null
+          data_inicio?: string | null
+          descricao: string
+          fornecedor?: string | null
+          id?: string
+          item_id?: string | null
+          status?: string | null
+          tipo: string
+          unidade_id?: string | null
+        }
+        Update: {
+          anexos?: Json | null
+          created_at?: string | null
+          custo_estimado?: number | null
+          custo_final?: number | null
+          data_fim?: string | null
+          data_inicio?: string | null
+          descricao?: string
+          fornecedor?: string | null
+          id?: string
+          item_id?: string | null
+          status?: string | null
+          tipo?: string
+          unidade_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventario_manutencoes_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "inventario_itens"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventario_manutencoes_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "inventario_unidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inventario_modelos: {
+        Row: {
+          categoria_id: string | null
+          created_at: string | null
+          especificacoes: Json | null
+          foto_capa: string | null
+          id: string
+          marca: string
+          modelo: string
+          updated_at: string | null
+        }
+        Insert: {
+          categoria_id?: string | null
+          created_at?: string | null
+          especificacoes?: Json | null
+          foto_capa?: string | null
+          id?: string
+          marca: string
+          modelo: string
+          updated_at?: string | null
+        }
+        Update: {
+          categoria_id?: string | null
+          created_at?: string | null
+          especificacoes?: Json | null
+          foto_capa?: string | null
+          id?: string
+          marca?: string
+          modelo?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventario_modelos_categoria_id_fkey"
+            columns: ["categoria_id"]
+            isOneToOne: false
+            referencedRelation: "inventario_categorias"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inventario_movimentacoes: {
+        Row: {
+          checklist_entrada: Json | null
+          checklist_saida: Json | null
+          cliente_id: string | null
+          created_at: string | null
+          data_mov_entrada: string | null
+          data_mov_saida: string | null
+          data_prevista_retorno: string | null
+          id: string
+          item_id: string | null
+          observacoes: string | null
+          origem_contexto: string | null
+          projeto_id: string | null
+          quantidade: number | null
+          responsavel_id: string | null
+          status_mov: string | null
+          tarefa_id: string | null
+          termo_assinado_id: string | null
+          tipo: string
+          trace_id: string | null
+          unidade_id: string | null
+        }
+        Insert: {
+          checklist_entrada?: Json | null
+          checklist_saida?: Json | null
+          cliente_id?: string | null
+          created_at?: string | null
+          data_mov_entrada?: string | null
+          data_mov_saida?: string | null
+          data_prevista_retorno?: string | null
+          id?: string
+          item_id?: string | null
+          observacoes?: string | null
+          origem_contexto?: string | null
+          projeto_id?: string | null
+          quantidade?: number | null
+          responsavel_id?: string | null
+          status_mov?: string | null
+          tarefa_id?: string | null
+          termo_assinado_id?: string | null
+          tipo: string
+          trace_id?: string | null
+          unidade_id?: string | null
+        }
+        Update: {
+          checklist_entrada?: Json | null
+          checklist_saida?: Json | null
+          cliente_id?: string | null
+          created_at?: string | null
+          data_mov_entrada?: string | null
+          data_mov_saida?: string | null
+          data_prevista_retorno?: string | null
+          id?: string
+          item_id?: string | null
+          observacoes?: string | null
+          origem_contexto?: string | null
+          projeto_id?: string | null
+          quantidade?: number | null
+          responsavel_id?: string | null
+          status_mov?: string | null
+          tarefa_id?: string | null
+          termo_assinado_id?: string | null
+          tipo?: string
+          trace_id?: string | null
+          unidade_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventario_movimentacoes_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventario_movimentacoes_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "vw_client_metrics"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "inventario_movimentacoes_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "inventario_itens"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventario_movimentacoes_projeto_id_fkey"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "projetos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventario_movimentacoes_responsavel_id_fkey"
+            columns: ["responsavel_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventario_movimentacoes_responsavel_id_fkey"
+            columns: ["responsavel_id"]
+            isOneToOne: false
+            referencedRelation: "vw_client_metrics"
+            referencedColumns: ["responsavel_id"]
+          },
+          {
+            foreignKeyName: "inventario_movimentacoes_tarefa_id_fkey"
+            columns: ["tarefa_id"]
+            isOneToOne: false
+            referencedRelation: "tarefas_projeto"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventario_movimentacoes_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "inventario_unidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inventario_reservas: {
+        Row: {
+          cliente_id: string | null
+          created_at: string | null
+          criado_por: string | null
+          fim: string
+          id: string
+          inicio: string
+          item_id: string | null
+          projeto_id: string | null
+          status_reserva: string | null
+          tarefa_id: string | null
+          tipo_reserva: string
+          unidade_id: string | null
+        }
+        Insert: {
+          cliente_id?: string | null
+          created_at?: string | null
+          criado_por?: string | null
+          fim: string
+          id?: string
+          inicio: string
+          item_id?: string | null
+          projeto_id?: string | null
+          status_reserva?: string | null
+          tarefa_id?: string | null
+          tipo_reserva: string
+          unidade_id?: string | null
+        }
+        Update: {
+          cliente_id?: string | null
+          created_at?: string | null
+          criado_por?: string | null
+          fim?: string
+          id?: string
+          inicio?: string
+          item_id?: string | null
+          projeto_id?: string | null
+          status_reserva?: string | null
+          tarefa_id?: string | null
+          tipo_reserva?: string
+          unidade_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventario_reservas_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventario_reservas_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "vw_client_metrics"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "inventario_reservas_criado_por_fkey"
+            columns: ["criado_por"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventario_reservas_criado_por_fkey"
+            columns: ["criado_por"]
+            isOneToOne: false
+            referencedRelation: "vw_client_metrics"
+            referencedColumns: ["responsavel_id"]
+          },
+          {
+            foreignKeyName: "inventario_reservas_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "inventario_itens"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventario_reservas_projeto_id_fkey"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "projetos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventario_reservas_tarefa_id_fkey"
+            columns: ["tarefa_id"]
+            isOneToOne: false
+            referencedRelation: "tarefas_projeto"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventario_reservas_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "inventario_unidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inventario_termos: {
+        Row: {
+          ativo: boolean | null
+          conteudo_html: string
+          created_at: string | null
+          id: string
+          tipo: string
+          versao: number | null
+        }
+        Insert: {
+          ativo?: boolean | null
+          conteudo_html: string
+          created_at?: string | null
+          id?: string
+          tipo: string
+          versao?: number | null
+        }
+        Update: {
+          ativo?: boolean | null
+          conteudo_html?: string
+          created_at?: string | null
+          id?: string
+          tipo?: string
+          versao?: number | null
+        }
+        Relationships: []
+      }
+      inventario_termos_assinados: {
+        Row: {
+          aceite: boolean | null
+          assinante_doc: string | null
+          assinante_email: string | null
+          assinante_nome: string
+          id: string
+          ip: unknown | null
+          referencia_id: string
+          referencia_tipo: string
+          termo_id: string | null
+          timestamp: string | null
+        }
+        Insert: {
+          aceite?: boolean | null
+          assinante_doc?: string | null
+          assinante_email?: string | null
+          assinante_nome: string
+          id?: string
+          ip?: unknown | null
+          referencia_id: string
+          referencia_tipo: string
+          termo_id?: string | null
+          timestamp?: string | null
+        }
+        Update: {
+          aceite?: boolean | null
+          assinante_doc?: string | null
+          assinante_email?: string | null
+          assinante_nome?: string
+          id?: string
+          ip?: unknown | null
+          referencia_id?: string
+          referencia_tipo?: string
+          termo_id?: string | null
+          timestamp?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventario_termos_assinados_termo_id_fkey"
+            columns: ["termo_id"]
+            isOneToOne: false
+            referencedRelation: "inventario_termos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inventario_unidades: {
+        Row: {
+          codigo_unidade: string
+          condicao_unidade: string | null
+          created_at: string | null
+          id: string
+          item_id: string | null
+          numero_serie_unidade: string | null
+          observacoes: string | null
+          qr_code_url: string | null
+          status_unidade: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          codigo_unidade: string
+          condicao_unidade?: string | null
+          created_at?: string | null
+          id?: string
+          item_id?: string | null
+          numero_serie_unidade?: string | null
+          observacoes?: string | null
+          qr_code_url?: string | null
+          status_unidade?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          codigo_unidade?: string
+          condicao_unidade?: string | null
+          created_at?: string | null
+          id?: string
+          item_id?: string | null
+          numero_serie_unidade?: string | null
+          observacoes?: string | null
+          qr_code_url?: string | null
+          status_unidade?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventario_unidades_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "inventario_itens"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       leads: {
         Row: {
           cargo: string | null
@@ -4787,6 +5513,80 @@ export type Database = {
           },
         ]
       }
+      tarefas_equipamentos: {
+        Row: {
+          checklist_entrada: Json | null
+          checklist_saida: Json | null
+          created_at: string | null
+          fim: string
+          id: string
+          inicio: string
+          item_id: string | null
+          quantidade: number | null
+          status_vinculo: string | null
+          tarefa_id: string | null
+          termo_assinado_id: string | null
+          unidade_id: string | null
+        }
+        Insert: {
+          checklist_entrada?: Json | null
+          checklist_saida?: Json | null
+          created_at?: string | null
+          fim: string
+          id?: string
+          inicio: string
+          item_id?: string | null
+          quantidade?: number | null
+          status_vinculo?: string | null
+          tarefa_id?: string | null
+          termo_assinado_id?: string | null
+          unidade_id?: string | null
+        }
+        Update: {
+          checklist_entrada?: Json | null
+          checklist_saida?: Json | null
+          created_at?: string | null
+          fim?: string
+          id?: string
+          inicio?: string
+          item_id?: string | null
+          quantidade?: number | null
+          status_vinculo?: string | null
+          tarefa_id?: string | null
+          termo_assinado_id?: string | null
+          unidade_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tarefas_equipamentos_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "inventario_itens"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tarefas_equipamentos_tarefa_id_fkey"
+            columns: ["tarefa_id"]
+            isOneToOne: false
+            referencedRelation: "tarefas_projeto"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tarefas_equipamentos_termo_assinado_id_fkey"
+            columns: ["termo_assinado_id"]
+            isOneToOne: false
+            referencedRelation: "inventario_termos_assinados"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tarefas_equipamentos_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "inventario_unidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tarefas_projeto: {
         Row: {
           anexos: string[] | null
@@ -5408,6 +6208,19 @@ export type Database = {
         }
         Returns: Json
       }
+      fn_criar_reserva_equipamento: {
+        Args: {
+          p_fim: string
+          p_inicio: string
+          p_item_id: string
+          p_projeto_id?: string
+          p_quantidade?: number
+          p_tarefa_id?: string
+          p_tipo_reserva: string
+          p_unidade_id?: string
+        }
+        Returns: string
+      }
       fn_criar_tarefa_de_planejamento: {
         Args: {
           p_data_prazo?: string
@@ -5437,6 +6250,16 @@ export type Database = {
       }
       fn_validar_vinculo_projeto_cliente: {
         Args: { p_projeto_id: string }
+        Returns: Json
+      }
+      fn_verificar_disponibilidade: {
+        Args: {
+          p_fim: string
+          p_inicio: string
+          p_item_id: string
+          p_quantidade?: number
+          p_unidade_id?: string
+        }
         Returns: Json
       }
       generate_content_with_ai_v2: {
