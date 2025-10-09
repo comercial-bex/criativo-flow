@@ -5288,6 +5288,13 @@ export type Database = {
         Args: { customer_id: string }
         Returns: boolean
       }
+      check_orphan_users: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          orphan_count: number
+          orphan_emails: string[]
+        }[]
+      }
       create_client_user_direct: {
         Args: {
           p_cliente_id: string
