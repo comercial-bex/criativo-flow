@@ -5519,6 +5519,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      validate_specialist_access: {
+        Args: { p_user_id: string }
+        Returns: Json
+      }
       validate_user_for_login: {
         Args: { p_email: string }
         Returns: Json

@@ -90,11 +90,11 @@ serve(async (req) => {
 
     console.log('🔐 Signup: Criando usuário:', { email, nome: metadata.nome, role });
 
-    // FASE 1: Criar usuário no Auth
+    // FASE 1: Criar usuário no Auth (SEM email_confirm para especialistas)
     const { data: userData, error: userError } = await supabaseAdmin.auth.admin.createUser({
       email,
       password,
-      email_confirm: true, // Pular confirmação de email (ajustar conforme SMTP)
+      email_confirm: metadata.especialidade ? false : true, // Especialistas precisam verificar email
       user_metadata: {
         nome: metadata.nome,
         telefone: metadata.telefone,
@@ -148,7 +148,8 @@ serve(async (req) => {
           telefone: metadata.telefone,
           especialidade: metadata.especialidade || null,
           cliente_id: metadata.cliente_id || null,
-          status: role === 'admin' ? 'aprovado' : 'pendente_aprovacao'
+          status: role === 'admin' ? 'aprovado' : 'pendente_aprovacao',
+          role_requested: metadata.especialidade ? 'especialista' : null
         });
 
       if (profileError) {
@@ -221,6 +222,28 @@ serve(async (req) => {
         }
       }
 
+      // FASE 5: Gerar token de verificação de email para especialistas
+      if (metadata.especialidade) {
+        const token = crypto.randomUUID();
+        const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 horas
+
+        const { error: tokenError } = await supabaseAdmin
+          .from('email_verification_tokens')
+          .insert({
+            user_id: userId,
+            token: token,
+            expires_at: expiresAt.toISOString()
+          });
+
+        if (tokenError) {
+          console.error('⚠️ Signup: Erro ao criar token de verificação:', tokenError);
+        } else {
+          console.log('✅ Signup: Token de verificação criado');
+          // TODO: Enviar email com link de verificação
+          // Link: ${supabaseUrl}/auth/verify-email?token=${token}
+        }
+      }
+
       return new Response(
         JSON.stringify({ 
           success: true,
@@ -229,7 +252,10 @@ serve(async (req) => {
             email: email,
             nome: metadata.nome
           },
-          message: 'Conta criada com sucesso!' 
+          requires_email_verification: !!metadata.especialidade,
+          message: metadata.especialidade 
+            ? 'Conta criada! Verifique seu email para confirmar o cadastro.' 
+            : 'Conta criada com sucesso!' 
         }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );

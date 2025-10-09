@@ -40,24 +40,28 @@ export function SmartRedirect() {
       return;
     }
 
-    // Check if this is the first access (email confirmation redirect)
-    const checkFirstAccess = async () => {
-      if (location.pathname === '/perfil' && user) {
-        // User came from email confirmation
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('avatar_url, telefone')
-          .eq('id', user.id)
-          .single();
+    // NOVA LÓGICA: Validar acesso via função do banco
+    const validateAndRedirect = async () => {
+      const { data, error } = await supabase.rpc('validate_specialist_access', {
+        p_user_id: user.id
+      });
 
-        // If profile is incomplete, this is first access
-        if (!profile?.avatar_url && !profile?.telefone) {
-          setIsFirstAccess(true);
-          return;
-        }
+      if (error) {
+        console.error('🔄 SmartRedirect: Error validating access:', error);
+        navigate('/dashboard', { replace: true });
+        return;
       }
 
-      // Normal redirect logic based on role
+      const accessData = data as { can_access: boolean; redirect_to: string | null; reason: string };
+
+      // Se não pode acessar e tem redirecionamento, redirecionar
+      if (!accessData.can_access && accessData.redirect_to) {
+        console.log('🔄 SmartRedirect: Access denied, redirecting to:', accessData.redirect_to);
+        navigate(accessData.redirect_to, { replace: true });
+        return;
+      }
+
+      // Se pode acessar, aplicar lógica normal de redirecionamento
       if (location.pathname === '/' || location.pathname === '/index') {
         if (role === 'cliente') {
           navigate('/cliente/painel', { replace: true });
@@ -80,7 +84,7 @@ export function SmartRedirect() {
       }
     };
 
-    checkFirstAccess();
+    validateAndRedirect();
 
     return () => clearTimeout(emergencyTimeout);
   }, [user, authLoading, roleLoading, role, navigate, location.pathname]);

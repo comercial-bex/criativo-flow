@@ -8,6 +8,7 @@ import { useAuth, AuthProvider } from "@/hooks/useAuth";
 import { Layout } from "@/components/Layout";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { SmartRedirect } from "@/components/SmartRedirect";
+import { SpecialistGuard } from "@/components/SpecialistGuard";
 
 
 import Index from "./pages/Index";
@@ -97,6 +98,12 @@ import TarefasUnificadasDesign from "./pages/Design/TarefasUnificadas";
 import DesignMinhasTarefas from "./pages/Design/MinhasTarefas";
 import Gamificacao from "./pages/Gamificacao";
 import GamificacaoAdmin from "./pages/GamificacaoAdmin";
+
+// Access control pages
+import AccessRejectedPage from "./pages/AccessRejectedPage";
+import AccessSuspendedPage from "./pages/AccessSuspendedPage";
+import VerifyEmailPage from "./pages/VerifyEmailPage";
+import { PendingApprovalPage } from "./components/PendingApprovalPage";
 
 import AprovacaoJob from "./pages/AprovacaoJob";
 import AdminPainel from "./pages/Admin/Painel";
@@ -486,11 +493,19 @@ function App() {
                 
                 <Route path="/public/proposta/:link_publico" element={<PropostaView />} />
                 
-                {/* Audiovisual routes */}
+                {/* Access Control Routes */}
+                <Route path="/aguardando-aprovacao" element={<PendingApprovalPage />} />
+                <Route path="/acesso-reprovado" element={<AccessRejectedPage />} />
+                <Route path="/acesso-suspenso" element={<AccessSuspendedPage />} />
+                <Route path="/auth/verify-email" element={<VerifyEmailPage />} />
+
+                {/* Audiovisual routes (protected by SpecialistGuard) */}
                 <Route path="/audiovisual/dashboard" element={
-                  <ProtectedRoute module="audiovisual">
-                    <Layout><AudiovisualDashboard /></Layout>
-                  </ProtectedRoute>
+                  <SpecialistGuard>
+                    <ProtectedRoute module="audiovisual">
+                      <Layout><AudiovisualDashboard /></Layout>
+                    </ProtectedRoute>
+                  </SpecialistGuard>
                 } />
                 
                 {/* Redirecionar /audiovisual/tarefas para /audiovisual/minhas-tarefas */}
@@ -499,34 +514,44 @@ function App() {
                 } />
                 
                 <Route path="/audiovisual/minhas-tarefas" element={
-                  <ProtectedRoute module="audiovisual">
-                    <Layout><AudiovisualMinhasTarefas /></Layout>
-                  </ProtectedRoute>
+                  <SpecialistGuard>
+                    <ProtectedRoute module="audiovisual">
+                      <Layout><AudiovisualMinhasTarefas /></Layout>
+                    </ProtectedRoute>
+                  </SpecialistGuard>
                 } />
                 
                 <Route path="/audiovisual/projetos" element={
-                  <ProtectedRoute module="audiovisual">
-                    <Layout><AudiovisualProjetos /></Layout>
-                  </ProtectedRoute>
+                  <SpecialistGuard>
+                    <ProtectedRoute module="audiovisual">
+                      <Layout><AudiovisualProjetos /></Layout>
+                    </ProtectedRoute>
+                  </SpecialistGuard>
                 } />
                 
                 <Route path="/audiovisual/captacoes" element={
-                  <ProtectedRoute module="audiovisual">
-                    <Layout><AudiovisualCaptacoes /></Layout>
-                  </ProtectedRoute>
+                  <SpecialistGuard>
+                    <ProtectedRoute module="audiovisual">
+                      <Layout><AudiovisualCaptacoes /></Layout>
+                    </ProtectedRoute>
+                  </SpecialistGuard>
                 } />
                 
                 <Route path="/audiovisual/equipamentos" element={
-                  <ProtectedRoute module="audiovisual">
-                    <Layout><AudiovisualEquipamentos /></Layout>
-                  </ProtectedRoute>
+                  <SpecialistGuard>
+                    <ProtectedRoute module="audiovisual">
+                      <Layout><AudiovisualEquipamentos /></Layout>
+                    </ProtectedRoute>
+                  </SpecialistGuard>
                 } />
                 
-                {/* Design routes */}
+                {/* Design routes (protected by SpecialistGuard) */}
                 <Route path="/design/dashboard" element={
-                  <ProtectedRoute module="design">
-                    <Layout><DesignDashboard /></Layout>
-                  </ProtectedRoute>
+                  <SpecialistGuard>
+                    <ProtectedRoute module="design">
+                      <Layout><DesignDashboard /></Layout>
+                    </ProtectedRoute>
+                  </SpecialistGuard>
                 } />
                 
                 {/* Redirecionar /design/tarefas para /design/minhas-tarefas */}
@@ -535,33 +560,43 @@ function App() {
                 } />
                 
                 <Route path="/design/minhas-tarefas" element={
-                  <ProtectedRoute module="design">
-                    <Layout><DesignMinhasTarefas /></Layout>
-                  </ProtectedRoute>
+                  <SpecialistGuard>
+                    <ProtectedRoute module="design">
+                      <Layout><DesignMinhasTarefas /></Layout>
+                    </ProtectedRoute>
+                  </SpecialistGuard>
                 } />
                 
                 <Route path="/design/biblioteca" element={
-                  <ProtectedRoute module="design">
-                    <Layout><DesignBiblioteca /></Layout>
-                  </ProtectedRoute>
+                  <SpecialistGuard>
+                    <ProtectedRoute module="design">
+                      <Layout><DesignBiblioteca /></Layout>
+                    </ProtectedRoute>
+                  </SpecialistGuard>
                 } />
                 
                 <Route path="/design/calendario" element={
-                  <ProtectedRoute module="design">
-                    <Layout><DesignCalendario /></Layout>
-                  </ProtectedRoute>
+                  <SpecialistGuard>
+                    <ProtectedRoute module="design">
+                      <Layout><DesignCalendario /></Layout>
+                    </ProtectedRoute>
+                  </SpecialistGuard>
                 } />
                 
                 <Route path="/design/metas" element={
-                  <ProtectedRoute module="design">
-                    <Layout><DesignMetas /></Layout>
-                  </ProtectedRoute>
+                  <SpecialistGuard>
+                    <ProtectedRoute module="design">
+                      <Layout><DesignMetas /></Layout>
+                    </ProtectedRoute>
+                  </SpecialistGuard>
                 } />
                 
                 <Route path="/design/aprovacoes" element={
-                  <ProtectedRoute module="design">
-                    <Layout><DesignAprovacoes /></Layout>
-                  </ProtectedRoute>
+                  <SpecialistGuard>
+                    <ProtectedRoute module="design">
+                      <Layout><DesignAprovacoes /></Layout>
+                    </ProtectedRoute>
+                  </SpecialistGuard>
                 } />
                 
                 {/* Client routes */}
