@@ -103,48 +103,52 @@ export function AIBriefingGenerator({ onGenerate, clienteId, planejamentoId }: A
   };
   
   return (
-    <Card className="p-4 bg-gradient-to-r from-purple-50 to-blue-50 border-purple-200">
-      <div className="flex items-start gap-3">
-        <Sparkles className="h-5 w-5 text-purple-600 mt-1 flex-shrink-0" />
-        <div className="flex-1 space-y-3">
-          <div>
-            <h4 className="font-semibold text-sm text-purple-900">
-              Gerar Briefing com IA ✨
-            </h4>
-            <p className="text-xs text-purple-700 mt-1">
-              Descreva o que você precisa e a IA criará um briefing completo baseado no contexto do cliente
-            </p>
+    <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
+      <div className="p-4">
+        <div className="flex items-start gap-3">
+          <div className="p-2 rounded-lg bg-primary/10">
+            <Sparkles className="h-5 w-5 text-primary flex-shrink-0" />
           </div>
-          
-          <Textarea
-            value={prompt}
-            onChange={(e) => setPrompt(e.target.value)}
-            placeholder="Ex: Post de promoção para Black Friday com foco em vendas diretas"
-            rows={2}
-            className="bg-white"
-            disabled={loading}
-          />
-          
-          <Button 
-            onClick={handleGenerate}
-            disabled={loading || !prompt.trim()}
-            size="sm"
-            className="w-full"
-            variant="secondary"
-            type="button"
-          >
-            {loading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Gerando briefing...
-              </>
-            ) : (
-              <>
-                <Wand2 className="mr-2 h-4 w-4" />
-                Gerar Briefing Automaticamente
-              </>
-            )}
-          </Button>
+          <div className="flex-1 space-y-3">
+            <div>
+              <h4 className="font-semibold text-base text-foreground flex items-center gap-2">
+                Gerar Briefing com IA ✨
+              </h4>
+              <p className="text-sm text-muted-foreground mt-1">
+                Descreva o que você precisa e a IA criará um briefing completo baseado no contexto do cliente
+              </p>
+            </div>
+            
+            <Textarea
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              placeholder="Ex: Post de promoção para Black Friday com foco em vendas diretas"
+              rows={2}
+              className="bg-background border-primary/20 focus:border-primary"
+              disabled={loading}
+            />
+            
+            <Button 
+              onClick={handleGenerate}
+              disabled={loading || !prompt.trim()}
+              size="sm"
+              className="w-full"
+              variant="default"
+              type="button"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Gerando briefing com IA...
+                </>
+              ) : (
+                <>
+                  <Wand2 className="mr-2 h-4 w-4" />
+                  Gerar Briefing Automaticamente
+                </>
+              )}
+            </Button>
+          </div>
         </div>
       </div>
     </Card>
