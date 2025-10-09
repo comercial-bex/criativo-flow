@@ -6485,12 +6485,30 @@ export type Database = {
         }
         Returns: string
       }
+      fn_sugerir_slot_disponivel: {
+        Args: {
+          p_data_preferida: string
+          p_duracao_minutos: number
+          p_responsavel_id: string
+          p_tipo_evento: Database["public"]["Enums"]["tipo_evento"]
+        }
+        Returns: Json
+      }
       fn_tarefa_status_prazo: {
         Args: { p_tarefa_id: string }
         Returns: string
       }
       fn_validar_vinculo_projeto_cliente: {
         Args: { p_projeto_id: string }
+        Returns: Json
+      }
+      fn_verificar_conflito_agenda: {
+        Args: {
+          p_data_fim: string
+          p_data_inicio: string
+          p_excluir_evento_id?: string
+          p_responsavel_id: string
+        }
         Returns: Json
       }
       fn_verificar_disponibilidade: {
