@@ -38,14 +38,14 @@ export function ResponsiveLayout({ children }: ResponsiveLayoutProps) {
 
   return (
     <SidebarProvider defaultOpen={true}>
-      <div className="min-h-screen w-full bg-background flex overflow-x-hidden">
-        {/* Sidebar - Flows naturally */}
+      <div className="min-h-screen w-full bg-background flex">
+        {/* Sidebar - shadcn handles fixed positioning internally */}
         <AppSidebar />
         
         {/* Main Content Area */}
-        <div className="flex flex-col min-h-screen flex-1">
+        <div className="flex flex-col min-h-screen flex-1 overflow-hidden">
           {/* Fixed Header */}
-          <header className={`${isTablet ? 'h-14' : 'h-16'} flex items-center border-b bg-background/95 backdrop-blur-sm px-4 sticky top-0 z-50 shadow-sm`}>
+          <header className={`${isTablet ? 'h-14' : 'h-16'} flex items-center border-b bg-background/95 backdrop-blur-sm px-4 sticky top-0 z-40 shadow-sm`}>
             <div className="flex items-center gap-3 flex-1">
               <SidebarTrigger className="hover:bg-muted/50 p-2 rounded-md transition-colors" />
               <GlobalHeader />
@@ -53,7 +53,7 @@ export function ResponsiveLayout({ children }: ResponsiveLayoutProps) {
           </header>
           
           {/* Scrollable Content */}
-          <main className="flex-1 overflow-y-auto bg-muted/20 relative">
+          <main className="flex-1 overflow-y-auto bg-muted/20">
             {children}
           </main>
         </div>
