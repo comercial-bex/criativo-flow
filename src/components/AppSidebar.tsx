@@ -178,7 +178,6 @@ const modules = [
     items: [
       { title: "Dashboard Design", url: "/design/dashboard", icon: Palette },
       { title: "Minhas Tarefas", url: "/design/tarefas", icon: CheckSquare },
-      { title: "Kanban", url: "/design/kanban", icon: ClipboardCheck },
       { title: "Calendário", url: "/design/calendario", icon: Calendar },
       { title: "Biblioteca", url: "/design/biblioteca", icon: FolderOpen },
       { title: "Metas", url: "/design/metas", icon: Target },

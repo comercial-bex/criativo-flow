@@ -89,7 +89,6 @@ import AudiovisualEquipamentos from "./pages/Audiovisual/Equipamentos";
 
 // Design pages
 import DesignDashboard from "./pages/Design/Dashboard";
-import DesignKanban from "./pages/Design/Kanban";
 import DesignCalendario from "./pages/Design/Calendario";
 import DesignMetas from "./pages/Design/Metas";
 import DesignBiblioteca from "./pages/Design/Biblioteca";
@@ -532,12 +531,6 @@ function App() {
                 <Route path="/design/biblioteca" element={
                   <ProtectedRoute module="design">
                     <Layout><DesignBiblioteca /></Layout>
-                  </ProtectedRoute>
-                } />
-                
-                <Route path="/design/kanban" element={
-                  <ProtectedRoute module="design">
-                    <Layout><DesignKanban /></Layout>
                   </ProtectedRoute>
                 } />
                 
