@@ -9,6 +9,8 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CalendarIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -16,13 +18,14 @@ import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { BriefingForm } from './BriefingForm';
 import { AIBriefingGenerator } from './AIBriefingGenerator';
+import { EquipamentosSelector } from './Inventario/EquipamentosSelector';
 import { useOperationalPermissions } from '@/hooks/useOperationalPermissions';
 import { supabase } from '@/integrations/supabase/client';
 
 interface CreateTaskModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onTaskCreate: (taskData: any) => void;
+  onTaskCreate: (taskData: any) => Promise<any>;
   projetoId?: string;
   defaultStatus?: string;
   clienteId?: string;
@@ -46,6 +49,8 @@ export function CreateTaskModal({
   const [selectedPlanejamento, setSelectedPlanejamento] = useState('');
   const [clientes, setClientes] = useState<any[]>([]);
   const [selectedCliente, setSelectedCliente] = useState(clienteId || '');
+  const [selectedEquipamentos, setSelectedEquipamentos] = useState<any[]>([]);
+  const [activeTab, setActiveTab] = useState('basico');
   
   // ⛔ GUARD: Verificar permissão de criação
   const { permissions } = useOperationalPermissions();
@@ -172,6 +177,8 @@ export function CreateTaskModal({
     setSelectedCliente(clienteId || '');
     setVinculadaPlanejamento(false);
     setSelectedPlanejamento('');
+    setSelectedEquipamentos([]);
+    setActiveTab('basico');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -232,15 +239,45 @@ export function CreateTaskModal({
         })
       };
 
-      await onTaskCreate(taskData);
+      const createdTask = await onTaskCreate(taskData);
+      
+      // Se houver equipamentos selecionados, criar reservas
+      if (selectedEquipamentos.length > 0 && createdTask?.id) {
+        for (const equipamento of selectedEquipamentos) {
+          // Calcular período da reserva
+          const dataInicio = formData.data_prazo || new Date();
+          const dataFim = formData.data_prazo 
+            ? new Date(formData.data_prazo.getTime() + (parseInt(formData.horas_estimadas || '4') * 60 * 60 * 1000))
+            : new Date(new Date().getTime() + (parseInt(formData.horas_estimadas || '4') * 60 * 60 * 1000));
+          
+          try {
+            await supabase.rpc('fn_criar_reserva_equipamento', {
+              p_item_id: equipamento.id,
+              p_unidade_id: null,
+              p_tipo_reserva: 'captacao',
+              p_inicio: dataInicio.toISOString(),
+              p_fim: dataFim.toISOString(),
+              p_tarefa_id: createdTask.id,
+              p_projeto_id: selectedProjeto,
+              p_quantidade: 1
+            });
+          } catch (reservaError) {
+            console.error('Erro ao criar reserva:', reservaError);
+          }
+        }
+        
+        toast({
+          title: "✅ Tarefa criada com equipamentos reservados!",
+          description: `${selectedEquipamentos.length} equipamento(s) foram reservados para "${formData.titulo}".`,
+        });
+      } else {
+        toast({
+          title: "✅ Tarefa criada com sucesso!",
+          description: `A tarefa "${formData.titulo}" foi adicionada ao projeto.`,
+        });
+      }
       
       onOpenChange(false);
-      
-      toast({
-        title: "✅ Tarefa criada com sucesso!",
-        description: `A tarefa "${formData.titulo}" foi adicionada ao projeto.`,
-      });
-
       setTimeout(() => resetForm(), 300);
       
     } catch (error: any) {
@@ -306,8 +343,16 @@ export function CreateTaskModal({
             </button>
           </div>
 
-          {/* Cliente e Projeto Selection */}
-          <div className="grid grid-cols-2 gap-4">
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="grid grid-cols-3 w-full">
+              <TabsTrigger value="basico">📋 Básico</TabsTrigger>
+              <TabsTrigger value="briefing" disabled={taskType !== 'avulsa'}>📝 Briefing</TabsTrigger>
+              <TabsTrigger value="equipamentos">📦 Equipamentos</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="basico" className="space-y-6 mt-4">
+              {/* Cliente e Projeto Selection */}
+              <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="cliente">Cliente *</Label>
               <Select 
@@ -488,35 +533,74 @@ export function CreateTaskModal({
               rows={3}
             />
           </div>
+            </TabsContent>
 
-          {/* AI Briefing Generator & Briefing Form */}
-          {taskType === 'avulsa' && (
-            <>
-              <AIBriefingGenerator
-                onGenerate={(briefing) => {
-                  setFormData(prev => ({ 
-                    ...prev, 
-                    titulo: briefing.titulo || prev.titulo,
-                    descricao: briefing.descricao || prev.descricao,
-                    objetivo_postagem: briefing.objetivo_postagem || prev.objetivo_postagem,
-                    publico_alvo: briefing.publico_alvo || prev.publico_alvo,
-                    contexto_estrategico: briefing.contexto_estrategico || prev.contexto_estrategico,
-                    formato_postagem: briefing.formato_postagem || prev.formato_postagem,
-                    call_to_action: briefing.call_to_action || prev.call_to_action
-                  }));
-                }}
+            <TabsContent value="briefing" className="space-y-6 mt-4">
+              {taskType === 'avulsa' && (
+                <>
+                  <AIBriefingGenerator
+                    onGenerate={(briefing) => {
+                      setFormData(prev => ({ 
+                        ...prev, 
+                        titulo: briefing.titulo || prev.titulo,
+                        descricao: briefing.descricao || prev.descricao,
+                        objetivo_postagem: briefing.objetivo_postagem || prev.objetivo_postagem,
+                        publico_alvo: briefing.publico_alvo || prev.publico_alvo,
+                        contexto_estrategico: briefing.contexto_estrategico || prev.contexto_estrategico,
+                        formato_postagem: briefing.formato_postagem || prev.formato_postagem,
+                        call_to_action: briefing.call_to_action || prev.call_to_action
+                      }));
+                    }}
+                    clienteId={selectedCliente}
+                    planejamentoId={vinculadaPlanejamento ? selectedPlanejamento : undefined}
+                  />
+                  
+                  <Separator className="my-4" />
+                  
+                  <BriefingForm 
+                    formData={formData}
+                    setFormData={setFormData}
+                  />
+                </>
+              )}
+            </TabsContent>
+
+            <TabsContent value="equipamentos" className="space-y-6 mt-4">
+              <EquipamentosSelector
                 clienteId={selectedCliente}
-                planejamentoId={vinculadaPlanejamento ? selectedPlanejamento : undefined}
+                projetoId={selectedProjeto}
+                dataInicio={formData.data_prazo}
+                dataFim={formData.data_prazo}
+                onSelect={(equipamentos) => setSelectedEquipamentos(equipamentos)}
               />
               
-              <Separator className="my-4" />
-              
-              <BriefingForm 
-                formData={formData}
-                setFormData={setFormData}
-              />
-            </>
-          )}
+              {selectedEquipamentos.length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>📦 Equipamentos Selecionados ({selectedEquipamentos.length})</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    {selectedEquipamentos.map((eq) => (
+                      <div key={eq.id} className="flex justify-between items-center p-3 border rounded-lg bg-muted/50">
+                        <div>
+                          <p className="font-medium">{eq.modelo?.marca} {eq.modelo?.modelo}</p>
+                          <p className="text-sm text-muted-foreground">{eq.identificacao_interna}</p>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setSelectedEquipamentos(prev => prev.filter(e => e.id !== eq.id))}
+                        >
+                          ✕
+                        </Button>
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+              )}
+            </TabsContent>
+          </Tabs>
 
           {taskType === 'planejamento' && (
             <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
