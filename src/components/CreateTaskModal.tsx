@@ -13,6 +13,7 @@ import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { BriefingForm } from './BriefingForm';
+import { useOperationalPermissions } from '@/hooks/useOperationalPermissions';
 
 interface CreateTaskModalProps {
   open: boolean;
@@ -32,6 +33,20 @@ export function CreateTaskModal({
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [taskType, setTaskType] = useState<'avulsa' | 'planejamento'>('avulsa');
+  
+  // ⛔ GUARD: Verificar permissão de criação
+  const { permissions } = useOperationalPermissions();
+  
+  // Bloquear acesso se não tiver permissão
+  if (!permissions.canCreateTask && open) {
+    toast({
+      title: "⛔ Sem Permissão",
+      description: "Apenas GRS e Administradores podem criar tarefas.",
+      variant: "destructive"
+    });
+    onOpenChange(false);
+    return null;
+  }
   
   const [formData, setFormData] = useState({
     titulo: '',

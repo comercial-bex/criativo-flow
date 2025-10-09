@@ -25,8 +25,8 @@ export function useOperationalPermissions(): {
 
   // Definição clara de permissões por papel
   const permissions: OperationalPermissions = {
-    // Administrador: acesso total
-    canCreateTask: role === 'admin' || role === 'grs' || role === 'gestor',
+    // Criação de tarefas: APENAS Admin e GRS
+    canCreateTask: role === 'admin' || role === 'grs',
     canEditTask: role === 'admin' || role === 'grs' || role === 'gestor',
     canDeleteTask: role === 'admin' || role === 'gestor',
     canCreateSchedule: role === 'admin' || role === 'grs' || role === 'gestor',
@@ -35,8 +35,8 @@ export function useOperationalPermissions(): {
     canViewAllTasks: role === 'admin' || role === 'gestor' || role === 'grs',
     canAssignSpecialists: role === 'admin' || role === 'grs' || role === 'gestor',
     
-    // Botão de criação visível apenas para Admin e GRS
-    showCreateButton: role === 'admin' || role === 'grs' || role === 'gestor',
+    // Botão de criação visível APENAS para Admin e GRS (executores não criam)
+    showCreateButton: role === 'admin' || role === 'grs',
   };
 
   return { permissions, loading, role };

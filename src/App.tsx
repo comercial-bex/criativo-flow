@@ -49,9 +49,7 @@ import FornecedorDashboard from "./pages/Fornecedor/Dashboard";
 import GestorDashboard from "./pages/Gestor/Dashboard";
 import MinhasTarefas from "./pages/MinhasTarefas";
 import TarefasUnificadasGRS from "./pages/GRS/TarefasUnificadas";
-import TarefasUnificadasDesign from "./pages/Design/TarefasUnificadas";
 import EspecialistaDashboard from "./pages/Especialista/Dashboard";
-import TarefasUnificadasAudiovisual from "./pages/Audiovisual/TarefasUnificadas";
 
 // Client pages
 import ClientePainel from "./pages/Cliente/Painel";
@@ -86,6 +84,8 @@ import AudiovisualDashboard from "./pages/Audiovisual/Dashboard";
 import AudiovisualCaptacoes from "./pages/Audiovisual/Captacoes";
 import AudiovisualProjetos from "./pages/Audiovisual/Projetos";
 import AudiovisualEquipamentos from "./pages/Audiovisual/Equipamentos";
+import TarefasUnificadasAudiovisual from "./pages/Audiovisual/TarefasUnificadas";
+import AudiovisualMinhasTarefas from "./pages/Audiovisual/MinhasTarefas";
 
 // Design pages
 import DesignDashboard from "./pages/Design/Dashboard";
@@ -93,6 +93,8 @@ import DesignCalendario from "./pages/Design/Calendario";
 import DesignMetas from "./pages/Design/Metas";
 import DesignBiblioteca from "./pages/Design/Biblioteca";
 import DesignAprovacoes from "./pages/Design/Aprovacoes";
+import TarefasUnificadasDesign from "./pages/Design/TarefasUnificadas";
+import DesignMinhasTarefas from "./pages/Design/MinhasTarefas";
 import Gamificacao from "./pages/Gamificacao";
 import GamificacaoAdmin from "./pages/GamificacaoAdmin";
 
@@ -491,9 +493,14 @@ function App() {
                   </ProtectedRoute>
                 } />
                 
+                {/* Redirecionar /audiovisual/tarefas para /audiovisual/minhas-tarefas */}
                 <Route path="/audiovisual/tarefas" element={
+                  <Navigate to="/audiovisual/minhas-tarefas" replace />
+                } />
+                
+                <Route path="/audiovisual/minhas-tarefas" element={
                   <ProtectedRoute module="audiovisual">
-                    <Layout><TarefasUnificadasAudiovisual /></Layout>
+                    <Layout><AudiovisualMinhasTarefas /></Layout>
                   </ProtectedRoute>
                 } />
                 
@@ -522,9 +529,14 @@ function App() {
                   </ProtectedRoute>
                 } />
                 
+                {/* Redirecionar /design/tarefas para /design/minhas-tarefas */}
                 <Route path="/design/tarefas" element={
+                  <Navigate to="/design/minhas-tarefas" replace />
+                } />
+                
+                <Route path="/design/minhas-tarefas" element={
                   <ProtectedRoute module="design">
-                    <Layout><TarefasUnificadasDesign /></Layout>
+                    <Layout><DesignMinhasTarefas /></Layout>
                   </ProtectedRoute>
                 } />
                 
