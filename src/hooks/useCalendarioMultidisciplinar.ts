@@ -63,9 +63,17 @@ export const useCalendarioMultidisciplinar = (options: {
         p_equipamentos_ids: params.equipamentosIds
       });
       
-      if (error) throw error;
+      if (error) {
+        console.error('Erro RPC:', error);
+        throw new Error(error.message || 'Erro ao criar evento');
+      }
+      
       const result = data as any;
-      if (!result?.success) throw new Error(result?.error || 'Erro ao criar evento');
+      if (!result?.success) {
+        console.error('Erro do servidor:', result);
+        throw new Error(result?.error || 'Erro ao criar evento');
+      }
+      
       return result;
     },
     onSuccess: () => {
@@ -73,6 +81,7 @@ export const useCalendarioMultidisciplinar = (options: {
       toast.success('Evento criado com sucesso!');
     },
     onError: (error: any) => {
+      console.error('Erro na mutation:', error);
       toast.error(error.message || 'Erro ao criar evento');
     }
   });
