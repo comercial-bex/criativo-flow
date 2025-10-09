@@ -6449,6 +6449,21 @@ export type Database = {
         }
         Returns: Json
       }
+      fn_criar_evento_com_regras: {
+        Args: {
+          p_data_fim: string
+          p_data_inicio: string
+          p_equipamentos_ids?: string[]
+          p_is_extra?: boolean
+          p_local?: string
+          p_modo_criativo?: string
+          p_projeto_id: string
+          p_responsavel_id: string
+          p_tipo: Database["public"]["Enums"]["tipo_evento"]
+          p_titulo: string
+        }
+        Returns: Json
+      }
       fn_criar_reserva_equipamento: {
         Args: {
           p_fim: string
