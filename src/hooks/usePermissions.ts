@@ -24,6 +24,8 @@ export interface ModulePermissions {
   relatorios: PermissionActions;
   inteligencia: PermissionActions;
   projetos: PermissionActions;
+  calendario: PermissionActions;
+  inventario: PermissionActions;
 }
 
 interface RolePermission {
@@ -54,6 +56,8 @@ const ROLE_PERMISSIONS: Record<NonNullable<UserRole>, Partial<ModulePermissions>
     relatorios: { canView: true, canCreate: true, canEdit: true, canDelete: true },
     inteligencia: { canView: true, canCreate: true, canEdit: true, canDelete: true },
     projetos: { canView: true, canCreate: true, canEdit: true, canDelete: true },
+    calendario: { canView: true, canCreate: true, canEdit: true, canDelete: true },
+    inventario: { canView: true, canCreate: true, canEdit: true, canDelete: true },
   },
   grs: {
     dashboard: { canView: true, canCreate: false, canEdit: false, canDelete: false },
@@ -75,12 +79,16 @@ const ROLE_PERMISSIONS: Record<NonNullable<UserRole>, Partial<ModulePermissions>
     design: { canView: true, canCreate: false, canEdit: true, canDelete: false },
     clientes: { canView: true, canCreate: false, canEdit: false, canDelete: false },
     projetos: { canView: true, canCreate: false, canEdit: true, canDelete: false },
+    calendario: { canView: true, canCreate: true, canEdit: true, canDelete: false },
+    inventario: { canView: true, canCreate: false, canEdit: false, canDelete: false },
   },
   filmmaker: {
     dashboard: { canView: true, canCreate: false, canEdit: false, canDelete: false },
     audiovisual: { canView: true, canCreate: false, canEdit: true, canDelete: false },
     clientes: { canView: true, canCreate: false, canEdit: false, canDelete: false },
     projetos: { canView: true, canCreate: false, canEdit: true, canDelete: false },
+    calendario: { canView: true, canCreate: true, canEdit: true, canDelete: false },
+    inventario: { canView: true, canCreate: false, canEdit: false, canDelete: false },
   },
   gestor: {
     dashboard: { canView: true, canCreate: false, canEdit: false, canDelete: false },
@@ -94,6 +102,8 @@ const ROLE_PERMISSIONS: Record<NonNullable<UserRole>, Partial<ModulePermissions>
     especialistas: { canView: true, canCreate: true, canEdit: true, canDelete: false },
     inteligencia: { canView: true, canCreate: false, canEdit: false, canDelete: false },
     projetos: { canView: true, canCreate: true, canEdit: true, canDelete: true },
+    calendario: { canView: true, canCreate: true, canEdit: true, canDelete: true },
+    inventario: { canView: true, canCreate: true, canEdit: true, canDelete: true },
   },
   financeiro: {
     dashboard: { canView: true, canCreate: false, canEdit: false, canDelete: false },

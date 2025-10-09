@@ -40,9 +40,9 @@ import {
   Activity,
   Brain,
   Trophy,
-  Package,
   FileType,
-  Bell
+  Bell,
+  Package
 } from "lucide-react"
 import { NavLink, useLocation } from "react-router-dom"
 import React from "react"
@@ -221,6 +221,24 @@ const modules = [
       { title: "Hub de Inteligência", url: "/inteligencia", icon: Brain },
     ],
     permissions: ["inteligencia"]
+  },
+  {
+    id: "calendario",
+    title: "Calendário",
+    icon: Calendar,
+    items: [
+      { title: "Calendário Multidisciplinar", url: "/calendario", icon: Calendar },
+    ],
+    permissions: ["calendario"],
+  },
+  {
+    id: "inventario",
+    title: "Inventário",
+    icon: Package,
+    items: [
+      { title: "Equipamentos", url: "/inventario", icon: Package },
+    ],
+    permissions: ["inventario"],
   },
   {
     id: "admin",

@@ -98,6 +98,8 @@ import TarefasUnificadasDesign from "./pages/Design/TarefasUnificadas";
 import DesignMinhasTarefas from "./pages/Design/MinhasTarefas";
 import Gamificacao from "./pages/Gamificacao";
 import GamificacaoAdmin from "./pages/GamificacaoAdmin";
+import Calendario from "./pages/Calendario";
+import Inventario from "./pages/Inventario";
 
 // Access control pages
 import AccessRejectedPage from "./pages/AccessRejectedPage";
@@ -599,6 +601,20 @@ function App() {
                   </SpecialistGuard>
                 } />
                 
+                {/* Calendário Multidisciplinar */}
+                <Route path="/calendario" element={
+                  <ProtectedRoute module="calendario">
+                    <Layout><Calendario /></Layout>
+                  </ProtectedRoute>
+                } />
+
+                {/* Inventário */}
+                <Route path="/inventario" element={
+                  <ProtectedRoute module="inventario">
+                    <Layout><Inventario /></Layout>
+                  </ProtectedRoute>
+                } />
+
                 {/* Client routes */}
                 <Route path="/cliente/painel" element={
                   <ProtectedRoute requiredRole="cliente">
