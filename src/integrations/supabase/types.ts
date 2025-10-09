@@ -3547,12 +3547,14 @@ export type Database = {
           created_at: string | null
           data_aprovacao: string | null
           email: string
+          email_verified_at: string | null
           especialidade:
             | Database["public"]["Enums"]["especialidade_type"]
             | null
           id: string
           nome: string
           observacoes_aprovacao: string | null
+          role_requested: string | null
           status: string
           telefone: string | null
           updated_at: string | null
@@ -3564,12 +3566,14 @@ export type Database = {
           created_at?: string | null
           data_aprovacao?: string | null
           email: string
+          email_verified_at?: string | null
           especialidade?:
             | Database["public"]["Enums"]["especialidade_type"]
             | null
           id: string
           nome: string
           observacoes_aprovacao?: string | null
+          role_requested?: string | null
           status?: string
           telefone?: string | null
           updated_at?: string | null
@@ -3581,12 +3585,14 @@ export type Database = {
           created_at?: string | null
           data_aprovacao?: string | null
           email?: string
+          email_verified_at?: string | null
           especialidade?:
             | Database["public"]["Enums"]["especialidade_type"]
             | null
           id?: string
           nome?: string
           observacoes_aprovacao?: string | null
+          role_requested?: string | null
           status?: string
           telefone?: string | null
           updated_at?: string | null
