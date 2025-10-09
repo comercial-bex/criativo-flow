@@ -194,7 +194,6 @@ const modules = [
       { title: "Minhas Tarefas", url: "/audiovisual/minhas-tarefas", icon: CheckSquare },
       { title: "Captações", url: "/audiovisual/captacoes", icon: Camera },
       { title: "Projetos AV", url: "/audiovisual/projetos", icon: Film },
-      { title: "Equipamentos", url: "/audiovisual/equipamentos", icon: Settings },
     ],
     permissions: ["audiovisual"]
   },

@@ -539,12 +539,9 @@ function App() {
                   </SpecialistGuard>
                 } />
                 
+                {/* Redirecionar equipamentos antigos para inventário */}
                 <Route path="/audiovisual/equipamentos" element={
-                  <SpecialistGuard>
-                    <ProtectedRoute module="audiovisual">
-                      <Layout><AudiovisualEquipamentos /></Layout>
-                    </ProtectedRoute>
-                  </SpecialistGuard>
+                  <Navigate to="/inventario" replace />
                 } />
                 
                 {/* Design routes (protected by SpecialistGuard) */}
