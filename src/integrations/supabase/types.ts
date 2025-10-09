@@ -641,6 +641,102 @@ export type Database = {
           },
         ]
       }
+      calendario_config: {
+        Row: {
+          capacidade_manha_avulso: number | null
+          capacidade_manha_lote: number | null
+          capacidade_sabado_lote: number | null
+          capacidade_tarde_avulso: number | null
+          capacidade_tarde_lote: number | null
+          deslocamento_curto: number | null
+          deslocamento_longo: number | null
+          deslocamento_medio: number | null
+          especialidade: string
+          flex_manha_fim: string
+          flex_manha_inicio: string
+          flex_noite_fim: string
+          flex_noite_inicio: string
+          id: string
+          pausa_foco: number | null
+          sabado_fim: string
+          sabado_inicio: string
+          seg_sex_manha_fim: string
+          seg_sex_manha_inicio: string
+          seg_sex_tarde_fim: string
+          seg_sex_tarde_inicio: string
+          tempo_criacao_avulso: number | null
+          tempo_criacao_lote: number | null
+          tempo_descarga_backup: number | null
+          tempo_edicao_curta: number | null
+          tempo_edicao_longa: number | null
+          tempo_planejamento: number | null
+          tempo_preparacao_captacao: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          capacidade_manha_avulso?: number | null
+          capacidade_manha_lote?: number | null
+          capacidade_sabado_lote?: number | null
+          capacidade_tarde_avulso?: number | null
+          capacidade_tarde_lote?: number | null
+          deslocamento_curto?: number | null
+          deslocamento_longo?: number | null
+          deslocamento_medio?: number | null
+          especialidade: string
+          flex_manha_fim?: string
+          flex_manha_inicio?: string
+          flex_noite_fim?: string
+          flex_noite_inicio?: string
+          id?: string
+          pausa_foco?: number | null
+          sabado_fim?: string
+          sabado_inicio?: string
+          seg_sex_manha_fim?: string
+          seg_sex_manha_inicio?: string
+          seg_sex_tarde_fim?: string
+          seg_sex_tarde_inicio?: string
+          tempo_criacao_avulso?: number | null
+          tempo_criacao_lote?: number | null
+          tempo_descarga_backup?: number | null
+          tempo_edicao_curta?: number | null
+          tempo_edicao_longa?: number | null
+          tempo_planejamento?: number | null
+          tempo_preparacao_captacao?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          capacidade_manha_avulso?: number | null
+          capacidade_manha_lote?: number | null
+          capacidade_sabado_lote?: number | null
+          capacidade_tarde_avulso?: number | null
+          capacidade_tarde_lote?: number | null
+          deslocamento_curto?: number | null
+          deslocamento_longo?: number | null
+          deslocamento_medio?: number | null
+          especialidade?: string
+          flex_manha_fim?: string
+          flex_manha_inicio?: string
+          flex_noite_fim?: string
+          flex_noite_inicio?: string
+          id?: string
+          pausa_foco?: number | null
+          sabado_fim?: string
+          sabado_inicio?: string
+          seg_sex_manha_fim?: string
+          seg_sex_manha_inicio?: string
+          seg_sex_tarde_fim?: string
+          seg_sex_tarde_inicio?: string
+          tempo_criacao_avulso?: number | null
+          tempo_criacao_lote?: number | null
+          tempo_descarga_backup?: number | null
+          tempo_edicao_curta?: number | null
+          tempo_edicao_longa?: number | null
+          tempo_planejamento?: number | null
+          tempo_preparacao_captacao?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       campanha: {
         Row: {
           ativo: boolean | null
@@ -1905,6 +2001,151 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "vw_client_metrics"
             referencedColumns: ["responsavel_id"]
+          },
+        ]
+      }
+      eventos_calendario: {
+        Row: {
+          cliente_id: string | null
+          created_at: string | null
+          created_by: string | null
+          data_fim: string
+          data_inicio: string
+          descricao: string | null
+          duracao_minutos: number | null
+          equipamentos_ids: string[] | null
+          evento_pai_id: string | null
+          id: string
+          is_automatico: boolean | null
+          is_bloqueante: boolean | null
+          is_extra: boolean | null
+          local: string | null
+          modo_criativo: string | null
+          projeto_id: string | null
+          quantidade_pecas: number | null
+          responsavel_id: string
+          status: Database["public"]["Enums"]["status_evento"] | null
+          tarefa_id: string | null
+          tipo: Database["public"]["Enums"]["tipo_evento"]
+          tipo_deslocamento: string | null
+          titulo: string
+          updated_at: string | null
+        }
+        Insert: {
+          cliente_id?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          data_fim: string
+          data_inicio: string
+          descricao?: string | null
+          duracao_minutos?: number | null
+          equipamentos_ids?: string[] | null
+          evento_pai_id?: string | null
+          id?: string
+          is_automatico?: boolean | null
+          is_bloqueante?: boolean | null
+          is_extra?: boolean | null
+          local?: string | null
+          modo_criativo?: string | null
+          projeto_id?: string | null
+          quantidade_pecas?: number | null
+          responsavel_id: string
+          status?: Database["public"]["Enums"]["status_evento"] | null
+          tarefa_id?: string | null
+          tipo: Database["public"]["Enums"]["tipo_evento"]
+          tipo_deslocamento?: string | null
+          titulo: string
+          updated_at?: string | null
+        }
+        Update: {
+          cliente_id?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          data_fim?: string
+          data_inicio?: string
+          descricao?: string | null
+          duracao_minutos?: number | null
+          equipamentos_ids?: string[] | null
+          evento_pai_id?: string | null
+          id?: string
+          is_automatico?: boolean | null
+          is_bloqueante?: boolean | null
+          is_extra?: boolean | null
+          local?: string | null
+          modo_criativo?: string | null
+          projeto_id?: string | null
+          quantidade_pecas?: number | null
+          responsavel_id?: string
+          status?: Database["public"]["Enums"]["status_evento"] | null
+          tarefa_id?: string | null
+          tipo?: Database["public"]["Enums"]["tipo_evento"]
+          tipo_deslocamento?: string | null
+          titulo?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "eventos_calendario_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "eventos_calendario_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "vw_client_metrics"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "eventos_calendario_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "eventos_calendario_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "vw_client_metrics"
+            referencedColumns: ["responsavel_id"]
+          },
+          {
+            foreignKeyName: "eventos_calendario_evento_pai_id_fkey"
+            columns: ["evento_pai_id"]
+            isOneToOne: false
+            referencedRelation: "eventos_calendario"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "eventos_calendario_projeto_id_fkey"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "projetos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "eventos_calendario_responsavel_id_fkey"
+            columns: ["responsavel_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "eventos_calendario_responsavel_id_fkey"
+            columns: ["responsavel_id"]
+            isOneToOne: false
+            referencedRelation: "vw_client_metrics"
+            referencedColumns: ["responsavel_id"]
+          },
+          {
+            foreignKeyName: "eventos_calendario_tarefa_id_fkey"
+            columns: ["tarefa_id"]
+            isOneToOne: false
+            referencedRelation: "tarefas_projeto"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -6399,6 +6640,12 @@ export type Database = {
       prioridade_enum: "baixa" | "media" | "alta" | "critica"
       priority_type: "baixa" | "media" | "alta" | "urgente"
       status_aprovacao_enum: "pendente" | "aprovado" | "ajustes" | "reprovado"
+      status_evento:
+        | "agendado"
+        | "confirmado"
+        | "em_andamento"
+        | "concluido"
+        | "cancelado"
       status_padrao:
         | "rascunho"
         | "em_revisao"
@@ -6430,6 +6677,19 @@ export type Database = {
         | "planilha"
         | "contrato"
         | "outro"
+      tipo_evento:
+        | "criacao_avulso"
+        | "criacao_lote"
+        | "edicao_curta"
+        | "edicao_longa"
+        | "captacao_interna"
+        | "captacao_externa"
+        | "planejamento"
+        | "reuniao"
+        | "pausa_automatica"
+        | "deslocamento"
+        | "preparacao"
+        | "backup"
       tipo_pontuacao:
         | "feedback_positivo"
         | "entrega_prazo"
@@ -6632,6 +6892,13 @@ export const Constants = {
       prioridade_enum: ["baixa", "media", "alta", "critica"],
       priority_type: ["baixa", "media", "alta", "urgente"],
       status_aprovacao_enum: ["pendente", "aprovado", "ajustes", "reprovado"],
+      status_evento: [
+        "agendado",
+        "confirmado",
+        "em_andamento",
+        "concluido",
+        "cancelado",
+      ],
       status_padrao: [
         "rascunho",
         "em_revisao",
@@ -6665,6 +6932,20 @@ export const Constants = {
         "planilha",
         "contrato",
         "outro",
+      ],
+      tipo_evento: [
+        "criacao_avulso",
+        "criacao_lote",
+        "edicao_curta",
+        "edicao_longa",
+        "captacao_interna",
+        "captacao_externa",
+        "planejamento",
+        "reuniao",
+        "pausa_automatica",
+        "deslocamento",
+        "preparacao",
+        "backup",
       ],
       tipo_pontuacao: [
         "feedback_positivo",
