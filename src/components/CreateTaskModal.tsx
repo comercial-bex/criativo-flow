@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,20 +7,25 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { CalendarIcon, Upload, X } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Separator } from '@/components/ui/separator';
+import { CalendarIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { BriefingForm } from './BriefingForm';
+import { AIBriefingGenerator } from './AIBriefingGenerator';
 import { useOperationalPermissions } from '@/hooks/useOperationalPermissions';
+import { supabase } from '@/integrations/supabase/client';
 
 interface CreateTaskModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onTaskCreate: (taskData: any) => void;
-  projetoId: string;
+  projetoId?: string;
   defaultStatus?: string;
+  clienteId?: string;
 }
 
 export function CreateTaskModal({ 
@@ -28,11 +33,19 @@ export function CreateTaskModal({
   onOpenChange, 
   onTaskCreate, 
   projetoId,
-  defaultStatus = 'backlog' 
+  defaultStatus = 'backlog',
+  clienteId
 }: CreateTaskModalProps) {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [taskType, setTaskType] = useState<'avulsa' | 'planejamento'>('avulsa');
+  const [projetos, setProjetos] = useState<any[]>([]);
+  const [selectedProjeto, setSelectedProjeto] = useState(projetoId || '');
+  const [vinculadaPlanejamento, setVinculadaPlanejamento] = useState(false);
+  const [planejamentos, setPlanejamentos] = useState<any[]>([]);
+  const [selectedPlanejamento, setSelectedPlanejamento] = useState('');
+  const [clientes, setClientes] = useState<any[]>([]);
+  const [selectedCliente, setSelectedCliente] = useState(clienteId || '');
   
   // ⛔ GUARD: Verificar permissão de criação
   const { permissions } = useOperationalPermissions();
@@ -65,6 +78,80 @@ export function CreateTaskModal({
     observacoes: ''
   });
 
+  // Buscar clientes quando modal abrir
+  useEffect(() => {
+    if (open) {
+      fetchClientes();
+    }
+  }, [open]);
+
+  // Buscar projetos quando cliente for selecionado
+  useEffect(() => {
+    if (selectedCliente) {
+      fetchProjetosByCliente(selectedCliente);
+    }
+  }, [selectedCliente]);
+
+  // Buscar planejamentos quando cliente for selecionado E vinculação estiver ativa
+  useEffect(() => {
+    if (selectedCliente && vinculadaPlanejamento) {
+      fetchPlanejamentos(selectedCliente);
+    }
+  }, [selectedCliente, vinculadaPlanejamento]);
+
+  const fetchClientes = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('clientes')
+        .select('id, nome')
+        .eq('status', 'ativo')
+        .order('nome');
+      
+      if (error) throw error;
+      setClientes(data || []);
+    } catch (error) {
+      console.error('Erro ao buscar clientes:', error);
+    }
+  };
+
+  const fetchProjetosByCliente = async (clienteId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('projetos')
+        .select('id, titulo, mes_referencia')
+        .eq('cliente_id', clienteId)
+        .order('mes_referencia', { ascending: false });
+      
+      if (error) throw error;
+      setProjetos(data || []);
+    } catch (error) {
+      console.error('Erro ao buscar projetos:', error);
+    }
+  };
+
+  const fetchPlanejamentos = async (clienteId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('planejamentos')
+        .select('id, titulo, mes_referencia, status')
+        .eq('cliente_id', clienteId)
+        .order('mes_referencia', { ascending: false });
+      
+      if (error) throw error;
+      
+      // Filtrar apenas planejamentos com status válido
+      const validPlanejamentos = (data || []).filter(pl => 
+        pl.status === 'aprovado_cliente' || 
+        pl.status === 'em_producao' || 
+        pl.status === 'em_revisao'
+      );
+      
+      setPlanejamentos(validPlanejamentos);
+    } catch (error) {
+      console.error('Erro ao buscar planejamentos:', error);
+    }
+  };
+
   const resetForm = () => {
     setFormData({
       titulo: '',
@@ -81,6 +168,10 @@ export function CreateTaskModal({
       hashtags: '',
       observacoes: ''
     });
+    setSelectedProjeto(projetoId || '');
+    setSelectedCliente(clienteId || '');
+    setVinculadaPlanejamento(false);
+    setSelectedPlanejamento('');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -95,11 +186,30 @@ export function CreateTaskModal({
       return;
     }
 
+    if (!selectedCliente) {
+      toast({
+        title: "Cliente obrigatório",
+        description: "Selecione um cliente para a tarefa.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!selectedProjeto) {
+      toast({
+        title: "Projeto obrigatório",
+        description: "Selecione um projeto para a tarefa.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {
       const taskData = {
-        projeto_id: projetoId,
+        projeto_id: selectedProjeto,
+        cliente_id: selectedCliente,
         titulo: formData.titulo,
         descricao: formData.descricao,
         setor_responsavel: formData.setor_responsavel,
@@ -107,7 +217,10 @@ export function CreateTaskModal({
         status: defaultStatus,
         data_prazo: formData.data_prazo?.toISOString().split('T')[0],
         horas_estimadas: formData.horas_estimadas ? parseInt(formData.horas_estimadas) : null,
-        // Add briefing data as JSON in observacoes field for now
+        origem: taskType, // 'avulsa' ou 'planejamento'
+        grs_action_id: vinculadaPlanejamento ? selectedPlanejamento : null,
+        tipo_tarefa: taskType === 'avulsa' ? 'avulsa' : 'planejamento_mensal',
+        briefing_obrigatorio: taskType === 'avulsa',
         observacoes: JSON.stringify({
           objetivo_postagem: formData.objetivo_postagem,
           publico_alvo: formData.publico_alvo,
@@ -121,16 +234,13 @@ export function CreateTaskModal({
 
       await onTaskCreate(taskData);
       
-      // Fecha o modal ANTES do toast para UX mais fluida
       onOpenChange(false);
       
-      // Toast de sucesso com ícone
       toast({
         title: "✅ Tarefa criada com sucesso!",
         description: `A tarefa "${formData.titulo}" foi adicionada ao projeto.`,
       });
 
-      // Reset após fechar (cleanup)
       setTimeout(() => resetForm(), 300);
       
     } catch (error: any) {
@@ -146,7 +256,6 @@ export function CreateTaskModal({
   };
 
   const getDepartmentResponsible = (setor: string) => {
-    // This could be enhanced to automatically assign based on available team members
     const departmentMapping = {
       'design': 'Designer responsável será atribuído automaticamente',
       'audiovisual': 'Filmmaker responsável será atribuído automaticamente', 
@@ -158,7 +267,7 @@ export function CreateTaskModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Nova Tarefa</DialogTitle>
           <DialogDescription>
@@ -196,6 +305,84 @@ export function CreateTaskModal({
               <div className="text-xs opacity-75 mt-1">Estrutura pré-definida</div>
             </button>
           </div>
+
+          {/* Cliente e Projeto Selection */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="cliente">Cliente *</Label>
+              <Select 
+                value={selectedCliente} 
+                onValueChange={(value) => {
+                  setSelectedCliente(value);
+                  setSelectedProjeto(''); // Reset projeto quando trocar cliente
+                  setProjetos([]);
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o cliente" />
+                </SelectTrigger>
+                <SelectContent>
+                  {clientes.map(cliente => (
+                    <SelectItem key={cliente.id} value={cliente.id}>
+                      {cliente.nome}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="projeto">Projeto *</Label>
+              <Select 
+                value={selectedProjeto} 
+                onValueChange={setSelectedProjeto}
+                disabled={!selectedCliente}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder={selectedCliente ? "Selecione o projeto" : "Selecione um cliente primeiro"} />
+                </SelectTrigger>
+                <SelectContent>
+                  {projetos.map(projeto => (
+                    <SelectItem key={projeto.id} value={projeto.id}>
+                      {projeto.titulo} - {format(new Date(projeto.mes_referencia), 'MMM/yyyy', { locale: ptBR })}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* Vinculação a Planejamento */}
+          {taskType === 'avulsa' && selectedCliente && (
+            <div className="flex items-center gap-2 p-3 bg-muted rounded-lg">
+              <Switch 
+                id="vinculada"
+                checked={vinculadaPlanejamento}
+                onCheckedChange={setVinculadaPlanejamento}
+              />
+              <Label htmlFor="vinculada" className="cursor-pointer">
+                Vincular a um planejamento mensal aprovado
+              </Label>
+            </div>
+          )}
+
+          {vinculadaPlanejamento && (
+            <div className="space-y-2">
+              <Label htmlFor="planejamento">Planejamento</Label>
+              <Select value={selectedPlanejamento} onValueChange={setSelectedPlanejamento}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o planejamento" />
+                </SelectTrigger>
+                <SelectContent>
+                  {planejamentos.map(pl => (
+                    <SelectItem key={pl.id} value={pl.id}>
+                      {pl.titulo} - {format(new Date(pl.mes_referencia), 'MMMM yyyy', { locale: ptBR })}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
           {/* Basic Task Information */}
           <div className="grid grid-cols-2 gap-4">
@@ -302,12 +489,33 @@ export function CreateTaskModal({
             />
           </div>
 
-          {/* Briefing Form */}
+          {/* AI Briefing Generator & Briefing Form */}
           {taskType === 'avulsa' && (
-            <BriefingForm 
-              formData={formData}
-              setFormData={setFormData}
-            />
+            <>
+              <AIBriefingGenerator
+                onGenerate={(briefing) => {
+                  setFormData(prev => ({ 
+                    ...prev, 
+                    titulo: briefing.titulo || prev.titulo,
+                    descricao: briefing.descricao || prev.descricao,
+                    objetivo_postagem: briefing.objetivo_postagem || prev.objetivo_postagem,
+                    publico_alvo: briefing.publico_alvo || prev.publico_alvo,
+                    contexto_estrategico: briefing.contexto_estrategico || prev.contexto_estrategico,
+                    formato_postagem: briefing.formato_postagem || prev.formato_postagem,
+                    call_to_action: briefing.call_to_action || prev.call_to_action
+                  }));
+                }}
+                clienteId={selectedCliente}
+                planejamentoId={vinculadaPlanejamento ? selectedPlanejamento : undefined}
+              />
+              
+              <Separator className="my-4" />
+              
+              <BriefingForm 
+                formData={formData}
+                setFormData={setFormData}
+              />
+            </>
           )}
 
           {taskType === 'planejamento' && (
@@ -323,7 +531,7 @@ export function CreateTaskModal({
           <div className="flex gap-3 pt-4 border-t">
             <Button 
               type="submit" 
-              disabled={loading || !formData.titulo || !formData.setor_responsavel}
+              disabled={loading || !formData.titulo || !formData.setor_responsavel || !selectedCliente || !selectedProjeto}
               className="flex-1"
             >
               {loading ? "Criando..." : "Criar Tarefa"}

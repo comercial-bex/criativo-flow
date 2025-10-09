@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { UniversalKanbanBoard, moduleConfigurations } from '@/components/UniversalKanbanBoard';
 import { TrelloStyleTaskModal } from '@/components/TrelloStyleTaskModal';
 import { AudiovisualScheduleModal } from '@/components/AudiovisualScheduleModal';
+import { CreateTaskModal } from '@/components/CreateTaskModal';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
@@ -60,16 +61,6 @@ export default function TarefasUnificadasGRS() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
   const [createColumnId, setCreateColumnId] = useState<string>('');
-  const [newTask, setNewTask] = useState({
-    titulo: '',
-    descricao: '',
-    prioridade: 'media',
-    data_prazo: '',
-    responsavel_id: '',
-    cliente_id: '',
-    projeto_id: '',
-    horas_estimadas: ''
-  });
 
   const { user } = useAuth();
   const { toast } = useToast();
@@ -189,44 +180,17 @@ export default function TarefasUnificadasGRS() {
     }
   };
 
-  const handleTaskCreate = (status?: string) => {
-    setCreateColumnId(status || 'em_cadastro');
-    setIsCreateModalOpen(true);
-  };
-
-  const createTask = async (e?: React.FormEvent) => {
-    e?.preventDefault(); // CRÍTICO: Previne reload
-    
-    if (!newTask.titulo.trim()) {
-      toast({
-        title: "Erro",
-        description: "O título é obrigatório.",
-        variant: "destructive",
-      });
-      return;
-    }
-
+  const handleTaskCreate = async (taskData: any) => {
     try {
       const { data, error } = await supabase
         .from('tarefas_projeto')
-        .insert({
-          titulo: newTask.titulo,
-          descricao: newTask.descricao || null,
-          prioridade: newTask.prioridade,
-          data_prazo: newTask.data_prazo || null,
-          responsavel_id: newTask.responsavel_id || null,
-          cliente_id: newTask.cliente_id || null,
-          projeto_id: newTask.projeto_id || null,
-          horas_estimadas: newTask.horas_estimadas ? parseInt(newTask.horas_estimadas) : null,
-          setor_responsavel: 'grs',
-          status: createColumnId
-        })
+        .insert(taskData)
         .select()
         .single();
 
       if (error) throw error;
 
-      // Buscar nomes relacionados separadamente
+      // Buscar nomes relacionados
       let responsavel_nome = '';
       let cliente_nome = '';
 
@@ -239,11 +203,11 @@ export default function TarefasUnificadasGRS() {
         responsavel_nome = profile?.nome || '';
       }
 
-      if (newTask.cliente_id) {
+      if (taskData.cliente_id) {
         const { data: cliente } = await supabase
           .from('clientes')
           .select('nome')
-          .eq('id', newTask.cliente_id)
+          .eq('id', taskData.cliente_id)
           .single();
         cliente_nome = cliente?.nome || '';
       }
@@ -253,40 +217,15 @@ export default function TarefasUnificadasGRS() {
         prioridade: data.prioridade as 'baixa' | 'media' | 'alta',
         responsavel_nome,
         cliente_nome,
+        cliente_id: taskData.cliente_id,
         observacoes: data.observacoes || ''
       };
 
       setTasks(prev => [processedTask, ...prev]);
-      
-      // Fechar modal antes do toast
-      setIsCreateModalOpen(false);
-      
-      toast({
-        title: "✅ Tarefa criada com sucesso!",
-        description: `A tarefa "${newTask.titulo}" foi adicionada.`,
-      });
-      
-      // Reset após fechar
-      setTimeout(() => {
-        setNewTask({
-          titulo: '',
-          descricao: '',
-          prioridade: 'media',
-          data_prazo: '',
-          responsavel_id: '',
-          cliente_id: '',
-          projeto_id: '',
-          horas_estimadas: ''
-        });
-      }, 300);
 
     } catch (error: any) {
       console.error('Erro ao criar tarefa:', error);
-      toast({
-        title: "❌ Erro ao criar tarefa",
-        description: error?.message || "Erro ao criar tarefa.",
-        variant: "destructive",
-      });
+      throw error;
     }
   };
 
@@ -370,125 +309,23 @@ export default function TarefasUnificadasGRS() {
                 Agendar Captação
               </Button>
               
-              <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
-                <DialogTrigger asChild>
-                  <Button onClick={() => handleTaskCreate()}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Nova Tarefa
-                  </Button>
-                </DialogTrigger>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
-              <DialogTitle>Nova Tarefa GRS</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="titulo">Título *</Label>
-                  <Input
-                    id="titulo"
-                    value={newTask.titulo}
-                    onChange={(e) => setNewTask(prev => ({ ...prev, titulo: e.target.value }))}
-                    placeholder="Ex: Planejamento Janeiro - Cliente X"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="prioridade">Prioridade</Label>
-                  <Select value={newTask.prioridade} onValueChange={(value) => setNewTask(prev => ({ ...prev, prioridade: value }))}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="baixa">Baixa</SelectItem>
-                      <SelectItem value="media">Média</SelectItem>
-                      <SelectItem value="alta">Alta</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div>
-                <Label htmlFor="descricao">Descrição</Label>
-                <Textarea
-                  id="descricao"
-                  value={newTask.descricao}
-                  onChange={(e) => setNewTask(prev => ({ ...prev, descricao: e.target.value }))}
-                  placeholder="Descreva os objetivos e requisitos da tarefa..."
-                  rows={3}
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="cliente">Cliente</Label>
-                  <Select value={newTask.cliente_id} onValueChange={(value) => setNewTask(prev => ({ ...prev, cliente_id: value }))}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecionar cliente" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {clientes.map(cliente => (
-                        <SelectItem key={cliente.id} value={cliente.id}>
-                          {cliente.nome}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label htmlFor="responsavel">Responsável</Label>
-                  <Select value={newTask.responsavel_id} onValueChange={(value) => setNewTask(prev => ({ ...prev, responsavel_id: value }))}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecionar responsável" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {profiles.map(profile => (
-                        <SelectItem key={profile.id} value={profile.id}>
-                          {profile.nome} ({profile.especialidade})
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="data_prazo">Prazo</Label>
-                  <Input
-                    id="data_prazo"
-                    type="date"
-                    value={newTask.data_prazo}
-                    onChange={(e) => setNewTask(prev => ({ ...prev, data_prazo: e.target.value }))}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="horas_estimadas">Horas Estimadas</Label>
-                  <Input
-                    id="horas_estimadas"
-                    type="number"
-                    value={newTask.horas_estimadas}
-                    onChange={(e) => setNewTask(prev => ({ ...prev, horas_estimadas: e.target.value }))}
-                    placeholder="Ex: 8"
-                  />
-                </div>
-              </div>
-
-              <div className="flex justify-end gap-2 pt-4">
-                <Button variant="outline" onClick={() => setIsCreateModalOpen(false)}>
-                  Cancelar
-                </Button>
-                <Button onClick={() => createTask()}>
-                  Criar Tarefa
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
+              <Button onClick={() => setIsCreateModalOpen(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Nova Tarefa
+              </Button>
             </>
           )}
         </div>
       </div>
       
+      {/* Modal de Criação de Tarefa */}
+      <CreateTaskModal
+        open={isCreateModalOpen}
+        onOpenChange={setIsCreateModalOpen}
+        onTaskCreate={handleTaskCreate}
+        defaultStatus={createColumnId || 'todo'}
+      />
+
       {/* Modal de Agendamento Audiovisual */}
       <AudiovisualScheduleModal
         open={isScheduleModalOpen}

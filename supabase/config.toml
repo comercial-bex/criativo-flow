@@ -64,3 +64,6 @@ verify_jwt = false
 
 [functions.event-bus]
 verify_jwt = false
+
+[functions.generate-task-briefing]
+verify_jwt = false
