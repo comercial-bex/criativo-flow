@@ -11,6 +11,7 @@ import { downloadHolerite } from '@/utils/holeritePdfGenerator';
 import { toast } from 'sonner';
 import { PagamentoFolhaModal } from '@/components/Financeiro/PagamentoFolhaModal';
 import { DetalhamentoFiscalModal } from '@/components/Financeiro/DetalhamentoFiscalModal';
+import { FolhaPagamentoStepper } from '@/components/Financeiro/FolhaPagamentoStepper';
 import { motion } from 'framer-motion';
 
 export default function FolhaPagamento() {
@@ -21,6 +22,7 @@ export default function FolhaPagamento() {
   const [itemSelecionado, setItemSelecionado] = useState<FolhaItem | null>(null);
   const [modalPagamentoAberto, setModalPagamentoAberto] = useState(false);
   const [modalDetalhamentoAberto, setModalDetalhamentoAberto] = useState(false);
+  const [stepperAberto, setStepperAberto] = useState(false);
   
   const { 
     folhas, 
@@ -35,6 +37,10 @@ export default function FolhaPagamento() {
   const folhaAtual = folhas[0];
 
   const handleProcessarFolha = () => {
+    setStepperAberto(true);
+  };
+
+  const handleCompletarProcessamento = () => {
     processarFolha({ competencia });
   };
 
@@ -395,6 +401,13 @@ export default function FolhaPagamento() {
         open={modalDetalhamentoAberto}
         onOpenChange={setModalDetalhamentoAberto}
         item={itemSelecionado}
+      />
+
+      <FolhaPagamentoStepper
+        open={stepperAberto}
+        onOpenChange={setStepperAberto}
+        competencia={competencia}
+        onComplete={handleCompletarProcessamento}
       />
     </div>
   );
