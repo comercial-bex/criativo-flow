@@ -1,10 +1,12 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Copy, Eye, EyeOff, MessageCircle } from 'lucide-react';
 import { toast } from 'sonner';
+import { useTutorial } from '@/hooks/useTutorial';
+import { TutorialButton } from '@/components/TutorialButton';
 
 interface CredentialsModalProps {
   open: boolean;
@@ -16,6 +18,15 @@ interface CredentialsModalProps {
 
 export function CredentialsModal({ open, onOpenChange, email, senha, nomeCliente }: CredentialsModalProps) {
   const [showPassword, setShowPassword] = useState(false);
+  const { startTutorial, hasSeenTutorial } = useTutorial('credentials-modal');
+
+  // Start tutorial when modal opens if not seen before
+  useEffect(() => {
+    if (open && !hasSeenTutorial) {
+      const timer = setTimeout(() => startTutorial(), 500);
+      return () => clearTimeout(timer);
+    }
+  }, [open, hasSeenTutorial, startTutorial]);
 
   const copyCredentials = () => {
     const credentials = `Credenciais de Acesso - ${nomeCliente}\n\nEmail: ${email}\nSenha: ${senha}\n\nAcesse: ${window.location.origin}/auth`;
@@ -30,7 +41,6 @@ export function CredentialsModal({ open, onOpenChange, email, senha, nomeCliente
     if (window.navigator.userAgent.includes('Mobile')) {
       window.open(whatsappUrl, '_blank');
     } else {
-      // Fallback: copiar mensagem
       navigator.clipboard.writeText(message);
       toast.success('Mensagem copiada! Cole no WhatsApp.');
     }
@@ -38,10 +48,11 @@ export function CredentialsModal({ open, onOpenChange, email, senha, nomeCliente
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md" data-tour="credentials-modal-container">
         <DialogHeader>
-          <DialogTitle className="text-center text-green-600">
-            ✅ Conta criada com sucesso!
+          <DialogTitle className="flex items-center justify-between text-center text-green-600">
+            <span data-tour="credentials-title">✅ Conta criada com sucesso!</span>
+            <TutorialButton onStart={startTutorial} hasSeenTutorial={hasSeenTutorial} variant="default" />
           </DialogTitle>
         </DialogHeader>
         
@@ -51,7 +62,7 @@ export function CredentialsModal({ open, onOpenChange, email, senha, nomeCliente
           </div>
 
           <div className="space-y-3">
-            <div className="space-y-2">
+            <div className="space-y-2" data-tour="credentials-email">
               <Label htmlFor="email-display">Email de Login</Label>
               <div className="relative">
                 <Input
@@ -75,7 +86,7 @@ export function CredentialsModal({ open, onOpenChange, email, senha, nomeCliente
               </div>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-2" data-tour="credentials-password">
               <Label htmlFor="password-display">Senha Temporária</Label>
               <div className="relative">
                 <Input
@@ -129,7 +140,7 @@ export function CredentialsModal({ open, onOpenChange, email, senha, nomeCliente
             </p>
           </div>
 
-          <div className="flex gap-2 pt-2">
+          <div className="flex gap-2 pt-2" data-tour="credentials-actions">
             <Button onClick={copyCredentials} className="flex-1">
               <Copy className="h-4 w-4 mr-2" />
               Copiar Tudo

@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { SocialScheduler } from "@/components/SocialScheduler";
 import { SocialIntegrationsCard } from "@/components/SocialIntegrationsCard";
-import { InteractiveGuideButton } from "@/components/InteractiveGuideButton";
+// Tutorial already imported below
 import { 
   Calendar,
   Clock,

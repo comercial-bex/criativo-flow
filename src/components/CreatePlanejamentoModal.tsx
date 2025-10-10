@@ -8,6 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { EspecialistasSelector } from "./EspecialistasSelector";
+import { useTutorial } from '@/hooks/useTutorial';
+import { TutorialButton } from '@/components/TutorialButton';
 
 interface Cliente {
   id: string;
@@ -28,8 +30,18 @@ export function CreatePlanejamentoModal({
   clienteId 
 }: CreatePlanejamentoModalProps) {
   const { toast } = useToast();
+  const { startTutorial, hasSeenTutorial } = useTutorial('create-planejamento-modal');
   const [loading, setLoading] = useState(false);
   const [clientes, setClientes] = useState<Cliente[]>([]);
+
+  // Start tutorial when modal opens if not seen before
+  useEffect(() => {
+    if (open && !hasSeenTutorial) {
+      const timer = setTimeout(() => startTutorial(), 500);
+      return () => clearTimeout(timer);
+    }
+  }, [open, hasSeenTutorial, startTutorial]);
+
   const [formData, setFormData] = useState({
     titulo: "",
     cliente_id: clienteId || "",
@@ -136,16 +148,19 @@ export function CreatePlanejamentoModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl" data-tour="create-planejamento-modal">
         <DialogHeader>
-          <DialogTitle>Novo Planejamento</DialogTitle>
+          <DialogTitle className="flex items-center justify-between">
+            <span data-tour="create-planejamento-title">Novo Planejamento</span>
+            <TutorialButton onStart={startTutorial} hasSeenTutorial={hasSeenTutorial} variant="default" />
+          </DialogTitle>
           <DialogDescription>
             Crie um novo planejamento para o cliente selecionado
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
+            <div className="space-y-2" data-tour="create-planejamento-titulo">
               <Label htmlFor="titulo">Título do Planejamento</Label>
               <Input
                 id="titulo"
@@ -155,7 +170,7 @@ export function CreatePlanejamentoModal({
                 required
               />
             </div>
-            <div className="space-y-2">
+            <div className="space-y-2" data-tour="create-planejamento-cliente">
               <Label htmlFor="cliente">Cliente</Label>
               <Select 
                 value={formData.cliente_id} 
@@ -174,7 +189,7 @@ export function CreatePlanejamentoModal({
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-2">
+            <div className="space-y-2" data-tour="create-planejamento-mes">
               <Label htmlFor="mes_referencia">Mês de Referência</Label>
               <Input
                 id="mes_referencia"
@@ -185,7 +200,7 @@ export function CreatePlanejamentoModal({
               />
             </div>
           </div>
-          <div className="space-y-2">
+          <div className="space-y-2" data-tour="create-planejamento-descricao">
             <Label htmlFor="descricao">Descrição</Label>
             <Textarea
               id="descricao"
@@ -197,7 +212,7 @@ export function CreatePlanejamentoModal({
           </div>
 
           {/* Seleção de Especialistas */}
-          <div className="pt-4 border-t">
+          <div className="pt-4 border-t" data-tour="create-planejamento-especialistas">
             <EspecialistasSelector
               value={formData.especialistas}
               onChange={(especialistas) => setFormData({ ...formData, especialistas })}

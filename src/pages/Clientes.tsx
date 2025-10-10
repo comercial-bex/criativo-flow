@@ -20,7 +20,8 @@ import { ClientTableView } from '@/components/ClientTableView';
 import { PermissionWrapper } from '@/components/PermissionWrapper';
 
 import { ClientLogoUpload } from '@/components/ClientLogoUpload';
-import { InteractiveGuideButton } from '@/components/InteractiveGuideButton';
+import { useTutorial } from '@/hooks/useTutorial';
+import { TutorialButton } from '@/components/TutorialButton';
 import { CnpjSearch } from '@/components/CnpjSearch';
 import type { CnpjData } from '@/hooks/useCnpjLookup';
 import { CredentialsModal } from '@/components/CredentialsModal';
@@ -65,6 +66,7 @@ const Clientes = () => {
   const navigate = useNavigate();
   const deviceType = useDeviceType();
   const isMobile = deviceType === 'mobile';
+  const { startTutorial, hasSeenTutorial } = useTutorial('clientes');
   const { 
     clientes, 
     loading, 
@@ -429,7 +431,7 @@ const Clientes = () => {
             icon: Plus
           }}
         />
-        <InteractiveGuideButton />
+        <TutorialButton onStart={startTutorial} hasSeenTutorial={hasSeenTutorial} />
       </div>
 
       {/* Filtros e Busca - Mobile Optimized */}
@@ -441,7 +443,7 @@ const Clientes = () => {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className={`pl-10 ${isMobile ? 'h-12 text-base' : ''}`}
-            data-intro="clientes-search"
+            data-tour="clientes-search"
           />
         </div>
         <div className={`flex gap-3 ${isMobile ? 'flex-col' : ''}`}>

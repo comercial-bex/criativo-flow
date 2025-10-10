@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -6,6 +6,8 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { FileText, Download } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { useTutorial } from '@/hooks/useTutorial';
+import { TutorialButton } from '@/components/TutorialButton';
 
 interface ExportPlanModalProps {
   open: boolean;
@@ -17,8 +19,17 @@ interface ExportPlanModalProps {
 
 export const ExportPlanModal = ({ open, onOpenChange, planId, planTitle, clienteId }: ExportPlanModalProps) => {
   const { toast } = useToast();
+  const { startTutorial, hasSeenTutorial } = useTutorial('export-plan-modal');
   const [exporting, setExporting] = useState(false);
   const [format, setFormat] = useState<'pdf' | 'pptx'>('pdf');
+
+  // Start tutorial when modal opens if not seen before
+  useEffect(() => {
+    if (open && !hasSeenTutorial) {
+      const timer = setTimeout(() => startTutorial(), 500);
+      return () => clearTimeout(timer);
+    }
+  }, [open, hasSeenTutorial, startTutorial]);
 
   const handleExport = async () => {
     setExporting(true);
@@ -58,9 +69,12 @@ export const ExportPlanModal = ({ open, onOpenChange, planId, planTitle, cliente
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent data-tour="export-plan-modal">
         <DialogHeader>
-          <DialogTitle>Exportar Plano Estratégico</DialogTitle>
+          <DialogTitle className="flex items-center justify-between">
+            <span data-tour="export-plan-title">Exportar Plano Estratégico</span>
+            <TutorialButton onStart={startTutorial} hasSeenTutorial={hasSeenTutorial} variant="default" />
+          </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
@@ -68,7 +82,7 @@ export const ExportPlanModal = ({ open, onOpenChange, planId, planTitle, cliente
             Plano: <span className="font-medium text-foreground">{planTitle}</span>
           </p>
 
-          <div>
+          <div data-tour="export-plan-format">
             <Label>Formato de Exportação</Label>
             <RadioGroup value={format} onValueChange={(value) => setFormat(value as 'pdf' | 'pptx')}>
               <div className="flex items-center space-x-2 mt-2">
