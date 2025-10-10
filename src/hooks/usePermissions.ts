@@ -67,12 +67,14 @@ const ROLE_PERMISSIONS: Record<NonNullable<UserRole>, Partial<ModulePermissions>
     grs: { canView: true, canCreate: true, canEdit: true, canDelete: false },
     relatorios: { canView: true, canCreate: false, canEdit: false, canDelete: false },
     projetos: { canView: true, canCreate: true, canEdit: true, canDelete: true },
+    inventario: { canView: true, canCreate: false, canEdit: false, canDelete: false },
   },
   atendimento: {
     dashboard: { canView: true, canCreate: false, canEdit: false, canDelete: false },
     clientes: { canView: true, canCreate: true, canEdit: true, canDelete: false },
     crm: { canView: true, canCreate: true, canEdit: true, canDelete: false },
     projetos: { canView: true, canCreate: true, canEdit: true, canDelete: true },
+    inventario: { canView: true, canCreate: false, canEdit: false, canDelete: false },
   },
   designer: {
     dashboard: { canView: true, canCreate: false, canEdit: false, canDelete: false },

@@ -291,6 +291,12 @@ function App() {
                   </ProtectedRoute>
                 } />
                 
+                <Route path="/inventario" element={
+                  <ProtectedRoute module="inventario">
+                    <Layout><Inventario /></Layout>
+                  </ProtectedRoute>
+                } />
+                
                 <Route path="/inteligencia" element={
                   <ProtectedRoute module="inteligencia">
                     <Layout><IntelligenceDashboard /></Layout>
