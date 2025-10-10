@@ -6,9 +6,10 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { useFolhaPagamento, FolhaItem } from '@/hooks/useFolhaPagamento';
 import { formatCurrency } from '@/lib/utils';
-import { Download, FileText, Calendar, TrendingUp, DollarSign, Users } from 'lucide-react';
+import { Download, FileText, Calendar, TrendingUp, DollarSign, Users, Calculator } from 'lucide-react';
 import { toast } from 'sonner';
 import { PagamentoFolhaModal } from '@/components/Financeiro/PagamentoFolhaModal';
+import { DetalhamentoFiscalModal } from '@/components/Financeiro/DetalhamentoFiscalModal';
 import { motion } from 'framer-motion';
 
 export default function FolhaPagamento() {
@@ -18,6 +19,7 @@ export default function FolhaPagamento() {
   const [competencia, setCompetencia] = useState(currentMonth);
   const [itemSelecionado, setItemSelecionado] = useState<FolhaItem | null>(null);
   const [modalPagamentoAberto, setModalPagamentoAberto] = useState(false);
+  const [modalDetalhamentoAberto, setModalDetalhamentoAberto] = useState(false);
   
   const { 
     folhas, 
@@ -38,6 +40,11 @@ export default function FolhaPagamento() {
   const handleAbrirModalPagamento = (item: FolhaItem) => {
     setItemSelecionado(item);
     setModalPagamentoAberto(true);
+  };
+
+  const handleAbrirDetalhamento = (item: FolhaItem) => {
+    setItemSelecionado(item);
+    setModalDetalhamentoAberto(true);
   };
 
   const handleConfirmarPagamento = (data: any) => {
@@ -292,21 +299,32 @@ export default function FolhaPagamento() {
                         </Badge>
                       </td>
                       <td className="px-6 py-4 text-center">
-                        {item.status === 'pendente' && (
+                        <div className="flex items-center gap-2 justify-center">
                           <Button
                             size="sm"
-                            onClick={() => handleAbrirModalPagamento(item)}
+                            variant="outline"
+                            onClick={() => handleAbrirDetalhamento(item)}
                             className="gap-2"
                           >
-                            <DollarSign className="h-4 w-4" />
-                            Pagar
+                            <Calculator className="h-4 w-4" />
+                            Ver Cálculos
                           </Button>
-                        )}
-                        {item.status === 'pago' && item.data_pagamento && (
-                          <span className="text-sm text-muted-foreground">
-                            Pago em {new Date(item.data_pagamento).toLocaleDateString('pt-BR')}
-                          </span>
-                        )}
+                          {item.status === 'pendente' && (
+                            <Button
+                              size="sm"
+                              onClick={() => handleAbrirModalPagamento(item)}
+                              className="gap-2"
+                            >
+                              <DollarSign className="h-4 w-4" />
+                              Pagar
+                            </Button>
+                          )}
+                          {item.status === 'pago' && item.data_pagamento && (
+                            <span className="text-sm text-muted-foreground">
+                              Pago em {new Date(item.data_pagamento).toLocaleDateString('pt-BR')}
+                            </span>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ))
@@ -340,6 +358,12 @@ export default function FolhaPagamento() {
         item={itemSelecionado}
         onConfirm={handleConfirmarPagamento}
         isLoading={isRegistrandoPagamento}
+      />
+
+      <DetalhamentoFiscalModal
+        open={modalDetalhamentoAberto}
+        onOpenChange={setModalDetalhamentoAberto}
+        item={itemSelecionado}
       />
     </div>
   );

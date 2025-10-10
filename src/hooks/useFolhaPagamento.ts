@@ -138,26 +138,94 @@ export function useFolhaPagamento(competencia?: string) {
       
       if (colabError) throw colabError;
       
-      // 3. Criar itens da folha (apenas valores base, sem cálculos fiscais ainda)
-      const itensParaInserir = colaboradores.map(colab => ({
-        folha_id: folhaId,
-        colaborador_id: colab.id,
-        base_calculo: colab.salario_base || colab.fee_mensal || 0,
-        total_proventos: colab.salario_base || colab.fee_mensal || 0,
-        total_descontos: 0,
-        total_encargos: 0,
-        liquido: colab.salario_base || colab.fee_mensal || 0,
-        proventos: [
-          {
-            rubrica_id: '001',
-            nome: 'Salário Base',
-            valor: colab.salario_base || colab.fee_mensal || 0,
-          },
-        ] as any,
-        descontos: [] as any,
-        encargos: [] as any,
-        status: 'pendente' as const,
-      }));
+      // 3. Processar cada colaborador com cálculos fiscais
+      const itensParaInserir = await Promise.all(
+        colaboradores.map(async (colab) => {
+          const salarioBruto = colab.salario_base || colab.fee_mensal || 0;
+          
+          // Calcular INSS (progressivo)
+          const { data: calculoINSS } = await supabase.rpc('fn_calcular_inss', {
+            p_salario_bruto: salarioBruto,
+            p_competencia: params.competencia,
+          });
+          
+          const inss = calculoINSS?.[0]?.valor_inss || 0;
+          const faixasINSS = calculoINSS?.[0]?.faixas_aplicadas || [];
+          
+          // Base para IRRF = Salário - INSS
+          const baseIRRF = salarioBruto - inss;
+          
+          // Calcular IRRF
+          const { data: calculoIRRF } = await supabase.rpc('fn_calcular_irrf', {
+            p_base_calculo: baseIRRF,
+            p_num_dependentes: 0, // TODO: pegar do cadastro do colaborador
+            p_competencia: params.competencia,
+          });
+          
+          const irrf = calculoIRRF?.[0]?.valor_irrf || 0;
+          
+          // Calcular FGTS (encargo patronal)
+          const { data: calculoFGTS } = await supabase.rpc('fn_calcular_fgts', {
+            p_salario_bruto: salarioBruto,
+            p_competencia: params.competencia,
+          });
+          
+          const fgts = calculoFGTS || 0;
+          
+          // Montar rubricas
+          const proventos = [
+            {
+              rubrica_id: '001',
+              nome: 'Salário Base',
+              valor: salarioBruto,
+            },
+          ];
+          
+          const descontos = [];
+          if (inss > 0) {
+            descontos.push({
+              rubrica_id: '101',
+              nome: 'INSS',
+              valor: inss,
+              faixas: faixasINSS,
+            });
+          }
+          if (irrf > 0) {
+            descontos.push({
+              rubrica_id: '102',
+              nome: 'IRRF',
+              valor: irrf,
+            });
+          }
+          
+          const encargos = [
+            {
+              rubrica_id: '201',
+              nome: 'FGTS (8%)',
+              valor: fgts,
+            },
+          ];
+          
+          const totalProventos = salarioBruto;
+          const totalDescontos = inss + irrf;
+          const totalEncargos = fgts;
+          const liquido = totalProventos - totalDescontos;
+          
+          return {
+            folha_id: folhaId,
+            colaborador_id: colab.id,
+            base_calculo: salarioBruto,
+            total_proventos: totalProventos,
+            total_descontos: totalDescontos,
+            total_encargos: totalEncargos,
+            liquido: liquido,
+            proventos: proventos as any,
+            descontos: descontos as any,
+            encargos: encargos as any,
+            status: 'pendente' as const,
+          };
+        })
+      );
       
       const { error: insertError } = await supabase
         .from('financeiro_folha_itens')
