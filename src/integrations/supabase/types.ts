@@ -2995,6 +2995,140 @@ export type Database = {
         }
         Relationships: []
       }
+      funcionarios: {
+        Row: {
+          agencia: string | null
+          ativo: boolean | null
+          banco: string | null
+          banco_horas: Json | null
+          celular: string | null
+          centro_custo: string | null
+          conta: string | null
+          cpf_cnpj: string
+          created_at: string | null
+          data_nascimento: string | null
+          email: string | null
+          funcao_cargo: string | null
+          gestor_imediato: string | null
+          id: string
+          nome_completo: string
+          papeis: string[] | null
+          perfil_acesso: string | null
+          pix_chave: string | null
+          pix_tipo: Database["public"]["Enums"]["pix_tipo_enum"] | null
+          politica_extra: string | null
+          politica_faltas: string | null
+          retencoes_impostos: Json | null
+          rg: string | null
+          salario_base: number | null
+          status_acesso:
+            | Database["public"]["Enums"]["status_acesso_enum"]
+            | null
+          tabela_hora: number | null
+          telefone: string | null
+          termos_assinados: Json | null
+          tipo_vinculo: Database["public"]["Enums"]["tipo_vinculo_enum"] | null
+          updated_at: string | null
+        }
+        Insert: {
+          agencia?: string | null
+          ativo?: boolean | null
+          banco?: string | null
+          banco_horas?: Json | null
+          celular?: string | null
+          centro_custo?: string | null
+          conta?: string | null
+          cpf_cnpj: string
+          created_at?: string | null
+          data_nascimento?: string | null
+          email?: string | null
+          funcao_cargo?: string | null
+          gestor_imediato?: string | null
+          id?: string
+          nome_completo: string
+          papeis?: string[] | null
+          perfil_acesso?: string | null
+          pix_chave?: string | null
+          pix_tipo?: Database["public"]["Enums"]["pix_tipo_enum"] | null
+          politica_extra?: string | null
+          politica_faltas?: string | null
+          retencoes_impostos?: Json | null
+          rg?: string | null
+          salario_base?: number | null
+          status_acesso?:
+            | Database["public"]["Enums"]["status_acesso_enum"]
+            | null
+          tabela_hora?: number | null
+          telefone?: string | null
+          termos_assinados?: Json | null
+          tipo_vinculo?: Database["public"]["Enums"]["tipo_vinculo_enum"] | null
+          updated_at?: string | null
+        }
+        Update: {
+          agencia?: string | null
+          ativo?: boolean | null
+          banco?: string | null
+          banco_horas?: Json | null
+          celular?: string | null
+          centro_custo?: string | null
+          conta?: string | null
+          cpf_cnpj?: string
+          created_at?: string | null
+          data_nascimento?: string | null
+          email?: string | null
+          funcao_cargo?: string | null
+          gestor_imediato?: string | null
+          id?: string
+          nome_completo?: string
+          papeis?: string[] | null
+          perfil_acesso?: string | null
+          pix_chave?: string | null
+          pix_tipo?: Database["public"]["Enums"]["pix_tipo_enum"] | null
+          politica_extra?: string | null
+          politica_faltas?: string | null
+          retencoes_impostos?: Json | null
+          rg?: string | null
+          salario_base?: number | null
+          status_acesso?:
+            | Database["public"]["Enums"]["status_acesso_enum"]
+            | null
+          tabela_hora?: number | null
+          telefone?: string | null
+          termos_assinados?: Json | null
+          tipo_vinculo?: Database["public"]["Enums"]["tipo_vinculo_enum"] | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "funcionarios_gestor_imediato_fkey"
+            columns: ["gestor_imediato"]
+            isOneToOne: false
+            referencedRelation: "funcionarios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "funcionarios_gestor_imediato_fkey"
+            columns: ["gestor_imediato"]
+            isOneToOne: false
+            referencedRelation: "vw_colaboradores_especialistas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "funcionarios_perfil_acesso_fkey"
+            columns: ["perfil_acesso"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "funcionarios_perfil_acesso_fkey"
+            columns: ["perfil_acesso"]
+            isOneToOne: false
+            referencedRelation: "vw_client_metrics"
+            referencedColumns: ["responsavel_id"]
+          },
+        ]
+      }
       gamificacao_conquistas: {
         Row: {
           created_at: string
@@ -3201,6 +3335,120 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      homologacao_checklist: {
+        Row: {
+          created_at: string | null
+          esforco: string | null
+          evidencia_dados: Json | null
+          evidencia_url: string | null
+          id: string
+          impacto: string | null
+          item: string
+          modulo: string
+          observacoes: string | null
+          prioridade: string | null
+          solucao_sugerida: string | null
+          status: string | null
+          testado_em: string | null
+          testado_por: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          esforco?: string | null
+          evidencia_dados?: Json | null
+          evidencia_url?: string | null
+          id?: string
+          impacto?: string | null
+          item: string
+          modulo: string
+          observacoes?: string | null
+          prioridade?: string | null
+          solucao_sugerida?: string | null
+          status?: string | null
+          testado_em?: string | null
+          testado_por?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          esforco?: string | null
+          evidencia_dados?: Json | null
+          evidencia_url?: string | null
+          id?: string
+          impacto?: string | null
+          item?: string
+          modulo?: string
+          observacoes?: string | null
+          prioridade?: string | null
+          solucao_sugerida?: string | null
+          status?: string | null
+          testado_em?: string | null
+          testado_por?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "homologacao_checklist_testado_por_fkey"
+            columns: ["testado_por"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "homologacao_checklist_testado_por_fkey"
+            columns: ["testado_por"]
+            isOneToOne: false
+            referencedRelation: "vw_client_metrics"
+            referencedColumns: ["responsavel_id"]
+          },
+        ]
+      }
+      homologacao_logs: {
+        Row: {
+          acao: string
+          created_at: string | null
+          evidencias: Json | null
+          executado_por: string | null
+          id: string
+          modulo: string | null
+          resultado: Json | null
+        }
+        Insert: {
+          acao: string
+          created_at?: string | null
+          evidencias?: Json | null
+          executado_por?: string | null
+          id?: string
+          modulo?: string | null
+          resultado?: Json | null
+        }
+        Update: {
+          acao?: string
+          created_at?: string | null
+          evidencias?: Json | null
+          executado_por?: string | null
+          id?: string
+          modulo?: string | null
+          resultado?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "homologacao_logs_executado_por_fkey"
+            columns: ["executado_por"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "homologacao_logs_executado_por_fkey"
+            columns: ["executado_por"]
+            isOneToOne: false
+            referencedRelation: "vw_client_metrics"
+            referencedColumns: ["responsavel_id"]
+          },
+        ]
       }
       intelligence_alerts: {
         Row: {
@@ -7109,6 +7357,63 @@ export type Database = {
         }
         Relationships: []
       }
+      vw_colaboradores_especialistas: {
+        Row: {
+          ativo: boolean | null
+          cpf_cnpj: string | null
+          created_at: string | null
+          email: string | null
+          especialidade: string | null
+          id: string | null
+          nome_completo: string | null
+          profile_id: string | null
+          regime: string | null
+          salario_base: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          ativo?: boolean | null
+          cpf_cnpj?: string | null
+          created_at?: string | null
+          email?: string | null
+          especialidade?: never
+          id?: string | null
+          nome_completo?: string | null
+          profile_id?: string | null
+          regime?: never
+          salario_base?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          ativo?: boolean | null
+          cpf_cnpj?: string | null
+          created_at?: string | null
+          email?: string | null
+          especialidade?: never
+          id?: string | null
+          nome_completo?: string | null
+          profile_id?: string | null
+          regime?: never
+          salario_base?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "funcionarios_perfil_acesso_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "funcionarios_perfil_acesso_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "vw_client_metrics"
+            referencedColumns: ["responsavel_id"]
+          },
+        ]
+      }
       vw_credenciais_por_categoria: {
         Row: {
           categoria: string | null
@@ -7607,6 +7912,10 @@ export type Database = {
         }
         Returns: string
       }
+      popular_checklist_inicial: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       process_social_post_queue: {
         Args: Record<PropertyKey, never>
         Returns: undefined
@@ -7677,9 +7986,11 @@ export type Database = {
         | "saude"
         | "acordo"
         | "outros"
+      pix_tipo_enum: "cpf" | "cnpj" | "email" | "telefone" | "aleatoria"
       prioridade_enum: "baixa" | "media" | "alta" | "critica"
       priority_type: "baixa" | "media" | "alta" | "urgente"
       regime_trabalho: "clt" | "estagio" | "pj"
+      status_acesso_enum: "ativo" | "suspenso" | "bloqueado"
       status_aprovacao_enum: "pendente" | "aprovado" | "ajustes" | "reprovado"
       status_colaborador:
         | "ativo"
@@ -7771,6 +8082,7 @@ export type Database = {
         | "trafego_pago"
         | "contrato"
         | "outro"
+      tipo_vinculo_enum: "clt" | "pj" | "estagio" | "freelancer"
       user_role:
         | "admin"
         | "atendimento"
@@ -7954,9 +8266,11 @@ export const Constants = {
         "acordo",
         "outros",
       ],
+      pix_tipo_enum: ["cpf", "cnpj", "email", "telefone", "aleatoria"],
       prioridade_enum: ["baixa", "media", "alta", "critica"],
       priority_type: ["baixa", "media", "alta", "urgente"],
       regime_trabalho: ["clt", "estagio", "pj"],
+      status_acesso_enum: ["ativo", "suspenso", "bloqueado"],
       status_aprovacao_enum: ["pendente", "aprovado", "ajustes", "reprovado"],
       status_colaborador: [
         "ativo",
@@ -8057,6 +8371,7 @@ export const Constants = {
         "contrato",
         "outro",
       ],
+      tipo_vinculo_enum: ["clt", "pj", "estagio", "freelancer"],
       user_role: [
         "admin",
         "atendimento",
