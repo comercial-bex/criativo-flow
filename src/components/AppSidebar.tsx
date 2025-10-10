@@ -150,11 +150,10 @@ const modules = [
     title: "Financeiro",
     icon: DollarSign,
     items: [
-      { title: "Financeiro", url: "/financeiro", icon: DollarSign },
+      { title: "Dashboard", url: "/financeiro/dashboard", icon: DollarSign },
       { title: "Planos", url: "/planos", icon: CreditCard },
       { title: "Categorias", url: "/categorias-financeiras", icon: FileText },
       { title: "Produtos", url: "/financeiro/produtos", icon: Package },
-      { title: "Meus Ganhos", url: "/financeiro/ganhos", icon: TrendingUp },
     ],
     permissions: ["financeiro"]
   },
