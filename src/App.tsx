@@ -79,6 +79,7 @@ import PropostaView from "./pages/Public/PropostaView";
 import Produtos from "./pages/Admin/Produtos";
 import ProdutoForm from "./components/Admin/ProdutoForm";
 import ProdutoDetails from "./pages/Admin/ProdutoDetails";
+import HomologacaoMVP from "./pages/Admin/HomologacaoMVP";
 
 // Audiovisual pages
 import AudiovisualDashboard from "./pages/Audiovisual/Dashboard";
@@ -503,6 +504,12 @@ function App() {
                 <Route path="/admin/produtos/:id/edit" element={
                   <ProtectedRoute module="administrativo">
                     <Layout><ProdutoForm /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/admin/homologacao-mvp" element={
+                  <ProtectedRoute requiredRole="admin">
+                    <Layout><HomologacaoMVP /></Layout>
                   </ProtectedRoute>
                 } />
                 
