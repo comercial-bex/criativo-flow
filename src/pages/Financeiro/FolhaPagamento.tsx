@@ -23,6 +23,17 @@ export default function FolhaPagamento() {
     processarFolha({ competencia });
   };
 
+  const handleAbrirModalPagamento = (item: FolhaItem) => {
+    setItemSelecionado(item);
+    setModalPagamentoAberto(true);
+  };
+
+  const handleConfirmarPagamento = (data: any) => {
+    registrarPagamento(data);
+    setModalPagamentoAberto(false);
+    setItemSelecionado(null);
+  };
+
   const handleExportCSV = () => {
     if (!itens.length) {
       toast.error('Nenhum dado para exportar');

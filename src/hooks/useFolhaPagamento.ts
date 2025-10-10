@@ -200,11 +200,44 @@ export function useFolhaPagamento(competencia?: string) {
     },
   });
 
+  const registrarPagamentoMutation = useMutation({
+    mutationFn: async (params: {
+      item_id: string;
+      forma_pagamento: string;
+      data_pagamento: string;
+      comprovante_url?: string;
+      observacoes?: string;
+    }) => {
+      const { error } = await supabase
+        .from('financeiro_folha_itens')
+        .update({
+          status: 'pago',
+          forma_pagamento: params.forma_pagamento,
+          data_pagamento: params.data_pagamento,
+          comprovante_url: params.comprovante_url,
+        })
+        .eq('id', params.item_id);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['folha-itens'] });
+      toast.success('✅ Pagamento registrado com sucesso!');
+    },
+    onError: (error: any) => {
+      toast.error('❌ Erro ao registrar pagamento', {
+        description: error.message,
+      });
+    },
+  });
+
   return {
     folhas,
     itens,
     isLoading: isLoadingFolhas || isLoadingItens,
     processarFolha: processarFolhaMutation.mutate,
     isProcessando: processarFolhaMutation.isPending,
+    registrarPagamento: registrarPagamentoMutation.mutate,
+    isRegistrandoPagamento: registrarPagamentoMutation.isPending,
   };
 }
