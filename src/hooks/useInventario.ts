@@ -116,22 +116,22 @@ export function useVerificarDisponibilidade() {
   return useMutation({
     mutationFn: async ({
       itemId,
-      unidadeId,
       inicio,
       fim,
+      unidadeId,
       quantidade = 1
     }: {
       itemId: string;
-      unidadeId?: string;
       inicio: string;
       fim: string;
+      unidadeId?: string;
       quantidade?: number;
     }) => {
       const { data, error } = await supabase.rpc('fn_verificar_disponibilidade', {
         p_item_id: itemId,
-        p_unidade_id: unidadeId || null,
         p_inicio: inicio,
         p_fim: fim,
+        p_unidade_id: unidadeId || null,
         p_quantidade: quantidade
       });
       
@@ -147,29 +147,29 @@ export function useCriarReserva() {
   return useMutation({
     mutationFn: async ({
       itemId,
-      unidadeId,
       tipoReserva,
       inicio,
       fim,
+      unidadeId,
       tarefaId,
       projetoId,
       quantidade = 1
     }: {
       itemId: string;
-      unidadeId?: string;
       tipoReserva: string;
       inicio: string;
       fim: string;
+      unidadeId?: string;
       tarefaId?: string;
       projetoId?: string;
       quantidade?: number;
     }) => {
       const { data, error } = await supabase.rpc('fn_criar_reserva_equipamento', {
         p_item_id: itemId,
-        p_unidade_id: unidadeId || null,
         p_tipo_reserva: tipoReserva,
         p_inicio: inicio,
         p_fim: fim,
+        p_unidade_id: unidadeId || null,
         p_tarefa_id: tarefaId || null,
         p_projeto_id: projetoId || null,
         p_quantidade: quantidade

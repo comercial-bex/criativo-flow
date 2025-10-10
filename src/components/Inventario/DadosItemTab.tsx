@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -14,8 +16,30 @@ interface DadosItemTabProps {
   onSave?: () => void;
 }
 
+const inventarioSchema = z.object({
+  categoria_id: z.string().min(1, 'Selecione uma categoria'),
+  modelo_id: z.string().min(1, 'Selecione um modelo'),
+  identificacao_interna: z.string().min(1, 'Identificação é obrigatória'),
+  numero_serie: z.string().optional(),
+  condicao: z.string().default('bom'),
+  localizacao_atual: z.string().optional(),
+  data_aquisicao: z.string().optional(),
+  valor_aquisicao: z.string().optional(),
+  fornecedor: z.string().optional(),
+  vida_util_meses: z.string().optional(),
+  garantia_ate: z.string().optional(),
+  observacoes: z.string().optional(),
+});
+
+type InventarioFormData = z.infer<typeof inventarioSchema>;
+
 export function DadosItemTab({ itemId, mode = 'create', onSave }: DadosItemTabProps) {
-  const { register, handleSubmit, setValue, watch } = useForm();
+  const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<InventarioFormData>({
+    resolver: zodResolver(inventarioSchema),
+    defaultValues: {
+      condicao: 'bom'
+    }
+  });
   const { data: categorias } = useInventarioCategorias();
   const selectedCategoriaId = watch('categoria_id');
   const { data: modelos } = useInventarioModelos(selectedCategoriaId);
@@ -38,9 +62,19 @@ export function DadosItemTab({ itemId, mode = 'create', onSave }: DadosItemTabPr
       .single();
     
     if (data) {
-      Object.keys(data).forEach(key => {
-        setValue(key, data[key]);
+      // Preencher campos do formulário de forma tipada
+      const fields: (keyof InventarioFormData)[] = [
+        'categoria_id', 'modelo_id', 'identificacao_interna', 'numero_serie',
+        'condicao', 'localizacao_atual', 'data_aquisicao', 'valor_aquisicao',
+        'fornecedor', 'vida_util_meses', 'garantia_ate', 'observacoes'
+      ];
+      
+      fields.forEach(field => {
+        if (data[field]) {
+          setValue(field, data[field] as string);
+        }
       });
+      
       if (data.modelo?.categoria_id) {
         setValue('categoria_id', data.modelo.categoria_id);
       }
@@ -49,9 +83,13 @@ export function DadosItemTab({ itemId, mode = 'create', onSave }: DadosItemTabPr
   };
 
   const onSubmit = async (data: any) => {
+    // Buscar user_id antes de montar o payload
+    const { data: { user } } = await supabase.auth.getUser();
+    
     const payload = {
       ...data,
-      criado_por: itemId ? undefined : (await supabase.auth.getUser()).data.user?.id
+      // Só adicionar criado_por em criações
+      ...(itemId ? {} : { criado_por: user?.id })
     };
 
     if (itemId) {
@@ -87,6 +125,9 @@ export function DadosItemTab({ itemId, mode = 'create', onSave }: DadosItemTabPr
               ))}
             </SelectContent>
           </Select>
+          {errors.categoria_id && (
+            <p className="text-sm text-destructive">{errors.categoria_id.message as string}</p>
+          )}
         </div>
 
         {/* Modelo */}
@@ -108,6 +149,9 @@ export function DadosItemTab({ itemId, mode = 'create', onSave }: DadosItemTabPr
               ))}
             </SelectContent>
           </Select>
+          {errors.modelo_id && (
+            <p className="text-sm text-destructive">{errors.modelo_id.message as string}</p>
+          )}
         </div>
 
         {/* Identificação Interna */}
@@ -115,10 +159,13 @@ export function DadosItemTab({ itemId, mode = 'create', onSave }: DadosItemTabPr
           <Label htmlFor="identificacao_interna">Identificação Interna *</Label>
           <Input 
             id="identificacao_interna" 
-            {...register('identificacao_interna', { required: true })}
+            {...register('identificacao_interna')}
             placeholder="Ex: CAM-SONY-A7-01"
             disabled={isReadOnly}
           />
+          {errors.identificacao_interna && (
+            <p className="text-sm text-destructive">{errors.identificacao_interna.message as string}</p>
+          )}
         </div>
 
         {/* Número de Série */}
