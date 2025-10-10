@@ -289,17 +289,17 @@ export function AppSidebar() {
     // Outros roles mantêm as restrições normais
     switch (role_str) {
       case 'grs':
-        return modules.filter(m => m.id === 'grs');
+        return modules.filter(m => ['grs', 'inventario'].includes(m.id));
       case 'designer':
-        return modules.filter(m => m.id === 'design');
+        return modules.filter(m => ['design', 'inventario'].includes(m.id));
       case 'atendimento':
-        return modules.filter(m => ['dashboard', 'crm', 'grs'].includes(m.id));
+        return modules.filter(m => ['dashboard', 'crm', 'grs', 'inventario'].includes(m.id));
       case 'filmmaker':
-        return modules.filter(m => m.id === 'audiovisual');
+        return modules.filter(m => ['audiovisual', 'inventario'].includes(m.id));
       case 'financeiro':
         return modules.filter(m => ['dashboard', 'financeiro', 'administrativo'].includes(m.id));
       case 'gestor':
-        return modules.filter(m => ['dashboard', 'crm', 'configuracoes', 'inteligencia'].includes(m.id));
+        return modules.filter(m => ['dashboard', 'crm', 'configuracoes', 'inteligencia', 'inventario', 'calendario'].includes(m.id));
       case 'cliente':
         return []; // Clientes have separate navigation
       case 'trafego':
