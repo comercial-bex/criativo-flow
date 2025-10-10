@@ -2351,6 +2351,93 @@ export type Database = {
           },
         ]
       }
+      financeiro_faixas_inss: {
+        Row: {
+          aliquota: number
+          created_at: string | null
+          faixa: number
+          id: string
+          is_ativo: boolean | null
+          parcela_deduzir: number | null
+          salario_ate: number | null
+          salario_de: number
+          teto_maximo: number | null
+          updated_at: string | null
+          vigencia_fim: string | null
+          vigencia_inicio: string
+        }
+        Insert: {
+          aliquota: number
+          created_at?: string | null
+          faixa: number
+          id?: string
+          is_ativo?: boolean | null
+          parcela_deduzir?: number | null
+          salario_ate?: number | null
+          salario_de: number
+          teto_maximo?: number | null
+          updated_at?: string | null
+          vigencia_fim?: string | null
+          vigencia_inicio: string
+        }
+        Update: {
+          aliquota?: number
+          created_at?: string | null
+          faixa?: number
+          id?: string
+          is_ativo?: boolean | null
+          parcela_deduzir?: number | null
+          salario_ate?: number | null
+          salario_de?: number
+          teto_maximo?: number | null
+          updated_at?: string | null
+          vigencia_fim?: string | null
+          vigencia_inicio?: string
+        }
+        Relationships: []
+      }
+      financeiro_faixas_irrf: {
+        Row: {
+          aliquota: number
+          base_calculo_ate: number | null
+          base_calculo_de: number
+          created_at: string | null
+          faixa: number
+          id: string
+          is_ativo: boolean | null
+          parcela_deduzir: number | null
+          updated_at: string | null
+          vigencia_fim: string | null
+          vigencia_inicio: string
+        }
+        Insert: {
+          aliquota: number
+          base_calculo_ate?: number | null
+          base_calculo_de: number
+          created_at?: string | null
+          faixa: number
+          id?: string
+          is_ativo?: boolean | null
+          parcela_deduzir?: number | null
+          updated_at?: string | null
+          vigencia_fim?: string | null
+          vigencia_inicio: string
+        }
+        Update: {
+          aliquota?: number
+          base_calculo_ate?: number | null
+          base_calculo_de?: number
+          created_at?: string | null
+          faixa?: number
+          id?: string
+          is_ativo?: boolean | null
+          parcela_deduzir?: number | null
+          updated_at?: string | null
+          vigencia_fim?: string | null
+          vigencia_inicio?: string
+        }
+        Relationships: []
+      }
       financeiro_folha: {
         Row: {
           ano: number
@@ -2491,6 +2578,142 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      financeiro_folha_logs: {
+        Row: {
+          acao: string
+          created_at: string | null
+          dados_anteriores: Json | null
+          dados_novos: Json | null
+          folha_id: string
+          id: string
+          observacoes: string | null
+          usuario_id: string | null
+        }
+        Insert: {
+          acao: string
+          created_at?: string | null
+          dados_anteriores?: Json | null
+          dados_novos?: Json | null
+          folha_id: string
+          id?: string
+          observacoes?: string | null
+          usuario_id?: string | null
+        }
+        Update: {
+          acao?: string
+          created_at?: string | null
+          dados_anteriores?: Json | null
+          dados_novos?: Json | null
+          folha_id?: string
+          id?: string
+          observacoes?: string | null
+          usuario_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financeiro_folha_logs_folha_id_fkey"
+            columns: ["folha_id"]
+            isOneToOne: false
+            referencedRelation: "financeiro_folha"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      financeiro_historico_salarial: {
+        Row: {
+          aprovado_por: string | null
+          cargo_anterior: string | null
+          cargo_novo: string | null
+          colaborador_id: string
+          created_at: string | null
+          created_by: string | null
+          data_vigencia: string
+          id: string
+          justificativa: string | null
+          metadata: Json | null
+          motivo: string | null
+          salario_anterior: number | null
+          salario_novo: number
+          tipo_alteracao: string
+        }
+        Insert: {
+          aprovado_por?: string | null
+          cargo_anterior?: string | null
+          cargo_novo?: string | null
+          colaborador_id: string
+          created_at?: string | null
+          created_by?: string | null
+          data_vigencia: string
+          id?: string
+          justificativa?: string | null
+          metadata?: Json | null
+          motivo?: string | null
+          salario_anterior?: number | null
+          salario_novo: number
+          tipo_alteracao: string
+        }
+        Update: {
+          aprovado_por?: string | null
+          cargo_anterior?: string | null
+          cargo_novo?: string | null
+          colaborador_id?: string
+          created_at?: string | null
+          created_by?: string | null
+          data_vigencia?: string
+          id?: string
+          justificativa?: string | null
+          metadata?: Json | null
+          motivo?: string | null
+          salario_anterior?: number | null
+          salario_novo?: number
+          tipo_alteracao?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financeiro_historico_salarial_colaborador_id_fkey"
+            columns: ["colaborador_id"]
+            isOneToOne: false
+            referencedRelation: "rh_colaboradores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      financeiro_parametros_fiscais: {
+        Row: {
+          aliquota_fgts: number | null
+          competencia: string
+          created_at: string | null
+          id: string
+          is_ativo: boolean | null
+          salario_minimo: number
+          teto_inss: number
+          updated_at: string | null
+          valor_dependente_irrf: number | null
+        }
+        Insert: {
+          aliquota_fgts?: number | null
+          competencia: string
+          created_at?: string | null
+          id?: string
+          is_ativo?: boolean | null
+          salario_minimo: number
+          teto_inss: number
+          updated_at?: string | null
+          valor_dependente_irrf?: number | null
+        }
+        Update: {
+          aliquota_fgts?: number | null
+          competencia?: string
+          created_at?: string | null
+          id?: string
+          is_ativo?: boolean | null
+          salario_minimo?: number
+          teto_inss?: number
+          updated_at?: string | null
+          valor_dependente_irrf?: number | null
+        }
+        Relationships: []
       }
       financeiro_previsao: {
         Row: {
@@ -6758,6 +6981,30 @@ export type Database = {
           email: string
           has_profile: boolean
           user_metadata: Json
+        }[]
+      }
+      fn_calcular_fgts: {
+        Args: { p_competencia?: string; p_salario_bruto: number }
+        Returns: number
+      }
+      fn_calcular_inss: {
+        Args: { p_competencia?: string; p_salario_bruto: number }
+        Returns: {
+          aliquota_efetiva: number
+          faixas_aplicadas: Json
+          valor_inss: number
+        }[]
+      }
+      fn_calcular_irrf: {
+        Args: {
+          p_base_calculo: number
+          p_competencia?: string
+          p_num_dependentes?: number
+        }
+        Returns: {
+          aliquota_efetiva: number
+          faixa_aplicada: number
+          valor_irrf: number
         }[]
       }
       fn_cred_get_metadata: {
