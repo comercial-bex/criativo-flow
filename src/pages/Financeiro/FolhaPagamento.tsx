@@ -1,18 +1,23 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { useFolhaPagamento, FolhaItem } from '@/hooks/useFolhaPagamento';
+import { useFolhaAnalytics } from '@/hooks/useFolhaAnalytics';
 import { formatCurrency } from '@/lib/utils';
-import { Download, FileText, Calendar, TrendingUp, DollarSign, Users, Calculator, FileDown } from 'lucide-react';
+import { Download, FileText, Calendar, TrendingUp, DollarSign, Users, Calculator, FileDown, BarChart3 } from 'lucide-react';
 import { downloadHolerite } from '@/utils/holeritePdfGenerator';
 import { toast } from 'sonner';
 import { PagamentoFolhaModal } from '@/components/Financeiro/PagamentoFolhaModal';
 import { DetalhamentoFiscalModal } from '@/components/Financeiro/DetalhamentoFiscalModal';
 import { FolhaPagamentoStepper } from '@/components/Financeiro/FolhaPagamentoStepper';
+import { FolhaTableFilters } from '@/components/Financeiro/FolhaTableFilters';
+import { FolhaEvolutionChart } from '@/components/Financeiro/Charts/FolhaEvolutionChart';
+import { EncargosCompositionChart } from '@/components/Financeiro/Charts/EncargosCompositionChart';
 import { motion } from 'framer-motion';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export default function FolhaPagamento() {
   const currentDate = new Date();
@@ -24,6 +29,12 @@ export default function FolhaPagamento() {
   const [modalDetalhamentoAberto, setModalDetalhamentoAberto] = useState(false);
   const [stepperAberto, setStepperAberto] = useState(false);
   
+  // Filtros
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('todos');
+  const [sortBy, setSortBy] = useState('nome-asc');
+  const [showCharts, setShowCharts] = useState(false);
+  
   const { 
     folhas, 
     itens, 
@@ -34,7 +45,42 @@ export default function FolhaPagamento() {
     isRegistrandoPagamento,
   } = useFolhaPagamento(competencia);
   
+  const { evolucaoMensal, composicaoEncargos, taxaAbsenteismo, isLoading: loadingAnalytics } = useFolhaAnalytics();
+  
   const folhaAtual = folhas[0];
+  
+  // Filtrar e ordenar itens
+  const itensFiltrados = useMemo(() => {
+    let filtered = itens.filter(item => {
+      const matchSearch = !searchTerm || 
+        item.colaborador?.nome_completo.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.colaborador?.cpf_cnpj.includes(searchTerm);
+      
+      const matchStatus = statusFilter === 'todos' || item.status === statusFilter;
+      
+      return matchSearch && matchStatus;
+    });
+    
+    // Ordenar
+    filtered.sort((a, b) => {
+      switch (sortBy) {
+        case 'nome-asc':
+          return (a.colaborador?.nome_completo || '').localeCompare(b.colaborador?.nome_completo || '');
+        case 'nome-desc':
+          return (b.colaborador?.nome_completo || '').localeCompare(a.colaborador?.nome_completo || '');
+        case 'liquido-desc':
+          return b.liquido - a.liquido;
+        case 'liquido-asc':
+          return a.liquido - b.liquido;
+        case 'cargo-asc':
+          return (a.colaborador?.cargo_atual || '').localeCompare(b.colaborador?.cargo_atual || '');
+        default:
+          return 0;
+      }
+    });
+    
+    return filtered;
+  }, [itens, searchTerm, statusFilter, sortBy]);
 
   const handleProcessarFolha = () => {
     setStepperAberto(true);
@@ -134,6 +180,13 @@ export default function FolhaPagamento() {
         <div className="flex gap-2">
           <Button
             variant="outline"
+            onClick={() => setShowCharts(!showCharts)}
+          >
+            <BarChart3 className="h-4 w-4 mr-2" />
+            {showCharts ? 'Ocultar' : 'Ver'} Gráficos
+          </Button>
+          <Button
+            variant="outline"
             onClick={handleExportCSV}
             disabled={!itens.length}
           >
@@ -173,6 +226,19 @@ export default function FolhaPagamento() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Gráficos Analytics */}
+      {showCharts && (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: 'auto' }}
+          exit={{ opacity: 0, height: 0 }}
+          className="grid grid-cols-1 lg:grid-cols-2 gap-4"
+        >
+          <FolhaEvolutionChart data={evolucaoMensal} loading={loadingAnalytics} />
+          <EncargosCompositionChart data={composicaoEncargos} loading={loadingAnalytics} />
+        </motion.div>
+      )}
 
       {/* KPIs */}
       {folhaAtual && (
@@ -263,11 +329,19 @@ export default function FolhaPagamento() {
           <CardTitle>Folha do Mês</CardTitle>
           <CardDescription>
             {folhaAtual
-              ? `Status: ${folhaAtual.status === 'aberta' ? 'Aberta' : folhaAtual.status === 'processada' ? 'Processada' : 'Fechada'}`
+              ? `Status: ${folhaAtual.status === 'aberta' ? 'Aberta' : folhaAtual.status === 'processada' ? 'Processada' : 'Fechada'} • ${itensFiltrados.length} de ${itens.length} colaboradores`
               : 'Nenhuma folha processada para este período'}
           </CardDescription>
         </CardHeader>
-        <CardContent className="p-0">
+        <CardContent>
+          <FolhaTableFilters
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
+            statusFilter={statusFilter}
+            onStatusFilterChange={setStatusFilter}
+            sortBy={sortBy}
+            onSortChange={setSortBy}
+          />
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-muted/50 border-b">
@@ -290,14 +364,17 @@ export default function FolhaPagamento() {
                       Carregando...
                     </td>
                   </tr>
-                ) : itens.length === 0 ? (
+                ) : itensFiltrados.length === 0 ? (
                   <tr>
                     <td colSpan={9} className="px-6 py-12 text-center text-muted-foreground">
-                      Nenhum item encontrado. Clique em "Processar Folha" para gerar.
+                      {itens.length === 0 
+                        ? 'Nenhum item encontrado. Clique em "Processar Folha" para gerar.'
+                        : 'Nenhum resultado encontrado com os filtros aplicados.'
+                      }
                     </td>
                   </tr>
                 ) : (
-                  itens.map((item) => (
+                  itensFiltrados.map((item) => (
                     <tr key={item.id} className="border-b hover:bg-muted/30 transition-colors">
                       <td className="px-6 py-4">
                         <div className="font-medium">{item.colaborador?.nome_completo}</div>
