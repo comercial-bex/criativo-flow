@@ -250,6 +250,13 @@ export default function Colaboradores() {
                           <Button
                             size="sm"
                             variant="outline"
+                            onClick={() => window.location.href = `/rh/colaboradores/${colaborador.id}`}
+                          >
+                            Ver Detalhes
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
                             onClick={() => handleEdit(colaborador)}
                           >
                             <Edit className="h-3 w-3" />

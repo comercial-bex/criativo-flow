@@ -101,7 +101,9 @@ import GamificacaoAdmin from "./pages/GamificacaoAdmin";
 
 // RH pages
 import Colaboradores from "./pages/RH/Colaboradores";
+import ColaboradorDetalhes from "./pages/RH/ColaboradorDetalhes";
 import FolhaPagamento from "./pages/Financeiro/FolhaPagamento";
+import BalanceteContabil from "./pages/Financeiro/BalanceteContabil";
 import Calendario from "./pages/Calendario";
 import Inventario from "./pages/Inventario";
 
@@ -739,9 +741,21 @@ function App() {
                   </ProtectedRoute>
                 } />
                 
+                <Route path="/rh/colaboradores/:id" element={
+                  <ProtectedRoute allowedRoles={['admin', 'gestor', 'financeiro']}>
+                    <Layout><ColaboradorDetalhes /></Layout>
+                  </ProtectedRoute>
+                } />
+                
                 <Route path="/rh/folha" element={
                   <ProtectedRoute allowedRoles={['admin', 'gestor', 'financeiro']}>
                     <Layout><FolhaPagamento /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/rh/balancete" element={
+                  <ProtectedRoute allowedRoles={['admin', 'gestor', 'financeiro']}>
+                    <Layout><BalanceteContabil /></Layout>
                   </ProtectedRoute>
                 } />
 
