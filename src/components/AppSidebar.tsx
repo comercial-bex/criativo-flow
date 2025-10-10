@@ -42,7 +42,8 @@ import {
   Trophy,
   FileType,
   Bell,
-  Package
+  Package,
+  ClipboardList
 } from "lucide-react"
 import { NavLink, useLocation } from "react-router-dom"
 import React from "react"
@@ -270,9 +271,10 @@ const modules = [
     icon: Settings,
     items: [
       { title: "Configurações", url: "/configuracoes", icon: Settings },
+      { title: "Homologação MVP", url: "/admin/homologacao-mvp", icon: ClipboardList },
       { title: "Relatórios", url: "/relatorios", icon: BarChart3 },
     ],
-    permissions: ["configuracoes", "relatorios"]
+    permissions: ["configuracoes", "relatorios", "admin"]
   },
 ]
 
