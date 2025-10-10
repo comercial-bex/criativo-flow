@@ -15,6 +15,8 @@ import { Video, Edit, Plus, Calendar, Clock, FileVideo, Image, Zap } from "lucid
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useToast } from "@/hooks/use-toast";
+import { useTutorial } from '@/hooks/useTutorial';
+import { TutorialButton } from '@/components/TutorialButton';
 
 interface ProjetoAudiovisual {
   id: string;
@@ -39,6 +41,7 @@ interface Planejamento {
 export default function ProjetosAudiovisuais() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { startTutorial, hasSeenTutorial } = useTutorial('audiovisual-projetos');
   const [projetos, setProjetos] = useState<ProjetoAudiovisual[]>([]);
   const [planejamentos, setPlanejamentos] = useState<Planejamento[]>([]);
   const [loading, setLoading] = useState(true);
@@ -257,9 +260,10 @@ export default function ProjetosAudiovisuais() {
             Gerencie seus projetos de vídeo, motion e edição
           </p>
         </div>
+        <TutorialButton onStart={startTutorial} hasSeenTutorial={hasSeenTutorial} />
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="gap-2">
+            <Button className="gap-2" data-tour="novo-projeto">
               <Plus className="h-4 w-4" />
               Novo Projeto
             </Button>
@@ -378,7 +382,7 @@ export default function ProjetosAudiovisuais() {
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList>
+        <TabsList data-tour="filtro-tabs">
           <TabsTrigger value="todos">Todos</TabsTrigger>
           <TabsTrigger value="ativo">Em Andamento</TabsTrigger>
           <TabsTrigger value="concluido">Concluídos</TabsTrigger>
@@ -399,7 +403,7 @@ export default function ProjetosAudiovisuais() {
               </CardContent>
             </Card>
           ) : (
-            <div className="grid gap-4">
+            <div className="grid gap-4" data-tour="lista-projetos">
               {filteredProjetos.map((projeto) => (
                 <Card key={projeto.id} className="hover:shadow-md transition-shadow">
                   <CardContent className="p-6">
@@ -408,7 +412,7 @@ export default function ProjetosAudiovisuais() {
                         <div className="flex items-center gap-3">
                           {getTipoIcon(projeto.tipo_projeto)}
                           <h3 className="text-lg font-semibold">{projeto.titulo}</h3>
-                          <Badge variant="outline" className={`${getStatusColor(projeto.status_review)} text-white`}>
+                          <Badge variant="outline" className={`${getStatusColor(projeto.status_review)} text-white`} data-tour="status-badge">
                             {projeto.status_review}
                           </Badge>
                         </div>

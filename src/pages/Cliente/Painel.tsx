@@ -9,12 +9,15 @@ import { useNavigate } from "react-router-dom";
 import { useIntelligenceData } from "@/hooks/useIntelligenceData";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { useTutorial } from '@/hooks/useTutorial';
+import { TutorialButton } from '@/components/TutorialButton';
 
 export default function ClientePainel() {
   const navigate = useNavigate();
   const { counts, timeline, clientProfile, loading, refresh } = useClientDashboard();
   const { unreadCount } = useNotifications();
   const { alerts } = useIntelligenceData();
+  const { startTutorial, hasSeenTutorial } = useTutorial('cliente-painel');
   const entregues = timeline.filter(item => item.status === 'entregue');
   const pendentes = timeline.filter(item => item.status === 'pendente' || item.status === 'urgente');
   const mesAtual = format(new Date(), "MMMM yyyy", { locale: ptBR });
@@ -74,19 +77,21 @@ export default function ClientePainel() {
           {clientProfile?.cliente_nome ? `${clientProfile.cliente_nome} - ` : ''}
           Acompanhe seus projetos e aprovações de forma simples
         </p>
-        <Button 
-          variant="outline" 
-          size="sm" 
-          onClick={refresh}
-          className="mt-2"
-        >
-          <RefreshCw className="h-4 w-4 mr-2" />
-          Atualizar
-        </Button>
+        <div className="flex gap-2 mt-2 justify-center">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={refresh}
+          >
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Atualizar
+          </Button>
+          <TutorialButton onStart={startTutorial} hasSeenTutorial={hasSeenTutorial} />
+        </div>
       </div>
 
       {/* Cards de ação */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4" data-tour="cards-aprovacao">
         <Card 
           className="cursor-pointer hover:shadow-md transition-shadow"
           onClick={() => navigate('/cliente/projetos')}
@@ -197,7 +202,7 @@ export default function ClientePainel() {
       )}
 
       {/* Timeline do mês */}
-      <Card>
+      <Card data-tour="timeline">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Clock className="h-5 w-5" />
@@ -289,7 +294,7 @@ export default function ClientePainel() {
       </Card>
 
       {/* Suporte rápido */}
-      <Card>
+      <Card data-tour="suporte">
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div>

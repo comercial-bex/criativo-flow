@@ -19,6 +19,8 @@ import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { useTutorial } from '@/hooks/useTutorial';
+import { TutorialButton } from '@/components/TutorialButton';
 
 interface DashboardStats {
   tarefasAbertas: number;
@@ -40,6 +42,7 @@ export default function DesignDashboard() {
   });
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const { startTutorial, hasSeenTutorial } = useTutorial('design-dashboard');
 
   useEffect(() => {
     fetchDashboardData();
@@ -155,6 +158,7 @@ export default function DesignDashboard() {
           <p className="text-muted-foreground">Visão geral da produção criativa</p>
         </div>
         <div className="flex gap-2">
+          <TutorialButton onStart={startTutorial} hasSeenTutorial={hasSeenTutorial} />
           <Button asChild variant="outline">
             <Link to="/design/kanban">
               <Clock className="h-4 w-4 mr-2" />
@@ -171,7 +175,7 @@ export default function DesignDashboard() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4" data-tour="kpis">
         <StatCard
           title="Tarefas Abertas"
           value={stats.tarefasAbertas}
@@ -202,7 +206,7 @@ export default function DesignDashboard() {
       {/* Main Content Grid */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {/* Próximos Deadlines */}
-        <Card className="lg:col-span-2">
+        <Card className="lg:col-span-2" data-tour="deadlines">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <AlertTriangle className="h-5 w-5 text-warning" />
@@ -240,7 +244,7 @@ export default function DesignDashboard() {
         </Card>
 
         {/* Quick Actions */}
-        <Card>
+        <Card data-tour="acoes-rapidas">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Target className="h-5 w-5 text-primary" />

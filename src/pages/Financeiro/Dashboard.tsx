@@ -10,9 +10,12 @@ import { ComposicaoReceitasChart } from '@/components/Financeiro/Charts/Composic
 import { ComposicaoDespesasChart } from '@/components/Financeiro/Charts/ComposicaoDespesasChart';
 import { ReceitaClienteChart } from '@/components/Financeiro/Charts/ReceitaClienteChart';
 import { useQueryClient } from '@tanstack/react-query';
+import { useTutorial } from '@/hooks/useTutorial';
+import { TutorialButton } from '@/components/TutorialButton';
 
 export default function FinanceiroDashboard() {
   const queryClient = useQueryClient();
+  const { startTutorial, hasSeenTutorial } = useTutorial('financeiro-dashboard');
   const [filters, setFilters] = useState<FinancialFilters>({
     startDate: startOfMonth(new Date()),
     endDate: endOfMonth(new Date()),
@@ -80,18 +83,25 @@ export default function FinanceiroDashboard() {
 
   return (
     <div className="container mx-auto p-4 md:p-6 lg:p-8 space-y-6 animate-fade-in">
-      <DashboardHeader
-        onRefresh={handleRefresh}
-        onExport={handleExport}
-        onConfig={() => {}}
-        isRefreshing={loadingKPIs}
-      />
+      <div className="flex items-center justify-between">
+        <DashboardHeader
+          onRefresh={handleRefresh}
+          onExport={handleExport}
+          onConfig={() => {}}
+          isRefreshing={loadingKPIs}
+        />
+        <TutorialButton onStart={startTutorial} hasSeenTutorial={hasSeenTutorial} />
+      </div>
 
-      <KPICards data={kpis} loading={loadingKPIs} />
+      <div data-tour="kpis">
+        <KPICards data={kpis} loading={loadingKPIs} />
+      </div>
 
-      <FilterBar onApply={handleApplyFilters} />
+      <div data-tour="filtros">
+        <FilterBar onApply={handleApplyFilters} />
+      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-scale-in">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-scale-in" data-tour="graficos">
         <ReceitasDespesasChart
           data={receitasDespesas || []}
           loading={loadingReceitasDespesas}

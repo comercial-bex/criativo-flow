@@ -16,10 +16,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { GamificationWidget } from "@/components/GamificationWidget";
 import { CalendarWidget } from "@/components/CalendarWidget";
-import { InteractiveGuideButton } from "@/components/InteractiveGuideButton";
 import { SimpleHelpModal } from "@/components/SimpleHelpModal";
 import { TarefasPorSetor } from "@/components/TarefasPorSetor";
 import { CreatePlanejamentoModal } from "@/components/CreatePlanejamentoModal";
+import { useTutorial } from '@/hooks/useTutorial';
+import { TutorialButton } from '@/components/TutorialButton';
 
 interface Cliente {
   id: string;
@@ -48,6 +49,7 @@ interface DashboardMetrics {
 export default function GRSDashboard() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { startTutorial, hasSeenTutorial } = useTutorial('grs-dashboard');
   const [metrics, setMetrics] = useState<DashboardMetrics>({
     clientesAtivos: 0,
     totalProjetos: 0,
@@ -236,12 +238,12 @@ export default function GRSDashboard() {
         </div>
         <div className="flex items-center gap-2">
           <SimpleHelpModal content={helpContent}>
-            <Button variant="outline" size="sm" data-intro="dashboard-help">
+            <Button variant="outline" size="sm" data-tour="dashboard-help">
               <Info className="h-4 w-4 mr-2" />
               Como usar
             </Button>
           </SimpleHelpModal>
-          <InteractiveGuideButton />
+          <TutorialButton onStart={startTutorial} hasSeenTutorial={hasSeenTutorial} />
         </div>
       </div>
 
@@ -256,7 +258,7 @@ export default function GRSDashboard() {
 
         <div className="flex items-center justify-between">
           <div className="flex gap-2">
-            <Button onClick={() => setDialogOpen(true)} data-intro="criar-planejamento">
+            <Button onClick={() => setDialogOpen(true)} data-tour="criar-planejamento">
               <Plus className="h-4 w-4 mr-2" />
               Novo Projeto
             </Button>
@@ -271,7 +273,7 @@ export default function GRSDashboard() {
         />
 
       {/* Metrics Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4" data-tour="metricas">
         {metricsData.map((item, index) => (
           <Card key={index}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">

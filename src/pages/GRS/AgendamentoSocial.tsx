@@ -32,6 +32,8 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { InstagramPreview } from "@/components/InstagramPreview";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { useTutorial } from '@/hooks/useTutorial';
+import { TutorialButton } from '@/components/TutorialButton';
 
 
 interface PostAgendado {
@@ -67,6 +69,7 @@ export default function GRSAgendamentoSocial() {
   const [isCreating, setIsCreating] = useState(false);
   const [selectedPost, setSelectedPost] = useState<PostAgendado | null>(null);
   const { toast } = useToast();
+  const { startTutorial, hasSeenTutorial } = useTutorial('grs-agendamento-social');
 
   const [novoPost, setNovoPost] = useState({
     titulo: '',
@@ -252,12 +255,13 @@ export default function GRSAgendamentoSocial() {
             Gerencie postagens em múltiplas redes sociais
           </p>
         </div>
+        <TutorialButton onStart={startTutorial} hasSeenTutorial={hasSeenTutorial} />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Form de Criação */}
         <div className="lg:col-span-1">
-          <Card>
+          <Card data-tour="novo-post">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Plus className="h-5 w-5" />
@@ -268,7 +272,7 @@ export default function GRSAgendamentoSocial() {
               <div>
                 <Label htmlFor="cliente">Cliente</Label>
                 <Select value={novoPost.cliente_id} onValueChange={(value) => setNovoPost(prev => ({ ...prev, cliente_id: value }))}>
-                  <SelectTrigger>
+                  <SelectTrigger data-tour="cliente-select">
                     <SelectValue placeholder="Selecionar cliente" />
                   </SelectTrigger>
                   <SelectContent>
@@ -350,7 +354,7 @@ export default function GRSAgendamentoSocial() {
 
               <div>
                 <Label>Plataformas</Label>
-                <div className="grid grid-cols-2 gap-2 mt-2">
+                <div className="grid grid-cols-2 gap-2 mt-2" data-tour="plataformas">
                   {plataformasDisponiveis.map((plataforma) => (
                     <Button
                       key={plataforma.id}
@@ -389,7 +393,7 @@ export default function GRSAgendamentoSocial() {
 
         {/* Lista de Posts Agendados */}
         <div className="lg:col-span-2">
-          <Card>
+          <Card data-tour="posts-agendados">
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 <span>Posts Agendados ({postsAgendados.length})</span>
