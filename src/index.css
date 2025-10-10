@@ -21,7 +21,7 @@ All colors MUST be HSL.
 
     /* Verde personalizado BCF125 */
     --primary: 84 65% 47%;
-    --primary-foreground: 0 0% 98%;
+    --primary-foreground: 0 0% 15%; /* Texto preto nos botões verdes */
     
     /* Cores customizadas BEX */
     --bex-green: 84 65% 47%; /* #54C43D - Verde da logo BEX */
@@ -91,7 +91,7 @@ All colors MUST be HSL.
     --popover-foreground: 0 0% 85%;
 
     --primary: 84 65% 47%;
-    --primary-foreground: 0 0% 98%;
+    --primary-foreground: 0 0% 15%; /* Texto preto nos botões verdes */
 
     --secondary: 0 0% 20%;
     --secondary-foreground: 0 0% 85%;
