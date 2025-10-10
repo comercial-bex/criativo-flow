@@ -1,5 +1,6 @@
 import { RefreshCw, Download, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 interface DashboardHeaderProps {
   onRefresh: () => void;
@@ -31,18 +32,31 @@ export function DashboardHeader({
           size="sm"
           onClick={onRefresh}
           disabled={isRefreshing}
-          className="gap-2"
+          className="gap-2 hover:border-primary/50 transition-all"
         >
-          <RefreshCw className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`} />
+          <RefreshCw className={cn(
+            "h-4 w-4 transition-transform duration-500",
+            isRefreshing && "animate-spin"
+          )} />
           Atualizar
         </Button>
 
-        <Button variant="outline" size="sm" onClick={onExport} className="gap-2">
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={onExport} 
+          className="gap-2 hover:border-primary/50 transition-all hover:scale-105"
+        >
           <Download className="h-4 w-4" />
           Exportar
         </Button>
 
-        <Button variant="outline" size="sm" onClick={onConfig} className="gap-2">
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={onConfig} 
+          className="gap-2 hover:border-primary/50 transition-all"
+        >
           <Settings className="h-4 w-4" />
           Configurações
         </Button>

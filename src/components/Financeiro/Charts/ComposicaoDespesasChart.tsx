@@ -1,10 +1,10 @@
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recharts";
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, Label } from "recharts";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
-const COLORS = ["#EF4444", "#F59E0B", "#8B5CF6", "#3B82F6", "#10B981"];
+const COLORS = ["#EF4444", "#F59E0B", "#F97316", "#DC2626", "#EA580C", "#B91C1C"];
 
 interface ComposicaoDespesasChartProps {
   data: any[];
@@ -48,21 +48,42 @@ export function ComposicaoDespesasChart({ data, loading, onExport }: ComposicaoD
               cy="50%"
               labelLine={false}
               label={(entry) => `${entry.categoria}: ${entry.percentual.toFixed(1)}%`}
-              outerRadius={80}
+              outerRadius={100}
+              innerRadius={60}
               fill="#8884d8"
               dataKey="valor"
-              innerRadius={60}
+              animationBegin={0}
+              animationDuration={1000}
+              paddingAngle={2}
             >
               {data.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                <Cell 
+                  key={`cell-${index}`} 
+                  fill={COLORS[index % COLORS.length]}
+                  stroke="hsl(var(--background))"
+                  strokeWidth={2}
+                />
               ))}
+              <Label
+                value="Despesas"
+                position="center"
+                fill="hsl(var(--foreground))"
+                style={{
+                  fontSize: "16px",
+                  fontWeight: "bold",
+                  fontFamily: "Montserrat"
+                }}
+              />
             </Pie>
             <Tooltip
               formatter={(value: number) =>
                 `R$ ${value.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`
               }
             />
-            <Legend />
+            <Legend 
+              iconType="circle"
+              wrapperStyle={{ paddingTop: "20px" }}
+            />
           </PieChart>
         </ResponsiveContainer>
       </CardContent>

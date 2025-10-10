@@ -79,7 +79,7 @@ export default function FinanceiroDashboard() {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-8">
+    <div className="container mx-auto p-4 md:p-6 lg:p-8 space-y-6 animate-fade-in">
       <DashboardHeader
         onRefresh={handleRefresh}
         onExport={handleExport}
@@ -91,7 +91,7 @@ export default function FinanceiroDashboard() {
 
       <FilterBar onApply={handleApplyFilters} />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-scale-in">
         <ReceitasDespesasChart
           data={receitasDespesas || []}
           loading={loadingReceitasDespesas}

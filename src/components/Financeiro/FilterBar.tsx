@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import { Card } from "@/components/ui/card";
 import { Filter } from "lucide-react";
 import { startOfMonth, endOfMonth, subMonths, startOfYear } from "date-fns";
 
@@ -22,37 +24,46 @@ export function FilterBar({ onApply }: FilterBarProps) {
   };
 
   return (
-    <div className="flex flex-wrap items-center gap-4 p-4 bg-card border rounded-lg">
-      <div className="flex items-center gap-2">
-        <Filter className="h-4 w-4 text-muted-foreground" />
-        <span className="text-sm font-medium">Filtros:</span>
+    <Card className="bg-gradient-to-r from-card via-muted/30 to-card border-2 border-primary/20 shadow-md hover:shadow-xl transition-all duration-300">
+      <div className="p-6">
+        <div className="flex flex-col md:flex-row gap-4 items-end">
+          <div className="flex-1">
+            <Label htmlFor="periodo" className="text-sm font-semibold">Período</Label>
+            <Select value={periodo} onValueChange={(value: any) => setPeriodo(value)}>
+              <SelectTrigger id="periodo" className="mt-1.5 border-primary/30 focus:border-primary">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="mes">Este Mês</SelectItem>
+                <SelectItem value="trimestre">Último Trimestre</SelectItem>
+                <SelectItem value="ano">Este Ano</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="flex-1">
+            <Label htmlFor="tipo" className="text-sm font-semibold">Tipo</Label>
+            <Select value={tipo} onValueChange={(value: any) => setTipo(value)}>
+              <SelectTrigger id="tipo" className="mt-1.5 border-primary/30 focus:border-primary">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos</SelectItem>
+                <SelectItem value="receita">Receitas</SelectItem>
+                <SelectItem value="despesa">Despesas</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <Button 
+            onClick={handleApply} 
+            className="w-full md:w-auto bg-primary hover:bg-primary/90 transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-primary/50"
+          >
+            <Filter className="mr-2 h-4 w-4" />
+            Aplicar Filtros
+          </Button>
+        </div>
       </div>
-
-      <Select value={periodo} onValueChange={(value: any) => setPeriodo(value)}>
-        <SelectTrigger className="w-[150px]">
-          <SelectValue placeholder="Período" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="mes">Mês Atual</SelectItem>
-          <SelectItem value="trimestre">Trimestre</SelectItem>
-          <SelectItem value="ano">Ano</SelectItem>
-        </SelectContent>
-      </Select>
-
-      <Select value={tipo} onValueChange={(value: any) => setTipo(value)}>
-        <SelectTrigger className="w-[150px]">
-          <SelectValue placeholder="Tipo" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">Receitas e Despesas</SelectItem>
-          <SelectItem value="receita">Apenas Receitas</SelectItem>
-          <SelectItem value="despesa">Apenas Despesas</SelectItem>
-        </SelectContent>
-      </Select>
-
-      <Button onClick={handleApply} size="sm">
-        Aplicar Filtros
-      </Button>
-    </div>
+    </Card>
   );
 }
