@@ -2351,6 +2351,75 @@ export type Database = {
           },
         ]
       }
+      financeiro_adiantamentos: {
+        Row: {
+          banco_conta: string | null
+          chave_pix: string | null
+          colaborador_id: string
+          competencia: string
+          comprovante_url: string | null
+          created_at: string | null
+          criado_por: string | null
+          data_adiantamento: string
+          folha_item_id: string | null
+          forma_pagamento: string
+          id: string
+          observacao: string | null
+          status: string | null
+          updated_at: string | null
+          valor: number
+        }
+        Insert: {
+          banco_conta?: string | null
+          chave_pix?: string | null
+          colaborador_id: string
+          competencia: string
+          comprovante_url?: string | null
+          created_at?: string | null
+          criado_por?: string | null
+          data_adiantamento: string
+          folha_item_id?: string | null
+          forma_pagamento: string
+          id?: string
+          observacao?: string | null
+          status?: string | null
+          updated_at?: string | null
+          valor: number
+        }
+        Update: {
+          banco_conta?: string | null
+          chave_pix?: string | null
+          colaborador_id?: string
+          competencia?: string
+          comprovante_url?: string | null
+          created_at?: string | null
+          criado_por?: string | null
+          data_adiantamento?: string
+          folha_item_id?: string | null
+          forma_pagamento?: string
+          id?: string
+          observacao?: string | null
+          status?: string | null
+          updated_at?: string | null
+          valor?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financeiro_adiantamentos_colaborador_id_fkey"
+            columns: ["colaborador_id"]
+            isOneToOne: false
+            referencedRelation: "rh_colaboradores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financeiro_adiantamentos_folha_item_id_fkey"
+            columns: ["folha_item_id"]
+            isOneToOne: false
+            referencedRelation: "financeiro_folha_itens"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       financeiro_faixas_inss: {
         Row: {
           aliquota: number
@@ -2679,6 +2748,69 @@ export type Database = {
           },
         ]
       }
+      financeiro_lancamentos: {
+        Row: {
+          centro_custo: string | null
+          conta_credito_id: string
+          conta_debito_id: string
+          created_at: string | null
+          created_by: string | null
+          data_lancamento: string
+          descricao: string
+          id: string
+          numero_lancamento: number
+          origem_id: string | null
+          tipo_origem: string
+          unidade: string | null
+          valor: number
+        }
+        Insert: {
+          centro_custo?: string | null
+          conta_credito_id: string
+          conta_debito_id: string
+          created_at?: string | null
+          created_by?: string | null
+          data_lancamento: string
+          descricao: string
+          id?: string
+          numero_lancamento?: number
+          origem_id?: string | null
+          tipo_origem: string
+          unidade?: string | null
+          valor: number
+        }
+        Update: {
+          centro_custo?: string | null
+          conta_credito_id?: string
+          conta_debito_id?: string
+          created_at?: string | null
+          created_by?: string | null
+          data_lancamento?: string
+          descricao?: string
+          id?: string
+          numero_lancamento?: number
+          origem_id?: string | null
+          tipo_origem?: string
+          unidade?: string | null
+          valor?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financeiro_lancamentos_conta_credito_id_fkey"
+            columns: ["conta_credito_id"]
+            isOneToOne: false
+            referencedRelation: "financeiro_plano_contas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financeiro_lancamentos_conta_debito_id_fkey"
+            columns: ["conta_debito_id"]
+            isOneToOne: false
+            referencedRelation: "financeiro_plano_contas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       financeiro_parametros_fiscais: {
         Row: {
           aliquota_fgts: number | null
@@ -2714,6 +2846,56 @@ export type Database = {
           valor_dependente_irrf?: number | null
         }
         Relationships: []
+      }
+      financeiro_plano_contas: {
+        Row: {
+          aceita_lancamento: boolean | null
+          ativo: boolean | null
+          codigo: string
+          conta_pai_id: string | null
+          created_at: string | null
+          id: string
+          natureza: string
+          nivel: number
+          nome: string
+          tipo: string
+          updated_at: string | null
+        }
+        Insert: {
+          aceita_lancamento?: boolean | null
+          ativo?: boolean | null
+          codigo: string
+          conta_pai_id?: string | null
+          created_at?: string | null
+          id?: string
+          natureza: string
+          nivel: number
+          nome: string
+          tipo: string
+          updated_at?: string | null
+        }
+        Update: {
+          aceita_lancamento?: boolean | null
+          ativo?: boolean | null
+          codigo?: string
+          conta_pai_id?: string | null
+          created_at?: string | null
+          id?: string
+          natureza?: string
+          nivel?: number
+          nome?: string
+          tipo?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financeiro_plano_contas_conta_pai_id_fkey"
+            columns: ["conta_pai_id"]
+            isOneToOne: false
+            referencedRelation: "financeiro_plano_contas"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       financeiro_previsao: {
         Row: {
@@ -5688,6 +5870,178 @@ export type Database = {
           },
         ]
       }
+      rh_folha_ponto: {
+        Row: {
+          aprovado_gestor_em: string | null
+          aprovado_gestor_por: string | null
+          aprovado_rh_em: string | null
+          aprovado_rh_por: string | null
+          arquivo_ponto_url: string | null
+          colaborador_id: string
+          competencia: string
+          comprovantes_anexos: Json | null
+          created_at: string | null
+          dias_falta: number | null
+          hora_base: number | null
+          horas_compensacao: number | null
+          horas_falta: number | null
+          horas_he_100: number | null
+          horas_he_50: number | null
+          horas_noturno: number | null
+          id: string
+          minutos_atraso: number | null
+          motivo: Database["public"]["Enums"]["motivo_ponto_enum"] | null
+          observacao: string | null
+          rejeitado_motivo: string | null
+          status: Database["public"]["Enums"]["status_ponto_enum"] | null
+          updated_at: string | null
+          valor_adicional_noturno: number | null
+          valor_desconto_atraso: number | null
+          valor_desconto_falta: number | null
+          valor_he_100: number | null
+          valor_he_50: number | null
+        }
+        Insert: {
+          aprovado_gestor_em?: string | null
+          aprovado_gestor_por?: string | null
+          aprovado_rh_em?: string | null
+          aprovado_rh_por?: string | null
+          arquivo_ponto_url?: string | null
+          colaborador_id: string
+          competencia: string
+          comprovantes_anexos?: Json | null
+          created_at?: string | null
+          dias_falta?: number | null
+          hora_base?: number | null
+          horas_compensacao?: number | null
+          horas_falta?: number | null
+          horas_he_100?: number | null
+          horas_he_50?: number | null
+          horas_noturno?: number | null
+          id?: string
+          minutos_atraso?: number | null
+          motivo?: Database["public"]["Enums"]["motivo_ponto_enum"] | null
+          observacao?: string | null
+          rejeitado_motivo?: string | null
+          status?: Database["public"]["Enums"]["status_ponto_enum"] | null
+          updated_at?: string | null
+          valor_adicional_noturno?: number | null
+          valor_desconto_atraso?: number | null
+          valor_desconto_falta?: number | null
+          valor_he_100?: number | null
+          valor_he_50?: number | null
+        }
+        Update: {
+          aprovado_gestor_em?: string | null
+          aprovado_gestor_por?: string | null
+          aprovado_rh_em?: string | null
+          aprovado_rh_por?: string | null
+          arquivo_ponto_url?: string | null
+          colaborador_id?: string
+          competencia?: string
+          comprovantes_anexos?: Json | null
+          created_at?: string | null
+          dias_falta?: number | null
+          hora_base?: number | null
+          horas_compensacao?: number | null
+          horas_falta?: number | null
+          horas_he_100?: number | null
+          horas_he_50?: number | null
+          horas_noturno?: number | null
+          id?: string
+          minutos_atraso?: number | null
+          motivo?: Database["public"]["Enums"]["motivo_ponto_enum"] | null
+          observacao?: string | null
+          rejeitado_motivo?: string | null
+          status?: Database["public"]["Enums"]["status_ponto_enum"] | null
+          updated_at?: string | null
+          valor_adicional_noturno?: number | null
+          valor_desconto_atraso?: number | null
+          valor_desconto_falta?: number | null
+          valor_he_100?: number | null
+          valor_he_50?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rh_folha_ponto_colaborador_id_fkey"
+            columns: ["colaborador_id"]
+            isOneToOne: false
+            referencedRelation: "rh_colaboradores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rh_timeline_carreira: {
+        Row: {
+          anexos_urls: Json | null
+          cargo_anterior: string | null
+          cargo_novo: string | null
+          colaborador_id: string
+          created_at: string | null
+          criado_por: string | null
+          data_fim: string | null
+          data_inicio: string
+          etapa_anterior:
+            | Database["public"]["Enums"]["etapa_carreira_enum"]
+            | null
+          etapa_nova: Database["public"]["Enums"]["etapa_carreira_enum"]
+          id: string
+          motivo: string
+          observacao: string | null
+          salario_anterior: number | null
+          salario_novo: number
+          updated_at: string | null
+        }
+        Insert: {
+          anexos_urls?: Json | null
+          cargo_anterior?: string | null
+          cargo_novo?: string | null
+          colaborador_id: string
+          created_at?: string | null
+          criado_por?: string | null
+          data_fim?: string | null
+          data_inicio: string
+          etapa_anterior?:
+            | Database["public"]["Enums"]["etapa_carreira_enum"]
+            | null
+          etapa_nova: Database["public"]["Enums"]["etapa_carreira_enum"]
+          id?: string
+          motivo: string
+          observacao?: string | null
+          salario_anterior?: number | null
+          salario_novo: number
+          updated_at?: string | null
+        }
+        Update: {
+          anexos_urls?: Json | null
+          cargo_anterior?: string | null
+          cargo_novo?: string | null
+          colaborador_id?: string
+          created_at?: string | null
+          criado_por?: string | null
+          data_fim?: string | null
+          data_inicio?: string
+          etapa_anterior?:
+            | Database["public"]["Enums"]["etapa_carreira_enum"]
+            | null
+          etapa_nova?: Database["public"]["Enums"]["etapa_carreira_enum"]
+          id?: string
+          motivo?: string
+          observacao?: string | null
+          salario_anterior?: number | null
+          salario_novo?: number
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rh_timeline_carreira_colaborador_id_fkey"
+            columns: ["colaborador_id"]
+            isOneToOne: false
+            referencedRelation: "rh_colaboradores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       role_permissions: {
         Row: {
           can_create: boolean
@@ -7007,6 +7361,10 @@ export type Database = {
           valor_irrf: number
         }[]
       }
+      fn_calcular_ponto: {
+        Args: { p_ponto_id: string }
+        Returns: undefined
+      }
       fn_cred_get_metadata: {
         Args: { p_cliente_id: string; p_projeto_id?: string }
         Returns: {
@@ -7146,6 +7504,14 @@ export type Database = {
       fn_tarefa_status_prazo: {
         Args: { p_tarefa_id: string }
         Returns: string
+      }
+      fn_validar_limite_adiantamento: {
+        Args: {
+          p_colaborador_id: string
+          p_competencia: string
+          p_novo_valor: number
+        }
+        Returns: boolean
       }
       fn_validar_vinculo_projeto_cliente: {
         Args: { p_projeto_id: string }
@@ -7303,7 +7669,14 @@ export type Database = {
         | "audiovisual"
         | "financeiro"
         | "gestor"
+      etapa_carreira_enum: "trainee" | "estagiario" | "especialista" | "gestor"
       executor_area_enum: "Audiovisual" | "Criativo"
+      motivo_ponto_enum:
+        | "operacional"
+        | "cliente"
+        | "saude"
+        | "acordo"
+        | "outros"
       prioridade_enum: "baixa" | "media" | "alta" | "critica"
       priority_type: "baixa" | "media" | "alta" | "urgente"
       regime_trabalho: "clt" | "estagio" | "pj"
@@ -7330,6 +7703,11 @@ export type Database = {
         | "em_aprovacao_final"
         | "finalizado"
         | "reprovado"
+      status_ponto_enum:
+        | "pendente"
+        | "aprovado_gestor"
+        | "aprovado_rh"
+        | "rejeitado"
       status_tarefa_enum:
         | "backlog"
         | "briefing"
@@ -7567,7 +7945,15 @@ export const Constants = {
         "financeiro",
         "gestor",
       ],
+      etapa_carreira_enum: ["trainee", "estagiario", "especialista", "gestor"],
       executor_area_enum: ["Audiovisual", "Criativo"],
+      motivo_ponto_enum: [
+        "operacional",
+        "cliente",
+        "saude",
+        "acordo",
+        "outros",
+      ],
       prioridade_enum: ["baixa", "media", "alta", "critica"],
       priority_type: ["baixa", "media", "alta", "urgente"],
       regime_trabalho: ["clt", "estagio", "pj"],
@@ -7596,6 +7982,12 @@ export const Constants = {
         "em_aprovacao_final",
         "finalizado",
         "reprovado",
+      ],
+      status_ponto_enum: [
+        "pendente",
+        "aprovado_gestor",
+        "aprovado_rh",
+        "rejeitado",
       ],
       status_tarefa_enum: [
         "backlog",
