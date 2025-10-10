@@ -161,6 +161,16 @@ export const ModalCriarEvento = ({ open, onClose, dataInicial, responsavelIdInic
       return;
     }
 
+    if (conflitos.length > 0) {
+      smartToast.error('Existem conflitos de agenda. Resolva antes de criar o evento.');
+      return;
+    }
+
+    if (modoCriativo === 'lote' && (quantidadePecas < 1 || quantidadePecas > 12)) {
+      smartToast.error('Quantidade de peças deve estar entre 1 e 12');
+      return;
+    }
+
     try {
       await criarEvento({
         projetoId,
@@ -174,6 +184,8 @@ export const ModalCriarEvento = ({ open, onClose, dataInicial, responsavelIdInic
           : null,
         local: ['captacao_interna', 'captacao_externa'].includes(tipo) ? local : null,
         equipamentosIds: equipamentos.length > 0 ? equipamentos : null,
+        observacoes: observacoes || null,
+        quantidadePecas: modoCriativo === 'lote' ? quantidadePecas : null,
       });
 
       handleClose();

@@ -14,6 +14,8 @@ interface CriarEventoParams {
   local?: string | null;
   isExtra?: boolean;
   equipamentosIds?: string[] | null;
+  observacoes?: string | null;
+  quantidadePecas?: number | null;
 }
 
 export const useCalendarioMultidisciplinar = (options: {
@@ -60,7 +62,9 @@ export const useCalendarioMultidisciplinar = (options: {
         p_modo_criativo: params.modoCriativo,
         p_local: params.local,
         p_is_extra: params.isExtra || false,
-        p_equipamentos_ids: params.equipamentosIds
+        p_equipamentos_ids: params.equipamentosIds,
+        p_observacoes: params.observacoes,
+        p_quantidade_pecas: params.quantidadePecas
       });
       
       if (error) {
