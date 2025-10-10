@@ -18,6 +18,8 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { useTutorial } from '@/hooks/useTutorial';
+import { TutorialButton } from '@/components/TutorialButton';
 
 interface ClienteTask {
   id: string;
@@ -48,6 +50,7 @@ interface ClienteStats {
 
 export default function ClienteTarefas() {
   const { user } = useAuth();
+  const { startTutorial, hasSeenTutorial } = useTutorial('cliente-tarefas');
   const [tasks, setTasks] = useState<ClienteTask[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedTask, setSelectedTask] = useState<ClienteTask | null>(null);

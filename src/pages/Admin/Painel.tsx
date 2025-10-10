@@ -27,6 +27,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { AIAnalyticsDashboard } from "@/components/AIAnalyticsDashboard";
+import { useTutorial } from '@/hooks/useTutorial';
+import { TutorialButton } from '@/components/TutorialButton';
 
 interface AdminUser {
   id: string;
@@ -48,6 +50,7 @@ interface UserStats {
 export default function AdminPainel() {
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<AdminUser[]>([]);
+  const { startTutorial, hasSeenTutorial } = useTutorial('admin-painel');
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterRole, setFilterRole] = useState("all");

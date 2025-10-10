@@ -7,8 +7,11 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Search, Package, Eye, Edit } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useTutorial } from '@/hooks/useTutorial';
+import { TutorialButton } from '@/components/TutorialButton';
 
 export default function Produtos() {
+  const { startTutorial, hasSeenTutorial } = useTutorial('admin-produtos');
   const navigate = useNavigate();
   const { produtos, loading } = useProdutos();
   const [searchTerm, setSearchTerm] = useState("");

@@ -23,6 +23,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, addMonths, subMonths } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { useTutorial } from '@/hooks/useTutorial';
+import { TutorialButton } from '@/components/TutorialButton';
 
 interface TarefaCalendario {
   id: string;
@@ -58,6 +60,7 @@ export default function DesignCalendario() {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [viewMode, setViewMode] = useState<'month' | 'week'>('month');
   const [filtroDesigner, setFiltroDesigner] = useState('all');
+  const { startTutorial, hasSeenTutorial } = useTutorial('design-calendario');
   const [loading, setLoading] = useState(true);
   const [isCreatingEvento, setIsCreatingEvento] = useState(false);
   const [novoEvento, setNovoEvento] = useState({

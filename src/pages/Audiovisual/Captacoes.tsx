@@ -13,6 +13,8 @@ import { Calendar, MapPin, Camera, Clock, Plus, Edit, Trash2 } from "lucide-reac
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useToast } from "@/hooks/use-toast";
+import { useTutorial } from '@/hooks/useTutorial';
+import { TutorialButton } from '@/components/TutorialButton';
 
 interface CaptacaoAgenda {
   id: string;
@@ -34,6 +36,7 @@ interface Cliente {
 export default function CaptacoesPage() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { startTutorial, hasSeenTutorial } = useTutorial('audiovisual-captacoes');
   const [captacoes, setCaptacoes] = useState<CaptacaoAgenda[]>([]);
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [loading, setLoading] = useState(true);

@@ -8,12 +8,15 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Plus, Search, Package, History, Eye } from "lucide-react";
 import { usePermissions } from "@/hooks/usePermissions";
+import { useTutorial } from '@/hooks/useTutorial';
+import { TutorialButton } from '@/components/TutorialButton';
 
 export default function ProdutosFinanceiro() {
   const navigate = useNavigate();
   const { produtos, loading } = useProdutos();
   const { role } = usePermissions();
   const [searchTerm, setSearchTerm] = useState("");
+  const { startTutorial, hasSeenTutorial } = useTutorial('financeiro-produtos');
 
   const canCreate = role === "admin" || role === "gestor" || role === "financeiro";
 

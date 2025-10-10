@@ -1,8 +1,12 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { FolderOpen, Palette } from "lucide-react";
+import { useTutorial } from '@/hooks/useTutorial';
+import { TutorialButton } from '@/components/TutorialButton';
 
 export default function DesignBiblioteca() {
+  const { startTutorial, hasSeenTutorial } = useTutorial('design-biblioteca');
+  
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
@@ -13,10 +17,13 @@ export default function DesignBiblioteca() {
           </h1>
           <p className="text-muted-foreground">Repositório de criativos e templates</p>
         </div>
-        <Button>
-          <Palette className="h-4 w-4 mr-2" />
-          Upload Asset
-        </Button>
+        <div className="flex gap-2">
+          <Button>
+            <Palette className="h-4 w-4 mr-2" />
+            Upload Asset
+          </Button>
+          <TutorialButton onStart={startTutorial} hasSeenTutorial={hasSeenTutorial} />
+        </div>
       </div>
 
       <Card>

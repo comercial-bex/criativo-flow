@@ -7,7 +7,8 @@ import { TrendingUp, BarChart3, Users, Calendar, Download, Eye, Info } from "luc
 import { supabase } from "@/integrations/supabase/client";
 import { ClientSelector } from "@/components/ClientSelector";
 import { SimpleHelpModal } from "@/components/SimpleHelpModal";
-import { InteractiveGuideButton } from "@/components/InteractiveGuideButton";
+import { useTutorial } from '@/hooks/useTutorial';
+import { TutorialButton } from '@/components/TutorialButton';
 
 interface RelatorioDados {
   totalPosts: number;
@@ -29,6 +30,7 @@ export default function GRSRelatorios() {
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
   const [periodo, setPeriodo] = useState("mes_atual");
   const [tipoRelatorio, setTipoRelatorio] = useState("geral");
+  const { startTutorial, hasSeenTutorial } = useTutorial('grs-relatorios');
 
   useEffect(() => {
     fetchRelatoriosData();
@@ -148,7 +150,7 @@ export default function GRSRelatorios() {
               Como usar
             </Button>
           </SimpleHelpModal>
-          <InteractiveGuideButton />
+          <TutorialButton onStart={startTutorial} hasSeenTutorial={hasSeenTutorial} />
         </div>
       </div>
 

@@ -14,6 +14,8 @@ import { Camera, Mic, Monitor, Zap, Plus, Edit, CheckCircle, AlertCircle, Clock 
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useToast } from "@/hooks/use-toast";
+import { useTutorial } from '@/hooks/useTutorial';
+import { TutorialButton } from '@/components/TutorialButton';
 
 interface Equipamento {
   id: string;
@@ -34,6 +36,7 @@ interface Profile {
 export default function EquipamentosPage() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { startTutorial, hasSeenTutorial } = useTutorial('audiovisual-equipamentos');
   const [equipamentos, setEquipamentos] = useState<Equipamento[]>([]);
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);

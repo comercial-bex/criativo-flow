@@ -10,6 +10,8 @@ import { Badge } from "@/components/ui/badge";
 import { Trash2, Edit2, Plus, Tags } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useTutorial } from '@/hooks/useTutorial';
+import { TutorialButton } from '@/components/TutorialButton';
 
 interface CategoriaFinanceira {
   id: string;
@@ -26,6 +28,7 @@ export default function CategoriasFinanceiras() {
   const [editingCategoria, setEditingCategoria] = useState<CategoriaFinanceira | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const { startTutorial, hasSeenTutorial } = useTutorial('financeiro-categorias');
 
   // Form state
   const [nome, setNome] = useState("");

@@ -11,6 +11,8 @@ import { CheckCircle, XCircle, FileText, Image, Video, MessageSquare, Camera, Cl
 import { Skeleton } from '@/components/ui/skeleton';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { useTutorial } from '@/hooks/useTutorial';
+import { TutorialButton } from '@/components/TutorialButton';
 
 const tipoIcons = {
   arte: <Image className="h-5 w-5" />,
@@ -32,6 +34,7 @@ export default function ClienteAprovacoes() {
   const { clientProfile, loading: clienteLoading } = useClientDashboard();
   const { approvals, loading, updateApprovalStatus } = useClientApprovals(clientProfile?.cliente_id);
   const { toast } = useToast();
+  const { startTutorial, hasSeenTutorial } = useTutorial('cliente-aprovacoes');
   
   const [selectedApproval, setSelectedApproval] = useState<string | null>(null);
   const [showApproveDialog, setShowApproveDialog] = useState(false);

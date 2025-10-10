@@ -3,8 +3,11 @@ import { Badge } from '@/components/ui/badge';
 import { useLancamentosContabeis } from '@/hooks/useLancamentosContabeis';
 import { usePlanoContas } from '@/hooks/usePlanoContas';
 import { TrendingUp, TrendingDown, DollarSign } from 'lucide-react';
+import { useTutorial } from '@/hooks/useTutorial';
+import { TutorialButton } from '@/components/TutorialButton';
 
 export default function BalancoPatrimonial() {
+  const { startTutorial, hasSeenTutorial } = useTutorial('financeiro-balanco');
   const { lancamentos } = useLancamentosContabeis();
   const { contas } = usePlanoContas();
 

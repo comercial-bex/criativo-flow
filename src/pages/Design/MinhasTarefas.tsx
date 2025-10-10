@@ -13,6 +13,8 @@ import {
   TrendingUp,
   CheckCircle
 } from 'lucide-react';
+import { useTutorial } from '@/hooks/useTutorial';
+import { TutorialButton } from '@/components/TutorialButton';
 
 interface DesignTask {
   id: string;
@@ -48,6 +50,7 @@ export default function MinhasTarefasDesign() {
 
   const { user } = useAuth();
   const { toast } = useToast();
+  const { startTutorial, hasSeenTutorial } = useTutorial('design-minhas-tarefas');
 
   useEffect(() => {
     if (user?.id) {

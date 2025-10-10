@@ -24,6 +24,8 @@ import {
   MessageSquare,
   Calendar
 } from 'lucide-react';
+import { useTutorial } from '@/hooks/useTutorial';
+import { TutorialButton } from '@/components/TutorialButton';
 
 interface Cliente {
   id: string;

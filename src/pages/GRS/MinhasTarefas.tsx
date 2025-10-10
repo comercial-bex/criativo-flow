@@ -21,6 +21,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { TaskWithDeadline } from '@/utils/statusUtils';
+import { useTutorial } from '@/hooks/useTutorial';
+import { TutorialButton } from '@/components/TutorialButton';
 
 interface MyTask extends TaskWithDeadline {
   descricao?: string;
@@ -42,6 +44,7 @@ interface MyTask extends TaskWithDeadline {
 export default function MinhasTarefas() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { startTutorial, hasSeenTutorial } = useTutorial('grs-minhas-tarefas');
   const [tasks, setTasks] = useState<MyTask[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedTask, setSelectedTask] = useState<MyTask | null>(null);

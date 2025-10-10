@@ -33,6 +33,8 @@ import { usePermissions } from "@/hooks/usePermissions";
 import { supabase } from "@/integrations/supabase/client";
 import { smartToast } from "@/lib/smart-toast";
 import { useQueryClient } from "@tanstack/react-query";
+import { useTutorial } from '@/hooks/useTutorial';
+import { TutorialButton } from '@/components/TutorialButton';
 
 const statusColors = {
   rascunho: "bg-gray-100 text-gray-800",

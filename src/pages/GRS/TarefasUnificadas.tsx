@@ -26,6 +26,8 @@ import {
   BarChart3,
   Video
 } from 'lucide-react';
+import { useTutorial } from '@/hooks/useTutorial';
+import { TutorialButton } from '@/components/TutorialButton';
 
 interface GRSTask {
   id: string;
@@ -65,6 +67,7 @@ export default function TarefasUnificadasGRS() {
   const { user } = useAuth();
   const { toast } = useToast();
   const { permissions, loading: permissionsLoading } = useOperationalPermissions();
+  const { startTutorial, hasSeenTutorial } = useTutorial('grs-tarefas-unificadas');
 
   useEffect(() => {
     fetchData();

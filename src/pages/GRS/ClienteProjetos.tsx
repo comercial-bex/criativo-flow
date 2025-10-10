@@ -25,6 +25,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { useTutorial } from '@/hooks/useTutorial';
+import { TutorialButton } from '@/components/TutorialButton';
 
 interface Cliente {
   id: string;
@@ -53,6 +55,7 @@ export default function ClienteProjetos() {
   const { clienteId } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { startTutorial, hasSeenTutorial } = useTutorial('grs-cliente-projetos');
   
   const [cliente, setCliente] = useState<Cliente | null>(null);
   const [projetos, setProjetos] = useState<Projeto[]>([]);

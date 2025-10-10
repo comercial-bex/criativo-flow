@@ -4,12 +4,15 @@ import { useProfileData } from "@/hooks/useProfileData";
 import { TimelineInteligente } from "@/components/TimelineInteligente";
 import { Card, CardContent } from "@/components/ui/card";
 import { Activity, XCircle } from "lucide-react";
+import { useTutorial } from '@/hooks/useTutorial';
+import { TutorialButton } from '@/components/TutorialButton';
 
 export default function ClienteTimeline() {
   const { user } = useAuth();
   const { getProfileById } = useProfileData();
   const [clienteId, setClienteId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const { startTutorial, hasSeenTutorial } = useTutorial('cliente-timeline');
 
   useEffect(() => {
     const fetchClienteData = async () => {

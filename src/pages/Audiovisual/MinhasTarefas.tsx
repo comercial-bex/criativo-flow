@@ -7,6 +7,8 @@ import { UniversalKanbanBoard } from '@/components/UniversalKanbanBoard';
 import { TrelloStyleTaskModal } from '@/components/TrelloStyleTaskModal';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
+import { useTutorial } from '@/hooks/useTutorial';
+import { TutorialButton } from '@/components/TutorialButton';
 
 // Interface para tarefas do Audiovisual
 interface AudiovisualTask {
@@ -40,6 +42,7 @@ const MinhasTarefasAudiovisual: React.FC = () => {
   const [showTaskModal, setShowTaskModal] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
+  const { startTutorial, hasSeenTutorial } = useTutorial('audiovisual-minhas-tarefas');
 
   // Fetch inicial dos dados - APENAS tarefas atribuídas ao usuário
   const fetchData = async () => {

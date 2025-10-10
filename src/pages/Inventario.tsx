@@ -7,6 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { InventarioModal } from '@/components/Inventario/InventarioModal';
 import { useInventarioItens, useInventarioCategorias } from '@/hooks/useInventario';
+import { useTutorial } from '@/hooks/useTutorial';
+import { TutorialButton } from '@/components/TutorialButton';
 
 export default function Inventario() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -14,6 +16,7 @@ export default function Inventario() {
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedItemId, setSelectedItemId] = useState<string | undefined>();
   const [modalMode, setModalMode] = useState<'view' | 'edit' | 'create'>('create');
+  const { startTutorial, hasSeenTutorial } = useTutorial('inventario');
 
   const { data: itens, isLoading: loadingItens } = useInventarioItens();
   const { data: categorias, isLoading: loadingCategorias } = useInventarioCategorias();

@@ -10,9 +10,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { ClientSelector } from "@/components/ClientSelector";
 import { SimpleHelpModal } from "@/components/SimpleHelpModal";
-import { InteractiveGuideButton } from "@/components/InteractiveGuideButton";
 import { WhatsAppNotifier } from "@/components/WhatsAppNotifier";
 import { useToast } from "@/hooks/use-toast";
+import { useTutorial } from '@/hooks/useTutorial';
+import { TutorialButton } from '@/components/TutorialButton';
 
 interface Cliente {
   id: string;
@@ -40,6 +41,7 @@ export default function GRSAprovacoes() {
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { startTutorial, hasSeenTutorial } = useTutorial('grs-aprovacoes');
 
   useEffect(() => {
     fetchAprovacoes();
@@ -208,7 +210,7 @@ Qualquer dúvida, estamos aqui para ajudar! 💚`;
               Como usar
             </Button>
           </SimpleHelpModal>
-          <InteractiveGuideButton />
+          <TutorialButton onStart={startTutorial} hasSeenTutorial={hasSeenTutorial} />
         </div>
       </div>
 
