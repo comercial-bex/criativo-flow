@@ -19,6 +19,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { useTutorial } from '@/hooks/useTutorial';
+import { TutorialButton } from '@/components/TutorialButton';
 
 interface DashboardStats {
   totalOrcamentos: number;
@@ -87,6 +89,7 @@ export default function AdministrativoDashboard() {
   const [propostasRecentes, setPropostasRecentes] = useState<PropostaRecente[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const { startTutorial, hasSeenTutorial } = useTutorial('administrativo-dashboard');
 
   useEffect(() => {
     fetchDashboardData();
@@ -181,13 +184,14 @@ export default function AdministrativoDashboard() {
           <p className="text-muted-foreground">Visão geral de orçamentos, propostas e assinaturas</p>
         </div>
         <div className="flex gap-2">
-          <Button asChild>
+          <TutorialButton onStart={startTutorial} hasSeenTutorial={hasSeenTutorial} />
+          <Button asChild data-tour="novo-orcamento">
             <Link to="/administrativo/orcamentos">
               <Plus className="mr-2 h-4 w-4" />
               Novo Orçamento
             </Link>
           </Button>
-          <Button variant="outline" asChild>
+          <Button variant="outline" asChild data-tour="nova-proposta">
             <Link to="/administrativo/propostas">
               <FileText className="mr-2 h-4 w-4" />
               Nova Proposta
@@ -197,8 +201,8 @@ export default function AdministrativoDashboard() {
       </div>
 
       {/* Cards de Estatísticas */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4" data-tour="kpis">
+        <Card data-tour="kpi-orcamentos">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total de Orçamentos</CardTitle>
             <FileText className="h-4 w-4 text-muted-foreground" />

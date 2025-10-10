@@ -7,6 +7,8 @@ import { BuilderComponent } from '@/components/BuilderComponent';
 import { SectionHeader } from '@/components/SectionHeader';
 import { StatsGrid } from '@/components/StatsGrid';
 import { QuickActions } from '@/components/QuickActions';
+import { useTutorial } from '@/hooks/useTutorial';
+import { TutorialButton } from '@/components/TutorialButton';
 
 interface DashboardStats {
   totalClientes: number;
@@ -24,6 +26,7 @@ const Dashboard = () => {
   });
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const { startTutorial, hasSeenTutorial } = useTutorial('dashboard');
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -95,28 +98,32 @@ const Dashboard = () => {
       value: loading ? '...' : stats.totalClientes,
       icon: Users,
       description: 'Clientes cadastrados',
-      trend: { value: '12%', isPositive: true }
+      trend: { value: '12%', isPositive: true },
+      dataTour: 'kpi-clientes'
     },
     {
       title: 'Projetos Ativos',
       value: loading ? '...' : stats.totalProjetos,
       icon: FolderOpen,
       description: 'Projetos em andamento',
-      trend: { value: '5%', isPositive: true }
+      trend: { value: '5%', isPositive: true },
+      dataTour: 'kpi-projetos'
     },
     {
       title: 'Leads no Funil',
       value: loading ? '...' : stats.totalLeads,
       icon: Target,
       description: 'Oportunidades ativas',
-      trend: { value: '3%', isPositive: true }
+      trend: { value: '3%', isPositive: true },
+      dataTour: 'kpi-leads'
     },
     {
       title: 'Tarefas Pendentes',
       value: loading ? '...' : stats.tarefasPendentes,
       icon: Clock,
       description: 'Aguardando execução',
-      trend: { value: '2%', isPositive: false }
+      trend: { value: '2%', isPositive: false },
+      dataTour: 'kpi-tarefas'
     }
   ];
 
@@ -146,19 +153,26 @@ const Dashboard = () => {
       {/* Builder.io Layout */}
       <BuilderComponent model="page" />
 
-      <SectionHeader
-        title="Dashboard"
-        description="Visão geral dos seus dados e métricas importantes"
-        icon={BarChart3}
-      />
+      <div className="flex items-center justify-between">
+        <SectionHeader
+          title="Dashboard"
+          description="Visão geral dos seus dados e métricas importantes"
+          icon={BarChart3}
+        />
+        <TutorialButton onStart={startTutorial} hasSeenTutorial={hasSeenTutorial} />
+      </div>
 
-      <StatsGrid stats={statsData} />
+      <div data-tour="kpis">
+        <StatsGrid stats={statsData} />
+      </div>
 
-      <QuickActions
-        title="Acesso Rápido"
-        actions={quickActions}
-        columns={4}
-      />
+      <div data-tour="acoes-rapidas">
+        <QuickActions
+          title="Acesso Rápido"
+          actions={quickActions}
+          columns={4}
+        />
+      </div>
     </div>
   );
 };

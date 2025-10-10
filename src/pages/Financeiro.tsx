@@ -19,6 +19,8 @@ import { useToast } from "@/hooks/use-toast";
 import { ProdutoSelector } from "@/components/Financeiro/ProdutoSelector";
 import { CadastroProdutoRapido } from "@/components/Financeiro/CadastroProdutoRapido";
 import { useProdutosFinanceiro } from "@/hooks/useProdutosFinanceiro";
+import { useTutorial } from '@/hooks/useTutorial';
+import { TutorialButton } from '@/components/TutorialButton';
 
 interface CategoriaFinanceira {
   id: string;
@@ -67,6 +69,7 @@ export default function Financeiro() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<TransacaoFinanceira | null>(null);
   const { toast } = useToast();
+  const { startTutorial, hasSeenTutorial } = useTutorial('financeiro-transacoes');
 
   const [modalCadastroRapido, setModalCadastroRapido] = useState(false);
   const { produtosDisponiveis, createTempData } = useProdutosFinanceiro();
@@ -330,11 +333,12 @@ export default function Financeiro() {
             Gerencie suas contas a pagar e receber de forma completa
           </p>
         </div>
+        <TutorialButton onStart={startTutorial} hasSeenTutorial={hasSeenTutorial} />
       </div>
 
       {/* Cards de Resumo */}
-      <div className="grid gap-6 md:grid-cols-4">
-        <Card className="border-l-4 border-l-green-500 shadow-md hover:shadow-lg transition-shadow">
+      <div className="grid gap-6 md:grid-cols-4" data-tour="kpis">
+        <Card className="border-l-4 border-l-green-500 shadow-md hover:shadow-lg transition-shadow" data-tour="kpi-receber">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Total a Receber</CardTitle>
             <div className="p-2 bg-green-100 dark:bg-green-900/20 rounded-lg">
@@ -351,7 +355,7 @@ export default function Financeiro() {
           </CardContent>
         </Card>
 
-        <Card className="border-l-4 border-l-red-500 shadow-md hover:shadow-lg transition-shadow">
+        <Card className="border-l-4 border-l-red-500 shadow-md hover:shadow-lg transition-shadow" data-tour="kpi-pagar">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Total a Pagar</CardTitle>
             <div className="p-2 bg-red-100 dark:bg-red-900/20 rounded-lg">
@@ -411,7 +415,7 @@ export default function Financeiro() {
         <h2 className="text-2xl font-bold">Transações do Mês</h2>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button onClick={() => { resetForm(); setIsDialogOpen(true); }} className="shadow-md">
+            <Button onClick={() => { resetForm(); setIsDialogOpen(true); }} className="shadow-md" data-tour="nova-transacao">
               <Plus className="mr-2 h-4 w-4" />
               Nova Transação
             </Button>
