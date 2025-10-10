@@ -320,76 +320,86 @@ export default function Financeiro() {
   const saldoLiquido = totalReceber - totalPagar;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 p-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Financeiro</h1>
-          <p className="text-muted-foreground">
-            Gerencie contas a pagar e receber
+          <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+            Lançamentos Financeiros
+          </h1>
+          <p className="text-muted-foreground mt-2">
+            Gerencie suas contas a pagar e receber de forma completa
           </p>
         </div>
       </div>
 
       {/* Cards de Resumo */}
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card>
+      <div className="grid gap-6 md:grid-cols-4">
+        <Card className="border-l-4 border-l-green-500 shadow-md hover:shadow-lg transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total a Receber</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-muted-foreground">Total a Receber</CardTitle>
+            <div className="p-2 bg-green-100 dark:bg-green-900/20 rounded-lg">
+              <TrendingUp className="h-5 w-5 text-green-600 dark:text-green-400" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">
-              R$ {totalReceber.toFixed(2)}
+            <div className="text-3xl font-bold text-green-600 dark:text-green-400">
+              R$ {totalReceber.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </div>
-            <p className="text-xs text-muted-foreground">
-              +12.5% em relação ao mês anterior
+            <p className="text-xs text-muted-foreground mt-1">
+              Receitas pendentes e pagas
             </p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-l-4 border-l-red-500 shadow-md hover:shadow-lg transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total a Pagar</CardTitle>
-            <TrendingDown className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-muted-foreground">Total a Pagar</CardTitle>
+            <div className="p-2 bg-red-100 dark:bg-red-900/20 rounded-lg">
+              <TrendingDown className="h-5 w-5 text-red-600 dark:text-red-400" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-600">
-              R$ {totalPagar.toFixed(2)}
+            <div className="text-3xl font-bold text-red-600 dark:text-red-400">
+              R$ {totalPagar.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </div>
-            <p className="text-xs text-muted-foreground">
-              +8.2% em relação ao mês anterior
+            <p className="text-xs text-muted-foreground mt-1">
+              Despesas pendentes e pagas
             </p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className={`border-l-4 shadow-md hover:shadow-lg transition-shadow ${saldoLiquido >= 0 ? 'border-l-primary' : 'border-l-orange-500'}`}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Saldo Líquido</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-muted-foreground">Saldo Líquido</CardTitle>
+            <div className={`p-2 rounded-lg ${saldoLiquido >= 0 ? 'bg-primary/10' : 'bg-orange-100 dark:bg-orange-900/20'}`}>
+              <DollarSign className={`h-5 w-5 ${saldoLiquido >= 0 ? 'text-primary' : 'text-orange-600 dark:text-orange-400'}`} />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className={`text-2xl font-bold ${saldoLiquido >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-              R$ {saldoLiquido.toFixed(2)}
+            <div className={`text-3xl font-bold ${saldoLiquido >= 0 ? 'text-primary' : 'text-orange-600 dark:text-orange-400'}`}>
+              R$ {saldoLiquido.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-muted-foreground mt-1">
               Diferença entre receitas e despesas
             </p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-l-4 border-l-blue-500 shadow-md hover:shadow-lg transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Vencendo Hoje</CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-muted-foreground">Vencendo Hoje</CardTitle>
+            <div className="p-2 bg-blue-100 dark:bg-blue-900/20 rounded-lg">
+              <Clock className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">
               {transacoes.filter(t => 
                 new Date(t.data_vencimento).toDateString() === new Date().toDateString() &&
                 t.status === "pendente"
               ).length}
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-muted-foreground mt-1">
               transações para hoje
             </p>
           </CardContent>
@@ -398,10 +408,10 @@ export default function Financeiro() {
 
       {/* Transações */}
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">Transações</h2>
+        <h2 className="text-2xl font-bold">Transações do Mês</h2>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button onClick={() => { resetForm(); setIsDialogOpen(true); }}>
+            <Button onClick={() => { resetForm(); setIsDialogOpen(true); }} className="shadow-md">
               <Plus className="mr-2 h-4 w-4" />
               Nova Transação
             </Button>
@@ -691,15 +701,18 @@ export default function Financeiro() {
       </div>
 
       {/* Filtros */}
-      <div className="flex gap-4 mb-4">
-        <Input
-          placeholder="Buscar transações..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="max-w-sm"
-        />
+      <div className="flex gap-4 mb-4 items-center bg-card p-4 rounded-lg border shadow-sm">
+        <div className="relative flex-1 max-w-sm">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Buscar transações..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10"
+          />
+        </div>
         <Select value={filterTipo} onValueChange={setFilterTipo}>
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="w-[200px]">
             <SelectValue placeholder="Filtrar por tipo" />
           </SelectTrigger>
           <SelectContent>
@@ -709,7 +722,7 @@ export default function Financeiro() {
           </SelectContent>
         </Select>
         <Select value={filterStatus} onValueChange={setFilterStatus}>
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="w-[200px]">
             <SelectValue placeholder="Filtrar por status" />
           </SelectTrigger>
           <SelectContent>
@@ -723,39 +736,39 @@ export default function Financeiro() {
       </div>
 
       {/* Tabela de Transações */}
-      <Card>
-        <CardHeader>
+      <Card className="shadow-md">
+        <CardHeader className="bg-muted/50">
           <CardTitle>Lista de Transações</CardTitle>
           <CardDescription>
-            Todas as transações financeiras cadastradas
+            Todas as transações financeiras cadastradas no sistema
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-0">
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead>Título</TableHead>
-                <TableHead>Tipo</TableHead>
-                <TableHead>Valor</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Vencimento</TableHead>
-                <TableHead>Categoria</TableHead>
-                <TableHead>Cliente</TableHead>
-                <TableHead className="text-right">Ações</TableHead>
+              <TableRow className="bg-muted/30 hover:bg-muted/30">
+                <TableHead className="font-semibold">Título</TableHead>
+                <TableHead className="font-semibold">Tipo</TableHead>
+                <TableHead className="font-semibold">Valor</TableHead>
+                <TableHead className="font-semibold">Status</TableHead>
+                <TableHead className="font-semibold">Vencimento</TableHead>
+                <TableHead className="font-semibold">Categoria</TableHead>
+                <TableHead className="font-semibold">Cliente</TableHead>
+                <TableHead className="text-right font-semibold">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredTransacoes.map((transacao) => (
-                <TableRow key={transacao.id}>
+                <TableRow key={transacao.id} className="hover:bg-muted/50 transition-colors">
                   <TableCell className="font-medium">{transacao.titulo}</TableCell>
                   <TableCell>
-                    <Badge variant={transacao.tipo === "receber" ? "default" : "secondary"}>
+                    <Badge variant={transacao.tipo === "receber" ? "default" : "secondary"} className="font-medium">
                       {transacao.tipo === "receber" ? "A Receber" : "A Pagar"}
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    <span className={transacao.tipo === "receber" ? "text-green-600" : "text-red-600"}>
-                      R$ {transacao.valor.toFixed(2)}
+                    <span className={`font-semibold ${transacao.tipo === "receber" ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}>
+                      R$ {transacao.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </span>
                   </TableCell>
                   <TableCell>
@@ -763,21 +776,21 @@ export default function Financeiro() {
                       {transacao.status}
                     </Badge>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="text-muted-foreground">
                     {new Date(transacao.data_vencimento).toLocaleDateString("pt-BR")}
                   </TableCell>
                   <TableCell>
                     {transacao.categorias_financeiras && (
                       <div className="flex items-center gap-2">
                         <div
-                          className="w-3 h-3 rounded-full"
+                          className="w-3 h-3 rounded-full shadow-sm"
                           style={{ backgroundColor: transacao.categorias_financeiras.cor }}
                         />
-                        {transacao.categorias_financeiras.nome}
+                        <span className="text-sm">{transacao.categorias_financeiras.nome}</span>
                       </div>
                     )}
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="text-muted-foreground">
                     {transacao.clientes?.nome || "-"}
                   </TableCell>
                   <TableCell className="text-right">
@@ -786,6 +799,7 @@ export default function Financeiro() {
                         variant="outline"
                         size="sm"
                         onClick={() => handleEdit(transacao)}
+                        className="hover:bg-primary/10 hover:text-primary hover:border-primary transition-colors"
                       >
                         <Edit2 className="h-4 w-4" />
                       </Button>
@@ -793,6 +807,7 @@ export default function Financeiro() {
                         variant="outline"
                         size="sm"
                         onClick={() => handleDelete(transacao.id)}
+                        className="hover:bg-destructive/10 hover:text-destructive hover:border-destructive transition-colors"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -802,8 +817,12 @@ export default function Financeiro() {
               ))}
               {filteredTransacoes.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
-                    Nenhuma transação encontrada.
+                  <TableCell colSpan={8} className="text-center py-12">
+                    <div className="flex flex-col items-center gap-2">
+                      <Search className="h-8 w-8 text-muted-foreground/50" />
+                      <p className="text-muted-foreground font-medium">Nenhuma transação encontrada</p>
+                      <p className="text-sm text-muted-foreground/70">Tente ajustar os filtros ou criar uma nova transação</p>
+                    </div>
                   </TableCell>
                 </TableRow>
               )}
