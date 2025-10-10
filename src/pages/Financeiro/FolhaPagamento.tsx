@@ -1,21 +1,33 @@
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { useFolhaPagamento } from '@/hooks/useFolhaPagamento';
-import { DollarSign, Download, FileText, Users } from 'lucide-react';
+import { useFolhaPagamento, FolhaItem } from '@/hooks/useFolhaPagamento';
 import { formatCurrency } from '@/lib/utils';
-import { motion } from 'framer-motion';
+import { Download, FileText, Calendar, TrendingUp, DollarSign, Users } from 'lucide-react';
 import { toast } from 'sonner';
+import { PagamentoFolhaModal } from '@/components/Financeiro/PagamentoFolhaModal';
+import { motion } from 'framer-motion';
 
 export default function FolhaPagamento() {
   const currentDate = new Date();
   const currentMonth = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-01`;
   
   const [competencia, setCompetencia] = useState(currentMonth);
-  const { folhas, itens, isLoading, processarFolha, isProcessando } = useFolhaPagamento(competencia);
+  const [itemSelecionado, setItemSelecionado] = useState<FolhaItem | null>(null);
+  const [modalPagamentoAberto, setModalPagamentoAberto] = useState(false);
+  
+  const { 
+    folhas, 
+    itens, 
+    isLoading, 
+    processarFolha, 
+    isProcessando,
+    registrarPagamento,
+    isRegistrandoPagamento,
+  } = useFolhaPagamento(competencia);
   
   const folhaAtual = folhas[0];
 
@@ -233,18 +245,19 @@ export default function FolhaPagamento() {
                   <th className="px-6 py-4 text-right text-sm font-semibold">Descontos (R$)</th>
                   <th className="px-6 py-4 text-right text-sm font-semibold">Líquido (R$)</th>
                   <th className="px-6 py-4 text-center text-sm font-semibold">Situação</th>
+                  <th className="px-6 py-4 text-center text-sm font-semibold">Ações</th>
                 </tr>
               </thead>
               <tbody>
                 {isLoading ? (
                   <tr>
-                    <td colSpan={8} className="px-6 py-12 text-center text-muted-foreground">
+                    <td colSpan={9} className="px-6 py-12 text-center text-muted-foreground">
                       Carregando...
                     </td>
                   </tr>
                 ) : itens.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="px-6 py-12 text-center text-muted-foreground">
+                    <td colSpan={9} className="px-6 py-12 text-center text-muted-foreground">
                       Nenhum item encontrado. Clique em "Processar Folha" para gerar.
                     </td>
                   </tr>
@@ -278,6 +291,23 @@ export default function FolhaPagamento() {
                           {item.status}
                         </Badge>
                       </td>
+                      <td className="px-6 py-4 text-center">
+                        {item.status === 'pendente' && (
+                          <Button
+                            size="sm"
+                            onClick={() => handleAbrirModalPagamento(item)}
+                            className="gap-2"
+                          >
+                            <DollarSign className="h-4 w-4" />
+                            Pagar
+                          </Button>
+                        )}
+                        {item.status === 'pago' && item.data_pagamento && (
+                          <span className="text-sm text-muted-foreground">
+                            Pago em {new Date(item.data_pagamento).toLocaleDateString('pt-BR')}
+                          </span>
+                        )}
+                      </td>
                     </tr>
                   ))
                 )}
@@ -295,7 +325,7 @@ export default function FolhaPagamento() {
                     <td className="px-6 py-4 text-right">
                       {formatCurrency(itens.reduce((sum, i) => sum + i.liquido, 0))}
                     </td>
-                    <td></td>
+                    <td colSpan={2}></td>
                   </tr>
                 </tfoot>
               )}
@@ -303,6 +333,14 @@ export default function FolhaPagamento() {
           </div>
         </CardContent>
       </Card>
+
+      <PagamentoFolhaModal
+        open={modalPagamentoAberto}
+        onOpenChange={setModalPagamentoAberto}
+        item={itemSelecionado}
+        onConfirm={handleConfirmarPagamento}
+        isLoading={isRegistrandoPagamento}
+      />
     </div>
   );
 }
