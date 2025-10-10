@@ -12,6 +12,8 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { useTutorial } from "@/hooks/useTutorial";
+import { TutorialButton } from "@/components/TutorialButton";
 
 interface Cliente {
   id: string;
@@ -68,6 +70,7 @@ export default function Orcamentos() {
   const [editingOrcamento, setEditingOrcamento] = useState<Orcamento | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const { startTutorial, hasSeenTutorial, isActive } = useTutorial('administrativo-orcamentos');
 
   // Form state
   const [formData, setFormData] = useState<{
@@ -327,13 +330,15 @@ export default function Orcamentos() {
           <h1 className="text-3xl font-bold">Orçamentos</h1>
           <p className="text-muted-foreground">Gerencie orçamentos e propostas comerciais</p>
         </div>
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogTrigger asChild>
-            <Button onClick={() => { resetForm(); setDialogOpen(true); }}>
-              <Plus className="mr-2 h-4 w-4" />
-              Novo Orçamento
-            </Button>
-          </DialogTrigger>
+        <div className="flex gap-2">
+          <TutorialButton onStart={startTutorial} hasSeenTutorial={hasSeenTutorial} />
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <DialogTrigger asChild>
+              <Button data-tour="novo-orcamento" onClick={() => { resetForm(); setDialogOpen(true); }}>
+                <Plus className="mr-2 h-4 w-4" />
+                Novo Orçamento
+              </Button>
+            </DialogTrigger>
           <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>
@@ -517,7 +522,8 @@ export default function Orcamentos() {
               </div>
             </form>
           </DialogContent>
-        </Dialog>
+          </Dialog>
+        </div>
       </div>
 
       {/* Lista de Orçamentos */}

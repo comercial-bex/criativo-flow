@@ -55,8 +55,10 @@ import {
   Eye,
   Edit3,
   Trash2
- } from 'lucide-react';
+  } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useTutorial } from '@/hooks/useTutorial';
+import { TutorialButton } from '@/components/TutorialButton';
 
 interface Lead {
   id: string;
@@ -240,6 +242,7 @@ const CRM = () => {
     observacoes: ''
   });
   const { toast } = useToast();
+  const { startTutorial, hasSeenTutorial, isActive } = useTutorial('crm-funil');
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -476,19 +479,25 @@ const CRM = () => {
 
   return (
     <div className="p-6 space-y-8 animate-fade-in">
-      <SectionHeader
-        title="CRM & Leads"
-        description="Gerencie leads, contatos e oportunidades de negócio"
-        icon={Users}
-        badge="Pro"
-        action={{
-          label: "Novo Lead",
-          onClick: () => setDialogOpen(true),
-          icon: Plus
-        }}
-      />
+      <div className="flex items-center justify-between">
+        <SectionHeader
+          title="CRM & Leads"
+          description="Gerencie leads, contatos e oportunidades de negócio"
+          icon={Users}
+          badge="Pro"
+        />
+        <div className="flex gap-2">
+          <TutorialButton onStart={startTutorial} hasSeenTutorial={hasSeenTutorial} />
+          <Button data-tour="novo-lead" onClick={() => setDialogOpen(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            Novo Lead
+          </Button>
+        </div>
+      </div>
 
-      <StatsGrid stats={statsData} />
+      <div data-tour="kpis-funil">
+        <StatsGrid stats={statsData} />
+      </div>
 
       <Tabs defaultValue="kanban" className="space-y-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">

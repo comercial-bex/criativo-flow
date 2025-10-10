@@ -10,6 +10,8 @@ import { Calendar, Video, Camera, Edit, Clock, Target, TrendingUp, CheckCircle }
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { GamificationWidget } from "@/components/GamificationWidget";
+import { useTutorial } from "@/hooks/useTutorial";
+import { TutorialButton } from "@/components/TutorialButton";
 
 interface AudiovisualMeta {
   id: string;
@@ -45,6 +47,7 @@ export default function AudiovisualDashboard() {
   const [projetos, setProjetos] = useState<ProjetoAudiovisual[]>([]);
   const [captacoes, setCaptacoes] = useState<CaptacaoAgenda[]>([]);
   const [loading, setLoading] = useState(true);
+  const { startTutorial, hasSeenTutorial, isActive } = useTutorial('audiovisual-dashboard');
 
   useEffect(() => {
     if (user) {
@@ -141,14 +144,17 @@ export default function AudiovisualDashboard() {
             Acompanhe seu desempenho e projetos em andamento
           </p>
         </div>
-        <Button className="gap-2">
-          <Calendar className="h-4 w-4" />
-          Nova Captação
-        </Button>
+        <div className="flex gap-2">
+          <TutorialButton onStart={startTutorial} hasSeenTutorial={hasSeenTutorial} />
+          <Button data-tour="nova-captacao" className="gap-2">
+            <Calendar className="h-4 w-4" />
+            Nova Captação
+          </Button>
+        </div>
       </div>
 
       {/* KPIs Row */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4" data-tour="kpis-audiovisual">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Meta Projetos</CardTitle>

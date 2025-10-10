@@ -11,6 +11,8 @@ import { useNavigate } from "react-router-dom";
 import { ClientSelector } from "@/components/ClientSelector";
 import { WhatsAppNotifier } from "@/components/WhatsAppNotifier";
 import { AIContentGenerator } from "@/components/AIContentGenerator";
+import { useTutorial } from "@/hooks/useTutorial";
+import { TutorialButton } from "@/components/TutorialButton";
 
 interface Cliente {
   id: string;
@@ -37,6 +39,7 @@ export default function GRSPlanejamentos() {
   const [statusFilter, setStatusFilter] = useState("todos");
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { startTutorial, hasSeenTutorial, isActive } = useTutorial('grs-planejamentos');
 
   useEffect(() => {
     fetchPlanejamentos();
@@ -147,6 +150,7 @@ Em breve você receberá para aprovação. Estamos criando algo incrível para s
           <p className="text-muted-foreground">Gerencie todos os planejamentos dos clientes</p>
         </div>
         <div className="flex gap-2">
+          <TutorialButton onStart={startTutorial} hasSeenTutorial={hasSeenTutorial} />
           {/* PHASE 3: AI CONTENT GENERATION */}
           <AIContentGenerator
             type="post"
@@ -158,7 +162,7 @@ Em breve você receberá para aprovação. Estamos criando algo incrível para s
               </Button>
             }
           />
-          <Button onClick={() => navigate('/grs/dashboard')}>
+          <Button data-tour="novo-planejamento" onClick={() => navigate('/grs/dashboard')}>
             <Plus className="h-4 w-4 mr-2" />
             Novo Planejamento
           </Button>
@@ -198,7 +202,7 @@ Em breve você receberá para aprovação. Estamos criando algo incrível para s
       </div>
 
       {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-4" data-tour="kpis-planejamentos">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total</CardTitle>

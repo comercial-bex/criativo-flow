@@ -8,6 +8,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { InstagramPreview } from "@/components/InstagramPreview";
 import { ClientSelector } from "@/components/ClientSelector";
+import { useTutorial } from "@/hooks/useTutorial";
+import { TutorialButton } from "@/components/TutorialButton";
 
 interface Cliente {
   id: string;
@@ -37,6 +39,7 @@ export default function GRSCalendarioEditorial() {
   const [viewMode, setViewMode] = useState<"calendario" | "lista">("calendario");
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [selectedMonth, setSelectedMonth] = useState(new Date());
+  const { startTutorial, hasSeenTutorial, isActive } = useTutorial('grs-calendario');
 
   useEffect(() => {
     fetchData();
@@ -151,7 +154,9 @@ export default function GRSCalendarioEditorial() {
         </div>
         
         <div className="flex items-center gap-2">
+          <TutorialButton onStart={startTutorial} hasSeenTutorial={hasSeenTutorial} />
           <Button
+            data-tour="view-calendario"
             variant={viewMode === "calendario" ? "default" : "outline"}
             onClick={() => setViewMode("calendario")}
             size="sm"
@@ -160,6 +165,7 @@ export default function GRSCalendarioEditorial() {
             Calendário
           </Button>
           <Button
+            data-tour="view-lista"
             variant={viewMode === "lista" ? "default" : "outline"}
             onClick={() => setViewMode("lista")}
             size="sm"

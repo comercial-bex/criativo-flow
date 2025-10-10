@@ -12,6 +12,8 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { useTutorial } from "@/hooks/useTutorial";
+import { TutorialButton } from "@/components/TutorialButton";
 
 interface Orcamento {
   id: string;
@@ -64,6 +66,7 @@ export default function Propostas() {
   const [editingProposta, setEditingProposta] = useState<Proposta | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const { startTutorial, hasSeenTutorial, isActive } = useTutorial('administrativo-propostas');
 
   // Form state
   const [formData, setFormData] = useState({
@@ -325,13 +328,15 @@ export default function Propostas() {
           <h1 className="text-3xl font-bold">Propostas Comerciais</h1>
           <p className="text-muted-foreground">Gerencie propostas e assinaturas eletrônicas</p>
         </div>
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogTrigger asChild>
-            <Button onClick={() => { resetForm(); setDialogOpen(true); }}>
-              <Plus className="mr-2 h-4 w-4" />
-              Nova Proposta
-            </Button>
-          </DialogTrigger>
+        <div className="flex gap-2">
+          <TutorialButton onStart={startTutorial} hasSeenTutorial={hasSeenTutorial} />
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <DialogTrigger asChild>
+              <Button data-tour="nova-proposta" onClick={() => { resetForm(); setDialogOpen(true); }}>
+                <Plus className="mr-2 h-4 w-4" />
+                Nova Proposta
+              </Button>
+            </DialogTrigger>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
               <DialogTitle>
@@ -385,11 +390,12 @@ export default function Propostas() {
               </div>
             </form>
           </DialogContent>
-        </Dialog>
+          </Dialog>
+        </div>
       </div>
 
       {/* Estatísticas */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4" data-tour="kpis-propostas">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total de Propostas</CardTitle>
