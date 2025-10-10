@@ -12,6 +12,7 @@ import { downloadHolerite } from '@/utils/holeritePdfGenerator';
 import { toast } from 'sonner';
 import { PagamentoFolhaModal } from '@/components/Financeiro/PagamentoFolhaModal';
 import { DetalhamentoFiscalModal } from '@/components/Financeiro/DetalhamentoFiscalModal';
+import { RelatoriosFiscaisModal } from '@/components/Financeiro/RelatoriosFiscaisModal';
 import { SimuladorFolha } from '@/components/Financeiro/SimuladorFolha';
 import { ComparativoMensal } from '@/components/Financeiro/ComparativoMensal';
 import { FolhaPagamentoStepper } from '@/components/Financeiro/FolhaPagamentoStepper';
@@ -29,6 +30,7 @@ export default function FolhaPagamento() {
   const [itemSelecionado, setItemSelecionado] = useState<FolhaItem | null>(null);
   const [modalPagamentoAberto, setModalPagamentoAberto] = useState(false);
   const [modalDetalhamentoAberto, setModalDetalhamentoAberto] = useState(false);
+  const [relatoriosFiscaisAberto, setRelatoriosFiscaisAberto] = useState(false);
   const [simuladorAberto, setSimuladorAberto] = useState(false);
   const [stepperAberto, setStepperAberto] = useState(false);
   
@@ -181,6 +183,13 @@ export default function FolhaPagamento() {
           </p>
         </div>
         <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={() => setRelatoriosFiscaisAberto(true)}
+          >
+            <FileText className="h-4 w-4 mr-2" />
+            Relatórios Fiscais
+          </Button>
           <Button
             variant="outline"
             onClick={() => setSimuladorAberto(true)}
@@ -507,6 +516,11 @@ export default function FolhaPagamento() {
       <SimuladorFolha
         open={simuladorAberto}
         onOpenChange={setSimuladorAberto}
+      />
+
+      <RelatoriosFiscaisModal
+        open={relatoriosFiscaisAberto}
+        onOpenChange={setRelatoriosFiscaisAberto}
       />
     </div>
   );
