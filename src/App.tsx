@@ -737,31 +737,31 @@ function App() {
                 
                 {/* RH routes */}
                 <Route path="/rh/colaboradores" element={
-                  <ProtectedRoute allowedRoles={['admin', 'gestor', 'financeiro']}>
+                  <ProtectedRoute module="rh" action="canView">
                     <Layout><Colaboradores /></Layout>
                   </ProtectedRoute>
                 } />
                 
                 <Route path="/rh/colaboradores/:id" element={
-                  <ProtectedRoute allowedRoles={['admin', 'gestor', 'financeiro']}>
+                  <ProtectedRoute module="rh" action="canView">
                     <Layout><ColaboradorDetalhes /></Layout>
                   </ProtectedRoute>
                 } />
                 
                 <Route path="/rh/ponto" element={
-                  <ProtectedRoute allowedRoles={['admin', 'gestor', 'financeiro']}>
+                  <ProtectedRoute module="rh" action="canView">
                     <Layout><FolhaPonto /></Layout>
                   </ProtectedRoute>
                 } />
                 
                 <Route path="/rh/folha" element={
-                  <ProtectedRoute allowedRoles={['admin', 'gestor', 'financeiro']}>
+                  <ProtectedRoute module="rh" action="canView">
                     <Layout><FolhaPagamento /></Layout>
                   </ProtectedRoute>
                 } />
                 
                 <Route path="/rh/balancete" element={
-                  <ProtectedRoute allowedRoles={['admin', 'gestor', 'financeiro']}>
+                  <ProtectedRoute module="rh" action="canView">
                     <Layout><BalanceteContabil /></Layout>
                   </ProtectedRoute>
                 } />
