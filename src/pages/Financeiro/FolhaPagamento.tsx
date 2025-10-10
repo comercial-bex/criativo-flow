@@ -6,7 +6,8 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { useFolhaPagamento, FolhaItem } from '@/hooks/useFolhaPagamento';
 import { formatCurrency } from '@/lib/utils';
-import { Download, FileText, Calendar, TrendingUp, DollarSign, Users, Calculator } from 'lucide-react';
+import { Download, FileText, Calendar, TrendingUp, DollarSign, Users, Calculator, FileDown } from 'lucide-react';
+import { downloadHolerite } from '@/utils/holeritePdfGenerator';
 import { toast } from 'sonner';
 import { PagamentoFolhaModal } from '@/components/Financeiro/PagamentoFolhaModal';
 import { DetalhamentoFiscalModal } from '@/components/Financeiro/DetalhamentoFiscalModal';
@@ -80,6 +81,27 @@ export default function FolhaPagamento() {
     link.click();
     
     toast.success('✅ Folha exportada com sucesso!');
+  };
+
+  const handleDownloadHolerite = (item: FolhaItem) => {
+    if (!item.colaborador) {
+      toast.error('Dados do colaborador não encontrados');
+      return;
+    }
+
+    downloadHolerite({
+      colaborador: item.colaborador,
+      competencia,
+      base_calculo: item.base_calculo,
+      proventos: item.proventos || [],
+      descontos: item.descontos || [],
+      encargos: item.encargos || [],
+      total_proventos: item.total_proventos,
+      total_descontos: item.total_descontos,
+      liquido: item.liquido,
+    });
+
+    toast.success('✅ Holerite gerado com sucesso!');
   };
 
   const getStatusColor = (status: string) => {
@@ -299,7 +321,7 @@ export default function FolhaPagamento() {
                         </Badge>
                       </td>
                       <td className="px-6 py-4 text-center">
-                        <div className="flex items-center gap-2 justify-center">
+                        <div className="flex items-center gap-2 justify-center flex-wrap">
                           <Button
                             size="sm"
                             variant="outline"
@@ -308,6 +330,15 @@ export default function FolhaPagamento() {
                           >
                             <Calculator className="h-4 w-4" />
                             Ver Cálculos
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleDownloadHolerite(item)}
+                            className="gap-2"
+                          >
+                            <FileDown className="h-4 w-4" />
+                            Holerite
                           </Button>
                           {item.status === 'pendente' && (
                             <Button
