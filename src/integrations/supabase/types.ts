@@ -2351,6 +2351,147 @@ export type Database = {
           },
         ]
       }
+      financeiro_folha: {
+        Row: {
+          ano: number
+          centro_custo: string | null
+          competencia: string
+          created_at: string | null
+          fechada_em: string | null
+          fechada_por: string | null
+          id: string
+          mes: number
+          processada_em: string | null
+          processada_por: string | null
+          status: Database["public"]["Enums"]["status_folha"] | null
+          total_colaboradores: number | null
+          total_descontos: number | null
+          total_encargos: number | null
+          total_liquido: number | null
+          total_proventos: number | null
+          unidade_filial: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          ano: number
+          centro_custo?: string | null
+          competencia: string
+          created_at?: string | null
+          fechada_em?: string | null
+          fechada_por?: string | null
+          id?: string
+          mes: number
+          processada_em?: string | null
+          processada_por?: string | null
+          status?: Database["public"]["Enums"]["status_folha"] | null
+          total_colaboradores?: number | null
+          total_descontos?: number | null
+          total_encargos?: number | null
+          total_liquido?: number | null
+          total_proventos?: number | null
+          unidade_filial?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          ano?: number
+          centro_custo?: string | null
+          competencia?: string
+          created_at?: string | null
+          fechada_em?: string | null
+          fechada_por?: string | null
+          id?: string
+          mes?: number
+          processada_em?: string | null
+          processada_por?: string | null
+          status?: Database["public"]["Enums"]["status_folha"] | null
+          total_colaboradores?: number | null
+          total_descontos?: number | null
+          total_encargos?: number | null
+          total_liquido?: number | null
+          total_proventos?: number | null
+          unidade_filial?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      financeiro_folha_itens: {
+        Row: {
+          base_calculo: number | null
+          colaborador_id: string
+          comprovante_url: string | null
+          created_at: string | null
+          data_pagamento: string | null
+          descontos: Json | null
+          encargos: Json | null
+          folha_id: string
+          forma_pagamento: string | null
+          id: string
+          liquido: number | null
+          pago_por: string | null
+          proventos: Json | null
+          status: Database["public"]["Enums"]["status_item_folha"] | null
+          total_descontos: number | null
+          total_encargos: number | null
+          total_proventos: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          base_calculo?: number | null
+          colaborador_id: string
+          comprovante_url?: string | null
+          created_at?: string | null
+          data_pagamento?: string | null
+          descontos?: Json | null
+          encargos?: Json | null
+          folha_id: string
+          forma_pagamento?: string | null
+          id?: string
+          liquido?: number | null
+          pago_por?: string | null
+          proventos?: Json | null
+          status?: Database["public"]["Enums"]["status_item_folha"] | null
+          total_descontos?: number | null
+          total_encargos?: number | null
+          total_proventos?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          base_calculo?: number | null
+          colaborador_id?: string
+          comprovante_url?: string | null
+          created_at?: string | null
+          data_pagamento?: string | null
+          descontos?: Json | null
+          encargos?: Json | null
+          folha_id?: string
+          forma_pagamento?: string | null
+          id?: string
+          liquido?: number | null
+          pago_por?: string | null
+          proventos?: Json | null
+          status?: Database["public"]["Enums"]["status_item_folha"] | null
+          total_descontos?: number | null
+          total_encargos?: number | null
+          total_proventos?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financeiro_folha_itens_colaborador_id_fkey"
+            columns: ["colaborador_id"]
+            isOneToOne: false
+            referencedRelation: "rh_colaboradores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financeiro_folha_itens_folha_id_fkey"
+            columns: ["folha_id"]
+            isOneToOne: false
+            referencedRelation: "financeiro_folha"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       financeiro_previsao: {
         Row: {
           created_at: string
@@ -2394,6 +2535,60 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      financeiro_rubricas: {
+        Row: {
+          ativo: boolean | null
+          base_calculo: string | null
+          centro_custo_padrao: string | null
+          codigo: string
+          conta_contabil: string | null
+          created_at: string | null
+          id: string
+          incide_fgts: boolean | null
+          incide_inss: boolean | null
+          incide_irrf: boolean | null
+          nome: string
+          percentual_padrao: number | null
+          tipo: Database["public"]["Enums"]["tipo_rubrica"]
+          updated_at: string | null
+          valor_padrao: number | null
+        }
+        Insert: {
+          ativo?: boolean | null
+          base_calculo?: string | null
+          centro_custo_padrao?: string | null
+          codigo: string
+          conta_contabil?: string | null
+          created_at?: string | null
+          id?: string
+          incide_fgts?: boolean | null
+          incide_inss?: boolean | null
+          incide_irrf?: boolean | null
+          nome: string
+          percentual_padrao?: number | null
+          tipo: Database["public"]["Enums"]["tipo_rubrica"]
+          updated_at?: string | null
+          valor_padrao?: number | null
+        }
+        Update: {
+          ativo?: boolean | null
+          base_calculo?: string | null
+          centro_custo_padrao?: string | null
+          codigo?: string
+          conta_contabil?: string | null
+          created_at?: string | null
+          id?: string
+          incide_fgts?: boolean | null
+          incide_inss?: boolean | null
+          incide_irrf?: boolean | null
+          nome?: string
+          percentual_padrao?: number | null
+          tipo?: Database["public"]["Enums"]["tipo_rubrica"]
+          updated_at?: string | null
+          valor_padrao?: number | null
+        }
+        Relationships: []
       }
       gamificacao_conquistas: {
         Row: {
@@ -5093,6 +5288,183 @@ export type Database = {
           },
         ]
       }
+      rh_cargos: {
+        Row: {
+          ativo: boolean | null
+          created_at: string | null
+          descricao: string | null
+          faixa_salarial_max: number | null
+          faixa_salarial_min: number | null
+          id: string
+          nome: string
+          senioridade: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          ativo?: boolean | null
+          created_at?: string | null
+          descricao?: string | null
+          faixa_salarial_max?: number | null
+          faixa_salarial_min?: number | null
+          id?: string
+          nome: string
+          senioridade?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          ativo?: boolean | null
+          created_at?: string | null
+          descricao?: string | null
+          faixa_salarial_max?: number | null
+          faixa_salarial_min?: number | null
+          id?: string
+          nome?: string
+          senioridade?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      rh_colaboradores: {
+        Row: {
+          agencia: string | null
+          bairro: string | null
+          banco_codigo: string | null
+          banco_nome: string | null
+          cargo_atual: string | null
+          cargo_id: string | null
+          celular: string | null
+          centro_custo: string | null
+          cep: string | null
+          chave_pix: string | null
+          cidade: string | null
+          complemento: string | null
+          conta: string | null
+          cpf_cnpj: string
+          cpf_cnpj_titular: string | null
+          created_at: string | null
+          created_by: string | null
+          data_admissao: string
+          data_desligamento: string | null
+          data_nascimento: string | null
+          email: string | null
+          estado: string | null
+          fee_mensal: number | null
+          gestor_imediato_id: string | null
+          id: string
+          logradouro: string | null
+          nome_completo: string
+          numero: string | null
+          observacoes: string | null
+          regime: Database["public"]["Enums"]["regime_trabalho"]
+          rg: string | null
+          salario_base: number | null
+          status: Database["public"]["Enums"]["status_colaborador"] | null
+          telefone: string | null
+          tipo_chave_pix: Database["public"]["Enums"]["tipo_chave_pix"] | null
+          tipo_conta: Database["public"]["Enums"]["tipo_conta_bancaria"] | null
+          titular_conta: string | null
+          unidade_filial: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          agencia?: string | null
+          bairro?: string | null
+          banco_codigo?: string | null
+          banco_nome?: string | null
+          cargo_atual?: string | null
+          cargo_id?: string | null
+          celular?: string | null
+          centro_custo?: string | null
+          cep?: string | null
+          chave_pix?: string | null
+          cidade?: string | null
+          complemento?: string | null
+          conta?: string | null
+          cpf_cnpj: string
+          cpf_cnpj_titular?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          data_admissao: string
+          data_desligamento?: string | null
+          data_nascimento?: string | null
+          email?: string | null
+          estado?: string | null
+          fee_mensal?: number | null
+          gestor_imediato_id?: string | null
+          id?: string
+          logradouro?: string | null
+          nome_completo: string
+          numero?: string | null
+          observacoes?: string | null
+          regime: Database["public"]["Enums"]["regime_trabalho"]
+          rg?: string | null
+          salario_base?: number | null
+          status?: Database["public"]["Enums"]["status_colaborador"] | null
+          telefone?: string | null
+          tipo_chave_pix?: Database["public"]["Enums"]["tipo_chave_pix"] | null
+          tipo_conta?: Database["public"]["Enums"]["tipo_conta_bancaria"] | null
+          titular_conta?: string | null
+          unidade_filial?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          agencia?: string | null
+          bairro?: string | null
+          banco_codigo?: string | null
+          banco_nome?: string | null
+          cargo_atual?: string | null
+          cargo_id?: string | null
+          celular?: string | null
+          centro_custo?: string | null
+          cep?: string | null
+          chave_pix?: string | null
+          cidade?: string | null
+          complemento?: string | null
+          conta?: string | null
+          cpf_cnpj?: string
+          cpf_cnpj_titular?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          data_admissao?: string
+          data_desligamento?: string | null
+          data_nascimento?: string | null
+          email?: string | null
+          estado?: string | null
+          fee_mensal?: number | null
+          gestor_imediato_id?: string | null
+          id?: string
+          logradouro?: string | null
+          nome_completo?: string
+          numero?: string | null
+          observacoes?: string | null
+          regime?: Database["public"]["Enums"]["regime_trabalho"]
+          rg?: string | null
+          salario_base?: number | null
+          status?: Database["public"]["Enums"]["status_colaborador"] | null
+          telefone?: string | null
+          tipo_chave_pix?: Database["public"]["Enums"]["tipo_chave_pix"] | null
+          tipo_conta?: Database["public"]["Enums"]["tipo_conta_bancaria"] | null
+          titular_conta?: string | null
+          unidade_filial?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rh_colaboradores_cargo_id_fkey"
+            columns: ["cargo_id"]
+            isOneToOne: false
+            referencedRelation: "rh_cargos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rh_colaboradores_gestor_imediato_id_fkey"
+            columns: ["gestor_imediato_id"]
+            isOneToOne: false
+            referencedRelation: "rh_colaboradores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       role_permissions: {
         Row: {
           can_create: boolean
@@ -6687,13 +7059,22 @@ export type Database = {
       executor_area_enum: "Audiovisual" | "Criativo"
       prioridade_enum: "baixa" | "media" | "alta" | "critica"
       priority_type: "baixa" | "media" | "alta" | "urgente"
+      regime_trabalho: "clt" | "estagio" | "pj"
       status_aprovacao_enum: "pendente" | "aprovado" | "ajustes" | "reprovado"
+      status_colaborador:
+        | "ativo"
+        | "inativo"
+        | "ferias"
+        | "afastado"
+        | "desligado"
       status_evento:
         | "agendado"
         | "confirmado"
         | "em_andamento"
         | "concluido"
         | "cancelado"
+      status_folha: "aberta" | "processada" | "fechada"
+      status_item_folha: "pendente" | "pago" | "cancelado"
       status_padrao:
         | "rascunho"
         | "em_revisao"
@@ -6725,6 +7106,8 @@ export type Database = {
         | "planilha"
         | "contrato"
         | "outro"
+      tipo_chave_pix: "cpf" | "cnpj" | "email" | "telefone" | "aleatoria"
+      tipo_conta_bancaria: "corrente" | "poupanca" | "pme" | "salario"
       tipo_evento:
         | "criacao_avulso"
         | "criacao_lote"
@@ -6753,6 +7136,7 @@ export type Database = {
         | "entregas_semanais"
         | "video_aprovado"
         | "video_reprovado"
+      tipo_rubrica: "provento" | "desconto" | "encargo" | "beneficio"
       tipo_tarefa_enum:
         | "planejamento_estrategico"
         | "roteiro_reels"
@@ -6939,7 +7323,15 @@ export const Constants = {
       executor_area_enum: ["Audiovisual", "Criativo"],
       prioridade_enum: ["baixa", "media", "alta", "critica"],
       priority_type: ["baixa", "media", "alta", "urgente"],
+      regime_trabalho: ["clt", "estagio", "pj"],
       status_aprovacao_enum: ["pendente", "aprovado", "ajustes", "reprovado"],
+      status_colaborador: [
+        "ativo",
+        "inativo",
+        "ferias",
+        "afastado",
+        "desligado",
+      ],
       status_evento: [
         "agendado",
         "confirmado",
@@ -6947,6 +7339,8 @@ export const Constants = {
         "concluido",
         "cancelado",
       ],
+      status_folha: ["aberta", "processada", "fechada"],
+      status_item_folha: ["pendente", "pago", "cancelado"],
       status_padrao: [
         "rascunho",
         "em_revisao",
@@ -6981,6 +7375,8 @@ export const Constants = {
         "contrato",
         "outro",
       ],
+      tipo_chave_pix: ["cpf", "cnpj", "email", "telefone", "aleatoria"],
+      tipo_conta_bancaria: ["corrente", "poupanca", "pme", "salario"],
       tipo_evento: [
         "criacao_avulso",
         "criacao_lote",
@@ -7011,6 +7407,7 @@ export const Constants = {
         "video_aprovado",
         "video_reprovado",
       ],
+      tipo_rubrica: ["provento", "desconto", "encargo", "beneficio"],
       tipo_tarefa_enum: [
         "planejamento_estrategico",
         "roteiro_reels",
