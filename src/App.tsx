@@ -98,6 +98,10 @@ import TarefasUnificadasDesign from "./pages/Design/TarefasUnificadas";
 import DesignMinhasTarefas from "./pages/Design/MinhasTarefas";
 import Gamificacao from "./pages/Gamificacao";
 import GamificacaoAdmin from "./pages/GamificacaoAdmin";
+
+// RH pages
+import Colaboradores from "./pages/RH/Colaboradores";
+import FolhaPagamento from "./pages/Financeiro/FolhaPagamento";
 import Calendario from "./pages/Calendario";
 import Inventario from "./pages/Inventario";
 
@@ -725,6 +729,19 @@ function App() {
                 <Route path="/financeiro/dashboard" element={
                   <ProtectedRoute requiredRole="financeiro">
                     <Layout><FinanceiroDashboard /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                {/* RH routes */}
+                <Route path="/rh/colaboradores" element={
+                  <ProtectedRoute allowedRoles={['admin', 'gestor', 'financeiro']}>
+                    <Layout><Colaboradores /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/rh/folha" element={
+                  <ProtectedRoute allowedRoles={['admin', 'gestor', 'financeiro']}>
+                    <Layout><FolhaPagamento /></Layout>
                   </ProtectedRoute>
                 } />
 
