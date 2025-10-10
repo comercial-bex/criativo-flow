@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -8,12 +8,15 @@ import { ColaboradorForm } from '@/components/RH/ColaboradorForm';
 import { UserPlus, Search, Edit, Trash2, Users, Building2 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
 import { motion } from 'framer-motion';
+import { useTutorial } from '@/hooks/useTutorial';
+import { TutorialButton } from '@/components/TutorialButton';
 
 export default function Colaboradores() {
   const { colaboradores, isLoading, deletar } = useColaboradores();
   const [formOpen, setFormOpen] = useState(false);
   const [selectedColaborador, setSelectedColaborador] = useState<any>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const { startTutorial, hasSeenTutorial } = useTutorial('colaboradores');
 
   const filteredColaboradores = colaboradores.filter((c) =>
     c.nome_completo.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -68,13 +71,17 @@ export default function Colaboradores() {
             Gerencie a equipe e dados profissionais
           </p>
         </div>
-        <Button
-          onClick={handleNew}
-          className="bg-primary hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all"
-        >
-          <UserPlus className="h-4 w-4 mr-2" />
-          Novo Colaborador
-        </Button>
+        <div className="flex gap-2">
+          <TutorialButton onStart={startTutorial} hasSeenTutorial={hasSeenTutorial} />
+          <Button
+            onClick={handleNew}
+            className="bg-primary hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all"
+            data-tour="novo-colaborador"
+          >
+            <UserPlus className="h-4 w-4 mr-2" />
+            Novo Colaborador
+          </Button>
+        </div>
       </div>
 
       {/* KPIs */}
@@ -147,7 +154,7 @@ export default function Colaboradores() {
       </div>
 
       {/* Filtros */}
-      <Card className="shadow-md">
+      <Card className="shadow-md" data-tour="filtros">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Search className="h-5 w-5" />
@@ -168,7 +175,7 @@ export default function Colaboradores() {
       </Card>
 
       {/* Tabela */}
-      <Card className="shadow-md animate-scale-in">
+      <Card className="shadow-md animate-scale-in" data-tour="tabela">
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <table className="w-full">

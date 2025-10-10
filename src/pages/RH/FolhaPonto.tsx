@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -8,6 +8,8 @@ import { useColaboradores } from '@/hooks/useColaboradores';
 import { PontoCard } from '@/components/RH/PontoCard';
 import { Calendar, CheckCircle, XCircle, Clock } from 'lucide-react';
 import { toast } from 'sonner';
+import { useTutorial } from '@/hooks/useTutorial';
+import { TutorialButton } from '@/components/TutorialButton';
 
 export default function FolhaPonto() {
   const [competencia, setCompetencia] = useState(
@@ -17,6 +19,7 @@ export default function FolhaPonto() {
   
   const { pontos, isLoading, aprovarRH, rejeitar } = useFolhaPonto(undefined, competencia);
   const { colaboradores } = useColaboradores();
+  const { startTutorial, hasSeenTutorial } = useTutorial('folha-ponto');
 
   const filteredPontos = pontos.filter((p) => {
     if (statusFilter === 'todos') return true;
@@ -58,10 +61,12 @@ export default function FolhaPonto() {
           </p>
         </div>
         <div className="flex gap-2">
+          <TutorialButton onStart={startTutorial} hasSeenTutorial={hasSeenTutorial} />
           <Button
             onClick={handleApproveAll}
             className="bg-success hover:bg-success/90"
             disabled={pendingCount === 0}
+            data-tour="aprovar-todos"
           >
             <CheckCircle className="h-4 w-4 mr-2" />
             Aprovar Todos ({pendingCount})
@@ -71,7 +76,7 @@ export default function FolhaPonto() {
 
       {/* Filtros */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="shadow-md">
+        <Card className="shadow-md" data-tour="competencia-ponto">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <Calendar className="h-4 w-4" />
@@ -109,7 +114,7 @@ export default function FolhaPonto() {
           </CardContent>
         </Card>
 
-        <Card className="shadow-md border-t-4 border-t-primary">
+        <Card className="shadow-md border-t-4 border-t-primary" data-tour="resumo">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <Clock className="h-4 w-4" />
@@ -130,7 +135,7 @@ export default function FolhaPonto() {
       </div>
 
       {/* Lista de Pontos */}
-      <div className="space-y-4">
+      <div className="space-y-4" data-tour="cards-ponto">
         {isLoading ? (
           <Card className="shadow-md">
             <CardContent className="p-12 text-center text-muted-foreground">

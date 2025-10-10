@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -21,6 +21,8 @@ import { FolhaEvolutionChart } from '@/components/Financeiro/Charts/FolhaEvoluti
 import { EncargosCompositionChart } from '@/components/Financeiro/Charts/EncargosCompositionChart';
 import { motion } from 'framer-motion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useTutorial } from '@/hooks/useTutorial';
+import { TutorialButton } from '@/components/TutorialButton';
 
 export default function FolhaPagamento() {
   const currentDate = new Date();
@@ -51,6 +53,7 @@ export default function FolhaPagamento() {
   } = useFolhaPagamento(competencia);
   
   const { evolucaoMensal, composicaoEncargos, taxaAbsenteismo, isLoading: loadingAnalytics } = useFolhaAnalytics();
+  const { startTutorial, hasSeenTutorial } = useTutorial('folha-pagamento');
   
   const folhaAtual = folhas[0];
   
@@ -183,9 +186,11 @@ export default function FolhaPagamento() {
           </p>
         </div>
         <div className="flex gap-2">
+          <TutorialButton onStart={startTutorial} hasSeenTutorial={hasSeenTutorial} />
           <Button
             variant="outline"
             onClick={() => setRelatoriosFiscaisAberto(true)}
+            data-tour="relatorios-fiscais"
           >
             <FileText className="h-4 w-4 mr-2" />
             Relatórios Fiscais
@@ -193,6 +198,7 @@ export default function FolhaPagamento() {
           <Button
             variant="outline"
             onClick={() => setSimuladorAberto(true)}
+            data-tour="simulador"
           >
             <Calculator className="h-4 w-4 mr-2" />
             Simulador
@@ -216,7 +222,7 @@ export default function FolhaPagamento() {
       </div>
 
       {/* Filtros */}
-      <Card className="shadow-md">
+      <Card className="shadow-md" data-tour="competencia">
         <CardHeader>
           <CardTitle>Filtros</CardTitle>
           <CardDescription>Selecione a competência (mês/ano)</CardDescription>
@@ -261,7 +267,7 @@ export default function FolhaPagamento() {
 
       {/* KPIs + Comparativo */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-        <div className="lg:col-span-3">
+        <div className="lg:col-span-3" data-tour="kpis">
           {folhaAtual && (
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <motion.div
@@ -344,7 +350,7 @@ export default function FolhaPagamento() {
             </div>
           )}
         </div>
-        <div>
+        <div data-tour="comparativo">
           <ComparativoMensal />
         </div>
       </div>
