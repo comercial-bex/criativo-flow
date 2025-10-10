@@ -12,6 +12,8 @@ import { downloadHolerite } from '@/utils/holeritePdfGenerator';
 import { toast } from 'sonner';
 import { PagamentoFolhaModal } from '@/components/Financeiro/PagamentoFolhaModal';
 import { DetalhamentoFiscalModal } from '@/components/Financeiro/DetalhamentoFiscalModal';
+import { SimuladorFolha } from '@/components/Financeiro/SimuladorFolha';
+import { ComparativoMensal } from '@/components/Financeiro/ComparativoMensal';
 import { FolhaPagamentoStepper } from '@/components/Financeiro/FolhaPagamentoStepper';
 import { FolhaTableFilters } from '@/components/Financeiro/FolhaTableFilters';
 import { FolhaEvolutionChart } from '@/components/Financeiro/Charts/FolhaEvolutionChart';
@@ -27,6 +29,7 @@ export default function FolhaPagamento() {
   const [itemSelecionado, setItemSelecionado] = useState<FolhaItem | null>(null);
   const [modalPagamentoAberto, setModalPagamentoAberto] = useState(false);
   const [modalDetalhamentoAberto, setModalDetalhamentoAberto] = useState(false);
+  const [simuladorAberto, setSimuladorAberto] = useState(false);
   const [stepperAberto, setStepperAberto] = useState(false);
   
   // Filtros
@@ -180,6 +183,13 @@ export default function FolhaPagamento() {
         <div className="flex gap-2">
           <Button
             variant="outline"
+            onClick={() => setSimuladorAberto(true)}
+          >
+            <Calculator className="h-4 w-4 mr-2" />
+            Simulador
+          </Button>
+          <Button
+            variant="outline"
             onClick={() => setShowCharts(!showCharts)}
           >
             <BarChart3 className="h-4 w-4 mr-2" />
@@ -240,14 +250,16 @@ export default function FolhaPagamento() {
         </motion.div>
       )}
 
-      {/* KPIs */}
-      {folhaAtual && (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-          >
+      {/* KPIs + Comparativo */}
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+        <div className="lg:col-span-3">
+          {folhaAtual && (
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+              >
             <Card className="border-t-4 border-t-primary shadow-md">
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
@@ -320,8 +332,13 @@ export default function FolhaPagamento() {
               </CardContent>
             </Card>
           </motion.div>
+            </div>
+          )}
         </div>
-      )}
+        <div>
+          <ComparativoMensal />
+        </div>
+      </div>
 
       {/* Tabela */}
       <Card className="shadow-md animate-scale-in">
@@ -485,6 +502,11 @@ export default function FolhaPagamento() {
         onOpenChange={setStepperAberto}
         competencia={competencia}
         onComplete={handleCompletarProcessamento}
+      />
+
+      <SimuladorFolha
+        open={simuladorAberto}
+        onOpenChange={setSimuladorAberto}
       />
     </div>
   );
