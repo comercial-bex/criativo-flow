@@ -164,6 +164,7 @@ const modules = [
     icon: Users2,
     items: [
       { title: "Colaboradores", url: "/rh/colaboradores", icon: Users },
+      { title: "Folha de Ponto", url: "/rh/ponto", icon: Clock },
       { title: "Folha de Pagamento", url: "/rh/folha", icon: DollarSign },
     ],
     permissions: ["financeiro", "admin", "gestor"]
