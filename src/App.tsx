@@ -478,7 +478,13 @@ function App() {
                 } />
                 
                 <Route path="/grs/projetos" element={
-                  <ProtectedRoute requiredRole="grs">
+                  <ProtectedRoute requiredRole="grs" module="grs" action="canView">
+                    <Layout><GRSDashboard /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/grs/meus-projetos" element={
+                  <ProtectedRoute requiredRole="grs" module="grs" action="canView">
                     <Layout><GRSProjetos /></Layout>
                   </ProtectedRoute>
                 } />

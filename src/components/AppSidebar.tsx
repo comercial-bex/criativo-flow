@@ -75,7 +75,8 @@ export function AppSidebar() {
       title: "Operacional (GRS)",
       icon: Icons.Globe,
       items: [
-        { title: "Projetos", url: "/grs/projetos", icon: Icons.Briefcase },
+        { title: "Dashboard", url: "/grs/projetos", icon: Icons.LayoutDashboard },
+        { title: "Meus Projetos", url: "/grs/meus-projetos", icon: Icons.Briefcase },
         { title: "Planejamentos", url: "/grs/planejamentos", icon: Icons.Calendar },
         { title: "Tarefas", url: "/grs/tarefas", icon: Icons.CheckSquare },
         { title: "Kanban", url: "/operacoes/kanban", icon: Icons.Columns },
