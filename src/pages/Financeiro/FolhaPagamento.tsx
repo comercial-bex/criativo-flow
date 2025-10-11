@@ -4,7 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { useFolhaPagamento, FolhaItem } from '@/hooks/useFolhaPagamento';
+import { useFolhaMes } from '@/hooks/useFolhaMes';
+import { usePessoas } from '@/hooks/usePessoas';
 import { useFolhaAnalytics } from '@/hooks/useFolhaAnalytics';
 import { formatCurrency } from '@/lib/utils';
 import { Download, FileText, Calendar, TrendingUp, DollarSign, Users, Calculator, FileDown, BarChart3 } from 'lucide-react';
@@ -29,7 +30,7 @@ export default function FolhaPagamento() {
   const currentMonth = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-01`;
   
   const [competencia, setCompetencia] = useState(currentMonth);
-  const [itemSelecionado, setItemSelecionado] = useState<FolhaItem | null>(null);
+  const [itemSelecionado, setItemSelecionado] = useState<any | null>(null);
   const [modalPagamentoAberto, setModalPagamentoAberto] = useState(false);
   const [modalDetalhamentoAberto, setModalDetalhamentoAberto] = useState(false);
   const [relatoriosFiscaisAberto, setRelatoriosFiscaisAberto] = useState(false);
@@ -42,21 +43,83 @@ export default function FolhaPagamento() {
   const [sortBy, setSortBy] = useState('nome-asc');
   const [showCharts, setShowCharts] = useState(false);
   
-  const { 
-    folhas, 
-    itens, 
-    isLoading, 
-    processarFolha, 
-    isProcessando,
-    registrarPagamento,
-    isRegistrandoPagamento,
-  } = useFolhaPagamento(competencia);
+  // Hooks integrados para nova arquitetura
+  const { folhas, isLoading: isLoadingFolhas, calcularFolha, fecharFolha, marcarComoPaga } = useFolhaMes(undefined, competencia);
+  const { pessoas: colaboradores, isLoading: isLoadingPessoas } = usePessoas('colaborador');
   
   const { evolucaoMensal, composicaoEncargos, taxaAbsenteismo, isLoading: loadingAnalytics } = useFolhaAnalytics();
   const { startTutorial, hasSeenTutorial } = useTutorial('folha-pagamento');
   
-  const folhaAtual = folhas[0];
+  const isLoading = isLoadingFolhas || isLoadingPessoas;
   
+  // Mapear folhas para itens compatíveis com a UI
+  const itens = useMemo(() => {
+    return folhas.map(folha => {
+      const pessoa = colaboradores.find(p => p.id === folha.pessoa_id);
+      return {
+        id: folha.id,
+        colaborador: pessoa ? {
+          id: pessoa.id,
+          nome_completo: pessoa.nome,
+          cpf_cnpj: pessoa.cpf || '',
+          cargo_atual: pessoa.observacoes || '', // Usar observacoes até campo cargo ser adicionado
+          regime: pessoa.regime || 'clt',
+        } : null,
+        base_calculo: folha.salario_base,
+        total_proventos: folha.total_extras,
+        total_descontos: folha.total_descontos,
+        liquido: folha.total_a_pagar,
+        status: folha.status === 'aberta' ? 'pendente' : folha.status === 'fechada' ? 'processado' : 'pago',
+        data_pagamento: folha.updated_at, // Usar updated_at como proxy para data_pagamento
+        proventos: [],
+        descontos: [],
+        encargos: []
+      };
+    });
+  }, [folhas, colaboradores]);
+  
+
+  // Agregar totais da folha
+  const folhaAtual = useMemo(() => {
+    if (folhas.length === 0) return null;
+    return {
+      total_proventos: folhas.reduce((sum, f) => sum + f.total_extras, 0),
+      total_descontos: folhas.reduce((sum, f) => sum + f.total_descontos, 0),
+      total_liquido: folhas.reduce((sum, f) => sum + f.total_a_pagar, 0),
+      total_colaboradores: folhas.length,
+      status: folhas.every(f => f.status === 'aberta') ? 'aberta' : 'processada',
+    };
+  }, [folhas]);
+
+  const handleProcessarFolha = () => {
+    setStepperAberto(true);
+  };
+
+  const handleCompletarProcessamento = () => {
+    colaboradores.forEach(pessoa => {
+      calcularFolha({ pessoaId: pessoa.id, competencia });
+    });
+  };
+
+  const handleAbrirModalPagamento = (item: any) => {
+    setItemSelecionado(item);
+    setModalPagamentoAberto(true);
+  };
+
+  const handleAbrirDetalhamento = (item: any) => {
+    setItemSelecionado(item);
+    setModalDetalhamentoAberto(true);
+  };
+
+  const handleConfirmarPagamento = (data: any) => {
+    if (itemSelecionado) {
+      marcarComoPaga(itemSelecionado.id);
+    }
+    setModalPagamentoAberto(false);
+    setItemSelecionado(null);
+  };
+
+
   // Filtrar e ordenar itens
   const itensFiltrados = useMemo(() => {
     let filtered = itens.filter(item => {
@@ -90,30 +153,6 @@ export default function FolhaPagamento() {
     return filtered;
   }, [itens, searchTerm, statusFilter, sortBy]);
 
-  const handleProcessarFolha = () => {
-    setStepperAberto(true);
-  };
-
-  const handleCompletarProcessamento = () => {
-    processarFolha({ competencia });
-  };
-
-  const handleAbrirModalPagamento = (item: FolhaItem) => {
-    setItemSelecionado(item);
-    setModalPagamentoAberto(true);
-  };
-
-  const handleAbrirDetalhamento = (item: FolhaItem) => {
-    setItemSelecionado(item);
-    setModalDetalhamentoAberto(true);
-  };
-
-  const handleConfirmarPagamento = (data: any) => {
-    registrarPagamento(data);
-    setModalPagamentoAberto(false);
-    setItemSelecionado(null);
-  };
-
   const handleExportCSV = () => {
     if (!itens.length) {
       toast.error('Nenhum dado para exportar');
@@ -143,7 +182,7 @@ export default function FolhaPagamento() {
     toast.success('✅ Folha exportada com sucesso!');
   };
 
-  const handleDownloadHolerite = (item: FolhaItem) => {
+  const handleDownloadHolerite = (item: any) => {
     if (!item.colaborador) {
       toast.error('Dados do colaborador não encontrados');
       return;
@@ -241,11 +280,11 @@ export default function FolhaPagamento() {
             <div className="flex items-end">
               <Button
                 onClick={handleProcessarFolha}
-                disabled={isProcessando}
+                disabled={isLoading}
                 className="w-full bg-primary hover:bg-primary/90"
               >
                 <FileText className="h-4 w-4 mr-2" />
-                {isProcessando ? 'Processando...' : 'Processar Folha'}
+                {isLoading ? 'Processando...' : 'Processar Folha'}
               </Button>
             </div>
           </div>
@@ -503,7 +542,7 @@ export default function FolhaPagamento() {
         onOpenChange={setModalPagamentoAberto}
         item={itemSelecionado}
         onConfirm={handleConfirmarPagamento}
-        isLoading={isRegistrandoPagamento}
+        isLoading={isLoading}
       />
 
       <DetalhamentoFiscalModal

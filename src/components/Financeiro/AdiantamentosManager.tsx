@@ -13,12 +13,25 @@ import { Plus, FileText, X } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface Props {
-  colaboradorId: string;
+  colaboradorId?: string; // DEPRECATED - manter temporariamente
+  pessoaId?: string; // NOVO - usar prioritariamente
   competencia: string;
 }
 
-export function AdiantamentosManager({ colaboradorId, competencia }: Props) {
-  const { adiantamentos, criar, cancelar, isCriando } = useAdiantamentos(colaboradorId, competencia);
+export function AdiantamentosManager({ colaboradorId, pessoaId, competencia }: Props) {
+  const idParaUsar = pessoaId || colaboradorId;
+  
+  if (!idParaUsar) {
+    return (
+      <Card className="p-4">
+        <div className="text-muted-foreground text-center py-4">
+          ID da pessoa não fornecido
+        </div>
+      </Card>
+    );
+  }
+  
+  const { adiantamentos, criar, cancelar, isCriando } = useAdiantamentos(idParaUsar, competencia);
   const [modalAberto, setModalAberto] = useState(false);
   const [formData, setFormData] = useState({
     valor: '',
@@ -35,7 +48,8 @@ export function AdiantamentosManager({ colaboradorId, competencia }: Props) {
 
   const handleSubmit = () => {
     criar({
-      colaborador_id: colaboradorId,
+      pessoa_id: idParaUsar, // ⬅️ NOVO - priorizar pessoa_id
+      colaborador_id: colaboradorId, // ⬅️ MANTER para retrocompatibilidade
       competencia,
       valor: Number(formData.valor),
       data_adiantamento: formData.data_adiantamento,
