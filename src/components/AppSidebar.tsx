@@ -1,7 +1,7 @@
 import { NavLink, useLocation } from "react-router-dom";
 import * as Icons from "lucide-react";
 import { LucideIcon } from "lucide-react";
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { usePermissions } from "@/hooks/usePermissions";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useDynamicModules } from "@/hooks/useDynamicModules";
@@ -75,7 +75,7 @@ export function AppSidebar() {
       title: "Operacional (GRS)",
       icon: Icons.Globe,
       items: [
-        { title: "Dashboard", url: "/grs/projetos", icon: Icons.LayoutDashboard },
+        { title: "Dashboard GRS", url: "/grs/projetos", icon: Icons.LayoutDashboard },
         { title: "Meus Projetos", url: "/grs/meus-projetos", icon: Icons.Briefcase },
         { title: "Planejamentos", url: "/grs/planejamentos", icon: Icons.Calendar },
         { title: "Tarefas", url: "/grs/tarefas", icon: Icons.CheckSquare },
@@ -161,19 +161,27 @@ export function AppSidebar() {
     });
   };
 
-  // USAR MÓDULOS DINÂMICOS DO BANCO (já populados via migration)
-  const displayModules = dbModules.length > 0 
-    ? dbModules.map(mod => ({
-        id: mod.slug,
-        title: mod.nome,
-        icon: getIconComponent(mod.icone),
-        items: mod.submodulos.map(sub => ({
-          title: sub.nome,
-          url: sub.rota,
-          icon: getIconComponent(sub.icone)
-        }))
-      })) 
-    : getVisibleModules(); // Fallback apenas se banco estiver vazio
+  // USAR MÓDULOS DINÂMICOS DO BANCO (memoized for stable identity)
+  const displayModules = useMemo(() => {
+    return dbModules.length > 0 
+      ? dbModules.map(mod => ({
+          id: mod.slug,
+          title: mod.nome,
+          icon: getIconComponent(mod.icone),
+          items: mod.submodulos.map(sub => ({
+            title: sub.nome,
+            url: sub.rota,
+            icon: getIconComponent(sub.icone)
+          }))
+        })) 
+      : getVisibleModules();
+  }, [dbModules, role]);
+
+  // Create stable index of routes for dependency tracking
+  const routesIndex = useMemo(() => 
+    displayModules.flatMap(m => m.items.map(i => i.url)).join('|'), 
+    [displayModules]
+  );
 
   // Detectar módulo atual baseado na rota
   const detectCurrentModule = () => {
@@ -210,10 +218,10 @@ export function AppSidebar() {
     return "inicio";
   };
 
-  // Atualizar módulo selecionado quando a localização mudar
+  // Atualizar módulo selecionado quando a localização, rotas ou role mudarem
   React.useEffect(() => {
     setSelectedModule(detectCurrentModule());
-  }, [location.pathname]);
+  }, [location.pathname, routesIndex, role]);
 
   const currentModule = displayModules.find(m => m.id === selectedModule);
   const isActive = (path: string) => location.pathname.startsWith(path);
