@@ -7,7 +7,7 @@ export function useEspecialistas() {
   return useQuery({
     queryKey: ['especialistas'],
     queryFn: async () => {
-      // Buscar especialistas aprovados OU admins
+      // Buscar todos os aprovados com suas roles
       const { data, error } = await supabase
         .from('profiles')
         .select(`
@@ -17,16 +17,22 @@ export function useEspecialistas() {
           user_roles!inner(role)
         `)
         .eq('status', 'aprovado')
-        .or('especialidade.in.(audiovisual,design,filmmaker,grs),user_roles.role.eq.admin')
+        .neq('user_roles.role', 'cliente')
         .order('nome');
       
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Erro ao buscar especialistas no hook:', error);
+        throw error;
+      }
       
-      // Mapear para formato esperado, mostrando "Admin" para admins sem especialidade
+      console.log('✅ Especialistas do hook:', data);
+      
+      // Mapear para formato esperado
       return (data || []).map(profile => ({
         id: profile.id,
         nome: profile.nome,
-        especialidade: profile.especialidade || 'admin'
+        especialidade: profile.especialidade || 'admin',
+        role: (profile.user_roles as any)?.[0]?.role
       }));
     }
   });

@@ -86,37 +86,30 @@ export default function Especialistas() {
   const fetchEspecialistas = useCallback(async () => {
     setLoading(true);
     try {
-      // Buscar profiles (apenas especialistas, não clientes)
+      // Buscar ALL profiles com user_roles (incluindo admins SEM especialidade)
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
-        .select('*')
-        .not('especialidade', 'is', null);
+        .select(`
+          *,
+          user_roles!inner(role)
+        `)
+        .neq('user_roles.role', 'cliente'); // Excluir apenas clientes
 
       if (profilesError) {
+        console.error('❌ Erro ao buscar profiles:', profilesError);
         throw profilesError;
       }
 
-      // Buscar roles dos usuários
-      const { data: userRoles, error: rolesError } = await supabase
-        .from('user_roles')
-        .select('user_id, role');
+      // Mapear para formato esperado
+      const especialistasComRoles = profiles?.map(profile => ({
+        ...profile,
+        role: (profile.user_roles as any)?.[0]?.role
+      })) || [];
 
-      if (rolesError) {
-        throw rolesError;
-      }
-
-      // Combinar dados
-      const especialistasComRoles = profiles?.map(profile => {
-        const userRole = userRoles?.find(role => role.user_id === profile.id);
-        return {
-          ...profile,
-          role: userRole?.role
-        };
-      }) || [];
-
+      console.log('✅ Especialistas carregados:', especialistasComRoles.length);
       setEspecialistas(especialistasComRoles as any);
     } catch (error: any) {
-      console.error('Erro ao buscar especialistas:', error);
+      console.error('❌ Erro ao buscar especialistas:', error);
       toast({
         title: "Erro",
         description: "Erro ao carregar especialistas",
@@ -195,6 +188,16 @@ export default function Especialistas() {
       return;
     }
 
+    // Validação: Se não for admin, especialidade é obrigatória
+    if (formData.role !== 'admin' && !formData.especialidade) {
+      toast({
+        title: "Erro",
+        description: "Especialidade é obrigatória para funções não administrativas",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       setLoading(true);
 
@@ -207,7 +210,7 @@ export default function Especialistas() {
               id: editingId,
               nome: formData.nome,
               telefone: formData.telefone,
-              especialidade: formData.especialidade,
+              especialidade: formData.role === 'admin' ? null : formData.especialidade,
               role: formData.role
             }
           }
@@ -229,18 +232,35 @@ export default function Especialistas() {
         });
       } else {
         // Criar novo usuário usando Edge Function
+        console.log('📤 Criando especialista:', {
+          email: formData.email,
+          nome: formData.nome,
+          role: formData.role,
+          especialidade: formData.role === 'admin' ? null : formData.especialidade
+        });
+
         const { data: userData, error: userError } = await supabase.functions.invoke('create-user', {
           body: {
             email: formData.email,
             password: formData.password,
             nome: formData.nome,
             telefone: formData.telefone,
-            especialidade: formData.especialidade,
+            especialidade: formData.role === 'admin' ? null : formData.especialidade,
             role: formData.role
           }
         });
 
-        if (userError) throw userError;
+        if (userError) {
+          console.error('❌ Erro ao criar especialista:', userError);
+          throw userError;
+        }
+
+        if (!userData?.success) {
+          console.error('❌ Resposta da função indica falha:', userData);
+          throw new Error(userData?.error || 'Erro ao criar especialista');
+        }
+
+        console.log('✅ Especialista criado com sucesso:', userData);
 
         toast({
           title: "Sucesso",
@@ -473,17 +493,25 @@ export default function Especialistas() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="especialidade">Especialidade</Label>
+                    <Label htmlFor="role">Função no Sistema *</Label>
                     <Select 
-                      value={formData.especialidade} 
-                      onValueChange={(value) => setFormData({ ...formData, especialidade: value })}
+                      value={formData.role} 
+                      onValueChange={(value) => {
+                        setFormData({ 
+                          ...formData, 
+                          role: value,
+                          // Limpar especialidade se selecionar admin
+                          especialidade: value === 'admin' ? '' : formData.especialidade
+                        });
+                      }}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Selecione uma especialidade" />
+                        <SelectValue placeholder="Selecione uma função" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="grs">Gestão de Redes Sociais</SelectItem>
-                        <SelectItem value="design">Design</SelectItem>
+                        <SelectItem value="admin">Administrador</SelectItem>
+                        <SelectItem value="grs">GRS</SelectItem>
+                        <SelectItem value="design">Designer</SelectItem>
                         <SelectItem value="audiovisual">Audiovisual</SelectItem>
                         <SelectItem value="atendimento">Atendimento</SelectItem>
                         <SelectItem value="financeiro">Financeiro</SelectItem>
@@ -493,18 +521,24 @@ export default function Especialistas() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="role">Função no Sistema *</Label>
+                    <Label htmlFor="especialidade">
+                      Especialidade {formData.role !== 'admin' && '*'}
+                    </Label>
                     <Select 
-                      value={formData.role} 
-                      onValueChange={(value) => setFormData({ ...formData, role: value })}
+                      value={formData.especialidade} 
+                      onValueChange={(value) => setFormData({ ...formData, especialidade: value })}
+                      disabled={formData.role === 'admin'}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Selecione uma função" />
+                        <SelectValue placeholder={
+                          formData.role === 'admin' 
+                            ? 'Não requerido para admin' 
+                            : 'Selecione uma especialidade'
+                        } />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="admin">Administrador</SelectItem>
-                        <SelectItem value="grs">GRS</SelectItem>
-                        <SelectItem value="design">Designer</SelectItem>
+                        <SelectItem value="grs">Gestão de Redes Sociais</SelectItem>
+                        <SelectItem value="design">Design</SelectItem>
                         <SelectItem value="audiovisual">Audiovisual</SelectItem>
                         <SelectItem value="atendimento">Atendimento</SelectItem>
                         <SelectItem value="financeiro">Financeiro</SelectItem>
