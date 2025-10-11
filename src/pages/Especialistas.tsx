@@ -273,23 +273,30 @@ export default function Especialistas() {
 
         console.log('📥 Resposta completa da Edge Function:', { userData, userError });
 
+        // Processar resposta (sempre 200 agora)
+        if (userData?.success === false) {
+          console.log('⚠️ Edge Function retornou erro:', userData.code, userData.error);
+          
+          // Tratar códigos específicos
+          if (userData.code === 'email_exists') {
+            toast({
+              title: "Erro",
+              description: "Este email já está cadastrado no sistema",
+              variant: "destructive",
+            });
+            return;
+          }
+          
+          throw new Error(userData.error || 'Erro ao criar especialista');
+        }
+        
         if (userError) {
-          console.error('❌ Erro da Edge Function:', {
-            message: userError.message,
-            status: userError.status,
-            details: userError
-          });
-          
-          const errorMessage = userError.message === 'FunctionsRelayError' 
-            ? 'Erro ao conectar com servidor. Verifique sua conexão e tente novamente.' 
-            : userError.message || 'Erro desconhecido ao criar especialista';
-          
-          throw new Error(errorMessage);
+          console.error('⚠️ Erro de rede/SDK:', userError);
+          throw new Error('Erro ao conectar com servidor. Tente novamente.');
         }
 
         if (!userData?.success) {
-          console.error('❌ Resposta da função indica falha:', userData);
-          throw new Error(userData?.error || 'Erro ao criar especialista');
+          throw new Error('Resposta inválida do servidor');
         }
 
         console.log('✅ Especialista criado com sucesso:', userData);

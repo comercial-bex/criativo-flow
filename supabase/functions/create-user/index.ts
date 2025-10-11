@@ -27,40 +27,29 @@ serve(async (req) => {
 
     const { email, password, nome, telefone, especialidade, role } = await req.json();
 
-    console.log('📝 Iniciando criação de usuário:', { email, nome, especialidade, role });
-
-    // Validar email duplicado antes de criar
-    console.log('🔍 Verificando email duplicado...');
-    const { data: existingUsers, error: listError } = await supabaseAdmin.auth.admin.listUsers();
-    
-    if (listError) {
-      console.error('❌ Erro ao listar usuários:', listError);
-      throw new Error('Erro ao validar email: ' + listError.message);
-    }
-
-    const emailExists = existingUsers?.users?.some(u => u.email === email);
-    
-    if (emailExists) {
-      console.log('⚠️ Email já existe:', email);
+    // Validar dados obrigatórios
+    if (!email || !password || !nome || !role) {
+      console.log('❌ Dados obrigatórios ausentes');
       return new Response(
         JSON.stringify({ 
           success: false,
-          error: 'Email já cadastrado no sistema' 
+          code: 'bad_request',
+          error: 'Dados obrigatórios ausentes' 
         }),
         { 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }, 
-          status: 409 
+          status: 200 
         }
       );
     }
 
-    console.log('✅ Email disponível, prosseguindo...');
+    console.log('📝 Iniciando criação de usuário:', { email, nome, especialidade, role });
 
-    // Create user with Supabase Auth Admin (without email confirmation)
+    // Tentar criar usuário diretamente (sem listUsers)
     const { data: userData, error: userError } = await supabaseAdmin.auth.admin.createUser({
       email,
       password,
-      email_confirm: true, // Skip email confirmation for internal accounts
+      email_confirm: true,
       user_metadata: {
         nome,
         telefone,
@@ -70,7 +59,35 @@ serve(async (req) => {
 
     if (userError) {
       console.error('❌ Erro ao criar usuário:', userError);
-      throw userError;
+      
+      // Verificar se é email duplicado
+      const errorMsg = userError.message?.toLowerCase() || '';
+      if (errorMsg.includes('already registered') || errorMsg.includes('email') || userError.status === 422) {
+        return new Response(
+          JSON.stringify({ 
+            success: false,
+            code: 'email_exists',
+            error: 'Email já cadastrado no sistema' 
+          }),
+          { 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }, 
+            status: 200 
+          }
+        );
+      }
+      
+      // Outro erro de autenticação
+      return new Response(
+        JSON.stringify({ 
+          success: false,
+          code: 'auth_error',
+          error: `Falha ao criar usuário: ${userError.message}` 
+        }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }, 
+          status: 200 
+        }
+      );
     }
 
     console.log('✅ Usuário criado:', userData.user?.id);
@@ -101,7 +118,17 @@ serve(async (req) => {
           await supabaseAdmin.auth.admin.deleteUser(userId);
           console.log('🔄 Rollback: Usuário deletado do Auth');
           
-          throw profileError;
+          return new Response(
+            JSON.stringify({ 
+              success: false,
+              code: 'db_error',
+              error: 'Falha ao salvar dados do usuário' 
+            }),
+            { 
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' }, 
+              status: 200 
+            }
+          );
         }
 
         console.log('✅ Perfil criado com sucesso');
@@ -122,7 +149,17 @@ serve(async (req) => {
           await supabaseAdmin.auth.admin.deleteUser(userId);
           console.log('🔄 Rollback: Perfil e usuário deletados');
           
-          throw roleError;
+          return new Response(
+            JSON.stringify({ 
+              success: false,
+              code: 'db_error',
+              error: 'Falha ao salvar dados do usuário' 
+            }),
+            { 
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' }, 
+              status: 200 
+            }
+          );
         }
 
         console.log('✅ Role inserida com sucesso');
