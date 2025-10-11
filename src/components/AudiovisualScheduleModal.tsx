@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { CalendarIcon, Video, Clock, MapPin, User, AlertTriangle } from 'lucide-react';
+import { CalendarIcon, Video, Clock, MapPin, User, AlertTriangle, Lightbulb } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -15,6 +15,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useCalendarioMultidisciplinar } from '@/hooks/useCalendarioMultidisciplinar';
 
 interface AudiovisualScheduleModalProps {
   open: boolean;
@@ -35,6 +36,13 @@ export function AudiovisualScheduleModal({
   const [conflicts, setConflicts] = useState<any[]>([]);
   const [filmmakers, setFilmmakers] = useState<any[]>([]);
   const [clientes, setClientes] = useState<any[]>([]);
+  const [suggestedSlot, setSuggestedSlot] = useState<any>(null);
+  
+  const { sugerirSlot } = useCalendarioMultidisciplinar({
+    responsavelId: formData.especialista_id || '',
+    dataInicio: new Date(),
+    dataFim: new Date()
+  });
 
   const [formData, setFormData] = useState({
     titulo: '',
@@ -366,6 +374,87 @@ export function AudiovisualScheduleModal({
                     </div>
                   ))}
                 </div>
+                
+                {/* PRIORIDADE 1: Sugestão inteligente de horário */}
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  className="w-full mt-3"
+                  onClick={async () => {
+                    if (!formData.data_captacao || !formData.especialista_id) return;
+                    
+                    try {
+                      const targetDate = format(formData.data_captacao, 'yyyy-MM-dd');
+                      const sugestao = await sugerirSlot({
+                        responsavelId: formData.especialista_id,
+                        duracaoMinutos: 120,
+                        dataPreferida: targetDate,
+                        tipoEvento: 'captacao_externa'
+                      });
+                      
+                      if (sugestao && sugestao.data_inicio) {
+                        const novaData = new Date(sugestao.data_inicio);
+                        const novaDataFim = new Date(sugestao.data_fim);
+                        
+                        setSuggestedSlot({
+                          data: novaData,
+                          horario_inicio: format(novaData, 'HH:mm'),
+                          horario_fim: format(novaDataFim, 'HH:mm')
+                        });
+                        
+                        toast({
+                          title: "💡 Horário sugerido",
+                          description: `${format(novaData, "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}`,
+                        });
+                      } else {
+                        toast({
+                          title: "❌ Sem horários disponíveis",
+                          description: "Tente outro dia ou especialista",
+                          variant: "destructive"
+                        });
+                      }
+                    } catch (error) {
+                      console.error('Erro ao sugerir horário:', error);
+                      toast({
+                        title: "Erro ao sugerir horário",
+                        variant: "destructive"
+                      });
+                    }
+                  }}
+                >
+                  <Lightbulb className="h-4 w-4 mr-2" />
+                  Sugerir horário alternativo
+                </Button>
+                
+                {suggestedSlot && (
+                  <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded text-sm">
+                    <p className="font-medium text-green-800">Horário sugerido:</p>
+                    <p className="text-green-700">
+                      {format(suggestedSlot.data, "dd/MM/yyyy", { locale: ptBR })} das {suggestedSlot.horario_inicio} às {suggestedSlot.horario_fim}
+                    </p>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="mt-2 w-full"
+                      onClick={() => {
+                        setFormData({
+                          ...formData,
+                          data_captacao: suggestedSlot.data,
+                          horario_inicio: suggestedSlot.horario_inicio,
+                          horario_fim: suggestedSlot.horario_fim
+                        });
+                        setConflicts([]);
+                        setSuggestedSlot(null);
+                        toast({
+                          title: "✅ Horário aplicado",
+                          description: "Sugestão aplicada ao formulário"
+                        });
+                      }}
+                    >
+                      Aplicar sugestão
+                    </Button>
+                  </div>
+                )}
               </AlertDescription>
             </Alert>
           )}

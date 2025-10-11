@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Plus, Video, CheckSquare, Calendar as CalendarIcon, AlertTriangle, Clock } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -329,7 +330,7 @@ export function AgendaUnificada() {
         </Card>
       </div>
 
-      {/* FASE 5: Modal de Reagendamento */}
+      {/* FASE 5 + PRIORIDADE 2: Modal de Reagendamento com Horário */}
       <Dialog open={!!rescheduleEvent} onOpenChange={() => setRescheduleEvent(null)}>
         <DialogContent>
           <DialogHeader>
@@ -338,7 +339,7 @@ export function AgendaUnificada() {
               Reagendar Evento
             </DialogTitle>
             <DialogDescription>
-              Altere a data de: <strong>{rescheduleEvent?.titulo}</strong>
+              Altere a data e horário de: <strong>{rescheduleEvent?.titulo}</strong>
             </DialogDescription>
           </DialogHeader>
           
@@ -350,12 +351,43 @@ export function AgendaUnificada() {
                 selected={rescheduleEvent?.data}
                 onSelect={(date) => {
                   if (date) {
-                    setRescheduleEvent({ ...rescheduleEvent, data: date });
+                    setRescheduleEvent({ 
+                      ...rescheduleEvent, 
+                      data: date,
+                      horario_inicio: rescheduleEvent?.horario_inicio || '09:00',
+                      horario_fim: rescheduleEvent?.horario_fim || '11:00'
+                    });
                   }
                 }}
                 locale={ptBR}
                 className="rounded-md border"
               />
+            </div>
+            
+            {/* PRIORIDADE 2: Inputs de horário */}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>Horário Início</Label>
+                <Input
+                  type="time"
+                  value={rescheduleEvent?.horario_inicio || '09:00'}
+                  onChange={(e) => setRescheduleEvent({
+                    ...rescheduleEvent,
+                    horario_inicio: e.target.value
+                  })}
+                />
+              </div>
+              <div>
+                <Label>Horário Fim</Label>
+                <Input
+                  type="time"
+                  value={rescheduleEvent?.horario_fim || '11:00'}
+                  onChange={(e) => setRescheduleEvent({
+                    ...rescheduleEvent,
+                    horario_fim: e.target.value
+                  })}
+                />
+              </div>
             </div>
             
             <div className="flex gap-3">
@@ -364,12 +396,17 @@ export function AgendaUnificada() {
                   if (!rescheduleEvent) return;
                   
                   try {
-                    // Atualizar no banco
+                    // PRIORIDADE 2: Atualizar com data + hora
                     if (rescheduleEvent.tipo === 'captacao') {
+                      const [horaInicio, minInicio] = (rescheduleEvent.horario_inicio || '09:00').split(':');
+                      
+                      const dataComHorario = new Date(rescheduleEvent.data);
+                      dataComHorario.setHours(parseInt(horaInicio), parseInt(minInicio));
+                      
                       const { error } = await supabase
                         .from('captacoes_agenda')
                         .update({ 
-                          data_captacao: rescheduleEvent.data.toISOString() 
+                          data_captacao: dataComHorario.toISOString() 
                         })
                         .eq('id', rescheduleEvent.id);
                       
@@ -378,7 +415,7 @@ export function AgendaUnificada() {
                     
                     toast({
                       title: "✅ Evento reagendado!",
-                      description: `Nova data: ${format(rescheduleEvent.data, "dd/MM/yyyy", { locale: ptBR })}`
+                      description: `Nova data: ${format(rescheduleEvent.data, "dd/MM/yyyy", { locale: ptBR })} às ${rescheduleEvent.horario_inicio}`
                     });
                     
                     setRescheduleEvent(null);
