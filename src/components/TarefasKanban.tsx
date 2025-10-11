@@ -371,7 +371,17 @@ export function TarefasKanban({ planejamento, clienteId, projetoId, filters }: T
 
   const handleTaskCreate = async (taskData: any) => {
     try {
-      // Mapear campos para a tabela tarefa
+      // Mapear executor_area antes de inserir
+      const mapearExecutorArea = (setor: string | null): string | null => {
+        const mapeamento: Record<string, string> = {
+          'audiovisual': 'Audiovisual',
+          'design': 'Criativo',
+          'grs': 'Criativo',
+          'atendimento': 'Criativo'
+        };
+        return setor ? (mapeamento[setor] || null) : null;
+      };
+
       const { data, error } = await supabase
         .from('tarefa')
         .insert({
@@ -382,12 +392,12 @@ export function TarefasKanban({ planejamento, clienteId, projetoId, filters }: T
           prioridade: taskData.prioridade,
           status: taskData.status || 'backlog',
           executor_id: taskData.executor_id,
-          executor_area: taskData.executor_area,
+          executor_area: mapearExecutorArea(taskData.executor_area),
           data_entrega_prevista: taskData.data_prazo,
           origem: taskData.origem || 'avulsa',
           tipo: taskData.tipo || null,
           kpis: taskData.kpis || {}
-        })
+        } as any)
         .select()
         .single();
 

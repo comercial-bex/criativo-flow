@@ -354,6 +354,17 @@ export function CreateTaskModal({
     setLoading(true);
 
     try {
+      // Mapear setor_responsavel → executor_area_enum
+      const mapearExecutorArea = (setor: string | null): string | null => {
+        const mapeamento: Record<string, string> = {
+          'audiovisual': 'Audiovisual',
+          'design': 'Criativo',
+          'grs': 'Criativo',
+          'atendimento': 'Criativo'
+        };
+        return setor ? (mapeamento[setor] || null) : null;
+      };
+
       const taskData = {
         projeto_id: selectedProjeto,
         cliente_id: selectedCliente,
@@ -361,7 +372,7 @@ export function CreateTaskModal({
         descricao: formData.descricao,
         setor_responsavel: formData.setor_responsavel,
         executor_id: selectedExecutor || null,
-        executor_area: formData.setor_responsavel || null,
+        executor_area: mapearExecutorArea(formData.setor_responsavel),
         prioridade: formData.prioridade,
         status: defaultStatus,
         data_prazo: formData.data_prazo?.toISOString().split('T')[0],
