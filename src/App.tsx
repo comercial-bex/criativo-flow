@@ -320,6 +320,13 @@ function App() {
                   </ProtectedRoute>
                 } />
                 
+                {/* Agenda Unificada */}
+                <Route path="/agenda" element={
+                  <ProtectedRoute>
+                    <Layout><GRSAgenda /></Layout>
+                  </ProtectedRoute>
+                } />
+                
                 {/* GRS routes */}
                 <Route path="/grs/dashboard" element={
                   <ProtectedRoute requiredRole="grs">
