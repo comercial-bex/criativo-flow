@@ -6626,6 +6626,30 @@ export type Database = {
         }
         Relationships: []
       }
+      system_health_logs: {
+        Row: {
+          check_type: string
+          created_at: string | null
+          details: Json | null
+          id: string
+          status: string
+        }
+        Insert: {
+          check_type: string
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          status: string
+        }
+        Update: {
+          check_type?: string
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          status?: string
+        }
+        Relationships: []
+      }
       tarefa: {
         Row: {
           area: Database["public"]["Enums"]["area_enum"][] | null
@@ -7299,6 +7323,33 @@ export type Database = {
           },
         ]
       }
+      user_integrity_checks: {
+        Row: {
+          auth_user_id: string
+          has_profile: boolean | null
+          has_role: boolean | null
+          id: string
+          is_orphan: boolean | null
+          last_check: string | null
+        }
+        Insert: {
+          auth_user_id: string
+          has_profile?: boolean | null
+          has_role?: boolean | null
+          id?: string
+          is_orphan?: boolean | null
+          last_check?: string | null
+        }
+        Update: {
+          auth_user_id?: string
+          has_profile?: boolean | null
+          has_role?: boolean | null
+          id?: string
+          is_orphan?: boolean | null
+          last_check?: string | null
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string | null
@@ -7337,6 +7388,15 @@ export type Database = {
       }
     }
     Views: {
+      safe_table_metadata: {
+        Row: {
+          column_name: unknown | null
+          data_type: string | null
+          is_nullable: string | null
+          table_name: unknown | null
+        }
+        Relationships: []
+      }
       vw_client_metrics: {
         Row: {
           assinatura_nome: string | null
@@ -7579,6 +7639,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      auto_sync_orphan_users: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
       can_access_sensitive_customer_data: {
         Args: { customer_id: string }
         Returns: boolean
@@ -7588,6 +7652,17 @@ export type Database = {
         Returns: {
           orphan_count: number
           orphan_emails: string[]
+        }[]
+      }
+      check_user_integrity: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          integrity_score: number
+          orphan_auth_users: number
+          orphan_profiles: number
+          total_auth_users: number
+          users_with_profile: number
+          users_with_role: number
         }[]
       }
       create_client_user_direct: {
