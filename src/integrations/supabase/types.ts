@@ -3034,6 +3034,59 @@ export type Database = {
         }
         Relationships: []
       }
+      folha_mes: {
+        Row: {
+          competencia: string
+          created_at: string | null
+          id: string
+          pessoa_id: string | null
+          resumo: Json | null
+          salario_base: number
+          status: string
+          total_a_pagar: number
+          total_adiantamentos: number
+          total_descontos: number
+          total_extras: number
+          updated_at: string | null
+        }
+        Insert: {
+          competencia: string
+          created_at?: string | null
+          id?: string
+          pessoa_id?: string | null
+          resumo?: Json | null
+          salario_base?: number
+          status?: string
+          total_a_pagar?: number
+          total_adiantamentos?: number
+          total_descontos?: number
+          total_extras?: number
+          updated_at?: string | null
+        }
+        Update: {
+          competencia?: string
+          created_at?: string | null
+          id?: string
+          pessoa_id?: string | null
+          resumo?: Json | null
+          salario_base?: number
+          status?: string
+          total_a_pagar?: number
+          total_adiantamentos?: number
+          total_descontos?: number
+          total_extras?: number
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "folha_mes_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "pessoas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       funcionarios: {
         Row: {
           agencia: string | null
@@ -4684,6 +4737,47 @@ export type Database = {
         }
         Relationships: []
       }
+      ocorrencias_ponto: {
+        Row: {
+          created_at: string | null
+          data: string
+          horas: number | null
+          id: string
+          observacao: string | null
+          pessoa_id: string | null
+          tipo: string
+          valor: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          data: string
+          horas?: number | null
+          id?: string
+          observacao?: string | null
+          pessoa_id?: string | null
+          tipo: string
+          valor?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          data?: string
+          horas?: number | null
+          id?: string
+          observacao?: string | null
+          pessoa_id?: string | null
+          tipo?: string
+          valor?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ocorrencias_ponto_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "pessoas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       orcamento_itens: {
         Row: {
           created_at: string
@@ -4930,6 +5024,110 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      parcelas_receber: {
+        Row: {
+          centro_custo: string | null
+          contrato_id: string | null
+          created_at: string | null
+          id: string
+          status: string
+          updated_at: string | null
+          valor: number
+          vencimento: string
+        }
+        Insert: {
+          centro_custo?: string | null
+          contrato_id?: string | null
+          created_at?: string | null
+          id?: string
+          status?: string
+          updated_at?: string | null
+          valor: number
+          vencimento: string
+        }
+        Update: {
+          centro_custo?: string | null
+          contrato_id?: string | null
+          created_at?: string | null
+          id?: string
+          status?: string
+          updated_at?: string | null
+          valor?: number
+          vencimento?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "parcelas_receber_contrato_id_fkey"
+            columns: ["contrato_id"]
+            isOneToOne: false
+            referencedRelation: "contratos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pessoas: {
+        Row: {
+          cargo_id: string | null
+          cpf: string | null
+          created_at: string | null
+          created_by: string | null
+          dados_bancarios: Json | null
+          data_admissao: string | null
+          data_desligamento: string | null
+          email: string | null
+          fee_mensal: number | null
+          id: string
+          nome: string
+          observacoes: string | null
+          papeis: Database["public"]["Enums"]["pessoa_papel"][]
+          regime: Database["public"]["Enums"]["pessoa_regime"] | null
+          salario_base: number | null
+          status: Database["public"]["Enums"]["pessoa_status"] | null
+          telefones: Json | null
+          updated_at: string | null
+        }
+        Insert: {
+          cargo_id?: string | null
+          cpf?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          dados_bancarios?: Json | null
+          data_admissao?: string | null
+          data_desligamento?: string | null
+          email?: string | null
+          fee_mensal?: number | null
+          id?: string
+          nome: string
+          observacoes?: string | null
+          papeis?: Database["public"]["Enums"]["pessoa_papel"][]
+          regime?: Database["public"]["Enums"]["pessoa_regime"] | null
+          salario_base?: number | null
+          status?: Database["public"]["Enums"]["pessoa_status"] | null
+          telefones?: Json | null
+          updated_at?: string | null
+        }
+        Update: {
+          cargo_id?: string | null
+          cpf?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          dados_bancarios?: Json | null
+          data_admissao?: string | null
+          data_desligamento?: string | null
+          email?: string | null
+          fee_mensal?: number | null
+          id?: string
+          nome?: string
+          observacoes?: string | null
+          papeis?: Database["public"]["Enums"]["pessoa_papel"][]
+          regime?: Database["public"]["Enums"]["pessoa_regime"] | null
+          salario_base?: number | null
+          status?: Database["public"]["Enums"]["pessoa_status"] | null
+          telefones?: Json | null
+          updated_at?: string | null
+        }
+        Relationships: []
       }
       planejamentos: {
         Row: {
@@ -7725,6 +7923,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: Json
       }
+      calcular_folha_mes: {
+        Args: { p_competencia: string; p_pessoa_id: string }
+        Returns: Json
+      }
       can_access_sensitive_customer_data: {
         Args: { customer_id: string }
         Returns: boolean
@@ -7798,6 +8000,10 @@ export type Database = {
           p_telefone?: string
           p_user_id: string
         }
+        Returns: string
+      }
+      fechar_folha_mes: {
+        Args: { p_competencia: string; p_pessoa_id: string }
         Returns: string
       }
       find_orphan_auth_users: {
@@ -8172,6 +8378,9 @@ export type Database = {
         | "saude"
         | "acordo"
         | "outros"
+      pessoa_papel: "colaborador" | "especialista" | "cliente"
+      pessoa_regime: "clt" | "pj" | "estagio" | "freelancer"
+      pessoa_status: "ativo" | "afastado" | "desligado"
       pix_tipo_enum: "cpf" | "cnpj" | "email" | "telefone" | "aleatoria"
       prioridade_enum: "baixa" | "media" | "alta" | "critica"
       priority_type: "baixa" | "media" | "alta" | "urgente"
@@ -8452,6 +8661,9 @@ export const Constants = {
         "acordo",
         "outros",
       ],
+      pessoa_papel: ["colaborador", "especialista", "cliente"],
+      pessoa_regime: ["clt", "pj", "estagio", "freelancer"],
+      pessoa_status: ["ativo", "afastado", "desligado"],
       pix_tipo_enum: ["cpf", "cnpj", "email", "telefone", "aleatoria"],
       prioridade_enum: ["baixa", "media", "alta", "critica"],
       priority_type: ["baixa", "media", "alta", "urgente"],
