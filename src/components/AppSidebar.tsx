@@ -1,404 +1,208 @@
-import { 
-  LayoutDashboard, 
-  Users, 
-  DollarSign, 
-  FileText, 
-  Settings, 
-  Building2,
-  CreditCard,
-  UserCheck,
-  Calendar,
-  CheckSquare,
-  BarChart3,
-  ClipboardCheck,
-  Calculator,
-  Briefcase,
-  Signature,
-  FileSignature,
-  Video,
-  Camera,
-  Film,
-  Palette,
-  FolderOpen,
-  Target,
-  Eye,
-  Home,
-  Inbox,
-  HeadphonesIcon,
-  TrendingUp,
-  Users2,
-  CalendarDays,
-  CheckCircle,
-  Globe,
-  Clock,
-  Plus,
-  Send,
-  XCircle,
-  ChevronDown,
-  ChevronRight,
-  Shield,
-  Activity,
-  Brain,
-  Trophy,
-  FileType,
-  Bell,
-  Package,
-  ClipboardList
-} from "lucide-react"
-import { NavLink, useLocation } from "react-router-dom"
-import React from "react"
-import { usePermissions, type ModulePermissions } from "@/hooks/usePermissions";
+import { NavLink, useLocation } from "react-router-dom";
+import * as Icons from "lucide-react";
+import { LucideIcon } from "lucide-react";
+import React, { useState } from "react";
+import { usePermissions } from "@/hooks/usePermissions";
+import { useUserRole } from "@/hooks/useUserRole";
+import { useDynamicModules } from "@/hooks/useDynamicModules";
 import { UserProfileSection } from "./UserProfileSection";
 import { UserActionsModule } from "./UserActionsModule";
-import { useState } from "react";
-
-// GRS Menu Component with Submenu
-function GRSMenuWithSubmenu({ item, isActive, index }: { item: any; isActive: boolean; index: number }) {
-  const [isExpanded, setIsExpanded] = useState(isActive);
-  const Icon = item.icon;
-  const location = useLocation();
-  
-  React.useEffect(() => {
-    if (isActive) {
-      setIsExpanded(true);
-    }
-  }, [isActive]);
-
-  return (
-    <div 
-      className="mb-1 animate-slide-in"
-      style={{ animationDelay: `${index * 30}ms` }}
-    >
-      {/* Main Menu Item */}
-      <button
-        onClick={() => setIsExpanded(!isExpanded)}
-        className={`w-full flex items-center px-4 py-3 text-sm rounded-lg transition-all duration-300 hover-lift ${
-          isActive
-            ? 'bg-sidebar-accent text-bex-green border-l-2 border-bex-green'
-            : 'text-sidebar-foreground hover:bg-bex-green/10 hover:text-bex-green'
-        }`}
-      >
-        <Icon className="mr-3 h-4 w-4" />
-        <span className="flex-1 text-left">{item.title}</span>
-        {isExpanded ? 
-          <ChevronDown className="h-3 w-3" /> : 
-          <ChevronRight className="h-3 w-3" />
-        }
-      </button>
-      
-      {/* Submenu */}
-      {isExpanded && item.submenu && (
-        <div className="ml-6 mt-2 space-y-1">
-          {item.submenu.map((subItem: any, subIndex: number) => {
-            const SubIcon = subItem.icon;
-            const isSubActive = location.pathname === subItem.url || 
-                                location.pathname.startsWith(subItem.url);
-            
-            return (
-              <NavLink
-                key={subItem.url}
-                to={subItem.url}
-                className={`flex items-center px-3 py-2 text-xs rounded-md transition-all duration-300 animate-fade-in ${
-                  isSubActive
-                    ? 'bg-bex-green/20 text-bex-green'
-                    : 'text-sidebar-foreground/80 hover:bg-bex-green/10 hover:text-bex-green'
-                }`}
-                style={{ animationDelay: `${(index + subIndex) * 20}ms` }}
-              >
-                <SubIcon className="mr-2 h-3 w-3" />
-                <span>{subItem.title}</span>
-              </NavLink>
-            );
-          })}
-        </div>
-      )}
-    </div>
-  );
-}
-
 import {
   Sidebar,
   SidebarContent,
-  SidebarTrigger,
   useSidebar,
-} from "@/components/ui/sidebar"
-import { cn } from "@/lib/utils"
+} from "@/components/ui/sidebar";
+import { cn } from "@/lib/utils";
 
-// Modules structure for the new layout
-const modules = [
-  {
-    id: "dashboard",
-    title: "Dashboard",
-    icon: LayoutDashboard,
-    items: [
-      { title: "Meu Painel", url: "/dashboard", icon: Home },
-    ],
-    permissions: ["dashboard"]
-  },
-  {
-    id: "crm",
-    title: "CRM",
-    icon: Users,
-    items: [
-      { title: "CRM", url: "/crm", icon: Users },
-      { title: "Clientes", url: "/clientes", icon: Building2 },
-      { title: "Especialistas", url: "/especialistas", icon: UserCheck },
-    ],
-    permissions: ["crm", "clientes", "especialistas"]
-  },
-  {
-    id: "gestao_financas",
-    title: "Gestão & Finanças",
-    icon: Building2,
-    items: [
-      { title: "Dashboard Geral", url: "/gestao/dashboard", icon: TrendingUp },
-      { title: "Lançamentos", url: "/financeiro", icon: DollarSign },
-      { title: "Dashboard Financeiro", url: "/financeiro/dashboard", icon: BarChart3 },
-      { title: "Produtos", url: "/financeiro/produtos", icon: Package },
-      { title: "Categorias", url: "/categorias-financeiras", icon: FileText },
-      { title: "Planos", url: "/planos", icon: CreditCard },
-      { title: "Orçamentos", url: "/administrativo/orcamentos", icon: Calculator },
-      { title: "Propostas", url: "/administrativo/propostas", icon: Signature },
-      { title: "Contratos", url: "/admin/contratos", icon: FileSignature },
-      { title: "Modelos", url: "/admin/contratos/templates", icon: FileType },
-    ],
-    permissions: ["financeiro", "administrativo"]
-  },
-  {
-    id: "rh",
-    title: "RH",
-    icon: Users2,
-    items: [
-      { title: "Gestão de Pessoas", url: "/rh/pessoas", icon: Users },
-      { title: "Ocorrências de Ponto", url: "/rh/ocorrencias", icon: Clock },
-      { title: "Folha de Pagamento", url: "/rh/folha", icon: DollarSign },
-      { title: "Folha de Ponto", url: "/rh/ponto", icon: ClipboardCheck },
-    ],
-    permissions: ["rh"]
-  },
-  {
-    id: "design",
-    title: "Design",
-    icon: Palette,
-    items: [
-      { title: "Dashboard Design", url: "/design/dashboard", icon: Palette },
-      { title: "Minhas Tarefas", url: "/design/minhas-tarefas", icon: CheckSquare },
-      { title: "Calendário", url: "/design/calendario", icon: Calendar },
-      { title: "Biblioteca", url: "/design/biblioteca", icon: FolderOpen },
-      { title: "Metas", url: "/design/metas", icon: Target },
-      { title: "Aprovações", url: "/design/aprovacoes", icon: Eye },
-    ],
-    permissions: ["design"]
-  },
-  {
-    id: "audiovisual",
-    title: "Audiovisual", 
-    icon: Video,
-    items: [
-      { title: "Dashboard AV", url: "/audiovisual/dashboard", icon: Video },
-      { title: "Minhas Tarefas", url: "/audiovisual/minhas-tarefas", icon: CheckSquare },
-      { title: "Captações", url: "/audiovisual/captacoes", icon: Camera },
-      { title: "Projetos AV", url: "/audiovisual/projetos", icon: Film },
-    ],
-    permissions: ["audiovisual"]
-  },
-  {
-    id: "grs",
-    title: "GRS",
-    icon: Globe,
-    items: [
-      { title: "Dashboard", url: "/grs/dashboard", icon: BarChart3 },
-      { title: "Planejamentos", url: "/grs/planejamentos", icon: Calendar },
-      { title: "Calendário Editorial", url: "/grs/calendario-editorial", icon: CalendarDays },
-      { title: "Aprovações", url: "/grs/aprovacoes", icon: CheckCircle },
-      { title: "Inbox de Revisões", url: "/grs/inbox", icon: Inbox },
-      { title: "Minhas Tarefas", url: "/grs/tarefas", icon: ClipboardCheck },
-      { title: "Relatórios", url: "/grs/relatorios", icon: TrendingUp },
-    ],
-    permissions: ["grs"]
-  },
-  {
-    id: "inteligencia",
-    title: "Inteligência",
-    icon: Brain,
-    items: [
-      { title: "Hub de Inteligência", url: "/inteligencia", icon: Brain },
-    ],
-    permissions: ["inteligencia"]
-  },
-  {
-    id: "calendario",
-    title: "Calendário",
-    icon: Calendar,
-    items: [
-      { title: "Calendário Multidisciplinar", url: "/calendario", icon: Calendar },
-    ],
-    permissions: ["calendario"],
-  },
-  {
-    id: "inventario",
-    title: "Inventário",
-    icon: Package,
-    items: [
-      { title: "Equipamentos", url: "/inventario", icon: Package },
-    ],
-    permissions: ["inventario"],
-  },
-  {
-    id: "admin",
-    title: "Admin",
-    icon: Shield,
-    items: [
-      { title: "Painel Admin", url: "/admin/painel", icon: Shield },
-      { title: "Central de Notificações", url: "/admin/central-notificacoes", icon: Bell },
-      { title: "Todas as Tarefas", url: "/admin/tarefas", icon: ClipboardCheck },
-      { title: "Usuários", url: "/admin/usuarios", icon: Users2 },
-      { title: "Logs do Sistema", url: "/admin/logs", icon: Activity },
-    ],
-    permissions: ["admin"],
-    roles: ["admin"]
-  },
-  {
-    id: "configuracoes",
-    title: "Configurações",
-    icon: Settings,
-    items: [
-      { title: "Configurações", url: "/configuracoes", icon: Settings },
-      { title: "Homologação MVP", url: "/admin/homologacao-mvp", icon: ClipboardList },
-      { title: "Relatórios", url: "/relatorios", icon: BarChart3 },
-    ],
-    permissions: ["configuracoes", "relatorios", "admin"]
-  },
-]
+// Função auxiliar para mapear nome de ícone para componente Lucide
+const getIconComponent = (iconName: string): LucideIcon => {
+  const icon = Icons[iconName as keyof typeof Icons] as LucideIcon;
+  return icon || Icons.Circle;
+};
+
+// Interface para módulos
+interface ModuleItem {
+  title: string;
+  url: string;
+  icon: LucideIcon;
+}
+
+interface Module {
+  id: string;
+  title: string;
+  icon: LucideIcon;
+  items: ModuleItem[];
+  permissions?: string[];
+  roles?: string[];
+}
 
 export function AppSidebar() {
+  const { hasModuleAccess } = usePermissions();
+  const { role } = useUserRole();
+  const { modules: dbModules, loading } = useDynamicModules();
+  const { state } = useSidebar();
   const location = useLocation();
-  const { hasModuleAccess, role } = usePermissions();
-  const [selectedModule, setSelectedModule] = useState<string>("dashboard");
+  const [selectedModule, setSelectedModule] = useState<string>("inicio");
 
-  const isActive = (path: string) => {
-    if (path === '/dashboard') {
-      return location.pathname === '/dashboard';
+  // Módulos fallback (7 hubs principais)
+  const fallbackModules: Module[] = [
+    {
+      id: "inicio",
+      title: "Início",
+      icon: Icons.Home,
+      items: [
+        { title: "Meu Resumo", url: "/inicio", icon: Icons.LayoutDashboard },
+        { title: "Favoritos", url: "/inicio/favoritos", icon: Icons.Star },
+        { title: "Recentes", url: "/inicio/recentes", icon: Icons.Clock },
+      ],
+      permissions: ["dashboard"]
+    },
+    {
+      id: "inteligencia",
+      title: "Inteligência Operacional",
+      icon: Icons.Brain,
+      items: [
+        { title: "Calendário Multidisciplinar", url: "/inteligencia/calendario", icon: Icons.CalendarDays },
+        { title: "Análises", url: "/inteligencia/analises", icon: Icons.BarChart3 },
+        { title: "Insights", url: "/inteligencia/insights", icon: Icons.Lightbulb },
+        { title: "Previsões", url: "/inteligencia/previsoes", icon: Icons.TrendingUp },
+        { title: "Métricas", url: "/inteligencia/metricas", icon: Icons.Activity },
+      ],
+      permissions: ["inteligencia", "calendario"]
+    },
+    {
+      id: "operacoes",
+      title: "Operacional (GRS)",
+      icon: Icons.Globe,
+      items: [
+        { title: "Projetos", url: "/grs/projetos", icon: Icons.Briefcase },
+        { title: "Planejamentos", url: "/grs/planejamentos", icon: Icons.Calendar },
+        { title: "Tarefas", url: "/grs/tarefas", icon: Icons.CheckSquare },
+        { title: "Kanban", url: "/operacoes/kanban", icon: Icons.Columns },
+        { title: "Calendário", url: "/grs/calendario-editorial", icon: Icons.CalendarDays },
+        { title: "Relatórios", url: "/grs/relatorios", icon: Icons.FileText },
+      ],
+      permissions: ["grs", "projetos"]
+    },
+    {
+      id: "crm",
+      title: "CRM / Pessoas",
+      icon: Icons.Users,
+      items: [
+        { title: "Clientes", url: "/clientes", icon: Icons.Building2 },
+        { title: "Especialistas", url: "/especialistas", icon: Icons.UserCheck },
+        { title: "Contatos", url: "/crm/contatos", icon: Icons.Phone },
+        { title: "Histórico", url: "/crm/historico", icon: Icons.History },
+      ],
+      permissions: ["crm", "clientes", "especialistas"]
+    },
+    {
+      id: "financeiro",
+      title: "Contratos & Financeiro",
+      icon: Icons.Building2,
+      items: [
+        { title: "Dashboard", url: "/gestao/dashboard", icon: Icons.TrendingUp },
+        { title: "Contratos", url: "/admin/contratos", icon: Icons.FileSignature },
+        { title: "Orçamentos", url: "/administrativo/orcamentos", icon: Icons.Calculator },
+        { title: "Propostas", url: "/administrativo/propostas", icon: Icons.FileText },
+        { title: "Folha", url: "/financeiro/folha", icon: Icons.Users2 },
+        { title: "Relatórios", url: "/relatorios", icon: Icons.FileText },
+      ],
+      permissions: ["financeiro", "administrativo", "rh"]
+    },
+    {
+      id: "audiovisual",
+      title: "Audiovisual",
+      icon: Icons.Video,
+      items: [
+        { title: "Dashboard", url: "/audiovisual/dashboard", icon: Icons.Video },
+        { title: "Minhas Tarefas", url: "/audiovisual/tarefas", icon: Icons.CheckSquare },
+        { title: "Captações", url: "/audiovisual/captacoes", icon: Icons.Camera },
+        { title: "Projetos", url: "/audiovisual/projetos", icon: Icons.Film },
+      ],
+      permissions: ["audiovisual"]
+    },
+    {
+      id: "admin",
+      title: "Admin",
+      icon: Icons.Shield,
+      items: [
+        { title: "Painel", url: "/admin/painel", icon: Icons.Shield },
+        { title: "Notificações", url: "/admin/central-notificacoes", icon: Icons.Bell },
+        { title: "Tarefas", url: "/admin/tarefas", icon: Icons.ClipboardCheck },
+        { title: "Usuários", url: "/usuarios", icon: Icons.Users2 },
+        { title: "Equipamentos", url: "/inventario", icon: Icons.Package },
+        { title: "Sistema", url: "/admin/system-health", icon: Icons.Settings },
+        { title: "Relatórios", url: "/relatorios", icon: Icons.FileText },
+        { title: "Homologação", url: "/admin/homologacao-mvp", icon: Icons.ClipboardList },
+        { title: "Logs", url: "/admin/logs", icon: Icons.Activity },
+      ],
+      permissions: [],
+      roles: ["admin"]
+    },
+  ];
+
+  // Filtrar módulos por permissões e roles
+  const getVisibleModules = (): Module[] => {
+    if (role === 'admin') {
+      return fallbackModules; // Admin vê tudo
     }
-    return location.pathname.startsWith(path);
+
+    return fallbackModules.filter((module) => {
+      // Se o módulo requer roles específicos
+      if (module.roles && module.roles.length > 0) {
+        return module.roles.includes(role || "");
+      }
+      // Caso contrário, verificar permissões - usar module.id como ModulePermissions
+      return module.permissions?.some(p => hasModuleAccess(p as any)) || false;
+    });
   };
 
-  // Get visible modules based on permissions and role - MODO DEUS PARA ADMIN
-  const getVisibleModules = () => {
-    const role_str = role as string;
-    
-    // 🔥 MODO DEUS: Admin vê TODOS os módulos sem restrição
-    if (role_str === 'admin') {
-      return modules; // ACESSO TOTAL - TODOS OS MÓDULOS
-    }
-    
-    // Outros roles mantêm as restrições normais
-    switch (role_str) {
-      case 'grs':
-        return modules.filter(m => ['grs', 'inventario'].includes(m.id));
-      case 'designer':
-        return modules.filter(m => ['design', 'inventario'].includes(m.id));
-      case 'atendimento':
-        return modules.filter(m => ['dashboard', 'crm', 'grs', 'inventario'].includes(m.id));
-      case 'filmmaker':
-        return modules.filter(m => ['audiovisual', 'inventario'].includes(m.id));
-      case 'financeiro':
-        return modules.filter(m => ['dashboard', 'financeiro', 'administrativo'].includes(m.id));
-      case 'gestor':
-        return modules.filter(m => ['dashboard', 'crm', 'configuracoes', 'inteligencia', 'inventario', 'calendario'].includes(m.id));
-      case 'cliente':
-        return []; // Clientes have separate navigation
-      case 'trafego':
-        return modules.filter(m => m.id === 'dashboard');
-      case 'fornecedor':
-        return modules.filter(m => m.id === 'dashboard');
-      default:
-        return modules.filter(m => m.id === 'dashboard');
-    }
-  };
+  // Usar módulos dinâmicos se disponíveis, caso contrário usar fallback
+  const displayModules = dbModules.length > 0 
+    ? dbModules.map(mod => ({
+        id: mod.slug,
+        title: mod.nome,
+        icon: getIconComponent(mod.icone),
+        items: mod.submodulos.map(sub => ({
+          title: sub.nome,
+          url: sub.rota,
+          icon: getIconComponent(sub.icone)
+        }))
+      })) 
+    : getVisibleModules();
 
-  // Client-specific items for role 'cliente'
-  const clientItems = [
-    { title: "Meu Painel", url: "/cliente/painel", icon: Home },
-    { title: "Meus Projetos", url: "/cliente/projetos", icon: Briefcase },
-    { title: "Minhas Tarefas", url: "/cliente/tarefas", icon: ClipboardCheck },
-    { title: "Aprovações", url: "/aprovacao-job", icon: Eye },
-    { title: "Meu Perfil", url: "/perfil", icon: UserCheck },
-  ];
-
-  // GRS specific items - CLEAN VERSION (sem submenus) - SIMPLIFIED UX
-  const grsItems = [
-    { title: "Dashboard", url: "/grs/dashboard", icon: BarChart3 },
-    { title: "Meus Projetos", url: "/especialista/dashboard", icon: Briefcase },
-    { title: "Minhas Tarefas", url: "/grs/tarefas", icon: ClipboardCheck },
-    { title: "Mensagens", url: "/grs/inbox", icon: Inbox },
-    { title: "Calendário", url: "/grs/calendario-editorial", icon: CalendarDays },
-    { title: "Gamificação", url: "/gamificacao", icon: Trophy },
-    { title: "Meu Perfil", url: "/perfil", icon: UserCheck },
-  ];
-
-  // Designer specific items
-  const designerItems = [
-    { title: "Meus Projetos", url: "/especialista/dashboard", icon: Briefcase },
-    { title: "Dashboard", url: "/design/dashboard", icon: Palette },
-    { title: "Minhas Tarefas", url: "/design/tarefas", icon: CheckSquare },
-    { title: "Kanban", url: "/design/kanban", icon: ClipboardCheck },
-    { title: "Gamificação", url: "/gamificacao", icon: Trophy },
-    { title: "Meu Perfil", url: "/perfil", icon: UserCheck },
-  ];
-
-  // Filmmaker specific items
-  const filmmakerItems = [
-    { title: "Meus Projetos", url: "/especialista/dashboard", icon: Briefcase },
-    { title: "Dashboard", url: "/audiovisual/dashboard", icon: Video },
-    { title: "Minhas Tarefas", url: "/audiovisual/tarefas", icon: CheckSquare },
-    { title: "Captações", url: "/audiovisual/captacoes", icon: Camera },
-    { title: "Gamificação", url: "/gamificacao", icon: Trophy },
-    { title: "Meu Perfil", url: "/perfil", icon: UserCheck },
-  ];
-
-  // Detect current module based on location
+  // Detectar módulo atual baseado na rota
   const detectCurrentModule = () => {
     const currentPath = location.pathname;
-    for (const module of modules) {
+    for (const module of displayModules) {
       if (module.items.some(item => currentPath.startsWith(item.url))) {
         return module.id;
       }
     }
-    return "dashboard";
+    return "inicio";
   };
 
-  // Update selected module when location changes
+  // Atualizar módulo selecionado quando a localização mudar
   React.useEffect(() => {
     setSelectedModule(detectCurrentModule());
   }, [location.pathname]);
 
-  const visibleModules = getVisibleModules();
-  const currentModule = visibleModules.find(m => m.id === selectedModule);
+  const currentModule = displayModules.find(m => m.id === selectedModule);
+  const isActive = (path: string) => location.pathname.startsWith(path);
 
-  // Get current module items or fallback items based on role
-  const getCurrentItems = () => {
-    if (role === 'cliente') {
-      return clientItems;
-    }
-    
-    if (role === 'grs') {
-      return grsItems;
-    }
+  if (loading) {
+    return (
+      <Sidebar collapsible="icon">
+        <SidebarContent>
+          <div className="p-4 text-center text-sm text-muted-foreground">
+            Carregando módulos...
+          </div>
+        </SidebarContent>
+      </Sidebar>
+    );
+  }
 
-    if (role === 'designer') {
-      return designerItems;
-    }
-
-    if (role === 'filmmaker') {
-      return filmmakerItems;
-    }
-    
-    return currentModule?.items || [];
-  };
-
-  const { state, open } = useSidebar();
-  
   return (
     <Sidebar 
       className={cn(
@@ -408,12 +212,12 @@ export function AppSidebar() {
       collapsible="icon"
     >
       <div className="flex h-full">
-        {/* Left Column - Modules (Green) - Always visible */}
+        {/* Coluna Esquerda - Módulos (Verde) */}
         <div className={cn(
-          "bg-bex-green flex flex-col items-center py-4 space-y-2 animate-slide-in relative z-50",
+          "bg-bex-green flex flex-col items-center py-4 space-y-2 relative z-50",
           state === "collapsed" ? "w-full" : "w-16"
         )}>
-          {visibleModules.map((module, index) => {
+          {displayModules.map((module, index) => {
             const isSelected = selectedModule === module.id;
             const Icon = module.icon;
             
@@ -422,12 +226,11 @@ export function AppSidebar() {
                 key={module.id}
                 onClick={() => setSelectedModule(module.id)}
                 className={cn(
-                  "w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-300 module-hover animate-fade-in",
+                  "w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-300",
                   isSelected 
                     ? 'bg-bex-dark text-bex-green shadow-lg' 
                     : 'bg-bex-green/90 text-bex-dark hover:bg-white/90'
                 )}
-                style={{ animationDelay: `${index * 50}ms` }}
                 title={module.title}
               >
                 <Icon size={20} />
@@ -435,21 +238,21 @@ export function AppSidebar() {
             );
           })}
 
-          {/* User Actions Module - Bottom Left */}
+          {/* User Actions - Bottom */}
           <div className="mt-auto pb-4">
             <UserActionsModule />
           </div>
         </div>
 
-        {/* Right Column - Functions + User Profile (Dark) - Hidden when collapsed */}
+        {/* Coluna Direita - Funções (Escuro) */}
         {state === "expanded" && (
-          <div className="flex-1 bg-bex-dark flex flex-col animate-scale-in relative z-40">
+          <div className="flex-1 bg-bex-dark flex flex-col relative z-40">
             {/* User Profile Section */}
             <UserProfileSection />
 
-            {/* Active Module Highlight + Admin Badge */}
+            {/* Módulo Ativo */}
             {currentModule && (
-              <div className="px-4 py-3 mx-4 mb-4 bg-bex-green rounded-lg animate-fade-in hover-lift">
+              <div className="px-4 py-3 mx-4 mb-4 bg-bex-green rounded-lg">
                 <div className="flex items-center justify-between text-bex-dark">
                   <div className="flex items-center">
                     <currentModule.icon className="mr-2 h-4 w-4" />
@@ -466,47 +269,25 @@ export function AppSidebar() {
 
             {/* Navigation Items */}
             <div className="flex-1 px-2 overflow-y-auto">
-              {getCurrentItems().map((item, index) => {
+              {currentModule?.items.map((item, index) => {
                 const isItemActive = isActive(item.url);
                 const Icon = item.icon;
-                
-                // Special handling for GRS hierarchical menu with submenus
-                if (role === 'grs' && (item as any).submenu) {
-                  return (
-                    <GRSMenuWithSubmenu 
-                      key={item.url}
-                      item={item}
-                      isActive={isItemActive}
-                      index={index}
-                    />
-                  );
-                }
                 
                 return (
                   <NavLink
                     key={item.url}
                     to={item.url}
-                    className={`flex items-center px-4 py-3 mb-1 text-sm rounded-lg transition-all duration-300 hover-lift animate-slide-in ${
+                    className={`flex items-center px-4 py-3 mb-1 text-sm rounded-lg transition-all duration-300 ${
                       isItemActive
                         ? 'bg-sidebar-accent text-bex-green border-l-2 border-bex-green'
                         : 'text-sidebar-foreground hover:bg-bex-green/10 hover:text-bex-green'
                     }`}
-                    style={{ animationDelay: `${index * 30}ms` }}
                   >
                     <Icon className="mr-3 h-4 w-4" />
                     <span>{item.title}</span>
-                    {item.url.includes('/ganhos') && (
-                      <span className="ml-auto text-xs bg-bex-green text-bex-dark px-2 py-1 rounded">→</span>
-                    )}
                   </NavLink>
                 );
               })}
-            </div>
-
-            {/* Footer */}
-            <div className="p-4 text-center text-xs text-sidebar-foreground/50 border-t border-sidebar-border animate-fade-in">
-              <p>Agência Bex Ltda. Admin Dashboard</p>
-              <p>© 2025 Todos os Direitos Reservados</p>
             </div>
           </div>
         )}
