@@ -31,12 +31,15 @@ import {
   Activity,
   Wifi,
   WifiOff,
-  Trash2
+  Trash2,
+  Plus
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useProfileData } from '@/hooks/useProfileData';
 import { useAdminUserManagement } from '@/hooks/useAdminUserManagement';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
+import { NewUserModal } from '@/components/Admin/NewUserModal';
+import { DataSyncIndicator } from '@/components/Admin/DataSyncIndicator';
 
 interface Profile {
   id: string;
@@ -73,8 +76,9 @@ const Usuarios = () => {
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<Profile | null>(null);
-  const [selectedRole, setSelectedRole] = useState<'admin' | 'gestor' | 'grs' | 'designer' | 'filmmaker' | 'atendimento' | 'financeiro' | 'trafego' | 'cliente' | 'fornecedor' | ''>('');
+  const [selectedRole, setSelectedRole] = useState<'admin' | 'gestor' | 'grs' | 'designer' | 'filmmaker' | 'atendimento' | 'financeiro' | 'trafego' | 'cliente' | 'fornecedor' | 'rh' | ''>('');
   const [updatingRole, setUpdatingRole] = useState(false);
+  const [newUserModalOpen, setNewUserModalOpen] = useState(false);
   const { toast } = useToast();
   const { deleteUser, loading: deleting } = useAdminUserManagement();
 
@@ -387,17 +391,25 @@ const Usuarios = () => {
   return (
     <PermissionGate module="especialistas" action="canView">
       <div className="p-6 space-y-8 animate-fade-in">
-        <SectionHeader
-          title="Gerenciar Usuários"
-          description="Controle de acesso, aprovações e monitoramento de usuários"
-          icon={Users}
-          badge="Admin"
-          action={{
-            label: "Atualizar",
-            onClick: fetchData,
-            icon: RefreshCw
-          }}
-        />
+        <div className="flex items-center justify-between">
+          <SectionHeader
+            title="Gerenciar Usuários"
+            description="Controle de acesso, aprovações e monitoramento de usuários"
+            icon={Users}
+            badge="Admin"
+          />
+          <div className="flex gap-2">
+            <DataSyncIndicator />
+            <Button onClick={() => setNewUserModalOpen(true)}>
+              <Plus className="mr-2 h-4 w-4" />
+              Novo Usuário
+            </Button>
+            <Button variant="outline" onClick={fetchData}>
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Atualizar
+            </Button>
+          </div>
+        </div>
 
         <StatsGrid stats={statsData} />
 
@@ -718,6 +730,12 @@ Tem certeza que deseja continuar?`
           cancelText="Cancelar"
           onConfirm={handleDeleteUser}
           variant="destructive"
+        />
+
+        <NewUserModal
+          open={newUserModalOpen}
+          onOpenChange={setNewUserModalOpen}
+          onSuccess={fetchData}
         />
       </div>
     </PermissionGate>

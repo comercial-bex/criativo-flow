@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,8 +10,10 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { usePessoas, Pessoa } from '@/hooks/usePessoas';
-import { Plus, Search, User, UserCheck, UserX, Pencil } from 'lucide-react';
+import { useColaboradorTempData } from '@/hooks/useColaboradorTempData';
+import { Plus, Search, User, UserCheck, UserX, Pencil, AlertCircle, Database } from 'lucide-react';
 
 export function PessoasManager() {
   const [filtro, setFiltro] = useState<'colaborador' | 'especialista' | 'cliente' | undefined>();
@@ -19,6 +21,7 @@ export function PessoasManager() {
   const [modalAberto, setModalAberto] = useState(false);
   const [pessoaEditando, setPessoaEditando] = useState<Pessoa | null>(null);
   const { pessoas, isLoading, criar, atualizar, desativar, isCriando, isAtualizando } = usePessoas(filtro);
+  const { dadosPendentes } = useColaboradorTempData();
 
   const [formData, setFormData] = useState<Partial<Pessoa>>({
     nome: '',
@@ -29,6 +32,29 @@ export function PessoasManager() {
     dados_bancarios: {},
     status: 'ativo',
   });
+
+  const [tempDataSelecionado, setTempDataSelecionado] = useState<any>(null);
+
+  // Detectar dados pendentes ao abrir modal
+  useEffect(() => {
+    if (modalAberto && !pessoaEditando && dadosPendentes.length > 0) {
+      setTempDataSelecionado(dadosPendentes[0]);
+    }
+  }, [modalAberto, pessoaEditando, dadosPendentes]);
+
+  // Pré-preencher formulário com dados temporários
+  useEffect(() => {
+    if (tempDataSelecionado) {
+      setFormData(prev => ({
+        ...prev,
+        nome: tempDataSelecionado.produto_nome,
+        regime: tempDataSelecionado.regime,
+        cargo_atual: tempDataSelecionado.cargo_atual,
+        salario_base: tempDataSelecionado.regime === 'clt' ? tempDataSelecionado.salario_ou_fee : undefined,
+        fee_mensal: tempDataSelecionado.regime === 'pj' ? tempDataSelecionado.salario_ou_fee : undefined,
+      }));
+    }
+  }, [tempDataSelecionado]);
 
   const pessoasFiltradas = pessoas.filter((p) =>
     p.nome.toLowerCase().includes(busca.toLowerCase()) ||
@@ -129,6 +155,18 @@ export function PessoasManager() {
                   <DialogTitle>{pessoaEditando ? 'Editar Pessoa' : 'Nova Pessoa'}</DialogTitle>
                   <DialogDescription>Preencha os dados da pessoa</DialogDescription>
                 </DialogHeader>
+
+                {tempDataSelecionado && !pessoaEditando && (
+                  <Alert>
+                    <Database className="h-4 w-4" />
+                    <AlertDescription>
+                      Há dados pré-cadastrados de {tempDataSelecionado.origem.toUpperCase()}. Os campos foram pré-preenchidos.
+                      <Button variant="link" size="sm" onClick={() => setTempDataSelecionado(null)}>
+                        Ignorar e preencher manualmente
+                      </Button>
+                    </AlertDescription>
+                  </Alert>
+                )}
 
                 <Tabs defaultValue="pessoal" className="w-full">
                   <TabsList className="grid w-full grid-cols-4">

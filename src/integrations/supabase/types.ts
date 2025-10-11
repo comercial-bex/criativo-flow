@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       admin_temp_data: {
         Row: {
+          cargo_atual: string | null
           categoria: string | null
           cliente_id: string
           created_at: string
@@ -24,14 +25,17 @@ export type Database = {
           id: string
           metadata: Json | null
           origem: string
-          produto_id: string
+          produto_id: string | null
           produto_nome: string
+          regime: string | null
+          salario_ou_fee: number | null
           used_at: string | null
           used_in_document_id: string | null
           used_in_document_type: string | null
           valor_unitario: number
         }
         Insert: {
+          cargo_atual?: string | null
           categoria?: string | null
           cliente_id: string
           created_at?: string
@@ -40,14 +44,17 @@ export type Database = {
           id?: string
           metadata?: Json | null
           origem?: string
-          produto_id: string
+          produto_id?: string | null
           produto_nome: string
+          regime?: string | null
+          salario_ou_fee?: number | null
           used_at?: string | null
           used_in_document_id?: string | null
           used_in_document_type?: string | null
           valor_unitario: number
         }
         Update: {
+          cargo_atual?: string | null
           categoria?: string | null
           cliente_id?: string
           created_at?: string
@@ -56,8 +63,10 @@ export type Database = {
           id?: string
           metadata?: Json | null
           origem?: string
-          produto_id?: string
+          produto_id?: string | null
           produto_nome?: string
+          regime?: string | null
+          salario_ou_fee?: number | null
           used_at?: string | null
           used_in_document_id?: string | null
           used_in_document_type?: string | null

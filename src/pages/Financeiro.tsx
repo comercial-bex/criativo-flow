@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Plus, Search, TrendingUp, TrendingDown, DollarSign, Clock, Edit2, Trash2 } from "lucide-react";
+import { CalendarIcon, Plus, Search, TrendingUp, TrendingDown, DollarSign, Clock, Edit2, Trash2, Users, ArrowRight } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -21,6 +21,8 @@ import { CadastroProdutoRapido } from "@/components/Financeiro/CadastroProdutoRa
 import { useProdutosFinanceiro } from "@/hooks/useProdutosFinanceiro";
 import { useTutorial } from '@/hooks/useTutorial';
 import { TutorialButton } from '@/components/TutorialButton';
+import { useNavigate } from 'react-router-dom';
+import { DataSyncIndicator } from '@/components/Admin/DataSyncIndicator';
 
 interface CategoriaFinanceira {
   id: string;
@@ -70,6 +72,7 @@ export default function Financeiro() {
   const [editingTransaction, setEditingTransaction] = useState<TransacaoFinanceira | null>(null);
   const { toast } = useToast();
   const { startTutorial, hasSeenTutorial } = useTutorial('financeiro-transacoes');
+  const navigate = useNavigate();
 
   const [modalCadastroRapido, setModalCadastroRapido] = useState(false);
   const { produtosDisponiveis, createTempData } = useProdutosFinanceiro();
@@ -333,7 +336,10 @@ export default function Financeiro() {
             Gerencie suas contas a pagar e receber de forma completa
           </p>
         </div>
-        <TutorialButton onStart={startTutorial} hasSeenTutorial={hasSeenTutorial} />
+        <div className="flex gap-2">
+          <DataSyncIndicator />
+          <TutorialButton onStart={startTutorial} hasSeenTutorial={hasSeenTutorial} />
+        </div>
       </div>
 
       {/* Cards de Resumo */}
@@ -833,6 +839,24 @@ export default function Financeiro() {
             </TableBody>
           </Table>
         </CardContent>
+      </Card>
+
+      {/* Link para Gestão de Pessoas */}
+      <Card className="border-l-4 border-l-primary cursor-pointer hover:shadow-lg transition-all" onClick={() => navigate('/rh/pessoas')}>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-3 bg-primary/10 rounded-lg">
+                <Users className="h-6 w-6 text-primary" />
+              </div>
+              <div>
+                <CardTitle>Gestão de Pessoas</CardTitle>
+                <CardDescription>Cadastrar e gerenciar colaboradores para folha de pagamento</CardDescription>
+              </div>
+            </div>
+            <ArrowRight className="h-5 w-5 text-muted-foreground" />
+          </div>
+        </CardHeader>
       </Card>
     </div>
   );
