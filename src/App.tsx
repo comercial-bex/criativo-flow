@@ -123,9 +123,14 @@ import AdminPainel from "./pages/Admin/Painel";
 import AdminTarefas from "./pages/Admin/Tarefas";
 import CentralNotificacoes from "./pages/Admin/CentralNotificacoes";
 import ClienteTarefas from "./pages/Cliente/Tarefas";
+import ClienteTimeline from "./pages/Cliente/Timeline";
 import Inteligencia from "./pages/Inteligencia";
 import GRSAgenda from "./pages/GRS/Agenda";
+import GRSMensagens from "./pages/GRS/Mensagens";
 import Aprovacoes from "./pages/Aprovacoes";
+import Usuarios from "./pages/Usuarios";
+import SystemHealth from "./pages/Admin/SystemHealth";
+import BalancoPatrimonial from "./pages/Financeiro/BalancoPatrimonial";
 
 // Client Details Pages
 import ClientDetails from "./pages/ClientDetails";
@@ -709,6 +714,12 @@ function App() {
                   </ProtectedRoute>
                 } />
                 
+                <Route path="/cliente/timeline" element={
+                  <ProtectedRoute requiredRole="cliente">
+                    <Layout><ClienteTimeline /></Layout>
+                  </ProtectedRoute>
+                } />
+                
                 {/* GRS integrated routes (formerly Atendimento) */}
                 <Route path="/grs/inbox" element={
                   <ProtectedRoute requiredRole="grs">
@@ -725,6 +736,12 @@ function App() {
                 <Route path="/grs/agenda" element={
                   <ProtectedRoute requiredRole="grs">
                     <Layout><GRSAgenda /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/grs/mensagens" element={
+                  <ProtectedRoute requiredRole="grs">
+                    <Layout><GRSMensagens /></Layout>
                   </ProtectedRoute>
                 } />
                 
@@ -831,6 +848,24 @@ function App() {
                 <Route path="/admin/central-notificacoes" element={
                   <ProtectedRoute requiredRole="admin">
                     <Layout><CentralNotificacoes /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/admin/system-health" element={
+                  <ProtectedRoute requiredRole="admin">
+                    <Layout><SystemHealth /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/usuarios" element={
+                  <ProtectedRoute module="configuracoes" action="canEdit" requiredRole="admin">
+                    <Layout><Usuarios /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/financeiro/balanco-patrimonial" element={
+                  <ProtectedRoute module="financeiro">
+                    <Layout><BalancoPatrimonial /></Layout>
                   </ProtectedRoute>
                 } />
 
