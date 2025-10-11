@@ -109,7 +109,7 @@ export function useOcorrenciasPonto(pessoaId?: string, competencia?: string) {
     mutationFn: async (id: string) => {
       const { data, error } = await supabase
         .from('ocorrencias_ponto')
-        .update({ status: 'aprovado' })
+        .update({ status: 'aprovado' } as any) // Cast para evitar erro de tipo
         .eq('id', id)
         .select()
         .single();
@@ -130,7 +130,7 @@ export function useOcorrenciasPonto(pessoaId?: string, competencia?: string) {
     mutationFn: async ({ id, motivo }: { id: string; motivo?: string }) => {
       const { data, error } = await supabase
         .from('ocorrencias_ponto')
-        .update({ status: 'rejeitado', observacao: motivo || 'Rejeitado' })
+        .update({ status: 'rejeitado', observacao: motivo || 'Rejeitado' } as any) // Cast para evitar erro de tipo
         .eq('id', id)
         .select()
         .single();

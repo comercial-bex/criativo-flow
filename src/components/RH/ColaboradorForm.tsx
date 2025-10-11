@@ -57,8 +57,16 @@ export function ColaboradorForm({ colaborador, pessoa, open, onOpenChange, mode 
       };
       pessoa ? atualizar({ id: pessoa.id, ...pessoaData }) : criar(pessoaData);
     } else {
-      // Modo legado
-      colaborador ? atualizar({ id: colaborador.id, ...formData }) : criar(formData);
+      // Modo legado - sempre envia dados completos
+      const legacyData = {
+        ...formData,
+        nome_completo: formData.nome_completo || '',
+        cpf_cnpj: formData.cpf_cnpj || '',
+        regime: formData.regime || 'clt',
+        data_admissao: formData.data_admissao || new Date().toISOString().split('T')[0],
+        status: formData.status || 'ativo',
+      };
+      colaborador ? atualizar({ id: colaborador.id, ...legacyData } as any) : criar(legacyData as any);
     }
     
     onOpenChange(false);

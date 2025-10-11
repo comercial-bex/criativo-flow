@@ -4783,6 +4783,7 @@ export type Database = {
           id: string
           observacao: string | null
           pessoa_id: string | null
+          status: string | null
           tipo: string
           valor: number | null
         }
@@ -4793,6 +4794,7 @@ export type Database = {
           id?: string
           observacao?: string | null
           pessoa_id?: string | null
+          status?: string | null
           tipo: string
           valor?: number | null
         }
@@ -4803,6 +4805,7 @@ export type Database = {
           id?: string
           observacao?: string | null
           pessoa_id?: string | null
+          status?: string | null
           tipo?: string
           valor?: number | null
         }

@@ -82,7 +82,7 @@ export function usePessoas(papel?: 'colaborador' | 'especialista' | 'cliente') {
 
       const { data, error } = await supabase
         .from('pessoas')
-        .insert([dados])
+        .insert([dados as any]) // Cast para evitar conflito de tipos com enum do banco
         .select()
         .single();
       
@@ -102,7 +102,7 @@ export function usePessoas(papel?: 'colaborador' | 'especialista' | 'cliente') {
     mutationFn: async ({ id, ...updates }: Partial<Pessoa> & { id: string }) => {
       const { data, error } = await supabase
         .from('pessoas')
-        .update(updates)
+        .update(updates as any) // Cast para evitar erro de tipo
         .eq('id', id)
         .select()
         .single();
