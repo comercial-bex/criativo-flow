@@ -20,7 +20,7 @@ interface AudiovisualScheduleModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   clienteId?: string;
-  onScheduleCreated?: () => void;
+  onScheduleCreated?: (captureData?: any) => void; // FASE 3: Retorna dados da captação
 }
 
 export function AudiovisualScheduleModal({ 
@@ -88,26 +88,56 @@ export function AudiovisualScheduleModal({
     }
   };
 
+  // FASE 2: Validação cruzada de conflitos
   const checkScheduleConflicts = async () => {
     if (!formData.data_captacao || !formData.especialista_id || !formData.horario_inicio) return;
 
     setCheckingConflicts(true);
+    const allConflicts: any[] = [];
+    
     try {
       const targetDate = format(formData.data_captacao, 'yyyy-MM-dd');
-      
-      // Verificar conflitos na tabela de captações
-      const { data: existingSchedules } = await supabase
-        .from('captacoes_agenda')
-        .select('*, clientes(nome)')
-        .eq('especialista_id', formData.especialista_id)
-        .gte('data_captacao', `${targetDate}T00:00:00`)
-        .lte('data_captacao', `${targetDate}T23:59:59`);
+      const horarioInicio = `${targetDate}T${formData.horario_inicio}:00`;
+      const horarioFim = formData.horario_fim 
+        ? `${targetDate}T${formData.horario_fim}:00`
+        : new Date(new Date(horarioInicio).getTime() + 2 * 60 * 60 * 1000).toISOString();
 
-      if (existingSchedules && existingSchedules.length > 0) {
-        setConflicts(existingSchedules);
-      } else {
-        setConflicts([]);
-      }
+      // Consultas paralelas para verificar todos os tipos de conflito
+      const [captacoes, eventos, tarefas] = await Promise.all([
+        // 1. Captações existentes
+        supabase
+          .from('captacoes_agenda')
+          .select('id, titulo, data_captacao, local, clientes(nome)')
+          .eq('especialista_id', formData.especialista_id)
+          .gte('data_captacao', `${targetDate}T00:00:00`)
+          .lte('data_captacao', `${targetDate}T23:59:59`)
+          .neq('status', 'cancelado'),
+        
+        // 2. Eventos bloqueantes
+        supabase
+          .from('eventos_calendario')
+          .select('id, titulo, tipo, data_inicio, data_fim, local, projetos(titulo)')
+          .eq('responsavel_id', formData.especialista_id)
+          .eq('is_bloqueante', true)
+          .gte('data_inicio', `${targetDate}T00:00:00`)
+          .lte('data_inicio', `${targetDate}T23:59:59`),
+        
+        // 3. Tarefas prioritárias
+        supabase
+          .from('tarefas_projeto')
+          .select('id, titulo, data_prazo, prioridade, projetos(titulo)')
+          .eq('responsavel_id', formData.especialista_id)
+          .eq('data_prazo', targetDate)
+          .in('prioridade', ['alta', 'urgente'])
+          .neq('status', 'concluida')
+      ]);
+
+      // Consolidar conflitos com identificação de tipo
+      if (captacoes.data) allConflicts.push(...captacoes.data.map(c => ({ ...c, tipo: 'captacao' })));
+      if (eventos.data) allConflicts.push(...eventos.data.map(e => ({ ...e, tipo: 'evento' })));
+      if (tarefas.data) allConflicts.push(...tarefas.data.map(t => ({ ...t, tipo: 'tarefa' })));
+
+      setConflicts(allConflicts);
     } catch (error) {
       console.error('Erro ao verificar conflitos:', error);
     } finally {
@@ -277,7 +307,16 @@ export function AudiovisualScheduleModal({
       // Limpar após fechar
       setTimeout(() => {
         resetForm();
-        onScheduleCreated?.();
+        // FASE 3: Retornar dados da captação criada
+        onScheduleCreated?.({
+          id: agendamento.id,
+          titulo: formData.titulo,
+          cliente_id: formData.cliente_id,
+          especialista_id: formData.especialista_id,
+          projeto_id: projetoId,
+          briefing: formData.briefing,
+          data_captacao: formData.data_captacao
+        });
       }, 300);
 
     } catch (error: any) {
@@ -306,12 +345,27 @@ export function AudiovisualScheduleModal({
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Conflitos de agendamento */}
+          {/* FASE 2: Conflitos de agendamento aprimorados */}
           {conflicts.length > 0 && (
             <Alert variant="destructive">
               <AlertTriangle className="h-4 w-4" />
-              <AlertDescription>
-                <strong>⚠️ Conflito detectado!</strong> Já existe{conflicts.length > 1 ? 'm' : ''} {conflicts.length} agendamento{conflicts.length > 1 ? 's' : ''} para este especialista neste dia.
+              <AlertDescription className="space-y-2">
+                <strong>⚠️ Conflito detectado!</strong> {conflicts.length} conflito{conflicts.length > 1 ? 's' : ''} encontrado{conflicts.length > 1 ? 's' : ''}:
+                <div className="space-y-1 mt-2">
+                  {conflicts.map((conflict: any, idx: number) => (
+                    <div key={idx} className="text-sm flex items-center gap-2">
+                      {conflict.tipo === 'captacao' && '📹'}
+                      {conflict.tipo === 'evento' && '📅'}
+                      {conflict.tipo === 'tarefa' && '✅'}
+                      <span>{conflict.titulo}</span>
+                      {conflict.data_captacao && (
+                        <Badge variant="outline" className="text-xs">
+                          {format(new Date(conflict.data_captacao), 'HH:mm')}
+                        </Badge>
+                      )}
+                    </div>
+                  ))}
+                </div>
               </AlertDescription>
             </Alert>
           )}

@@ -26,6 +26,7 @@ import {
   BarChart3,
   Video
 } from 'lucide-react';
+import { Alert } from '@/components/ui/alert';
 import { useTutorial } from '@/hooks/useTutorial';
 import { TutorialButton } from '@/components/TutorialButton';
 
@@ -63,6 +64,7 @@ export default function TarefasUnificadasGRS() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
   const [createColumnId, setCreateColumnId] = useState<string>('');
+  const [lastCreatedCapture, setLastCreatedCapture] = useState<any>(null); // FASE 3
 
   const { user } = useAuth();
   const { toast } = useToast();
@@ -320,6 +322,39 @@ export default function TarefasUnificadasGRS() {
           )}
         </div>
       </div>
+
+      {/* FASE 3: Alerta de sugestão de criar tarefa após captação */}
+      {lastCreatedCapture && (
+        <Alert className="border-orange-200 bg-orange-50 dark:bg-orange-950">
+          <Video className="h-4 w-4 text-orange-600" />
+          <div className="flex items-center justify-between w-full">
+            <div>
+              <p className="font-medium">Captação criada com sucesso! 🎉</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                Deseja criar uma tarefa relacionada agora?
+              </p>
+            </div>
+            <div className="flex gap-2 ml-4">
+              <Button 
+                size="sm"
+                onClick={() => {
+                  setIsCreateModalOpen(true);
+                  setLastCreatedCapture(null);
+                }}
+              >
+                ✅ Criar Tarefa
+              </Button>
+              <Button 
+                size="sm"
+                variant="outline"
+                onClick={() => setLastCreatedCapture(null)}
+              >
+                ❌ Agora não
+              </Button>
+            </div>
+          </div>
+        </Alert>
+      )}
       
       {/* Modal de Criação de Tarefa */}
       <CreateTaskModal
@@ -333,7 +368,10 @@ export default function TarefasUnificadasGRS() {
       <AudiovisualScheduleModal
         open={isScheduleModalOpen}
         onOpenChange={setIsScheduleModalOpen}
-        onScheduleCreated={fetchData}
+        onScheduleCreated={(captureData) => {
+          setLastCreatedCapture(captureData); // FASE 3: Capturar dados
+          fetchData();
+        }}
       />
 
       {/* Stats Cards */}

@@ -4,11 +4,15 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
-import { Plus, Video, CheckSquare, Calendar as CalendarIcon } from 'lucide-react';
+import { Plus, Video, CheckSquare, Calendar as CalendarIcon, AlertTriangle, Clock } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { format, isSameDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { cn } from '@/lib/utils';
 
 interface AgendaEvent {
   id: string;
@@ -24,6 +28,7 @@ export function AgendaUnificada() {
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [events, setEvents] = useState<AgendaEvent[]>([]);
+  const [rescheduleEvent, setRescheduleEvent] = useState<any>(null); // FASE 5
 
   const fetchEvents = async () => {
     try {
@@ -99,6 +104,21 @@ export function AgendaUnificada() {
   const selectedDateEvents = events.filter((event) =>
     isSameDay(event.data, selectedDate)
   );
+
+  // FASE 4: Detectar conflitos/sobrecarga
+  const getConflictingEvents = (date: Date) => {
+    const dayEvents = events.filter(e => isSameDay(e.data, date));
+    
+    // Agrupar por responsável (simplificado - todos os eventos do dia)
+    const conflicts = dayEvents.length >= 3 ? [{
+      count: dayEvents.length,
+      events: dayEvents
+    }] : [];
+
+    return conflicts;
+  };
+
+  const selectedDateConflicts = getConflictingEvents(selectedDate);
 
   const getEventIcon = (tipo: string) => {
     switch (tipo) {
@@ -215,6 +235,15 @@ export function AgendaUnificada() {
               onSelect={(date) => date && setSelectedDate(date)}
               locale={ptBR}
               className="rounded-md border"
+              modifiers={{
+                conflict: (date) => getConflictingEvents(date).length > 0
+              }}
+              modifiersStyles={{
+                conflict: { 
+                  backgroundColor: 'hsl(var(--warning) / 0.2)', 
+                  fontWeight: 'bold'
+                }
+              }}
             />
           </CardContent>
         </Card>
@@ -226,6 +255,18 @@ export function AgendaUnificada() {
             </CardTitle>
           </CardHeader>
           <CardContent>
+            {/* FASE 4: Alerta de sobrecarga */}
+            {selectedDateConflicts.length > 0 && (
+              <Alert variant="destructive" className="mb-4">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertTitle>⚠️ Sobrecarga detectada!</AlertTitle>
+                <AlertDescription>
+                  {selectedDateConflicts[0].count} eventos agendados neste dia. 
+                  Considere redistribuir para evitar sobrecarga.
+                </AlertDescription>
+              </Alert>
+            )}
+
             {selectedDateEvents.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">
                 <CalendarIcon className="h-12 w-12 mx-auto mb-4 opacity-50" />
@@ -249,7 +290,15 @@ export function AgendaUnificada() {
                         <div className="flex-1">
                           <p className="font-medium">{event.titulo}</p>
                           <div className="flex items-center gap-2 mt-1">
-                            <Badge variant="outline" className="text-xs">
+                            <Badge 
+                              variant="outline" 
+                              className={cn(
+                                "text-xs",
+                                selectedDateConflicts.some(c => 
+                                  c.events.some(e => e.id === event.id)
+                                ) && "border-red-500 bg-red-50 text-red-700"
+                              )}
+                            >
                               {getEventTypeLabel(event.tipo)}
                             </Badge>
                             {event.status && (
@@ -259,6 +308,17 @@ export function AgendaUnificada() {
                             )}
                           </div>
                         </div>
+                        
+                        {/* FASE 5: Botão reagendar */}
+                        {event.tipo === 'captacao' && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setRescheduleEvent(event)}
+                          >
+                            🔄 Reagendar
+                          </Button>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -268,6 +328,80 @@ export function AgendaUnificada() {
           </CardContent>
         </Card>
       </div>
+
+      {/* FASE 5: Modal de Reagendamento */}
+      <Dialog open={!!rescheduleEvent} onOpenChange={() => setRescheduleEvent(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Clock className="h-5 w-5" />
+              Reagendar Evento
+            </DialogTitle>
+            <DialogDescription>
+              Altere a data de: <strong>{rescheduleEvent?.titulo}</strong>
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div>
+              <Label>Nova Data</Label>
+              <Calendar
+                mode="single"
+                selected={rescheduleEvent?.data}
+                onSelect={(date) => {
+                  if (date) {
+                    setRescheduleEvent({ ...rescheduleEvent, data: date });
+                  }
+                }}
+                locale={ptBR}
+                className="rounded-md border"
+              />
+            </div>
+            
+            <div className="flex gap-3">
+              <Button 
+                onClick={async () => {
+                  if (!rescheduleEvent) return;
+                  
+                  try {
+                    // Atualizar no banco
+                    if (rescheduleEvent.tipo === 'captacao') {
+                      const { error } = await supabase
+                        .from('captacoes_agenda')
+                        .update({ 
+                          data_captacao: rescheduleEvent.data.toISOString() 
+                        })
+                        .eq('id', rescheduleEvent.id);
+                      
+                      if (error) throw error;
+                    }
+                    
+                    toast({
+                      title: "✅ Evento reagendado!",
+                      description: `Nova data: ${format(rescheduleEvent.data, "dd/MM/yyyy", { locale: ptBR })}`
+                    });
+                    
+                    setRescheduleEvent(null);
+                    fetchEvents();
+                  } catch (error) {
+                    console.error('Erro ao reagendar:', error);
+                    toast({
+                      title: "Erro ao reagendar",
+                      description: "Não foi possível reagendar o evento",
+                      variant: "destructive"
+                    });
+                  }
+                }}
+              >
+                Confirmar
+              </Button>
+              <Button variant="outline" onClick={() => setRescheduleEvent(null)}>
+                Cancelar
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
