@@ -5,30 +5,28 @@ import { smartToast } from '@/lib/smart-toast';
 export interface Pessoa {
   id: string;
   nome: string;
-  email?: string;
-  cpf?: string;
-  telefones?: string[];
-  papeis: ('colaborador' | 'especialista' | 'cliente')[];
-  dados_bancarios?: {
-    banco_codigo?: string;
-    banco_nome?: string;
-    agencia?: string;
-    conta?: string;
-    tipo_conta?: string;
-    pix_tipo?: string;
-    pix_chave?: string;
-  };
-  cargo_id?: string;
-  cargo_atual?: string;
-  regime?: 'clt' | 'pj' | 'estagio' | 'freelancer';
-  data_admissao?: string;
-  data_desligamento?: string;
-  status: 'ativo' | 'afastado' | 'desligado' | 'ferias' | 'inativo';
-  salario_base?: number;
-  fee_mensal?: number;
-  observacoes?: string;
+  email?: string | null;
+  cpf?: string | null;
+  telefones?: any; // JSONB array
+  papeis: string[]; // pessoa_papel[]
+  dados_bancarios?: any;
+  cargo_id?: string | null;
+  cargo_atual?: string | null;
+  regime?: string | null; // pessoa_regime
+  data_admissao?: string | null;
+  data_desligamento?: string | null;
+  status?: string; // pessoa_status
+  salario_base?: number | null;
+  fee_mensal?: number | null;
+  observacoes?: string | null;
+  profile_id?: string | null;
+  cliente_id?: string | null;
   created_at?: string;
   updated_at?: string;
+  created_by?: string | null;
+  // Campos computados
+  role?: string | null;
+  tem_acesso_sistema?: boolean;
 }
 
 export function usePessoas(papel?: 'colaborador' | 'especialista' | 'cliente') {
@@ -37,7 +35,13 @@ export function usePessoas(papel?: 'colaborador' | 'especialista' | 'cliente') {
   const { data: pessoas = [], isLoading } = useQuery({
     queryKey: ['pessoas', papel],
     queryFn: async () => {
-      let query = supabase.from('pessoas').select('*').order('nome', { ascending: true });
+      let query = supabase
+        .from('pessoas')
+        .select(`
+          *,
+          user_roles(role)
+        `)
+        .order('nome', { ascending: true });
       
       if (papel) {
         query = query.contains('papeis', [papel]);
@@ -45,7 +49,13 @@ export function usePessoas(papel?: 'colaborador' | 'especialista' | 'cliente') {
       
       const { data, error } = await query;
       if (error) throw error;
-      return data as Pessoa[];
+      
+      // Processar dados retornados
+      return (data || []).map((p: any) => ({
+        ...p,
+        role: p.user_roles?.[0]?.role || null,
+        tem_acesso_sistema: !!p.profile_id
+      })) as Pessoa[];
     },
   });
 

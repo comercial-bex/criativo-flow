@@ -5123,7 +5123,9 @@ export type Database = {
       }
       pessoas: {
         Row: {
+          cargo_atual: string | null
           cargo_id: string | null
+          cliente_id: string | null
           cpf: string | null
           created_at: string | null
           created_by: string | null
@@ -5136,6 +5138,7 @@ export type Database = {
           nome: string
           observacoes: string | null
           papeis: Database["public"]["Enums"]["pessoa_papel"][]
+          profile_id: string | null
           regime: Database["public"]["Enums"]["pessoa_regime"] | null
           salario_base: number | null
           status: Database["public"]["Enums"]["pessoa_status"] | null
@@ -5143,7 +5146,9 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          cargo_atual?: string | null
           cargo_id?: string | null
+          cliente_id?: string | null
           cpf?: string | null
           created_at?: string | null
           created_by?: string | null
@@ -5156,6 +5161,7 @@ export type Database = {
           nome: string
           observacoes?: string | null
           papeis?: Database["public"]["Enums"]["pessoa_papel"][]
+          profile_id?: string | null
           regime?: Database["public"]["Enums"]["pessoa_regime"] | null
           salario_base?: number | null
           status?: Database["public"]["Enums"]["pessoa_status"] | null
@@ -5163,7 +5169,9 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          cargo_atual?: string | null
           cargo_id?: string | null
+          cliente_id?: string | null
           cpf?: string | null
           created_at?: string | null
           created_by?: string | null
@@ -5176,13 +5184,29 @@ export type Database = {
           nome?: string
           observacoes?: string | null
           papeis?: Database["public"]["Enums"]["pessoa_papel"][]
+          profile_id?: string | null
           regime?: Database["public"]["Enums"]["pessoa_regime"] | null
           salario_base?: number | null
           status?: Database["public"]["Enums"]["pessoa_status"] | null
           telefones?: Json | null
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "pessoas_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pessoas_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "vw_client_metrics"
+            referencedColumns: ["cliente_id"]
+          },
+        ]
       }
       planejamentos: {
         Row: {
