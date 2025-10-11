@@ -53,6 +53,7 @@ import { format } from "date-fns";
 interface CofreCredenciaisProps {
   clienteId: string;
   projetoId?: string;
+  readOnly?: boolean;
 }
 
 interface Credencial {
@@ -115,7 +116,7 @@ const PLATFORM_PRESETS: Record<string, {
   },
 };
 
-export function CofreCredenciais({ clienteId, projetoId }: CofreCredenciaisProps) {
+export function CofreCredenciais({ clienteId, projetoId, readOnly = false }: CofreCredenciaisProps) {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [revealModalOpen, setRevealModalOpen] = useState(false);
   const [selectedCred, setSelectedCred] = useState<Credencial | null>(null);
@@ -273,10 +274,12 @@ export function CofreCredenciais({ clienteId, projetoId }: CofreCredenciaisProps
                 </CardDescription>
               </div>
             </div>
-            <Button onClick={() => setEditModalOpen(true)} size="sm" className="gap-2">
-              <Plus className="h-4 w-4" />
-              Nova Credencial
-            </Button>
+            {!readOnly && (
+              <Button onClick={() => setEditModalOpen(true)} size="sm" className="gap-2">
+                <Plus className="h-4 w-4" />
+                Nova Credencial
+              </Button>
+            )}
           </div>
         </CardHeader>
         <CardContent>
@@ -328,26 +331,30 @@ export function CofreCredenciais({ clienteId, projetoId }: CofreCredenciaisProps
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            setSelectedCred(cred);
-                            setRevealModalOpen(true);
-                          }}
-                          className="gap-2"
-                        >
-                          <Eye className="h-4 w-4" />
-                          Revelar Senha
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleEdit(cred)}
-                          className="h-8 w-8 p-0"
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
+                        {!readOnly && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setSelectedCred(cred);
+                              setRevealModalOpen(true);
+                            }}
+                            className="gap-2"
+                          >
+                            <Eye className="h-4 w-4" />
+                            Revelar Senha
+                          </Button>
+                        )}
+                        {!readOnly && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleEdit(cred)}
+                            className="h-8 w-8 p-0"
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                        )}
                       </div>
                     </TableCell>
                   </TableRow>

@@ -25,6 +25,7 @@ interface OnboardingFormProps {
     telefone: string;
     endereco: string;
   };
+  readOnly?: boolean;
 }
 
 interface OnboardingData {
@@ -93,7 +94,7 @@ interface OnboardingData {
   ameacas: string;
 }
 
-export function OnboardingForm({ isOpen, onClose, clienteId, cliente }: OnboardingFormProps) {
+export function OnboardingForm({ isOpen, onClose, clienteId, cliente, readOnly = false }: OnboardingFormProps) {
   const [formData, setFormData] = useState<OnboardingData>({
     nomeEmpresa: cliente.nome,
     segmentoAtuacao: "",
@@ -363,6 +364,7 @@ export function OnboardingForm({ isOpen, onClose, clienteId, cliente }: Onboardi
                     <Input
                       value={formData.segmentoAtuacao}
                       onChange={(e) => setFormData({...formData, segmentoAtuacao: e.target.value})}
+                      readOnly={readOnly}
                     />
                   </div>
                 </div>
@@ -852,16 +854,26 @@ export function OnboardingForm({ isOpen, onClose, clienteId, cliente }: Onboardi
 
             <Separator />
             
-            <div className="flex justify-end gap-2 pt-4">
-              <Button type="button" variant="outline" onClick={onClose}>
-                <X className="h-4 w-4 mr-2" />
-                Cancelar
-              </Button>
-              <Button type="submit">
-                <Save className="h-4 w-4 mr-2" />
-                Salvar Onboarding
-              </Button>
-            </div>
+            {!readOnly && (
+              <div className="flex justify-end gap-2 pt-4">
+                <Button type="button" variant="outline" onClick={onClose}>
+                  <X className="h-4 w-4 mr-2" />
+                  Cancelar
+                </Button>
+                <Button type="submit">
+                  <Save className="h-4 w-4 mr-2" />
+                  Salvar Onboarding
+                </Button>
+              </div>
+            )}
+            {readOnly && (
+              <div className="flex justify-end pt-4">
+                <Button type="button" onClick={onClose}>
+                  <X className="h-4 w-4 mr-2" />
+                  Fechar
+                </Button>
+              </div>
+            )}
           </form>
         </ScrollArea>
       </DialogContent>

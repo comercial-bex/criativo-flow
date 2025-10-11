@@ -15,9 +15,10 @@ import { useDropzone } from "react-dropzone";
 interface ArquivosTabProps {
   clienteId: string;
   projetoId?: string;
+  readOnly?: boolean;
 }
 
-export function ArquivosTab({ clienteId, projetoId }: ArquivosTabProps) {
+export function ArquivosTab({ clienteId, projetoId, readOnly = false }: ArquivosTabProps) {
   const { user } = useAuth();
   const { files, loading, uploadFile, deleteFile, getPublicUrl } = useClientFiles(clienteId, projetoId);
   const [searchTerm, setSearchTerm] = useState("");
@@ -93,25 +94,27 @@ export function ArquivosTab({ clienteId, projetoId }: ArquivosTabProps) {
         />
       </div>
 
-      <div
-        {...getRootProps()}
-        className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${
-          isDragActive ? "border-primary bg-primary/5" : "border-muted-foreground/25"
-        }`}
-      >
-        <input {...getInputProps()} />
-        <Upload className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-        {isDragActive ? (
-          <p className="text-sm text-muted-foreground">Solte os arquivos aqui...</p>
-        ) : (
-          <div>
-            <p className="text-sm font-medium mb-1">Arraste arquivos ou clique para fazer upload</p>
-            <p className="text-xs text-muted-foreground">
-              Máximo 5 arquivos, 20MB cada
-            </p>
-          </div>
-        )}
-      </div>
+      {!readOnly && (
+        <div
+          {...getRootProps()}
+          className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${
+            isDragActive ? "border-primary bg-primary/5" : "border-muted-foreground/25"
+          }`}
+        >
+          <input {...getInputProps()} />
+          <Upload className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+          {isDragActive ? (
+            <p className="text-sm text-muted-foreground">Solte os arquivos aqui...</p>
+          ) : (
+            <div>
+              <p className="text-sm font-medium mb-1">Arraste arquivos ou clique para fazer upload</p>
+              <p className="text-xs text-muted-foreground">
+                Máximo 5 arquivos, 20MB cada
+              </p>
+            </div>
+          )}
+        </div>
+      )}
 
       {filteredFiles.length === 0 ? (
         <EmptyState
@@ -161,14 +164,16 @@ export function ArquivosTab({ clienteId, projetoId }: ArquivosTabProps) {
                       <Download className="h-3 w-3 mr-1" />
                       Baixar
                     </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="text-red-600 hover:text-red-700"
-                      onClick={() => setFileToDelete(file.name)}
-                    >
-                      <Trash2 className="h-3 w-3" />
-                    </Button>
+                    {!readOnly && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="text-red-600 hover:text-red-700"
+                        onClick={() => setFileToDelete(file.name)}
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    )}
                   </div>
                 </CardContent>
               </Card>

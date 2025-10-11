@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { SectionHeader } from '@/components/SectionHeader';
 import { ProjectStatusIndicator } from '@/components/ProjectStatusIndicator';
 import { supabase } from '@/integrations/supabase/client';
@@ -19,9 +20,17 @@ import {
   Target,
   Filter,
   RefreshCw,
-  FileText
+  FileText,
+  Zap,
+  FileEdit,
+  FolderOpen,
+  Lock
 } from 'lucide-react';
 import { ProjectWithTasks } from '@/utils/statusUtils';
+import { useClientAccessPermissions } from '@/hooks/useClientAccessPermissions';
+import { OnboardingForm } from '@/components/OnboardingForm';
+import { ArquivosTab } from '@/components/ClientArea/ArquivosTab';
+import { CofreCredenciais } from '@/components/ClientArea/CofreCredenciais';
 
 interface Cliente {
   id: string;
@@ -81,6 +90,13 @@ export default function ClienteProjetosFluxo() {
   const [projetosUnificados, setProjetosUnificados] = useState<ProjetoUnificado[]>([]);
   const [loading, setLoading] = useState(true);
   const [filtroTipo, setFiltroTipo] = useState<'todos' | 'recorrentes' | 'avulsos'>('todos');
+  
+  // Modais de acesso rápido
+  const [onboardingOpen, setOnboardingOpen] = useState(false);
+  const [filesOpen, setFilesOpen] = useState(false);
+  const [credentialsOpen, setCredentialsOpen] = useState(false);
+  
+  const permissions = useClientAccessPermissions();
 
   useEffect(() => {
     if (clienteId) {
@@ -294,6 +310,55 @@ export default function ClienteProjetosFluxo() {
         </CardContent>
       </Card>
 
+      {/* Card de Acesso Rápido */}
+      {(permissions.canViewOnboarding || permissions.canViewFiles || permissions.canViewCredentials) && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Zap className="h-5 w-5 text-yellow-500" />
+              Acesso Rápido
+            </CardTitle>
+            <CardDescription>
+              Ferramentas essenciais para gerenciar o cliente
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              {permissions.canManageOnboarding && (
+                <Button 
+                  variant="outline" 
+                  onClick={() => setOnboardingOpen(true)} 
+                  className="gap-2 justify-start"
+                >
+                  <FileEdit className="h-4 w-4" />
+                  Onboarding
+                </Button>
+              )}
+              {permissions.canViewFiles && (
+                <Button 
+                  variant="outline" 
+                  onClick={() => setFilesOpen(true)} 
+                  className="gap-2 justify-start"
+                >
+                  <FolderOpen className="h-4 w-4" />
+                  Arquivos
+                </Button>
+              )}
+              {permissions.canViewCredentials && (
+                <Button 
+                  variant="outline" 
+                  onClick={() => setCredentialsOpen(true)} 
+                  className="gap-2 justify-start"
+                >
+                  <Lock className="h-4 w-4" />
+                  Cofre de Credenciais
+                </Button>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Lista de Projetos */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
@@ -443,6 +508,52 @@ export default function ClienteProjetosFluxo() {
           </div>
         )}
       </div>
+
+      {/* Modais de Acesso Rápido */}
+      {cliente && (
+        <>
+          <OnboardingForm
+            isOpen={onboardingOpen}
+            onClose={() => setOnboardingOpen(false)}
+            clienteId={cliente.id}
+            cliente={{
+              nome: cliente.nome,
+              email: cliente.email || '',
+              telefone: '',
+              endereco: ''
+            }}
+            readOnly={!permissions.canManageOnboarding}
+          />
+
+          <Dialog open={filesOpen} onOpenChange={setFilesOpen}>
+            <DialogContent className="max-w-5xl max-h-[90vh]">
+              <DialogHeader>
+                <DialogTitle>Arquivos - {cliente.nome}</DialogTitle>
+              </DialogHeader>
+              <div className="overflow-auto max-h-[calc(90vh-100px)]">
+                <ArquivosTab 
+                  clienteId={cliente.id} 
+                  readOnly={!permissions.canManageFiles}
+                />
+              </div>
+            </DialogContent>
+          </Dialog>
+
+          <Dialog open={credentialsOpen} onOpenChange={setCredentialsOpen}>
+            <DialogContent className="max-w-4xl max-h-[90vh]">
+              <DialogHeader>
+                <DialogTitle>Cofre de Credenciais - {cliente.nome}</DialogTitle>
+              </DialogHeader>
+              <div className="overflow-auto max-h-[calc(90vh-100px)]">
+                <CofreCredenciais 
+                  clienteId={cliente.id} 
+                  readOnly={!permissions.canEditCredentials}
+                />
+              </div>
+            </DialogContent>
+          </Dialog>
+        </>
+      )}
     </div>
   );
 }
