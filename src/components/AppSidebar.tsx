@@ -151,26 +151,26 @@ const modules = [
     title: "Financeiro",
     icon: DollarSign,
     items: [
+      { title: "Dashboard Financeiro", url: "/financeiro/dashboard", icon: TrendingUp },
       { title: "Lançamentos", url: "/financeiro", icon: DollarSign },
-      { title: "Dashboard Analítico", url: "/financeiro/dashboard", icon: TrendingUp },
-      { title: "Planos", url: "/planos", icon: CreditCard },
-      { title: "Categorias", url: "/categorias-financeiras", icon: FileText },
       { title: "Produtos", url: "/financeiro/produtos", icon: Package },
+      { title: "Categorias", url: "/categorias-financeiras", icon: FileText },
+      { title: "Planos", url: "/planos", icon: CreditCard },
     ],
     permissions: ["financeiro"]
   },
-    {
-      id: "rh",
-      title: "RH",
-      icon: Users2,
-      items: [
-        { title: "Gestão de Pessoas", url: "/rh/pessoas", icon: Users },
-        { title: "Ocorrências de Ponto", url: "/rh/ocorrencias", icon: Clock },
-        { title: "Folha de Pagamento", url: "/rh/folha", icon: DollarSign },
-        { title: "Colaboradores (Legado)", url: "/rh/colaboradores", icon: Users },
-      ],
-      permissions: ["rh"]
-    },
+  {
+    id: "rh",
+    title: "RH",
+    icon: Users2,
+    items: [
+      { title: "Gestão de Pessoas", url: "/rh/pessoas", icon: Users },
+      { title: "Ocorrências de Ponto", url: "/rh/ocorrencias", icon: Clock },
+      { title: "Folha de Pagamento", url: "/rh/folha", icon: DollarSign },
+      { title: "Folha de Ponto", url: "/rh/ponto", icon: ClipboardCheck },
+    ],
+    permissions: ["rh"]
+  },
   {
     id: "administrativo", 
     title: "Administrativo",
