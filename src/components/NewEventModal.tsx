@@ -122,18 +122,15 @@ export function NewEventModal({ onEventCreated }: { onEventCreated?: () => void 
     setIsLoading(true);
     
     try {
+      const user = await supabase.auth.getUser();
       const { error } = await supabase
-        .from("eventos_agenda")
+        .from("eventos_calendario")
         .insert({
-          titulo: formData.titulo,
-          descricao: formData.descricao,
           data_inicio: formData.data_inicio.toISOString(),
           data_fim: formData.data_fim.toISOString(),
-          tipo: formData.tipo,
-          cor: formData.cor,
-          responsavel_id: (await supabase.auth.getUser()).data.user?.id,
-          // Store additional data as JSON in a metadata column if needed
-        });
+          tipo: 'evento_externo',
+          responsavel_id: user.data.user?.id,
+        } as any); // TODO: Atualizar types após migration
 
       if (error) throw error;
 

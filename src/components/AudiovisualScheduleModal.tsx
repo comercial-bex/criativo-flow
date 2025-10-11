@@ -225,17 +225,14 @@ export function AudiovisualScheduleModal({
       }
 
       await supabase
-        .from('eventos_agenda')
+        .from('eventos_calendario')
         .insert({
-          titulo: `🎬 ${formData.titulo}`,
-          descricao: formData.briefing,
           data_inicio: dataCaptacao.toISOString(),
           data_fim: dataFim.toISOString(),
-          tipo: 'captacao',
-          cor: '#f59e0b',
+          tipo: 'captacao_externa',
           cliente_id: formData.cliente_id,
           responsavel_id: formData.especialista_id
-        });
+        } as any); // TODO: Atualizar types após migration
 
       // 5. Criar notificação para o Filmmaker
       await supabase

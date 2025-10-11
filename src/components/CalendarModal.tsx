@@ -72,7 +72,7 @@ export function CalendarModal() {
     setIsLoading(true);
     try {
       const { data, error } = await supabase
-        .from('eventos_agenda')
+        .from('eventos_calendario')
         .select('*')
         .order('data_inicio', { ascending: true });
 
@@ -107,7 +107,7 @@ export function CalendarModal() {
   const handleDeleteEvent = async (eventId: string) => {
     try {
       const { error } = await supabase
-        .from('eventos_agenda')
+        .from('eventos_calendario')
         .delete()
         .eq('id', eventId);
 

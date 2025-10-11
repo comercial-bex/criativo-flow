@@ -93,9 +93,9 @@ export default function DesignCalendario() {
       if (tarefasError) throw tarefasError;
       setTarefas(tarefasData || []);
 
-      // Buscar eventos do calendário
+      // Buscar eventos do calendário unificado
       const { data: eventosData, error: eventosError } = await supabase
-        .from('eventos_agenda')
+        .from('eventos_calendario')
         .select('*')
         .gte('data_inicio', format(startDate, 'yyyy-MM-dd'))
         .lte('data_inicio', format(endDate, 'yyyy-MM-dd'));
@@ -138,15 +138,13 @@ export default function DesignCalendario() {
       setIsCreatingEvento(true);
 
       const { data, error } = await supabase
-        .from('eventos_agenda')
+        .from('eventos_calendario')
         .insert({
-          titulo: novoEvento.titulo,
-          descricao: novoEvento.descricao || null,
           data_inicio: novoEvento.data_inicio,
           data_fim: novoEvento.data_fim || novoEvento.data_inicio,
-          tipo: 'design',
+          tipo: 'evento_externo',
           responsavel_id: novoEvento.responsavel_id || null
-        })
+        } as any) // TODO: Atualizar types após migration
         .select()
         .single();
 

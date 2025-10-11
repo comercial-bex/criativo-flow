@@ -2046,6 +2046,7 @@ export type Database = {
       eventos_calendario: {
         Row: {
           cliente_id: string | null
+          cor: string | null
           created_at: string | null
           created_by: string | null
           data_fim: string
@@ -2072,6 +2073,7 @@ export type Database = {
         }
         Insert: {
           cliente_id?: string | null
+          cor?: string | null
           created_at?: string | null
           created_by?: string | null
           data_fim: string
@@ -2098,6 +2100,7 @@ export type Database = {
         }
         Update: {
           cliente_id?: string | null
+          cor?: string | null
           created_at?: string | null
           created_by?: string | null
           data_fim?: string

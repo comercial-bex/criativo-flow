@@ -30,7 +30,7 @@ export const AgendaUnificada = () => {
       const [captacoesRes, tarefasRes, eventosRes] = await Promise.all([
         supabase.from('captacoes_agenda').select('id, titulo, data_captacao, status'),
         supabase.from('tarefas_projeto').select('id, titulo, data_prazo, status'),
-        supabase.from('eventos_agenda').select('id, titulo, data_inicio, cor')
+        supabase.from('eventos_calendario').select('id, titulo, data_inicio, cor, status, tipo')
       ]);
 
       const allEvents: AgendaEvent[] = [];
@@ -65,7 +65,7 @@ export const AgendaUnificada = () => {
         });
       }
 
-      // Eventos Agenda (verde)
+      // Eventos do Calendário Unificado (cores variadas)
       if (eventosRes.data) {
         eventosRes.data.forEach((e) => {
           allEvents.push({
@@ -73,6 +73,7 @@ export const AgendaUnificada = () => {
             titulo: e.titulo,
             data: new Date(e.data_inicio),
             tipo: 'evento',
+            status: e.status,
             cor: e.cor || '#22c55e'
           });
         });
