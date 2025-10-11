@@ -178,7 +178,7 @@ export default function ClienteProjetosFluxo() {
           created_at: projeto.created_at,
           updated_at: projeto.updated_at,
           tipo_fonte: 'projeto' as const,
-          tipo_projeto: 'avulso' as const,
+          tipo_projeto: (projeto.tipo_projeto || 'plano_editorial') as any,
           data_inicio: projeto.data_inicio,
           data_fim: projeto.data_fim,
           data_prazo: projeto.data_prazo,
