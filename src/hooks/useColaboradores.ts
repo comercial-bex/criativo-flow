@@ -54,11 +54,22 @@ export interface Colaborador {
   updated_at?: string;
 }
 
+/**
+ * @deprecated Hook DEPRECATED desde 2025-01-11
+ * Use `usePessoas('colaborador')` para novos desenvolvimentos
+ * Este hook será removido em 30 dias (2025-02-10)
+ * 
+ * Migração:
+ * - Substituir `useColaboradores()` por `usePessoas('colaborador')`
+ * - Interface mudou de `Colaborador` para `Pessoa`
+ * - Campos JSONB: `telefones`, `dados_bancarios`
+ * - Campo array: `papeis` (ex: ['colaborador', 'especialista'])
+ */
 export function useColaboradores() {
-  // ⚠️ DEPRECATION WARNING
   console.warn(
-    '⚠️ useColaboradores() está DEPRECATED. Use usePessoas("colaborador") para novos desenvolvimentos.\n' +
-    'Mais informações: /docs/UNIFICACAO_PESSOAS.md'
+    '⚠️ DEPRECATED: useColaboradores() será removido em 30 dias.\n' +
+    '→ Migre para: usePessoas("colaborador")\n' +
+    '→ Documentação: /docs/UNIFICACAO_PESSOAS.md'
   );
   
   const queryClient = useQueryClient();

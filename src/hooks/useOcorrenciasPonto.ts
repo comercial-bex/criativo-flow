@@ -15,6 +15,11 @@ export interface OcorrenciaPonto {
   updated_at?: string;
 }
 
+/**
+ * Hook para gerenciar ocorrências de ponto
+ * @param pessoaId - ID da pessoa (estrutura unificada)
+ * @param competencia - Mês/ano no formato YYYY-MM
+ */
 export function useOcorrenciasPonto(pessoaId?: string, competencia?: string) {
   const queryClient = useQueryClient();
 

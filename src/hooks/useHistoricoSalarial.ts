@@ -18,26 +18,39 @@ export interface HistoricoSalarial {
   metadata?: any;
 }
 
-export function useHistoricoSalarial(colaboradorId?: string) {
+/**
+ * @deprecated Parâmetro `colaboradorId` está deprecated. Use `pessoaId` no lugar.
+ * Hook aceita ambos por retrocompatibilidade temporária (30 dias).
+ */
+export function useHistoricoSalarial(
+  id?: string, 
+  idType: 'pessoa' | 'colaborador' = 'pessoa'
+) {
   const queryClient = useQueryClient();
 
   const { data: historico = [], isLoading } = useQuery({
-    queryKey: ['historico-salarial', colaboradorId],
+    queryKey: ['historico-salarial', id, idType],
     queryFn: async () => {
+      if (!id) return [];
+      
       let query = supabase
         .from('financeiro_historico_salarial')
         .select('*')
         .order('data_vigencia', { ascending: false });
       
-      if (colaboradorId) {
-        query = query.eq('colaborador_id', colaboradorId);
+      if (idType === 'pessoa') {
+        query = query.eq('pessoa_id', id);
+      } else {
+        // Modo legado: buscar pessoa_id pelo colaborador_id
+        console.warn('⚠️ useHistoricoSalarial: Usando colaborador_id é deprecated. Migre para pessoa_id.');
+        query = query.eq('colaborador_id', id);
       }
       
       const { data, error } = await query;
       if (error) throw error;
       return data as HistoricoSalarial[];
     },
-    enabled: !!colaboradorId,
+    enabled: !!id,
   });
 
   const createMutation = useMutation({

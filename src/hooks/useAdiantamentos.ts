@@ -20,11 +20,25 @@ export interface Adiantamento {
   created_at?: string;
 }
 
-export function useAdiantamentos(colaboradorId?: string, competencia?: string, pessoaId?: string) {
+/**
+ * Hook para gerenciar adiantamentos
+ * @param pessoaId - ID da pessoa (estrutura unificada) - PREFERENCIAL
+ * @param competencia - Mês/ano no formato YYYY-MM
+ * @param colaboradorId - DEPRECATED: Use pessoaId (mantido por retrocompat 30 dias)
+ */
+export function useAdiantamentos(
+  pessoaId?: string, 
+  competencia?: string, 
+  colaboradorId?: string
+) {
   const queryClient = useQueryClient();
 
-  // Usar pessoa_id se fornecido, senão colaborador_id (retrocompatibilidade)
+  // Priorizar pessoa_id, fallback para colaborador_id
   const id = pessoaId || colaboradorId;
+  
+  if (colaboradorId && !pessoaId) {
+    console.warn('⚠️ useAdiantamentos: colaboradorId está deprecated. Use pessoaId.');
+  }
 
   const { data: adiantamentos = [], isLoading } = useQuery({
     queryKey: ['adiantamentos', id, competencia],
@@ -32,7 +46,7 @@ export function useAdiantamentos(colaboradorId?: string, competencia?: string, p
       let query = supabase.from('financeiro_adiantamentos').select('*').order('data_adiantamento', { ascending: false });
       
       if (id) {
-        // Tentar buscar por pessoa_id primeiro, depois colaborador_id
+        // Buscar por pessoa_id primeiro, depois colaborador_id (retrocompat)
         query = query.or(`pessoa_id.eq.${id},colaborador_id.eq.${id}`);
       }
       if (competencia) query = query.eq('competencia', competencia);
@@ -46,7 +60,7 @@ export function useAdiantamentos(colaboradorId?: string, competencia?: string, p
 
   const criarMutation = useMutation({
     mutationFn: async (dados: Omit<Adiantamento, 'id' | 'created_at' | 'status'>) => {
-      // Usar pessoa_id se fornecido, senão colaborador_id (retrocompatibilidade)
+      // Priorizar pessoa_id, fallback para colaborador_id
       const idParaValidar = dados.pessoa_id || dados.colaborador_id;
       
       if (!idParaValidar) {
@@ -67,10 +81,11 @@ export function useAdiantamentos(colaboradorId?: string, competencia?: string, p
       const { data, error } = await supabase
         .from('financeiro_adiantamentos')
         .insert([{ 
-          ...dados, 
-          colaborador_id: dados.colaborador_id || dados.pessoa_id || idParaValidar, // Garantir retrocompatibilidade
+          ...dados,
+          pessoa_id: dados.pessoa_id || idParaValidar, // Sempre preencher pessoa_id
+          colaborador_id: dados.colaborador_id || idParaValidar, // Manter retrocompat
           criado_por: (await supabase.auth.getUser()).data.user?.id 
-        } as any]) // Type assertion temporário até types serem atualizados
+        } as any])
         .select()
         .single();
       
