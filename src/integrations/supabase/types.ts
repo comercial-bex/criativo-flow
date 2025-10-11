@@ -6240,6 +6240,7 @@ export type Database = {
           responsavel_grs_id: string | null
           responsavel_id: string | null
           status: Database["public"]["Enums"]["status_type"] | null
+          tipo_projeto: string | null
           titulo: string
           updated_at: string | null
         }
@@ -6260,6 +6261,7 @@ export type Database = {
           responsavel_grs_id?: string | null
           responsavel_id?: string | null
           status?: Database["public"]["Enums"]["status_type"] | null
+          tipo_projeto?: string | null
           titulo: string
           updated_at?: string | null
         }
@@ -6280,6 +6282,7 @@ export type Database = {
           responsavel_grs_id?: string | null
           responsavel_id?: string | null
           status?: Database["public"]["Enums"]["status_type"] | null
+          tipo_projeto?: string | null
           titulo?: string
           updated_at?: string | null
         }

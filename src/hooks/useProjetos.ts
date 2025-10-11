@@ -10,6 +10,7 @@ export interface Projeto {
   descricao: string | null;
   status: string;
   prioridade: string;
+  tipo_projeto: 'plano_editorial' | 'avulso' | 'campanha';
   data_inicio: string | null;
   data_prazo: string | null;
   created_by: string | null;
