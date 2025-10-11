@@ -14,6 +14,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useProjetos } from '@/hooks/useProjetos';
 import { useEspecialistas } from '@/hooks/useEspecialistas';
+import { useStrategicPlans } from '@/hooks/useStrategicPlans';
 import { 
   Plus, 
   ArrowLeft, 
@@ -31,7 +32,10 @@ import {
   FolderOpen,
   Lock,
   ChevronDown,
-  Megaphone
+  Megaphone,
+  TrendingUp,
+  CheckCircle2,
+  AlertCircle
 } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { CriarProjetoAvulsoModal } from '@/components/CriarProjetoAvulsoModal';
@@ -111,6 +115,7 @@ export default function ClienteProjetosFluxo() {
   const permissions = useClientAccessPermissions();
   const { createProjeto } = useProjetos();
   const { data: especialistasGRS } = useEspecialistas();
+  const { plans, objectives, loading: plansLoading } = useStrategicPlans(clienteId);
 
   useEffect(() => {
     if (clienteId) {
@@ -396,6 +401,158 @@ export default function ClienteProjetosFluxo() {
                 </Button>
               )}
             </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Card de Planejamento Estratégico */}
+      {plans.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Target className="h-5 w-5 text-blue-500" />
+              Planejamento Estratégico
+            </CardTitle>
+            <CardDescription>
+              Objetivos e metas alinhados aos projetos
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {plans.map((plan) => {
+              const planObjectives = objectives.filter(obj => obj.plano_id === plan.id);
+              const objetivosEmAndamento = planObjectives.filter(obj => obj.status === 'em_andamento').length;
+              const objetivosConcluidos = planObjectives.filter(obj => obj.status === 'concluido').length;
+              const totalObjetivos = planObjectives.length;
+              const progressoPorcentagem = totalObjetivos > 0 
+                ? Math.round((objetivosConcluidos / totalObjetivos) * 100) 
+                : 0;
+
+              return (
+                <div key={plan.id} className="space-y-4">
+                  {/* Header do Plano */}
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <h3 className="font-semibold text-lg">{plan.titulo}</h3>
+                      <p className="text-sm text-muted-foreground">
+                        {new Date(plan.periodo_inicio).toLocaleDateString('pt-BR')} até{' '}
+                        {new Date(plan.periodo_fim).toLocaleDateString('pt-BR')}
+                      </p>
+                    </div>
+                    <Badge variant={progressoPorcentagem === 100 ? 'default' : 'secondary'}>
+                      {progressoPorcentagem}% Concluído
+                    </Badge>
+                  </div>
+
+                  {/* Missão e Visão */}
+                  {(plan.missao || plan.visao) && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 p-3 bg-muted/50 rounded-lg">
+                      {plan.missao && (
+                        <div>
+                          <p className="text-xs font-semibold text-muted-foreground mb-1">MISSÃO</p>
+                          <p className="text-sm">{plan.missao}</p>
+                        </div>
+                      )}
+                      {plan.visao && (
+                        <div>
+                          <p className="text-xs font-semibold text-muted-foreground mb-1">VISÃO</p>
+                          <p className="text-sm">{plan.visao}</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Estatísticas de Objetivos */}
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="p-3 bg-blue-50 dark:bg-blue-950/30 rounded-lg border border-blue-200 dark:border-blue-800">
+                      <div className="flex items-center gap-2">
+                        <Target className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                        <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">{totalObjetivos}</span>
+                      </div>
+                      <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">Total de Objetivos</p>
+                    </div>
+                    
+                    <div className="p-3 bg-yellow-50 dark:bg-yellow-950/30 rounded-lg border border-yellow-200 dark:border-yellow-800">
+                      <div className="flex items-center gap-2">
+                        <TrendingUp className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
+                        <span className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{objetivosEmAndamento}</span>
+                      </div>
+                      <p className="text-xs text-yellow-600 dark:text-yellow-400 mt-1">Em Andamento</p>
+                    </div>
+                    
+                    <div className="p-3 bg-green-50 dark:bg-green-950/30 rounded-lg border border-green-200 dark:border-green-800">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />
+                        <span className="text-2xl font-bold text-green-600 dark:text-green-400">{objetivosConcluidos}</span>
+                      </div>
+                      <p className="text-xs text-green-600 dark:text-green-400 mt-1">Concluídos</p>
+                    </div>
+                  </div>
+
+                  {/* Lista de Objetivos Ativos */}
+                  {planObjectives.length > 0 && (
+                    <div className="space-y-2">
+                      <h4 className="text-sm font-semibold text-muted-foreground">Objetivos Ativos</h4>
+                      {planObjectives
+                        .filter(obj => obj.status === 'em_andamento' || obj.status === 'planejado')
+                        .slice(0, 3)
+                        .map((obj) => (
+                          <div key={obj.id} className="flex items-start gap-3 p-3 bg-muted/30 rounded-lg border">
+                            <div className={`mt-1 h-2 w-2 rounded-full ${
+                              obj.status === 'em_andamento' ? 'bg-yellow-500' : 'bg-gray-400'
+                            }`} />
+                            <div className="flex-1">
+                              <p className="text-sm font-medium">{obj.objetivo}</p>
+                              {obj.descricao && (
+                                <p className="text-xs text-muted-foreground mt-1">{obj.descricao}</p>
+                              )}
+                              {obj.prazo_conclusao && (
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  Prazo: {new Date(obj.prazo_conclusao).toLocaleDateString('pt-BR')}
+                                </p>
+                              )}
+                            </div>
+                            <Badge variant={obj.status === 'em_andamento' ? 'default' : 'outline'}>
+                              {obj.status === 'em_andamento' ? 'Em Andamento' : 'Planejado'}
+                            </Badge>
+                          </div>
+                        ))}
+                      
+                      {planObjectives.filter(obj => obj.status === 'em_andamento' || obj.status === 'planejado').length > 3 && (
+                        <p className="text-xs text-muted-foreground text-center">
+                          + {planObjectives.filter(obj => obj.status === 'em_andamento' || obj.status === 'planejado').length - 3} objetivos adicionais
+                        </p>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Botão Ver Detalhes */}
+                  <Button 
+                    variant="outline" 
+                    className="w-full"
+                    onClick={() => navigate(`/grs/planejamento-estrategico?cliente=${clienteId}`)}
+                  >
+                    <Target className="h-4 w-4 mr-2" />
+                    Ver Planejamento Completo
+                  </Button>
+                </div>
+              );
+            })}
+
+            {/* Estado Vazio: Sem Planejamento */}
+            {plans.length === 0 && !plansLoading && (
+              <div className="text-center py-8">
+                <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+                <h3 className="font-semibold mb-2">Nenhum Planejamento Estratégico</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Este cliente ainda não possui um planejamento estratégico definido.
+                </p>
+                <Button 
+                  onClick={() => navigate(`/grs/planejamento-estrategico?cliente=${clienteId}`)}
+                >
+                  Criar Planejamento
+                </Button>
+              </div>
+            )}
           </CardContent>
         </Card>
       )}
