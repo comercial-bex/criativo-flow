@@ -49,6 +49,7 @@ import FinanceiroDashboard from "./pages/Financeiro/Dashboard";
 import FornecedorDashboard from "./pages/Fornecedor/Dashboard";
 import GestorDashboard from "./pages/Gestor/Dashboard";
 import MinhasTarefas from "./pages/MinhasTarefas";
+import GestaoDashboard from "./pages/Gestao/Dashboard";
 import TarefasUnificadasGRS from "./pages/GRS/TarefasUnificadas";
 import EspecialistaDashboard from "./pages/Especialista/Dashboard";
 
@@ -408,6 +409,13 @@ function App() {
                 <Route path="/especialista/dashboard" element={
                   <ProtectedRoute>
                     <Layout><EspecialistaDashboard /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                {/* Gestão & Finanças routes */}
+                <Route path="/gestao/dashboard" element={
+                  <ProtectedRoute module="financeiro">
+                    <Layout><GestaoDashboard /></Layout>
                   </ProtectedRoute>
                 } />
                 

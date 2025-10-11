@@ -147,17 +147,22 @@ const modules = [
     permissions: ["crm", "clientes", "especialistas"]
   },
   {
-    id: "financeiro",
-    title: "Financeiro",
-    icon: DollarSign,
+    id: "gestao_financas",
+    title: "Gestão & Finanças",
+    icon: Building2,
     items: [
-      { title: "Dashboard Financeiro", url: "/financeiro/dashboard", icon: TrendingUp },
+      { title: "Dashboard Geral", url: "/gestao/dashboard", icon: TrendingUp },
       { title: "Lançamentos", url: "/financeiro", icon: DollarSign },
+      { title: "Dashboard Financeiro", url: "/financeiro/dashboard", icon: BarChart3 },
       { title: "Produtos", url: "/financeiro/produtos", icon: Package },
       { title: "Categorias", url: "/categorias-financeiras", icon: FileText },
       { title: "Planos", url: "/planos", icon: CreditCard },
+      { title: "Orçamentos", url: "/administrativo/orcamentos", icon: Calculator },
+      { title: "Propostas", url: "/administrativo/propostas", icon: Signature },
+      { title: "Contratos", url: "/admin/contratos", icon: FileSignature },
+      { title: "Modelos", url: "/admin/contratos/templates", icon: FileType },
     ],
-    permissions: ["financeiro"]
+    permissions: ["financeiro", "administrativo"]
   },
   {
     id: "rh",
@@ -170,19 +175,6 @@ const modules = [
       { title: "Folha de Ponto", url: "/rh/ponto", icon: ClipboardCheck },
     ],
     permissions: ["rh"]
-  },
-  {
-    id: "administrativo", 
-    title: "Administrativo",
-    icon: Briefcase,
-    items: [
-      { title: "Dashboard Admin", url: "/administrativo/dashboard", icon: Briefcase },
-      { title: "Orçamentos", url: "/administrativo/orcamentos", icon: Calculator },
-      { title: "Propostas", url: "/administrativo/propostas", icon: Signature },
-      { title: "Contratos", url: "/admin/contratos", icon: FileSignature },
-      { title: "Modelos de Contrato", url: "/admin/contratos/templates", icon: FileType },
-    ],
-    permissions: ["administrativo"]
   },
   {
     id: "design",
