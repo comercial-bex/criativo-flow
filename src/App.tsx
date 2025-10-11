@@ -22,6 +22,17 @@ import Dashboard from "./pages/Dashboard";
 import CRM from "./pages/CRM";
 import Clientes from "./pages/Clientes";
 import Financeiro from "./pages/Financeiro";
+
+// Inicio pages
+import InicioFavoritos from "./pages/Inicio/Favoritos";
+import InicioRecentes from "./pages/Inicio/Recentes";
+
+// Inteligencia pages
+import Inteligencia from "./pages/Inteligencia";
+import InteligenciaAnalises from "./pages/Inteligencia/Analises";
+import InteligenciaInsights from "./pages/Inteligencia/Insights";
+import InteligenciaPrevisoes from "./pages/Inteligencia/Previsoes";
+import InteligenciaMetricas from "./pages/Inteligencia/Metricas";
 import CategoriasFinanceiras from "./pages/CategoriasFinanceiras";
 import ProdutosFinanceiro from "./pages/Financeiro/Produtos";
 import ProdutoHistorico from "./pages/Financeiro/ProdutoHistorico";
@@ -125,7 +136,6 @@ import AdminTarefas from "./pages/Admin/Tarefas";
 import CentralNotificacoes from "./pages/Admin/CentralNotificacoes";
 import ClienteTarefas from "./pages/Cliente/Tarefas";
 import ClienteTimeline from "./pages/Cliente/Timeline";
-import Inteligencia from "./pages/Inteligencia";
 import GRSAgenda from "./pages/GRS/Agenda";
 import GRSMensagens from "./pages/GRS/Mensagens";
 import Aprovacoes from "./pages/Aprovacoes";
@@ -403,6 +413,50 @@ function App() {
                 <Route path="/minhas-tarefas" element={
                   <ProtectedRoute>
                     <Layout><MinhasTarefas /></Layout>
+                  </ProtectedRoute>
+                } />
+
+                {/* Inicio Routes */}
+                <Route path="/inicio/favoritos" element={
+                  <ProtectedRoute>
+                    <Layout><InicioFavoritos /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/inicio/recentes" element={
+                  <ProtectedRoute>
+                    <Layout><InicioRecentes /></Layout>
+                  </ProtectedRoute>
+                } />
+
+                {/* Inteligencia Routes */}
+                <Route path="/inteligencia" element={
+                  <ProtectedRoute>
+                    <Layout><Inteligencia /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/inteligencia/analises" element={
+                  <ProtectedRoute>
+                    <Layout><InteligenciaAnalises /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/inteligencia/insights" element={
+                  <ProtectedRoute>
+                    <Layout><InteligenciaInsights /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/inteligencia/previsoes" element={
+                  <ProtectedRoute>
+                    <Layout><InteligenciaPrevisoes /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/inteligencia/metricas" element={
+                  <ProtectedRoute>
+                    <Layout><InteligenciaMetricas /></Layout>
                   </ProtectedRoute>
                 } />
 
