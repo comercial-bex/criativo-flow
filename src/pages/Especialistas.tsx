@@ -231,6 +231,27 @@ export default function Especialistas() {
           description: "Especialista atualizado com sucesso",
         });
       } else {
+        // Validar email duplicado antes de criar
+        console.log('🔍 Verificando email duplicado no frontend...');
+        const { data: existingProfile, error: checkError } = await supabase
+          .from('profiles')
+          .select('email')
+          .eq('email', formData.email)
+          .maybeSingle();
+
+        if (checkError) {
+          console.error('❌ Erro ao verificar email:', checkError);
+        }
+
+        if (existingProfile) {
+          toast({
+            title: "Erro",
+            description: "Este email já está cadastrado no sistema",
+            variant: "destructive",
+          });
+          return;
+        }
+
         // Criar novo usuário usando Edge Function
         console.log('📤 Criando especialista:', {
           email: formData.email,
@@ -250,9 +271,20 @@ export default function Especialistas() {
           }
         });
 
+        console.log('📥 Resposta completa da Edge Function:', { userData, userError });
+
         if (userError) {
-          console.error('❌ Erro ao criar especialista:', userError);
-          throw userError;
+          console.error('❌ Erro da Edge Function:', {
+            message: userError.message,
+            status: userError.status,
+            details: userError
+          });
+          
+          const errorMessage = userError.message === 'FunctionsRelayError' 
+            ? 'Erro ao conectar com servidor. Verifique sua conexão e tente novamente.' 
+            : userError.message || 'Erro desconhecido ao criar especialista';
+          
+          throw new Error(errorMessage);
         }
 
         if (!userData?.success) {

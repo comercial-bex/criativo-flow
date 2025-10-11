@@ -27,7 +27,34 @@ serve(async (req) => {
 
     const { email, password, nome, telefone, especialidade, role } = await req.json();
 
-    console.log('📝 Criando usuário:', { email, nome, especialidade, role });
+    console.log('📝 Iniciando criação de usuário:', { email, nome, especialidade, role });
+
+    // Validar email duplicado antes de criar
+    console.log('🔍 Verificando email duplicado...');
+    const { data: existingUsers, error: listError } = await supabaseAdmin.auth.admin.listUsers();
+    
+    if (listError) {
+      console.error('❌ Erro ao listar usuários:', listError);
+      throw new Error('Erro ao validar email: ' + listError.message);
+    }
+
+    const emailExists = existingUsers?.users?.some(u => u.email === email);
+    
+    if (emailExists) {
+      console.log('⚠️ Email já existe:', email);
+      return new Response(
+        JSON.stringify({ 
+          success: false,
+          error: 'Email já cadastrado no sistema' 
+        }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }, 
+          status: 409 
+        }
+      );
+    }
+
+    console.log('✅ Email disponível, prosseguindo...');
 
     // Create user with Supabase Auth Admin (without email confirmation)
     const { data: userData, error: userError } = await supabaseAdmin.auth.admin.createUser({
