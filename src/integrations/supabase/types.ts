@@ -2404,6 +2404,7 @@ export type Database = {
           forma_pagamento: string
           id: string
           observacao: string | null
+          pessoa_id: string | null
           status: string | null
           updated_at: string | null
           valor: number
@@ -2421,6 +2422,7 @@ export type Database = {
           forma_pagamento: string
           id?: string
           observacao?: string | null
+          pessoa_id?: string | null
           status?: string | null
           updated_at?: string | null
           valor: number
@@ -2438,6 +2440,7 @@ export type Database = {
           forma_pagamento?: string
           id?: string
           observacao?: string | null
+          pessoa_id?: string | null
           status?: string | null
           updated_at?: string | null
           valor?: number
@@ -2455,6 +2458,27 @@ export type Database = {
             columns: ["folha_item_id"]
             isOneToOne: false
             referencedRelation: "financeiro_folha_itens"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financeiro_adiantamentos_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "especialistas_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financeiro_adiantamentos_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "pessoas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financeiro_adiantamentos_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "rh_colaboradores_view"
             referencedColumns: ["id"]
           },
         ]
@@ -3082,7 +3106,21 @@ export type Database = {
             foreignKeyName: "folha_mes_pessoa_id_fkey"
             columns: ["pessoa_id"]
             isOneToOne: false
+            referencedRelation: "especialistas_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "folha_mes_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: false
             referencedRelation: "pessoas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "folha_mes_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "rh_colaboradores_view"
             referencedColumns: ["id"]
           },
         ]
@@ -4773,7 +4811,21 @@ export type Database = {
             foreignKeyName: "ocorrencias_ponto_pessoa_id_fkey"
             columns: ["pessoa_id"]
             isOneToOne: false
+            referencedRelation: "especialistas_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ocorrencias_ponto_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: false
             referencedRelation: "pessoas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ocorrencias_ponto_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "rh_colaboradores_view"
             referencedColumns: ["id"]
           },
         ]
@@ -7658,6 +7710,114 @@ export type Database = {
       }
     }
     Views: {
+      especialistas_view: {
+        Row: {
+          created_at: string | null
+          email: string | null
+          especialidade: string | null
+          id: string | null
+          nome: string | null
+          status: Database["public"]["Enums"]["pessoa_status"] | null
+          telefone: Json | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email?: string | null
+          especialidade?: never
+          id?: string | null
+          nome?: string | null
+          status?: Database["public"]["Enums"]["pessoa_status"] | null
+          telefone?: never
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string | null
+          especialidade?: never
+          id?: string | null
+          nome?: string | null
+          status?: Database["public"]["Enums"]["pessoa_status"] | null
+          telefone?: never
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      rh_colaboradores_view: {
+        Row: {
+          agencia: string | null
+          banco_codigo: string | null
+          banco_nome: string | null
+          cargo_id: string | null
+          conta: string | null
+          cpf_cnpj: string | null
+          created_at: string | null
+          data_admissao: string | null
+          data_desligamento: string | null
+          email: string | null
+          fee_mensal: number | null
+          id: string | null
+          nome_completo: string | null
+          observacoes: string | null
+          pix_chave: string | null
+          pix_tipo: string | null
+          regime: Database["public"]["Enums"]["pessoa_regime"] | null
+          salario_base: number | null
+          status: Database["public"]["Enums"]["pessoa_status"] | null
+          telefone: Json | null
+          tipo_conta: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          agencia?: never
+          banco_codigo?: never
+          banco_nome?: never
+          cargo_id?: string | null
+          conta?: never
+          cpf_cnpj?: string | null
+          created_at?: string | null
+          data_admissao?: string | null
+          data_desligamento?: string | null
+          email?: string | null
+          fee_mensal?: number | null
+          id?: string | null
+          nome_completo?: string | null
+          observacoes?: string | null
+          pix_chave?: never
+          pix_tipo?: never
+          regime?: Database["public"]["Enums"]["pessoa_regime"] | null
+          salario_base?: number | null
+          status?: Database["public"]["Enums"]["pessoa_status"] | null
+          telefone?: never
+          tipo_conta?: never
+          updated_at?: string | null
+        }
+        Update: {
+          agencia?: never
+          banco_codigo?: never
+          banco_nome?: never
+          cargo_id?: string | null
+          conta?: never
+          cpf_cnpj?: string | null
+          created_at?: string | null
+          data_admissao?: string | null
+          data_desligamento?: string | null
+          email?: string | null
+          fee_mensal?: number | null
+          id?: string | null
+          nome_completo?: string | null
+          observacoes?: string | null
+          pix_chave?: never
+          pix_tipo?: never
+          regime?: Database["public"]["Enums"]["pessoa_regime"] | null
+          salario_base?: number | null
+          status?: Database["public"]["Enums"]["pessoa_status"] | null
+          telefone?: never
+          tipo_conta?: never
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       rls_errors_stats: {
         Row: {
           affected_users: number | null
