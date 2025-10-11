@@ -7,8 +7,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { PasswordResetModal } from '@/components/PasswordResetModal';
 import { PasswordInput } from '@/components/ui/password-input';
-import { Info, AlertCircle } from 'lucide-react';
+import { Info, AlertCircle, Bug } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { LoginDiagnostic } from '@/components/Auth/LoginDiagnostic';
 
 import bexLogo from '@/assets/logo_bex_verde.png';
 
@@ -21,6 +22,7 @@ export default function Auth() {
   const [showPasswordReset, setShowPasswordReset] = useState(false);
   const [capsLockOn, setCapsLockOn] = useState(false);
   const [emailError, setEmailError] = useState('');
+  const [showDiagnostic, setShowDiagnostic] = useState(false);
   
   // Add ref to track if component is mounted
   const mountedRef = useRef(true);
@@ -206,6 +208,23 @@ export default function Auth() {
           open={showPasswordReset} 
           onOpenChange={setShowPasswordReset} 
         />
+
+        {/* Botão de Diagnóstico */}
+        <div className="flex justify-center">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="text-xs text-muted-foreground gap-2"
+            onClick={() => setShowDiagnostic(!showDiagnostic)}
+          >
+            <Bug className="h-3 w-3" />
+            {showDiagnostic ? 'Ocultar' : 'Mostrar'} Diagnóstico
+          </Button>
+        </div>
+
+        {/* Painel de Diagnóstico */}
+        {showDiagnostic && <LoginDiagnostic />}
       </div>
     </div>
   );
