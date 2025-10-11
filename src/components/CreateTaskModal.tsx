@@ -145,9 +145,9 @@ export function CreateTaskModal({
     try {
       const { data, error } = await supabase
         .from('projetos')
-        .select('id, titulo, mes_referencia')
+        .select('id, titulo, data_inicio, data_prazo, created_at')
         .eq('cliente_id', clienteId)
-        .order('mes_referencia', { ascending: false });
+        .order('created_at', { ascending: false });
       
       if (error) throw error;
       setProjetos(data || []);

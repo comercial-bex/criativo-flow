@@ -315,10 +315,17 @@ export default function ClienteProjetosFluxo() {
         });
       }
     } catch (error: any) {
-      console.error('💥 Erro ao criar projeto:', error);
+      console.error('💥 Erro detalhado ao criar projeto:', {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+        hint: error.hint,
+        stack: error.stack
+      });
+      
       toast({
         title: "❌ Erro ao criar projeto",
-        description: error.message || "Ocorreu um erro ao salvar o projeto",
+        description: error.message || error.details || "Verifique o console para mais detalhes",
         variant: "destructive"
       });
     } finally {
