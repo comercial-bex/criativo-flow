@@ -29,10 +29,13 @@ import {
   RefreshCw,
   Activity,
   Wifi,
-  WifiOff
+  WifiOff,
+  Trash2
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useProfileData } from '@/hooks/useProfileData';
+import { useAdminUserManagement } from '@/hooks/useAdminUserManagement';
+import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 
 interface Profile {
   id: string;
@@ -67,7 +70,10 @@ const Usuarios = () => {
   const [filterStatus, setFilterStatus] = useState('all');
   const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<Profile | null>(null);
   const { toast } = useToast();
+  const { deleteUser, loading: deleting } = useAdminUserManagement();
 
   useEffect(() => {
     fetchData();
@@ -133,6 +139,18 @@ const Usuarios = () => {
         description: `Não foi possível ${action} o usuário`,
         variant: "destructive",
       });
+    }
+  };
+
+  const handleDeleteUser = async () => {
+    if (!userToDelete) return;
+    
+    const result = await deleteUser(userToDelete.id);
+    
+    if (result.success) {
+      setDeleteConfirmOpen(false);
+      setUserToDelete(null);
+      fetchData();
     }
   };
 
@@ -275,6 +293,19 @@ const Usuarios = () => {
                     }}
                   >
                     <Eye className="h-4 w-4" />
+                  </Button>
+                  
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setUserToDelete(profile);
+                      setDeleteConfirmOpen(true);
+                    }}
+                    className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                    title="Deletar usuário permanentemente"
+                  >
+                    <Trash2 className="h-4 w-4" />
                   </Button>
                   
                   {profile.status === 'pendente_aprovacao' && (
@@ -596,6 +627,29 @@ const Usuarios = () => {
             )}
           </DialogContent>
         </Dialog>
+
+        <ConfirmationDialog
+          open={deleteConfirmOpen}
+          onOpenChange={setDeleteConfirmOpen}
+          title="⚠️ Deletar Usuário Permanentemente?"
+          description={
+            userToDelete 
+              ? `Você está prestes a deletar "${userToDelete.nome}" (${userToDelete.email}).
+
+Esta ação:
+• Remove o usuário do sistema de autenticação
+• Remove o perfil e dados vinculados
+• Define campos de auditoria como NULL (preserva histórico)
+• NÃO pode ser desfeita
+
+Tem certeza que deseja continuar?`
+              : ''
+          }
+          confirmText="Sim, deletar permanentemente"
+          cancelText="Cancelar"
+          onConfirm={handleDeleteUser}
+          variant="destructive"
+        />
       </div>
     </PermissionGate>
   );
