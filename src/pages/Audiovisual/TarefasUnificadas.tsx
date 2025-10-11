@@ -8,6 +8,7 @@ import { UniversalKanbanBoard } from '@/components/UniversalKanbanBoard';
 import { TrelloStyleTaskModal } from '@/components/TrelloStyleTaskModal';
 import { CreateTaskModal } from '@/components/CreateTaskModal';
 import { useToast } from '@/hooks/use-toast';
+import { sanitizeTaskPayload } from '@/utils/tarefaUtils';
 
 // Interface para tarefas do Audiovisual
 interface AudiovisualTask {
@@ -146,13 +147,11 @@ const TarefasUnificadasAudiovisual: React.FC = () => {
   // Criar nova tarefa
   const handleTaskCreate = async (taskData: any) => {
     try {
+      const base = { ...taskData, setor_responsavel: 'audiovisual' };
+      const payload = sanitizeTaskPayload(base);
       const { data, error } = await supabase
         .from('tarefas_projeto')
-        .insert([{
-          ...taskData,
-          setor_responsavel: 'audiovisual',
-          status: 'roteiro'
-        }])
+        .insert([{ ...payload, status: 'roteiro' }])
         .select()
         .single();
 

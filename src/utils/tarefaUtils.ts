@@ -208,3 +208,25 @@ export const KANBAN_COLUMNS = [
   { id: 'agendado', title: 'Agendado', statuses: ['agendado'] },
   { id: 'publicado', title: 'Publicado', statuses: ['publicado'] },
 ];
+
+// === Mapeamento centralizado de executor_area ===
+export type ExecutorAreaEnum = 'Audiovisual' | 'Criativo';
+
+export function mapExecutorArea(valor?: string | null): ExecutorAreaEnum | null {
+  const mapeamento: Record<string, ExecutorAreaEnum> = {
+    audiovisual: 'Audiovisual',
+    design: 'Criativo',
+    grs: 'Criativo',
+    atendimento: 'Criativo',
+  };
+  if (!valor) return null;
+  const key = String(valor).toLowerCase();
+  return mapeamento[key] ?? null;
+}
+
+// Não remove setor_responsavel; apenas garante executor_area válido para o enum
+export function sanitizeTaskPayload<T extends Record<string, any>>(p: T): T {
+  if (!p) return p;
+  const ea = mapExecutorArea((p as any).executor_area ?? (p as any).setor_responsavel ?? null);
+  return { ...(p as any), executor_area: ea };
+}

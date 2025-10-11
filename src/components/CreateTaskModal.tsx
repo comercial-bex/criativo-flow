@@ -24,6 +24,7 @@ import { useOperationalPermissions } from '@/hooks/useOperationalPermissions';
 import { supabase } from '@/integrations/supabase/client';
 import { useEspecialistas } from '@/hooks/useEspecialistas';
 import type { TipoTarefa } from '@/types/tarefa';
+import { sanitizeTaskPayload } from '@/utils/tarefaUtils';
 
 interface CreateTaskModalProps {
   open: boolean;
@@ -402,7 +403,7 @@ export function CreateTaskModal({
         }
       };
 
-      const createdTask = await onTaskCreate(taskData);
+      const createdTask = await onTaskCreate(sanitizeTaskPayload(taskData));
       
       // Se houver equipamentos selecionados, criar reservas
       if (selectedEquipamentos.length > 0 && createdTask?.id) {

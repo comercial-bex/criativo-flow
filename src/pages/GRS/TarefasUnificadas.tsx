@@ -29,6 +29,7 @@ import {
 import { Alert } from '@/components/ui/alert';
 import { useTutorial } from '@/hooks/useTutorial';
 import { TutorialButton } from '@/components/TutorialButton';
+import { sanitizeTaskPayload } from '@/utils/tarefaUtils';
 
 interface GRSTask {
   id: string;
@@ -187,9 +188,10 @@ export default function TarefasUnificadasGRS() {
 
   const handleTaskCreate = async (taskData: any) => {
     try {
+      const payload = sanitizeTaskPayload(taskData);
       const { data, error } = await supabase
         .from('tarefas_projeto')
-        .insert(taskData)
+        .insert(payload as any)
         .select()
         .single();
 

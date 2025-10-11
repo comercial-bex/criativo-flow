@@ -17,7 +17,7 @@ import {
   Plus,
   Settings
 } from 'lucide-react';
-
+import { sanitizeTaskPayload } from '@/utils/tarefaUtils';
 interface Cliente {
   id: string;
   nome: string;
@@ -165,9 +165,10 @@ export default function ProjetoTarefasKanban() {
 
   const handleTaskCreate = async (taskData: any) => {
     try {
+      const payload = sanitizeTaskPayload(taskData);
       const { data, error } = await supabase
         .from('tarefas_projeto')
-        .insert(taskData)
+        .insert(payload as any)
         .select()
         .single();
 

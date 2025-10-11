@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Tarefa } from '@/types/tarefa';
 import { useToast } from '@/hooks/use-toast';
+import { sanitizeTaskPayload } from '@/utils/tarefaUtils';
 
 interface UseTarefasOptions {
   projetoId?: string;
@@ -69,9 +70,10 @@ export function useTarefas(options: UseTarefasOptions = {}) {
 
   const createTarefa = async (novaTarefa: Partial<Tarefa>) => {
     try {
+      const payload = sanitizeTaskPayload(novaTarefa as any);
       const { data, error } = await supabase
         .from('tarefa')
-        .insert(novaTarefa as any)
+        .insert(payload as any)
         .select()
         .single();
 
