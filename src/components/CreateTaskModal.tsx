@@ -11,7 +11,7 @@ import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { CalendarIcon } from 'lucide-react';
+import { CalendarIcon, Sparkles } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -51,6 +51,7 @@ export function CreateTaskModal({
   const [selectedCliente, setSelectedCliente] = useState(clienteId || '');
   const [selectedEquipamentos, setSelectedEquipamentos] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState('basico');
+  const [loadingAI, setLoadingAI] = useState(false);
   
   // ⛔ GUARD: Verificar permissão de criação
   const { permissions } = useOperationalPermissions();
@@ -179,6 +180,50 @@ export function CreateTaskModal({
     setSelectedPlanejamento('');
     setSelectedEquipamentos([]);
     setActiveTab('basico');
+  };
+
+  const melhorarTextoComIA = async (campo: 'titulo' | 'descricao', tipo: 'ortografia' | 'melhorar') => {
+    const textoAtual = formData[campo];
+    if (!textoAtual?.trim()) {
+      toast({
+        title: "Campo vazio",
+        description: "Digite algo primeiro para melhorar com IA",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setLoadingAI(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-content-with-ai', {
+        body: {
+          prompt: tipo === 'ortografia' 
+            ? `Corrija apenas erros de ortografia e gramática neste texto, mantendo o mesmo tom e estrutura: "${textoAtual}"`
+            : `Melhore este ${campo === 'titulo' ? 'título' : 'descrição'} de forma criativa e profissional, mantendo a essência: "${textoAtual}"`,
+          type: 'text'
+        }
+      });
+
+      if (error) throw error;
+      
+      const textoMelhorado = data?.generatedText?.trim();
+      if (textoMelhorado) {
+        setFormData(prev => ({ ...prev, [campo]: textoMelhorado }));
+        toast({
+          title: "✨ Texto melhorado!",
+          description: tipo === 'ortografia' ? "Erros corrigidos" : "Texto aprimorado com IA"
+        });
+      }
+    } catch (error) {
+      console.error('Erro ao melhorar texto:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível melhorar o texto",
+        variant: "destructive"
+      });
+    } finally {
+      setLoadingAI(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -363,7 +408,7 @@ export function CreateTaskModal({
                   setProjetos([]);
                 }}
               >
-                <SelectTrigger>
+                <SelectTrigger className={cn(!selectedCliente && "border-destructive")}>
                   <SelectValue placeholder="Selecione o cliente" />
                 </SelectTrigger>
                 <SelectContent>
@@ -383,7 +428,7 @@ export function CreateTaskModal({
                 onValueChange={setSelectedProjeto}
                 disabled={!selectedCliente}
               >
-                <SelectTrigger>
+                <SelectTrigger className={cn(!selectedProjeto && selectedCliente && "border-destructive")}>
                   <SelectValue placeholder={selectedCliente ? "Selecione o projeto" : "Selecione um cliente primeiro"} />
                 </SelectTrigger>
                 <SelectContent>
@@ -433,13 +478,26 @@ export function CreateTaskModal({
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="titulo">Título da Tarefa *</Label>
-              <Input
-                id="titulo"
-                value={formData.titulo}
-                onChange={(e) => setFormData({ ...formData, titulo: e.target.value })}
-                placeholder="Ex: Post promocional Black Friday"
-                required
-              />
+              <div className="flex gap-2">
+                <Input
+                  id="titulo"
+                  value={formData.titulo}
+                  onChange={(e) => setFormData({ ...formData, titulo: e.target.value })}
+                  placeholder="Ex: Post promocional Black Friday"
+                  required
+                  className={cn(!formData.titulo.trim() && "border-destructive")}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  onClick={() => melhorarTextoComIA('titulo', 'ortografia')}
+                  disabled={loadingAI || !formData.titulo.trim()}
+                  title="Corrigir ortografia"
+                >
+                  <Sparkles className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
 
             <div className="space-y-2">
@@ -448,7 +506,7 @@ export function CreateTaskModal({
                 value={formData.setor_responsavel} 
                 onValueChange={(value) => setFormData({ ...formData, setor_responsavel: value })}
               >
-                <SelectTrigger>
+                <SelectTrigger className={cn(!formData.setor_responsavel && "border-destructive")}>
                   <SelectValue placeholder="Selecione o setor" />
                 </SelectTrigger>
                 <SelectContent>
@@ -524,7 +582,33 @@ export function CreateTaskModal({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="descricao">Descrição Geral</Label>
+            <div className="flex justify-between items-center">
+              <Label htmlFor="descricao">Descrição Geral</Label>
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => melhorarTextoComIA('descricao', 'ortografia')}
+                  disabled={loadingAI || !formData.descricao.trim()}
+                  className="h-7 text-xs"
+                >
+                  <Sparkles className="h-3 w-3 mr-1" />
+                  Corrigir
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => melhorarTextoComIA('descricao', 'melhorar')}
+                  disabled={loadingAI || !formData.descricao.trim()}
+                  className="h-7 text-xs"
+                >
+                  <Sparkles className="h-3 w-3 mr-1" />
+                  Melhorar
+                </Button>
+              </div>
+            </div>
             <Textarea
               id="descricao"
               value={formData.descricao}
