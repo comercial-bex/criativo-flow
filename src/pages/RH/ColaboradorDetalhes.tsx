@@ -4,10 +4,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { useColaboradores } from '@/hooks/useColaboradores';
 import { TimelineColaborador } from '@/components/RH/TimelineColaborador';
 import { formatCurrency } from '@/lib/utils';
-import { ArrowLeft, User, Briefcase, Calendar, TrendingUp, Edit } from 'lucide-react';
+import { ArrowLeft, User, Briefcase, Calendar, TrendingUp, Edit, AlertTriangle } from 'lucide-react';
 import { ColaboradorForm } from '@/components/RH/ColaboradorForm';
 import { toast } from 'sonner';
 
@@ -19,10 +20,19 @@ export default function ColaboradorDetalhes() {
 
   const colaborador = colaboradores.find((c) => c.id === id);
 
-  // Redirecionar para nova interface
+  // Auto-redirect em 30 dias (2025-02-10)
   useEffect(() => {
+    const DEPRECATION_DATE = new Date('2025-02-10');
+    const now = new Date();
+    
+    if (now >= DEPRECATION_DATE) {
+      toast.warning('🔄 Redirecionando para nova interface de Gestão de Pessoas...');
+      navigate(`/rh/pessoas/${id}`, { replace: true });
+      return;
+    }
+
     if (!isLoading && !colaborador && id) {
-      toast.info('⚠️ Redirecionando para nova interface de Gestão de Pessoas...');
+      toast.info('⚠️ Colaborador não encontrado. Redirecionando...');
       setTimeout(() => navigate('/rh/pessoas'), 1500);
     }
   }, [id, isLoading, colaborador, navigate]);
@@ -72,6 +82,24 @@ export default function ColaboradorDetalhes() {
 
   return (
     <div className="container mx-auto p-6 space-y-6 animate-fade-in">
+      {/* Banner de Deprecação */}
+      <Alert className="border-warning/50 bg-warning/10">
+        <AlertTriangle className="h-4 w-4 text-warning" />
+        <AlertTitle className="text-warning">⚠️ Interface Legada - Será Descontinuada</AlertTitle>
+        <AlertDescription className="text-sm space-y-2">
+          <p>
+            Esta página será <strong>removida em 10/02/2025</strong>. Utilize a nova{' '}
+            <button
+              onClick={() => navigate(`/rh/pessoas/${id}`)}
+              className="underline font-semibold hover:text-warning/80"
+            >
+              Gestão de Pessoas
+            </button>{' '}
+            para acessar funcionalidades atualizadas.
+          </p>
+        </AlertDescription>
+      </Alert>
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">

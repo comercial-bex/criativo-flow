@@ -63,15 +63,28 @@ export default function Colaboradores() {
   return (
     <div className="container mx-auto p-6 space-y-6 animate-fade-in">
       {/* Alerta de Migração */}
-      <Alert className="border-warning/50 bg-warning/10">
-        <Info className="h-4 w-4 text-warning" />
-        <AlertTitle className="text-warning">Página em Migração</AlertTitle>
-        <AlertDescription className="text-sm">
-          Esta página será substituída pela nova{' '}
-          <a href="/rh/pessoas" className="underline font-semibold hover:text-warning/80">
-            Gestão de Pessoas
-          </a>
-          . Novos cadastros devem ser feitos lá.
+      <Alert className="border-destructive/50 bg-destructive/10">
+        <Info className="h-4 w-4 text-destructive" />
+        <AlertTitle className="text-destructive font-semibold">
+          ⚠️ DEPRECADO - Remoção em 10/02/2025
+        </AlertTitle>
+        <AlertDescription className="text-sm space-y-2">
+          <p>
+            Esta interface <strong>legada</strong> será <strong>removida em 30 dias</strong>.
+          </p>
+          <div className="flex gap-2 mt-2">
+            <Button
+              size="sm"
+              variant="outline"
+              className="border-warning text-warning hover:bg-warning/10"
+              onClick={() => window.location.href = '/rh/pessoas'}
+            >
+              Ir para Nova Gestão de Pessoas →
+            </Button>
+          </div>
+          <p className="text-xs mt-2 text-muted-foreground">
+            <strong>Novos cadastros e edições</strong> devem ser feitos na nova interface.
+          </p>
         </AlertDescription>
       </Alert>
 

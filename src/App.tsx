@@ -9,6 +9,7 @@ import { Layout } from "@/components/Layout";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { SmartRedirect } from "@/components/SmartRedirect";
 import { SpecialistGuard } from "@/components/SpecialistGuard";
+import { DeprecatedRouteRedirect } from "@/components/DeprecatedRouteRedirect";
 
 
 import Index from "./pages/Index";
@@ -782,16 +783,23 @@ function App() {
                   </ProtectedRoute>
                 } />
                 
+                {/* DEPRECATED: Rotas legadas com redirecionamento automático */}
                 <Route path="/rh/colaboradores" element={
-                  <ProtectedRoute module="rh" action="canView">
-                    <Layout><Colaboradores /></Layout>
-                  </ProtectedRoute>
+                  <>
+                    <DeprecatedRouteRedirect />
+                    <ProtectedRoute module="rh" action="canView">
+                      <Layout><Colaboradores /></Layout>
+                    </ProtectedRoute>
+                  </>
                 } />
                 
                 <Route path="/rh/colaboradores/:id" element={
-                  <ProtectedRoute module="rh" action="canView">
-                    <Layout><ColaboradorDetalhes /></Layout>
-                  </ProtectedRoute>
+                  <>
+                    <DeprecatedRouteRedirect />
+                    <ProtectedRoute module="rh" action="canView">
+                      <Layout><ColaboradorDetalhes /></Layout>
+                    </ProtectedRoute>
+                  </>
                 } />
                 
                 <Route path="/rh/ponto" element={
