@@ -113,7 +113,7 @@ export default function AdminTarefas() {
       const projetoIds = [...new Set(tarefasData?.map(t => t.projeto_id).filter(Boolean))];
       const { data: projetosData } = await supabase
         .from('projetos')
-        .select('id, nome, cliente_id')
+        .select('id, titulo, cliente_id')
         .in('id', projetoIds);
 
       // Buscar dados dos clientes
@@ -132,7 +132,7 @@ export default function AdminTarefas() {
         return {
           ...task,
           responsavel_nome: responsavel?.nome,
-          projeto_nome: projeto?.nome,
+          projeto_nome: projeto?.titulo,
           cliente_nome: cliente?.nome,
           cliente_id: projeto?.cliente_id,
           prioridade: task.prioridade as 'baixa' | 'media' | 'alta',

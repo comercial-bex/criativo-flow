@@ -47,7 +47,7 @@ interface TransacaoFinanceira {
   observacoes?: string;
   categorias_financeiras?: CategoriaFinanceira;
   clientes?: { nome: string };
-  projetos?: { nome: string };
+  projetos?: { titulo: string };
 }
 
 interface Cliente {
@@ -57,7 +57,7 @@ interface Cliente {
 
 interface Projeto {
   id: string;
-  nome: string;
+  titulo: string;
 }
 
 export default function Financeiro() {
@@ -105,7 +105,7 @@ export default function Financeiro() {
           *,
           categorias_financeiras (id, nome, tipo, cor),
           clientes (nome),
-          projetos (nome)
+          projetos (titulo)
         `)
         .order("data_vencimento", { ascending: false });
 
@@ -134,9 +134,9 @@ export default function Financeiro() {
       // Buscar projetos
       const { data: projetosData, error: projetosError } = await supabase
         .from("projetos")
-        .select("id, nome")
+        .select("id, titulo")
         .eq("status", "ativo")
-        .order("nome");
+        .order("titulo");
 
       if (projetosError) throw projetosError;
       setProjetos(projetosData || []);
@@ -582,7 +582,7 @@ export default function Financeiro() {
                   <SelectContent>
                     {projetos.map((projeto) => (
                       <SelectItem key={projeto.id} value={projeto.id}>
-                        {projeto.nome}
+                        {projeto.titulo}
                       </SelectItem>
                     ))}
                   </SelectContent>

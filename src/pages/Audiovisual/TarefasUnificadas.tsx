@@ -85,7 +85,7 @@ const TarefasUnificadasAudiovisual: React.FC = () => {
           prioridade: task.prioridade as 'baixa' | 'media' | 'alta',
           responsavel_nome: task.profiles?.nome || 'Não atribuído',
           cliente_nome: (clientsData || []).find(c => c.id === task.projeto_id)?.nome || 'Sem cliente',
-          projeto_nome: (projectsData || []).find(p => p.id === task.projeto_id)?.nome || 'Sem projeto'
+          projeto_nome: (projectsData || []).find(p => p.id === task.projeto_id)?.titulo || 'Sem projeto'
         })) || [];
         
         setTasks(formattedTasks);

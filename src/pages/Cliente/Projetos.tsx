@@ -21,7 +21,7 @@ import { TutorialButton } from '@/components/TutorialButton';
 
 interface Projeto {
   id: string;
-  nome: string;
+  titulo: string;
   status: 'ativo' | 'concluido' | 'pendente' | 'pausado';
   valor: number;
   dataInicio: string;
@@ -61,7 +61,7 @@ const mockClientesComProjetos: ClienteComProjetos[] = [
     projetos: [
       {
         id: "p1",
-        nome: "Campanha Digital Q1",
+        titulo: "Campanha Digital Q1",
         status: "ativo",
         valor: 45000,
         dataInicio: "2024-01-15",
@@ -71,7 +71,7 @@ const mockClientesComProjetos: ClienteComProjetos[] = [
       },
       {
         id: "p2",
-        nome: "Website Institucional",
+        titulo: "Website Institucional",
         status: "ativo",
         valor: 25000,
         dataInicio: "2024-02-01",
@@ -80,7 +80,7 @@ const mockClientesComProjetos: ClienteComProjetos[] = [
       },
       {
         id: "p3",
-        nome: "Rebranding Completo",
+        titulo: "Rebranding Completo",
         status: "concluido",
         valor: 80000,
         dataInicio: "2023-11-01",
@@ -105,7 +105,7 @@ const mockClientesComProjetos: ClienteComProjetos[] = [
     projetos: [
       {
         id: "p4",
-        nome: "App Mobile",
+        titulo: "App Mobile",
         status: "ativo",
         valor: 120000,
         dataInicio: "2024-01-10",
@@ -114,7 +114,7 @@ const mockClientesComProjetos: ClienteComProjetos[] = [
       },
       {
         id: "p5",
-        nome: "Sistema CRM",
+        titulo: "Sistema CRM",
         status: "pendente",
         valor: 75000,
         dataInicio: "2024-03-01",
@@ -166,7 +166,7 @@ const mockClientesComProjetos: ClienteComProjetos[] = [
     projetos: [
       {
         id: "p6",
-        nome: "MVP Development",
+        titulo: "MVP Development",
         status: "pausado",
         valor: 35000,
         dataInicio: "2024-02-01",
@@ -249,7 +249,7 @@ function ProjetoForm({ onSuccess }: { onSuccess: () => void }) {
       const { error } = await supabase
         .from('projetos')
         .insert({
-          nome: formData.nome,
+          titulo: formData.nome,
           descricao: formData.descricao,
           cliente_id: formData.cliente_id,
           orcamento: formData.valor ? parseFloat(formData.valor) : null,
@@ -429,7 +429,7 @@ export default function ClienteProjetos() {
           status,
           projetos (
             id,
-            nome,
+            titulo,
             status,
             orcamento,
             data_inicio,
@@ -445,7 +445,7 @@ export default function ClienteProjetos() {
       const clientesFormatados: ClienteComProjetos[] = (clientesData || []).map(cliente => {
         const projetos = (cliente.projetos || []).map(projeto => ({
           id: projeto.id,
-          nome: projeto.nome,
+          titulo: projeto.titulo,
           status: projeto.status as 'ativo' | 'concluido' | 'pendente' | 'pausado',
           valor: projeto.orcamento || 0,
           dataInicio: projeto.data_inicio || '',

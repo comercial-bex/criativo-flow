@@ -7,7 +7,7 @@ import { Building, Calendar, DollarSign, Eye, BarChart3 } from "lucide-react";
 
 interface Projeto {
   id: string;
-  nome: string;
+  titulo: string;
   status: 'ativo' | 'concluido' | 'pendente' | 'pausado';
   valor: number;
   dataInicio: string;
@@ -136,7 +136,7 @@ export function MobileProjetoCard({
               <div key={projeto.id} className="bg-muted/30 rounded-lg p-3 space-y-2">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
-                    <h4 className="text-sm font-medium text-foreground truncate">{projeto.nome}</h4>
+                    <h4 className="text-sm font-medium text-foreground truncate">{projeto.titulo}</h4>
                     <p className="text-xs text-muted-foreground">{projeto.tipo}</p>
                   </div>
                   <Badge className={`${getStatusColor(projeto.status)} text-xs ml-2 shrink-0`}>

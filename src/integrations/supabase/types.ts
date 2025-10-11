@@ -6051,40 +6051,61 @@ export type Database = {
         Row: {
           cliente_id: string | null
           created_at: string | null
+          created_by: string | null
           data_fim: string | null
           data_inicio: string | null
+          data_prazo: string | null
           descricao: string | null
           id: string
-          nome: string
           orcamento: number | null
+          orcamento_estimado: number | null
+          prioridade: string | null
+          progresso: number | null
+          responsavel_atendimento_id: string | null
+          responsavel_grs_id: string | null
           responsavel_id: string | null
           status: Database["public"]["Enums"]["status_type"] | null
+          titulo: string
           updated_at: string | null
         }
         Insert: {
           cliente_id?: string | null
           created_at?: string | null
+          created_by?: string | null
           data_fim?: string | null
           data_inicio?: string | null
+          data_prazo?: string | null
           descricao?: string | null
           id?: string
-          nome: string
           orcamento?: number | null
+          orcamento_estimado?: number | null
+          prioridade?: string | null
+          progresso?: number | null
+          responsavel_atendimento_id?: string | null
+          responsavel_grs_id?: string | null
           responsavel_id?: string | null
           status?: Database["public"]["Enums"]["status_type"] | null
+          titulo: string
           updated_at?: string | null
         }
         Update: {
           cliente_id?: string | null
           created_at?: string | null
+          created_by?: string | null
           data_fim?: string | null
           data_inicio?: string | null
+          data_prazo?: string | null
           descricao?: string | null
           id?: string
-          nome?: string
           orcamento?: number | null
+          orcamento_estimado?: number | null
+          prioridade?: string | null
+          progresso?: number | null
+          responsavel_atendimento_id?: string | null
+          responsavel_grs_id?: string | null
           responsavel_id?: string | null
           status?: Database["public"]["Enums"]["status_type"] | null
+          titulo?: string
           updated_at?: string | null
         }
         Relationships: [
@@ -6101,6 +6122,48 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "vw_client_metrics"
             referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "projetos_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "projetos_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "vw_client_metrics"
+            referencedColumns: ["responsavel_id"]
+          },
+          {
+            foreignKeyName: "projetos_responsavel_atendimento_id_fkey"
+            columns: ["responsavel_atendimento_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "projetos_responsavel_atendimento_id_fkey"
+            columns: ["responsavel_atendimento_id"]
+            isOneToOne: false
+            referencedRelation: "vw_client_metrics"
+            referencedColumns: ["responsavel_id"]
+          },
+          {
+            foreignKeyName: "projetos_responsavel_grs_id_fkey"
+            columns: ["responsavel_grs_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "projetos_responsavel_grs_id_fkey"
+            columns: ["responsavel_grs_id"]
+            isOneToOne: false
+            referencedRelation: "vw_client_metrics"
+            referencedColumns: ["responsavel_id"]
           },
           {
             foreignKeyName: "projetos_responsavel_id_fkey"

@@ -356,12 +356,12 @@ export default function MinhasTarefas() {
         if (task.projeto_id) {
           const { data: projeto } = await supabase
             .from('projetos')
-            .select('nome, cliente_id')
+            .select('titulo, cliente_id')
             .eq('id', task.projeto_id)
             .single();
           
           if (projeto) {
-            projeto_nome = projeto.nome;
+            projeto_nome = projeto.titulo;
             
             // Buscar cliente separadamente
             if (projeto.cliente_id) {

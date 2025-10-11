@@ -37,7 +37,7 @@ interface Cliente {
 interface Projeto {
   id: string;
   cliente_id: string | null;
-  nome: string;
+  titulo: string;
   descricao: string | null;
   status: string | null;
   data_inicio: string | null;
@@ -107,7 +107,7 @@ export default function ClienteProjetos() {
         .from('projetos')
         .select(`
           *,
-          profiles:responsavel_id (nome)
+          profiles!projetos_responsavel_id_fkey(nome)
         `)
         .eq('cliente_id', clienteId)
         .order('created_at', { ascending: false });
@@ -373,7 +373,7 @@ export default function ClienteProjetos() {
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between gap-2">
                   <CardTitle className="text-lg font-semibold line-clamp-2">
-                    {projeto.nome}
+                    {projeto.titulo}
                   </CardTitle>
                   <div className="flex gap-1">
                     {getStatusBadge(projeto.status)}

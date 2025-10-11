@@ -25,7 +25,7 @@ interface Cliente {
 
 interface Projeto {
   id: string;
-  nome: string;
+  titulo: string;
   descricao?: string;
   status: string;
   data_inicio?: string;
@@ -251,7 +251,7 @@ export default function ProjetoTarefasKanban() {
           {cliente.nome}
         </Button>
         <span className="text-muted-foreground">/</span>
-        <span className="font-medium">{projeto.nome}</span>
+        <span className="font-medium">{projeto.titulo}</span>
         <span className="text-muted-foreground">/</span>
         <span className="font-medium">Tarefas</span>
       </div>
@@ -262,11 +262,10 @@ export default function ProjetoTarefasKanban() {
           <div className="flex items-center justify-between">
             <div className="space-y-2">
               <CardTitle className="flex items-center gap-2">
-                {projeto.nome}
+                {projeto.titulo}
                 <ProjectStatusIndicator 
                   project={{ 
                     ...projeto, 
-                    titulo: projeto.nome,
                     tarefas 
                   }} 
                 />

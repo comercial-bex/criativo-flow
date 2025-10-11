@@ -17,7 +17,7 @@ import { useToast } from "@/hooks/use-toast";
 
 interface Projeto {
   id: string;
-  nome: string;
+  titulo: string;
   status: 'ativo' | 'concluido' | 'pendente' | 'pausado';
   valor: number;
   dataInicio: string;
@@ -44,7 +44,7 @@ const mockClienteDetalhes: Record<string, ClienteDetalhes> = {
     projetos: [
       {
         id: "p1",
-        nome: "Campanha Digital Q1",
+        titulo: "Campanha Digital Q1",
         status: "ativo",
         valor: 45000,
         dataInicio: "2024-01-15",
@@ -54,7 +54,7 @@ const mockClienteDetalhes: Record<string, ClienteDetalhes> = {
       },
       {
         id: "p2",
-        nome: "Website Institucional",
+        titulo: "Website Institucional",
         status: "ativo",
         valor: 25000,
         dataInicio: "2024-02-01",
@@ -63,7 +63,7 @@ const mockClienteDetalhes: Record<string, ClienteDetalhes> = {
       },
       {
         id: "p3",
-        nome: "Rebranding Completo",
+        titulo: "Rebranding Completo",
         status: "concluido",
         valor: 80000,
         dataInicio: "2023-11-01",
@@ -81,7 +81,7 @@ const mockClienteDetalhes: Record<string, ClienteDetalhes> = {
     projetos: [
       {
         id: "p4",
-        nome: "App Mobile",
+        titulo: "App Mobile",
         status: "ativo",
         valor: 120000,
         dataInicio: "2024-01-10",
@@ -90,7 +90,7 @@ const mockClienteDetalhes: Record<string, ClienteDetalhes> = {
       },
       {
         id: "p5",
-        nome: "Sistema CRM",
+        titulo: "Sistema CRM",
         status: "pendente",
         valor: 75000,
         dataInicio: "2024-03-01",
@@ -107,7 +107,7 @@ const mockClienteDetalhes: Record<string, ClienteDetalhes> = {
     projetos: [
       {
         id: "p6",
-        nome: "MVP Development",
+        titulo: "MVP Development",
         status: "pausado",
         valor: 35000,
         dataInicio: "2024-02-01",
@@ -159,7 +159,7 @@ function ProjetoForm({ clienteId, onSuccess }: { clienteId: string; onSuccess: (
       const { error } = await supabase
         .from('projetos')
         .insert({
-          nome: formData.nome,
+          titulo: formData.nome,
           descricao: formData.descricao,
           cliente_id: clienteId,
           orcamento: formData.valor ? parseFloat(formData.valor) : null,

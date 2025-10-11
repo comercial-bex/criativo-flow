@@ -12,7 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 interface ProjetoDetalhes {
   id: string;
-  nome: string;
+  titulo: string;
   descricao?: string;
   status: 'ativo' | 'pendente' | 'inativo' | 'arquivado';
   orcamento?: number;
@@ -138,7 +138,7 @@ export default function ProjetoDetalhes() {
             </Button>
             <div>
               <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-                {projeto.nome}
+                {projeto.titulo}
               </h1>
               <p className="text-muted-foreground mt-1">
                 Projeto de {cliente.nome}

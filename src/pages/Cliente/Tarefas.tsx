@@ -86,7 +86,7 @@ export default function ClienteTarefas() {
       // Buscar projetos do cliente
       const { data: projetos } = await supabase
         .from('projetos')
-        .select('id, nome')
+        .select('id, titulo')
         .eq('cliente_id', profile.cliente_id);
 
       if (!projetos || projetos.length === 0) {
@@ -136,7 +136,7 @@ export default function ClienteTarefas() {
         return {
           ...task,
           responsavel_nome: responsavel?.nome,
-          projeto_nome: projeto?.nome,
+          projeto_nome: projeto?.titulo,
           prioridade: task.prioridade as 'baixa' | 'media' | 'alta',
           anexos: [],
           comentarios: [],

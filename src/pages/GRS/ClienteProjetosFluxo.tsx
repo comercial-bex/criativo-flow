@@ -136,7 +136,7 @@ export default function ClienteProjetosFluxo() {
       const projetosUnificados: ProjetoUnificado[] = [
         ...(projetosData || []).map(projeto => ({
           id: projeto.id,
-          titulo: projeto.nome || 'Projeto sem título',
+          titulo: projeto.titulo || 'Projeto sem título',
           descricao: projeto.descricao,
           status: projeto.status,
           cliente_id: projeto.cliente_id,

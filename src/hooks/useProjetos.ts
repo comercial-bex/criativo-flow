@@ -77,12 +77,24 @@ export function useProjetos() {
         `)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Erro detalhado ao buscar projetos:', error);
+        if (error.code === 'PGRST116') {
+          toast.error('Tabela de projetos não encontrada no banco de dados');
+        } else if (error.code === '42703') {
+          toast.error('Erro no schema da tabela projetos. Verifique as colunas.');
+        } else {
+          toast.error('Erro ao carregar projetos: ' + error.message);
+        }
+        setProjetos([]);
+        return;
+      }
 
       setProjetos(data as unknown as Projeto[] || []);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao buscar projetos:', error);
-      toast.error('Erro ao carregar projetos');
+      toast.error('Erro inesperado ao carregar projetos');
+      setProjetos([]);
     } finally {
       setLoading(false);
     }

@@ -28,7 +28,7 @@ interface Cliente {
 interface Projeto {
   id: string;
   cliente_id: string | null;
-  nome: string;
+  titulo: string;
   descricao: string | null;
   status: string | null;
   data_inicio: string | null;
@@ -73,7 +73,7 @@ export default function ProjetoTarefas() {
         .from('projetos')
         .select(`
           *,
-          profiles:responsavel_id (nome)
+          profiles!projetos_responsavel_id_fkey(nome)
         `)
         .eq('id', projetoId)
         .single();
@@ -159,7 +159,7 @@ export default function ProjetoTarefas() {
             {cliente.nome}
           </Button>
           <span>/</span>
-          <span className="font-medium text-foreground">{projeto.nome}</span>
+          <span className="font-medium text-foreground">{projeto.titulo}</span>
         </div>
 
         {/* Cabeçalho do Projeto */}
@@ -167,7 +167,7 @@ export default function ProjetoTarefas() {
           <CardHeader>
             <div className="flex items-start justify-between">
               <div className="space-y-2">
-                <CardTitle className="text-2xl">{projeto.nome}</CardTitle>
+                <CardTitle className="text-2xl">{projeto.titulo}</CardTitle>
                 {projeto.descricao && (
                   <p className="text-muted-foreground">{projeto.descricao}</p>
                 )}
