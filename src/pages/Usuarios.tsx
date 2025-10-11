@@ -114,13 +114,11 @@ const Usuarios = () => {
 
   const handleApproval = async (profileId: string, action: 'aprovar' | 'rejeitar', observacao?: string) => {
     try {
-      const { error } = await supabase.functions.invoke(
+      const { error } = await supabase.rpc(
         action === 'aprovar' ? 'aprovar_especialista' : 'rejeitar_especialista',
         {
-          body: {
-            especialista_id: profileId,
-            observacao: observacao || null
-          }
+          especialista_id: profileId,
+          observacao: observacao || null
         }
       );
 

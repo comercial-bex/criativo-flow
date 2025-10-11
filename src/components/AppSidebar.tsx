@@ -86,15 +86,14 @@ export function AppSidebar() {
     },
     {
       id: "crm",
-      title: "CRM / Pessoas",
+      title: "CRM",
       icon: Icons.Users,
       items: [
-        { title: "Clientes", url: "/clientes", icon: Icons.Building2 },
-        { title: "Especialistas", url: "/especialistas", icon: Icons.UserCheck },
+        { title: "Funil de Vendas", url: "/crm", icon: Icons.Target },
         { title: "Contatos", url: "/crm/contatos", icon: Icons.Phone },
         { title: "Histórico", url: "/crm/historico", icon: Icons.History },
       ],
-      permissions: ["crm", "clientes", "especialistas"]
+      permissions: ["crm"]
     },
     {
       id: "financeiro",
