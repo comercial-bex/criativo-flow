@@ -164,9 +164,10 @@ const modules = [
       title: "RH",
       icon: Users2,
       items: [
-        { title: "Colaboradores", url: "/rh/colaboradores", icon: Users },
-        { title: "Folha de Ponto", url: "/rh/ponto", icon: Clock },
+        { title: "Gestão de Pessoas", url: "/rh/pessoas", icon: Users },
+        { title: "Ocorrências de Ponto", url: "/rh/ocorrencias", icon: Clock },
         { title: "Folha de Pagamento", url: "/rh/folha", icon: DollarSign },
+        { title: "Colaboradores (Legado)", url: "/rh/colaboradores", icon: Users },
       ],
       permissions: ["rh"]
     },

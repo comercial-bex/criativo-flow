@@ -105,6 +105,8 @@ import Colaboradores from "./pages/RH/Colaboradores";
 import ColaboradorDetalhes from "./pages/RH/ColaboradorDetalhes";
 import FolhaPonto from "./pages/RH/FolhaPonto";
 import FolhaPagamento from "./pages/Financeiro/FolhaPagamento";
+import Pessoas from "./pages/RH/Pessoas";
+import Ponto from "./pages/RH/Ponto";
 import BalanceteContabil from "./pages/Financeiro/BalanceteContabil";
 import Calendario from "./pages/Calendario";
 import Inventario from "./pages/Inventario";
@@ -743,6 +745,18 @@ function App() {
                 } />
                 
                 {/* RH routes */}
+                <Route path="/rh/pessoas" element={
+                  <ProtectedRoute module="rh" action="canView">
+                    <Layout><Pessoas /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/rh/ocorrencias" element={
+                  <ProtectedRoute module="rh" action="canView">
+                    <Layout><Ponto /></Layout>
+                  </ProtectedRoute>
+                } />
+                
                 <Route path="/rh/colaboradores" element={
                   <ProtectedRoute module="rh" action="canView">
                     <Layout><Colaboradores /></Layout>
