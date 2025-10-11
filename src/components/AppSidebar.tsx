@@ -158,7 +158,7 @@ export function AppSidebar() {
     });
   };
 
-  // Usar módulos dinâmicos se disponíveis, caso contrário usar fallback
+  // USAR MÓDULOS DINÂMICOS DO BANCO (já populados via migration)
   const displayModules = dbModules.length > 0 
     ? dbModules.map(mod => ({
         id: mod.slug,
@@ -170,7 +170,7 @@ export function AppSidebar() {
           icon: getIconComponent(sub.icone)
         }))
       })) 
-    : getVisibleModules();
+    : getVisibleModules(); // Fallback apenas se banco estiver vazio
 
   // Detectar módulo atual baseado na rota
   const detectCurrentModule = () => {

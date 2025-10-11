@@ -54,6 +54,11 @@ import GRSCalendarioEditorial from "./pages/GRS/CalendarioEditorial";
 import GRSAprovacoes from "./pages/GRS/Aprovacoes";
 import GRSClienteProjetos from "./pages/GRS/ClienteProjetosFluxo";
 import GRSProjetoTarefas from "./pages/GRS/ProjetoTarefasKanban";
+import GRSProjetos from "./pages/GRS/Projetos";
+import OperacoesKanban from "./pages/Operacoes/Kanban";
+import CRMContatos from "./pages/CRM/Contatos";
+import CRMHistorico from "./pages/CRM/Historico";
+import AdminLogs from "./pages/Admin/Logs";
 import AtendimentoInbox from "./pages/Atendimento/Inbox";
 import AtendimentoDashboard from "./pages/Atendimento/Dashboard";
 import TrafegoDashboard from "./pages/Trafego/Dashboard";
@@ -472,6 +477,32 @@ function App() {
                   </ProtectedRoute>
                 } />
                 
+                <Route path="/grs/projetos" element={
+                  <ProtectedRoute requiredRole="grs">
+                    <Layout><GRSProjetos /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                {/* Operações routes */}
+                <Route path="/operacoes/kanban" element={
+                  <ProtectedRoute module="grs">
+                    <Layout><OperacoesKanban /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                {/* CRM routes */}
+                <Route path="/crm/contatos" element={
+                  <ProtectedRoute module="crm">
+                    <Layout><CRMContatos /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/crm/historico" element={
+                  <ProtectedRoute module="crm">
+                    <Layout><CRMHistorico /></Layout>
+                  </ProtectedRoute>
+                } />
+                
                 {/* Especialista routes */}
                 <Route path="/especialista/dashboard" element={
                   <ProtectedRoute>
@@ -589,6 +620,16 @@ function App() {
                     <Layout><HomologacaoMVP /></Layout>
                   </ProtectedRoute>
                 } />
+                
+                <Route path="/admin/logs" element={
+                  <ProtectedRoute requiredRole="admin">
+                    <Layout><AdminLogs /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                {/* Aliases */}
+                <Route path="/inicio" element={<Navigate to="/dashboard" replace />} />
+                <Route path="/inteligencia/calendario" element={<Navigate to="/calendario" replace />} />
                 
                 <Route path="/public/proposta/:link_publico" element={<PropostaView />} />
                 

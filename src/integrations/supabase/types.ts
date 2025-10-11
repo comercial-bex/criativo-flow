@@ -4725,6 +4725,42 @@ export type Database = {
           },
         ]
       }
+      modulos: {
+        Row: {
+          ativo: boolean
+          created_at: string
+          icone: string
+          id: string
+          nome: string
+          ordem: number
+          roles_permitidos: Database["public"]["Enums"]["user_role"][]
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          ativo?: boolean
+          created_at?: string
+          icone?: string
+          id?: string
+          nome: string
+          ordem?: number
+          roles_permitidos?: Database["public"]["Enums"]["user_role"][]
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          ativo?: boolean
+          created_at?: string
+          icone?: string
+          id?: string
+          nome?: string
+          ordem?: number
+          roles_permitidos?: Database["public"]["Enums"]["user_role"][]
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       notas_cliente: {
         Row: {
           cliente_id: string
@@ -5192,6 +5228,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      permissoes_modulo: {
+        Row: {
+          can_create: boolean
+          can_delete: boolean
+          can_edit: boolean
+          can_view: boolean
+          created_at: string
+          id: string
+          modulo_slug: string
+          role: Database["public"]["Enums"]["user_role"]
+          updated_at: string
+        }
+        Insert: {
+          can_create?: boolean
+          can_delete?: boolean
+          can_edit?: boolean
+          can_view?: boolean
+          created_at?: string
+          id?: string
+          modulo_slug: string
+          role: Database["public"]["Enums"]["user_role"]
+          updated_at?: string
+        }
+        Update: {
+          can_create?: boolean
+          can_delete?: boolean
+          can_edit?: boolean
+          can_view?: boolean
+          created_at?: string
+          id?: string
+          modulo_slug?: string
+          role?: Database["public"]["Enums"]["user_role"]
+          updated_at?: string
+        }
+        Relationships: []
       }
       pessoas: {
         Row: {
@@ -7070,6 +7142,53 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      submodulos: {
+        Row: {
+          ativo: boolean
+          created_at: string
+          icone: string
+          id: string
+          modulo_id: string
+          nome: string
+          ordem: number
+          rota: string
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          ativo?: boolean
+          created_at?: string
+          icone?: string
+          id?: string
+          modulo_id: string
+          nome: string
+          ordem?: number
+          rota: string
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          ativo?: boolean
+          created_at?: string
+          icone?: string
+          id?: string
+          modulo_id?: string
+          nome?: string
+          ordem?: number
+          rota?: string
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "submodulos_modulo_id_fkey"
+            columns: ["modulo_id"]
+            isOneToOne: false
+            referencedRelation: "modulos"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       system_health_logs: {
         Row: {
