@@ -228,34 +228,29 @@ function App() {
                 } />
                 
                 <Route path="/clientes" element={
-                  <ProtectedRoute module="clientes">
+                  <ProtectedRoute module="financeiro">
                     <Layout><Clientes /></Layout>
                   </ProtectedRoute>
                 } />
                 
                 {/* Client Details Routes (nested) */}
                 <Route path="/clients/:clientId" element={
-                  <ProtectedRoute module="clientes">
-                    <Layout><ClientDetails /></Layout>
+                  <ProtectedRoute module="financeiro">
+                    <Layout>
+                      <ClientDetails />
+                    </Layout>
                   </ProtectedRoute>
                 }>
-                  <Route index element={<TimelinePage />} />
-                  <Route path="timeline" element={<TimelinePage />} />
                   <Route path="details" element={<DetailsPage />} />
-                  <Route path="contacts" element={<ContactsPage />} />
                   <Route path="projects" element={<ProjectsPage />} />
-                  <Route path="files" element={<FilesPage />} />
-                  <Route path="requests" element={<RequestsPage />} />
                   <Route path="contracts" element={<ContractsPage />} />
                   <Route path="finance" element={<FinancePage />} />
+                  <Route path="files" element={<FilesPage />} />
+                  <Route path="timeline" element={<TimelinePage />} />
+                  <Route path="contacts" element={<ContactsPage />} />
                   <Route path="notes" element={<NotesPage />} />
+                  <Route path="requests" element={<RequestsPage />} />
                 </Route>
-                
-                <Route path="/financeiro" element={
-                  <ProtectedRoute module="financeiro">
-                    <Layout><Financeiro /></Layout>
-                  </ProtectedRoute>
-                } />
                 
                 <Route path="/categorias-financeiras" element={
                   <ProtectedRoute module="financeiro">

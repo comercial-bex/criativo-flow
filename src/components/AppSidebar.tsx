@@ -102,6 +102,7 @@ export function AppSidebar() {
       icon: Icons.Building2,
       items: [
         { title: "Dashboard", url: "/gestao/dashboard", icon: Icons.TrendingUp },
+        { title: "Clientes", url: "/clientes", icon: Icons.Users },
         { title: "Contratos", url: "/admin/contratos", icon: Icons.FileSignature },
         { title: "Orçamentos", url: "/administrativo/orcamentos", icon: Icons.Calculator },
         { title: "Propostas", url: "/administrativo/propostas", icon: Icons.FileText },
