@@ -1,14 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { PasswordInput } from '@/components/ui/password-input';
 import { Label } from '@/components/ui/label';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { PasswordResetModal } from '@/components/PasswordResetModal';
 
 import bexLogo from '@/assets/logo_bex_verde.png';
@@ -18,18 +14,13 @@ import { toast } from 'sonner';
 export default function Auth() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [nome, setNome] = useState('');
-  const [empresa, setEmpresa] = useState('');
-  const [userType, setUserType] = useState('cliente');
   const [loading, setLoading] = useState(false);
   const [showPasswordReset, setShowPasswordReset] = useState(false);
-  const [isPasswordValid, setIsPasswordValid] = useState(false);
-  const [signupSuccess, setSignupSuccess] = useState(false);
   
   // Add ref to track if component is mounted
   const mountedRef = useRef(true);
   
-  const { signIn, signUp, user } = useAuth();
+  const { signIn, user } = useAuth();
   const navigate = useNavigate();
 
   // Redirect if already authenticated
@@ -44,15 +35,6 @@ export default function Auth() {
       setShowPasswordReset(false);
     };
   }, [user, navigate]);
-
-  // Reset form when switching tabs
-  const handleTabChange = (value: string) => {
-    setEmail('');
-    setPassword('');
-    setNome('');
-    setEmpresa('');
-    setIsPasswordValid(false);
-  };
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -91,135 +73,6 @@ export default function Auth() {
     }
   };
 
-  const handleSignUp = async (e: React.FormEvent) => {
-    e.preventDefault(); // ⚡ ANTI-REFRESH CRÍTICO
-    if (!mountedRef.current) return;
-    
-    // Validação básica
-    if (!email || !password || !nome) {
-      toast.error('Por favor, preencha todos os campos');
-      return;
-    }
-
-    // Validação de senha forte
-    if (!isPasswordValid) {
-      toast.error('Por favor, crie uma senha que atenda todos os requisitos de segurança');
-      return;
-    }
-
-    // Validação específica para clientes
-    if (userType === 'cliente' && !empresa) {
-      toast.error('Por favor, informe o nome da empresa');
-      return;
-    }
-
-    setLoading(true);
-    
-    try {
-      console.log('🔐 UI: Tentando signup via Edge Function...');
-      
-      // PRIORIDADE 1: Tentar Edge Function
-      const response = await fetch(
-        `https://xvpqgwbktpfodbuhwqhh.supabase.co/functions/v1/signup`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2cHFnd2JrdHBmb2RidWh3cWhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc1NDA0MzUsImV4cCI6MjA3MzExNjQzNX0.slj0vNEGfgTFv_vB_4ieLH1zuHSP_A6dAZsMmHVWnto',
-            'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2cHFnd2JrdHBmb2RidWh3cWhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc1NDA0MzUsImV4cCI6MjA3MzExNjQzNX0.slj0vNEGfgTFv_vB_4ieLH1zuHSP_A6dAZsMmHVWnto'
-          },
-          body: JSON.stringify({
-            email,
-            password,
-            metadata: {
-              nome,
-              empresa: userType === 'cliente' ? empresa : undefined
-            },
-            role: userType === 'cliente' ? 'cliente' : 'colaborador'
-          })
-        }
-      );
-
-      const data = await response.json();
-
-      if (!mountedRef.current) return;
-
-      if (!response.ok) {
-        console.error('🔐 UI: Erro na Edge Function:', data);
-        
-        // Mensagens específicas baseadas no erro
-        if (data.error === 'EMAIL_EXISTS') {
-          toast.error('Este email já está cadastrado no sistema');
-          setLoading(false);
-          return;
-        }
-        
-        if (data.error === 'MISSING_CREDENTIALS') {
-          toast.error('Email e senha são obrigatórios');
-          setLoading(false);
-          return;
-        }
-
-        if (data.error === 'MISSING_NAME') {
-          toast.error('Nome é obrigatório');
-          setLoading(false);
-          return;
-        }
-
-        // FALLBACK: Tentar método tradicional se não for email duplicado
-        console.log('🔐 UI: Tentando fallback via signUp...');
-        const { error: fallbackError } = await signUp(
-          email, 
-          password, 
-          nome, 
-          userType === 'cliente' ? empresa : undefined
-        );
-
-        if (fallbackError) {
-          toast.error('Erro no cadastro: ' + (data.message || fallbackError.message));
-          setLoading(false);
-          return;
-        }
-      }
-
-      // Sucesso!
-      console.log('✅ UI: Signup bem-sucedido!');
-      setSignupSuccess(true);
-      toast.success('Conta criada com sucesso!');
-      
-      // Criar lead se for cliente
-      if (userType === 'cliente' && empresa) {
-        try {
-          await supabase.from('leads').insert({
-            nome,
-            email,
-            empresa,
-            origem: 'signup',
-            status: 'pre_qualificacao'
-          });
-          console.log('✅ UI: Lead criado');
-        } catch (leadError) {
-          console.warn('⚠️ UI: Erro ao criar lead (não crítico):', leadError);
-        }
-      }
-
-      // Limpar formulário
-      setEmail('');
-      setPassword('');
-      setNome('');
-      setEmpresa('');
-
-    } catch (error) {
-      console.error('🔐 UI: Erro inesperado:', error);
-      if (mountedRef.current) {
-        toast.error('Erro inesperado no cadastro. Por favor, tente novamente.');
-      }
-    } finally {
-      if (mountedRef.current) {
-        setLoading(false);
-      }
-    }
-  };
 
 
   return (
@@ -242,151 +95,45 @@ export default function Auth() {
             </div>
           </CardHeader>
           <CardContent>
-            {/* Success Message after Signup */}
-            {signupSuccess && (
-              <div className="mb-4 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
-                <h3 className="font-semibold text-green-800 dark:text-green-200 mb-2">
-                  ✅ Conta criada com sucesso!
-                </h3>
-                <p className="text-sm text-green-700 dark:text-green-300">
-                  Para ativar seu acesso, <strong>verifique o e-mail que você cadastrou</strong> e clique no link de confirmação. 
-                  Isso garante mais segurança para você e sua empresa.
-                </p>
+            <form onSubmit={handleSignIn} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="seu@email.com"
+                  disabled={loading}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="password">Senha</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Sua senha"
+                  disabled={loading}
+                  required
+                />
+              </div>
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading ? 'Entrando...' : 'Entrar'}
+              </Button>
+              <div className="text-center">
                 <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="mt-3"
-                  onClick={() => setSignupSuccess(false)}
+                  type="button" 
+                  variant="link" 
+                  className="text-sm text-muted-foreground hover:text-primary"
+                  onClick={() => setShowPasswordReset(true)}
                 >
-                  Entendi, fazer login
+                  Esqueci minha senha
                 </Button>
               </div>
-            )}
-
-            <Tabs defaultValue="login" className="w-full" onValueChange={handleTabChange}>
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="login">Login</TabsTrigger>
-                <TabsTrigger value="signup">Cadastro</TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="login">
-                <form onSubmit={handleSignIn} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="login-email">Email</Label>
-                    <Input
-                      id="login-email"
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="seu@email.com"
-                      disabled={loading}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="login-password">Senha</Label>
-                    <Input
-                      id="login-password"
-                      type="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder="Sua senha"
-                      disabled={loading}
-                    />
-                  </div>
-                    <Button type="submit" className="w-full" disabled={loading}>
-                      {loading ? 'Entrando...' : 'Entrar'}
-                    </Button>
-                    <div className="text-center">
-                      <Button 
-                        type="button" 
-                        variant="link" 
-                        className="text-sm text-muted-foreground hover:text-primary"
-                        onClick={() => setShowPasswordReset(true)}
-                      >
-                        Esqueci minha senha
-                      </Button>
-                    </div>
-                </form>
-              </TabsContent>
-              
-              <TabsContent value="signup">
-                <form onSubmit={handleSignUp} className="space-y-4">
-                  <div className="space-y-3">
-                    <Label>Tipo de Cadastro</Label>
-                    <RadioGroup 
-                      value={userType} 
-                      onValueChange={setUserType}
-                      className="flex flex-col space-y-2"
-                    >
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="cliente" id="cliente" />
-                        <Label htmlFor="cliente" className="text-sm font-normal">
-                          <span className="font-medium">Cliente</span> - Empresa que contrata serviços
-                        </Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="colaborador" id="colaborador" />
-                        <Label htmlFor="colaborador" className="text-sm font-normal">
-                          <span className="font-medium">Colaborador</span> - Funcionário da agência
-                        </Label>
-                      </div>
-                    </RadioGroup>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-nome">Nome Completo</Label>
-                    <Input
-                      id="signup-nome"
-                      type="text"
-                      value={nome}
-                      onChange={(e) => setNome(e.target.value)}
-                      placeholder="Seu nome completo"
-                      disabled={loading}
-                    />
-                  </div>
-                  
-                  {userType === 'cliente' && (
-                    <div className="space-y-2">
-                      <Label htmlFor="signup-empresa">Nome da Empresa</Label>
-                      <Input
-                        id="signup-empresa"
-                        type="text"
-                        value={empresa}
-                        onChange={(e) => setEmpresa(e.target.value)}
-                        placeholder="Nome da sua empresa"
-                        disabled={loading}
-                        required
-                      />
-                    </div>
-                  )}
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-email">Email</Label>
-                    <Input
-                      id="signup-email"
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="seu@email.com"
-                      disabled={loading}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-password">Senha</Label>
-                    <PasswordInput
-                      id="signup-password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder="Crie uma senha segura"
-                      disabled={loading}
-                      showRequirements={true}
-                      onValidityChange={setIsPasswordValid}
-                    />
-                  </div>
-                  <Button type="submit" className="w-full" disabled={loading || !isPasswordValid}>
-                    {loading ? 'Cadastrando...' : 'Cadastrar'}
-                  </Button>
-                </form>
-              </TabsContent>
-            </Tabs>
+            </form>
           </CardContent>
         </Card>
 
