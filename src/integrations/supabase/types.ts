@@ -6290,6 +6290,39 @@ export type Database = {
           },
         ]
       }
+      rls_errors_log: {
+        Row: {
+          created_at: string | null
+          error_code: string | null
+          error_message: string | null
+          id: string
+          metadata: Json | null
+          operation: string
+          table_name: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          error_code?: string | null
+          error_message?: string | null
+          id?: string
+          metadata?: Json | null
+          operation: string
+          table_name: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          error_code?: string | null
+          error_message?: string | null
+          id?: string
+          metadata?: Json | null
+          operation?: string
+          table_name?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       role_permissions: {
         Row: {
           can_create: boolean
@@ -7388,6 +7421,16 @@ export type Database = {
       }
     }
     Views: {
+      rls_errors_stats: {
+        Row: {
+          affected_users: number | null
+          error_count: number | null
+          last_occurrence: string | null
+          operation: string | null
+          table_name: string | null
+        }
+        Relationships: []
+      }
       safe_table_metadata: {
         Row: {
           column_name: unknown | null
@@ -7985,6 +8028,16 @@ export type Database = {
       is_admin: {
         Args: { user_uuid: string }
         Returns: boolean
+      }
+      log_rls_error: {
+        Args: {
+          p_error_code?: string
+          p_error_message: string
+          p_metadata?: Json
+          p_operation: string
+          p_table_name: string
+        }
+        Returns: string
       }
       log_user_access: {
         Args: {
