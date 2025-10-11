@@ -123,7 +123,7 @@ import AdminPainel from "./pages/Admin/Painel";
 import AdminTarefas from "./pages/Admin/Tarefas";
 import CentralNotificacoes from "./pages/Admin/CentralNotificacoes";
 import ClienteTarefas from "./pages/Cliente/Tarefas";
-import IntelligenceDashboard from "./components/IntelligenceDashboard";
+import Inteligencia from "./pages/Inteligencia";
 import GRSAgenda from "./pages/GRS/Agenda";
 import Aprovacoes from "./pages/Aprovacoes";
 
@@ -310,7 +310,7 @@ function App() {
                 
                 <Route path="/inteligencia" element={
                   <ProtectedRoute module="inteligencia">
-                    <Layout><IntelligenceDashboard /></Layout>
+                    <Layout><Inteligencia /></Layout>
                   </ProtectedRoute>
                 } />
                 
