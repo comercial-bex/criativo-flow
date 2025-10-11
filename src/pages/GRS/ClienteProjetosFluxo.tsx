@@ -233,6 +233,8 @@ export default function ClienteProjetosFluxo() {
   };
 
   const handleSalvarProjeto = async () => {
+    console.log('🚀 Iniciando criação de projeto...');
+    
     // Validações
     if (!novoProjeto.titulo.trim()) {
       toast({
@@ -265,40 +267,55 @@ export default function ClienteProjetosFluxo() {
       return;
     }
 
+    const projetoData = {
+      cliente_id: clienteId!,
+      titulo: novoProjeto.titulo.trim(),
+      descricao: novoProjeto.descricao.trim() || undefined,
+      data_inicio: novoProjeto.data_inicio || undefined,
+      data_prazo: novoProjeto.data_prazo || undefined,
+      orcamento_estimado: novoProjeto.orcamento ? parseFloat(novoProjeto.orcamento) : undefined,
+      status: novoProjeto.status,
+      responsavel_grs_id: novoProjeto.responsavel_grs_id || undefined,
+      prioridade: 'media'
+    };
+
+    console.log('📋 Dados do projeto:', projetoData);
+
     setSaving(true);
     try {
-      await createProjeto({
-        cliente_id: clienteId!,
-        titulo: novoProjeto.titulo.trim(),
-        descricao: novoProjeto.descricao.trim() || undefined,
-        data_inicio: novoProjeto.data_inicio || undefined,
-        data_prazo: novoProjeto.data_prazo || undefined,
-        orcamento_estimado: novoProjeto.orcamento ? parseFloat(novoProjeto.orcamento) : undefined,
-        status: novoProjeto.status,
-        responsavel_grs_id: novoProjeto.responsavel_grs_id || undefined
-      });
-
-      toast({
-        title: "✅ Projeto criado",
-        description: `O projeto "${novoProjeto.titulo}" foi criado com sucesso`,
-      });
-
-      // Resetar formulário
-      setNovoProjeto({
-        titulo: '',
-        descricao: '',
-        tipo_projeto: 'avulso',
-        data_inicio: '',
-        data_prazo: '',
-        orcamento: '',
-        status: 'rascunho',
-        responsavel_grs_id: ''
-      });
+      const result = await createProjeto(projetoData);
+      console.log('✅ Resultado da criação:', result);
       
-      setProjetoDialogOpen(false);
-      fetchProjetosUnificados(); // Atualizar lista
+      if (result) {
+        toast({
+          title: "✅ Projeto criado",
+          description: `O projeto "${novoProjeto.titulo}" foi criado com sucesso`,
+        });
+
+        // Resetar formulário
+        setNovoProjeto({
+          titulo: '',
+          descricao: '',
+          tipo_projeto: 'avulso',
+          data_inicio: '',
+          data_prazo: '',
+          orcamento: '',
+          status: 'rascunho',
+          responsavel_grs_id: ''
+        });
+        
+        setProjetoDialogOpen(false);
+        fetchProjetosUnificados(); // Atualizar lista
+      } else {
+        console.error('❌ Criação retornou null');
+        toast({
+          title: "❌ Erro ao criar projeto",
+          description: "A criação do projeto falhou. Verifique o console para detalhes.",
+          variant: "destructive"
+        });
+      }
     } catch (error: any) {
-      console.error('Erro ao criar projeto:', error);
+      console.error('💥 Erro ao criar projeto:', error);
       toast({
         title: "❌ Erro ao criar projeto",
         description: error.message || "Ocorreu um erro ao salvar o projeto",
