@@ -62,6 +62,8 @@ export function AppSidebar() {
       title: "Inteligência Operacional",
       icon: Icons.Brain,
       items: [
+        { title: "Hub de Inteligência", url: "/inteligencia", icon: Icons.Brain },
+        { title: "🔮 Análise Preditiva", url: "/inteligencia/preditiva", icon: Icons.TrendingUp },
         { title: "Calendário Multidisciplinar", url: "/inteligencia/calendario", icon: Icons.CalendarDays },
         { title: "Análises", url: "/inteligencia/analises", icon: Icons.BarChart3 },
         { title: "Insights", url: "/inteligencia/insights", icon: Icons.Lightbulb },

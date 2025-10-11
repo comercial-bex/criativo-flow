@@ -82,6 +82,7 @@ import ClientePerfil from "./pages/Cliente/Perfil";
 import ClienteAprovacoes from "./pages/Cliente/Aprovacoes";
 import ClientePlanos from "./pages/Cliente/Planos";
 import ClienteExportacoes from "./pages/Cliente/Exportacoes";
+import Preditiva from "./pages/Inteligencia/Preditiva";
 
 // Administrative pages
 import AdminDashboard from "./pages/Administrativo/Dashboard";
@@ -440,6 +441,12 @@ function App() {
                 <Route path="/inteligencia" element={
                   <ProtectedRoute>
                     <Layout><Inteligencia /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/inteligencia/preditiva" element={
+                  <ProtectedRoute allowedRoles={['admin', 'gestor', 'grs']}>
+                    <Layout><Preditiva /></Layout>
                   </ProtectedRoute>
                 } />
                 
