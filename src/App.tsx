@@ -910,7 +910,7 @@ function App() {
                   </ProtectedRoute>
                 } />
                 
-                <Route path="/rh/folha" element={
+                <Route path="/financeiro/folha" element={
                   <ProtectedRoute module="rh" action="canView">
                     <Layout><FolhaPagamento /></Layout>
                   </ProtectedRoute>
