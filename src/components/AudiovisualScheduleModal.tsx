@@ -37,12 +37,6 @@ export function AudiovisualScheduleModal({
   const [filmmakers, setFilmmakers] = useState<any[]>([]);
   const [clientes, setClientes] = useState<any[]>([]);
   const [suggestedSlot, setSuggestedSlot] = useState<any>(null);
-  
-  const { sugerirSlot } = useCalendarioMultidisciplinar({
-    responsavelId: formData.especialista_id || '',
-    dataInicio: new Date(),
-    dataFim: new Date()
-  });
 
   const [formData, setFormData] = useState({
     titulo: '',
@@ -55,6 +49,12 @@ export function AudiovisualScheduleModal({
     equipamentos: [] as string[],
     briefing: '',
     observacoes: ''
+  });
+  
+  const { sugerirSlot } = useCalendarioMultidisciplinar({
+    responsavelId: formData.especialista_id || '',
+    dataInicio: new Date(),
+    dataFim: new Date()
   });
 
   useEffect(() => {
@@ -392,9 +392,9 @@ export function AudiovisualScheduleModal({
                         tipoEvento: 'captacao_externa'
                       });
                       
-                      if (sugestao && sugestao.data_inicio) {
-                        const novaData = new Date(sugestao.data_inicio);
-                        const novaDataFim = new Date(sugestao.data_fim);
+                      if (sugestao && typeof sugestao === 'object' && 'data_inicio' in sugestao) {
+                        const novaData = new Date(String(sugestao.data_inicio));
+                        const novaDataFim = new Date(String(sugestao.data_fim));
                         
                         setSuggestedSlot({
                           data: novaData,
