@@ -53,6 +53,7 @@ import GRSPlanejamentoEstrategico from "./pages/GRS/PlanejamentoEstrategico";
 import GRSCalendarioEditorial from "./pages/GRS/CalendarioEditorial";
 import GRSAprovacoes from "./pages/GRS/Aprovacoes";
 import GRSClienteProjetos from "./pages/GRS/ClienteProjetosFluxo";
+import GRSClientes from "./pages/GRS/Clientes";
 import GRSProjetoTarefas from "./pages/GRS/ProjetoTarefasKanban";
 import GRSProjetos from "./pages/GRS/Projetos";
 import OperacoesKanban from "./pages/Operacoes/Kanban";
@@ -353,6 +354,12 @@ function App() {
                 <Route path="/grs/planejamento/:id" element={
                   <ProtectedRoute requiredRole="grs">
                     <Layout><GRSPlanejamentoDetalhes /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/grs/cliente" element={
+                  <ProtectedRoute requiredRole="grs">
+                    <Layout><GRSClientes /></Layout>
                   </ProtectedRoute>
                 } />
                 
