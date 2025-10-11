@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -15,6 +15,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { smartToast } from "@/lib/smart-toast";
 import { ArrowLeft, Save, Trash2, AlertCircle, Sparkles, Download } from "lucide-react";
 import { useDebounce } from "@/hooks/use-debounce";
+import DOMPurify from 'dompurify';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -783,7 +784,13 @@ export default function ContratoForm() {
                         </div>
                         <div 
                           className="prose max-w-none p-6 bg-background border rounded-lg min-h-[600px]"
-                          dangerouslySetInnerHTML={{ __html: previewHtml }}
+                          dangerouslySetInnerHTML={{ 
+                            __html: DOMPurify.sanitize(previewHtml, {
+                              ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'li', 'table', 'thead', 'tbody', 'tr', 'td', 'th', 'div', 'span', 'a'],
+                              ALLOWED_ATTR: ['class', 'style', 'href', 'target', 'rel'],
+                              ALLOW_DATA_ATTR: false
+                            })
+                          }}
                         />
                       </div>
                     ) : (

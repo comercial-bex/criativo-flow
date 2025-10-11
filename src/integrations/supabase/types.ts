@@ -491,6 +491,45 @@ export type Database = {
         }
         Relationships: []
       }
+      audit_sensitive_access: {
+        Row: {
+          action: string
+          id: string
+          ip_address: unknown | null
+          metadata: Json | null
+          record_id: string | null
+          success: boolean
+          table_name: string
+          timestamp: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          action: string
+          id?: string
+          ip_address?: unknown | null
+          metadata?: Json | null
+          record_id?: string | null
+          success?: boolean
+          table_name: string
+          timestamp?: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          action?: string
+          id?: string
+          ip_address?: unknown | null
+          metadata?: Json | null
+          record_id?: string | null
+          success?: boolean
+          table_name?: string
+          timestamp?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       brand_assets: {
         Row: {
           cliente_id: string
@@ -8062,6 +8101,10 @@ export type Database = {
       rejeitar_especialista: {
         Args: { especialista_id: string; observacao?: string }
         Returns: boolean
+      }
+      sanitize_error_message: {
+        Args: { error_msg: string }
+        Returns: string
       }
       update_connector_status: {
         Args: {
