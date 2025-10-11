@@ -21,6 +21,7 @@ import { AIBriefingGenerator } from './AIBriefingGenerator';
 import { EquipamentosSelector } from './Inventario/EquipamentosSelector';
 import { useOperationalPermissions } from '@/hooks/useOperationalPermissions';
 import { supabase } from '@/integrations/supabase/client';
+import { useEspecialistas } from '@/hooks/useEspecialistas';
 
 interface CreateTaskModalProps {
   open: boolean;
@@ -52,9 +53,24 @@ export function CreateTaskModal({
   const [selectedEquipamentos, setSelectedEquipamentos] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState('basico');
   const [loadingAI, setLoadingAI] = useState(false);
+  const [selectedExecutor, setSelectedExecutor] = useState("");
   
   // ⛔ GUARD: Verificar permissão de criação
   const { permissions } = useOperationalPermissions();
+  
+  // Buscar especialistas
+  const { data: todosEspecialistas } = useEspecialistas();
+  
+  // Filtrar especialistas por setor
+  const especialistasPorSetor = todosEspecialistas?.filter(esp => {
+    const setorMap: Record<string, string> = {
+      'design': 'design',
+      'audiovisual': 'audiovisual',
+      'grs': 'grs',
+      'atendimento': 'atendimento'
+    };
+    return esp.especialidade === setorMap[formData.setor_responsavel];
+  }) || [];
   
   // Bloquear acesso se não tiver permissão
   if (!permissions.canCreateTask && open) {
@@ -179,6 +195,7 @@ export function CreateTaskModal({
     setVinculadaPlanejamento(false);
     setSelectedPlanejamento('');
     setSelectedEquipamentos([]);
+    setSelectedExecutor('');
     setActiveTab('basico');
   };
 
@@ -265,6 +282,8 @@ export function CreateTaskModal({
         titulo: formData.titulo,
         descricao: formData.descricao,
         setor_responsavel: formData.setor_responsavel,
+        executor_id: selectedExecutor || null,
+        executor_area: formData.setor_responsavel || null,
         prioridade: formData.prioridade,
         status: defaultStatus,
         data_prazo: formData.data_prazo?.toISOString().split('T')[0],
@@ -504,7 +523,10 @@ export function CreateTaskModal({
               <Label htmlFor="setor">Setor Responsável *</Label>
               <Select 
                 value={formData.setor_responsavel} 
-                onValueChange={(value) => setFormData({ ...formData, setor_responsavel: value })}
+                onValueChange={(value) => {
+                  setFormData({ ...formData, setor_responsavel: value });
+                  setSelectedExecutor(''); // Reset executor ao trocar setor
+                }}
               >
                 <SelectTrigger className={cn(!formData.setor_responsavel && "border-destructive")}>
                   <SelectValue placeholder="Selecione o setor" />
@@ -516,12 +538,42 @@ export function CreateTaskModal({
                   <SelectItem value="atendimento">Atendimento</SelectItem>
                 </SelectContent>
               </Select>
-              {formData.setor_responsavel && (
-                <p className="text-xs text-muted-foreground">
-                  {getDepartmentResponsible(formData.setor_responsavel)}
-                </p>
-              )}
             </div>
+
+            {/* Especialista Executor - Aparece após selecionar setor */}
+            {formData.setor_responsavel && (
+              <div className="space-y-2">
+                <Label htmlFor="executor">
+                  Especialista Executor {especialistasPorSetor.length === 0 && '(nenhum disponível)'}
+                </Label>
+                <Select 
+                  value={selectedExecutor} 
+                  onValueChange={setSelectedExecutor}
+                  disabled={especialistasPorSetor.length === 0}
+                >
+                  <SelectTrigger className={cn(!selectedExecutor && "border-yellow-500")}>
+                    <SelectValue placeholder={
+                      especialistasPorSetor.length > 0 
+                        ? "Selecione o executor (opcional)" 
+                        : "Nenhum especialista disponível"
+                    } />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {especialistasPorSetor.map(esp => (
+                      <SelectItem key={esp.id} value={esp.id}>
+                        {esp.nome}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  {selectedExecutor 
+                    ? "✅ Tarefa será atribuída diretamente ao especialista" 
+                    : "Se não selecionar, a tarefa ficará disponível para qualquer especialista do setor pegar"
+                  }
+                </p>
+              </div>
+            )}
 
             <div className="space-y-2">
               <Label htmlFor="prioridade">Prioridade</Label>
