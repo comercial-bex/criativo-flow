@@ -368,19 +368,27 @@ export function CreateTaskModal({
         horas_estimadas: formData.horas_estimadas ? parseInt(formData.horas_estimadas) : null,
         origem: taskType, // 'avulsa' ou 'planejamento'
         grs_action_id: vinculadaPlanejamento ? selectedPlanejamento : null,
-        tipo: tipoTarefaSelecionado || null, // NOVO: Tipo de tarefa
-        observacoes: JSON.stringify({
-          id_cartao: idCartao, // NOVO: ID do cartão
-          objetivo_postagem: formData.objetivo_postagem,
-          publico_alvo: formData.publico_alvo,
-          formato_postagem: formData.formato_postagem,
-          contexto_estrategico: formData.contexto_estrategico,
-          call_to_action: formData.call_to_action,
-          hashtags: formData.hashtags ? formData.hashtags.split(',').map(h => h.trim()) : [],
-          observacoes: formData.observacoes,
-          referencias_visuais: formData.referencias_visuais, // NOVO: Referências
-          arquivos_complementares: formData.arquivos_complementares.map((a: any) => a.name) // NOVO: Arquivos
-        })
+        tipo: tipoTarefaSelecionado || null,
+        kpis: {
+          briefing: {
+            id_cartao: idCartao,
+            objetivo_postagem: formData.objetivo_postagem,
+            publico_alvo: formData.publico_alvo,
+            formato_postagem: formData.formato_postagem,
+            contexto_estrategico: formData.contexto_estrategico,
+            call_to_action: formData.call_to_action,
+            hashtags: formData.hashtags ? formData.hashtags.split(',').map((h: string) => h.trim()) : [],
+            observacoes_gerais: formData.observacoes
+          },
+          referencias: {
+            visuais: formData.referencias_visuais || [],
+            arquivos: formData.arquivos_complementares.map((a: any) => a.name) || []
+          },
+          metadados: {
+            horas_estimadas: formData.horas_estimadas ? parseInt(formData.horas_estimadas) : null,
+            criado_via: 'modal_completo'
+          }
+        }
       };
 
       const createdTask = await onTaskCreate(taskData);

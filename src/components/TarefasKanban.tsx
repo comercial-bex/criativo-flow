@@ -386,7 +386,7 @@ export function TarefasKanban({ planejamento, clienteId, projetoId, filters }: T
           data_entrega_prevista: taskData.data_prazo,
           origem: taskData.origem || 'avulsa',
           tipo: taskData.tipo || null,
-          observacoes: taskData.observacoes
+          kpis: taskData.kpis || {}
         })
         .select()
         .single();
