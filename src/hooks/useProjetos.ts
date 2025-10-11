@@ -132,23 +132,45 @@ export function useProjetos() {
   };
 
   const createProjeto = async (projeto: Partial<Projeto>) => {
-    if (!user) return null;
+    console.log('🚀 [useProjetos] createProjeto chamado');
+    console.log('👤 User:', user?.id);
+    console.log('📋 Dados do projeto:', projeto);
+    
+    if (!user) {
+      console.error('❌ Usuário não autenticado');
+      return null;
+    }
 
     try {
+      console.log('📤 Enviando para Supabase...');
       const { data, error } = await supabase
         .from('projetos')
         .insert(projeto as any)
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Erro do Supabase:', {
+          message: error.message,
+          code: error.code,
+          details: error.details,
+          hint: error.hint
+        });
+        throw error;
+      }
 
+      console.log('✅ Projeto criado com sucesso:', data);
       toast.success('Projeto criado com sucesso!');
       fetchProjetos();
       return data;
-    } catch (error) {
-      console.error('Erro ao criar projeto:', error);
-      toast.error('Erro ao criar projeto');
+    } catch (error: any) {
+      console.error('💥 Erro ao criar projeto:', {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+        hint: error.hint
+      });
+      toast.error('Erro ao criar projeto: ' + (error.message || 'Erro desconhecido'));
       return null;
     }
   };
