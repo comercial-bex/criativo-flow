@@ -18,12 +18,86 @@ interface AIBriefingGeneratorProps {
   }) => void;
   clienteId?: string;
   planejamentoId?: string;
+  tipoTarefa?: string;
 }
 
-export function AIBriefingGenerator({ onGenerate, clienteId, planejamentoId }: AIBriefingGeneratorProps) {
+export function AIBriefingGenerator({ onGenerate, clienteId, planejamentoId, tipoTarefa }: AIBriefingGeneratorProps) {
   const [prompt, setPrompt] = useState('');
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+
+  const gerarPromptContextual = (tipo: string | undefined, promptOriginal: string) => {
+    const contextos: Record<string, string> = {
+      'criativo_card': `
+Você está criando um briefing para um POST CARD de Instagram/Facebook.
+Especificações técnicas:
+- Formato: Quadrado 1080x1080px
+- Texto máximo: 3-4 linhas
+- CTA visível e destacado
+- Marca/logo presente
+${promptOriginal}`,
+      'criativo_carrossel': `
+Você está criando um briefing para um CARROSSEL de Instagram.
+Especificações técnicas:
+- Formato: 2 a 10 cards (recomendado 5-7)
+- Cada card: 1080x1080px
+- Narrativa sequencial
+- Último card com CTA forte
+${promptOriginal}`,
+      'criativo_cartela': `
+Você está criando um briefing para uma CARTELA de imagens.
+Especificações técnicas:
+- Múltiplas imagens organizadas
+- Layout grid ou mosaico
+- Identidade visual coesa
+${promptOriginal}`,
+      'roteiro_reels': `
+Você está criando um briefing para um REELS do Instagram.
+Especificações técnicas:
+- Duração: 15-60 segundos
+- Formato: 9:16 (vertical)
+- Hook nos primeiros 3 segundos
+- Legendas obrigatórias
+- Trilha sonora tendência
+${promptOriginal}`,
+      'reels_instagram': `
+Você está criando um briefing para um REELS do Instagram.
+Especificações técnicas:
+- Duração: 15-60 segundos
+- Formato: 9:16 (vertical)
+- Hook nos primeiros 3 segundos
+- Legendas obrigatórias
+- Trilha sonora tendência
+${promptOriginal}`,
+      'criativo_vt': `
+Você está criando um briefing para um VT (Vídeo Comercial).
+Especificações técnicas:
+- Duração: 30-60 segundos
+- Formato: 16:9 (horizontal) ou 9:16 (vertical para social)
+- Roteiro com início/meio/fim
+- Locução profissional
+- Animações/motion graphics
+${promptOriginal}`,
+      'stories_interativo': `
+Você está criando um briefing para um STORIES INTERATIVO do Instagram.
+Especificações técnicas:
+- Duração: 7-15 segundos
+- Formato: 9:16 (vertical)
+- Possibilidade de swipe up/link
+- Elementos interativos (enquetes, caixas de perguntas)
+${promptOriginal}`,
+      'feed_post': `
+Você está criando um briefing para um POST DE FEED.
+Especificações técnicas:
+- Formato: Quadrado ou retrato
+- Imagem de alta qualidade
+- Legenda engajadora
+- Hashtags estratégicas
+${promptOriginal}`
+    };
+    
+    return tipo && contextos[tipo] ? contextos[tipo] : promptOriginal;
+  };
   
   const handleGenerate = async () => {
     if (!prompt.trim()) {
@@ -71,10 +145,14 @@ export function AIBriefingGenerator({ onGenerate, clienteId, planejamentoId }: A
         contexto.planejamento = planejamento;
       }
       
+      // Gerar prompt contextual baseado no tipo de tarefa
+      const promptContextual = gerarPromptContextual(tipoTarefa, prompt);
+
       // Chamar edge function com IA
       const { data, error } = await supabase.functions.invoke('generate-task-briefing', {
         body: { 
-          prompt, 
+          prompt: promptContextual,
+          tipoTarefa,
           contexto
         }
       });

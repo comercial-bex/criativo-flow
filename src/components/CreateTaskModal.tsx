@@ -19,9 +19,11 @@ import { useToast } from '@/hooks/use-toast';
 import { BriefingForm } from './BriefingForm';
 import { AIBriefingGenerator } from './AIBriefingGenerator';
 import { EquipamentosSelector } from './Inventario/EquipamentosSelector';
+import { TaskReferencesTab } from './TaskReferencesTab';
 import { useOperationalPermissions } from '@/hooks/useOperationalPermissions';
 import { supabase } from '@/integrations/supabase/client';
 import { useEspecialistas } from '@/hooks/useEspecialistas';
+import type { TipoTarefa } from '@/types/tarefa';
 
 interface CreateTaskModalProps {
   open: boolean;
@@ -54,6 +56,8 @@ export function CreateTaskModal({
   const [activeTab, setActiveTab] = useState('basico');
   const [loadingAI, setLoadingAI] = useState(false);
   const [selectedExecutor, setSelectedExecutor] = useState("");
+  const [tipoTarefaSelecionado, setTipoTarefaSelecionado] = useState<TipoTarefa | ''>('');
+  const [idCartao, setIdCartao] = useState('');
   
   const [formData, setFormData] = useState({
     titulo: '',
@@ -69,8 +73,68 @@ export function CreateTaskModal({
     contexto_estrategico: '',
     call_to_action: '',
     hashtags: '',
-    observacoes: ''
+    observacoes: '',
+    // Referências
+    referencias_visuais: [] as any[],
+    arquivos_complementares: [] as any[],
+    capa_thumbnail: null as File | null
   });
+
+  // Gerar ID do cartão automaticamente
+  const gerarIdCartao = (tipoTarefa: TipoTarefa | '', clienteId: string) => {
+    if (!tipoTarefa || !clienteId) return '';
+    
+    const prefixo: Record<string, string> = {
+      'criativo_card': 'CRD',
+      'criativo_carrossel': 'CRS',
+      'criativo_vt': 'VT',
+      'reels_instagram': 'REELS',
+      'stories_interativo': 'STR',
+      'criativo_cartela': 'CTL',
+      'feed_post': 'FEED',
+      'roteiro_reels': 'ROT'
+    };
+    
+    const prefix = prefixo[tipoTarefa] || 'TASK';
+    const timestamp = Date.now().toString().slice(-6);
+    const clienteCode = clienteId.slice(0, 4).toUpperCase();
+    
+    return `${prefix}-${clienteCode}-${timestamp}`;
+  };
+
+  // Atualizar ID ao mudar tipo ou cliente
+  useEffect(() => {
+    if (tipoTarefaSelecionado && selectedCliente) {
+      setIdCartao(gerarIdCartao(tipoTarefaSelecionado, selectedCliente));
+    }
+  }, [tipoTarefaSelecionado, selectedCliente]);
+
+  // Filtrar especialistas por tipo de tarefa
+  const getEspecialistasDisponiveisPorTipo = (tipoTarefa: TipoTarefa | '') => {
+    if (!tipoTarefa || !todosEspecialistas) return [];
+    
+    const mapeamento: Record<string, string> = {
+      // Audiovisual
+      'roteiro_reels': 'audiovisual',
+      'reels_instagram': 'audiovisual',
+      'criativo_vt': 'audiovisual',
+      'stories_interativo': 'audiovisual',
+      
+      // Design/Criativo
+      'criativo_card': 'design',
+      'criativo_carrossel': 'design',
+      'criativo_cartela': 'design',
+      'feed_post': 'design',
+      
+      // GRS
+      'planejamento_estrategico': 'grs',
+      'datas_comemorativas': 'grs',
+      'trafego_pago': 'grs'
+    };
+    
+    const especialidade = mapeamento[tipoTarefa] || 'grs';
+    return todosEspecialistas.filter(esp => esp.especialidade === especialidade);
+  };
   
   // ⛔ GUARD: Verificar permissão de criação
   const { permissions } = useOperationalPermissions();
@@ -78,8 +142,14 @@ export function CreateTaskModal({
   // Buscar especialistas
   const { data: todosEspecialistas } = useEspecialistas();
   
-  // Filtrar especialistas por setor usando useMemo
+  // Filtrar especialistas por setor ou tipo de tarefa
   const especialistasPorSetor = useMemo(() => {
+    // Se tiver tipo de tarefa selecionado, usar filtro por tipo
+    if (tipoTarefaSelecionado) {
+      return getEspecialistasDisponiveisPorTipo(tipoTarefaSelecionado);
+    }
+    
+    // Senão, usar filtro por setor
     if (!formData.setor_responsavel || !todosEspecialistas) return [];
     
     const setorMap: Record<string, string> = {
@@ -92,7 +162,7 @@ export function CreateTaskModal({
     return todosEspecialistas.filter(esp => 
       esp.especialidade === setorMap[formData.setor_responsavel]
     );
-  }, [formData.setor_responsavel, todosEspecialistas]);
+  }, [formData.setor_responsavel, tipoTarefaSelecionado, todosEspecialistas]);
   
   // Bloquear acesso se não tiver permissão
   if (!permissions.canCreateTask && open) {
@@ -193,7 +263,10 @@ export function CreateTaskModal({
       contexto_estrategico: '',
       call_to_action: '',
       hashtags: '',
-      observacoes: ''
+      observacoes: '',
+      referencias_visuais: [],
+      arquivos_complementares: [],
+      capa_thumbnail: null
     });
     setSelectedProjeto(projetoId || '');
     setSelectedCliente(clienteId || '');
@@ -694,6 +767,7 @@ export function CreateTaskModal({
                     }}
                     clienteId={selectedCliente}
                     planejamentoId={vinculadaPlanejamento ? selectedPlanejamento : undefined}
+                    tipoTarefa={tipoTarefaSelecionado}
                   />
                   
                   <Separator className="my-4" />
@@ -701,9 +775,17 @@ export function CreateTaskModal({
                   <BriefingForm 
                     formData={formData}
                     setFormData={setFormData}
+                    tipoTarefa={tipoTarefaSelecionado}
                   />
                 </>
               )}
+            </TabsContent>
+
+            <TabsContent value="referencias" className="space-y-6 mt-4">
+              <TaskReferencesTab 
+                formData={formData}
+                setFormData={setFormData}
+              />
             </TabsContent>
 
             <TabsContent value="equipamentos" className="space-y-6 mt-4">

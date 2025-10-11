@@ -24,8 +24,13 @@ export function CreateTaskDropdown({ projetoId, onTaskCreated }: CreateTaskDropd
 
   const taskTypes = [
     { tipo: 'roteiro_reels' as TipoTarefa, icon: '🎬', label: 'Roteiro Reels', category: 'Audiovisual' },
+    { tipo: 'reels_instagram' as TipoTarefa, icon: '📱', label: 'Reels Instagram', category: 'Audiovisual' },
+    { tipo: 'criativo_vt' as TipoTarefa, icon: '🎥', label: 'VT (Vídeo)', category: 'Audiovisual' },
     { tipo: 'criativo_card' as TipoTarefa, icon: '🎨', label: 'Card', category: 'Design' },
     { tipo: 'criativo_carrossel' as TipoTarefa, icon: '📸', label: 'Carrossel', category: 'Design' },
+    { tipo: 'criativo_cartela' as TipoTarefa, icon: '🖼️', label: 'Cartela', category: 'Design' },
+    { tipo: 'feed_post' as TipoTarefa, icon: '📷', label: 'Post Feed', category: 'Design' },
+    { tipo: 'stories_interativo' as TipoTarefa, icon: '📲', label: 'Stories Interativo', category: 'Design' },
     { tipo: 'planejamento_estrategico' as TipoTarefa, icon: '📊', label: 'Planejamento', category: 'Estratégia' },
     { tipo: 'datas_comemorativas' as TipoTarefa, icon: '🎉', label: 'Datas Comemorativas', category: 'Marketing' },
     { tipo: 'trafego_pago' as TipoTarefa, icon: '💰', label: 'Tráfego Pago', category: 'Marketing' },

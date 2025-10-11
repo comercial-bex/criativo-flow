@@ -8,9 +8,15 @@ import { FileText, Target, Users, Zap } from 'lucide-react';
 interface BriefingFormProps {
   formData: any;
   setFormData: (data: any) => void;
+  tipoTarefa?: string;
 }
 
-export function BriefingForm({ formData, setFormData }: BriefingFormProps) {
+export function BriefingForm({ formData, setFormData, tipoTarefa }: BriefingFormProps) {
+  // Detectar tipo de conteúdo para campos adaptativos
+  const isVideo = ['criativo_vt', 'roteiro_reels', 'reels_instagram'].includes(tipoTarefa || '');
+  const isCarrossel = tipoTarefa === 'criativo_carrossel';
+  const isStories = tipoTarefa === 'stories_interativo';
+  const isCartela = tipoTarefa === 'criativo_cartela';
   return (
     <Card className="border-primary/20">
       <CardHeader>
@@ -123,6 +129,145 @@ export function BriefingForm({ formData, setFormData }: BriefingFormProps) {
             rows={3}
           />
         </div>
+
+        {/* Campos específicos por tipo de conteúdo */}
+        {isCarrossel && (
+          <div className="space-y-2">
+            <Label htmlFor="num_cards" className="flex items-center gap-2">
+              <span>📸</span> Número de Cards
+            </Label>
+            <Input
+              id="num_cards"
+              type="number"
+              min={2}
+              max={10}
+              placeholder="Ex: 5"
+              value={formData.num_cards || ''}
+              onChange={(e) => setFormData({ ...formData, num_cards: e.target.value })}
+            />
+            <p className="text-xs text-muted-foreground">Recomendado: 5-7 cards para melhor engajamento</p>
+          </div>
+        )}
+
+        {isVideo && (
+          <>
+            <div className="space-y-2">
+              <Label htmlFor="duracao_segundos" className="flex items-center gap-2">
+                <span>⏱️</span> Duração (segundos)
+              </Label>
+              <Input
+                id="duracao_segundos"
+                type="number"
+                min={7}
+                max={90}
+                placeholder={isStories ? "7-15s" : "15-60s"}
+                value={formData.duracao_segundos || ''}
+                onChange={(e) => setFormData({ ...formData, duracao_segundos: e.target.value })}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="com_locucao" className="flex items-center gap-2">
+                <span>🎙️</span> Com Locução?
+              </Label>
+              <Select
+                value={formData.com_locucao || 'nao'}
+                onValueChange={(value) => setFormData({ ...formData, com_locucao: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="sim">Sim</SelectItem>
+                  <SelectItem value="nao">Não</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="legendas" className="flex items-center gap-2">
+                <span>💬</span> Legendas
+              </Label>
+              <Select
+                value={formData.legendas || 'obrigatorio'}
+                onValueChange={(value) => setFormData({ ...formData, legendas: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="obrigatorio">Obrigatório</SelectItem>
+                  <SelectItem value="opcional">Opcional</SelectItem>
+                  <SelectItem value="nao">Não</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="trilha_sonora" className="flex items-center gap-2">
+                <span>🎵</span> Trilha Sonora Sugerida
+              </Label>
+              <Input
+                id="trilha_sonora"
+                placeholder="Ex: Trending TikTok 2024, Música motivacional"
+                value={formData.trilha_sonora || ''}
+                onChange={(e) => setFormData({ ...formData, trilha_sonora: e.target.value })}
+              />
+            </div>
+          </>
+        )}
+
+        {isStories && (
+          <>
+            <div className="space-y-2">
+              <Label htmlFor="swipe_up" className="flex items-center gap-2">
+                <span>👆</span> Link Externo (Swipe Up)?
+              </Label>
+              <Select
+                value={formData.swipe_up || 'nao'}
+                onValueChange={(value) => setFormData({ ...formData, swipe_up: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="sim">Sim</SelectItem>
+                  <SelectItem value="nao">Não</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {formData.swipe_up === 'sim' && (
+              <div className="space-y-2">
+                <Label htmlFor="link_swipe_up">URL do Link</Label>
+                <Input
+                  id="link_swipe_up"
+                  type="url"
+                  placeholder="https://..."
+                  value={formData.link_swipe_up || ''}
+                  onChange={(e) => setFormData({ ...formData, link_swipe_up: e.target.value })}
+                />
+              </div>
+            )}
+          </>
+        )}
+
+        {isCartela && (
+          <div className="space-y-2">
+            <Label htmlFor="num_imagens" className="flex items-center gap-2">
+              <span>🖼️</span> Número de Imagens na Cartela
+            </Label>
+            <Input
+              id="num_imagens"
+              type="number"
+              min={1}
+              max={20}
+              placeholder="Ex: 6"
+              value={formData.num_imagens || ''}
+              onChange={(e) => setFormData({ ...formData, num_imagens: e.target.value })}
+            />
+          </div>
+        )}
       </CardContent>
     </Card>
   );
