@@ -81,7 +81,6 @@ export function AppSidebar() {
         { title: "Meus Projetos", url: "/grs/meus-projetos", icon: Icons.Briefcase },
         { title: "Planejamentos", url: "/grs/planejamentos", icon: Icons.Calendar },
         { title: "Tarefas", url: "/grs/tarefas", icon: Icons.CheckSquare },
-        { title: "Kanban", url: "/operacoes/kanban", icon: Icons.Columns },
         { title: "Calendário Editorial", url: "/grs/calendario-editorial", icon: Icons.CalendarDays },
         { title: "Agenda Multidisciplinar", url: "/calendario", icon: Icons.CalendarClock },
         { title: "Relatórios", url: "/grs/relatorios", icon: Icons.FileText },

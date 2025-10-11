@@ -56,7 +56,6 @@ import GRSClienteProjetos from "./pages/GRS/ClienteProjetosFluxo";
 import GRSClientes from "./pages/GRS/Clientes";
 import GRSProjetoTarefas from "./pages/GRS/ProjetoTarefasKanban";
 import GRSProjetos from "./pages/GRS/Projetos";
-import OperacoesKanban from "./pages/Operacoes/Kanban";
 import CRMContatos from "./pages/CRM/Contatos";
 import CRMHistorico from "./pages/CRM/Historico";
 import AdminLogs from "./pages/Admin/Logs";
@@ -495,13 +494,6 @@ function App() {
                 <Route path="/grs/meus-projetos" element={
                   <ProtectedRoute requiredRole="grs" module="grs" action="canView">
                     <Layout><GRSProjetos /></Layout>
-                  </ProtectedRoute>
-                } />
-                
-                {/* Operações routes */}
-                <Route path="/operacoes/kanban" element={
-                  <ProtectedRoute module="grs">
-                    <Layout><OperacoesKanban /></Layout>
                   </ProtectedRoute>
                 } />
                 
