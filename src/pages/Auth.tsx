@@ -6,6 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { PasswordResetModal } from '@/components/PasswordResetModal';
+import { PasswordInput } from '@/components/ui/password-input';
+import { Info, AlertCircle } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 import bexLogo from '@/assets/logo_bex_verde.png';
 
@@ -16,6 +19,8 @@ export default function Auth() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPasswordReset, setShowPasswordReset] = useState(false);
+  const [capsLockOn, setCapsLockOn] = useState(false);
+  const [emailError, setEmailError] = useState('');
   
   // Add ref to track if component is mounted
   const mountedRef = useRef(true);
@@ -36,12 +41,52 @@ export default function Auth() {
     };
   }, [user, navigate]);
 
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setEmail(value);
+    
+    // Validação de email em tempo real
+    if (value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+      setEmailError('Formato de email inválido');
+    } else {
+      setEmailError('');
+    }
+  };
+
+  const handleKeyUp = (e: React.KeyboardEvent) => {
+    setCapsLockOn(e.getModifierState('CapsLock'));
+  };
+
+  const getErrorMessage = (error: any): string => {
+    const message = error?.message?.toLowerCase() || '';
+    
+    if (message.includes('invalid login credentials') || message.includes('invalid email or password')) {
+      return 'Email ou senha incorretos';
+    }
+    if (message.includes('email not confirmed')) {
+      return 'Email não confirmado. Verifique sua caixa de entrada';
+    }
+    if (message.includes('user not found')) {
+      return 'Usuário não encontrado';
+    }
+    if (message.includes('too many requests')) {
+      return 'Muitas tentativas. Aguarde alguns minutos';
+    }
+    
+    return error?.message || 'Erro ao fazer login';
+  };
+
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!mountedRef.current) return;
     
     if (!email || !password) {
       toast.error('Por favor, preencha todos os campos');
+      return;
+    }
+
+    if (emailError) {
+      toast.error('Por favor, corrija o email antes de continuar');
       return;
     }
 
@@ -55,7 +100,7 @@ export default function Auth() {
       
       if (error) {
         console.error('🔐 UI: Erro no login:', error);
-        toast.error(error.message || 'Erro no login');
+        toast.error(getErrorMessage(error));
       } else {
         console.log('🔐 UI: Login bem-sucedido, redirecionando...');
         toast.success('Login realizado com sucesso!');
@@ -89,8 +134,12 @@ export default function Auth() {
             </div>
             <div>
               <CardTitle className="text-2xl font-bold text-primary">Sistema BEX</CardTitle>
-              <CardDescription>
-                Acesse o sistema de gestão da agência
+              <CardDescription className="space-y-2">
+                <p>Acesse o sistema de gestão da agência</p>
+                <div className="flex items-center gap-2 text-xs text-muted-foreground mt-2">
+                  <Info className="h-3 w-3" />
+                  <span>Use suas credenciais fornecidas pela equipe BEX</span>
+                </div>
               </CardDescription>
             </div>
           </CardHeader>
@@ -102,23 +151,36 @@ export default function Auth() {
                   id="email"
                   type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={handleEmailChange}
                   placeholder="seu@email.com"
                   disabled={loading}
                   required
+                  className={emailError ? 'border-destructive' : ''}
                 />
+                {emailError && (
+                  <p className="text-xs text-destructive">{emailError}</p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="password">Senha</Label>
-                <Input
+                <PasswordInput
                   id="password"
-                  type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  onKeyUp={handleKeyUp}
                   placeholder="Sua senha"
                   disabled={loading}
                   required
+                  showRequirements={false}
                 />
+                {capsLockOn && (
+                  <Alert variant="destructive" className="py-2">
+                    <AlertCircle className="h-3 w-3" />
+                    <AlertDescription className="text-xs">
+                      Caps Lock está ativado
+                    </AlertDescription>
+                  </Alert>
+                )}
               </div>
               <Button type="submit" className="w-full" disabled={loading}>
                 {loading ? 'Entrando...' : 'Entrar'}
