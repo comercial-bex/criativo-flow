@@ -1,6 +1,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.57.4';
+import { validateUpdateSpecialist, formatValidationErrors } from "../_shared/validation.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -49,8 +50,20 @@ serve(async (req) => {
 });
 
 async function handleUpdateSpecialist(supabase: any, especialistaData: any) {
-  const { id, nome, telefone, especialidade, role } = especialistaData;
+  // ✅ FASE 1 FIX 1.3: Validação robusta de input
+  const validation = validateUpdateSpecialist(especialistaData);
+  if (!validation.success) {
+    console.log('❌ Validação falhou:', validation.errors);
+    return new Response(
+      JSON.stringify(formatValidationErrors(validation.errors!)),
+      { 
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      }
+    );
+  }
 
+  const { id, nome, telefone, especialidade, role } = validation.data!;
   console.log('📝 Atualizando especialista:', { id, nome, especialidade, role });
 
   try {

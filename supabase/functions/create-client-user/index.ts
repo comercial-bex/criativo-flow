@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { validateCreateUser, formatValidationErrors } from "../_shared/validation.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -135,25 +136,20 @@ serve(async (req) => {
       password: '***OCULTA***' 
     });
     
-    const { email, password, nome, cliente_id, role }: CreateClientUserRequest = requestBody;
-
-    // Validate required fields
-    if (!email || !password || !nome || !cliente_id || !role) {
-      console.error('🔧 Edge Function: Campos obrigatórios ausentes');
+    // ✅ FASE 1 FIX 1.3: Validação robusta de input
+    const validation = validateCreateUser(requestBody);
+    if (!validation.success) {
+      console.log('❌ Validação falhou:', validation.errors);
       return new Response(
-        JSON.stringify({ 
-          error: 'Todos os campos são obrigatórios',
-          missing: {
-            email: !email,
-            password: !password,
-            nome: !nome,
-            cliente_id: !cliente_id,
-            role: !role
-          }
-        }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify(formatValidationErrors(validation.errors!)),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }, 
+          status: 400 
+        }
       );
     }
+
+    const { email, password, nome, cliente_id, role } = validation.data!;
 
     console.log('📝 Processando usuário cliente:', { email, nome, cliente_id, role });
 

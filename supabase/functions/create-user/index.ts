@@ -1,6 +1,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { validateCreateUser, formatValidationErrors } from "../_shared/validation.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -25,40 +26,22 @@ serve(async (req) => {
       }
     });
 
-    const { email, password, nome, telefone, especialidade, role } = await req.json();
-
-    // Validar dados obrigatórios
-    if (!email || !password || !nome || !role) {
-      console.log('❌ Dados obrigatórios ausentes');
+    const requestData = await req.json();
+    
+    // ✅ FASE 1 FIX 1.3: Validação robusta de input
+    const validation = validateCreateUser(requestData);
+    if (!validation.success) {
+      console.log('❌ Validação falhou:', validation.errors);
       return new Response(
-        JSON.stringify({ 
-          success: false,
-          code: 'bad_request',
-          error: 'Dados obrigatórios ausentes' 
-        }),
+        JSON.stringify(formatValidationErrors(validation.errors!)),
         { 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }, 
-          status: 200 
+          status: 400 
         }
       );
     }
 
-    // Validar role permitida
-    const validRoles = ['admin', 'gestor', 'grs', 'designer', 'filmmaker', 'atendimento', 'financeiro', 'trafego', 'fornecedor', 'cliente'];
-    if (!validRoles.includes(role)) {
-      console.log(`❌ Role inválida: ${role}. Roles válidas: ${validRoles.join(', ')}`);
-      return new Response(
-        JSON.stringify({ 
-          success: false,
-          code: 'invalid_role',
-          error: `Role '${role}' não é válida. Roles permitidas: ${validRoles.join(', ')}`
-        }),
-        { 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }, 
-          status: 200 
-        }
-      );
-    }
+    const { email, password, nome, telefone, especialidade, role } = validation.data!;
 
     console.log('📝 Iniciando criação de usuário:', { email, nome, especialidade, role });
 

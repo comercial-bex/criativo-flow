@@ -7632,6 +7632,17 @@ export type Database = {
         }
         Returns: string
       }
+      ensure_profile_exists: {
+        Args: {
+          p_cliente_id?: string
+          p_email: string
+          p_especialidade?: string
+          p_nome?: string
+          p_telefone?: string
+          p_user_id: string
+        }
+        Returns: string
+      }
       find_orphan_auth_users: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -7931,6 +7942,10 @@ export type Database = {
           p_success: boolean
         }
         Returns: undefined
+      }
+      user_can_manage_cliente_usuarios: {
+        Args: { p_cliente_id: string; p_user_id: string }
+        Returns: boolean
       }
       validate_specialist_access: {
         Args: { p_user_id: string }
