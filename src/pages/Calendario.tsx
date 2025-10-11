@@ -13,7 +13,7 @@ import { CalendarioDashboard } from '@/components/Calendario/CalendarioDashboard
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 
-export default function Calendario() {
+const Calendario = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [viewMode, setViewMode] = useState<'day' | 'week' | 'month'>('week');
   const [filtroEspecialidade, setFiltroEspecialidade] = useState<string | null>(null);
@@ -232,4 +232,6 @@ export default function Calendario() {
       />
     </div>
   );
-}
+};
+
+export default Calendario;
