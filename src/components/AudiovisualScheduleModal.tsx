@@ -215,7 +215,7 @@ export function AudiovisualScheduleModal({
         if (tarefaError) throw tarefaError;
       }
 
-      // 4. Criar evento na agenda geral
+      // 4. Criar evento na agenda geral (CORRIGIDO - FASE 1)
       const dataFim = new Date(dataCaptacao);
       if (formData.horario_fim) {
         const [horaFim, minFim] = formData.horario_fim.split(':');
@@ -224,15 +224,36 @@ export function AudiovisualScheduleModal({
         dataFim.setHours(dataCaptacao.getHours() + 2); // 2 horas por padrão
       }
 
-      await supabase
+      // Buscar user_id atual para created_by
+      const { data: { user } } = await supabase.auth.getUser();
+
+      const { error: eventoError } = await supabase
         .from('eventos_calendario')
         .insert({
+          // Campos obrigatórios
+          titulo: `📹 ${formData.titulo}`,
+          tipo: 'captacao_externa' as const,
+          responsavel_id: formData.especialista_id,
           data_inicio: dataCaptacao.toISOString(),
           data_fim: dataFim.toISOString(),
-          tipo: 'captacao_externa',
+          
+          // Campos recomendados
+          projeto_id: projetoId,
           cliente_id: formData.cliente_id,
-          responsavel_id: formData.especialista_id
-        } as any); // TODO: Atualizar types após migration
+          local: formData.local || null,
+          equipamentos_ids: formData.equipamentos.length > 0 ? formData.equipamentos : null,
+          descricao: formData.briefing || null,
+          
+          // Segurança e controle
+          is_bloqueante: true, // ✅ CRÍTICO: Previne conflitos
+          is_extra: false,
+          created_by: user?.id || null
+        });
+
+      if (eventoError) {
+        console.error('Erro ao criar evento no calendário:', eventoError);
+        // Continua mesmo com erro (não é crítico para o fluxo principal)
+      }
 
       // 5. Criar notificação para o Filmmaker
       await supabase
