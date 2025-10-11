@@ -8993,6 +8993,20 @@ export type Database = {
         Args: { profile_id: string }
         Returns: Json
       }
+      get_grs_dashboard_metrics: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          aprovacoes_pendentes: number
+          cliente_id: string
+          posts_agendados: number
+          posts_rascunho: number
+          projetos_ativos: number
+          responsavel_id: string
+          tarefas_ativas: number
+          total_posts: number
+          total_projetos: number
+        }[]
+      }
       get_masked_social_integration: {
         Args: { integration_id: string }
         Returns: Json
@@ -9000,26 +9014,6 @@ export type Database = {
       get_user_role: {
         Args: { user_uuid: string }
         Returns: Database["public"]["Enums"]["user_role"]
-      }
-      gtrgm_compress: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      gtrgm_decompress: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      gtrgm_in: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      gtrgm_options: {
-        Args: { "": unknown }
-        Returns: undefined
-      }
-      gtrgm_out: {
-        Args: { "": unknown }
-        Returns: unknown
       }
       has_role: {
         Args: {
@@ -9073,18 +9067,6 @@ export type Database = {
       sanitize_error_message: {
         Args: { error_msg: string }
         Returns: string
-      }
-      set_limit: {
-        Args: { "": number }
-        Returns: number
-      }
-      show_limit: {
-        Args: Record<PropertyKey, never>
-        Returns: number
-      }
-      show_trgm: {
-        Args: { "": string }
-        Returns: string[]
       }
       update_connector_status: {
         Args: {
