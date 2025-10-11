@@ -190,37 +190,80 @@ async function handleDeleteUser(supabase: any, userId: string) {
   console.log(`🗑️ Iniciando deleção de usuário: ${userId}`);
   
   try {
-    // 1. Verificar dados vinculados ANTES de deletar
-    const { data: profile, error: profileCheckError } = await supabase
+    // 1. Buscar dados do perfil antes de deletar (para log)
+    const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('email, nome, cliente_id')
       .eq('id', userId)
       .single();
     
-    if (profileCheckError) {
-      console.error('❌ Erro ao buscar perfil:', profileCheckError);
-      throw new Error(`Erro ao verificar perfil: ${profileCheckError.message}`);
+    if (profileError && profileError.code !== 'PGRST116') {
+      console.error('❌ Erro ao buscar perfil:', profileError);
+    } else if (profile) {
+      console.log(`✅ Perfil encontrado: ${profile.email} (${profile.nome})`);
     }
     
-    console.log(`✅ Perfil encontrado: ${profile.email} (${profile.nome})`);
+    // 2. Tentar deletar do Auth primeiro (cascade automático para profiles)
+    const { error: authDeleteError } = await supabase.auth.admin.deleteUser(userId);
     
-    // 2. Deletar do auth (cascata para profiles por FK)
-    const { error: deleteError } = await supabase.auth.admin.deleteUser(userId);
-    
-    if (deleteError) {
-      console.error('❌ Erro ao deletar usuário do Auth:', deleteError);
-      throw new Error(`Erro ao deletar: ${deleteError.message}`);
+    if (authDeleteError) {
+      // Se o erro for "user not found", fazer limpeza manual
+      if (authDeleteError.message?.includes('not found') || 
+          authDeleteError.message?.includes('Database error loading user')) {
+        console.warn('⚠️ Usuário não encontrado no Auth, fazendo limpeza manual...');
+        
+        // Deletar manualmente de profiles (com nova policy RLS)
+        const { error: profileDeleteError } = await supabase
+          .from('profiles')
+          .delete()
+          .eq('id', userId);
+        
+        if (profileDeleteError) {
+          console.error('❌ Erro ao deletar perfil:', profileDeleteError);
+        }
+        
+        // Deletar manualmente de user_roles (com nova policy RLS)
+        const { error: rolesDeleteError } = await supabase
+          .from('user_roles')
+          .delete()
+          .eq('user_id', userId);
+        
+        if (rolesDeleteError) {
+          console.error('❌ Erro ao deletar roles:', rolesDeleteError);
+        }
+        
+        console.log('🧹 Limpeza manual concluída');
+        
+        return new Response(
+          JSON.stringify({ 
+            success: true, 
+            message: 'Usuário removido (limpeza manual)',
+            deleted_user: {
+              email: profile?.email,
+              nome: profile?.nome
+            },
+            cleanup_mode: true
+          }), 
+          {
+            status: 200,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          }
+        );
+      }
+      
+      console.error('❌ Erro ao deletar do Auth:', authDeleteError);
+      throw new Error(`Erro ao deletar: ${authDeleteError.message}`);
     }
     
-    console.log(`🎉 Usuário ${profile.email} deletado com sucesso`);
+    console.log(`🎉 Usuário ${profile?.email} deletado com sucesso`);
     
     return new Response(
       JSON.stringify({ 
         success: true, 
         message: 'Usuário deletado com sucesso',
         deleted_user: {
-          email: profile.email,
-          nome: profile.nome
+          email: profile?.email,
+          nome: profile?.nome
         }
       }), 
       {
