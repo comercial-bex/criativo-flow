@@ -111,7 +111,7 @@ export default function ClienteProjetosFluxo() {
     data_inicio: '',
     data_prazo: '',
     orcamento: '',
-    status: 'rascunho',
+    status: 'ativo',
     responsavel_grs_id: ''
   });
   
@@ -183,6 +183,7 @@ export default function ClienteProjetosFluxo() {
           tipo_projeto: 'avulso' as const,
           data_inicio: projeto.data_inicio,
           data_fim: projeto.data_fim,
+          data_prazo: projeto.data_prazo,
           orcamento: projeto.orcamento,
           responsavel_id: projeto.responsavel_id,
           tarefas: projeto.tarefas
@@ -300,7 +301,7 @@ export default function ClienteProjetosFluxo() {
           data_inicio: '',
           data_prazo: '',
           orcamento: '',
-          status: 'rascunho',
+          status: 'ativo',
           responsavel_grs_id: ''
         });
         
@@ -576,10 +577,10 @@ export default function ClienteProjetosFluxo() {
                       </div>
                     )}
                     
-                    {projeto.data_fim && (
+                    {(projeto.data_prazo || projeto.data_fim) && (
                       <div className="flex items-center gap-2">
                         <Clock className="h-4 w-4 text-muted-foreground" />
-                        <span>Prazo: {new Date(projeto.data_fim).toLocaleDateString('pt-BR')}</span>
+                        <span>Prazo: {new Date(projeto.data_prazo || projeto.data_fim!).toLocaleDateString('pt-BR')}</span>
                       </div>
                     )}
 
@@ -675,6 +676,131 @@ export default function ClienteProjetosFluxo() {
                   readOnly={!permissions.canEditCredentials}
                 />
               </div>
+            </DialogContent>
+          </Dialog>
+
+          {/* Modal de Criação de Projeto */}
+          <Dialog open={projetoDialogOpen} onOpenChange={setProjetoDialogOpen}>
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>Novo Projeto</DialogTitle>
+                <DialogDescription>
+                  Crie um novo projeto para {cliente.nome}
+                </DialogDescription>
+              </DialogHeader>
+              
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="titulo">Título *</Label>
+                  <Input
+                    id="titulo"
+                    placeholder="Nome do projeto"
+                    value={novoProjeto.titulo}
+                    onChange={(e) => setNovoProjeto({ ...novoProjeto, titulo: e.target.value })}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="descricao">Descrição</Label>
+                  <Textarea
+                    id="descricao"
+                    placeholder="Descreva o projeto..."
+                    rows={3}
+                    value={novoProjeto.descricao}
+                    onChange={(e) => setNovoProjeto({ ...novoProjeto, descricao: e.target.value })}
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="data_inicio">Data de Início</Label>
+                    <Input
+                      id="data_inicio"
+                      type="date"
+                      value={novoProjeto.data_inicio}
+                      onChange={(e) => setNovoProjeto({ ...novoProjeto, data_inicio: e.target.value })}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="data_prazo">Data de Prazo</Label>
+                    <Input
+                      id="data_prazo"
+                      type="date"
+                      value={novoProjeto.data_prazo}
+                      onChange={(e) => setNovoProjeto({ ...novoProjeto, data_prazo: e.target.value })}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="orcamento">Orçamento Estimado (R$)</Label>
+                  <Input
+                    id="orcamento"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    placeholder="0.00"
+                    value={novoProjeto.orcamento}
+                    onChange={(e) => setNovoProjeto({ ...novoProjeto, orcamento: e.target.value })}
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="status">Status</Label>
+                    <Select 
+                      value={novoProjeto.status} 
+                      onValueChange={(value) => setNovoProjeto({ ...novoProjeto, status: value })}
+                    >
+                      <SelectTrigger id="status">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="ativo">Ativo</SelectItem>
+                        <SelectItem value="pendente">Pendente</SelectItem>
+                        <SelectItem value="inativo">Inativo</SelectItem>
+                        <SelectItem value="arquivado">Arquivado</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="responsavel">Responsável GRS</Label>
+                    <Select 
+                      value={novoProjeto.responsavel_grs_id} 
+                      onValueChange={(value) => setNovoProjeto({ ...novoProjeto, responsavel_grs_id: value })}
+                    >
+                      <SelectTrigger id="responsavel">
+                        <SelectValue placeholder="Selecionar..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {especialistasGRS?.filter(e => e.role === 'grs').map(especialista => (
+                          <SelectItem key={especialista.id} value={especialista.id}>
+                            {especialista.nome}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </div>
+
+              <DialogFooter className="mt-6">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setProjetoDialogOpen(false)}
+                  disabled={saving}
+                >
+                  Cancelar
+                </Button>
+                <Button 
+                  onClick={handleSalvarProjeto}
+                  disabled={saving || !novoProjeto.titulo.trim()}
+                >
+                  {saving ? 'Criando...' : 'Criar Projeto'}
+                </Button>
+              </DialogFooter>
             </DialogContent>
           </Dialog>
         </>
