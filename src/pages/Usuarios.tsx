@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { PermissionGate } from '@/components/PermissionGate';
 import { 
   Users, 
@@ -72,6 +73,8 @@ const Usuarios = () => {
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<Profile | null>(null);
+  const [selectedRole, setSelectedRole] = useState<'admin' | 'gestor' | 'grs' | 'designer' | 'filmmaker' | 'atendimento' | 'financeiro' | 'trafego' | 'cliente' | 'fornecedor' | ''>('');
+  const [updatingRole, setUpdatingRole] = useState(false);
   const { toast } = useToast();
   const { deleteUser, loading: deleting } = useAdminUserManagement();
 
@@ -149,6 +152,37 @@ const Usuarios = () => {
       setDeleteConfirmOpen(false);
       setUserToDelete(null);
       fetchData();
+    }
+  };
+
+  const handleUpdateRole = async () => {
+    if (!selectedProfile || !selectedRole) return;
+
+    setUpdatingRole(true);
+    try {
+      const { error } = await supabase.rpc('update_user_role', {
+        p_user_id: selectedProfile.id,
+        p_new_role: selectedRole
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "✅ Role atualizada com sucesso!",
+        description: `${selectedProfile.nome} agora tem a role: ${selectedRole}`,
+      });
+
+      fetchData();
+      setDetailsOpen(false);
+    } catch (error: any) {
+      console.error('Erro ao atualizar role:', error);
+      toast({
+        title: "❌ Erro ao atualizar role",
+        description: error.message || "Não foi possível atualizar a role do usuário",
+        variant: "destructive",
+      });
+    } finally {
+      setUpdatingRole(false);
     }
   };
 
@@ -611,14 +645,51 @@ const Usuarios = () => {
                   
                   <Separator />
                   
+                  {/* Edição de Role */}
+                  {selectedProfile.status === 'aprovado' && (
+                    <>
+                      <div className="space-y-3">
+                        <label className="text-sm font-medium">Editar Função/Role</label>
+                        <Select 
+                          value={selectedRole} 
+                          onValueChange={(value: string) => setSelectedRole(value as any)}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecione uma role..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="admin">Admin</SelectItem>
+                            <SelectItem value="gestor">Gestor</SelectItem>
+                            <SelectItem value="grs">GRS</SelectItem>
+                            <SelectItem value="designer">Designer</SelectItem>
+                            <SelectItem value="filmmaker">Filmmaker</SelectItem>
+                            <SelectItem value="atendimento">Atendimento</SelectItem>
+                            <SelectItem value="financeiro">Financeiro</SelectItem>
+                            <SelectItem value="trafego">Tráfego</SelectItem>
+                            <SelectItem value="cliente">Cliente</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <p className="text-xs text-muted-foreground">
+                          Alterar a role do usuário afetará suas permissões de acesso ao sistema.
+                        </p>
+                      </div>
+                      <Separator />
+                    </>
+                  )}
+                  
                   <div className="flex justify-end space-x-3">
                     <Button variant="outline" onClick={() => setDetailsOpen(false)}>
                       Fechar
                     </Button>
-                    <Button variant="outline">
-                      <Settings className="h-4 w-4 mr-2" />
-                      Configurar Acesso
-                    </Button>
+                    {selectedProfile.status === 'aprovado' && selectedRole && (
+                      <Button 
+                        onClick={handleUpdateRole}
+                        disabled={updatingRole}
+                      >
+                        <Settings className="h-4 w-4 mr-2" />
+                        {updatingRole ? 'Salvando...' : 'Salvar Role'}
+                      </Button>
+                    )}
                   </div>
                 </div>
               </>

@@ -8722,6 +8722,13 @@ export type Database = {
         }
         Returns: undefined
       }
+      update_user_role: {
+        Args: {
+          p_new_role: Database["public"]["Enums"]["user_role"]
+          p_user_id: string
+        }
+        Returns: boolean
+      }
       user_can_manage_cliente_usuarios: {
         Args: { p_cliente_id: string; p_user_id: string }
         Returns: boolean
