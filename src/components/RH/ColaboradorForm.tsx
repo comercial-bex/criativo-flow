@@ -21,7 +21,10 @@ interface ColaboradorFormProps {
 export function ColaboradorForm({ colaborador, pessoa, open, onOpenChange, mode = 'legacy' }: ColaboradorFormProps) {
   const legacyHooks = useColaboradores();
   const newHooks = usePessoas();
-  const { criar, atualizar, isCriando, isAtualizando } = mode === 'new' ? newHooks : legacyHooks;
+  
+  // Selecionar hooks baseado no modo
+  const hooks = mode === 'new' ? newHooks : legacyHooks;
+  const { criar, atualizar, isCriando, isAtualizando } = hooks;
   const [formData, setFormData] = useState<Partial<Colaborador>>(
     colaborador || {
       regime: 'clt',
@@ -55,18 +58,18 @@ export function ColaboradorForm({ colaborador, pessoa, open, onOpenChange, mode 
           pix_chave: formData.chave_pix,
         },
       };
-      pessoa ? atualizar({ id: pessoa.id, ...pessoaData }) : criar(pessoaData);
+      pessoa ? atualizar({ id: pessoa.id, ...pessoaData } as any) : criar(pessoaData as any);
     } else {
       // Modo legado - sempre envia dados completos
       const legacyData = {
         ...formData,
         nome_completo: formData.nome_completo || '',
         cpf_cnpj: formData.cpf_cnpj || '',
-        regime: formData.regime || 'clt',
-        data_admissao: formData.data_admissao || new Date().toISOString().split('T')[0],
-        status: formData.status || 'ativo',
+        data_admissao: formData.data_admissao || '',
       };
-      colaborador ? atualizar({ id: colaborador.id, ...legacyData } as any) : criar(legacyData as any);
+      colaborador 
+        ? atualizar({ id: colaborador.id, ...legacyData } as any) 
+        : criar(legacyData as any);
     }
     
     onOpenChange(false);
