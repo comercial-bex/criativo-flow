@@ -12,8 +12,12 @@ import { ModalCriarEvento } from '@/components/Calendario/ModalCriarEvento';
 import { CalendarioDashboard } from '@/components/Calendario/CalendarioDashboard';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useUserRole } from '@/hooks/useUserRole';
 
 export default function Calendario() {
+  const { role } = useUserRole();
+  const canEdit = ['admin', 'gestor', 'grs'].includes(role || '');
+  
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [viewMode, setViewMode] = useState<'day' | 'week' | 'month'>('week');
   const [filtroEspecialidade, setFiltroEspecialidade] = useState<string | null>(null);
@@ -78,10 +82,12 @@ export default function Calendario() {
           <h1 className="text-3xl font-bold">Calendário Multidisciplinar</h1>
         </div>
         
-        <Button size="lg" onClick={() => handleAbrirModal()}>
-          <Plus className="mr-2 h-4 w-4" />
-          Novo Evento
-        </Button>
+        {canEdit && (
+          <Button size="lg" onClick={() => handleAbrirModal()}>
+            <Plus className="mr-2 h-4 w-4" />
+            Novo Evento
+          </Button>
+        )}
       </div>
       
       <Card>

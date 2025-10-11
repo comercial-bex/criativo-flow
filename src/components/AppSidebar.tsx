@@ -80,7 +80,8 @@ export function AppSidebar() {
         { title: "Planejamentos", url: "/grs/planejamentos", icon: Icons.Calendar },
         { title: "Tarefas", url: "/grs/tarefas", icon: Icons.CheckSquare },
         { title: "Kanban", url: "/operacoes/kanban", icon: Icons.Columns },
-        { title: "Calendário", url: "/grs/calendario-editorial", icon: Icons.CalendarDays },
+        { title: "Calendário Editorial", url: "/grs/calendario-editorial", icon: Icons.CalendarDays },
+        { title: "Agenda Multidisciplinar", url: "/calendario", icon: Icons.CalendarClock },
         { title: "Relatórios", url: "/grs/relatorios", icon: Icons.FileText },
         { title: "Cliente (Detalhes)", url: "/grs/cliente", icon: Icons.User },
       ],
@@ -122,6 +123,7 @@ export function AppSidebar() {
         { title: "Minhas Tarefas", url: "/audiovisual/tarefas", icon: Icons.CheckSquare },
         { title: "Captações", url: "/audiovisual/captacoes", icon: Icons.Camera },
         { title: "Projetos", url: "/audiovisual/projetos", icon: Icons.Film },
+        { title: "Agenda Multidisciplinar", url: "/calendario", icon: Icons.CalendarClock },
       ],
       permissions: ["audiovisual"]
     },
