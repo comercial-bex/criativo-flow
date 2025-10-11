@@ -19,8 +19,13 @@ import {
   FolderOpen,
   AlertCircle,
   CheckCircle2,
-  PlayCircle
+  PlayCircle,
+  ChevronDown,
+  Zap,
+  Megaphone
 } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { CriarProjetoAvulsoModal } from '@/components/CriarProjetoAvulsoModal';
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
@@ -60,24 +65,12 @@ export default function ClienteProjetos() {
   const [cliente, setCliente] = useState<Cliente | null>(null);
   const [projetos, setProjetos] = useState<Projeto[]>([]);
   const [loading, setLoading] = useState(true);
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [profiles, setProfiles] = useState<any[]>([]);
-  
-  const [formData, setFormData] = useState({
-    nome: '',
-    descricao: '',
-    status: 'ativo',
-    data_inicio: '',
-    data_fim: '',
-    orcamento: '',
-    responsavel_id: ''
-  });
+  const [tipoModal, setTipoModal] = useState<'avulso' | 'campanha' | null>(null);
 
   useEffect(() => {
     if (clienteId) {
       fetchClienteData();
       fetchProjetos();
-      fetchProfiles();
     }
   }, [clienteId]);
 
@@ -126,64 +119,6 @@ export default function ClienteProjetos() {
     }
   };
 
-  const fetchProfiles = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('id, nome, especialidade');
-
-      if (error) throw error;
-      setProfiles(data || []);
-    } catch (error) {
-      console.error('Erro ao buscar profiles:', error);
-    }
-  };
-
-  const handleCreateProjeto = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    try {
-      const { error } = await supabase
-        .from('projetos')
-        .insert({
-          cliente_id: clienteId,
-          nome: formData.nome,
-          descricao: formData.descricao,
-          status: formData.status,
-          data_inicio: formData.data_inicio || null,
-          data_fim: formData.data_fim || null,
-          orcamento: formData.orcamento ? parseFloat(formData.orcamento) : null,
-          responsavel_id: formData.responsavel_id || null
-        } as any);
-
-      if (error) throw error;
-
-      toast({
-        title: "Sucesso",
-        description: "Projeto criado com sucesso!",
-      });
-
-      setDialogOpen(false);
-      setFormData({
-        nome: '',
-        descricao: '',
-        status: 'ativo',
-        data_inicio: '',
-        data_fim: '',
-        orcamento: '',
-        responsavel_id: ''
-      });
-      
-      fetchProjetos();
-    } catch (error) {
-      console.error('Erro ao criar projeto:', error);
-      toast({
-        title: "Erro",
-        description: "Erro ao criar projeto.",
-        variant: "destructive",
-      });
-    }
-  };
 
   const getStatusBadge = (status: string | null) => {
     const statusConfig = {
@@ -233,118 +168,37 @@ export default function ClienteProjetos() {
           </div>
         </div>
 
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogTrigger asChild>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
             <Button>
               <Plus className="h-4 w-4 mr-2" />
               Novo Projeto
+              <ChevronDown className="h-4 w-4 ml-2" />
             </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
-              <DialogTitle>Criar Novo Projeto</DialogTitle>
-            </DialogHeader>
-            <form onSubmit={handleCreateProjeto} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="nome">Nome do Projeto</Label>
-                  <Input
-                    id="nome"
-                    value={formData.nome}
-                    onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
-                    placeholder="Ex: Planejamento Mensal Janeiro"
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="status">Status</Label>
-                  <Select value={formData.status} onValueChange={(value) => setFormData({ ...formData, status: value })}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="ativo">Ativo</SelectItem>
-                      <SelectItem value="inativo">Inativo</SelectItem>
-                      <SelectItem value="pendente">Pendente</SelectItem>
-                      <SelectItem value="arquivado">Arquivado</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="descricao">Descrição</Label>
-                <Textarea
-                  id="descricao"
-                  value={formData.descricao}
-                  onChange={(e) => setFormData({ ...formData, descricao: e.target.value })}
-                  placeholder="Descreva os objetivos e escopo do projeto..."
-                  rows={3}
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="data_inicio">Data Início</Label>
-                  <Input
-                    id="data_inicio"
-                    type="date"
-                    value={formData.data_inicio}
-                    onChange={(e) => setFormData({ ...formData, data_inicio: e.target.value })}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="data_fim">Data Fim</Label>
-                  <Input
-                    id="data_fim"
-                    type="date"
-                    value={formData.data_fim}
-                    onChange={(e) => setFormData({ ...formData, data_fim: e.target.value })}
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="responsavel_id">Responsável</Label>
-                  <Select value={formData.responsavel_id} onValueChange={(value) => setFormData({ ...formData, responsavel_id: value })}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecionar responsável" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {profiles.map((profile) => (
-                        <SelectItem key={profile.id} value={profile.id}>
-                          {profile.nome}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="orcamento">Orçamento (R$)</Label>
-                  <Input
-                    id="orcamento"
-                    type="number"
-                    step="0.01"
-                    value={formData.orcamento}
-                    onChange={(e) => setFormData({ ...formData, orcamento: e.target.value })}
-                    placeholder="0,00"
-                  />
-                </div>
-              </div>
-
-              <div className="flex gap-2 pt-4">
-                <Button type="submit" className="flex-1">
-                  Criar Projeto
-                </Button>
-                <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
-                  Cancelar
-                </Button>
-              </div>
-            </form>
-          </DialogContent>
-        </Dialog>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => setTipoModal('avulso')}>
+              <Zap className="w-4 h-4 mr-2 text-green-500" />
+              Projeto Avulso
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setTipoModal('campanha')}>
+              <Megaphone className="w-4 h-4 mr-2 text-purple-500" />
+              Campanha Publicitária
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
+
+      {/* Modal de Projeto Avulso/Campanha */}
+      {tipoModal && (
+        <CriarProjetoAvulsoModal
+          open={!!tipoModal}
+          onOpenChange={(open) => !open && setTipoModal(null)}
+          clienteId={clienteId}
+          tipo={tipoModal}
+          onSuccess={() => fetchProjetos()}
+        />
+      )}
 
       {/* Lista de Projetos */}
       {loading ? (
@@ -360,10 +214,25 @@ export default function ClienteProjetos() {
             <p className="text-muted-foreground mb-4">
               Este cliente ainda não possui projetos. Crie o primeiro projeto para começar.
             </p>
-            <Button onClick={() => setDialogOpen(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              Criar Primeiro Projeto
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Criar Primeiro Projeto
+                  <ChevronDown className="h-4 w-4 ml-2" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => setTipoModal('avulso')}>
+                  <Zap className="w-4 h-4 mr-2 text-green-500" />
+                  Projeto Avulso
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setTipoModal('campanha')}>
+                  <Megaphone className="w-4 h-4 mr-2 text-purple-500" />
+                  Campanha Publicitária
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </CardContent>
         </Card>
       ) : (

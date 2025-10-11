@@ -29,8 +29,12 @@ import {
   Zap,
   FileEdit,
   FolderOpen,
-  Lock
+  Lock,
+  ChevronDown,
+  Megaphone
 } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { CriarProjetoAvulsoModal } from '@/components/CriarProjetoAvulsoModal';
 import { ProjectWithTasks } from '@/utils/statusUtils';
 import { useClientAccessPermissions } from '@/hooks/useClientAccessPermissions';
 import { OnboardingForm } from '@/components/OnboardingForm';
@@ -102,18 +106,7 @@ export default function ClienteProjetosFluxo() {
   const [credentialsOpen, setCredentialsOpen] = useState(false);
   
   // Modal de criação de projeto
-  const [projetoDialogOpen, setProjetoDialogOpen] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [novoProjeto, setNovoProjeto] = useState({
-    titulo: '',
-    descricao: '',
-    tipo_projeto: 'avulso',
-    data_inicio: '',
-    data_prazo: '',
-    orcamento: '',
-    status: 'ativo',
-    responsavel_grs_id: ''
-  });
+  const [tipoModal, setTipoModal] = useState<'avulso' | 'campanha' | null>(null);
   
   const permissions = useClientAccessPermissions();
   const { createProjeto } = useProjetos();
@@ -229,110 +222,6 @@ export default function ClienteProjetosFluxo() {
     }
   };
 
-  const handleCriarProjeto = () => {
-    setProjetoDialogOpen(true);
-  };
-
-  const handleSalvarProjeto = async () => {
-    console.log('🚀 Iniciando criação de projeto...');
-    
-    // Validações
-    if (!novoProjeto.titulo.trim()) {
-      toast({
-        title: "⚠️ Título obrigatório",
-        description: "Informe um título para o projeto",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    if (novoProjeto.data_inicio && novoProjeto.data_prazo) {
-      const inicio = new Date(novoProjeto.data_inicio);
-      const prazo = new Date(novoProjeto.data_prazo);
-      if (inicio > prazo) {
-        toast({
-          title: "⚠️ Datas inválidas",
-          description: "A data de início não pode ser posterior à data de prazo",
-          variant: "destructive"
-        });
-        return;
-      }
-    }
-
-    if (novoProjeto.orcamento && parseFloat(novoProjeto.orcamento) < 0) {
-      toast({
-        title: "⚠️ Orçamento inválido",
-        description: "O orçamento não pode ser negativo",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    const projetoData = {
-      cliente_id: clienteId!,
-      titulo: novoProjeto.titulo.trim(),
-      descricao: novoProjeto.descricao.trim() || undefined,
-      data_inicio: novoProjeto.data_inicio || undefined,
-      data_prazo: novoProjeto.data_prazo || undefined,
-      orcamento_estimado: novoProjeto.orcamento ? parseFloat(novoProjeto.orcamento) : undefined,
-      status: novoProjeto.status,
-      responsavel_grs_id: novoProjeto.responsavel_grs_id || undefined,
-      prioridade: 'media'
-    };
-
-    console.log('📋 Dados do projeto:', projetoData);
-
-    setSaving(true);
-    try {
-      const result = await createProjeto(projetoData);
-      console.log('✅ Resultado da criação:', result);
-      
-      if (result) {
-        toast({
-          title: "✅ Projeto criado",
-          description: `O projeto "${novoProjeto.titulo}" foi criado com sucesso`,
-        });
-
-        // Resetar formulário
-        setNovoProjeto({
-          titulo: '',
-          descricao: '',
-          tipo_projeto: 'avulso',
-          data_inicio: '',
-          data_prazo: '',
-          orcamento: '',
-          status: 'ativo',
-          responsavel_grs_id: ''
-        });
-        
-        setProjetoDialogOpen(false);
-        fetchProjetosUnificados(); // Atualizar lista
-      } else {
-        console.error('❌ Criação retornou null');
-        toast({
-          title: "❌ Erro ao criar projeto",
-          description: "A criação do projeto falhou. Verifique o console para detalhes.",
-          variant: "destructive"
-        });
-      }
-    } catch (error: any) {
-      console.error('💥 Erro detalhado ao criar projeto:', {
-        message: error.message,
-        code: error.code,
-        details: error.details,
-        hint: error.hint,
-        stack: error.stack
-      });
-      
-      toast({
-        title: "❌ Erro ao criar projeto",
-        description: error.message || error.details || "Verifique o console para mais detalhes",
-        variant: "destructive"
-      });
-    } finally {
-      setSaving(false);
-    }
-  };
 
   // Filtrar projetos unificados
   const projetosFiltrados = projetosUnificados.filter(projeto => {
@@ -406,10 +295,25 @@ export default function ClienteProjetosFluxo() {
                 Gestão de projetos e tarefas do cliente
               </CardDescription>
             </div>
-            <Button onClick={handleCriarProjeto}>
-              <Plus className="h-4 w-4 mr-2" />
-              Novo Projeto
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Novo Projeto
+                  <ChevronDown className="h-4 w-4 ml-2" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => setTipoModal('avulso')}>
+                  <Zap className="w-4 h-4 mr-2 text-green-500" />
+                  Projeto Avulso
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setTipoModal('campanha')}>
+                  <Megaphone className="w-4 h-4 mr-2 text-purple-500" />
+                  Campanha Publicitária
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </CardHeader>
         <CardContent>
@@ -435,6 +339,17 @@ export default function ClienteProjetosFluxo() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Modal de Projeto Avulso/Campanha */}
+      {tipoModal && (
+        <CriarProjetoAvulsoModal
+          open={!!tipoModal}
+          onOpenChange={(open) => !open && setTipoModal(null)}
+          clienteId={clienteId}
+          tipo={tipoModal}
+          onSuccess={() => fetchProjetosUnificados()}
+        />
+      )}
 
       {/* Card de Acesso Rápido */}
       {(permissions.canViewOnboarding || permissions.canViewFiles || permissions.canViewCredentials) && (
@@ -521,10 +436,25 @@ export default function ClienteProjetosFluxo() {
                     }
                   </p>
                 </div>
-                <Button onClick={handleCriarProjeto}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Criar Primeiro Projeto
-                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Criar Primeiro Projeto
+                      <ChevronDown className="h-4 w-4 ml-2" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => setTipoModal('avulso')}>
+                      <Zap className="w-4 h-4 mr-2 text-green-500" />
+                      Projeto Avulso
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setTipoModal('campanha')}>
+                      <Megaphone className="w-4 h-4 mr-2 text-purple-500" />
+                      Campanha Publicitária
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             </CardContent>
           </Card>
@@ -679,130 +609,6 @@ export default function ClienteProjetosFluxo() {
             </DialogContent>
           </Dialog>
 
-          {/* Modal de Criação de Projeto */}
-          <Dialog open={projetoDialogOpen} onOpenChange={setProjetoDialogOpen}>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>Novo Projeto</DialogTitle>
-                <DialogDescription>
-                  Crie um novo projeto para {cliente.nome}
-                </DialogDescription>
-              </DialogHeader>
-              
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="titulo">Título *</Label>
-                  <Input
-                    id="titulo"
-                    placeholder="Nome do projeto"
-                    value={novoProjeto.titulo}
-                    onChange={(e) => setNovoProjeto({ ...novoProjeto, titulo: e.target.value })}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="descricao">Descrição</Label>
-                  <Textarea
-                    id="descricao"
-                    placeholder="Descreva o projeto..."
-                    rows={3}
-                    value={novoProjeto.descricao}
-                    onChange={(e) => setNovoProjeto({ ...novoProjeto, descricao: e.target.value })}
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="data_inicio">Data de Início</Label>
-                    <Input
-                      id="data_inicio"
-                      type="date"
-                      value={novoProjeto.data_inicio}
-                      onChange={(e) => setNovoProjeto({ ...novoProjeto, data_inicio: e.target.value })}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="data_prazo">Data de Prazo</Label>
-                    <Input
-                      id="data_prazo"
-                      type="date"
-                      value={novoProjeto.data_prazo}
-                      onChange={(e) => setNovoProjeto({ ...novoProjeto, data_prazo: e.target.value })}
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="orcamento">Orçamento Estimado (R$)</Label>
-                  <Input
-                    id="orcamento"
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    placeholder="0.00"
-                    value={novoProjeto.orcamento}
-                    onChange={(e) => setNovoProjeto({ ...novoProjeto, orcamento: e.target.value })}
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="status">Status</Label>
-                    <Select 
-                      value={novoProjeto.status} 
-                      onValueChange={(value) => setNovoProjeto({ ...novoProjeto, status: value })}
-                    >
-                      <SelectTrigger id="status">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="ativo">Ativo</SelectItem>
-                        <SelectItem value="pendente">Pendente</SelectItem>
-                        <SelectItem value="inativo">Inativo</SelectItem>
-                        <SelectItem value="arquivado">Arquivado</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="responsavel">Responsável GRS</Label>
-                    <Select 
-                      value={novoProjeto.responsavel_grs_id} 
-                      onValueChange={(value) => setNovoProjeto({ ...novoProjeto, responsavel_grs_id: value })}
-                    >
-                      <SelectTrigger id="responsavel">
-                        <SelectValue placeholder="Selecionar..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {especialistasGRS?.filter(e => e.role === 'grs').map(especialista => (
-                          <SelectItem key={especialista.id} value={especialista.id}>
-                            {especialista.nome}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              </div>
-
-              <DialogFooter className="mt-6">
-                <Button 
-                  variant="outline" 
-                  onClick={() => setProjetoDialogOpen(false)}
-                  disabled={saving}
-                >
-                  Cancelar
-                </Button>
-                <Button 
-                  onClick={handleSalvarProjeto}
-                  disabled={saving || !novoProjeto.titulo.trim()}
-                >
-                  {saving ? 'Criando...' : 'Criar Projeto'}
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
         </>
       )}
     </div>
