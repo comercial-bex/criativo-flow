@@ -122,7 +122,14 @@ async function handleListUsers(supabase: any, filters?: any) {
     query = query.or(`nome.ilike.%${filters.search}%,email.ilike.%${filters.search}%`);
   }
 
-  const { data, error } = await query.order('created_at', { ascending: false });
+  const { data, error } = await supabase
+    .from('profiles')
+    .select(`
+      *,
+      user_roles(role),
+      clientes!profiles_cliente_id_fkey(nome)
+    `)
+    .order('created_at', { ascending: false });
 
   if (error) {
     throw error;
@@ -180,17 +187,62 @@ async function handleUpdateStatus(supabase: any, userId: string, status: string)
 }
 
 async function handleDeleteUser(supabase: any, userId: string) {
-  // Delete from auth.users (cascades to profiles)
-  const { error } = await supabase.auth.admin.deleteUser(userId);
-
-  if (error) {
-    throw error;
+  console.log(`🗑️ Iniciando deleção de usuário: ${userId}`);
+  
+  try {
+    // 1. Verificar dados vinculados ANTES de deletar
+    const { data: profile, error: profileCheckError } = await supabase
+      .from('profiles')
+      .select('email, nome, cliente_id')
+      .eq('id', userId)
+      .single();
+    
+    if (profileCheckError) {
+      console.error('❌ Erro ao buscar perfil:', profileCheckError);
+      throw new Error(`Erro ao verificar perfil: ${profileCheckError.message}`);
+    }
+    
+    console.log(`✅ Perfil encontrado: ${profile.email} (${profile.nome})`);
+    
+    // 2. Deletar do auth (cascata para profiles por FK)
+    const { error: deleteError } = await supabase.auth.admin.deleteUser(userId);
+    
+    if (deleteError) {
+      console.error('❌ Erro ao deletar usuário do Auth:', deleteError);
+      throw new Error(`Erro ao deletar: ${deleteError.message}`);
+    }
+    
+    console.log(`🎉 Usuário ${profile.email} deletado com sucesso`);
+    
+    return new Response(
+      JSON.stringify({ 
+        success: true, 
+        message: 'Usuário deletado com sucesso',
+        deleted_user: {
+          email: profile.email,
+          nome: profile.nome
+        }
+      }), 
+      {
+        status: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      }
+    );
+    
+  } catch (error: any) {
+    console.error('💥 Erro crítico na deleção:', error);
+    return new Response(
+      JSON.stringify({ 
+        success: false,
+        error: error.message || 'Erro desconhecido ao deletar usuário',
+        details: error
+      }), 
+      {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      }
+    );
   }
-
-  return new Response(JSON.stringify({ success: true, message: 'User deleted successfully' }), {
-    status: 200,
-    headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-  });
 }
 
 serve(handler);
