@@ -47,21 +47,16 @@ export const LoginDiagnostic = () => {
     const warnings: string[] = [];
 
     try {
-      // 1. Verificar se existe em auth.users (usando admin API)
-      const { data: authUsers, error: authError } = await supabase
-        .from('profiles')
-        .select('id, email')
-        .eq('email', email)
-        .maybeSingle();
-
-      // 2. Verificar perfil
+      // 1. Primeiro verificar se existe perfil (que tem o mesmo ID do auth)
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('*')
         .eq('email', email)
         .maybeSingle();
 
-      // 3. Verificar role
+      console.log('🔍 Profile encontrado:', profile);
+
+      // 2. Se encontrou perfil, verificar role
       let roleData = null;
       if (profile?.id) {
         const { data: role } = await supabase
@@ -70,29 +65,40 @@ export const LoginDiagnostic = () => {
           .eq('user_id', profile.id)
           .maybeSingle();
         roleData = role;
+        console.log('🔍 Role encontrada:', roleData);
       }
 
+      // 3. Verificar se usuário existe no auth através da função find_orphan_auth_users
+      const { data: orphanCheck } = await supabase.rpc('find_orphan_auth_users');
+      
+      const isOrphanInAuth = orphanCheck?.some((u: any) => u.email === email);
+      const authExists = profile?.id || isOrphanInAuth;
+      
+      console.log('🔍 Órfãos no auth:', orphanCheck);
+      console.log('🔍 Este usuário é órfão?', isOrphanInAuth);
+      console.log('🔍 Auth exists:', authExists);
+
       // Análise de problemas
-      const authExists = !!authUsers;
       const profileExists = !!profile;
       const roleExists = !!roleData;
 
-      if (!authExists) {
-        errors.push('❌ Usuário não existe no Authentication');
+      if (!authExists && !profileExists) {
+        errors.push('❌ Usuário não existe no Authentication nem no sistema');
       }
 
-      if (!profileExists) {
-        errors.push('❌ Perfil não existe na tabela profiles');
-        warnings.push('⚠️ Usuário órfão detectado - precisa sincronização');
+      if (authExists && !profileExists) {
+        errors.push('❌ Usuário existe no Auth mas não tem perfil (usuário órfão)');
+        warnings.push('⚠️ Sincronização necessária para criar perfil');
       }
 
-      if (!roleExists && profileExists) {
+      if (profileExists && !roleExists) {
         errors.push('❌ Nenhuma role atribuída ao usuário');
         warnings.push('⚠️ Usuário sem permissões - login será bloqueado');
       }
 
       if (profile?.status === 'pendente_aprovacao') {
-        warnings.push('⚠️ Usuário aguardando aprovação');
+        warnings.push('⚠️ Usuário aguardando aprovação - login bloqueado');
+        errors.push('❌ Status: pendente de aprovação');
       }
 
       if (profile?.status === 'suspenso') {
@@ -107,7 +113,7 @@ export const LoginDiagnostic = () => {
 
       const diagnostic: DiagnosticResult = {
         email,
-        authExists,
+        authExists: !!authExists,
         authId: profile?.id,
         authConfirmed: true,
         profileExists,
@@ -127,6 +133,7 @@ export const LoginDiagnostic = () => {
         smartToast.error('❌ Problemas detectados', `${errors.length} erro(s) encontrado(s)`);
       }
     } catch (error: any) {
+      console.error('Erro no diagnóstico:', error);
       smartToast.error('Erro ao verificar', error.message);
     } finally {
       setChecking(false);
@@ -216,7 +223,14 @@ export const LoginDiagnostic = () => {
               <div className="flex items-center justify-between p-3 border rounded">
                 <div className="flex items-center gap-3">
                   <User className="h-5 w-5" />
-                  <span className="text-sm font-medium">Authentication (Supabase)</span>
+                  <div>
+                    <div className="text-sm font-medium">Authentication (Supabase Auth)</div>
+                    {result.authId && (
+                      <div className="text-xs text-muted-foreground font-mono">
+                        UID: {result.authId.slice(0, 8)}...
+                      </div>
+                    )}
+                  </div>
                 </div>
                 {result.authExists ? (
                   <CheckCircle2 className="h-5 w-5 text-green-500" />
