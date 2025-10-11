@@ -62,7 +62,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       console.log('🔐 Auth: Iniciando login para', email);
       
       // Proceder com o login direto
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data: authData, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
@@ -84,6 +84,71 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
         
         return { error };
+      }
+      
+      // ✅ FASE 5: Validação de Integridade Pós-Login
+      if (authData?.session?.user) {
+        const userId = authData.session.user.id;
+        console.log('🔐 Auth: Validando integridade do usuário:', userId);
+        
+        // 1. Verificar se perfil existe
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('id, status')
+          .eq('id', userId)
+          .maybeSingle();
+        
+        if (profileError) {
+          console.error('🔐 Auth: Erro ao buscar perfil:', profileError);
+          await supabase.auth.signOut();
+          return { error: { message: 'Erro ao validar perfil. Tente novamente.' } };
+        }
+        
+        if (!profile) {
+          console.error('🔐 Auth: Perfil não encontrado');
+          await supabase.auth.signOut();
+          return { error: { message: 'Perfil não encontrado. Entre em contato com o suporte.' } };
+        }
+        
+        // 2. Verificar status do perfil
+        if (profile.status !== 'aprovado') {
+          console.warn('🔐 Auth: Status do perfil:', profile.status);
+          await supabase.auth.signOut();
+          
+          const statusMessages = {
+            'pendente_aprovacao': 'Seu cadastro está pendente de aprovação. Aguarde liberação do administrador.',
+            'suspenso': 'Sua conta foi suspensa. Entre em contato com o administrador.',
+            'rejeitado': 'Seu cadastro foi rejeitado. Entre em contato com o suporte.'
+          };
+          
+          return { 
+            error: { 
+              message: statusMessages[profile.status as keyof typeof statusMessages] || 
+                       `Seu cadastro está ${profile.status}. Entre em contato com o administrador.` 
+            } 
+          };
+        }
+        
+        // 3. Verificar se role está atribuída
+        const { data: role, error: roleError } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', userId)
+          .maybeSingle();
+        
+        if (roleError) {
+          console.error('🔐 Auth: Erro ao buscar role:', roleError);
+          await supabase.auth.signOut();
+          return { error: { message: 'Erro ao validar permissões. Tente novamente.' } };
+        }
+        
+        if (!role) {
+          console.warn('🔐 Auth: Nenhuma role atribuída');
+          await supabase.auth.signOut();
+          return { error: { message: 'Você não tem permissões atribuídas. Entre em contato com o administrador.' } };
+        }
+        
+        console.log('✅ Auth: Validação de integridade concluída - Role:', role.role);
       }
       
       console.log('🔐 Auth: Login realizado com sucesso');
