@@ -8543,7 +8543,16 @@ export type Database = {
         | "outros"
       pessoa_papel: "colaborador" | "especialista" | "cliente"
       pessoa_regime: "clt" | "pj" | "estagio" | "freelancer"
-      pessoa_status: "ativo" | "afastado" | "desligado"
+      pessoa_status:
+        | "ativo"
+        | "afastado"
+        | "desligado"
+        | "inativo"
+        | "ferias"
+        | "aprovado"
+        | "pendente_aprovacao"
+        | "rejeitado"
+        | "suspenso"
       pix_tipo_enum: "cpf" | "cnpj" | "email" | "telefone" | "aleatoria"
       prioridade_enum: "baixa" | "media" | "alta" | "critica"
       priority_type: "baixa" | "media" | "alta" | "urgente"
@@ -8826,7 +8835,17 @@ export const Constants = {
       ],
       pessoa_papel: ["colaborador", "especialista", "cliente"],
       pessoa_regime: ["clt", "pj", "estagio", "freelancer"],
-      pessoa_status: ["ativo", "afastado", "desligado"],
+      pessoa_status: [
+        "ativo",
+        "afastado",
+        "desligado",
+        "inativo",
+        "ferias",
+        "aprovado",
+        "pendente_aprovacao",
+        "rejeitado",
+        "suspenso",
+      ],
       pix_tipo_enum: ["cpf", "cnpj", "email", "telefone", "aleatoria"],
       prioridade_enum: ["baixa", "media", "alta", "critica"],
       priority_type: ["baixa", "media", "alta", "urgente"],
