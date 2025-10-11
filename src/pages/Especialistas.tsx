@@ -252,11 +252,26 @@ export default function Especialistas() {
           return;
         }
 
+        // Mapear especialidade para role correta do enum
+        const roleMapping: Record<string, string> = {
+          'design': 'designer',
+          'grs': 'grs',
+          'filmmaker': 'filmmaker',
+          'admin': 'admin',
+          'gestor': 'gestor',
+          'atendimento': 'atendimento',
+          'financeiro': 'financeiro',
+          'trafego': 'trafego'
+        };
+
+        const mappedRole = roleMapping[formData.role] || formData.role;
+
         // Criar novo usuário usando Edge Function
         console.log('📤 Criando especialista:', {
           email: formData.email,
           nome: formData.nome,
           role: formData.role,
+          mappedRole: mappedRole,
           especialidade: formData.role === 'admin' ? null : formData.especialidade
         });
 
@@ -267,7 +282,7 @@ export default function Especialistas() {
             nome: formData.nome,
             telefone: formData.telefone,
             especialidade: formData.role === 'admin' ? null : formData.especialidade,
-            role: formData.role
+            role: mappedRole // ← Usar role mapeada
           }
         });
 

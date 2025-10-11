@@ -43,19 +43,69 @@ serve(async (req) => {
       );
     }
 
+    // Validar role permitida
+    const validRoles = ['admin', 'gestor', 'grs', 'designer', 'filmmaker', 'atendimento', 'financeiro', 'trafego', 'fornecedor', 'cliente'];
+    if (!validRoles.includes(role)) {
+      console.log(`❌ Role inválida: ${role}. Roles válidas: ${validRoles.join(', ')}`);
+      return new Response(
+        JSON.stringify({ 
+          success: false,
+          code: 'invalid_role',
+          error: `Role '${role}' não é válida. Roles permitidas: ${validRoles.join(', ')}`
+        }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }, 
+          status: 200 
+        }
+      );
+    }
+
     console.log('📝 Iniciando criação de usuário:', { email, nome, especialidade, role });
 
-    // Tentar criar usuário diretamente (sem listUsers)
-    const { data: userData, error: userError } = await supabaseAdmin.auth.admin.createUser({
-      email,
-      password,
-      email_confirm: true,
-      user_metadata: {
-        nome,
-        telefone,
-        especialidade
-      }
-    });
+    // Tentar criar usuário com try-catch granular
+    console.log('🔄 Tentando criar usuário no Supabase Auth...');
+
+    let userData;
+    let userError;
+
+    try {
+      const response = await supabaseAdmin.auth.admin.createUser({
+        email,
+        password,
+        email_confirm: true,
+        user_metadata: {
+          nome,
+          telefone,
+          especialidade
+        }
+      });
+      
+      userData = response.data;
+      userError = response.error;
+      
+      console.log('📊 Response do createUser:', { 
+        hasData: !!userData?.user, 
+        hasError: !!userError,
+        userId: userData?.user?.id,
+        errorCode: userError?.code,
+        errorMessage: userError?.message 
+      });
+      
+    } catch (createUserException) {
+      console.error('💥 Exceção ao chamar createUser:', createUserException);
+      return new Response(
+        JSON.stringify({ 
+          success: false,
+          code: 'auth_exception',
+          error: createUserException instanceof Error ? createUserException.message : 'Erro inesperado ao criar usuário',
+          details: createUserException instanceof Error ? createUserException.stack : String(createUserException)
+        }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }, 
+          status: 200 
+        }
+      );
+    }
 
     if (userError) {
       console.error('❌ Erro ao criar usuário:', userError);
