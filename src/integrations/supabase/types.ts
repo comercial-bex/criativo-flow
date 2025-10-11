@@ -2481,6 +2481,27 @@ export type Database = {
             referencedRelation: "rh_colaboradores_view"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "fk_adiantamento_pessoa"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "especialistas_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_adiantamento_pessoa"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "pessoas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_adiantamento_pessoa"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "rh_colaboradores_view"
+            referencedColumns: ["id"]
+          },
         ]
       }
       financeiro_faixas_inss: {
@@ -2647,6 +2668,7 @@ export type Database = {
           id: string
           liquido: number | null
           pago_por: string | null
+          pessoa_id: string | null
           proventos: Json | null
           status: Database["public"]["Enums"]["status_item_folha"] | null
           total_descontos: number | null
@@ -2667,6 +2689,7 @@ export type Database = {
           id?: string
           liquido?: number | null
           pago_por?: string | null
+          pessoa_id?: string | null
           proventos?: Json | null
           status?: Database["public"]["Enums"]["status_item_folha"] | null
           total_descontos?: number | null
@@ -2687,6 +2710,7 @@ export type Database = {
           id?: string
           liquido?: number | null
           pago_por?: string | null
+          pessoa_id?: string | null
           proventos?: Json | null
           status?: Database["public"]["Enums"]["status_item_folha"] | null
           total_descontos?: number | null
@@ -2707,6 +2731,27 @@ export type Database = {
             columns: ["folha_id"]
             isOneToOne: false
             referencedRelation: "financeiro_folha"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_folha_itens_pessoa"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "especialistas_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_folha_itens_pessoa"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "pessoas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_folha_itens_pessoa"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "rh_colaboradores_view"
             referencedColumns: ["id"]
           },
         ]
@@ -2765,6 +2810,7 @@ export type Database = {
           justificativa: string | null
           metadata: Json | null
           motivo: string | null
+          pessoa_id: string | null
           salario_anterior: number | null
           salario_novo: number
           tipo_alteracao: string
@@ -2781,6 +2827,7 @@ export type Database = {
           justificativa?: string | null
           metadata?: Json | null
           motivo?: string | null
+          pessoa_id?: string | null
           salario_anterior?: number | null
           salario_novo: number
           tipo_alteracao: string
@@ -2797,6 +2844,7 @@ export type Database = {
           justificativa?: string | null
           metadata?: Json | null
           motivo?: string | null
+          pessoa_id?: string | null
           salario_anterior?: number | null
           salario_novo?: number
           tipo_alteracao?: string
@@ -2807,6 +2855,27 @@ export type Database = {
             columns: ["colaborador_id"]
             isOneToOne: false
             referencedRelation: "rh_colaboradores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_historico_pessoa"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "especialistas_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_historico_pessoa"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "pessoas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_historico_pessoa"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "rh_colaboradores_view"
             referencedColumns: ["id"]
           },
         ]
@@ -6456,6 +6525,7 @@ export type Database = {
           minutos_atraso: number | null
           motivo: Database["public"]["Enums"]["motivo_ponto_enum"] | null
           observacao: string | null
+          pessoa_id: string | null
           rejeitado_motivo: string | null
           status: Database["public"]["Enums"]["status_ponto_enum"] | null
           updated_at: string | null
@@ -6486,6 +6556,7 @@ export type Database = {
           minutos_atraso?: number | null
           motivo?: Database["public"]["Enums"]["motivo_ponto_enum"] | null
           observacao?: string | null
+          pessoa_id?: string | null
           rejeitado_motivo?: string | null
           status?: Database["public"]["Enums"]["status_ponto_enum"] | null
           updated_at?: string | null
@@ -6516,6 +6587,7 @@ export type Database = {
           minutos_atraso?: number | null
           motivo?: Database["public"]["Enums"]["motivo_ponto_enum"] | null
           observacao?: string | null
+          pessoa_id?: string | null
           rejeitado_motivo?: string | null
           status?: Database["public"]["Enums"]["status_ponto_enum"] | null
           updated_at?: string | null
@@ -6526,6 +6598,27 @@ export type Database = {
           valor_he_50?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_ponto_pessoa"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "especialistas_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_ponto_pessoa"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "pessoas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_ponto_pessoa"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "rh_colaboradores_view"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "rh_folha_ponto_colaborador_id_fkey"
             columns: ["colaborador_id"]
