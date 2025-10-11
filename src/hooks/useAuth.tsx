@@ -61,29 +61,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       console.log('🔐 Auth: Iniciando login para', email);
       
-      // Validar usuário antes do login
-      const { data: validationData, error: validationError } = await supabase.rpc(
-        'validate_user_for_login', 
-        { p_email: email }
-      );
-      
-      if (validationError) {
-        console.error('🔐 Auth: Erro na validação:', validationError);
-      }
-      
-      const validation = validationData as any;
-      
-      if (!validation?.exists) {
-        console.log('🔐 Auth: Usuário não encontrado no sistema, tentando login direto');
-      } else {
-        if (validation?.is_admin_role) {
-          console.log('🔐 Auth: Role administrativa detectada');
-        } else if (!validation?.has_client && validation?.role === 'cliente') {
-          console.warn('🔐 Auth: Cliente sem vínculo, mas permitindo login para configuração');
-        }
-      }
-      
-      // Proceder com o login
+      // Proceder com o login direto
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
