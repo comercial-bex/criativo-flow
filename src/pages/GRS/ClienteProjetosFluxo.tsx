@@ -4,11 +4,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { SectionHeader } from '@/components/SectionHeader';
 import { ProjectStatusIndicator } from '@/components/ProjectStatusIndicator';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useProjetos } from '@/hooks/useProjetos';
+import { useEspecialistas } from '@/hooks/useEspecialistas';
 import { 
   Plus, 
   ArrowLeft, 
@@ -96,7 +101,23 @@ export default function ClienteProjetosFluxo() {
   const [filesOpen, setFilesOpen] = useState(false);
   const [credentialsOpen, setCredentialsOpen] = useState(false);
   
+  // Modal de criação de projeto
+  const [projetoDialogOpen, setProjetoDialogOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [novoProjeto, setNovoProjeto] = useState({
+    titulo: '',
+    descricao: '',
+    tipo_projeto: 'avulso',
+    data_inicio: '',
+    data_prazo: '',
+    orcamento: '',
+    status: 'rascunho',
+    responsavel_grs_id: ''
+  });
+  
   const permissions = useClientAccessPermissions();
+  const { createProjeto } = useProjetos();
+  const { data: especialistasGRS } = useEspecialistas();
 
   useEffect(() => {
     if (clienteId) {
@@ -208,11 +229,84 @@ export default function ClienteProjetosFluxo() {
   };
 
   const handleCriarProjeto = () => {
-    // TODO: Implementar modal de criação de projeto
-    toast({
-      title: "Em desenvolvimento",
-      description: "Funcionalidade de criação de projeto em desenvolvimento",
-    });
+    setProjetoDialogOpen(true);
+  };
+
+  const handleSalvarProjeto = async () => {
+    // Validações
+    if (!novoProjeto.titulo.trim()) {
+      toast({
+        title: "⚠️ Título obrigatório",
+        description: "Informe um título para o projeto",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (novoProjeto.data_inicio && novoProjeto.data_prazo) {
+      const inicio = new Date(novoProjeto.data_inicio);
+      const prazo = new Date(novoProjeto.data_prazo);
+      if (inicio > prazo) {
+        toast({
+          title: "⚠️ Datas inválidas",
+          description: "A data de início não pode ser posterior à data de prazo",
+          variant: "destructive"
+        });
+        return;
+      }
+    }
+
+    if (novoProjeto.orcamento && parseFloat(novoProjeto.orcamento) < 0) {
+      toast({
+        title: "⚠️ Orçamento inválido",
+        description: "O orçamento não pode ser negativo",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setSaving(true);
+    try {
+      await createProjeto({
+        cliente_id: clienteId!,
+        titulo: novoProjeto.titulo.trim(),
+        descricao: novoProjeto.descricao.trim() || undefined,
+        data_inicio: novoProjeto.data_inicio || undefined,
+        data_prazo: novoProjeto.data_prazo || undefined,
+        orcamento_estimado: novoProjeto.orcamento ? parseFloat(novoProjeto.orcamento) : undefined,
+        status: novoProjeto.status,
+        responsavel_grs_id: novoProjeto.responsavel_grs_id || undefined
+      });
+
+      toast({
+        title: "✅ Projeto criado",
+        description: `O projeto "${novoProjeto.titulo}" foi criado com sucesso`,
+      });
+
+      // Resetar formulário
+      setNovoProjeto({
+        titulo: '',
+        descricao: '',
+        tipo_projeto: 'avulso',
+        data_inicio: '',
+        data_prazo: '',
+        orcamento: '',
+        status: 'rascunho',
+        responsavel_grs_id: ''
+      });
+      
+      setProjetoDialogOpen(false);
+      fetchProjetosUnificados(); // Atualizar lista
+    } catch (error: any) {
+      console.error('Erro ao criar projeto:', error);
+      toast({
+        title: "❌ Erro ao criar projeto",
+        description: error.message || "Ocorreu um erro ao salvar o projeto",
+        variant: "destructive"
+      });
+    } finally {
+      setSaving(false);
+    }
   };
 
   // Filtrar projetos unificados
