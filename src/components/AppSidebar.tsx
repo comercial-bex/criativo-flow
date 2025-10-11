@@ -82,6 +82,7 @@ export function AppSidebar() {
         { title: "Kanban", url: "/operacoes/kanban", icon: Icons.Columns },
         { title: "Calendário", url: "/grs/calendario-editorial", icon: Icons.CalendarDays },
         { title: "Relatórios", url: "/grs/relatorios", icon: Icons.FileText },
+        { title: "Cliente (Detalhes)", url: "/grs/cliente", icon: Icons.User },
       ],
       permissions: ["grs", "projetos"]
     },
@@ -177,11 +178,35 @@ export function AppSidebar() {
   // Detectar módulo atual baseado na rota
   const detectCurrentModule = () => {
     const currentPath = location.pathname;
+    
+    // Primeiro: tentar match exato com items.url
     for (const module of displayModules) {
       if (module.items.some(item => currentPath.startsWith(item.url))) {
         return module.id;
       }
     }
+    
+    // Fallback para rotas dinâmicas (ex: /grs/cliente/{id}/projetos)
+    // Extrair prefixo da rota (ex: "/grs/cliente" de "/grs/cliente/123/projetos")
+    const pathSegments = currentPath.split('/').filter(Boolean);
+    if (pathSegments.length >= 2) {
+      const modulePrefix = `/${pathSegments[0]}/${pathSegments[1]}`; // ex: "/grs/cliente"
+      
+      for (const module of displayModules) {
+        if (module.items.some(item => item.url.startsWith(modulePrefix))) {
+          return module.id;
+        }
+      }
+    }
+    
+    // Match por primeiro segmento (ex: "/grs" em "/grs/qualquer-coisa")
+    const firstSegment = `/${pathSegments[0]}`;
+    for (const module of displayModules) {
+      if (module.items.some(item => item.url.startsWith(firstSegment))) {
+        return module.id;
+      }
+    }
+    
     return "inicio";
   };
 

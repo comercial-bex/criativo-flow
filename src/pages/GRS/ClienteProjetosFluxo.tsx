@@ -254,17 +254,24 @@ export default function ClienteProjetosFluxo() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header com breadcrumb */}
-      <div className="flex items-center gap-4">
-        <Button variant="outline" onClick={() => navigate('/grs/dashboard')}>
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Dashboard GRS
-        </Button>
-        <span className="text-muted-foreground">/</span>
-        <span>{cliente.nome}</span>
-        <span className="text-muted-foreground">/</span>
-        <span className="font-medium">Projetos</span>
+    <div className="space-y-6 p-6">
+      {/* Header com breadcrumb melhorado */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => navigate('/grs/projetos')}
+            className="gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Voltar ao Dashboard GRS
+          </Button>
+          <span className="text-muted-foreground">/</span>
+          <span className="text-sm font-medium">{cliente.nome}</span>
+          <span className="text-muted-foreground">/</span>
+          <span className="text-sm text-muted-foreground">Projetos</span>
+        </div>
       </div>
 
       {/* Informações do Cliente */}
