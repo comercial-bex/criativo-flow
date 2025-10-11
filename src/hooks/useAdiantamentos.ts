@@ -68,9 +68,9 @@ export function useAdiantamentos(colaboradorId?: string, competencia?: string, p
         .from('financeiro_adiantamentos')
         .insert([{ 
           ...dados, 
-          pessoa_id: dados.pessoa_id || dados.colaborador_id, // Garantir pessoa_id preenchido
+          colaborador_id: dados.colaborador_id || dados.pessoa_id || idParaValidar, // Garantir retrocompatibilidade
           criado_por: (await supabase.auth.getUser()).data.user?.id 
-        }])
+        } as any]) // Type assertion temporário até types serem atualizados
         .select()
         .single();
       
