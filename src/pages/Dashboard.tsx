@@ -16,7 +16,7 @@ interface DashboardStats {
   tarefasPendentes: number;
 }
 
-const Dashboard = () => {
+function Dashboard() {
   const [stats, setStats] = useState<DashboardStats>({
     totalClientes: 0,
     totalProjetos: 0,
@@ -174,6 +174,6 @@ const Dashboard = () => {
       </div>
     </div>
   );
-};
+}
 
 export default Dashboard;

@@ -217,7 +217,7 @@ function DraggableCard({ lead, updateLeadStatus }: DraggableCardProps) {
   );
 }
 
-const CRM = () => {
+function CRM() {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -799,6 +799,6 @@ const CRM = () => {
       </Dialog>
     </div>
   );
-};
+}
 
 export default CRM;

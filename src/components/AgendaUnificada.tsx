@@ -19,7 +19,7 @@ interface AgendaEvent {
   cor: string;
 }
 
-export const AgendaUnificada = () => {
+export function AgendaUnificada() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
@@ -270,4 +270,4 @@ export const AgendaUnificada = () => {
       </div>
     </div>
   );
-};
+}

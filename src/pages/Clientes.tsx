@@ -62,7 +62,7 @@ interface Assinatura {
   preco: number;
 }
 
-const Clientes = () => {
+function Clientes() {
   const navigate = useNavigate();
   const deviceType = useDeviceType();
   const isMobile = deviceType === 'mobile';
@@ -963,6 +963,6 @@ const Clientes = () => {
       )}
     </div>
   );
-};
+}
 
 export default Clientes;
