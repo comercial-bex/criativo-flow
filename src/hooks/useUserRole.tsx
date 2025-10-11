@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from './useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
 
 export type UserRole = 
   | 'admin' 
@@ -17,8 +18,8 @@ export type UserRole =
 
 export function useUserRole() {
   const { user, loading: authLoading } = useAuth();
-  const [role, setRole] = useState<UserRole>('cliente'); // Default to 'cliente' immediately
-  const [loading, setLoading] = useState(false); // Start with false for faster UI
+  const [role, setRole] = useState<UserRole>(null); // Start with null instead of 'cliente'
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     console.log('👤 UserRole: Effect triggered, user:', !!user, 'authLoading:', authLoading);
@@ -29,17 +30,17 @@ export function useUserRole() {
       return;
     }
 
-    // If no user, set cliente role immediately
+    // If no user, set null role
     if (!user) {
-      console.log('👤 UserRole: No user, setting role to cliente');
-      setRole('cliente');
+      console.log('👤 UserRole: No user, setting role to null');
+      setRole(null);
       setLoading(false);
       return;
     }
 
     // Short timeout for role fetching
     const roleTimeout = setTimeout(() => {
-      console.log('⚠️ UserRole: Timeout reached, keeping default role');
+      console.log('⚠️ UserRole: Timeout reached, keeping current role');
       setLoading(false);
     }, 1000);
 
@@ -56,18 +57,36 @@ export function useUserRole() {
 
         clearTimeout(roleTimeout);
 
-        if (error || !data) {
-          console.warn('👤 UserRole: No role found, using default cliente');
-          setRole('cliente');
+        if (error) {
+          console.error('❌ UserRole: Erro ao buscar role:', error);
+          toast({
+            variant: "destructive",
+            title: "Erro ao carregar permissões",
+            description: "Tente fazer login novamente.",
+          });
+          setRole(null);
+        } else if (!data) {
+          console.warn('⚠️ UserRole: Usuário sem role atribuída');
+          toast({
+            variant: "destructive",
+            title: "Sem permissões atribuídas",
+            description: "Entre em contato com o administrador.",
+          });
+          setRole(null);
         } else {
-          const userRole = (data.role as UserRole) ?? 'cliente';
+          const userRole = data.role as UserRole;
           console.log('👤 UserRole: Fetched role:', userRole);
           setRole(userRole);
         }
       } catch (error) {
-        console.error('👤 UserRole: Error fetching role:', error);
+        console.error('❌ UserRole: Erro inesperado ao buscar role:', error);
         clearTimeout(roleTimeout);
-        setRole('cliente');
+        toast({
+          variant: "destructive",
+          title: "Erro inesperado",
+          description: "Não foi possível carregar suas permissões.",
+        });
+        setRole(null);
       } finally {
         setLoading(false);
       }
