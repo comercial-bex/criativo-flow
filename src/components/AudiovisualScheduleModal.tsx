@@ -51,11 +51,12 @@ export function AudiovisualScheduleModal({
     observacoes: ''
   });
   
-  const { sugerirSlot } = useCalendarioMultidisciplinar({
-    responsavelId: formData.especialista_id || '',
+  // Inicializar hook apenas quando especialista_id estiver disponível
+  const calendarioHook = formData.especialista_id ? useCalendarioMultidisciplinar({
+    responsavelId: formData.especialista_id,
     dataInicio: new Date(),
     dataFim: new Date()
-  });
+  }) : null;
 
   useEffect(() => {
     if (open) {
@@ -384,28 +385,51 @@ export function AudiovisualScheduleModal({
                     if (!formData.data_captacao || !formData.especialista_id) return;
                     
                     try {
+                      if (!calendarioHook?.sugerirSlot) {
+                        toast({
+                          title: "Erro",
+                          description: "Selecione um filmmaker primeiro",
+                          variant: "destructive"
+                        });
+                        return;
+                      }
+                      
                       const targetDate = format(formData.data_captacao, 'yyyy-MM-dd');
-                      const sugestao = await sugerirSlot({
+                      const sugestao = await calendarioHook.sugerirSlot({
                         responsavelId: formData.especialista_id,
                         duracaoMinutos: 120,
                         dataPreferida: targetDate,
                         tipoEvento: 'captacao_externa'
                       });
                       
-                      if (sugestao && typeof sugestao === 'object' && 'data_inicio' in sugestao) {
-                        const novaData = new Date(String(sugestao.data_inicio));
-                        const novaDataFim = new Date(String(sugestao.data_fim));
+                      // Type guard para verificar se a sugestão tem a estrutura esperada
+                      if (
+                        sugestao && 
+                        typeof sugestao === 'object' && 
+                        !Array.isArray(sugestao) &&
+                        'data_inicio' in sugestao && 
+                        'data_fim' in sugestao
+                      ) {
+                        const dataInicioStr = String(sugestao.data_inicio);
+                        const dataFimStr = String(sugestao.data_fim);
                         
-                        setSuggestedSlot({
-                          data: novaData,
-                          horario_inicio: format(novaData, 'HH:mm'),
-                          horario_fim: format(novaDataFim, 'HH:mm')
-                        });
+                        const novaData = new Date(dataInicioStr);
+                        const novaDataFim = new Date(dataFimStr);
                         
-                        toast({
-                          title: "💡 Horário sugerido",
-                          description: `${format(novaData, "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}`,
-                        });
+                        if (!isNaN(novaData.getTime()) && !isNaN(novaDataFim.getTime())) {
+                          setSuggestedSlot({
+                            data: novaData,
+                            horario_inicio: format(novaData, 'HH:mm'),
+                            horario_fim: format(novaDataFim, 'HH:mm')
+                          });
+                          
+                          toast({
+                            title: "💡 Horário sugerido",
+                            description: `${format(novaData, "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}`,
+                          });
+                        } else {
+                          throw new Error('Datas inválidas retornadas');
+                        }
                       } else {
                         toast({
                           title: "❌ Sem horários disponíveis",
@@ -417,6 +441,7 @@ export function AudiovisualScheduleModal({
                       console.error('Erro ao sugerir horário:', error);
                       toast({
                         title: "Erro ao sugerir horário",
+                        description: error instanceof Error ? error.message : "Erro desconhecido",
                         variant: "destructive"
                       });
                     }
