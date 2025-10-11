@@ -19,6 +19,7 @@ import { PermissionWrapper } from '@/components/PermissionWrapper';
 import { ViewEspecialistaModal } from '@/components/ViewEspecialistaModal';
 import { ViewClienteModal } from '@/components/ViewClienteModal';
 import { ConfirmDeleteModal } from '@/components/ConfirmDeleteModal';
+import { PasswordInput } from '@/components/ui/password-input';
 
 type Profile = Database['public']['Tables']['profiles']['Row'] & {
   status?: 'pendente_aprovacao' | 'aprovado' | 'rejeitado' | 'suspenso';
@@ -74,6 +75,7 @@ export default function Especialistas() {
   const [viewEspecialista, setViewEspecialista] = useState<any>(null);
   const [deleteEspecialista, setDeleteEspecialista] = useState<any>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [isPasswordValid, setIsPasswordValid] = useState(false);
   const [formData, setFormData] = useState<EspecialistaFormData>({
     nome: '',
     email: '',
@@ -533,13 +535,14 @@ export default function Especialistas() {
                   {!editingId && (
                     <div className="space-y-2">
                       <Label htmlFor="password">Senha *</Label>
-                      <Input
+                      <PasswordInput
                         id="password"
-                        type="password"
                         value={formData.password}
                         onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                        placeholder="Digite a senha"
+                        placeholder="Digite uma senha forte"
                         required={!editingId}
+                        showRequirements={true}
+                        onValidityChange={setIsPasswordValid}
                       />
                     </div>
                   )}
@@ -610,7 +613,10 @@ export default function Especialistas() {
                   >
                     Cancelar
                   </Button>
-                  <Button type="submit" disabled={loading}>
+                  <Button 
+                    type="submit" 
+                    disabled={loading || (!editingId && !isPasswordValid)}
+                  >
                     {loading ? 'Salvando...' : editingId ? 'Atualizar' : 'Criar'}
                   </Button>
                 </div>
