@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -55,34 +55,6 @@ export function CreateTaskModal({
   const [loadingAI, setLoadingAI] = useState(false);
   const [selectedExecutor, setSelectedExecutor] = useState("");
   
-  // ⛔ GUARD: Verificar permissão de criação
-  const { permissions } = useOperationalPermissions();
-  
-  // Buscar especialistas
-  const { data: todosEspecialistas } = useEspecialistas();
-  
-  // Filtrar especialistas por setor
-  const especialistasPorSetor = todosEspecialistas?.filter(esp => {
-    const setorMap: Record<string, string> = {
-      'design': 'design',
-      'audiovisual': 'audiovisual',
-      'grs': 'grs',
-      'atendimento': 'atendimento'
-    };
-    return esp.especialidade === setorMap[formData.setor_responsavel];
-  }) || [];
-  
-  // Bloquear acesso se não tiver permissão
-  if (!permissions.canCreateTask && open) {
-    toast({
-      title: "⛔ Sem Permissão",
-      description: "Apenas GRS e Administradores podem criar tarefas.",
-      variant: "destructive"
-    });
-    onOpenChange(false);
-    return null;
-  }
-  
   const [formData, setFormData] = useState({
     titulo: '',
     descricao: '',
@@ -99,6 +71,39 @@ export function CreateTaskModal({
     hashtags: '',
     observacoes: ''
   });
+  
+  // ⛔ GUARD: Verificar permissão de criação
+  const { permissions } = useOperationalPermissions();
+  
+  // Buscar especialistas
+  const { data: todosEspecialistas } = useEspecialistas();
+  
+  // Filtrar especialistas por setor usando useMemo
+  const especialistasPorSetor = useMemo(() => {
+    if (!formData.setor_responsavel || !todosEspecialistas) return [];
+    
+    const setorMap: Record<string, string> = {
+      'design': 'design',
+      'audiovisual': 'audiovisual',
+      'grs': 'grs',
+      'atendimento': 'atendimento'
+    };
+    
+    return todosEspecialistas.filter(esp => 
+      esp.especialidade === setorMap[formData.setor_responsavel]
+    );
+  }, [formData.setor_responsavel, todosEspecialistas]);
+  
+  // Bloquear acesso se não tiver permissão
+  if (!permissions.canCreateTask && open) {
+    toast({
+      title: "⛔ Sem Permissão",
+      description: "Apenas GRS e Administradores podem criar tarefas.",
+      variant: "destructive"
+    });
+    onOpenChange(false);
+    return null;
+  }
 
   // Buscar clientes quando modal abrir
   useEffect(() => {
