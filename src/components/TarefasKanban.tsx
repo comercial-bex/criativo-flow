@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Label } from "@/components/ui/label";
@@ -31,6 +31,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { CreateTaskModal } from "./CreateTaskModal";
 
 interface TarefasKanbanProps {
   planejamento: {
@@ -285,18 +286,9 @@ export function TarefasKanban({ planejamento, clienteId, projetoId, filters }: T
   const [tarefas, setTarefas] = useState<Tarefa[]>([]);
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isCreating, setIsCreating] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingTarefa, setEditingTarefa] = useState<Tarefa | null>(null);
   const [uploadingFile, setUploadingFile] = useState(false);
-  const [novaTarefa, setNovaTarefa] = useState({
-    titulo: '',
-    descricao: '',
-    prioridade: 'media',
-    data_prazo: '',
-    responsavel_id: '',
-    tipo: 'conteudo',
-    tempo_estimado: ''
-  });
   const { toast } = useToast();
 
   useEffect(() => {
@@ -377,60 +369,37 @@ export function TarefasKanban({ planejamento, clienteId, projetoId, filters }: T
     }
   };
 
-  const createTarefa = async () => {
-    if (!novaTarefa.titulo.trim()) {
-      toast({
-        title: "Erro",
-        description: "O título é obrigatório.",
-        variant: "destructive",
-      });
-      return;
-    }
-
+  const handleTaskCreate = async (taskData: any) => {
     try {
-      setIsCreating(true);
-
+      // Mapear campos para a tabela tarefa
       const { data, error } = await supabase
         .from('tarefa')
         .insert({
-          projeto_id: projetoId,
-          titulo: novaTarefa.titulo,
-          descricao: novaTarefa.descricao || null,
-          prioridade: novaTarefa.prioridade as any,
-          data_prazo: novaTarefa.data_prazo || null,
-          responsavel_id: novaTarefa.responsavel_id || null,
-          setor: 'grs' as any,
-          status: 'backlog' as any
-        } as any)
+          projeto_id: taskData.projeto_id,
+          cliente_id: taskData.cliente_id,
+          titulo: taskData.titulo,
+          descricao: taskData.descricao,
+          prioridade: taskData.prioridade,
+          status: taskData.status || 'backlog',
+          executor_id: taskData.executor_id,
+          executor_area: taskData.executor_area,
+          data_entrega_prevista: taskData.data_prazo,
+          origem: taskData.origem || 'avulsa',
+          tipo: taskData.tipo || null,
+          observacoes: taskData.observacoes
+        })
         .select()
         .single();
 
       if (error) throw error;
 
-      setTarefas(prev => [data, ...prev]);
-      setNovaTarefa({
-        titulo: '',
-        descricao: '',
-        prioridade: 'media',
-        data_prazo: '',
-        responsavel_id: '',
-        tipo: 'conteudo',
-        tempo_estimado: ''
-      });
+      // Atualizar lista local
+      await fetchData();
 
-      toast({
-        title: "Sucesso",
-        description: "Tarefa criada com sucesso!",
-      });
-    } catch (error) {
+      return data;
+    } catch (error: any) {
       console.error('Erro ao criar tarefa:', error);
-      toast({
-        title: "Erro",
-        description: "Erro ao criar tarefa.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsCreating(false);
+      throw error;
     }
   };
 
@@ -440,16 +409,25 @@ export function TarefasKanban({ planejamento, clienteId, projetoId, filters }: T
 
   const updateTarefa = async (tarefaId: string, updates: any) => {
     try {
+      // Mapear data_prazo para data_entrega_prevista
+      const mappedUpdates = { ...updates };
+      if (updates.data_prazo) {
+        mappedUpdates.data_entrega_prevista = updates.data_prazo;
+        delete mappedUpdates.data_prazo;
+      }
+      
+      // Remover campos que não existem na tabela
+      delete mappedUpdates.tempo_estimado;
+      delete mappedUpdates.anexos;
+
       const { error } = await supabase
         .from('tarefa')
-        .update(updates)
+        .update(mappedUpdates)
         .eq('id', tarefaId);
 
       if (error) throw error;
 
-      setTarefas(prev => prev.map(tarefa => 
-        tarefa.id === tarefaId ? { ...tarefa, ...updates } : tarefa
-      ));
+      await fetchData();
 
       toast({
         title: "Sucesso",
@@ -585,146 +563,31 @@ export function TarefasKanban({ planejamento, clienteId, projetoId, filters }: T
           </p>
         </div>
         
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Nova Tarefa
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
-              <DialogTitle>Criar Nova Tarefa</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Título</label>
-                  <Input
-                    value={novaTarefa.titulo}
-                    onChange={(e) => setNovaTarefa({...novaTarefa, titulo: e.target.value})}
-                    placeholder="Digite o título da tarefa"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Tipo</label>
-                  <Select 
-                    value={novaTarefa.tipo} 
-                    onValueChange={(value) => setNovaTarefa({...novaTarefa, tipo: value})}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="conteudo">📝 Criação de Conteúdo</SelectItem>
-                      <SelectItem value="design">🎨 Design</SelectItem>
-                      <SelectItem value="aprovacao">✅ Aprovação</SelectItem>
-                      <SelectItem value="publicacao">📢 Publicação</SelectItem>
-                      <SelectItem value="revisao">🔍 Revisão</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
+        <Button onClick={() => setShowCreateModal(true)}>
+          <Plus className="h-4 w-4 mr-2" />
+          Nova Tarefa
+        </Button>
+      </div>
 
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Descrição</label>
-                <Textarea
-                  value={novaTarefa.descricao}
-                  onChange={(e) => setNovaTarefa({...novaTarefa, descricao: e.target.value})}
-                  placeholder="Descreva os detalhes da tarefa"
-                  className="resize-none"
-                />
-              </div>
+      {/* Modal de Criação Completo */}
+      <CreateTaskModal 
+        open={showCreateModal}
+        onOpenChange={setShowCreateModal}
+        projetoId={projetoId}
+        clienteId={clienteId}
+        defaultStatus="backlog"
+        onTaskCreate={handleTaskCreate}
+      />
 
-              <div className="grid grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Prioridade</label>
-                  <Select 
-                    value={novaTarefa.prioridade} 
-                    onValueChange={(value) => setNovaTarefa({...novaTarefa, prioridade: value})}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="baixa">🟢 Baixa</SelectItem>
-                      <SelectItem value="media">🟡 Média</SelectItem>
-                      <SelectItem value="alta">🔴 Alta</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Data Limite</label>
-                  <Input
-                    type="date"
-                    value={novaTarefa.data_prazo}
-                    onChange={(e) => setNovaTarefa({...novaTarefa, data_prazo: e.target.value})}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Tempo Estimado (h)</label>
-                  <Input
-                    type="number"
-                    value={novaTarefa.tempo_estimado}
-                    onChange={(e) => setNovaTarefa({...novaTarefa, tempo_estimado: e.target.value})}
-                    placeholder="Ex: 4"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Responsável</label>
-                <Select 
-                  value={novaTarefa.responsavel_id} 
-                  onValueChange={(value) => setNovaTarefa({...novaTarefa, responsavel_id: value})}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecionar responsável" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {profiles.map((profile) => (
-                      <SelectItem key={profile.id} value={profile.id}>
-                        <div className="flex items-center gap-2">
-                          <Avatar className="h-6 w-6">
-                            <AvatarImage src={profile.avatar_url} />
-                            <AvatarFallback className="text-xs">{profile.nome.charAt(0)}</AvatarFallback>
-                          </Avatar>
-                          {profile.nome}
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={() => setNovaTarefa({
-                  titulo: '',
-                  descricao: '',
-                  prioridade: 'media',
-                  data_prazo: '',
-                  responsavel_id: '',
-                  tipo: 'conteudo',
-                  tempo_estimado: ''
-                })}>
-                  Cancelar
-                </Button>
-                <Button onClick={createTarefa} disabled={isCreating}>
-                  {isCreating ? 'Criando...' : 'Criar Tarefa'}
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-
-        {/* Modal de Edição */}
-        <Dialog open={!!editingTarefa} onOpenChange={() => setEditingTarefa(null)}>
-          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Editar Tarefa</DialogTitle>
-            </DialogHeader>
+      {/* Modal de Edição */}
+      <Dialog open={!!editingTarefa} onOpenChange={() => setEditingTarefa(null)}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Editar Tarefa</DialogTitle>
+            <DialogDescription>
+              Atualize os detalhes da tarefa
+            </DialogDescription>
+          </DialogHeader>
             {editingTarefa && (
               <div className="space-y-6">
                 <div className="grid grid-cols-2 gap-4">
@@ -916,7 +779,6 @@ export function TarefasKanban({ planejamento, clienteId, projetoId, filters }: T
             )}
           </DialogContent>
         </Dialog>
-      </div>
 
       {/* Kanban Board */}
       <DndContext collisionDetection={closestCorners} onDragEnd={handleDragEnd}>

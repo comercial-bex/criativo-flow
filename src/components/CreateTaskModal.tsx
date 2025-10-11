@@ -368,16 +368,18 @@ export function CreateTaskModal({
         horas_estimadas: formData.horas_estimadas ? parseInt(formData.horas_estimadas) : null,
         origem: taskType, // 'avulsa' ou 'planejamento'
         grs_action_id: vinculadaPlanejamento ? selectedPlanejamento : null,
-        tipo_tarefa: taskType === 'avulsa' ? 'avulsa' : 'planejamento_mensal',
-        briefing_obrigatorio: taskType === 'avulsa',
+        tipo: tipoTarefaSelecionado || null, // NOVO: Tipo de tarefa
         observacoes: JSON.stringify({
+          id_cartao: idCartao, // NOVO: ID do cartão
           objetivo_postagem: formData.objetivo_postagem,
           publico_alvo: formData.publico_alvo,
           formato_postagem: formData.formato_postagem,
           contexto_estrategico: formData.contexto_estrategico,
           call_to_action: formData.call_to_action,
           hashtags: formData.hashtags ? formData.hashtags.split(',').map(h => h.trim()) : [],
-          observacoes: formData.observacoes
+          observacoes: formData.observacoes,
+          referencias_visuais: formData.referencias_visuais, // NOVO: Referências
+          arquivos_complementares: formData.arquivos_complementares.map((a: any) => a.name) // NOVO: Arquivos
         })
       };
 
@@ -486,9 +488,10 @@ export function CreateTaskModal({
           </div>
 
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid grid-cols-3 w-full">
+            <TabsList className="grid grid-cols-4 w-full">
               <TabsTrigger value="basico">📋 Básico</TabsTrigger>
               <TabsTrigger value="briefing" disabled={taskType !== 'avulsa'}>📝 Briefing</TabsTrigger>
+              <TabsTrigger value="referencias" disabled={taskType !== 'avulsa'}>🎨 Referências</TabsTrigger>
               <TabsTrigger value="equipamentos">📦 Equipamentos</TabsTrigger>
             </TabsList>
             
@@ -531,7 +534,7 @@ export function CreateTaskModal({
                 <SelectContent>
                   {projetos.map(projeto => (
                     <SelectItem key={projeto.id} value={projeto.id}>
-                      {projeto.titulo} - {format(new Date(projeto.mes_referencia), 'MMM/yyyy', { locale: ptBR })}
+                      {projeto.titulo} - {projeto.data_prazo ? format(new Date(projeto.data_prazo), 'MMM/yyyy', { locale: ptBR }) : format(new Date(projeto.created_at), 'MMM/yyyy', { locale: ptBR })}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -595,6 +598,52 @@ export function CreateTaskModal({
                   <Sparkles className="h-4 w-4" />
                 </Button>
               </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="tipoTarefa">Tipo de Tarefa *</Label>
+              <Select 
+                value={tipoTarefaSelecionado} 
+                onValueChange={(value: TipoTarefa) => {
+                  setTipoTarefaSelecionado(value);
+                  
+                  // Auto-setar setor baseado no tipo
+                  const setorAuto = value.includes('reel') || value.includes('vt') || value.includes('stories') 
+                    ? 'audiovisual' 
+                    : value.includes('card') || value.includes('carrossel') || value.includes('cartela') || value.includes('feed')
+                    ? 'design'
+                    : 'grs';
+                  
+                  if (!formData.setor_responsavel) {
+                    setFormData({ ...formData, setor_responsavel: setorAuto });
+                  }
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o tipo" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="criativo_card">📱 Card Instagram/Facebook</SelectItem>
+                  <SelectItem value="criativo_carrossel">🎠 Carrossel</SelectItem>
+                  <SelectItem value="criativo_cartela">🎨 Cartela</SelectItem>
+                  <SelectItem value="criativo_vt">🎬 VT (Vídeo Comercial)</SelectItem>
+                  <SelectItem value="reels_instagram">📹 Reels Instagram</SelectItem>
+                  <SelectItem value="stories_interativo">📲 Stories Interativo</SelectItem>
+                  <SelectItem value="feed_post">📸 Feed Post</SelectItem>
+                  <SelectItem value="roteiro_reels">📝 Roteiro Reels</SelectItem>
+                  <SelectItem value="planejamento_estrategico">🎯 Planejamento Estratégico</SelectItem>
+                  <SelectItem value="datas_comemorativas">📅 Datas Comemorativas</SelectItem>
+                  <SelectItem value="trafego_pago">💰 Tráfego Pago</SelectItem>
+                  <SelectItem value="outro">📋 Outro</SelectItem>
+                </SelectContent>
+              </Select>
+              
+              {/* ID do Cartão */}
+              {idCartao && (
+                <div className="text-xs text-muted-foreground mt-1">
+                  ID do Cartão: <code className="bg-muted px-2 py-1 rounded font-mono">{idCartao}</code>
+                </div>
+              )}
             </div>
 
             <div className="space-y-2">
