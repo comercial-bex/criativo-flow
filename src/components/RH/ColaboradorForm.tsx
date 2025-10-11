@@ -5,86 +5,107 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Textarea } from '@/components/ui/textarea';
-import { Colaborador, useColaboradores } from '@/hooks/useColaboradores';
 import { usePessoas, Pessoa } from '@/hooks/usePessoas';
 import { User, Briefcase, CreditCard } from 'lucide-react';
 
 interface ColaboradorFormProps {
-  colaborador?: Colaborador;
   pessoa?: Pessoa;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  mode?: 'legacy' | 'new';
 }
 
-export function ColaboradorForm({ colaborador, pessoa, open, onOpenChange, mode = 'legacy' }: ColaboradorFormProps) {
-  const legacyHooks = useColaboradores();
-  const newHooks = usePessoas();
+/**
+ * Formulário UNIFICADO para criar/editar pessoas com papel 'colaborador'
+ * - Removido modo legado (useColaboradores deprecated)
+ * - Usa estrutura JSONB para telefones e dados_bancarios
+ * - Suporta múltiplos papéis via array
+ */
+export function ColaboradorForm({ pessoa, open, onOpenChange }: ColaboradorFormProps) {
+  const { criar, atualizar, isCriando, isAtualizando } = usePessoas();
   
-  // Selecionar hooks baseado no modo
-  const hooks = mode === 'new' ? newHooks : legacyHooks;
-  const { criar, atualizar, isCriando, isAtualizando } = hooks;
-  const [formData, setFormData] = useState<Partial<Colaborador>>(
-    colaborador || {
-      regime: 'clt',
-      status: 'ativo',
-    }
-  );
+  // Estado inicial do formulário (converter JSONB de volta para campos)
+  const [formData, setFormData] = useState<Partial<Pessoa>>(() => {
+    if (!pessoa) return { papeis: ['colaborador'], regime: 'clt', status: 'ativo' };
+    
+    const dadosBancarios = pessoa.dados_bancarios as any || {};
+    const telefones = Array.isArray(pessoa.telefones) ? pessoa.telefones : [];
+    
+    return {
+      ...pessoa,
+      telefones,
+      dados_bancarios: dadosBancarios,
+    };
+  });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (mode === 'new') {
-      // Converter para formato Pessoa
-      const pessoaData = {
-        nome: formData.nome_completo || '',
-        cpf: formData.cpf_cnpj,
-        papeis: ['colaborador'] as any,
-        regime: formData.regime,
-        status: formData.status,
-        salario_base: formData.salario_base,
-        fee_mensal: formData.fee_mensal,
-        cargo_atual: formData.cargo_atual,
-        data_admissao: formData.data_admissao,
-        email: formData.email,
-        telefones: formData.celular ? [formData.celular] : [],
-        dados_bancarios: {
-          banco_codigo: formData.banco_codigo,
-          agencia: formData.agencia,
-          conta: formData.conta,
-          tipo_conta: formData.tipo_conta,
-          pix_tipo: formData.tipo_chave_pix,
-          pix_chave: formData.chave_pix,
-        },
-      };
-      pessoa ? atualizar({ id: pessoa.id, ...pessoaData } as any) : criar(pessoaData as any);
-    } else {
-      // Modo legado - sempre envia dados completos
-      const legacyData = {
-        ...formData,
-        nome_completo: formData.nome_completo || '',
-        cpf_cnpj: formData.cpf_cnpj || '',
-        data_admissao: formData.data_admissao || '',
-      };
-      colaborador 
-        ? atualizar({ id: colaborador.id, ...legacyData } as any) 
-        : criar(legacyData as any);
-    }
+    // Preparar dados no formato Pessoa com campos JSONB
+    const dadosBancarios = formData.dados_bancarios as any || {};
+    const telefones = Array.isArray(formData.telefones) ? formData.telefones : [];
+    
+    const pessoaData: Partial<Pessoa> = {
+      nome: formData.nome || '',
+      cpf: formData.cpf,
+      email: formData.email,
+      telefones,
+      papeis: formData.papeis || ['colaborador'],
+      regime: formData.regime,
+      status: formData.status,
+      salario_base: formData.salario_base,
+      fee_mensal: formData.fee_mensal,
+      cargo_atual: formData.cargo_atual,
+      data_admissao: formData.data_admissao,
+      data_nascimento: formData.data_nascimento,
+      dados_bancarios: {
+        banco_codigo: dadosBancarios.banco_codigo,
+        banco_nome: dadosBancarios.banco_nome,
+        agencia: dadosBancarios.agencia,
+        conta: dadosBancarios.conta,
+        tipo_conta: dadosBancarios.tipo_conta,
+        pix_tipo: dadosBancarios.pix_tipo,
+        pix_chave: dadosBancarios.pix_chave,
+      },
+      observacoes: formData.observacoes,
+    };
+    
+    pessoa 
+      ? atualizar({ id: pessoa.id, ...pessoaData } as any) 
+      : criar(pessoaData as any);
     
     onOpenChange(false);
   };
 
-  const handleChange = (field: keyof Colaborador, value: any) => {
+  const handleChange = (field: keyof Pessoa, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
+  
+  const handleBankChange = (field: string, value: any) => {
+    setFormData(prev => ({
+      ...prev,
+      dados_bancarios: {
+        ...(prev.dados_bancarios as any || {}),
+        [field]: value,
+      },
+    }));
+  };
+
+  const handlePhoneChange = (value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      telefones: value ? [value] : [],
+    }));
+  };
+
+  const dadosBancarios = (formData.dados_bancarios as any) || {};
+  const telefone = Array.isArray(formData.telefones) && formData.telefones[0] || '';
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-2xl font-montserrat">
-            {colaborador ? 'Editar Colaborador' : 'Novo Colaborador'}
+            {pessoa ? 'Editar Pessoa' : 'Nova Pessoa'}
           </DialogTitle>
         </DialogHeader>
 
@@ -108,29 +129,22 @@ export function ColaboradorForm({ colaborador, pessoa, open, onOpenChange, mode 
             <TabsContent value="pessoal" className="space-y-4 mt-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="nome_completo">Nome Completo *</Label>
+                  <Label htmlFor="nome">Nome Completo *</Label>
                   <Input
-                    id="nome_completo"
-                    value={formData.nome_completo || ''}
-                    onChange={(e) => handleChange('nome_completo', e.target.value)}
+                    id="nome"
+                    value={formData.nome || ''}
+                    onChange={(e) => handleChange('nome', e.target.value)}
                     required
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="cpf_cnpj">CPF/CNPJ *</Label>
+                  <Label htmlFor="cpf">CPF *</Label>
                   <Input
-                    id="cpf_cnpj"
-                    value={formData.cpf_cnpj || ''}
-                    onChange={(e) => handleChange('cpf_cnpj', e.target.value)}
+                    id="cpf"
+                    value={formData.cpf || ''}
+                    onChange={(e) => handleChange('cpf', e.target.value)}
+                    placeholder="000.000.000-00"
                     required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="rg">RG</Label>
-                  <Input
-                    id="rg"
-                    value={formData.rg || ''}
-                    onChange={(e) => handleChange('rg', e.target.value)}
                   />
                 </div>
                 <div className="space-y-2">
@@ -152,11 +166,12 @@ export function ColaboradorForm({ colaborador, pessoa, open, onOpenChange, mode 
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="celular">Celular</Label>
+                  <Label htmlFor="telefone">Telefone</Label>
                   <Input
-                    id="celular"
-                    value={formData.celular || ''}
-                    onChange={(e) => handleChange('celular', e.target.value)}
+                    id="telefone"
+                    value={telefone}
+                    onChange={(e) => handlePhoneChange(e.target.value)}
+                    placeholder="(00) 00000-0000"
                   />
                 </div>
               </div>
@@ -234,11 +249,12 @@ export function ColaboradorForm({ colaborador, pessoa, open, onOpenChange, mode 
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="centro_custo">Centro de Custo</Label>
+                  <Label htmlFor="observacoes">Observações</Label>
                   <Input
-                    id="centro_custo"
-                    value={formData.centro_custo || ''}
-                    onChange={(e) => handleChange('centro_custo', e.target.value)}
+                    id="observacoes"
+                    value={formData.observacoes || ''}
+                    onChange={(e) => handleChange('observacoes', e.target.value)}
+                    placeholder="Centro de custo, unidade, etc."
                   />
                 </div>
               </div>
@@ -250,8 +266,8 @@ export function ColaboradorForm({ colaborador, pessoa, open, onOpenChange, mode 
                   <Label htmlFor="banco_nome">Banco</Label>
                   <Input
                     id="banco_nome"
-                    value={formData.banco_nome || ''}
-                    onChange={(e) => handleChange('banco_nome', e.target.value)}
+                    value={dadosBancarios.banco_nome || ''}
+                    onChange={(e) => handleBankChange('banco_nome', e.target.value)}
                     placeholder="Ex: Banco do Brasil"
                   />
                 </div>
@@ -259,8 +275,8 @@ export function ColaboradorForm({ colaborador, pessoa, open, onOpenChange, mode 
                   <Label htmlFor="banco_codigo">Código do Banco</Label>
                   <Input
                     id="banco_codigo"
-                    value={formData.banco_codigo || ''}
-                    onChange={(e) => handleChange('banco_codigo', e.target.value)}
+                    value={dadosBancarios.banco_codigo || ''}
+                    onChange={(e) => handleBankChange('banco_codigo', e.target.value)}
                     placeholder="Ex: 001"
                   />
                 </div>
@@ -268,23 +284,23 @@ export function ColaboradorForm({ colaborador, pessoa, open, onOpenChange, mode 
                   <Label htmlFor="agencia">Agência</Label>
                   <Input
                     id="agencia"
-                    value={formData.agencia || ''}
-                    onChange={(e) => handleChange('agencia', e.target.value)}
+                    value={dadosBancarios.agencia || ''}
+                    onChange={(e) => handleBankChange('agencia', e.target.value)}
                   />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="conta">Conta</Label>
                   <Input
                     id="conta"
-                    value={formData.conta || ''}
-                    onChange={(e) => handleChange('conta', e.target.value)}
+                    value={dadosBancarios.conta || ''}
+                    onChange={(e) => handleBankChange('conta', e.target.value)}
                   />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="tipo_conta">Tipo de Conta</Label>
                   <Select
-                    value={formData.tipo_conta}
-                    onValueChange={(value) => handleChange('tipo_conta', value)}
+                    value={dadosBancarios.tipo_conta}
+                    onValueChange={(value) => handleBankChange('tipo_conta', value)}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Selecione" />
@@ -298,10 +314,10 @@ export function ColaboradorForm({ colaborador, pessoa, open, onOpenChange, mode 
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="tipo_chave_pix">Tipo de Chave PIX</Label>
+                  <Label htmlFor="pix_tipo">Tipo de Chave PIX</Label>
                   <Select
-                    value={formData.tipo_chave_pix}
-                    onValueChange={(value) => handleChange('tipo_chave_pix', value)}
+                    value={dadosBancarios.pix_tipo}
+                    onValueChange={(value) => handleBankChange('pix_tipo', value)}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Selecione" />
@@ -316,11 +332,11 @@ export function ColaboradorForm({ colaborador, pessoa, open, onOpenChange, mode 
                   </Select>
                 </div>
                 <div className="space-y-2 md:col-span-2">
-                  <Label htmlFor="chave_pix">Chave PIX</Label>
+                  <Label htmlFor="pix_chave">Chave PIX</Label>
                   <Input
-                    id="chave_pix"
-                    value={formData.chave_pix || ''}
-                    onChange={(e) => handleChange('chave_pix', e.target.value)}
+                    id="pix_chave"
+                    value={dadosBancarios.pix_chave || ''}
+                    onChange={(e) => handleBankChange('pix_chave', e.target.value)}
                   />
                 </div>
               </div>
@@ -336,7 +352,7 @@ export function ColaboradorForm({ colaborador, pessoa, open, onOpenChange, mode 
               className="bg-primary hover:bg-primary/90"
               disabled={isCriando || isAtualizando}
             >
-              {isCriando || isAtualizando ? 'Salvando...' : colaborador ? 'Atualizar' : 'Cadastrar'}
+              {isCriando || isAtualizando ? 'Salvando...' : pessoa ? 'Atualizar' : 'Cadastrar'}
             </Button>
           </div>
         </form>

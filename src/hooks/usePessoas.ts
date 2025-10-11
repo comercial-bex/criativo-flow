@@ -14,6 +14,7 @@ export interface Pessoa {
   cargo_atual?: string | null;
   regime?: string | null; // pessoa_regime
   data_admissao?: string | null;
+  data_nascimento?: string | null; // Campo adicionado
   data_desligamento?: string | null;
   status?: string; // pessoa_status
   salario_base?: number | null;

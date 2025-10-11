@@ -288,12 +288,12 @@ export default function ColaboradorDetalhes() {
         </TabsContent>
 
         <TabsContent value="timeline" className="mt-4">
-          <TimelineColaborador colaboradorId={colaborador.id} />
+          <TimelineColaborador pessoaId={colaborador.id} colaboradorId={colaborador.id} />
         </TabsContent>
       </Tabs>
 
       <ColaboradorForm
-        colaborador={colaborador}
+        pessoa={colaborador as any}
         open={formOpen}
         onOpenChange={setFormOpen}
       />

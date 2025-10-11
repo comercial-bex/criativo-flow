@@ -17,7 +17,7 @@ export default function FolhaPonto() {
   );
   const [statusFilter, setStatusFilter] = useState<string>('todos');
   
-  const { ocorrencias, isLoading, aprovar, rejeitar } = useOcorrenciasPonto(competencia);
+  const { ocorrencias, isLoading, aprovar, rejeitar } = useOcorrenciasPonto(undefined, competencia);
   const { pessoas } = usePessoas('colaborador');
   const { startTutorial, hasSeenTutorial } = useTutorial('folha-ponto');
 

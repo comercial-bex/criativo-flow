@@ -306,7 +306,7 @@ export default function Colaboradores() {
       </Card>
 
       <ColaboradorForm
-        colaborador={selectedColaborador}
+        pessoa={selectedColaborador as any}
         open={formOpen}
         onOpenChange={setFormOpen}
       />

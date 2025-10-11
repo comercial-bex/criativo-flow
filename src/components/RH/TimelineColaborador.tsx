@@ -6,11 +6,20 @@ import { Calendar, TrendingUp, TrendingDown, UserPlus, UserX, Briefcase } from '
 import { motion } from 'framer-motion';
 
 interface TimelineColaboradorProps {
-  colaboradorId: string;
+  pessoaId: string; // Atualizado para usar pessoa_id
+  /** @deprecated Use pessoaId - colaboradorId mantido por retrocompat 30 dias */
+  colaboradorId?: string;
 }
 
-export function TimelineColaborador({ colaboradorId }: TimelineColaboradorProps) {
-  const { historico, isLoading } = useHistoricoSalarial(colaboradorId);
+export function TimelineColaborador({ pessoaId, colaboradorId }: TimelineColaboradorProps) {
+  // Priorizar pessoaId, fallback para colaboradorId (retrocompat)
+  const id = pessoaId || colaboradorId;
+  
+  if (colaboradorId && !pessoaId) {
+    console.warn('⚠️ TimelineColaborador: colaboradorId deprecated. Use pessoaId.');
+  }
+  
+  const { historico, isLoading } = useHistoricoSalarial(id || '', id === pessoaId ? 'pessoa' : 'colaborador');
 
   const getIconByType = (tipo: string) => {
     const icons: Record<string, any> = {
