@@ -13,7 +13,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { Colaborador } from '@/hooks/useColaboradores';
+import { Pessoa } from '@/hooks/usePessoas';
 import { useFolhaPonto } from '@/hooks/useFolhaPonto';
 import { formatCurrency } from '@/lib/utils';
 import {
@@ -30,12 +30,12 @@ import { motion } from 'framer-motion';
 
 interface PontoCardProps {
   ponto: any;
-  colaborador?: Colaborador;
+  pessoa?: Pessoa;
   onApprove: () => void;
   onReject: () => void;
 }
 
-export function PontoCard({ ponto, colaborador, onApprove, onReject }: PontoCardProps) {
+export function PontoCard({ ponto, pessoa, onApprove, onReject }: PontoCardProps) {
   const { salvar } = useFolhaPonto(undefined, ponto.competencia);
   const [editOpen, setEditOpen] = useState(false);
   const [editData, setEditData] = useState({
@@ -66,7 +66,7 @@ export function PontoCard({ ponto, colaborador, onApprove, onReject }: PontoCard
   // Validação CLT: HE não pode ultrapassar 2h/dia
   const validateCLT = () => {
     const totalHE = editData.horas_he_50 + editData.horas_he_100;
-    if (colaborador?.regime === 'clt' && totalHE > 2) {
+    if (pessoa?.regime === 'clt' && totalHE > 2) {
       return {
         valid: false,
         message: 'CLT: HE não pode ultrapassar 2h/dia (Lei 13.467/2017)',
@@ -113,10 +113,10 @@ export function PontoCard({ ponto, colaborador, onApprove, onReject }: PontoCard
           <div className="flex justify-between items-start">
             <div>
               <h3 className="text-lg font-bold text-foreground">
-                {colaborador?.nome_completo || 'Colaborador não encontrado'}
+                {pessoa?.nome || 'Pessoa não encontrada'}
               </h3>
               <p className="text-sm text-muted-foreground">
-                {colaborador?.cargo_atual || '-'} • {colaborador?.regime?.toUpperCase()}
+                {pessoa?.cargo_atual || '-'} • {pessoa?.regime?.toUpperCase()}
               </p>
             </div>
             <div className="flex items-center gap-2">
@@ -213,7 +213,7 @@ export function PontoCard({ ponto, colaborador, onApprove, onReject }: PontoCard
                   <DialogHeader>
                     <DialogTitle>Editar Registro de Ponto</DialogTitle>
                     <DialogDescription>
-                      {colaborador?.nome_completo} • {colaborador?.regime?.toUpperCase()}
+                      {pessoa?.nome} • {pessoa?.regime?.toUpperCase()}
                     </DialogDescription>
                   </DialogHeader>
 
@@ -309,7 +309,7 @@ export function PontoCard({ ponto, colaborador, onApprove, onReject }: PontoCard
                     </div>
                   </div>
 
-                  {colaborador?.regime === 'clt' && (
+                  {pessoa?.regime === 'clt' && (
                     <div className="bg-warning/10 border border-warning/20 rounded-lg p-3 flex items-start gap-2">
                       <AlertTriangle className="h-4 w-4 text-warning mt-0.5" />
                       <div className="text-sm">

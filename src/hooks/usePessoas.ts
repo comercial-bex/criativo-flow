@@ -19,10 +19,11 @@ export interface Pessoa {
     pix_chave?: string;
   };
   cargo_id?: string;
+  cargo_atual?: string;
   regime?: 'clt' | 'pj' | 'estagio' | 'freelancer';
   data_admissao?: string;
   data_desligamento?: string;
-  status: 'ativo' | 'afastado' | 'desligado';
+  status: 'ativo' | 'afastado' | 'desligado' | 'ferias' | 'inativo';
   salario_base?: number;
   fee_mensal?: number;
   observacoes?: string;

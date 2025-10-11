@@ -10,6 +10,7 @@ export interface OcorrenciaPonto {
   horas?: number;
   valor?: number;
   observacao?: string;
+  status?: 'pendente' | 'aprovado' | 'rejeitado';
   created_at?: string;
   updated_at?: string;
 }
@@ -104,6 +105,48 @@ export function useOcorrenciasPonto(pessoaId?: string, competencia?: string) {
     },
   });
 
+  const aprovarMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { data, error } = await supabase
+        .from('ocorrencias_ponto')
+        .update({ status: 'aprovado' })
+        .eq('id', id)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['ocorrencias-ponto'] });
+      smartToast.success('Ocorrência aprovada com sucesso');
+    },
+    onError: (error: any) => {
+      smartToast.error('Erro ao aprovar ocorrência', error.message);
+    },
+  });
+
+  const rejeitarMutation = useMutation({
+    mutationFn: async ({ id, motivo }: { id: string; motivo?: string }) => {
+      const { data, error } = await supabase
+        .from('ocorrencias_ponto')
+        .update({ status: 'rejeitado', observacao: motivo || 'Rejeitado' })
+        .eq('id', id)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['ocorrencias-ponto'] });
+      smartToast.success('Ocorrência rejeitada');
+    },
+    onError: (error: any) => {
+      smartToast.error('Erro ao rejeitar ocorrência', error.message);
+    },
+  });
+
   const deletarMutation = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
@@ -127,9 +170,13 @@ export function useOcorrenciasPonto(pessoaId?: string, competencia?: string) {
     isLoading,
     criar: criarMutation.mutate,
     atualizar: atualizarMutation.mutate,
+    aprovar: aprovarMutation.mutate,
+    rejeitar: rejeitarMutation.mutate,
     deletar: deletarMutation.mutate,
     isCriando: criarMutation.isPending,
     isAtualizando: atualizarMutation.isPending,
+    isAprovando: aprovarMutation.isPending,
+    isRejeitando: rejeitarMutation.isPending,
     isDeletando: deletarMutation.isPending,
   };
 }

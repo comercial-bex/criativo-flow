@@ -55,6 +55,12 @@ export interface Colaborador {
 }
 
 export function useColaboradores() {
+  // ⚠️ DEPRECATION WARNING
+  console.warn(
+    '⚠️ useColaboradores() está DEPRECATED. Use usePessoas("colaborador") para novos desenvolvimentos.\n' +
+    'Mais informações: /docs/UNIFICACAO_PESSOAS.md'
+  );
+  
   const queryClient = useQueryClient();
 
   const { data: colaboradores = [], isLoading } = useQuery({

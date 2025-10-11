@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,6 +9,7 @@ import { TimelineColaborador } from '@/components/RH/TimelineColaborador';
 import { formatCurrency } from '@/lib/utils';
 import { ArrowLeft, User, Briefcase, Calendar, TrendingUp, Edit } from 'lucide-react';
 import { ColaboradorForm } from '@/components/RH/ColaboradorForm';
+import { toast } from 'sonner';
 
 export default function ColaboradorDetalhes() {
   const { id } = useParams<{ id: string }>();
@@ -17,6 +18,14 @@ export default function ColaboradorDetalhes() {
   const [formOpen, setFormOpen] = useState(false);
 
   const colaborador = colaboradores.find((c) => c.id === id);
+
+  // Redirecionar para nova interface
+  useEffect(() => {
+    if (!isLoading && !colaborador && id) {
+      toast.info('⚠️ Redirecionando para nova interface de Gestão de Pessoas...');
+      setTimeout(() => navigate('/rh/pessoas'), 1500);
+    }
+  }, [id, isLoading, colaborador, navigate]);
 
   if (isLoading) {
     return (
@@ -78,8 +87,11 @@ export default function ColaboradorDetalhes() {
             <h1 className="text-3xl font-montserrat font-bold text-foreground">
               {colaborador.nome_completo}
             </h1>
-            <p className="text-muted-foreground">
+            <p className="text-muted-foreground flex items-center gap-2">
               {colaborador.cargo_atual || 'Sem cargo definido'}
+              <Badge variant="outline" className="text-warning border-warning/50">
+                Legado
+              </Badge>
             </p>
           </div>
         </div>

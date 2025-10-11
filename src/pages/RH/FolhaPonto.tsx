@@ -3,8 +3,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useFolhaPonto } from '@/hooks/useFolhaPonto';
-import { useColaboradores } from '@/hooks/useColaboradores';
+import { useOcorrenciasPonto } from '@/hooks/useOcorrenciasPonto';
+import { usePessoas } from '@/hooks/usePessoas';
 import { PontoCard } from '@/components/RH/PontoCard';
 import { Calendar, CheckCircle, XCircle, Clock } from 'lucide-react';
 import { toast } from 'sonner';
@@ -17,34 +17,34 @@ export default function FolhaPonto() {
   );
   const [statusFilter, setStatusFilter] = useState<string>('todos');
   
-  const { pontos, isLoading, aprovarRH, rejeitar } = useFolhaPonto(undefined, competencia);
-  const { colaboradores } = useColaboradores();
+  const { ocorrencias, isLoading, aprovar, rejeitar } = useOcorrenciasPonto(competencia);
+  const { pessoas } = usePessoas('colaborador');
   const { startTutorial, hasSeenTutorial } = useTutorial('folha-ponto');
 
-  const filteredPontos = pontos.filter((p) => {
+  const filteredOcorrencias = ocorrencias.filter((p) => {
     if (statusFilter === 'todos') return true;
     return p.status === statusFilter;
   });
 
-  const pendingCount = pontos.filter((p) => p.status === 'pendente').length;
-  const approvedCount = pontos.filter((p) => p.status === 'aprovado_rh' || p.status === 'aprovado_gestor').length;
+  const pendingCount = ocorrencias.filter((p) => p.status === 'pendente').length;
+  const approvedCount = ocorrencias.filter((p) => p.status === 'aprovado').length;
 
   const handleApproveAll = async () => {
-    const pending = pontos.filter((p) => p.status === 'pendente');
+    const pending = ocorrencias.filter((p) => p.status === 'pendente');
     if (pending.length === 0) {
-      toast.error('Nenhum ponto pendente para aprovar');
+      toast.error('Nenhuma ocorrência pendente para aprovar');
       return;
     }
 
-    if (!confirm(`Aprovar ${pending.length} registros de ponto?`)) return;
+    if (!confirm(`Aprovar ${pending.length} ocorrências de ponto?`)) return;
 
     try {
-      for (const ponto of pending) {
-        await aprovarRH(ponto.id);
+      for (const ocorrencia of pending) {
+        await aprovar(ocorrencia.id);
       }
-      toast.success(`${pending.length} registros aprovados com sucesso!`);
+      toast.success(`${pending.length} ocorrências aprovadas com sucesso!`);
     } catch (error) {
-      toast.error('Erro ao aprovar pontos em lote');
+      toast.error('Erro ao aprovar ocorrências em lote');
     }
   };
 
@@ -142,22 +142,22 @@ export default function FolhaPonto() {
               Carregando registros de ponto...
             </CardContent>
           </Card>
-        ) : filteredPontos.length === 0 ? (
+        ) : filteredOcorrencias.length === 0 ? (
           <Card className="shadow-md">
             <CardContent className="p-12 text-center text-muted-foreground">
-              Nenhum registro de ponto encontrado para esta competência
+              Nenhuma ocorrência de ponto encontrada para esta competência
             </CardContent>
           </Card>
         ) : (
-          filteredPontos.map((ponto) => {
-            const colaborador = colaboradores.find((c) => c.id === ponto.colaborador_id);
+          filteredOcorrencias.map((ocorrencia) => {
+            const pessoa = pessoas.find((p) => p.id === ocorrencia.pessoa_id);
             return (
               <PontoCard
-                key={ponto.id}
-                ponto={ponto}
-                colaborador={colaborador}
-                onApprove={() => aprovarRH(ponto.id)}
-                onReject={() => rejeitar({ id: ponto.id, motivo: 'Rejeitado pelo RH' })}
+                key={ocorrencia.id}
+                ponto={ocorrencia}
+                pessoa={pessoa}
+                onApprove={() => aprovar(ocorrencia.id)}
+                onReject={() => rejeitar({ id: ocorrencia.id, motivo: 'Rejeitado pelo RH' })}
               />
             );
           })

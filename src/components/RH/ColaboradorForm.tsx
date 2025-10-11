@@ -7,16 +7,21 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { Colaborador, useColaboradores } from '@/hooks/useColaboradores';
+import { usePessoas, Pessoa } from '@/hooks/usePessoas';
 import { User, Briefcase, CreditCard } from 'lucide-react';
 
 interface ColaboradorFormProps {
   colaborador?: Colaborador;
+  pessoa?: Pessoa;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  mode?: 'legacy' | 'new';
 }
 
-export function ColaboradorForm({ colaborador, open, onOpenChange }: ColaboradorFormProps) {
-  const { criar, atualizar, isCriando, isAtualizando } = useColaboradores();
+export function ColaboradorForm({ colaborador, pessoa, open, onOpenChange, mode = 'legacy' }: ColaboradorFormProps) {
+  const legacyHooks = useColaboradores();
+  const newHooks = usePessoas();
+  const { criar, atualizar, isCriando, isAtualizando } = mode === 'new' ? newHooks : legacyHooks;
   const [formData, setFormData] = useState<Partial<Colaborador>>(
     colaborador || {
       regime: 'clt',
@@ -27,10 +32,33 @@ export function ColaboradorForm({ colaborador, open, onOpenChange }: Colaborador
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (colaborador) {
-      atualizar({ id: colaborador.id, ...formData });
+    if (mode === 'new') {
+      // Converter para formato Pessoa
+      const pessoaData = {
+        nome: formData.nome_completo || '',
+        cpf: formData.cpf_cnpj,
+        papeis: ['colaborador'] as any,
+        regime: formData.regime,
+        status: formData.status,
+        salario_base: formData.salario_base,
+        fee_mensal: formData.fee_mensal,
+        cargo_atual: formData.cargo_atual,
+        data_admissao: formData.data_admissao,
+        email: formData.email,
+        telefones: formData.celular ? [formData.celular] : [],
+        dados_bancarios: {
+          banco_codigo: formData.banco_codigo,
+          agencia: formData.agencia,
+          conta: formData.conta,
+          tipo_conta: formData.tipo_conta,
+          pix_tipo: formData.tipo_chave_pix,
+          pix_chave: formData.chave_pix,
+        },
+      };
+      pessoa ? atualizar({ id: pessoa.id, ...pessoaData }) : criar(pessoaData);
     } else {
-      criar(formData);
+      // Modo legado
+      colaborador ? atualizar({ id: colaborador.id, ...formData }) : criar(formData);
     }
     
     onOpenChange(false);

@@ -3,9 +3,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { useColaboradores } from '@/hooks/useColaboradores';
 import { ColaboradorForm } from '@/components/RH/ColaboradorForm';
-import { UserPlus, Search, Edit, Trash2, Users, Building2 } from 'lucide-react';
+import { UserPlus, Search, Edit, Trash2, Users, Building2, Info } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import { useTutorial } from '@/hooks/useTutorial';
@@ -61,6 +62,19 @@ export default function Colaboradores() {
 
   return (
     <div className="container mx-auto p-6 space-y-6 animate-fade-in">
+      {/* Alerta de Migração */}
+      <Alert className="border-warning/50 bg-warning/10">
+        <Info className="h-4 w-4 text-warning" />
+        <AlertTitle className="text-warning">Página em Migração</AlertTitle>
+        <AlertDescription className="text-sm">
+          Esta página será substituída pela nova{' '}
+          <a href="/rh/pessoas" className="underline font-semibold hover:text-warning/80">
+            Gestão de Pessoas
+          </a>
+          . Novos cadastros devem ser feitos lá.
+        </AlertDescription>
+      </Alert>
+
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
