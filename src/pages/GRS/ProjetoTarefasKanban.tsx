@@ -276,7 +276,7 @@ export default function ProjetoTarefasKanban() {
               )}
             </div>
             <div className="flex items-center gap-2">
-              <Button variant="outline" onClick={handleTaskCreate}>
+              <Button variant="outline" onClick={() => setShowCreateModal(true)}>
                 <Plus className="h-4 w-4 mr-2" />
                 Nova Tarefa
               </Button>
