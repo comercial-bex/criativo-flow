@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bex-flow-v1';
+const CACHE_NAME = 'bex-flow-v2';
 const urlsToCache = [
   '/',
   '/static/js/bundle.js',
@@ -14,6 +14,11 @@ self.addEventListener('install', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
+  // Ignorar requisições para domínios externos (auth-bridge, etc)
+  if (!event.request.url.startsWith(self.location.origin)) {
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request)
       .then((response) => {
@@ -21,8 +26,12 @@ self.addEventListener('fetch', (event) => {
           return response;
         }
         return fetch(event.request);
-      }
-    )
+      })
+      .catch((error) => {
+        // Ignorar erros de CORS silenciosamente
+        console.warn('SW fetch failed:', event.request.url, error);
+        return fetch(event.request);
+      })
   );
 });
 
