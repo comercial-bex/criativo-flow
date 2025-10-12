@@ -118,26 +118,19 @@ export function BriefingInteligenteModal({
 
     setLoading(true);
     try {
-      // Primeiro vamos buscar ou criar uma tarefa de briefing
-      const { data: tarefasBriefing } = await supabase
+      // Criar tarefa genérica para o briefing
+      const { data: novaTarefa, error: tarefaError } = await supabase
         .from('tarefa')
+        .insert({ 
+          tipo: 'outro',
+          cliente_id: clienteId,
+          setor_responsavel: 'grs'
+        } as any)
         .select('id')
-        .eq('tipo', 'briefing')
-        .limit(1);
-
-      let tarefaId: string;
+        .single();
       
-      if (tarefasBriefing && tarefasBriefing.length > 0) {
-        tarefaId = tarefasBriefing[0].id;
-      } else {
-        // Criar tarefa genérica de briefing (usando tipo 'outro')
-        const { data: novaTarefa } = await supabase
-          .from('tarefa')
-          .insert({ tipo: 'outro' } as any)
-          .select('id')
-          .single();
-        tarefaId = novaTarefa?.id || '';
-      }
+      if (tarefaError) throw tarefaError;
+      const tarefaId = novaTarefa?.id || '';
 
       const { data, error } = await supabase
         .from('briefings')
