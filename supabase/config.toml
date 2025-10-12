@@ -1,8 +1,5 @@
 project_id = "xvpqgwbktpfodbuhwqhh"
 
-[functions.event-bus]
-verify_jwt = false
-
 [api]
 enabled = true
 port = 54321
@@ -63,6 +60,9 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.event-bus]
+verify_jwt = false
+
+[functions.analyze-social-links]
 verify_jwt = false
 
 [functions.generate-task-briefing]

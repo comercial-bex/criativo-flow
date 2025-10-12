@@ -32,10 +32,18 @@ serve(async (req) => {
     const linksToAnalyze = links.slice(0, 10);
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
 
+    console.log(`📊 [ANALYZE-SOCIAL-LINKS] Requisição recebida`);
+    console.log(`   └─ Total de links: ${linksToAnalyze.length}`);
+    linksToAnalyze.forEach((url, idx) => {
+      const plataforma = detectarPlataforma(url);
+      console.log(`   ${idx + 1}. [${plataforma?.toUpperCase() || 'DESCONHECIDA'}] ${url.substring(0, 60)}...`);
+    });
+
     const linksAnalisados: SocialLinkAnalysis[] = [];
 
     for (const linkUrl of linksToAnalyze) {
       try {
+        console.log(`🔍 Analisando: ${linkUrl}`);
         const plataforma = detectarPlataforma(linkUrl);
         
         // Análise básica via metadados
@@ -47,7 +55,7 @@ serve(async (req) => {
           insightsIA = await analisarComIA(linkUrl, metadata, LOVABLE_API_KEY);
         }
 
-        linksAnalisados.push({
+        const analysis = {
           url: linkUrl,
           plataforma,
           titulo: metadata.titulo || 'Vídeo sem título',
@@ -55,9 +63,12 @@ serve(async (req) => {
           thumbnail_url: metadata.thumbnail,
           estilo_visual_detectado: extrairEstilosVisuais(insightsIA, metadata),
           tom_narrativo: extrairTomNarrativo(insightsIA, metadata),
-        });
+        };
+        
+        linksAnalisados.push(analysis);
+        console.log(`✅ Sucesso: ${analysis.titulo}`);
       } catch (error) {
-        console.error(`Erro ao analisar ${linkUrl}:`, error);
+        console.error(`❌ Erro ao analisar ${linkUrl}:`, error.message);
         // Fallback gracioso
         linksAnalisados.push({
           url: linkUrl,

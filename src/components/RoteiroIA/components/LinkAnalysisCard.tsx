@@ -17,20 +17,38 @@ export default function LinkAnalysisCard({ formData, setFormData }: LinkAnalysis
   const [linksInput, setLinksInput] = useState(formData.referencias || "");
 
   const handleAnalyzeLinks = async () => {
-    // Extrair URLs do texto
-    const urlRegex = /(https?:\/\/[^\s]+)/g;
-    const urls = linksInput.match(urlRegex);
+    // Extrair URLs do texto com regex robusta
+    const urlRegex = /(https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&\/=]*))/gi;
+    const urls = linksInput.match(urlRegex)?.map(url => {
+      // Remove pontuação final acidental (., ;, !, ?)
+      return url.replace(/[.,;!?]+$/, '').trim();
+    }).filter(url => url.length > 0);
 
     if (!urls || urls.length === 0) {
-      smartToast.error("Nenhum link válido encontrado");
+      smartToast.error("Nenhum link válido encontrado", "Cole URLs do TikTok, Instagram ou YouTube");
       return;
     }
 
+    // Limitar a 10 links
+    const linksToAnalyze = urls.slice(0, 10);
+    if (urls.length > 10) {
+      smartToast.info(`Apenas os primeiros 10 links serão analisados (você colou ${urls.length})`);
+    }
+
     setIsAnalyzing(true);
+    
+    // Aviso após 15s
+    const warningTimeout = setTimeout(() => {
+      if (isAnalyzing) {
+        smartToast.info("Análise em andamento", "Plataformas de mídia social podem demorar para responder...");
+      }
+    }, 15000);
     try {
       const { data, error } = await supabase.functions.invoke('analyze-social-links', {
-        body: { links: urls }
+        body: { links: linksToAnalyze }
       });
+
+      clearTimeout(warningTimeout); // Cancelar aviso se terminou antes
 
       if (error) throw error;
 
@@ -44,6 +62,7 @@ export default function LinkAnalysisCard({ formData, setFormData }: LinkAnalysis
         smartToast.success(`${data.links_analisados.length} link(s) analisado(s) com sucesso!`);
       }
     } catch (error: any) {
+      clearTimeout(warningTimeout);
       smartToast.error("Erro ao analisar links", error.message);
       console.error(error);
     } finally {
