@@ -304,6 +304,18 @@ const TUTORIALS_CONFIG: Record<string, TutorialConfig> = {
       { intro: '<h3>🎯 Desafio!</h3><p>Complete tarefas para ganhar pontos e badges.</p>' },
     ],
   },
+  
+  'grs-painel': {
+    page: 'grs-painel',
+    steps: [
+      { intro: '<h3>🎯 Bem-vindo ao Painel GRS!</h3><p>Gerencie projetos, tarefas e acompanhe sua produtividade pessoal.</p>' },
+      { element: '[data-tour="metricas"]', intro: '<strong>Métricas Rápidas</strong><br/>Acompanhe projetos ativos e tarefas distribuídas por status (Novo, Em Andamento, Concluído).', position: 'bottom' },
+      { element: '[data-tour="produtividade"]', intro: '<strong>Produtividade Pessoal</strong><br/>Expanda esta seção para acessar:<br/>• Radar de Metas SMART<br/>• Timer Pomodoro<br/>• Reflexões Diárias<br/>• Insights de IA<br/>• Matriz Eisenhower', position: 'bottom' },
+      { element: '[data-tour="projetos"]', intro: '<strong>Tabela de Projetos</strong><br/>Veja seus projetos ativos com cliente, prazo, status e progresso. Clique em uma linha para ver detalhes e tarefas.', position: 'top' },
+      { element: '[data-tour="timeline"]', intro: '<strong>Timeline de Atividades</strong><br/>Acompanhe eventos recentes e atividades dos seus projetos em ordem cronológica.', position: 'top' },
+      { intro: '<h3>✅ Tutorial Concluído!</h3><p>Explore o painel livremente. Clique no botão (?) no header para rever o tour a qualquer momento.</p>' },
+    ],
+  },
 };
 
 export function useTutorial(pageName: string) {

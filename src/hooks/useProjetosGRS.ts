@@ -51,7 +51,7 @@ export function useProjetosGRS() {
           )
         `)
         .eq('responsavel_grs_id', user?.id)
-        .not('status', 'in', '("concluido","cancelado")')
+        .not('status', 'in', '("arquivado","inativo")')
         .order('data_prazo', { ascending: true })
         .limit(10);
 
@@ -74,7 +74,7 @@ export function useProjetosGRS() {
         .from('projetos')
         .select('*', { count: 'exact', head: true })
         .eq('responsavel_grs_id', user?.id)
-        .eq('status', 'pendente');
+        .eq('status', 'ativo');
 
       const { count: novo } = await supabase
         .from('tarefa')
