@@ -113,6 +113,39 @@ export default function Step1Briefing({ formData, setFormData }: any) {
         </div>
       </div>
 
+      {/* Campos de Metadados Adicionais */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="cliente_nome">Nome do Cliente</Label>
+          <Input
+            id="cliente_nome"
+            value={formData.cliente_nome || ''}
+            onChange={(e) => setFormData({ ...formData, cliente_nome: e.target.value })}
+            placeholder="Ex: BEX Communication"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="agencia">Agência</Label>
+          <Input
+            id="agencia"
+            value={formData.agencia || ''}
+            onChange={(e) => setFormData({ ...formData, agencia: e.target.value })}
+            placeholder="BEX Communication"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="produtora">Produtora</Label>
+          <Input
+            id="produtora"
+            value={formData.produtora || ''}
+            onChange={(e) => setFormData({ ...formData, produtora: e.target.value })}
+            placeholder="INSPIRE FILMES"
+          />
+        </div>
+      </div>
+
       <div className="space-y-2">
         <Label>Plataforma *</Label>
         <div className="flex flex-wrap gap-2">
