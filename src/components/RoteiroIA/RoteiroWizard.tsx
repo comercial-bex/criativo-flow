@@ -126,6 +126,9 @@ export default function RoteiroWizard({ mode, roteiroId, initialData }: RoteiroW
       beneficios: formData.publico_alvo,
       cta: "Acesse nosso site e saiba mais!",
       ambiente: "genérico",
+      agente_ia_id: formData.agente_ia_id,
+      framework_id: formData.framework_id,
+      tom_criativo: formData.tom_criativo || [],
     };
 
     try {
