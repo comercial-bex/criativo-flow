@@ -51,7 +51,10 @@ export function useTarefas(options: UseTarefasOptions = {}) {
       const { data, error } = await query;
 
       if (error) throw error;
-      setTarefas((data || []) as Tarefa[]);
+      setTarefas((data || []).map(item => ({
+        ...item,
+        checklist: item.checklist ? JSON.parse(JSON.stringify(item.checklist)) : []
+      })) as Tarefa[]);
     } catch (error) {
       console.error('Erro ao buscar tarefas:', error);
       toast({
@@ -79,7 +82,10 @@ export function useTarefas(options: UseTarefasOptions = {}) {
 
       if (error) throw error;
 
-      setTarefas((prev) => [data as Tarefa, ...prev]);
+      setTarefas((prev) => [{
+        ...data,
+        checklist: data.checklist ? JSON.parse(JSON.stringify(data.checklist)) : []
+      } as Tarefa, ...prev]);
       
       toast({
         title: 'Sucesso',
@@ -110,7 +116,11 @@ export function useTarefas(options: UseTarefasOptions = {}) {
       if (error) throw error;
 
       setTarefas((prev) =>
-        prev.map((t) => (t.id === tarefaId ? { ...t, ...data } as Tarefa : t))
+        prev.map((t) => (t.id === tarefaId ? { 
+          ...t, 
+          ...data,
+          checklist: data.checklist ? JSON.parse(JSON.stringify(data.checklist)) : t.checklist
+        } as Tarefa : t))
       );
 
       toast({

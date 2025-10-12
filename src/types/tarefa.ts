@@ -59,6 +59,13 @@ export type StatusAprovacao = 'pendente' | 'aprovado' | 'ajustes' | 'reprovado';
 
 export type StatusPrazo = 'vermelho' | 'amarelo' | 'verde' | 'cinza';
 
+export interface ChecklistItem {
+  id: string;
+  text: string;
+  completed: boolean;
+  ordem?: number;
+}
+
 export interface Tarefa {
   id: string;
   tipo: TipoTarefa;
@@ -87,6 +94,8 @@ export interface Tarefa {
   trace_id?: string | null;
   projeto_id?: string | null;
   cliente_id?: string | null;
+  checklist?: ChecklistItem[] | null;
+  checklist_progress?: number | null;
   created_by?: string | null;
   updated_by?: string | null;
   created_at?: string;

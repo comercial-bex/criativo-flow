@@ -8334,6 +8334,8 @@ export type Database = {
           area: Database["public"]["Enums"]["area_enum"][] | null
           campanha_id: string | null
           canais: Database["public"]["Enums"]["canal_enum"][] | null
+          checklist: Json | null
+          checklist_progress: number | null
           cliente_id: string | null
           created_at: string | null
           created_by: string | null
@@ -8371,6 +8373,8 @@ export type Database = {
           area?: Database["public"]["Enums"]["area_enum"][] | null
           campanha_id?: string | null
           canais?: Database["public"]["Enums"]["canal_enum"][] | null
+          checklist?: Json | null
+          checklist_progress?: number | null
           cliente_id?: string | null
           created_at?: string | null
           created_by?: string | null
@@ -8408,6 +8412,8 @@ export type Database = {
           area?: Database["public"]["Enums"]["area_enum"][] | null
           campanha_id?: string | null
           canais?: Database["public"]["Enums"]["canal_enum"][] | null
+          checklist?: Json | null
+          checklist_progress?: number | null
           cliente_id?: string | null
           created_at?: string | null
           created_by?: string | null

@@ -84,7 +84,8 @@ export default function MinhasTarefasDesign() {
         ...task,
         prioridade: task.prioridade as 'baixa' | 'media' | 'alta',
         setor_responsavel: 'design',
-        observacoes: (task as any).observacoes || ''
+        observacoes: (task as any).observacoes || '',
+        checklist: task.checklist ? JSON.parse(JSON.stringify(task.checklist)) : []
       })) || [];
 
       setTasks(processedTasks);
