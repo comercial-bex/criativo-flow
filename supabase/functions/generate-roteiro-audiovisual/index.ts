@@ -17,6 +17,8 @@ interface BriefingData {
   beneficios: string[];
   cta: string;
   ambiente: string;
+  duracao_prevista_seg?: number;
+  formato?: string;
   agente_ia_id?: string;
   framework_id?: string;
   tom_criativo?: string[];
@@ -76,44 +78,108 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     let roteiroGerado = '';
 
-    if (LOVABLE_API_KEY && (agente || framework)) {
-      // Construir system prompt dinâmico
+    if (LOVABLE_API_KEY) {
+      // Construir system prompt profissional
       const systemPrompt = `
-${agente?.prompt_instrucoes || 'Você é um roteirista experiente especializado em conteúdo audiovisual.'}
+Você é um roteirista profissional especializado em roteiros audiovisuais técnicos para agências de publicidade.
+
+FORMATO OBRIGATÓRIO:
+Gere o roteiro seguindo EXATAMENTE esta estrutura:
+
+---
+IDENTIFICAÇÃO
+
+Cliente: ${briefingData.cliente_nome}
+Agência: BEX Communication
+Produtora: INSPIRE FILMES
+Peça: ${briefingData.formato || 'Vídeo institucional'} (duração: ${briefingData.duracao_prevista_seg || 30}s)
+Título: ${briefingData.titulo}
+Duração: ${briefingData.duracao_prevista_seg || 30} segundos
+Veiculação: ${briefingData.veiculacao?.join(', ') || 'Redes sociais'}
+Data: ${new Date().toLocaleDateString('pt-BR')}
+Criação: ${agente?.nome || 'BEX Creative Team'}
+
+---
+OBJETIVO E TOM
+
+Objetivo: ${briefingData.objetivo}
+Tom: ${briefingData.tom}
+${briefingData.tom_criativo?.length ? `Tons Criativos: ${briefingData.tom_criativo.join(', ')}` : ''}
+
+---
+ROTEIRO
+
+[Gere de 3 a 6 cenas seguindo EXATAMENTE este formato:]
+
+CENA 1 (Duração: 4s)
+📸 IMAGEM DE APOIO: [descreva detalhadamente a cena visual - exemplo: "Porta-voz em plano médio, fundo institucional neutro, iluminação suave"]
+🎤 FALA (ON): [fala direta do personagem - exemplo: "Você sabe quem fiscaliza o mercado imobiliário no Amapá?"]
+📢 NARRAÇÃO (OFF): [deixe vazio se houver fala ON, ou inclua locução]
+🎬 EFEITOS VISUAIS/ÁUDIO: [trilha sonora, cortes, transições - exemplo: "Trilha institucional suave, fade-in, áudio direto com lapela"]
+⏱️ DURAÇÃO ESTIMADA: 4s
+
+CENA 2 (Duração: 6s)
+📸 IMAGEM DE APOIO: [próxima cena - exemplo: "Tela com texto da Lei 6.530/78 em destaque, logo do CRECI-AP ao fundo"]
+🎤 FALA (ON): [fala do personagem - exemplo: "O CRECI-AP é uma autarquia federal criada pela Lei 6.530/78"]
+📢 NARRAÇÃO (OFF): [locução se não houver fala ON]
+🎬 EFEITOS VISUAIS/ÁUDIO: [exemplo: "Corte seco, zoom no texto da lei, trilha mantém volume"]
+⏱️ DURAÇÃO ESTIMADA: 6s
+
+CENA 3 (Duração: 5s)
+📸 IMAGEM DE APOIO: [desenvolvimento - exemplo: "Sequência rápida de profissionais imobiliários trabalhando"]
+🎤 FALA (ON): [se houver]
+📢 NARRAÇÃO (OFF): [exemplo: "Garantindo ética, segurança e profissionalismo no mercado"]
+🎬 EFEITOS VISUAIS/ÁUDIO: [exemplo: "Montagem dinâmica 2s por cena, trilha aumenta intensidade"]
+⏱️ DURAÇÃO ESTIMADA: 5s
+
+[Continue com mais 2-3 cenas]
+
+CENA FINAL - ENCERRAMENTO (Duração: 5s)
+📸 IMAGEM DE APOIO: [tela final - exemplo: "Logo CRECI-AP centralizado, slogan abaixo, informações de contato"]
+📢 NARRAÇÃO (OFF): [frase de impacto - exemplo: "CRECI-AP. Fiscalização que protege você."]
+🎬 EFEITOS VISUAIS/ÁUDIO: [exemplo: "Fade-out gradual, trilha finaliza suavemente, logo animado"]
+⏱️ DURAÇÃO ESTIMADA: 5s
+
+---
+REFERÊNCIAS TÉCNICAS
+
+| Aspecto | Especificação |
+|---------|---------------|
+| **Lente recomendada** | ${briefingData.ambiente === 'externo' ? '24-70mm zoom' : '50mm fixa'} |
+| **Iluminação** | ${briefingData.ambiente === 'externo' ? 'Luz natural difusa' : 'Softbox 3 pontos'} |
+| **Horário ideal** | ${briefingData.ambiente === 'externo' ? 'Golden hour' : 'Controlado'} |
+| **Movimento de câmera** | Plano fixo + cortes dinâmicos |
+| **Tratamento de cor** | Gradação profissional ${briefingData.tom === 'emotivo' ? 'quente' : 'neutra'} |
+
+---
+OBSERVAÇÕES FINAIS
+
+Mensagem-chave: ${briefingData.mensagem_chave || briefingData.objetivo}
+Call to Action (CTA): ${briefingData.cta || 'Saiba mais!'}
+${briefingData.veiculacao?.includes('Instagram') || briefingData.veiculacao?.includes('TikTok') ? 'Hashtags: [gerar 3-5 hashtags relevantes]' : ''}
+
+---
+
+INSTRUÇÕES CRÍTICAS:
+1. SEMPRE separe FALA (ON) de NARRAÇÃO (OFF)
+2. Descreva IMAGENS DE APOIO de forma cinematográfica e detalhada
+3. Inclua EFEITOS VISUAIS/ÁUDIO em cada cena
+4. Mantenha timing realista (máx. 30-60s total)
+5. Finalize com logo + slogan + CTA
+6. Use linguagem humanizada e natural
+7. Adapte ao tom: ${briefingData.tom}
 
 ${framework ? `
 FRAMEWORK: ${framework.nome}
-${framework.descricao}
-
-ESTRUTURA DO FRAMEWORK:
-${JSON.stringify(framework.estrutura, null, 2)}
-
-Siga esta estrutura para organizar o roteiro.
+Estrutura: ${JSON.stringify(framework.estrutura)}
+Adapte as cenas seguindo esta narrativa.
 ` : ''}
 
-${briefingData.tom_criativo && briefingData.tom_criativo.length > 0 ? `
-TOM CRIATIVO: ${briefingData.tom_criativo.join(', ')}
-Aplique estes tons de forma equilibrada ao longo do roteiro.
+${agente ? `
+AGENTE: ${agente.nome}
+Estilo: ${agente.especialidade}
+${agente.descricao}
 ` : ''}
-
-ESPECIFICAÇÕES DO VÍDEO:
-- Cliente: ${briefingData.cliente_nome}
-- Título: ${briefingData.titulo}
-- Duração: 30s
-- Veiculação: ${briefingData.veiculacao.join(', ')}
-- Objetivo: ${briefingData.objetivo}
-- Tom: ${briefingData.tom}
-- Ambiente: ${briefingData.ambiente}
-
-INSTRUÇÕES DE FORMATAÇÃO:
-1. Use marcadores Markdown para estruturar o roteiro
-2. Divida em blocos claros (IMAGEM, OFF, ON, MONTAGEM, CTA)
-3. Seja específico nas descrições visuais
-4. ${framework ? `Siga a estrutura do framework ${framework.nome}` : 'Use estrutura narrativa clara'}
-5. Mantenha o timing adequado para 30s
-6. Inclua sugestões técnicas (lente, iluminação, movimento)
-
-Gere um roteiro profissional em Markdown.
 `;
 
       try {
@@ -154,14 +220,15 @@ Gere um roteiro profissional em Markdown.
       const roteiro = {
         identificacao: {
           cliente: briefingData.cliente_nome,
-          peca: briefingData.titulo,
-          duracao: '30s',
+          peca: briefingData.formato || 'Vídeo institucional',
+          titulo: briefingData.titulo,
+          duracao: `${briefingData.duracao_prevista_seg || 30}s`,
           veiculacao: briefingData.veiculacao,
           data: new Date().toLocaleDateString('pt-BR'),
         },
         objetivo: briefingData.objetivo,
         tom: briefingData.tom,
-        agente_usado: agente?.nome || 'Padrão',
+        agente_usado: agente?.nome || 'BEX Creative Team',
         framework_usado: framework?.nome || 'Storytelling tradicional',
         tons_criativos: briefingData.tom_criativo || [],
         blocos: blocos,
@@ -229,129 +296,175 @@ function getSugestoesAmbiente(ambiente: string): SugestoesTecnicas {
       movimento: 'Plano médio fixo ou slider sutil',
       cor: 'Profissional, iluminação suave',
     },
-    noturno: {
-      lente: '24-35mm f/1.4',
-      filtro: 'LED RGB para acentos coloridos',
-      hora: 'Noite (após crepúsculo)',
-      movimento: 'Tripé ou gimbal estabilizado (ISO alto)',
-      cor: 'Contraste forte, neons, bokeh urbano',
+    interno: {
+      lente: '50mm f/1.4',
+      filtro: 'Softbox 3 pontos',
+      hora: 'Iluminação controlada',
+      movimento: 'Plano fixo ou slider',
+      cor: 'Gradação profissional neutra',
     },
-    evento: {
-      lente: '24-70mm f/2.8 (zoom versátil)',
-      filtro: 'Mix de luz ambiente + LED portátil',
-      hora: 'Variável (adaptar)',
-      movimento: 'Handheld rápido + momentos fixos',
-      cor: 'Energia, cores vibrantes',
+    externo: {
+      lente: '24-70mm f/2.8',
+      filtro: 'Luz natural difusa',
+      hora: 'Golden hour',
+      movimento: 'Gimbal estabilizado',
+      cor: 'Tons quentes saturados',
     },
   };
 
-  return sugestoes[ambiente] || sugestoes.cidade;
+  return sugestoes[ambiente] || sugestoes.interno;
 }
 
 function gerarBlocos(briefingData: BriefingData, sugestoes: SugestoesTecnicas, agente: any, framework: any) {
-  // Se temos framework, usar sua estrutura
-  const estruturaFramework = framework?.estrutura?.blocos || [];
-  
-  if (estruturaFramework.length > 0) {
-    return estruturaFramework.map((descBloco: string, index: number) => ({
-      bloco: index + 1,
-      tipo: index === 0 ? 'HOOK' : (index === estruturaFramework.length - 1 ? 'CTA' : 'DESENVOLVIMENTO'),
-      tempo: `${index * 6}-${(index + 1) * 6}s`,
-      descricao: descBloco,
-      texto: descBloco,
-      tecnica: sugestoes.lente,
-      observacao: `Estilo ${agente?.nome || 'padrão'}`,
+  // Se houver framework com estrutura customizada
+  if (framework?.estrutura && Array.isArray(framework.estrutura)) {
+    return framework.estrutura.map((item: any, idx: number) => ({
+      cena: idx + 1,
+      take: item.tipo || `Cena ${idx + 1}`,
+      duracao: item.duracao || '5s',
+      imagem_apoio: item.descricao || `${briefingData.ambiente} - Cena ${idx + 1}`,
+      fala_on: item.fala_on || '',
+      narracao_off: item.conteudo || item.texto || '',
+      efeitos: item.efeitos || sugestoes.movimento,
+      sugestao_tecnica: item.observacao || sugestoes.lente,
     }));
   }
 
-  // Estrutura padrão
+  // Estrutura padrão profissional
   return [
     {
-      bloco: 1,
-      tipo: 'IMAGEM',
-      tempo: '0-3s',
-      descricao: `Abertura com ${briefingData.ambiente}`,
-      tecnica: sugestoes.lente,
-      observacao: `Usar ${sugestoes.filtro}`,
+      cena: 1,
+      take: 'Abertura institucional',
+      duracao: '4s',
+      imagem_apoio: `${briefingData.ambiente} - abertura com identidade visual, ${sugestoes.filtro}`,
+      fala_on: '',
+      narracao_off: `${briefingData.mensagem_chave || briefingData.objetivo}`,
+      efeitos: `Trilha suave, fade-in, ${sugestoes.movimento}`,
+      sugestao_tecnica: `Lente: ${sugestoes.lente}, ${sugestoes.filtro}`,
     },
     {
-      bloco: 2,
-      tipo: 'OFF',
-      tempo: '3-10s',
-      texto: briefingData.mensagem_chave,
-      tecnica: 'Locução em estúdio com reverb suave',
-      observacao: 'Sincronia com imagens do ambiente',
+      cena: 2,
+      take: 'Apresentação do conceito',
+      duracao: '6s',
+      imagem_apoio: 'Porta-voz em plano médio ou produto em destaque',
+      fala_on: briefingData.mensagem_chave || 'Fala principal do apresentador',
+      narracao_off: '',
+      efeitos: 'Áudio direto com lapela, ambiente natural',
+      sugestao_tecnica: 'Plano médio, iluminação suave 3 pontos',
     },
     {
-      bloco: 3,
-      tipo: 'ON',
-      tempo: '10-20s',
-      texto: briefingData.beneficios[0] || 'Benefício principal',
-      tecnica: 'Plano médio do cliente/produto',
-      observacao: 'Áudio direto + ambiente natural',
+      cena: 3,
+      take: 'Desenvolvimento - Benefícios',
+      duracao: '8s',
+      imagem_apoio: 'Sequência visual de benefícios ou produto em uso',
+      fala_on: '',
+      narracao_off: briefingData.beneficios?.join('. ') || 'Apresentação dos benefícios principais',
+      efeitos: `Montagem rápida 2s por cena, ${sugestoes.cor}`,
+      sugestao_tecnica: `${sugestoes.movimento}, cortes dinâmicos`,
     },
     {
-      bloco: 4,
-      tipo: 'MONTAGEM',
-      tempo: '20-27s',
-      descricao: 'Sequência rápida de benefícios visuais',
-      tecnica: sugestoes.movimento,
-      observacao: `Cores: ${sugestoes.cor}`,
+      cena: 4,
+      take: 'Prova social ou depoimento',
+      duracao: '6s',
+      imagem_apoio: 'Cliente satisfeito ou case de sucesso',
+      fala_on: 'Depoimento espontâneo do cliente',
+      narracao_off: '',
+      efeitos: 'Cortes naturais, trilha emocional sutil',
+      sugestao_tecnica: 'Close-up, luz natural difusa',
     },
     {
-      bloco: 5,
-      tipo: 'CTA',
-      tempo: '27-30s',
-      texto: briefingData.cta || 'Saiba mais!',
-      tecnica: 'Plano fechado logo/produto',
-      observacao: 'Fade out com branding',
+      cena: 5,
+      take: 'Encerramento com CTA',
+      duracao: '6s',
+      imagem_apoio: 'Logo institucional centralizado + slogan + informações de contato',
+      fala_on: '',
+      narracao_off: briefingData.cta || 'Saiba mais! Acesse nosso site.',
+      efeitos: 'Fade-out gradual, trilha finaliza suavemente, logo animado',
+      sugestao_tecnica: 'Tela final estática, branding profissional',
     },
   ];
 }
 
 function gerarMarkdown(roteiro: any): string {
-  let md = `# ${roteiro.identificacao.peca}\n\n`;
-  md += `**Cliente:** ${roteiro.identificacao.cliente}\n`;
-  md += `**Duração:** ${roteiro.identificacao.duracao}\n`;
-  md += `**Veiculação:** ${roteiro.identificacao.veiculacao.join(', ')}\n`;
-  md += `**Data:** ${roteiro.identificacao.data}\n\n`;
+  let md = `# 🎬 ROTEIRO AUDIOVISUAL\n\n`;
+  md += `## IDENTIFICAÇÃO\n\n`;
+  md += `| Campo | Valor |\n|-------|-------|\n`;
+  md += `| **Cliente** | ${roteiro.identificacao.cliente} |\n`;
+  md += `| **Agência** | BEX Communication |\n`;
+  md += `| **Produtora** | INSPIRE FILMES |\n`;
+  md += `| **Peça** | ${roteiro.identificacao.peca || 'Vídeo institucional'} |\n`;
+  md += `| **Título** | ${roteiro.identificacao.titulo} |\n`;
+  md += `| **Duração** | ${roteiro.identificacao.duracao} |\n`;
+  md += `| **Veiculação** | ${roteiro.identificacao.veiculacao.join(', ')} |\n`;
+  md += `| **Data** | ${roteiro.identificacao.data} |\n`;
+  md += `| **Criação** | ${roteiro.agente_usado || 'BEX Creative Team'} |\n\n`;
   
-  if (roteiro.agente_usado) {
-    md += `**🎬 Agente IA:** ${roteiro.agente_usado}\n`;
-  }
-  if (roteiro.framework_usado) {
-    md += `**📚 Framework:** ${roteiro.framework_usado}\n`;
-  }
-  if (roteiro.tons_criativos && roteiro.tons_criativos.length > 0) {
-    md += `**🎭 Tons:** ${roteiro.tons_criativos.join(', ')}\n`;
-  }
-  
-  md += `\n---\n\n`;
-  md += `## 🎯 Objetivo\n${roteiro.objetivo}\n\n`;
-  md += `## 🎭 Tom\n${roteiro.tom}\n\n`;
   md += `---\n\n`;
-  md += `## 📝 Roteiro\n\n`;
+  md += `## 🎯 OBJETIVO E TOM\n\n`;
+  md += `**Objetivo:** ${roteiro.objetivo}\n\n`;
+  md += `**Tom:** ${roteiro.tom}\n\n`;
   
-  roteiro.blocos.forEach((bloco: any) => {
-    md += `### Bloco ${bloco.bloco} - ${bloco.tipo} (${bloco.tempo})\n`;
-    if (bloco.descricao) md += `**Descrição:** ${bloco.descricao}\n`;
-    if (bloco.texto) md += `**Texto:** "${bloco.texto}"\n`;
-    md += `**Técnica:** ${bloco.tecnica}\n`;
-    md += `**Observação:** ${bloco.observacao}\n\n`;
+  if (roteiro.tons_criativos?.length) {
+    md += `**Tons Criativos:** ${roteiro.tons_criativos.join(', ')}\n\n`;
+  }
+  
+  md += `---\n\n`;
+  md += `## 📝 ROTEIRO TÉCNICO\n\n`;
+  
+  roteiro.blocos.forEach((bloco: any, index: number) => {
+    md += `### CENA ${bloco.cena || index + 1} - ${bloco.take || bloco.tipo} (${bloco.duracao || bloco.tempo})\n\n`;
+    
+    if (bloco.imagem_apoio || bloco.descricao) {
+      md += `📸 **IMAGEM DE APOIO:**\n`;
+      md += `> ${bloco.imagem_apoio || bloco.descricao}\n\n`;
+    }
+    
+    if (bloco.fala_on && bloco.fala_on.trim()) {
+      md += `🎤 **FALA (ON):**\n`;
+      md += `> "${bloco.fala_on}"\n\n`;
+    }
+    
+    if (bloco.narracao_off || (!bloco.fala_on && bloco.texto)) {
+      md += `📢 **NARRAÇÃO (OFF):**\n`;
+      md += `> "${bloco.narracao_off || bloco.texto}"\n\n`;
+    }
+    
+    if (bloco.efeitos || bloco.tecnica) {
+      md += `🎬 **EFEITOS VISUAIS/ÁUDIO:**\n`;
+      md += `> ${bloco.efeitos || bloco.tecnica}\n\n`;
+    }
+    
+    if (bloco.sugestao_tecnica || bloco.observacao) {
+      md += `🎥 **SUGESTÃO TÉCNICA:**\n`;
+      md += `> ${bloco.sugestao_tecnica || bloco.observacao}\n\n`;
+    }
+    
+    md += `⏱️ **DURAÇÃO ESTIMADA:** ${bloco.duracao || bloco.tempo}\n\n`;
+    md += `---\n\n`;
   });
   
-  md += `---\n\n`;
-  md += `## 🎬 Referências Técnicas\n\n`;
-  md += `- **Lente:** ${roteiro.referencias_tecnicas.lente}\n`;
-  md += `- **Filtro:** ${roteiro.referencias_tecnicas.filtro}\n`;
-  md += `- **Horário:** ${roteiro.referencias_tecnicas.hora}\n`;
-  md += `- **Movimento:** ${roteiro.referencias_tecnicas.movimento}\n`;
-  md += `- **Cor:** ${roteiro.referencias_tecnicas.cor}\n\n`;
+  md += `## 🎬 REFERÊNCIAS TÉCNICAS\n\n`;
+  md += `| Aspecto | Especificação |\n|---------|---------------|\n`;
+  md += `| **Lente recomendada** | ${roteiro.referencias_tecnicas.lente} |\n`;
+  md += `| **Filtro/Iluminação** | ${roteiro.referencias_tecnicas.filtro} |\n`;
+  md += `| **Horário ideal** | ${roteiro.referencias_tecnicas.hora} |\n`;
+  md += `| **Movimento de câmera** | ${roteiro.referencias_tecnicas.movimento} |\n`;
+  md += `| **Tratamento de cor** | ${roteiro.referencias_tecnicas.cor} |\n\n`;
   
   md += `---\n\n`;
-  md += `## 📌 Observações Finais\n\n`;
-  md += `**Mensagem-chave:** ${roteiro.observacoes_finais.mensagem_chave}\n\n`;
-  md += `**CTA:** ${roteiro.observacoes_finais.cta}\n`;
+  md += `## 📌 OBSERVAÇÕES FINAIS\n\n`;
+  md += `**Mensagem-chave:** ${roteiro.observacoes_finais.mensagem_chave || roteiro.observacoes_finais}\n\n`;
+  
+  if (roteiro.observacoes_finais.cta) {
+    md += `**Call to Action (CTA):** ${roteiro.observacoes_finais.cta}\n\n`;
+  }
+  
+  if (roteiro.framework_usado && roteiro.framework_usado !== 'Storytelling tradicional') {
+    md += `**Framework aplicado:** ${roteiro.framework_usado}\n\n`;
+  }
+  
+  md += `---\n\n`;
+  md += `*Roteiro gerado por ${roteiro.agente_usado || 'BEX AI'} - ${roteiro.identificacao.data}*\n`;
   
   return md;
 }

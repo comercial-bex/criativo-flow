@@ -101,6 +101,31 @@ export default function RoteiroWizard({ mode, roteiroId, initialData }: RoteiroW
     }
   }, [initialData]);
 
+  // Carregar dados da tarefa automaticamente
+  useEffect(() => {
+    const loadTarefaData = async () => {
+      if (formData.tarefa_id && !hasLoadedInitialData.current) {
+        const { data: tarefa } = await supabase
+          .from('tarefa')
+          .select('titulo, descricao, publico_alvo, horas_estimadas')
+          .eq('id', formData.tarefa_id)
+          .single();
+        
+        if (tarefa) {
+          setFormData(prev => ({
+            ...prev,
+            titulo: prev.titulo || tarefa.titulo,
+            objetivo: prev.objetivo || tarefa.descricao,
+            publico_alvo: prev.publico_alvo?.length ? prev.publico_alvo : (tarefa.publico_alvo ? [tarefa.publico_alvo] : []),
+            duracao_prevista_seg: prev.duracao_prevista_seg || (tarefa.horas_estimadas ? Math.min(tarefa.horas_estimadas * 60, 60) : 30),
+          }));
+        }
+      }
+    };
+    
+    loadTarefaData();
+  }, [formData.tarefa_id]);
+
   const handleAutoSave = async () => {
     if (!roteiroId) return;
     try {
