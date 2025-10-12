@@ -404,6 +404,8 @@ export function TarefasKanban({ planejamento, clienteId, projetoId, filters }: T
           prazo_executor: taskData.prazo_executor || taskData.data_prazo,
           origem: taskData.origem || 'avulsa',
           tipo: taskData.tipo || null,
+          setor_responsavel: taskData.setor_responsavel,
+          responsavel_id: taskData.responsavel_id,
           kpis: taskData.kpis || {}
         } as any)
         .select()
