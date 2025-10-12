@@ -636,55 +636,112 @@ export type Database = {
       }
       briefings: {
         Row: {
+          ambiente: string | null
           anexos: string[] | null
+          beneficios: string[] | null
           call_to_action: string | null
+          captacao: string[] | null
           cliente_id: string
           contexto_estrategico: string | null
           created_at: string | null
+          cta: string | null
+          data_entrega: string | null
           descricao: string | null
           formato_postagem: string | null
           hashtags: string | null
           id: string
+          locucao: string | null
+          logo_url: string | null
+          manual_marca_url: string | null
+          mensagem_chave: string | null
+          objetivo: string | null
           objetivo_postagem: string | null
           observacoes: string | null
+          pacote_id: string | null
+          paleta_fontes_url: string | null
+          projeto_gerado_id: string | null
+          provas_sociais: string | null
           publico_alvo: string | null
+          referencias_visuais: Json | null
+          restricoes: string | null
+          status_briefing: string | null
           tarefa_id: string
           titulo: string
+          tom: string | null
           updated_at: string | null
+          veiculacao: string[] | null
         }
         Insert: {
+          ambiente?: string | null
           anexos?: string[] | null
+          beneficios?: string[] | null
           call_to_action?: string | null
+          captacao?: string[] | null
           cliente_id: string
           contexto_estrategico?: string | null
           created_at?: string | null
+          cta?: string | null
+          data_entrega?: string | null
           descricao?: string | null
           formato_postagem?: string | null
           hashtags?: string | null
           id?: string
+          locucao?: string | null
+          logo_url?: string | null
+          manual_marca_url?: string | null
+          mensagem_chave?: string | null
+          objetivo?: string | null
           objetivo_postagem?: string | null
           observacoes?: string | null
+          pacote_id?: string | null
+          paleta_fontes_url?: string | null
+          projeto_gerado_id?: string | null
+          provas_sociais?: string | null
           publico_alvo?: string | null
+          referencias_visuais?: Json | null
+          restricoes?: string | null
+          status_briefing?: string | null
           tarefa_id: string
           titulo: string
+          tom?: string | null
           updated_at?: string | null
+          veiculacao?: string[] | null
         }
         Update: {
+          ambiente?: string | null
           anexos?: string[] | null
+          beneficios?: string[] | null
           call_to_action?: string | null
+          captacao?: string[] | null
           cliente_id?: string
           contexto_estrategico?: string | null
           created_at?: string | null
+          cta?: string | null
+          data_entrega?: string | null
           descricao?: string | null
           formato_postagem?: string | null
           hashtags?: string | null
           id?: string
+          locucao?: string | null
+          logo_url?: string | null
+          manual_marca_url?: string | null
+          mensagem_chave?: string | null
+          objetivo?: string | null
           objetivo_postagem?: string | null
           observacoes?: string | null
+          pacote_id?: string | null
+          paleta_fontes_url?: string | null
+          projeto_gerado_id?: string | null
+          provas_sociais?: string | null
           publico_alvo?: string | null
+          referencias_visuais?: Json | null
+          restricoes?: string | null
+          status_briefing?: string | null
           tarefa_id?: string
           titulo?: string
+          tom?: string | null
           updated_at?: string | null
+          veiculacao?: string[] | null
         }
         Relationships: [
           {
@@ -707,6 +764,20 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "vw_client_metrics"
             referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "briefings_pacote_id_fkey"
+            columns: ["pacote_id"]
+            isOneToOne: false
+            referencedRelation: "pacotes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "briefings_projeto_gerado_id_fkey"
+            columns: ["projeto_gerado_id"]
+            isOneToOne: false
+            referencedRelation: "projetos"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "briefings_tarefa_id_fkey"
@@ -5302,6 +5373,133 @@ export type Database = {
             referencedColumns: ["responsavel_id"]
           },
         ]
+      }
+      pacote_itens: {
+        Row: {
+          created_at: string | null
+          duracao_padrao_min: number | null
+          id: string
+          nome: string
+          ordem: number | null
+          pacote_id: string | null
+          quantidade: number
+          skill: string
+          unidade: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          duracao_padrao_min?: number | null
+          id?: string
+          nome: string
+          ordem?: number | null
+          pacote_id?: string | null
+          quantidade?: number
+          skill: string
+          unidade?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          duracao_padrao_min?: number | null
+          id?: string
+          nome?: string
+          ordem?: number | null
+          pacote_id?: string | null
+          quantidade?: number
+          skill?: string
+          unidade?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pacote_itens_pacote_id_fkey"
+            columns: ["pacote_id"]
+            isOneToOne: false
+            referencedRelation: "pacotes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pacote_task_templates: {
+        Row: {
+          anexos_obrigatorios: string[] | null
+          checklist_items: string[] | null
+          created_at: string | null
+          depende_de: string[] | null
+          descricao: string | null
+          id: string
+          pacote_item_id: string | null
+          prazo_offset_dias: number | null
+          skill: string
+          titulo: string
+        }
+        Insert: {
+          anexos_obrigatorios?: string[] | null
+          checklist_items?: string[] | null
+          created_at?: string | null
+          depende_de?: string[] | null
+          descricao?: string | null
+          id?: string
+          pacote_item_id?: string | null
+          prazo_offset_dias?: number | null
+          skill: string
+          titulo: string
+        }
+        Update: {
+          anexos_obrigatorios?: string[] | null
+          checklist_items?: string[] | null
+          created_at?: string | null
+          depende_de?: string[] | null
+          descricao?: string | null
+          id?: string
+          pacote_item_id?: string | null
+          prazo_offset_dias?: number | null
+          skill?: string
+          titulo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pacote_task_templates_pacote_item_id_fkey"
+            columns: ["pacote_item_id"]
+            isOneToOne: false
+            referencedRelation: "pacote_itens"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pacotes: {
+        Row: {
+          ativo: boolean | null
+          created_at: string | null
+          descricao: string | null
+          id: string
+          nome: string
+          preco_base: number | null
+          slug: string
+          tipo: string
+          updated_at: string | null
+        }
+        Insert: {
+          ativo?: boolean | null
+          created_at?: string | null
+          descricao?: string | null
+          id?: string
+          nome: string
+          preco_base?: number | null
+          slug: string
+          tipo: string
+          updated_at?: string | null
+        }
+        Update: {
+          ativo?: boolean | null
+          created_at?: string | null
+          descricao?: string | null
+          id?: string
+          nome?: string
+          preco_base?: number | null
+          slug?: string
+          tipo?: string
+          updated_at?: string | null
+        }
+        Relationships: []
       }
       pagamentos: {
         Row: {
