@@ -10,12 +10,12 @@ interface Step3PersonalizacaoProps {
 }
 
 export default function Step3Personalizacao({ formData, setFormData }: Step3PersonalizacaoProps) {
-  const handleAgenteSelect = (agenteId: string) => {
-    setFormData({ ...formData, agente_ia_id: agenteId });
+  const handleAgenteSelect = (agenteIds: string[]) => {
+    setFormData({ ...formData, agentes_ia_ids: agenteIds });
   };
 
   const handleFrameworkSelect = (frameworkId: string) => {
-    setFormData({ ...formData, framework_id: frameworkId });
+    setFormData({ ...formData, frameworks_ids: frameworkId ? [frameworkId] : [] });
   };
 
   const handleTomToggle = (ton: string) => {
@@ -36,14 +36,14 @@ export default function Step3Personalizacao({ formData, setFormData }: Step3Pers
       </div>
 
       <AgenteSelector
-        selectedId={formData.agente_ia_id}
+        selectedIds={formData.agentes_ia_ids || []}
         onSelect={handleAgenteSelect}
       />
 
       <FrameworkSelector
-        selectedIds={formData.framework_id ? [formData.framework_id] : []}
+        selectedIds={formData.frameworks_ids || []}
         onSelect={handleFrameworkSelect}
-        multiSelect={false}
+        multiSelect={true}
       />
 
       <TomCreativoSelector

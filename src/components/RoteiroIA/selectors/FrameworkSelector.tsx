@@ -23,7 +23,15 @@ export default function FrameworkSelector({
   }, {} as Record<string, typeof frameworks>);
 
   const handleSelect = (id: string) => {
-    onSelect(id);
+    if (multiSelect) {
+      const isSelected = selectedIds.includes(id);
+      const newSelection = isSelected 
+        ? selectedIds.filter(sid => sid !== id)
+        : [...selectedIds, id];
+      onSelect(newSelection[0] || ''); // Manter apenas 1 por enquanto mas preparar para múltiplos
+    } else {
+      onSelect(id);
+    }
   };
 
   if (isLoading) {
@@ -40,6 +48,11 @@ export default function FrameworkSelector({
     <div className="space-y-6">
       <h3 className="text-lg font-semibold flex items-center gap-2">
         📚 Frameworks de Conteúdo
+        {selectedIds.length > 0 && (
+          <span className="bg-primary text-primary-foreground text-xs px-2 py-1 rounded-full">
+            {selectedIds.length}
+          </span>
+        )}
       </h3>
 
       {Object.entries(frameworksPorCategoria).map(([categoria, fws]) => (

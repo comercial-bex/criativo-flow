@@ -22,6 +22,8 @@ interface BriefingData {
   formato?: string;
   agente_ia_id?: string;
   framework_id?: string;
+  agentes_ia_ids?: string[];
+  frameworks_ids?: string[];
   tom_criativo?: string[];
   publico_alvo_descricao?: string;
   persona_voz?: string;
@@ -54,28 +56,34 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Buscar agente de IA se fornecido
-    let agente: any = null;
-    if (briefingData.agente_ia_id) {
+    // Buscar múltiplos agentes de IA
+    let agentes: any[] = [];
+    const agentesIds = briefingData.agentes_ia_ids?.length 
+      ? briefingData.agentes_ia_ids 
+      : (briefingData.agente_ia_id ? [briefingData.agente_ia_id] : []);
+      
+    if (agentesIds.length > 0) {
       const { data } = await supabaseAdmin
         .from('roteiro_agentes_ia')
         .select('*')
-        .eq('id', briefingData.agente_ia_id)
-        .single();
-      agente = data;
-      console.log('✅ Agente carregado:', agente?.nome);
+        .in('id', agentesIds);
+      agentes = data || [];
+      console.log('✅ Agentes carregados:', agentes.map(a => a.nome).join(', '));
     }
 
-    // Buscar framework se fornecido
-    let framework: any = null;
-    if (briefingData.framework_id) {
+    // Buscar múltiplos frameworks
+    let frameworks: any[] = [];
+    const frameworksIds = briefingData.frameworks_ids?.length
+      ? briefingData.frameworks_ids
+      : (briefingData.framework_id ? [briefingData.framework_id] : []);
+      
+    if (frameworksIds.length > 0) {
       const { data } = await supabaseAdmin
         .from('roteiro_frameworks')
         .select('*')
-        .eq('id', briefingData.framework_id)
-        .single();
-      framework = data;
-      console.log('✅ Framework carregado:', framework?.nome);
+        .in('id', frameworksIds);
+      frameworks = data || [];
+      console.log('✅ Frameworks carregados:', frameworks.map(f => f.nome).join(', '));
     }
 
     // Verificar se temos Lovable AI disponível
@@ -101,7 +109,7 @@ Título: ${briefingData.titulo}
 Duração: ${briefingData.duracao_prevista_seg || 30} segundos
 Veiculação: ${briefingData.veiculacao?.join(', ') || 'Redes sociais'}
 Data: ${new Date().toLocaleDateString('pt-BR')}
-Criação: ${agente?.nome || 'BEX Creative Team'}
+Criação: ${agentes.length > 0 ? agentes.map(a => a.nome).join(' + ') : 'BEX Creative Team'}
 
 ---
 OBJETIVO E TOM
@@ -258,8 +266,8 @@ Use como inspiração de estilo visual e narrativo (não copie conteúdo literal
         },
         objetivo: briefingData.objetivo,
         tom: briefingData.tom,
-        agente_usado: agente?.nome || 'BEX Creative Team',
-        framework_usado: framework?.nome || 'Storytelling tradicional',
+        agente_usado: agentes.length > 0 ? agentes.map(a => a.nome).join(' + ') : 'BEX Creative Team',
+        framework_usado: frameworks.length > 0 ? frameworks.map(f => f.nome).join(' + ') : 'Storytelling tradicional',
         tons_criativos: briefingData.tom_criativo || [],
         blocos: blocos,
         referencias_tecnicas: sugestoesTecnicas,
@@ -276,8 +284,8 @@ Use como inspiração de estilo visual e narrativo (não copie conteúdo literal
       JSON.stringify({ 
         success: true, 
         roteiro: roteiroGerado,
-        agente_usado: agente?.nome,
-        framework_usado: framework?.nome,
+        agentes_usados: agentes.map(a => a.nome),
+        frameworks_usados: frameworks.map(f => f.nome),
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

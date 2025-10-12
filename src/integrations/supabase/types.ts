@@ -7727,6 +7727,7 @@ export type Database = {
       roteiros: {
         Row: {
           agente_ia_id: string | null
+          agentes_ia_ids: string[] | null
           cliente_id: string
           created_at: string
           created_by: string | null
@@ -7734,6 +7735,7 @@ export type Database = {
           duracao_prevista_seg: number
           estilo: Json | null
           framework_id: string | null
+          frameworks_ids: string[] | null
           hash_publico: string | null
           hashtags: string | null
           id: string
@@ -7762,6 +7764,7 @@ export type Database = {
         }
         Insert: {
           agente_ia_id?: string | null
+          agentes_ia_ids?: string[] | null
           cliente_id: string
           created_at?: string
           created_by?: string | null
@@ -7769,6 +7772,7 @@ export type Database = {
           duracao_prevista_seg?: number
           estilo?: Json | null
           framework_id?: string | null
+          frameworks_ids?: string[] | null
           hash_publico?: string | null
           hashtags?: string | null
           id?: string
@@ -7799,6 +7803,7 @@ export type Database = {
         }
         Update: {
           agente_ia_id?: string | null
+          agentes_ia_ids?: string[] | null
           cliente_id?: string
           created_at?: string
           created_by?: string | null
@@ -7806,6 +7811,7 @@ export type Database = {
           duracao_prevista_seg?: number
           estilo?: Json | null
           framework_id?: string | null
+          frameworks_ids?: string[] | null
           hash_publico?: string | null
           hashtags?: string | null
           id?: string

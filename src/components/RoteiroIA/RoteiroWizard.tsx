@@ -52,6 +52,8 @@ export default function RoteiroWizard({ mode, roteiroId, initialData }: RoteiroW
     versao: 1,
     agente_ia_id: "",
     framework_id: "",
+    agentes_ia_ids: [] as string[],
+    frameworks_ids: [] as string[],
     tom_criativo: [] as string[],
     logo_url: "",
     cliente_nome: "",
@@ -207,9 +209,12 @@ export default function RoteiroWizard({ mode, roteiroId, initialData }: RoteiroW
       ],
       cta: formData.cta || "Saiba mais! Entre em contato.",
       
-      // IA E FRAMEWORKS
-      agente_ia_id: formData.agente_ia_id,
-      framework_id: formData.framework_id,
+      // IA E FRAMEWORKS (múltiplos)
+      agentes_ia_ids: formData.agentes_ia_ids || [],
+      frameworks_ids: formData.frameworks_ids || [],
+      // Manter campos antigos por compatibilidade
+      agente_ia_id: formData.agentes_ia_ids?.[0] || formData.agente_ia_id,
+      framework_id: formData.frameworks_ids?.[0] || formData.framework_id,
       
       // REFERÊNCIAS
       referencias: formData.referencias || "",
