@@ -214,13 +214,33 @@ export function CreateTaskModal({
 
   // Auto-preencher cliente/projeto quando modal for aberto dentro de um projeto
   useEffect(() => {
-    if (open && projetoId && clienteId) {
+    if (open && projetoId) {
       console.log('🎯 Auto-preenchendo projeto:', { clienteId, projetoId });
-      setSelectedCliente(clienteId);
-      setSelectedProjeto(projetoId);
       
-      // Buscar projetos do cliente para popular o dropdown
-      fetchProjetosByCliente(clienteId);
+      if (clienteId) {
+        // Cliente veio por props, usar direto
+        setSelectedCliente(clienteId);
+        setSelectedProjeto(projetoId);
+        fetchProjetosByCliente(clienteId);
+      } else {
+        // Cliente não veio, buscar do projeto
+        const fetchClienteFromProjeto = async () => {
+          const { data, error } = await supabase
+            .from('projetos')
+            .select('cliente_id')
+            .eq('id', projetoId)
+            .single();
+          
+          if (!error && data) {
+            console.log('✅ Cliente encontrado do projeto:', data.cliente_id);
+            setSelectedCliente(data.cliente_id);
+            setSelectedProjeto(projetoId);
+            fetchProjetosByCliente(data.cliente_id);
+          }
+        };
+        
+        fetchClienteFromProjeto();
+      }
     }
   }, [open, projetoId, clienteId]);
 
