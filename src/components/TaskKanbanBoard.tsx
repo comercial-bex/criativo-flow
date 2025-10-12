@@ -1,31 +1,24 @@
 import { useState } from 'react';
 import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, useDroppable } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
-import { useSortable } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { SmartStatusBadge } from '@/components/SmartStatusBadge';
-import { 
-  Plus, 
-  Calendar, 
-  User, 
-  Clock,
-  AlertTriangle,
-  FileText,
-  GripVertical
-} from 'lucide-react';
+import { AnimatePresence } from 'framer-motion';
+import { Plus } from 'lucide-react';
+import { BexCard, BexCardContent, BexCardHeader, BexCardTitle } from '@/components/ui/bex-card';
+import { BexButton } from '@/components/ui/bex-button';
+import { ModernKanbanCard } from '@/components/ModernKanbanCard';
 import { TaskWithDeadline } from '@/utils/statusUtils';
 
-interface KanbanTask extends TaskWithDeadline {
+export interface KanbanTask extends TaskWithDeadline {
   descricao?: string;
   responsavel_id?: string;
   responsavel_nome?: string;
+  responsavel_avatar?: string;
   executor_area?: string;
   setor_responsavel?: string;
   prioridade: 'baixa' | 'media' | 'alta';
   horas_trabalhadas?: number;
+  horas_estimadas?: number;
+  prazo_executor?: string | null;
 }
 
 interface KanbanColumn {
@@ -43,111 +36,7 @@ interface TaskKanbanBoardProps {
   projetoId: string;
 }
 
-function SortableTaskCard({ task, onTaskClick }: { task: KanbanTask; onTaskClick: (task: KanbanTask) => void }) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: task.id });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
-  };
-
-  const getPriorityColor = (prioridade: string) => {
-    switch (prioridade) {
-      case 'alta': return 'bg-red-500';
-      case 'media': return 'bg-yellow-500';
-      default: return 'bg-green-500';
-    }
-  };
-
-  return (
-    <Card 
-      ref={setNodeRef} 
-      style={style}
-      className="hover:shadow-md transition-shadow mb-3"
-    >
-      <CardContent className="p-4 space-y-3">
-        <div className="flex items-start gap-2">
-          {/* Drag Handle */}
-          <div 
-            {...attributes} 
-            {...listeners}
-            className="cursor-grab active:cursor-grabbing p-1 hover:bg-accent rounded flex-shrink-0 mt-0.5"
-          >
-            <GripVertical className="h-4 w-4 text-muted-foreground" />
-          </div>
-
-          {/* Clickable content area */}
-          <div 
-            onClick={() => onTaskClick(task)}
-            className="flex-1 cursor-pointer space-y-3"
-          >
-            {/* Priority indicator and status */}
-            <div className="flex items-start justify-between">
-              <div className={`w-3 h-3 rounded-full ${getPriorityColor(task.prioridade)}`} />
-              <SmartStatusBadge task={task} showIcon={false} />
-            </div>
-
-            {/* Task title */}
-            <h4 className="font-medium text-sm leading-tight">{task.titulo}</h4>
-
-            {/* Task details */}
-            <div className="space-y-2 text-xs text-muted-foreground">
-              <div className="flex items-center gap-2">
-                {task.executor_area && (
-                  <Badge variant="outline" className="text-xs">
-                    {task.executor_area}
-                  </Badge>
-                )}
-              </div>
-
-              {task.responsavel_nome && (
-                <div className="flex items-center gap-1">
-                  <User className="h-3 w-3" />
-                  <span>{task.responsavel_nome}</span>
-                </div>
-              )}
-
-              {task.data_prazo && (
-                <div className="flex items-center gap-1">
-                  <Calendar className="h-3 w-3" />
-                  <span>{new Date(task.data_prazo).toLocaleDateString('pt-BR')}</span>
-                </div>
-              )}
-            </div>
-
-            {/* Additional indicators */}
-            <div className="flex items-center justify-between">
-              {task.descricao && (
-                <FileText className="h-3 w-3 text-muted-foreground" />
-              )}
-              
-              {/* Show alert if near deadline */}
-              {task.data_prazo && (
-                (() => {
-                  const now = new Date();
-                  const deadline = new Date(task.data_prazo);
-                  const remainingDays = Math.ceil((deadline.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-                  
-                  return remainingDays <= 2 && remainingDays >= 0 ? (
-                    <AlertTriangle className="h-3 w-3 text-red-500" />
-                  ) : null;
-                })()
-              )}
-            </div>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
+// Removed - using ModernKanbanCard instead
 
 function KanbanColumnComponent({ 
   column, 
@@ -162,59 +51,67 @@ function KanbanColumnComponent({
     id: column.id,
   });
 
+  const columnGradient = {
+    "a_fazer": "bg-gradient-to-r from-gray-500/10 to-transparent",
+    "em_andamento": "bg-gradient-to-r from-blue-500/10 to-transparent",
+    "concluido": "bg-gradient-to-r from-bex/10 to-transparent",
+  }[column.id] || "bg-gradient-to-r from-gray-500/10 to-transparent";
+
   return (
-    <div className="flex-1 min-w-[280px]">
-      <Card>
-        <CardHeader className="pb-3">
+    <div className="flex-1 min-w-[300px]">
+      <BexCard variant="gaming">
+        <BexCardHeader className={`pb-3 ${columnGradient}`}>
           <div className="flex items-center justify-between">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
+            <BexCardTitle className="text-sm font-medium flex items-center gap-2">
               <div className={`w-3 h-3 rounded-full ${column.color}`} />
               {column.title}
-              <Badge variant="secondary" className="ml-2">
+              <div className="px-2 py-0.5 bg-bex/20 border border-bex/30 rounded-full text-xs font-semibold text-bex">
                 {column.tasks.length}
-              </Badge>
-            </CardTitle>
-            <Button 
-              variant="ghost" 
+              </div>
+            </BexCardTitle>
+            <BexButton 
+              variant="bexGhost" 
               size="sm"
               onClick={() => onTaskCreate(column.id)}
             >
               <Plus className="h-4 w-4" />
-            </Button>
+            </BexButton>
           </div>
-        </CardHeader>
-        <CardContent 
+        </BexCardHeader>
+        <BexCardContent 
           ref={setNodeRef}
-          className={`space-y-2 max-h-[600px] overflow-y-auto transition-colors ${
-            isOver ? 'bg-accent/50' : ''
+          className={`space-y-3 max-h-[600px] overflow-y-auto transition-colors ${
+            isOver ? 'bg-bex/10 border-bex/50 shadow-bex' : ''
           }`}
         >
           <SortableContext items={column.tasks.map(task => task.id)} strategy={verticalListSortingStrategy}>
-            {column.tasks.map((task) => (
-              <SortableTaskCard 
-                key={task.id} 
-                task={task} 
-                onTaskClick={onTaskClick}
-              />
-            ))}
+            <AnimatePresence mode="popLayout">
+              {column.tasks.map((task) => (
+                <ModernKanbanCard 
+                  key={task.id} 
+                  task={task} 
+                  onTaskClick={onTaskClick}
+                />
+              ))}
+            </AnimatePresence>
           </SortableContext>
           
           {column.tasks.length === 0 && (
             <div className="text-center py-8 text-muted-foreground">
               <p className="text-sm">Nenhuma tarefa</p>
-              <Button 
-                variant="ghost" 
+              <BexButton 
+                variant="bexGhost" 
                 size="sm" 
                 className="mt-2"
                 onClick={() => onTaskCreate(column.id)}
               >
                 <Plus className="h-4 w-4 mr-2" />
                 Adicionar Tarefa
-              </Button>
+              </BexButton>
             </div>
           )}
-        </CardContent>
-      </Card>
+        </BexCardContent>
+      </BexCard>
     </div>
   );
 }
@@ -306,7 +203,11 @@ export function TaskKanbanBoard({ tasks, onTaskMove, onTaskCreate, onTaskClick, 
 
       <DragOverlay>
         {activeTask ? (
-          <SortableTaskCard task={activeTask} onTaskClick={() => {}} />
+          <ModernKanbanCard 
+            task={activeTask} 
+            onTaskClick={onTaskClick}
+            isDragging
+          />
         ) : null}
       </DragOverlay>
     </DndContext>
