@@ -102,17 +102,6 @@ export default function Step2TomEstilo({ formData, setFormData }: any) {
           Exemplo: "Guilherme – social media, linguagem meiga, PT-BR padrão, inserções sutis do Norte (Amapá)..."
         </p>
       </div>
-
-      <div className="flex items-center space-x-2">
-        <Checkbox
-          id="legendas"
-          checked={formData.incluir_legendas}
-          onCheckedChange={(checked) => setFormData({ ...formData, incluir_legendas: checked })}
-        />
-        <Label htmlFor="legendas" className="cursor-pointer">
-          Incluir sugestões de legendas com CTA, emojis e hashtags
-        </Label>
-      </div>
     </div>
   );
 }

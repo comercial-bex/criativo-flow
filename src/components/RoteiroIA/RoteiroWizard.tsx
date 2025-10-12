@@ -45,7 +45,6 @@ export default function RoteiroWizard({ mode, roteiroId, initialData }: RoteiroW
     tom: [] as string[],
     estilo: [] as string[],
     persona_voz: "Guilherme – social media, linguagem meiga, PT-BR padrão, inserções sutis do Norte (Amapá)...",
-    incluir_legendas: true,
     duracao_prevista_seg: 30,
     roteiro_markdown: "",
     roteiro_struct: null,
