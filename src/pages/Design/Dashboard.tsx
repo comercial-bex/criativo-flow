@@ -21,9 +21,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useTutorial } from '@/hooks/useTutorial';
 import { TutorialButton } from '@/components/TutorialButton';
-import { PomodoroTimer } from "@/components/Produtividade/PomodoroTimer";
-import { MetasSmart } from "@/components/Produtividade/MetasSmart";
-import { InsightsIA } from "@/components/Produtividade/InsightsIA";
+import { SecaoProdutividade } from "@/components/Produtividade/SecaoProdutividade";
 
 interface DashboardStats {
   tarefasAbertas: number;
@@ -177,15 +175,8 @@ export default function DesignDashboard() {
         </div>
       </div>
 
-      {/* Kit de Produtividade */}
-      <div>
-        <h2 className="text-xl font-semibold mb-4">Kit de Produtividade</h2>
-        <div className="grid gap-6 md:grid-cols-3">
-          <PomodoroTimer setor="design" />
-          <MetasSmart setor="design" />
-          <InsightsIA setor="design" />
-        </div>
-      </div>
+      {/* Seção de Produtividade Pessoal */}
+      <SecaoProdutividade setor="design" defaultExpanded={false} />
 
       {/* Stats Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4" data-tour="kpis">

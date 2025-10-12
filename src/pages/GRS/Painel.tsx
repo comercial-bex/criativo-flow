@@ -4,9 +4,7 @@ import MetricasRapidas from "@/components/GRS/MetricasRapidas";
 import KitProdutividade from "@/components/GRS/KitProdutividade";
 import TabelaProjetos from "@/components/GRS/TabelaProjetos";
 import TimelineAtividades from "@/components/GRS/TimelineAtividades";
-import { PomodoroTimer } from "@/components/Produtividade/PomodoroTimer";
-import { MetasSmart } from "@/components/Produtividade/MetasSmart";
-import { InsightsIA } from "@/components/Produtividade/InsightsIA";
+import { SecaoProdutividade } from "@/components/Produtividade/SecaoProdutividade";
 
 export default function PainelGRS() {
   const { user } = useAuth();
@@ -24,14 +22,14 @@ export default function PainelGRS() {
       {/* Cards de Métricas Rápidas */}
       <MetricasRapidas />
 
+      {/* Seção de Produtividade Pessoal */}
+      <SecaoProdutividade setor="grs" defaultExpanded={false} />
+
       {/* Layout Principal: Kit de Produtividade + Conteúdo */}
       <div className="grid grid-cols-1 lg:grid-cols-[350px_1fr] gap-6">
         {/* Coluna Esquerda: Kit de Produtividade */}
         <aside className="space-y-6">
           <KitProdutividade />
-          <PomodoroTimer setor="grs" />
-          <MetasSmart setor="grs" />
-          <InsightsIA setor="grs" />
         </aside>
 
         {/* Coluna Direita: Projetos e Timeline */}
