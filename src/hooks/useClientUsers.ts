@@ -75,10 +75,45 @@ export function useClientUsers(clienteId: string) {
     },
   });
 
+  const createUserMutation = useMutation({
+    mutationFn: async (userData: { 
+      email: string; 
+      password: string; 
+      nome: string; 
+      role_cliente: string;
+    }) => {
+      const { data, error } = await supabase.functions.invoke(
+        'create-client-user',
+        {
+          body: {
+            email: userData.email,
+            password: userData.password,
+            nome: userData.nome,
+            cliente_id: clienteId,
+            role_cliente: userData.role_cliente
+          }
+        }
+      );
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data) => {
+      smartToast.success("Usuário criado com sucesso!");
+      smartToast.info(`Email: ${data.email} | Senha: ${data.password}`);
+      queryClient.invalidateQueries({ queryKey: ["client-users", clienteId] });
+    },
+    onError: (error: Error) => {
+      smartToast.error("Erro ao criar usuário", error.message);
+    }
+  });
+
   return {
     users,
     loading: isLoading,
     deactivateUser: deactivateMutation.mutate,
     updateRole: updateRoleMutation.mutate,
+    createUser: createUserMutation.mutate,
+    creatingUser: createUserMutation.isPending,
   };
 }

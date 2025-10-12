@@ -8,15 +8,17 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { UserPlus, UserMinus, Mail, CheckCircle, XCircle } from "lucide-react";
+import { AddClientUserModal } from "./AddClientUserModal";
 
 interface UsuariosTabProps {
   clienteId: string;
 }
 
 export function UsuariosTab({ clienteId }: UsuariosTabProps) {
-  const { users, loading, deactivateUser } = useClientUsers(clienteId);
+  const { users, loading, deactivateUser, createUser } = useClientUsers(clienteId);
   const [searchTerm, setSearchTerm] = useState("");
   const [userToDeactivate, setUserToDeactivate] = useState<string | null>(null);
+  const [addUserModalOpen, setAddUserModalOpen] = useState(false);
 
   const filteredUsers = users.filter(
     (user) =>
@@ -48,7 +50,7 @@ export function UsuariosTab({ clienteId }: UsuariosTabProps) {
           placeholder="Buscar por nome ou email..."
           className="max-w-sm"
         />
-        <Button>
+        <Button onClick={() => setAddUserModalOpen(true)}>
           <UserPlus className="h-4 w-4 mr-2" />
           Adicionar Usuário
         </Button>
@@ -139,6 +141,13 @@ export function UsuariosTab({ clienteId }: UsuariosTabProps) {
             setUserToDeactivate(null);
           }
         }}
+      />
+
+      <AddClientUserModal
+        open={addUserModalOpen}
+        onOpenChange={setAddUserModalOpen}
+        clienteId={clienteId}
+        onSuccess={(userData) => createUser(userData)}
       />
     </div>
   );
