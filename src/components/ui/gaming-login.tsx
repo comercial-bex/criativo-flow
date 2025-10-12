@@ -4,10 +4,13 @@ import { Eye, EyeOff, Mail, Lock, Chrome, Twitter, Gamepad2 } from 'lucide-react
 
 interface LoginFormProps {
     onSubmit: (email: string, password: string, remember: boolean) => void;
+    onForgotPassword?: () => void;
+    loading?: boolean;
 }
 
 interface VideoBackgroundProps {
-    videoUrl: string;
+    videoUrl?: string;
+    imageUrl?: string;
 }
 
 interface FormInputProps {
@@ -77,80 +80,65 @@ const ToggleSwitch: React.FC<ToggleSwitchProps> = ({ checked, onChange, id }) =>
 };
 
 // VideoBackground Component
-const VideoBackground: React.FC<VideoBackgroundProps> = ({ videoUrl }) => {
+const VideoBackground: React.FC<VideoBackgroundProps> = ({ videoUrl, imageUrl }) => {
     const videoRef = useRef<HTMLVideoElement>(null);
 
     useEffect(() => {
-        if (videoRef.current) {
+        if (videoRef.current && videoUrl) {
             videoRef.current.play().catch(error => {
                 console.error("Video autoplay failed:", error);
             });
         }
-    }, []);
+    }, [videoUrl]);
 
     return (
         <div className="absolute inset-0 w-full h-full overflow-hidden">
-            <div className="absolute inset-0 bg-black/30 z-10" />
-            <video
-                ref={videoRef}
-                className="absolute inset-0 min-w-full min-h-full object-cover w-auto h-auto"
-                autoPlay
-                loop
-                muted
-                playsInline
-            >
-                <source src={videoUrl} type="video/mp4" />
-                Your browser does not support the video tag.
-            </video>
+            <div className="absolute inset-0 bg-black/50 z-10" />
+            {imageUrl ? (
+                <img 
+                    src={imageUrl} 
+                    alt="Background" 
+                    className="absolute inset-0 w-full h-full object-cover"
+                />
+            ) : videoUrl ? (
+                <video
+                    ref={videoRef}
+                    className="absolute inset-0 min-w-full min-h-full object-cover w-auto h-auto"
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                >
+                    <source src={videoUrl} type="video/mp4" />
+                </video>
+            ) : null}
         </div>
     );
 };
 
 // Main LoginForm Component
-const LoginForm: React.FC<LoginFormProps> = ({ onSubmit }) => {
+const LoginForm: React.FC<LoginFormProps> = ({ onSubmit, onForgotPassword, loading = false }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [remember, setRemember] = useState(false);
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [isSuccess, setIsSuccess] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setIsSubmitting(true);
-
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        setIsSuccess(true);
-        await new Promise(resolve => setTimeout(resolve, 500));
-
         onSubmit(email, password, remember);
-        setIsSubmitting(false);
-        setIsSuccess(false);
     };
 
     return (
         <div className="p-8 rounded-2xl backdrop-blur-sm bg-black/50 border border-white/10">
             <div className="mb-8 text-center">
-                <h2 className="text-3xl font-bold mb-2 relative group">
-                    <span className="absolute -inset-1 bg-gradient-to-r from-purple-600/30 via-pink-500/30 to-blue-500/30 blur-xl opacity-75 group-hover:opacity-100 transition-all duration-500 animate-pulse"></span>
-                    <span className="relative inline-block text-3xl font-bold mb-2 text-white">
-                        NexusGate
+                <h2 className="text-3xl font-bold mb-4 relative group">
+                    <span className="absolute -inset-1 bg-gradient-to-r from-[#54C43D]/30 via-[#6dd34f]/30 to-[#47a834]/30 blur-xl opacity-75 group-hover:opacity-100 transition-all duration-500"></span>
+                    <span className="relative inline-block text-3xl font-bold text-white">
+                        BEX
                     </span>
-                    <span className="absolute -inset-0.5 bg-gradient-to-r from-purple-500/20 to-pink-500/20 blur-sm opacity-0 group-hover:opacity-100 transition-all duration-300"></span>
                 </h2>
-                <p className="text-white/80 flex flex-col items-center space-y-1">
-                    <span className="relative group cursor-default">
-                        <span className="absolute -inset-1 bg-gradient-to-r from-purple-600/20 to-pink-600/20 blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-500"></span>
-                        <span className="relative inline-block animate-pulse">Your gaming universe awaits</span>
-                    </span>
-                    <span className="text-xs text-white/50 animate-pulse">
-                        [Press Enter to join the adventure]
-                    </span>
-                    <div className="flex space-x-2 text-xs text-white/40">
-                        <span className="animate-pulse">⚔️</span>
-                        <span className="animate-bounce">🎮</span>
-                        <span className="animate-pulse">🏆</span>
-                    </div>
+                <p className="text-white/80">
+                    Faça login em sua conta
                 </p>
             </div>
 
@@ -158,7 +146,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit }) => {
                 <FormInput
                     icon={<Mail className="text-white/60" size={18} />}
                     type="email"
-                    placeholder="Email address"
+                    placeholder="E-mail"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
@@ -168,7 +156,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit }) => {
                     <FormInput
                         icon={<Lock className="text-white/60" size={18} />}
                         type={showPassword ? "text" : "password"}
-                        placeholder="Password"
+                        placeholder="Senha"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         required
@@ -197,45 +185,31 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit }) => {
                             className="text-sm text-white/80 cursor-pointer hover:text-white transition-colors"
                             onClick={() => setRemember(!remember)}
                         >
-                            Remember me
+                            Lembrar-me
                         </label>
                     </div>
-                    <a href="#" className="text-sm text-white/80 hover:text-white transition-colors">
-                        Forgot password?
-                    </a>
+                    <button 
+                        type="button"
+                        onClick={onForgotPassword}
+                        className="text-sm text-white/80 hover:text-white transition-colors"
+                    >
+                        Esqueci minha senha
+                    </button>
                 </div>
 
                 <button
                     type="submit"
-                    disabled={isSubmitting}
-                    className={`w-full py-3 rounded-lg ${isSuccess
-                            ? 'animate-success'
-                            : 'bg-purple-600 hover:bg-purple-700'
-                        } text-white font-medium transition-all duration-200 ease-in-out transform hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none shadow-lg shadow-purple-500/20 hover:shadow-purple-500/40`}
+                    disabled={loading}
+                    className="w-full py-3 rounded-lg bg-[#54C43D] hover:bg-[#47a834] text-white font-medium transition-all duration-200 ease-in-out transform hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-[#54C43D] focus:ring-opacity-50 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none shadow-lg shadow-[#54C43D]/20 hover:shadow-[#54C43D]/40"
                 >
-                    {isSubmitting ? 'Logging in...' : 'Enter NexusGate'}
+                    {loading ? 'Entrando...' : 'Prosseguir'}
                 </button>
             </form>
 
-            <div className="mt-8">
-                <div className="relative flex items-center justify-center">
-                    <div className="border-t border-white/10 absolute w-full"></div>
-                    <div className="bg-transparent px-4 relative text-white/60 text-sm">
-                        quick access via
-                    </div>
-                </div>
-
-                <div className="mt-6 grid grid-cols-3 gap-3">
-                    <SocialButton icon={<Chrome size={18} />} name="Chrome" />
-                    <SocialButton icon={<Twitter size={18} />} name="X" />
-                    <SocialButton icon={<Gamepad2 size={18} />} name="Steam" />
-                </div>
-            </div>
-
             <p className="mt-8 text-center text-sm text-white/60">
-                Don't have an account?{' '}
-                <a href="#" className="font-medium text-white hover:text-purple-300 transition-colors">
-                    Create Account
+                Não tem uma conta?{' '}
+                <a href="#" className="font-medium text-white hover:text-[#54C43D] transition-colors">
+                    Inscrever-se
                 </a>
             </p>
         </div>
