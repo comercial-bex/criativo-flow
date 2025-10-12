@@ -1,19 +1,10 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.4";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.57.4';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
-
-interface GRSEvent {
-  type: 'grs.action.created' | 'grs.action.assigned.specialist' | 'task.created.from.grs' | 'approval.request.created';
-  trace_id: string;
-  timestamp: string;
-  source: string;
-  data: Record<string, any>;
-  metadata?: Record<string, any>;
-}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -21,102 +12,70 @@ serve(async (req) => {
   }
 
   try {
-    const supabase = createClient(
+    const { event, payload, metadata } = await req.json();
+
+    const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
     );
 
-    const event: GRSEvent = await req.json();
-    
-    console.log(`📢 EVENT-BUS: ${event.type}`, {
-      trace_id: event.trace_id,
-      source: event.source,
-      timestamp: event.timestamp,
+    // Log do evento na tabela event_logs
+    await supabaseClient.from('event_logs').insert({
+      event_type: event,
+      payload: payload,
+      metadata: metadata,
     });
 
-    // 1️⃣ BROADCAST VIA SUPABASE REALTIME
-    const channel = supabase.channel(`events:${event.trace_id}`);
-    
-    await channel.subscribe(async (status) => {
-      if (status === 'SUBSCRIBED') {
-        await channel.send({
-          type: 'broadcast',
-          event: event.type,
-          payload: {
-            trace_id: event.trace_id,
-            data: event.data,
-            timestamp: event.timestamp,
-            source: event.source,
-          }
-        });
-        console.log(`✅ Broadcast enviado: ${event.type}`);
-      }
-    });
-
-    // 2️⃣ LOG ESTRUTURADO NO BANCO
-    const { error: logError } = await supabase
-      .from('logs_atividade')
-      .insert({
-        cliente_id: event.data.cliente_id,
-        usuario_id: event.data.usuario_id || null,
-        acao: `event_bus:${event.type}`,
-        entidade_tipo: 'event_bus',
-        entidade_id: event.trace_id,
-        descricao: `📢 Event Bus: ${event.type}`,
-        trace_id: event.trace_id,
-        metadata: {
-          event_type: event.type,
-          source: event.source,
-          data: event.data,
-          timestamp: event.timestamp,
+    // Processar eventos específicos
+    switch (event) {
+      case 'project.created':
+        // Notificar equipe sobre novo projeto
+        if (payload.responsavel_id) {
+          await supabaseClient.from('notificacoes').insert({
+            user_id: payload.responsavel_id,
+            titulo: 'Novo Projeto Criado',
+            mensagem: `Projeto "${payload.titulo || 'Sem título'}" foi criado com sucesso`,
+            tipo: 'info',
+            data_evento: new Date().toISOString(),
+          });
         }
-      });
+        console.log(`✅ Event: ${event} - Projeto ${payload.projeto_id} criado`);
+        break;
 
-    if (logError) {
-      console.error('❌ Erro ao salvar log:', logError);
-    } else {
-      console.log('✅ Log salvo no banco');
+      case 'task.created':
+        // Notificar executor quando tarefa for atribuída
+        if (payload.executor_id) {
+          await supabaseClient.from('notificacoes').insert({
+            user_id: payload.executor_id,
+            titulo: 'Nova Tarefa Atribuída',
+            mensagem: `Você foi atribuído à tarefa: ${payload.titulo || 'Nova tarefa'}`,
+            tipo: 'info',
+            data_evento: new Date().toISOString(),
+          });
+        }
+        console.log(`✅ Event: ${event} - Tarefa ${payload.tarefa_id} criada`);
+        break;
+
+      case 'briefing.completed':
+        console.log(`✅ Event: ${event} - Briefing ${payload.briefing_id} completo`);
+        break;
+
+      default:
+        console.log(`ℹ️ Event não processado: ${event}`);
     }
-
-    // 3️⃣ (OPCIONAL) WEBHOOK PARA SISTEMAS EXTERNOS
-    if (event.metadata?.webhook_url) {
-      try {
-        const webhookResponse = await fetch(event.metadata.webhook_url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(event),
-        });
-        console.log(`🔗 Webhook enviado: ${webhookResponse.status}`);
-      } catch (webhookError) {
-        console.error('❌ Erro ao enviar webhook:', webhookError);
-      }
-    }
-
-    // Cleanup
-    setTimeout(() => {
-      supabase.removeChannel(channel);
-    }, 1000);
 
     return new Response(
-      JSON.stringify({ 
-        success: true, 
-        trace_id: event.trace_id,
-        message: `Event ${event.type} processado com sucesso`,
-      }),
-      { 
+      JSON.stringify({ success: true, event }),
+      {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
       }
     );
-
   } catch (error) {
-    console.error('❌ Erro no Event Bus:', error);
+    console.error('❌ Erro no event-bus:', error);
     return new Response(
-      JSON.stringify({ 
-        success: false, 
-        error: error.message,
-      }),
-      { 
+      JSON.stringify({ error: error.message }),
+      {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500,
       }

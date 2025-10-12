@@ -57,6 +57,7 @@ import GRSClienteProjetos from "./pages/GRS/ClienteProjetosFluxo";
 import GRSClientes from "./pages/GRS/Clientes";
 import GRSProjetoTarefas from "./pages/GRS/ProjetoTarefasKanban";
 import GRSProjetos from "./pages/GRS/Projetos";
+import GRSNovaOrdem from "./pages/GRS/NovaOrdem";
 import CRMContatos from "./pages/CRM/Contatos";
 import CRMHistorico from "./pages/CRM/Historico";
 import AdminLogs from "./pages/Admin/Logs";
@@ -388,6 +389,12 @@ function App() {
                 <Route path="/grs/cliente/:clienteId/projeto/:projetoId/tarefas" element={
                   <ProtectedRoute requiredRole="grs">
                     <Layout><GRSProjetoTarefas /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/grs/cliente/:clienteId/nova-ordem" element={
+                  <ProtectedRoute requiredRole="grs">
+                    <Layout><GRSNovaOrdem /></Layout>
                   </ProtectedRoute>
                 } />
                 

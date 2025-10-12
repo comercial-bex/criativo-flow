@@ -56,6 +56,8 @@ export function BriefingInteligenteModal({
     captacao: [] as string[],
     ambiente: '',
     restricoes: '',
+    observacoes: '',
+    quantidade_pecas: 1,
     
     // Etapa 5
     logo_url: '',
@@ -152,6 +154,7 @@ export function BriefingInteligenteModal({
           captacao: formData.captacao,
           ambiente: formData.ambiente,
           restricoes: formData.restricoes,
+          observacoes: formData.observacoes,
           logo_url: formData.logo_url,
           paleta_fontes_url: formData.paleta_fontes_url,
           manual_marca_url: formData.manual_marca_url,
@@ -265,7 +268,29 @@ export function BriefingInteligenteModal({
                 type="date"
                 value={formData.data_entrega}
                 onChange={(e) => setFormData({ ...formData, data_entrega: e.target.value })}
+                required
               />
+            </div>
+
+            <div>
+              <Label>Veiculação *</Label>
+              <div className="space-y-2 mt-2">
+                {['TV', 'Redes Sociais', 'Institucional', 'Tráfego Pago'].map((tipo) => (
+                  <div key={tipo} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`veiculacao-${tipo}`}
+                      checked={formData.veiculacao.includes(tipo)}
+                      onCheckedChange={(checked) => {
+                        const newVeiculacao = checked
+                          ? [...formData.veiculacao, tipo]
+                          : formData.veiculacao.filter((v) => v !== tipo);
+                        setFormData({ ...formData, veiculacao: newVeiculacao });
+                      }}
+                    />
+                    <label htmlFor={`veiculacao-${tipo}`} className="text-sm">{tipo}</label>
+                  </div>
+                ))}
+              </div>
             </div>
           </TabsContent>
 
@@ -455,6 +480,29 @@ export function BriefingInteligenteModal({
                 id="restricoes"
                 value={formData.restricoes}
                 onChange={(e) => setFormData({ ...formData, restricoes: e.target.value })}
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="observacoes">Observações Gerais</Label>
+              <Textarea
+                id="observacoes"
+                value={formData.observacoes || ''}
+                onChange={(e) => setFormData({ ...formData, observacoes: e.target.value })}
+                placeholder="Informações adicionais sobre o projeto"
+                rows={4}
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="quantidade_pecas">Quantidade de Peças *</Label>
+              <Input
+                id="quantidade_pecas"
+                type="number"
+                min="1"
+                value={formData.quantidade_pecas || 1}
+                onChange={(e) => setFormData({ ...formData, quantidade_pecas: parseInt(e.target.value) || 1 })}
+                required
               />
             </div>
           </TabsContent>

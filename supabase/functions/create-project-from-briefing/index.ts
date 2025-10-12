@@ -53,8 +53,7 @@ serve(async (req) => {
       cliente_id: briefing.cliente_id,
       titulo: briefing.titulo,
       descricao: `Projeto criado automaticamente a partir do briefing: ${briefing.titulo}`,
-      tipo: briefing.pacotes.tipo === 'social' ? 'campanha' : 
-            briefing.pacotes.tipo === 'audiovisual' ? 'audiovisual' : 'campanha',
+      tipo: 'campanha', // Sempre campanha para jobs não-recorrentes
       status: 'ativo',
       data_inicio: new Date().toISOString().split('T')[0],
       prazo_final: briefing.data_entrega,
@@ -96,10 +95,7 @@ serve(async (req) => {
             cliente_id: briefing.cliente_id,
             titulo: template.titulo,
             descricao: template.descricao || `${template.titulo} - ${item.nome}`,
-            tipo: template.skill === 'design' ? 'design' : 
-                  template.skill === 'filmmaker' ? 'captacao' :
-                  template.skill === 'editor' ? 'edicao' :
-                  template.skill === 'motion' ? 'motion' : 'social',
+            tipo: 'outro', // Usar 'outro' para todas as tarefas
             status: 'aberta',
             prioridade: 'alta',
             data_prazo: prazo.toISOString().split('T')[0],
@@ -138,10 +134,10 @@ serve(async (req) => {
       })
       .eq('id', briefingId);
 
-    // Publicar evento
-    await supabaseClient.functions.invoke('event-bus', {
-      body: {
-        event: 'project.created',
+    // Log do evento (Event Bus será implementado via migration)
+    try {
+      await supabaseClient.from('event_logs').insert({
+        event_type: 'project.created',
         payload: {
           projeto_id: projeto.id,
           briefing_id: briefingId,
@@ -150,9 +146,12 @@ serve(async (req) => {
         },
         metadata: {
           timestamp: new Date().toISOString(),
+          source: 'create-project-from-briefing',
         },
-      },
-    });
+      });
+    } catch (eventError) {
+      console.warn('Erro ao registrar evento:', eventError);
+    }
 
     return new Response(
       JSON.stringify({

@@ -35,7 +35,8 @@ import {
   Megaphone,
   TrendingUp,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  Boxes
 } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { CriarProjetoAvulsoModal } from '@/components/CriarProjetoAvulsoModal';
@@ -309,6 +310,10 @@ export default function ClienteProjetosFluxo() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => navigate(`/grs/cliente/${clienteId}/nova-ordem`)}>
+                  <Boxes className="w-4 h-4 mr-2 text-blue-500" />
+                  Ordem de Serviço (Pacote)
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setTipoModal('avulso')}>
                   <Zap className="w-4 h-4 mr-2 text-green-500" />
                   Projeto Avulso

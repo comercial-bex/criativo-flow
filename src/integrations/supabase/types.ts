@@ -2112,6 +2112,30 @@ export type Database = {
           },
         ]
       }
+      event_logs: {
+        Row: {
+          created_at: string | null
+          event_type: string
+          id: string
+          metadata: Json | null
+          payload: Json
+        }
+        Insert: {
+          created_at?: string | null
+          event_type: string
+          id?: string
+          metadata?: Json | null
+          payload?: Json
+        }
+        Update: {
+          created_at?: string | null
+          event_type?: string
+          id?: string
+          metadata?: Json | null
+          payload?: Json
+        }
+        Relationships: []
+      }
       eventos_agenda: {
         Row: {
           cliente_id: string | null
