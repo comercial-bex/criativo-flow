@@ -19,6 +19,21 @@ export default {
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
+        bex: {
+          DEFAULT: '#54C43D',
+          light: '#6dd34f',
+          dark: '#47a834',
+          50: '#f0fdf4',
+          100: '#dcfce7',
+          200: '#bbf7d0',
+          300: '#86efac',
+          400: '#6dd34f',
+          500: '#54C43D',
+          600: '#47a834',
+          700: '#3a8629',
+          800: '#2d6820',
+          900: '#1f4a16',
+        },
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
@@ -64,6 +79,11 @@ export default {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+      },
+      boxShadow: {
+        'bex': '0 10px 40px -12px rgba(84, 196, 61, 0.2)',
+        'bex-lg': '0 20px 60px -15px rgba(84, 196, 61, 0.3)',
+        'bex-glow': '0 0 30px rgba(84, 196, 61, 0.4)',
       },
       keyframes: {
         "accordion-down": {

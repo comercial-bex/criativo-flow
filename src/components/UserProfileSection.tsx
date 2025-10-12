@@ -1,4 +1,4 @@
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { BexAvatar, BexAvatarFallback, BexAvatarImage } from "@/components/ui/bex-avatar";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfileData } from "@/hooks/useProfileData";
 import { useEffect, useState } from "react";
@@ -34,15 +34,15 @@ export function UserProfileSection() {
 
       {/* Avatar Centralizado e Maior */}
       <div className="flex flex-col items-center mb-6">
-        <Avatar className="w-20 h-20 border-2 border-bex-green hover-lift mb-3">
-          <AvatarImage src={profile.avatar_url} alt={displayName} />
-          <AvatarFallback className="bg-bex-green text-white font-bold text-lg">
+        <BexAvatar className="w-20 h-20 mb-3" gaming>
+          <BexAvatarImage src={profile.avatar_url} alt={displayName} />
+          <BexAvatarFallback className="bg-bex text-white font-bold text-lg">
             {initials}
-          </AvatarFallback>
-        </Avatar>
+          </BexAvatarFallback>
+        </BexAvatar>
         
         <div className="text-center">
-          <h3 className="text-lg font-semibold text-bex-green mb-1">
+          <h3 className="text-lg font-semibold text-bex mb-1">
             Olá, {displayName.split(' ')[0]}
           </h3>
           <p className="text-sm text-muted-foreground truncate max-w-[200px]">

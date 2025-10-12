@@ -212,6 +212,27 @@ All colors MUST be HSL.
     0%, 100% { box-shadow: 0 0 5px rgba(188, 241, 37, 0.3); }
     50% { box-shadow: 0 0 15px rgba(188, 241, 37, 0.6); }
   }
+  
+  /* BEX Gaming utilities */
+  .glass-bex {
+    @apply backdrop-blur-md bg-white/5 dark:bg-black/30 border border-bex/20;
+  }
+  
+  .glow-bex {
+    @apply shadow-bex-glow;
+  }
+  
+  .hover-lift-bex {
+    @apply transition-all duration-200 hover:-translate-y-1 hover:shadow-bex-lg;
+  }
+  
+  .gradient-bex {
+    @apply bg-gradient-to-r from-bex via-bex-light to-bex-dark;
+  }
+  
+  .border-glow-bex {
+    @apply border border-bex/30 shadow-lg shadow-bex/20;
+  }
 }
 
 /* Interactive Guide Customizations */
