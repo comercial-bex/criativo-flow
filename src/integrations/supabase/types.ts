@@ -5907,6 +5907,273 @@ export type Database = {
           },
         ]
       }
+      produtividade_checklist: {
+        Row: {
+          categoria: string | null
+          concluido: boolean | null
+          created_at: string | null
+          descricao: string | null
+          id: string
+          ordem: number | null
+          prioridade: number | null
+          setor: string
+          titulo: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          categoria?: string | null
+          concluido?: boolean | null
+          created_at?: string | null
+          descricao?: string | null
+          id?: string
+          ordem?: number | null
+          prioridade?: number | null
+          setor: string
+          titulo: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          categoria?: string | null
+          concluido?: boolean | null
+          created_at?: string | null
+          descricao?: string | null
+          id?: string
+          ordem?: number | null
+          prioridade?: number | null
+          setor?: string
+          titulo?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "produtividade_checklist_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "produtividade_checklist_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "vw_client_metrics"
+            referencedColumns: ["responsavel_id"]
+          },
+        ]
+      }
+      produtividade_insights_foco: {
+        Row: {
+          created_at: string | null
+          data_analise: string | null
+          energia_media: number | null
+          horarios_ideais: Json | null
+          id: string
+          recomendacoes: string | null
+          setor: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          data_analise?: string | null
+          energia_media?: number | null
+          horarios_ideais?: Json | null
+          id?: string
+          recomendacoes?: string | null
+          setor: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          data_analise?: string | null
+          energia_media?: number | null
+          horarios_ideais?: Json | null
+          id?: string
+          recomendacoes?: string | null
+          setor?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "produtividade_insights_foco_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "produtividade_insights_foco_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "vw_client_metrics"
+            referencedColumns: ["responsavel_id"]
+          },
+        ]
+      }
+      produtividade_metas: {
+        Row: {
+          avaliacao_ia: Json | null
+          categoria: string | null
+          created_at: string | null
+          data_limite: string | null
+          descricao: string
+          id: string
+          progresso: number | null
+          qualidade_smart: number | null
+          setor: string
+          status: string | null
+          titulo: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          avaliacao_ia?: Json | null
+          categoria?: string | null
+          created_at?: string | null
+          data_limite?: string | null
+          descricao: string
+          id?: string
+          progresso?: number | null
+          qualidade_smart?: number | null
+          setor: string
+          status?: string | null
+          titulo: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          avaliacao_ia?: Json | null
+          categoria?: string | null
+          created_at?: string | null
+          data_limite?: string | null
+          descricao?: string
+          id?: string
+          progresso?: number | null
+          qualidade_smart?: number | null
+          setor?: string
+          status?: string | null
+          titulo?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "produtividade_metas_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "produtividade_metas_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "vw_client_metrics"
+            referencedColumns: ["responsavel_id"]
+          },
+        ]
+      }
+      produtividade_pomodoro: {
+        Row: {
+          created_at: string | null
+          duracao_minutos: number | null
+          fim: string | null
+          id: string
+          inicio: string
+          setor: string
+          status: string | null
+          tipo: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          duracao_minutos?: number | null
+          fim?: string | null
+          id?: string
+          inicio?: string
+          setor: string
+          status?: string | null
+          tipo?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          duracao_minutos?: number | null
+          fim?: string | null
+          id?: string
+          inicio?: string
+          setor?: string
+          status?: string | null
+          tipo?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "produtividade_pomodoro_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "produtividade_pomodoro_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "vw_client_metrics"
+            referencedColumns: ["responsavel_id"]
+          },
+        ]
+      }
+      produtividade_reflexao: {
+        Row: {
+          created_at: string | null
+          data: string
+          humor: string | null
+          id: string
+          resumo_ia: string | null
+          setor: string
+          texto: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          data?: string
+          humor?: string | null
+          id?: string
+          resumo_ia?: string | null
+          setor: string
+          texto: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          data?: string
+          humor?: string | null
+          id?: string
+          resumo_ia?: string | null
+          setor?: string
+          texto?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "produtividade_reflexao_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "produtividade_reflexao_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "vw_client_metrics"
+            referencedColumns: ["responsavel_id"]
+          },
+        ]
+      }
       produto: {
         Row: {
           ativo: boolean | null
