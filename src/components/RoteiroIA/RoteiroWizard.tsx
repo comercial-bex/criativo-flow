@@ -77,13 +77,36 @@ export default function RoteiroWizard({ mode, roteiroId, initialData }: RoteiroW
     if (initialData && !hasLoadedInitialData.current) {
       setFormData(prev => ({ ...prev, ...initialData }));
       hasLoadedInitialData.current = true;
+      
+      // Buscar metadados do cliente
+      const loadClienteMetadata = async () => {
+        if (initialData.cliente_id) {
+          const { data: cliente } = await supabase
+            .from('clientes')
+            .select('nome, logo_url')
+            .eq('id', initialData.cliente_id)
+            .single();
+          
+          if (cliente) {
+            setFormData(prev => ({
+              ...prev,
+              cliente_nome: cliente.nome,
+              logo_url: cliente.logo_url || ''
+            }));
+          }
+        }
+      };
+      
+      loadClienteMetadata();
     }
   }, [initialData]);
 
   const handleAutoSave = async () => {
     if (!roteiroId) return;
     try {
-      await updateRoteiro({ id: roteiroId, data: formData });
+      // Filtrar campos que não existem no schema
+      const { logo_url, cliente_nome, agencia, produtora, ...roteiroData } = formData;
+      await updateRoteiro({ id: roteiroId, data: roteiroData });
     } catch (error) {
       console.error("Autosave error:", error);
     }
@@ -106,12 +129,15 @@ export default function RoteiroWizard({ mode, roteiroId, initialData }: RoteiroW
   const handleSaveDraft = async () => {
     setIsSaving(true);
     try {
+      // Filtrar campos que não existem no schema
+      const { logo_url, cliente_nome, agencia, produtora, ...roteiroData } = formData;
+      
       if (mode === "create") {
-        const created = await createRoteiro({ ...formData, status: "rascunho" });
+        const created = await createRoteiro({ ...roteiroData, status: "rascunho" });
         smartToast.success("Rascunho salvo com sucesso!");
         navigate(`/grs/roteiro-ia/${created.id}`);
       } else if (roteiroId) {
-        await updateRoteiro({ id: roteiroId, data: { ...formData, status: "rascunho" } });
+        await updateRoteiro({ id: roteiroId, data: { ...roteiroData, status: "rascunho" } });
         smartToast.success("Rascunho atualizado!");
       }
     } catch (error: any) {

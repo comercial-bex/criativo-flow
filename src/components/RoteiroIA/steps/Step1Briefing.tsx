@@ -7,6 +7,7 @@ import { ClientSelector } from "@/components/ClientSelector";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useProjetos } from "@/hooks/useProjetos";
 import { useTarefas } from "@/hooks/useTarefas";
+import { supabase } from "@/integrations/supabase/client";
 import { X } from "lucide-react";
 
 const PLATAFORMAS = [
@@ -45,6 +46,28 @@ export default function Step1Briefing({ formData, setFormData }: any) {
     });
   };
 
+  const handleClienteChange = async (clienteId: string) => {
+    setFormData({ ...formData, cliente_id: clienteId || "", projeto_id: "", tarefa_id: "" });
+    
+    if (clienteId) {
+      // Buscar metadados do cliente
+      const { data: cliente } = await supabase
+        .from('clientes')
+        .select('nome, logo_url')
+        .eq('id', clienteId)
+        .single();
+      
+      if (cliente) {
+        setFormData((prev: any) => ({
+          ...prev,
+          cliente_id: clienteId,
+          cliente_nome: cliente.nome,
+          logo_url: cliente.logo_url || ''
+        }));
+      }
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -57,7 +80,7 @@ export default function Step1Briefing({ formData, setFormData }: any) {
           <Label htmlFor="cliente">Cliente *</Label>
           <ClientSelector
             selectedClientId={formData.cliente_id}
-            onClientSelect={(value) => setFormData({ ...formData, cliente_id: value || "", projeto_id: "", tarefa_id: "" })}
+            onClientSelect={handleClienteChange}
             showContext={false}
           />
         </div>
