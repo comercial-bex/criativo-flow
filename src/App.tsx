@@ -340,6 +340,8 @@ function App() {
                 } />
                 
                 {/* GRS routes */}
+                <Route path="/grs" element={<Navigate to="/grs/painel" replace />} />
+                
                 <Route path="/grs/dashboard" element={
                   <ProtectedRoute requiredRole="grs">
                     <Layout><GRSDashboard /></Layout>
@@ -498,11 +500,7 @@ function App() {
                   </ProtectedRoute>
                 } />
                 
-                <Route path="/grs/meus-projetos" element={
-                  <ProtectedRoute requiredRole="grs" module="grs" action="canView">
-                    <Layout><GRSProjetos /></Layout>
-                  </ProtectedRoute>
-                } />
+                <Route path="/grs/meus-projetos" element={<Navigate to="/grs/painel" replace />} />
                 
                 {/* CRM routes */}
                 <Route path="/crm/contatos" element={
