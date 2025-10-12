@@ -116,6 +116,15 @@ export function AppSidebar() {
       permissions: ["financeiro", "administrativo", "rh"]
     },
     {
+      id: "produtividade",
+      title: "📊 Produtividade",
+      icon: Icons.TrendingUp,
+      items: [
+        { title: "Dashboard", url: "/produtividade/dashboard", icon: Icons.LayoutDashboard },
+      ],
+      permissions: ["grs", "design", "audiovisual", "gestor", "admin"]
+    },
+    {
       id: "design",
       title: "Design / Criativo",
       icon: Icons.Palette,

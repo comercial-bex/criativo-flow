@@ -12,21 +12,22 @@ serve(async (req) => {
   }
 
   try {
-    const { userId, setor } = await req.json();
+    const { userId, setor, tipo = 'diario' } = await req.json();
     
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     );
 
-    // Buscar dados recentes
+    // Buscar dados recentes (7 dias para diário, 30 para semanal)
+    const dias = tipo === 'semanal' ? 30 : 7;
     const { data: reflexoes } = await supabase
       .from('produtividade_reflexao')
       .select('texto, humor, data')
       .eq('user_id', userId)
       .eq('setor', setor)
-      .order('data', { ascending: false })
-      .limit(7);
+      .gte('data', new Date(Date.now() - dias * 24 * 60 * 60 * 1000).toISOString().split('T')[0])
+      .order('data', { ascending: false });
 
     const { data: pomodoros } = await supabase
       .from('produtividade_pomodoro')
@@ -37,7 +38,39 @@ serve(async (req) => {
       .gte('inicio', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
       .order('inicio', { ascending: false });
 
-    const prompt = `
+    const prompt = tipo === 'semanal' ? `
+Você é um coach de produtividade especializado em análise comportamental.
+
+**Dados do usuário (últimos 30 dias):**
+- Reflexões diárias: ${JSON.stringify(reflexoes, null, 2)}
+- Ciclos Pomodoro: ${JSON.stringify(pomodoros, null, 2)}
+
+**Sua tarefa:**
+1. Analise padrões gerais de humor, energia e foco ao longo do mês
+2. Identifique conquistas e desafios principais
+3. Gere 5 insights estratégicos
+4. Forneça 3 recomendações para próxima semana
+
+**Formato de resposta (máximo 300 palavras):**
+📊 Resumo Semanal Completo
+[Análise geral em 3-4 frases]
+
+🏆 Conquistas:
+• [Conquista 1]
+• [Conquista 2]
+
+💡 Insights Estratégicos:
+1. [Insight profundo]
+2. [Insight profundo]
+3. [Insight profundo]
+4. [Insight profundo]
+5. [Insight profundo]
+
+🎯 Plano para Próxima Semana:
+• [Ação específica]
+• [Ação específica]
+• [Ação específica]
+    ` : `
 Você é um coach de produtividade especializado em análise comportamental.
 
 **Dados do usuário (últimos 7 dias):**
@@ -51,7 +84,7 @@ Você é um coach de produtividade especializado em análise comportamental.
 4. Forneça 2 recomendações acionáveis
 
 **Formato de resposta (máximo 200 palavras):**
-📊 Análise Semanal
+📊 Análise Diária
 [Resumo em 2-3 frases]
 
 💡 Insights:
@@ -83,10 +116,12 @@ Você é um coach de produtividade especializado em análise comportamental.
     const data = await response.json();
     const insight = data.choices[0].message.content;
 
-    // Salvar insight
+    // Salvar insight na reflexão mais recente
     if (reflexoes && reflexoes.length > 0) {
+      const campo = tipo === 'semanal' ? 'resumo_semanal' : 'resumo_ia';
+      
       await supabase.from('produtividade_reflexao')
-        .update({ resumo_ia: insight })
+        .update({ [campo]: insight })
         .eq('user_id', userId)
         .eq('setor', setor)
         .order('data', { ascending: false })

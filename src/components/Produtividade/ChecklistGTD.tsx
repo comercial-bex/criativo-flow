@@ -2,42 +2,39 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { CheckSquare, Plus, Trash2 } from "lucide-react";
+import { CheckSquare, Plus, Trash2, Loader2 } from "lucide-react";
 import { useState } from "react";
+import { useProdutividadeChecklist } from "@/hooks/useProdutividadeChecklist";
 
-interface ChecklistItem {
-  id: string;
-  texto: string;
-  concluido: boolean;
+interface ChecklistGTDProps {
+  setor: 'grs' | 'design' | 'audiovisual';
 }
 
-export function ChecklistGTD() {
-  const [items, setItems] = useState<ChecklistItem[]>([]);
+export function ChecklistGTD({ setor }: ChecklistGTDProps) {
+  const { itemsAtivos, itemsConcluidos, loading, criarItem, toggleItem, removerItem } = useProdutividadeChecklist(setor);
   const [novoItem, setNovoItem] = useState("");
 
-  const handleAdicionar = () => {
+  const handleAdicionar = async () => {
     if (!novoItem.trim()) return;
-    
-    setItems([...items, {
-      id: crypto.randomUUID(),
-      texto: novoItem,
-      concluido: false
-    }]);
+    await criarItem(novoItem);
     setNovoItem("");
   };
 
-  const handleToggle = (id: string) => {
-    setItems(items.map(item => 
-      item.id === id ? { ...item, concluido: !item.concluido } : item
-    ));
-  };
-
-  const handleRemover = (id: string) => {
-    setItems(items.filter(item => item.id !== id));
-  };
-
-  const itemsAtivos = items.filter(i => !i.concluido);
-  const itemsConcluidos = items.filter(i => i.concluido);
+  if (loading) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <CheckSquare className="h-5 w-5 text-green-500" />
+            Checklist GTD
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="flex items-center justify-center py-8">
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card>
@@ -74,14 +71,14 @@ export function ChecklistGTD() {
                 <div key={item.id} className="flex items-center gap-2 p-2 hover:bg-muted/50 rounded">
                   <Checkbox 
                     checked={item.concluido}
-                    onCheckedChange={() => handleToggle(item.id)}
+                    onCheckedChange={() => toggleItem(item.id)}
                   />
-                  <span className="flex-1 text-sm">{item.texto}</span>
+                  <span className="flex-1 text-sm">{item.titulo}</span>
                   <Button 
                     size="icon" 
                     variant="ghost" 
                     className="h-6 w-6"
-                    onClick={() => handleRemover(item.id)}
+                    onClick={() => removerItem(item.id)}
                   >
                     <Trash2 className="h-3 w-3" />
                   </Button>
@@ -98,14 +95,14 @@ export function ChecklistGTD() {
                     <div key={item.id} className="flex items-center gap-2 p-2 opacity-50">
                       <Checkbox 
                         checked={item.concluido}
-                        onCheckedChange={() => handleToggle(item.id)}
+                        onCheckedChange={() => toggleItem(item.id)}
                       />
-                      <span className="flex-1 text-sm line-through">{item.texto}</span>
+                      <span className="flex-1 text-sm line-through">{item.titulo}</span>
                       <Button 
                         size="icon" 
                         variant="ghost" 
                         className="h-6 w-6"
-                        onClick={() => handleRemover(item.id)}
+                        onClick={() => removerItem(item.id)}
                       >
                         <Trash2 className="h-3 w-3" />
                       </Button>
