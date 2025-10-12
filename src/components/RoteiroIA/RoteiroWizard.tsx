@@ -108,27 +108,31 @@ export default function RoteiroWizard({ mode, roteiroId, initialData }: RoteiroW
 
   const handleGenerateAI = async () => {
     const briefingData = {
-      cliente_nome: formData.titulo,
-      titulo: formData.titulo,
-      objetivo: formData.objetivo,
-      tom: formData.tom.join(", "),
-      estilo: formData.estilo.join(", "),
-      veiculacao: [formData.plataforma],
-      mensagem_chave: formData.pilares_mensagem.join(", "),
+      cliente_nome: formData.titulo || "Cliente",
+      titulo: formData.titulo || "Roteiro Audiovisual",
+      objetivo: formData.objetivo || "Apresentar o produto/serviço",
+      tom: formData.tom.join(", ") || "Humanizado",
+      veiculacao: formData.plataforma ? [formData.plataforma] : ["Reel"],
+      mensagem_chave: formData.pilares_mensagem.join(", ") || "Mensagem principal",
       beneficios: formData.publico_alvo,
-      persona_voz: formData.persona_voz,
+      cta: "Acesse nosso site e saiba mais!",
       ambiente: "genérico",
     };
 
     try {
       const result = await generateWithAI(briefingData);
-      setFormData({
-        ...formData,
-        roteiro_markdown: result.roteiro || result.content || "",
-      });
-      smartToast.success("Roteiro gerado com IA!");
+      
+      if (result?.roteiro) {
+        setFormData({
+          ...formData,
+          roteiro_markdown: result.roteiro,
+          roteiro_struct: result.roteiro_struct,
+        });
+        smartToast.success("Roteiro gerado com IA!");
+      }
     } catch (error: any) {
       smartToast.error("Erro ao gerar roteiro", error.message);
+      console.error("Erro na geração:", error);
     }
   };
 

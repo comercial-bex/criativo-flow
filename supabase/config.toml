@@ -79,3 +79,6 @@ verify_jwt = false
 
 [functions.prever-horarios-foco]
 verify_jwt = false
+
+[functions.generate-roteiro-audiovisual]
+verify_jwt = false

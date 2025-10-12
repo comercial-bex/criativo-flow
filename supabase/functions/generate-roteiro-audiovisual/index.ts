@@ -31,10 +31,10 @@ serve(async (req) => {
   }
 
   try {
-    const { briefingData } = await req.json() as { briefingData: BriefingData };
+    const briefingData = await req.json() as BriefingData;
 
-    if (!briefingData) {
-      throw new Error('briefingData é obrigatório');
+    if (!briefingData || !briefingData.titulo) {
+      throw new Error('Dados do briefing são obrigatórios');
     }
 
     // Gerar sugestões técnicas com base no ambiente
@@ -57,12 +57,19 @@ serve(async (req) => {
       referencias_tecnicas: sugestoesTecnicas,
       observacoes_finais: {
         mensagem_chave: briefingData.mensagem_chave,
-        cta: briefingData.cta,
+        cta: briefingData.cta || 'Saiba mais!',
       },
     };
 
+    // Gerar Markdown do roteiro
+    const roteiroMarkdown = gerarMarkdown(roteiro);
+
     return new Response(
-      JSON.stringify({ success: true, roteiro }),
+      JSON.stringify({ 
+        success: true, 
+        roteiro: roteiroMarkdown,
+        roteiro_struct: roteiro 
+      }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
@@ -167,9 +174,45 @@ function gerarBlocos(briefingData: BriefingData, sugestoes: SugestoesTecnicas) {
       bloco: 5,
       tipo: 'CTA',
       tempo: '27-30s',
-      texto: briefingData.cta,
+      texto: briefingData.cta || 'Saiba mais!',
       tecnica: 'Plano fechado logo/produto',
       observacao: 'Fade out com branding',
     },
   ];
+}
+
+function gerarMarkdown(roteiro: any): string {
+  let md = `# ${roteiro.identificacao.peca}\n\n`;
+  md += `**Cliente:** ${roteiro.identificacao.cliente}\n`;
+  md += `**Duração:** ${roteiro.identificacao.duracao}\n`;
+  md += `**Veiculação:** ${roteiro.identificacao.veiculacao.join(', ')}\n`;
+  md += `**Data:** ${roteiro.identificacao.data}\n\n`;
+  md += `---\n\n`;
+  md += `## 🎯 Objetivo\n${roteiro.objetivo}\n\n`;
+  md += `## 🎭 Tom\n${roteiro.tom}\n\n`;
+  md += `---\n\n`;
+  md += `## 📝 Roteiro\n\n`;
+  
+  roteiro.blocos.forEach((bloco: any) => {
+    md += `### Bloco ${bloco.bloco} - ${bloco.tipo} (${bloco.tempo})\n`;
+    if (bloco.descricao) md += `**Descrição:** ${bloco.descricao}\n`;
+    if (bloco.texto) md += `**Texto:** "${bloco.texto}"\n`;
+    md += `**Técnica:** ${bloco.tecnica}\n`;
+    md += `**Observação:** ${bloco.observacao}\n\n`;
+  });
+  
+  md += `---\n\n`;
+  md += `## 🎬 Referências Técnicas\n\n`;
+  md += `- **Lente:** ${roteiro.referencias_tecnicas.lente}\n`;
+  md += `- **Filtro:** ${roteiro.referencias_tecnicas.filtro}\n`;
+  md += `- **Horário:** ${roteiro.referencias_tecnicas.hora}\n`;
+  md += `- **Movimento:** ${roteiro.referencias_tecnicas.movimento}\n`;
+  md += `- **Cor:** ${roteiro.referencias_tecnicas.cor}\n\n`;
+  
+  md += `---\n\n`;
+  md += `## 📌 Observações Finais\n\n`;
+  md += `**Mensagem-chave:** ${roteiro.observacoes_finais.mensagem_chave}\n\n`;
+  md += `**CTA:** ${roteiro.observacoes_finais.cta}\n`;
+  
+  return md;
 }
