@@ -70,6 +70,9 @@ import GestorDashboard from "./pages/Gestor/Dashboard";
 import MinhasTarefas from "./pages/MinhasTarefas";
 import GestaoDashboard from "./pages/Gestao/Dashboard";
 import TarefasUnificadasGRS from "./pages/GRS/TarefasUnificadas";
+import RoteiroIAListPage from "./pages/GRS/RoteiroIA/index";
+import NovoRoteiroPage from "./pages/GRS/RoteiroIA/NovoRoteiro";
+import EditarRoteiroPage from "./pages/GRS/RoteiroIA/EditarRoteiro";
 import EspecialistaDashboard from "./pages/Especialista/Dashboard";
 
 // Client pages
@@ -856,6 +859,24 @@ function App() {
                 <Route path="/grs/tarefas" element={
                   <ProtectedRoute requiredRole="grs">
                     <Layout><TarefasUnificadasGRS /></Layout>
+                  </ProtectedRoute>
+                } />
+
+                <Route path="/grs/roteiro-ia" element={
+                  <ProtectedRoute requiredRole="grs">
+                    <Layout><RoteiroIAListPage /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/grs/roteiro-ia/novo" element={
+                  <ProtectedRoute requiredRole="grs">
+                    <Layout><NovoRoteiroPage /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/grs/roteiro-ia/:id" element={
+                  <ProtectedRoute requiredRole="grs">
+                    <Layout><EditarRoteiroPage /></Layout>
                   </ProtectedRoute>
                 } />
 

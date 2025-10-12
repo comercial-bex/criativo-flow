@@ -72,22 +72,23 @@ export function AppSidebar() {
       ],
       permissions: ["inteligencia", "calendario"]
     },
-    {
-      id: "operacoes",
-      title: "Operacional (GRS)",
-      icon: Icons.Globe,
-      items: [
-        { title: "🎯 Painel GRS", url: "/grs/painel", icon: Icons.LayoutDashboard },
-        { title: "Visão de Clientes", url: "/grs/dashboard", icon: Icons.Users },
-        { title: "Planejamentos", url: "/grs/planejamentos", icon: Icons.Calendar },
-        { title: "Tarefas", url: "/grs/tarefas", icon: Icons.CheckSquare },
-        { title: "Calendário Editorial", url: "/grs/calendario-editorial", icon: Icons.CalendarDays },
-        { title: "Agenda Multidisciplinar", url: "/calendario", icon: Icons.CalendarClock },
-        { title: "Relatórios", url: "/grs/relatorios", icon: Icons.FileText },
-        { title: "Cliente (Detalhes)", url: "/grs/cliente", icon: Icons.User },
-      ],
-      permissions: ["grs", "projetos"]
-    },
+      {
+        id: "operacoes",
+        title: "Operacional (GRS)",
+        icon: Icons.Globe,
+        items: [
+          { title: "🎯 Painel GRS", url: "/grs/painel", icon: Icons.LayoutDashboard },
+          { title: "Visão de Clientes", url: "/grs/dashboard", icon: Icons.Users },
+          { title: "Planejamentos", url: "/grs/planejamentos", icon: Icons.Calendar },
+          { title: "Tarefas", url: "/grs/tarefas", icon: Icons.CheckSquare },
+          { title: "Calendário Editorial", url: "/grs/calendario-editorial", icon: Icons.CalendarDays },
+          { title: "🎬 Roteiro IA", url: "/grs/roteiro-ia", icon: Icons.Film },
+          { title: "Agenda Multidisciplinar", url: "/calendario", icon: Icons.CalendarClock },
+          { title: "Relatórios", url: "/grs/relatorios", icon: Icons.FileText },
+          { title: "Cliente (Detalhes)", url: "/grs/cliente", icon: Icons.User },
+        ],
+        permissions: ["grs", "projetos"]
+      },
     {
       id: "crm",
       title: "CRM",
