@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight, Save, FileText, Palette, Sparkles, FileDown, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -54,23 +54,29 @@ export default function RoteiroWizard({ mode, roteiroId, initialData }: RoteiroW
     agente_ia_id: "",
     framework_id: "",
     tom_criativo: [] as string[],
+    logo_url: "",
+    cliente_nome: "",
+    agencia: "BEX Communication",
+    produtora: "INSPIRE FILMES",
   });
 
   const [isSaving, setIsSaving] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const debouncedFormData = useDebounce(formData, 1500);
+  const hasLoadedInitialData = useRef(false);
 
   // Autosave quando dados mudam (apenas em modo edição)
   useEffect(() => {
-    if (mode === "edit" && roteiroId && debouncedFormData) {
+    if (mode === "edit" && roteiroId && debouncedFormData && hasLoadedInitialData.current) {
       handleAutoSave();
     }
   }, [debouncedFormData]);
 
-  // Carregar dados iniciais em modo edição
+  // Carregar dados iniciais em modo edição (apenas uma vez)
   useEffect(() => {
-    if (initialData) {
-      setFormData({ ...formData, ...initialData });
+    if (initialData && !hasLoadedInitialData.current) {
+      setFormData(prev => ({ ...prev, ...initialData }));
+      hasLoadedInitialData.current = true;
     }
   }, [initialData]);
 
@@ -148,9 +154,9 @@ export default function RoteiroWizard({ mode, roteiroId, initialData }: RoteiroW
     }
   };
 
-  const handleExportPDF = () => {
+  const handleExportPDF = async () => {
     try {
-      downloadRoteiroAsPDF(formData);
+      await downloadRoteiroAsPDF(formData);
       smartToast.success("PDF baixado com sucesso!");
     } catch (error: any) {
       smartToast.error("Erro ao exportar PDF", error.message);
@@ -166,7 +172,7 @@ export default function RoteiroWizard({ mode, roteiroId, initialData }: RoteiroW
     setIsExporting(true);
     try {
       // Gerar PDF
-      const pdfBlob = exportRoteiroToPDF(formData);
+      const pdfBlob = await exportRoteiroToPDF(formData);
       
       // Definir caminho do arquivo
       const fileName = `${formData.cliente_id || 'sem-cliente'}/${formData.projeto_id || 'sem-projeto'}/${roteiroId}_v${formData.versao || 1}.pdf`;

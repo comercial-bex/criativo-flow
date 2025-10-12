@@ -13,9 +13,13 @@ interface RoteiroData {
   pilares_mensagem: string[];
   publico_alvo: string[];
   versao?: number;
+  logo_url?: string;
+  cliente_nome?: string;
+  agencia?: string;
+  produtora?: string;
 }
 
-export function exportRoteiroToPDF(roteiro: RoteiroData): Blob {
+export async function exportRoteiroToPDF(roteiro: RoteiroData): Promise<Blob> {
   const doc = new jsPDF();
   let yPosition = 20;
   const lineHeight = 7;
@@ -23,144 +27,199 @@ export function exportRoteiroToPDF(roteiro: RoteiroData): Blob {
   const margin = 20;
   const maxWidth = pageWidth - (margin * 2);
 
-  // Header
-  doc.setFontSize(20);
-  doc.setFont('helvetica', 'bold');
-  doc.text('🎬 Roteiro Audiovisual', margin, yPosition);
-  yPosition += lineHeight * 2;
+  // 🔵 Cabeçalho Azul com Logo
+  doc.setFillColor(219, 234, 254); // blue-100
+  doc.rect(0, 0, pageWidth, 55, 'F');
 
-  // Metadata
-  doc.setFontSize(10);
+  // Logo (se existir)
+  if (roteiro.logo_url) {
+    try {
+      const response = await fetch(roteiro.logo_url);
+      const blob = await response.blob();
+      const reader = new FileReader();
+      await new Promise((resolve) => {
+        reader.onload = () => {
+          const imgData = reader.result as string;
+          doc.addImage(imgData, 'PNG', margin, yPosition, 35, 15);
+          resolve(true);
+        };
+        reader.readAsDataURL(blob);
+      });
+      yPosition += 20;
+    } catch (error) {
+      console.error('Erro ao carregar logo:', error);
+      yPosition += 5;
+    }
+  }
+
+  // Título Principal
+  doc.setFontSize(18);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(30, 58, 138); // blue-900
+  doc.text(`🎬 ${roteiro.titulo}`, margin, yPosition);
+  yPosition += lineHeight * 1.5;
+
+  // Tabela de Informações Técnicas
+  doc.setFontSize(9);
   doc.setFont('helvetica', 'normal');
+  doc.setTextColor(30, 64, 175); // blue-800
   
-  const metadata = [
-    `Título: ${roteiro.titulo}`,
-    `Plataforma: ${roteiro.plataforma}`,
-    `Duração: ${roteiro.duracao_prevista_seg}s`,
-    `Versão: ${roteiro.versao || 1}`,
-    `Data: ${new Date().toLocaleDateString('pt-BR')}`,
+  const infoLines = [
+    [`Cliente: ${roteiro.cliente_nome || 'N/A'}`, `Agência: ${roteiro.agencia || 'BEX Communication'}`],
+    [`Peça: ${roteiro.duracao_prevista_seg}s`, `Produtora: ${roteiro.produtora || 'INSPIRE FILMES'}`],
+    [`Versão: ${roteiro.versao || 1}`, `Data: ${new Date().toLocaleDateString('pt-BR')}`],
   ];
 
-  metadata.forEach(line => {
-    doc.text(line, margin, yPosition);
+  infoLines.forEach(([left, right]) => {
+    doc.text(left, margin, yPosition);
+    doc.text(right, pageWidth / 2 + 10, yPosition);
     yPosition += lineHeight;
   });
 
   yPosition += lineHeight;
+
+  // 🟢 Seção Verde - Contexto
+  doc.setFillColor(220, 252, 231); // green-100
+  doc.rect(margin, yPosition, maxWidth, 25, 'F');
+  
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(22, 101, 52); // green-800
+  yPosition += 7;
+  doc.text('🎯 Objetivo:', margin + 2, yPosition);
+  yPosition += lineHeight;
+  
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(20, 83, 45); // green-900
+  const objetivoLines = doc.splitTextToSize(roteiro.objetivo, maxWidth - 4);
+  doc.text(objetivoLines, margin + 2, yPosition);
+  yPosition += (objetivoLines.length * lineHeight) + 5;
+  
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(22, 101, 52);
+  doc.text(`🎭 Tom: ${Array.isArray(roteiro.tom) ? roteiro.tom.join(', ') : roteiro.tom}`, margin + 2, yPosition);
+  yPosition += lineHeight * 2;
 
   // Separator
   doc.setDrawColor(200, 200, 200);
   doc.line(margin, yPosition, pageWidth - margin, yPosition);
   yPosition += lineHeight;
 
-  // Objetivo
+  // Roteiro com Cores
   doc.setFontSize(12);
   doc.setFont('helvetica', 'bold');
-  doc.text('🎯 Objetivo', margin, yPosition);
-  yPosition += lineHeight;
-  
-  doc.setFontSize(10);
-  doc.setFont('helvetica', 'normal');
-  const objetivoLines = doc.splitTextToSize(roteiro.objetivo, maxWidth);
-  doc.text(objetivoLines, margin, yPosition);
-  yPosition += (objetivoLines.length * lineHeight) + lineHeight;
-
-  // Tom & Estilo
-  if (roteiro.tom.length > 0 || roteiro.estilo.length > 0) {
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'bold');
-    doc.text('🎭 Tom & Estilo', margin, yPosition);
-    yPosition += lineHeight;
-    
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
-    if (roteiro.tom.length > 0) {
-      doc.text(`Tom: ${roteiro.tom.join(', ')}`, margin, yPosition);
-      yPosition += lineHeight;
-    }
-    if (roteiro.estilo.length > 0) {
-      doc.text(`Estilo: ${roteiro.estilo.join(', ')}`, margin, yPosition);
-      yPosition += lineHeight;
-    }
-    yPosition += lineHeight / 2;
-  }
-
-  // Público-alvo
-  if (roteiro.publico_alvo.length > 0) {
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'bold');
-    doc.text('👥 Público-alvo', margin, yPosition);
-    yPosition += lineHeight;
-    
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
-    doc.text(roteiro.publico_alvo.join(', '), margin, yPosition);
-    yPosition += lineHeight * 2;
-  }
-
-  // Separator
-  doc.line(margin, yPosition, pageWidth - margin, yPosition);
-  yPosition += lineHeight;
-
-  // Roteiro (Markdown convertido)
-  doc.setFontSize(12);
-  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(0, 0, 0);
   doc.text('📝 Roteiro', margin, yPosition);
-  yPosition += lineHeight;
+  yPosition += lineHeight * 1.5;
 
-  // Process markdown content
   const markdownLines = roteiro.roteiro_markdown.split('\n');
   doc.setFontSize(10);
 
   markdownLines.forEach(line => {
-    // Check if we need a new page
-    if (yPosition > doc.internal.pageSize.getHeight() - margin) {
+    if (yPosition > doc.internal.pageSize.getHeight() - margin - 10) {
       doc.addPage();
       yPosition = margin;
     }
 
-    // Handle headers
-    if (line.startsWith('# ')) {
+    const trimmed = line.trim();
+    
+    // 🟣 Roxo - CENA X
+    if (/^CENA\s+\d+/i.test(trimmed) || /^###\s+CENA/i.test(trimmed)) {
+      doc.setFillColor(233, 213, 255); // purple-200
+      doc.rect(margin - 2, yPosition - 5, maxWidth + 4, lineHeight + 2, 'F');
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(88, 28, 135); // purple-900
+      const text = trimmed.replace(/^###\s+/, '');
+      doc.text(text, margin, yPosition);
+      yPosition += lineHeight + 2;
+      doc.setTextColor(0, 0, 0);
+      return;
+    }
+    
+    // 🟠 Laranja - ON
+    if (/Locução em ON:|em plano|cenário/i.test(trimmed)) {
+      doc.setFillColor(254, 215, 170); // orange-200
+      doc.rect(margin - 2, yPosition - 5, maxWidth + 4, lineHeight + 2, 'F');
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(154, 52, 18); // orange-900
+      const wrappedLines = doc.splitTextToSize(trimmed, maxWidth - 2);
+      doc.text(wrappedLines, margin, yPosition);
+      yPosition += wrappedLines.length * lineHeight + 2;
+      doc.setTextColor(0, 0, 0);
+      return;
+    }
+    
+    // 🟡 Amarelo - OFF
+    if (/Locução em OFF:|Imagens de|Abertura com/i.test(trimmed)) {
+      doc.setFillColor(254, 240, 138); // yellow-200
+      doc.rect(margin - 2, yPosition - 5, maxWidth + 4, lineHeight + 2, 'F');
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(133, 77, 14); // yellow-900
+      const wrappedLines = doc.splitTextToSize(trimmed, maxWidth - 2);
+      doc.text(wrappedLines, margin, yPosition);
+      yPosition += wrappedLines.length * lineHeight + 2;
+      doc.setTextColor(0, 0, 0);
+      return;
+    }
+    
+    // 🔴 Vermelho - CTA
+    if (/Tela final|CTA:|hashtag|#\w+/i.test(trimmed)) {
+      doc.setFillColor(254, 202, 202); // red-200
+      doc.rect(margin - 2, yPosition - 5, maxWidth + 4, lineHeight + 2, 'F');
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(127, 29, 29); // red-900
+      const wrappedLines = doc.splitTextToSize(trimmed, maxWidth - 2);
+      doc.text(wrappedLines, margin, yPosition);
+      yPosition += wrappedLines.length * lineHeight + 2;
+      doc.setTextColor(0, 0, 0);
+      return;
+    }
+    
+    // ⚫ Cinza - Observações técnicas
+    if (/\(.*\)|plano:|câmera:|luz:|som:/i.test(trimmed)) {
+      doc.setFillColor(229, 231, 235); // gray-200
+      doc.rect(margin - 2, yPosition - 5, maxWidth + 4, lineHeight + 2, 'F');
+      doc.setFont('helvetica', 'italic');
+      doc.setTextColor(75, 85, 99); // gray-600
+      const wrappedLines = doc.splitTextToSize(trimmed, maxWidth - 2);
+      doc.text(wrappedLines, margin, yPosition);
+      yPosition += wrappedLines.length * lineHeight + 2;
+      doc.setTextColor(0, 0, 0);
+      doc.setFont('helvetica', 'normal');
+      return;
+    }
+
+    // Headers markdown
+    if (trimmed.startsWith('# ')) {
       doc.setFontSize(14);
       doc.setFont('helvetica', 'bold');
-      const text = line.replace('# ', '');
-      doc.text(text, margin, yPosition);
+      doc.text(trimmed.replace('# ', ''), margin, yPosition);
       yPosition += lineHeight * 1.5;
       doc.setFontSize(10);
-    } else if (line.startsWith('## ')) {
+      doc.setFont('helvetica', 'normal');
+      return;
+    }
+
+    if (trimmed.startsWith('## ')) {
       doc.setFontSize(12);
       doc.setFont('helvetica', 'bold');
-      const text = line.replace('## ', '');
-      doc.text(text, margin, yPosition);
+      doc.text(trimmed.replace('## ', ''), margin, yPosition);
       yPosition += lineHeight * 1.3;
       doc.setFontSize(10);
-    } else if (line.startsWith('### ')) {
-      doc.setFontSize(11);
-      doc.setFont('helvetica', 'bold');
-      const text = line.replace('### ', '');
-      doc.text(text, margin, yPosition);
-      yPosition += lineHeight;
-      doc.setFontSize(10);
-    } else if (line.startsWith('**') && line.endsWith('**')) {
-      doc.setFont('helvetica', 'bold');
-      const text = line.replace(/\*\*/g, '');
-      const wrappedLines = doc.splitTextToSize(text, maxWidth);
-      doc.text(wrappedLines, margin, yPosition);
-      yPosition += wrappedLines.length * lineHeight;
-    } else if (line.startsWith('- ')) {
       doc.setFont('helvetica', 'normal');
-      const text = '• ' + line.replace('- ', '');
-      const wrappedLines = doc.splitTextToSize(text, maxWidth);
-      doc.text(wrappedLines, margin, yPosition);
-      yPosition += wrappedLines.length * lineHeight;
-    } else if (line.startsWith('---')) {
-      yPosition += lineHeight / 2;
+      return;
+    }
+
+    if (trimmed.startsWith('---')) {
       doc.setDrawColor(200, 200, 200);
       doc.line(margin, yPosition, pageWidth - margin, yPosition);
       yPosition += lineHeight;
-    } else if (line.trim() !== '') {
+      return;
+    }
+
+    if (trimmed) {
       doc.setFont('helvetica', 'normal');
-      const wrappedLines = doc.splitTextToSize(line, maxWidth);
+      const wrappedLines = doc.splitTextToSize(trimmed, maxWidth);
       doc.text(wrappedLines, margin, yPosition);
       yPosition += wrappedLines.length * lineHeight;
     } else {
@@ -186,8 +245,8 @@ export function exportRoteiroToPDF(roteiro: RoteiroData): Blob {
   return doc.output('blob');
 }
 
-export function downloadRoteiroAsPDF(roteiro: RoteiroData) {
-  const pdfBlob = exportRoteiroToPDF(roteiro);
+export async function downloadRoteiroAsPDF(roteiro: RoteiroData) {
+  const pdfBlob = await exportRoteiroToPDF(roteiro);
   const url = URL.createObjectURL(pdfBlob);
   const link = document.createElement('a');
   link.href = url;
