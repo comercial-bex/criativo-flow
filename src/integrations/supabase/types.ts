@@ -7634,14 +7634,106 @@ export type Database = {
         }
         Relationships: []
       }
+      roteiro_agentes_ia: {
+        Row: {
+          ativo: boolean | null
+          created_at: string | null
+          descricao: string
+          especialidade: string
+          icone: string | null
+          id: string
+          nome: string
+          ordem: number | null
+          prompt_instrucoes: string
+          slug: string
+          tags: string[] | null
+          updated_at: string | null
+        }
+        Insert: {
+          ativo?: boolean | null
+          created_at?: string | null
+          descricao: string
+          especialidade: string
+          icone?: string | null
+          id?: string
+          nome: string
+          ordem?: number | null
+          prompt_instrucoes: string
+          slug: string
+          tags?: string[] | null
+          updated_at?: string | null
+        }
+        Update: {
+          ativo?: boolean | null
+          created_at?: string | null
+          descricao?: string
+          especialidade?: string
+          icone?: string | null
+          id?: string
+          nome?: string
+          ordem?: number | null
+          prompt_instrucoes?: string
+          slug?: string
+          tags?: string[] | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      roteiro_frameworks: {
+        Row: {
+          aplicacao: string | null
+          ativo: boolean | null
+          categoria: string | null
+          created_at: string | null
+          descricao: string
+          estrutura: Json | null
+          icone: string | null
+          id: string
+          nome: string
+          ordem: number | null
+          slug: string
+          updated_at: string | null
+        }
+        Insert: {
+          aplicacao?: string | null
+          ativo?: boolean | null
+          categoria?: string | null
+          created_at?: string | null
+          descricao: string
+          estrutura?: Json | null
+          icone?: string | null
+          id?: string
+          nome: string
+          ordem?: number | null
+          slug: string
+          updated_at?: string | null
+        }
+        Update: {
+          aplicacao?: string | null
+          ativo?: boolean | null
+          categoria?: string | null
+          created_at?: string | null
+          descricao?: string
+          estrutura?: Json | null
+          icone?: string | null
+          id?: string
+          nome?: string
+          ordem?: number | null
+          slug?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       roteiros: {
         Row: {
+          agente_ia_id: string | null
           cliente_id: string
           created_at: string
           created_by: string | null
           cta: string | null
           duracao_prevista_seg: number
           estilo: Json | null
+          framework_id: string | null
           hash_publico: string | null
           hashtags: string | null
           id: string
@@ -7663,17 +7755,20 @@ export type Database = {
           titulo: string
           tokens_custos: Json | null
           tom: Json | null
+          tom_criativo: string[] | null
           updated_at: string
           updated_by: string | null
           versao: number
         }
         Insert: {
+          agente_ia_id?: string | null
           cliente_id: string
           created_at?: string
           created_by?: string | null
           cta?: string | null
           duracao_prevista_seg?: number
           estilo?: Json | null
+          framework_id?: string | null
           hash_publico?: string | null
           hashtags?: string | null
           id?: string
@@ -7697,17 +7792,20 @@ export type Database = {
           titulo: string
           tokens_custos?: Json | null
           tom?: Json | null
+          tom_criativo?: string[] | null
           updated_at?: string
           updated_by?: string | null
           versao?: number
         }
         Update: {
+          agente_ia_id?: string | null
           cliente_id?: string
           created_at?: string
           created_by?: string | null
           cta?: string | null
           duracao_prevista_seg?: number
           estilo?: Json | null
+          framework_id?: string | null
           hash_publico?: string | null
           hashtags?: string | null
           id?: string
@@ -7731,11 +7829,19 @@ export type Database = {
           titulo?: string
           tokens_custos?: Json | null
           tom?: Json | null
+          tom_criativo?: string[] | null
           updated_at?: string
           updated_by?: string | null
           versao?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "roteiros_agente_ia_id_fkey"
+            columns: ["agente_ia_id"]
+            isOneToOne: false
+            referencedRelation: "roteiro_agentes_ia"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "roteiros_cliente_id_fkey"
             columns: ["cliente_id"]
@@ -7756,6 +7862,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "vw_client_metrics"
             referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "roteiros_framework_id_fkey"
+            columns: ["framework_id"]
+            isOneToOne: false
+            referencedRelation: "roteiro_frameworks"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "roteiros_parent_id_fkey"

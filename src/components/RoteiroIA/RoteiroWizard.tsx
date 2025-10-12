@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { downloadRoteiroAsPDF, exportRoteiroToPDF } from "@/utils/roteiroToPdf";
 import Step1Briefing from "./steps/Step1Briefing";
 import Step2TomEstilo from "./steps/Step2TomEstilo";
+import Step3Personalizacao from "./steps/Step3Personalizacao";
 import Step4Roteiro from "./steps/Step4Roteiro";
 
 interface RoteiroWizardProps {
@@ -23,7 +24,8 @@ interface RoteiroWizardProps {
 const STEPS = [
   { id: 1, label: "Briefing", icon: FileText },
   { id: 2, label: "Tom & Estilo", icon: Palette },
-  { id: 4, label: "Roteiro & IA", icon: Sparkles },
+  { id: 3, label: "Personalização IA", icon: Sparkles },
+  { id: 4, label: "Roteiro & IA", icon: FileDown },
 ];
 
 export default function RoteiroWizard({ mode, roteiroId, initialData }: RoteiroWizardProps) {
@@ -49,6 +51,9 @@ export default function RoteiroWizard({ mode, roteiroId, initialData }: RoteiroW
     roteiro_struct: null,
     status: "rascunho" as any,
     versao: 1,
+    agente_ia_id: "",
+    framework_id: "",
+    tom_criativo: [] as string[],
   });
 
   const [isSaving, setIsSaving] = useState(false);
@@ -195,6 +200,9 @@ export default function RoteiroWizard({ mode, roteiroId, initialData }: RoteiroW
     if (currentStep === 2) {
       return formData.tom.length > 0 && formData.estilo.length > 0;
     }
+    if (currentStep === 3) {
+      return formData.agente_ia_id && formData.framework_id;
+    }
     return true;
   };
 
@@ -257,6 +265,9 @@ export default function RoteiroWizard({ mode, roteiroId, initialData }: RoteiroW
               )}
               {currentStep === 2 && (
                 <Step2TomEstilo formData={formData} setFormData={setFormData} />
+              )}
+              {currentStep === 3 && (
+                <Step3Personalizacao formData={formData} setFormData={setFormData} />
               )}
               {currentStep === 4 && (
                 <Step4Roteiro
