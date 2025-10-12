@@ -45,6 +45,7 @@ import Especialistas from "./pages/Especialistas";
 
 // Role-specific pages
 import GRSDashboard from "./pages/GRS/Dashboard";
+import GRSPainel from "./pages/GRS/Painel";
 import GRSPlanejamentos from "./pages/GRS/Planejamentos";
 import GRSRelatorios from "./pages/GRS/Relatorios";
 import GRSAgendamentoSocial from "./pages/GRS/AgendamentoSocial";
@@ -342,6 +343,12 @@ function App() {
                 <Route path="/grs/dashboard" element={
                   <ProtectedRoute requiredRole="grs">
                     <Layout><GRSDashboard /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/grs/painel" element={
+                  <ProtectedRoute requiredRole="grs">
+                    <Layout><GRSPainel /></Layout>
                   </ProtectedRoute>
                 } />
                 

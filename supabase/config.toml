@@ -67,3 +67,6 @@ verify_jwt = false
 
 [functions.generate-task-briefing]
 verify_jwt = false
+
+[functions.generate-reflexao]
+verify_jwt = false
