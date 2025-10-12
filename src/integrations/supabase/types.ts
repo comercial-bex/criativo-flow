@@ -103,6 +103,45 @@ export type Database = {
           },
         ]
       }
+      agentes_ia: {
+        Row: {
+          created_at: string | null
+          descricao: string | null
+          especialidade: string
+          icone: string | null
+          id: string
+          is_ativo: boolean | null
+          nome: string
+          parametros_ia: Json | null
+          system_prompt: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          descricao?: string | null
+          especialidade: string
+          icone?: string | null
+          id?: string
+          is_ativo?: boolean | null
+          nome: string
+          parametros_ia?: Json | null
+          system_prompt: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          descricao?: string | null
+          especialidade?: string
+          icone?: string | null
+          id?: string
+          is_ativo?: boolean | null
+          nome?: string
+          parametros_ia?: Json | null
+          system_prompt?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       ai_cache: {
         Row: {
           cache_key: string
