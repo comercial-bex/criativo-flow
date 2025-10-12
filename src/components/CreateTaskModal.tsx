@@ -478,7 +478,6 @@ export function CreateTaskModal({
         cliente_id: selectedCliente,
         titulo: formData.titulo,
         descricao: formData.descricao,
-        setor_responsavel: formData.setor_responsavel,
         executor_id: selectedExecutor || null,
         executor_area: mapearExecutorArea(formData.setor_responsavel),
         prioridade: formData.prioridade,
@@ -582,10 +581,17 @@ export function CreateTaskModal({
       }
       
     } catch (error: any) {
-      console.error('Erro ao criar tarefa:', error);
+      console.error('❌ Erro ao criar tarefa:', error);
+      console.error('🔍 Detalhes do erro:', {
+        message: error?.message,
+        code: error?.code,
+        details: error?.details,
+        hint: error?.hint
+      });
+      
       toast({
         title: "❌ Erro ao criar tarefa",
-        description: error?.message || "Não foi possível criar a tarefa. Tente novamente.",
+        description: error?.message || error?.hint || "Não foi possível criar a tarefa. Verifique o console para mais detalhes.",
         variant: "destructive",
       });
     } finally {

@@ -228,7 +228,7 @@ export function mapExecutorArea(valor?: string | null): ExecutorAreaEnum | null 
 export function sanitizeTaskPayload<T extends Record<string, any>>(p: T): any {
   if (!p) return p;
   
-  // Lista de campos válidos para a tabela tarefa
+  // Lista de campos válidos para a tabela tarefa (atualizada - sem setor_responsavel)
   const validFields = [
     'id',
     'projeto_id',
@@ -238,7 +238,6 @@ export function sanitizeTaskPayload<T extends Record<string, any>>(p: T): any {
     'tipo',
     'status',
     'prioridade',
-    'setor_responsavel',
     'executor_area',
     'responsavel_id',
     'executor_id',
@@ -268,11 +267,16 @@ export function sanitizeTaskPayload<T extends Record<string, any>>(p: T): any {
     }
   });
   
-  // Mapear executor_area corretamente
-  const ea = mapExecutorArea(cleanPayload.executor_area ?? cleanPayload.setor_responsavel ?? null);
-  if (ea) {
-    cleanPayload.executor_area = ea;
+  // Mapear executor_area corretamente se ainda não estiver mapeado
+  if (cleanPayload.executor_area && typeof cleanPayload.executor_area === 'string') {
+    const ea = mapExecutorArea(cleanPayload.executor_area);
+    if (ea) {
+      cleanPayload.executor_area = ea;
+    }
   }
+  
+  // Remover explicitamente setor_responsavel se existir (proteção extra)
+  delete cleanPayload.setor_responsavel;
   
   return cleanPayload;
 }
