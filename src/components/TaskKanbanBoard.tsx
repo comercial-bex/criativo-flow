@@ -13,7 +13,8 @@ import {
   User, 
   Clock,
   AlertTriangle,
-  FileText
+  FileText,
+  GripVertical
 } from 'lucide-react';
 import { TaskWithDeadline } from '@/utils/statusUtils';
 
@@ -21,9 +22,9 @@ interface KanbanTask extends TaskWithDeadline {
   descricao?: string;
   responsavel_id?: string;
   responsavel_nome?: string;
-  setor_responsavel: string;
+  executor_area?: string;
+  setor_responsavel?: string;
   prioridade: 'baixa' | 'media' | 'alta';
-  
   horas_trabalhadas?: number;
 }
 
@@ -69,64 +70,79 @@ function SortableTaskCard({ task, onTaskClick }: { task: KanbanTask; onTaskClick
   return (
     <Card 
       ref={setNodeRef} 
-      style={style} 
-      {...attributes} 
-      {...listeners}
-      className="cursor-grab active:cursor-grabbing hover:shadow-md transition-shadow mb-3"
-      onClick={() => onTaskClick(task)}
+      style={style}
+      className="hover:shadow-md transition-shadow mb-3"
     >
       <CardContent className="p-4 space-y-3">
-        {/* Priority indicator */}
-        <div className="flex items-start justify-between">
-          <div className={`w-3 h-3 rounded-full ${getPriorityColor(task.prioridade)}`} />
-          <SmartStatusBadge task={task} showIcon={false} />
-        </div>
-
-        {/* Task title */}
-        <h4 className="font-medium text-sm leading-tight">{task.titulo}</h4>
-
-        {/* Task details */}
-        <div className="space-y-2 text-xs text-muted-foreground">
-          <div className="flex items-center gap-2">
-            <Badge variant="outline" className="text-xs">
-              {task.setor_responsavel}
-            </Badge>
+        <div className="flex items-start gap-2">
+          {/* Drag Handle */}
+          <div 
+            {...attributes} 
+            {...listeners}
+            className="cursor-grab active:cursor-grabbing p-1 hover:bg-accent rounded flex-shrink-0 mt-0.5"
+          >
+            <GripVertical className="h-4 w-4 text-muted-foreground" />
           </div>
 
-          {task.responsavel_nome && (
-            <div className="flex items-center gap-1">
-              <User className="h-3 w-3" />
-              <span>{task.responsavel_nome}</span>
+          {/* Clickable content area */}
+          <div 
+            onClick={() => onTaskClick(task)}
+            className="flex-1 cursor-pointer space-y-3"
+          >
+            {/* Priority indicator and status */}
+            <div className="flex items-start justify-between">
+              <div className={`w-3 h-3 rounded-full ${getPriorityColor(task.prioridade)}`} />
+              <SmartStatusBadge task={task} showIcon={false} />
             </div>
-          )}
 
-          {task.data_prazo && (
-            <div className="flex items-center gap-1">
-              <Calendar className="h-3 w-3" />
-              <span>{new Date(task.data_prazo).toLocaleDateString('pt-BR')}</span>
+            {/* Task title */}
+            <h4 className="font-medium text-sm leading-tight">{task.titulo}</h4>
+
+            {/* Task details */}
+            <div className="space-y-2 text-xs text-muted-foreground">
+              <div className="flex items-center gap-2">
+                {task.executor_area && (
+                  <Badge variant="outline" className="text-xs">
+                    {task.executor_area}
+                  </Badge>
+                )}
+              </div>
+
+              {task.responsavel_nome && (
+                <div className="flex items-center gap-1">
+                  <User className="h-3 w-3" />
+                  <span>{task.responsavel_nome}</span>
+                </div>
+              )}
+
+              {task.data_prazo && (
+                <div className="flex items-center gap-1">
+                  <Calendar className="h-3 w-3" />
+                  <span>{new Date(task.data_prazo).toLocaleDateString('pt-BR')}</span>
+                </div>
+              )}
             </div>
-          )}
 
-        </div>
-
-        {/* Additional indicators */}
-        <div className="flex items-center justify-between">
-          {task.descricao && (
-            <FileText className="h-3 w-3 text-muted-foreground" />
-          )}
-          
-          {/* Show alert if near deadline */}
-          {task.data_prazo && (
-            (() => {
-              const now = new Date();
-              const deadline = new Date(task.data_prazo);
-              const remainingDays = Math.ceil((deadline.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+            {/* Additional indicators */}
+            <div className="flex items-center justify-between">
+              {task.descricao && (
+                <FileText className="h-3 w-3 text-muted-foreground" />
+              )}
               
-              return remainingDays <= 2 && remainingDays >= 0 ? (
-                <AlertTriangle className="h-3 w-3 text-red-500" />
-              ) : null;
-            })()
-          )}
+              {/* Show alert if near deadline */}
+              {task.data_prazo && (
+                (() => {
+                  const now = new Date();
+                  const deadline = new Date(task.data_prazo);
+                  const remainingDays = Math.ceil((deadline.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+                  
+                  return remainingDays <= 2 && remainingDays >= 0 ? (
+                    <AlertTriangle className="h-3 w-3 text-red-500" />
+                  ) : null;
+                })()
+              )}
+            </div>
+          </div>
         </div>
       </CardContent>
     </Card>
@@ -142,12 +158,12 @@ function KanbanColumnComponent({
   onTaskCreate: (columnId: string) => void;
   onTaskClick: (task: KanbanTask) => void;
 }) {
-  const { setNodeRef } = useDroppable({
+  const { setNodeRef, isOver } = useDroppable({
     id: column.id,
   });
 
   return (
-    <div className="flex-1 min-w-[280px]" ref={setNodeRef}>
+    <div className="flex-1 min-w-[280px]">
       <Card>
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
@@ -167,7 +183,12 @@ function KanbanColumnComponent({
             </Button>
           </div>
         </CardHeader>
-        <CardContent className="space-y-2 max-h-[600px] overflow-y-auto">
+        <CardContent 
+          ref={setNodeRef}
+          className={`space-y-2 max-h-[600px] overflow-y-auto transition-colors ${
+            isOver ? 'bg-accent/50' : ''
+          }`}
+        >
           <SortableContext items={column.tasks.map(task => task.id)} strategy={verticalListSortingStrategy}>
             {column.tasks.map((task) => (
               <SortableTaskCard 
@@ -230,6 +251,12 @@ export function TaskKanbanBoard({ tasks, onTaskMove, onTaskCreate, onTaskClick, 
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
+    
+    console.log('🔍 Debug Drag End:', {
+      activeId: active.id,
+      overId: over?.id,
+      columns: columns.map(c => ({ id: c.id, taskCount: c.tasks.length }))
+    });
     
     if (!over) {
       console.log('❌ Nenhum drop zone detectado');

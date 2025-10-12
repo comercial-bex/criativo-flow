@@ -30,9 +30,9 @@ interface KanbanTask extends TaskWithDeadline {
   descricao?: string;
   responsavel_id?: string;
   responsavel_nome?: string;
-  setor_responsavel: string;
+  executor_area?: string;
+  setor_responsavel?: string;
   prioridade: 'baixa' | 'media' | 'alta';
-  
   horas_trabalhadas?: number;
   observacoes?: string;
 }

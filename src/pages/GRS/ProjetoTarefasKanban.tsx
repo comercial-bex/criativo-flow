@@ -45,7 +45,8 @@ interface Tarefa {
   data_prazo?: string;
   data_inicio?: string;
   horas_trabalhadas?: number;
-  setor_responsavel: string;
+  executor_area?: string;
+  setor_responsavel?: string;
   responsavel_id?: string;
   responsavel_nome?: string;
   projeto_id: string;
@@ -117,7 +118,8 @@ export default function ProjetoTarefasKanban() {
         ...tarefa,
         responsavel_nome: tarefa.responsavel?.nome,
         prioridade: (tarefa.prioridade as 'baixa' | 'media' | 'alta') || 'media',
-        setor_responsavel: tarefa.setor_responsavel || 'grs'
+        executor_area: tarefa.executor_area,
+        setor_responsavel: tarefa.setor_responsavel
       }));
       
       setTarefas(transformedTarefas as Tarefa[]);
