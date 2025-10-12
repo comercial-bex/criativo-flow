@@ -75,6 +75,7 @@ export function CreateTaskModal({
     call_to_action: '',
     hashtags: '',
     observacoes: '',
+    ambiente: 'cidade' as string,
     // Referências
     referencias_visuais: [] as any[],
     arquivos_complementares: [] as any[],
@@ -197,6 +198,14 @@ export function CreateTaskModal({
     }
   }, [selectedCliente, vinculadaPlanejamento]);
 
+  // Auto-preencher cliente/projeto quando modal for aberto dentro de um projeto
+  useEffect(() => {
+    if (open && projetoId && clienteId) {
+      setSelectedCliente(clienteId);
+      setSelectedProjeto(projetoId);
+    }
+  }, [open, projetoId, clienteId]);
+
   const fetchClientes = async () => {
     try {
       const { data, error } = await supabase
@@ -265,10 +274,12 @@ export function CreateTaskModal({
       call_to_action: '',
       hashtags: '',
       observacoes: '',
+      ambiente: 'cidade',
       referencias_visuais: [],
       arquivos_complementares: [],
       capa_thumbnail: null
     });
+    // Manter cliente/projeto se foram passados como props (modo "dentro do projeto")
     setSelectedProjeto(projetoId || '');
     setSelectedCliente(clienteId || '');
     setVinculadaPlanejamento(false);
@@ -366,6 +377,49 @@ export function CreateTaskModal({
         return setor ? (mapeamento[setor] || null) : null;
       };
 
+      // 🎬 GERAR ROTEIRO AUDIOVISUAL AUTOMATICAMENTE
+      let roteiroGerado = null;
+      const tiposAudiovisuais = ['criativo_vt', 'reels_instagram', 'stories_interativo', 'roteiro_reels'];
+      
+      if (tipoTarefaSelecionado && tiposAudiovisuais.includes(tipoTarefaSelecionado)) {
+        try {
+          // Buscar nome do cliente
+          const { data: clienteData } = await supabase
+            .from('clientes')
+            .select('nome')
+            .eq('id', selectedCliente)
+            .single();
+
+          const briefingParaRoteiro = {
+            cliente_nome: clienteData?.nome || 'Cliente',
+            titulo: formData.titulo,
+            objetivo: formData.objetivo_postagem || 'promocional',
+            tom: 'profissional',
+            veiculacao: ['digital'],
+            mensagem_chave: formData.contexto_estrategico || formData.descricao,
+            beneficios: [formData.call_to_action || 'Confira'],
+            cta: formData.call_to_action || 'Saiba mais',
+            ambiente: formData.ambiente || 'cidade',
+          };
+
+          const { data: roteiroData, error: roteiroError } = await supabase.functions.invoke(
+            'generate-roteiro-audiovisual',
+            { body: { briefingData: briefingParaRoteiro } }
+          );
+
+          if (!roteiroError && roteiroData?.success) {
+            roteiroGerado = roteiroData.roteiro;
+            toast({
+              title: "🎬 Roteiro gerado automaticamente!",
+              description: "Um roteiro técnico foi anexado à tarefa.",
+            });
+          }
+        } catch (error) {
+          console.error('Erro ao gerar roteiro:', error);
+          // Não bloquear criação da tarefa se roteiro falhar
+        }
+      }
+
       const taskData = {
         projeto_id: selectedProjeto,
         cliente_id: selectedCliente,
@@ -378,7 +432,7 @@ export function CreateTaskModal({
         status: defaultStatus,
         data_prazo: formData.data_prazo?.toISOString().split('T')[0],
         horas_estimadas: formData.horas_estimadas ? parseInt(formData.horas_estimadas) : null,
-        origem: taskType, // 'avulsa' ou 'planejamento'
+        origem: taskType,
         grs_action_id: vinculadaPlanejamento ? selectedPlanejamento : null,
         tipo: tipoTarefaSelecionado || null,
         kpis: {
@@ -390,7 +444,8 @@ export function CreateTaskModal({
             contexto_estrategico: formData.contexto_estrategico,
             call_to_action: formData.call_to_action,
             hashtags: formData.hashtags ? formData.hashtags.split(',').map((h: string) => h.trim()) : [],
-            observacoes_gerais: formData.observacoes
+            observacoes_gerais: formData.observacoes,
+            roteiro_audiovisual: roteiroGerado
           },
           referencias: {
             visuais: formData.referencias_visuais || [],
@@ -524,12 +579,13 @@ export function CreateTaskModal({
                 value={selectedCliente} 
                 onValueChange={(value) => {
                   setSelectedCliente(value);
-                  setSelectedProjeto(''); // Reset projeto quando trocar cliente
+                  setSelectedProjeto('');
                   setProjetos([]);
                 }}
+                disabled={!!clienteId}
               >
                 <SelectTrigger className={cn(!selectedCliente && "border-destructive")}>
-                  <SelectValue placeholder="Selecione o cliente" />
+                  <SelectValue placeholder={clienteId ? "Cliente pré-selecionado" : "Selecione o cliente"} />
                 </SelectTrigger>
                 <SelectContent>
                   {clientes.map(cliente => (
@@ -546,10 +602,14 @@ export function CreateTaskModal({
               <Select 
                 value={selectedProjeto} 
                 onValueChange={setSelectedProjeto}
-                disabled={!selectedCliente}
+                disabled={!selectedCliente || !!projetoId}
               >
                 <SelectTrigger className={cn(!selectedProjeto && selectedCliente && "border-destructive")}>
-                  <SelectValue placeholder={selectedCliente ? "Selecione o projeto" : "Selecione um cliente primeiro"} />
+                  <SelectValue placeholder={
+                    projetoId ? "Projeto pré-selecionado" :
+                    selectedCliente ? "Selecione o projeto" : 
+                    "Selecione um cliente primeiro"
+                  } />
                 </SelectTrigger>
                 <SelectContent>
                   {projetos.map(projeto => (
@@ -841,11 +901,33 @@ export function CreateTaskModal({
                   
                   <Separator className="my-4" />
                   
-                  <BriefingForm 
-                    formData={formData}
-                    setFormData={setFormData}
-                    tipoTarefa={tipoTarefaSelecionado}
-                  />
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="ambiente">Ambiente da Captação</Label>
+                      <Select
+                        value={formData.ambiente}
+                        onValueChange={(value) => setFormData({ ...formData, ambiente: value })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione o ambiente" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="praia">🏖️ Praia</SelectItem>
+                          <SelectItem value="floresta">🌲 Floresta</SelectItem>
+                          <SelectItem value="cidade">🏙️ Cidade</SelectItem>
+                          <SelectItem value="escritorio">🏢 Escritório</SelectItem>
+                          <SelectItem value="noturno">🌙 Noturno</SelectItem>
+                          <SelectItem value="evento">🎉 Evento</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <BriefingForm 
+                      formData={formData}
+                      setFormData={setFormData}
+                      tipoTarefa={tipoTarefaSelecionado}
+                    />
+                  </div>
                 </>
               )}
             </TabsContent>
