@@ -80,21 +80,31 @@ export default function TarefasUnificadasGRS() {
     try {
       setLoading(true);
 
-      // Buscar tarefas GRS
-      const { data: tasksData, error: tasksError } = await supabase
-        .from('tarefas_projeto')
+      // @ts-ignore - Evitar erro de tipo recursivo do Supabase
+      const { data, error } = await supabase
+        .from('tarefa')
         .select('*')
         .eq('setor_responsavel', 'grs')
         .order('created_at', { ascending: false });
 
-      if (tasksError) throw tasksError;
+      if (error) throw error;
 
       // Processar tarefas
-      const processedTasks = tasksData?.map(task => ({
-        ...task,
+      const processedTasks = (data || []).map((task: any) => ({
+        id: task.id,
+        titulo: task.titulo,
+        descricao: task.descricao,
+        status: task.status,
         prioridade: task.prioridade as 'baixa' | 'media' | 'alta',
-        observacoes: task.observacoes || ''
-      })) || [];
+        data_prazo: task.prazo_executor,
+        responsavel_id: task.responsavel_id,
+        setor_responsavel: task.setor_responsavel || 'grs',
+        cliente_id: task.cliente_id,
+        projeto_id: task.projeto_id,
+        observacoes: task.observacoes || '',
+        created_at: task.created_at,
+        updated_at: task.updated_at
+      }));
 
       setTasks(processedTasks);
 
@@ -156,9 +166,9 @@ export default function TarefasUnificadasGRS() {
       }
 
       const { error } = await supabase
-        .from('tarefas_projeto')
+        .from('tarefa')
         .update({ 
-          status: newStatus,
+          status: newStatus as any,
           observacoes: observations ? `${task.observacoes || ''}\n${observations}` : task.observacoes,
           updated_at: new Date().toISOString()
         })
@@ -190,7 +200,7 @@ export default function TarefasUnificadasGRS() {
     try {
       const payload = sanitizeTaskPayload(taskData);
       const { data, error } = await supabase
-        .from('tarefas_projeto')
+        .from('tarefa')
         .insert(payload as any)
         .select()
         .single();
@@ -220,12 +230,21 @@ export default function TarefasUnificadasGRS() {
       }
 
       const processedTask: GRSTask = {
-        ...data,
+        id: data.id,
+        titulo: data.titulo,
+        descricao: data.descricao,
+        status: data.status,
         prioridade: data.prioridade as 'baixa' | 'media' | 'alta',
+        data_prazo: (data as any).prazo_executor,
+        responsavel_id: data.responsavel_id,
         responsavel_nome,
-        cliente_nome,
+        setor_responsavel: (data as any).setor_responsavel || 'grs',
         cliente_id: taskData.cliente_id,
-        observacoes: data.observacoes || ''
+        cliente_nome,
+        projeto_id: data.projeto_id,
+        observacoes: (data as any).observacoes || '',
+        created_at: data.created_at,
+        updated_at: data.updated_at
       };
 
       setTasks(prev => [processedTask, ...prev]);
@@ -243,7 +262,7 @@ export default function TarefasUnificadasGRS() {
   const handleTaskUpdate = async (taskId: string, updates: any) => {
     try {
       const { error } = await supabase
-        .from('tarefas_projeto')
+        .from('tarefa')
         .update({ ...updates, updated_at: new Date().toISOString() })
         .eq('id', taskId);
 
