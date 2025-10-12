@@ -66,6 +66,7 @@ export function CreateTaskModal({
     setor_responsavel: '',
     prioridade: 'media' as 'baixa' | 'media' | 'alta',
     data_prazo: undefined as Date | undefined,
+    horas_estimadas: '',
     // Briefing fields
     objetivo_postagem: '',
     publico_alvo: '',
@@ -343,6 +344,7 @@ export function CreateTaskModal({
       setor_responsavel: '',
       prioridade: 'media',
       data_prazo: undefined,
+      horas_estimadas: '',
       objetivo_postagem: '',
       publico_alvo: '',
       formato_postagem: '',
@@ -482,6 +484,7 @@ export function CreateTaskModal({
         prioridade: formData.prioridade,
         status: defaultStatus,
         prazo_executor: formData.data_prazo?.toISOString(),
+        horas_estimadas: formData.horas_estimadas ? parseInt(formData.horas_estimadas) : null,
         origem: taskType,
         grs_action_id: vinculadaPlanejamento ? selectedPlanejamento : null,
         tipo: tipoTarefaSelecionado || null,
@@ -906,6 +909,17 @@ export function CreateTaskModal({
               </Popover>
             </div>
 
+            <div className="space-y-2">
+              <Label htmlFor="horas">Horas Estimadas</Label>
+              <Input
+                id="horas"
+                type="number"
+                value={formData.horas_estimadas}
+                onChange={(e) => setFormData({ ...formData, horas_estimadas: e.target.value })}
+                placeholder="Ex: 4"
+                min="0"
+              />
+            </div>
           </div>
 
           <div className="space-y-2">

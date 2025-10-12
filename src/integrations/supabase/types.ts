@@ -8002,6 +8002,8 @@ export type Database = {
             | null
           executor_id: string | null
           grs_action_id: string | null
+          horas_estimadas: number | null
+          horas_trabalhadas: number | null
           id: string
           kpis: Json | null
           origem: string | null
@@ -8037,6 +8039,8 @@ export type Database = {
             | null
           executor_id?: string | null
           grs_action_id?: string | null
+          horas_estimadas?: number | null
+          horas_trabalhadas?: number | null
           id?: string
           kpis?: Json | null
           origem?: string | null
@@ -8072,6 +8076,8 @@ export type Database = {
             | null
           executor_id?: string | null
           grs_action_id?: string | null
+          horas_estimadas?: number | null
+          horas_trabalhadas?: number | null
           id?: string
           kpis?: Json | null
           origem?: string | null
