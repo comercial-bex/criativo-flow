@@ -96,7 +96,8 @@ export default function MinhasTarefas() {
         ...task,
         responsavel_nome: task.responsavel?.nome || 'Não atribuído',
         prioridade: task.prioridade as 'baixa' | 'media' | 'alta',
-        setor_responsavel: task.setor_responsavel || (task.area && task.area[0]) || 'GRS'
+        setor_responsavel: task.setor_responsavel || (task.area && task.area[0]) || 'GRS',
+        data_prazo: task.prazo_executor // Map for TaskKanbanBoard compatibility
       }));
 
       setTasks(formattedTasks as MyTask[]);

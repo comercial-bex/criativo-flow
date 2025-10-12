@@ -229,22 +229,24 @@ export default function TarefasUnificadasDesign() {
     }
 
     try {
+      const tarefaPayload = {
+        titulo: newTask.titulo,
+        descricao: newTask.descricao || null,
+        prioridade: newTask.prioridade as any,
+        prazo_executor: newTask.data_prazo || null,
+        responsavel_id: newTask.responsavel_id || null,
+        cliente_id: newTask.cliente_id || null,
+        projeto_id: newTask.projeto_id || null,
+        horas_estimadas: newTask.horas_estimadas ? parseInt(newTask.horas_estimadas) : null,
+        setor_responsavel: 'design',
+        status: createColumnId as any,
+        tipo: 'design',
+        observacoes: `Tipo: ${newTask.tipo_criativo} | Formato: ${newTask.formato} | Dimensões: ${newTask.dimensoes}`
+      };
+
       const { data, error } = await supabase
-        .from('tarefas_projeto')
-        .insert({
-          titulo: newTask.titulo,
-          descricao: newTask.descricao || null,
-          prioridade: newTask.prioridade,
-          data_prazo: newTask.data_prazo || null,
-          responsavel_id: newTask.responsavel_id || null,
-          cliente_id: newTask.cliente_id || null,
-          projeto_id: newTask.projeto_id || null,
-          horas_estimadas: newTask.horas_estimadas ? parseInt(newTask.horas_estimadas) : null,
-          setor_responsavel: 'design',
-          status: createColumnId,
-          tipo_tarefa: 'design',
-          observacoes: `Tipo: ${newTask.tipo_criativo} | Formato: ${newTask.formato} | Dimensões: ${newTask.dimensoes}`
-        })
+        .from('tarefa')
+        .insert(tarefaPayload as any)
         .select()
         .single();
 
@@ -273,11 +275,17 @@ export default function TarefasUnificadasDesign() {
       }
 
       const processedTask: DesignTask = {
-        ...data,
+        id: data.id,
+        titulo: data.titulo,
+        descricao: data.descricao,
+        status: data.status,
         prioridade: data.prioridade as 'baixa' | 'media' | 'alta',
         responsavel_nome,
         cliente_nome,
-        observacoes: data.observacoes || ''
+        setor_responsavel: 'design',
+        data_prazo: data.prazo_executor,
+        created_at: data.created_at,
+        updated_at: data.updated_at
       };
 
       setTasks(prev => [processedTask, ...prev]);
@@ -320,9 +328,15 @@ export default function TarefasUnificadasDesign() {
 
   const handleTaskUpdate = async (taskId: string, updates: any) => {
     try {
+      const mappedUpdates = { ...updates };
+      if (updates.data_prazo) {
+        mappedUpdates.prazo_executor = updates.data_prazo;
+        delete mappedUpdates.data_prazo;
+      }
+      
       const { error } = await supabase
-        .from('tarefas_projeto')
-        .update({ ...updates, updated_at: new Date().toISOString() })
+        .from('tarefa')
+        .update({ ...mappedUpdates, updated_at: new Date().toISOString() })
         .eq('id', taskId);
 
       if (error) throw error;

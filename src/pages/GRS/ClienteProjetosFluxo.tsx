@@ -150,14 +150,24 @@ export default function ClienteProjetosFluxo() {
       // Buscar projetos
       const { data: projetosData, error: projetosError } = await supabase
         .from('projetos')
-        .select(`
-          *,
-          tarefas:tarefas_projeto(*)
-        `)
+        .select('*')
         .eq('cliente_id', clienteId)
         .order('created_at', { ascending: false });
 
       if (projetosError) throw projetosError;
+      
+      // Buscar tarefas separadamente para cada projeto
+      const projetosComTarefas = await Promise.all((projetosData || []).map(async (projeto) => {
+        const { data: tarefasData } = await supabase
+          .from('tarefa')
+          .select('*')
+          .eq('projeto_id', projeto.id);
+        
+        return {
+          ...projeto,
+          tarefas: tarefasData || []
+        };
+      }));
 
       // Buscar planejamentos
       const { data: planejamentosData, error: planejamentosError } = await supabase
@@ -170,7 +180,7 @@ export default function ClienteProjetosFluxo() {
 
       // Unificar projetos
       const projetosUnificados: ProjetoUnificado[] = [
-        ...(projetosData || []).map(projeto => ({
+        ...(projetosComTarefas || []).map(projeto => ({
           id: projeto.id,
           titulo: projeto.titulo || 'Projeto sem título',
           descricao: projeto.descricao,

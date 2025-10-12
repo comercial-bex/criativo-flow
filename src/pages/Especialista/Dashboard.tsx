@@ -87,25 +87,41 @@ export default function EspecialistaDashboard() {
 
       // Buscar tarefas atribuídas ao usuário
       const { data: tarefasData, error: tarefasError } = await supabase
-        .from('tarefas_projeto')
+        .from('tarefa')
         .select(`
           id,
           titulo,
           status,
           prioridade,
-          data_prazo,
-          projetos:projeto_id (
-            id,
-            titulo,
-            clientes (nome)
-          )
+          prazo_executor,
+          projeto_id,
+          cliente_id
         `)
         .eq('responsavel_id', user.id)
-        .order('data_prazo', { ascending: true });
+        .order('prazo_executor', { ascending: true });
 
       if (tarefasError) throw tarefasError;
 
-      setTarefas(tarefasData as any || []);
+      // Buscar nomes de projetos e clientes separadamente e mapear prazo_executor
+      const tarefasFormatadas = await Promise.all((tarefasData || []).map(async (tarefa: any) => {
+        let projeto: any = null;
+        if (tarefa.projeto_id) {
+          const { data: projetoData } = await supabase
+            .from('projetos')
+            .select('id, titulo, clientes(nome)')
+            .eq('id', tarefa.projeto_id)
+            .single();
+          projeto = projetoData;
+        }
+        
+        return {
+          ...tarefa,
+          data_prazo: tarefa.prazo_executor,
+          projeto
+        };
+      }));
+
+      setTarefas(tarefasFormatadas as any);
     } catch (error) {
       console.error('Erro ao carregar dados:', error);
       toast({

@@ -53,7 +53,8 @@ interface Tarefa {
   descricao?: string;
   status: string;
   prioridade?: string;
-  data_prazo?: string;
+  prazo_executor?: string;
+  data_prazo?: string; // Mapped from prazo_executor for UI compatibility
   responsavel_id?: string;
   tipo?: string;
   tempo_estimado?: number;
@@ -305,7 +306,14 @@ export function TarefasKanban({ planejamento, clienteId, projetoId, filters }: T
         .order('created_at', { ascending: false });
 
       if (tarefasError) throw tarefasError;
-      setTarefas(tarefasData || []);
+      
+      // Mapear prazo_executor para data_prazo para compatibilidade com UI
+      const tarefasProcessadas = (tarefasData || []).map(t => ({
+        ...t,
+        data_prazo: t.prazo_executor
+      }));
+      
+      setTarefas(tarefasProcessadas);
 
       // Buscar profiles
       const { data: profilesData, error: profilesError } = await supabase
@@ -393,7 +401,7 @@ export function TarefasKanban({ planejamento, clienteId, projetoId, filters }: T
           status: taskData.status || 'backlog',
           executor_id: taskData.executor_id,
           executor_area: mapearExecutorArea(taskData.executor_area),
-          data_entrega_prevista: taskData.data_prazo,
+          prazo_executor: taskData.prazo_executor || taskData.data_prazo,
           origem: taskData.origem || 'avulsa',
           tipo: taskData.tipo || null,
           kpis: taskData.kpis || {}
@@ -419,10 +427,10 @@ export function TarefasKanban({ planejamento, clienteId, projetoId, filters }: T
 
   const updateTarefa = async (tarefaId: string, updates: any) => {
     try {
-      // Mapear data_prazo para data_entrega_prevista
+      // Mapear data_prazo para prazo_executor
       const mappedUpdates = { ...updates };
       if (updates.data_prazo) {
-        mappedUpdates.data_entrega_prevista = updates.data_prazo;
+        mappedUpdates.prazo_executor = updates.data_prazo;
         delete mappedUpdates.data_prazo;
       }
       

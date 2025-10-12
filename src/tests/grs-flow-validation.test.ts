@@ -212,7 +212,7 @@ async function test4_ValidarTarefaCriada() {
   await new Promise(resolve => setTimeout(resolve, 1000)); // Aguardar trigger
 
   const { data: tarefas, error } = await supabase
-    .from('tarefas_projeto')
+    .from('tarefa')
     .select('*')
     .eq('projeto_id', fixtureProjetoId)
     .eq('origem', 'planejamento')
@@ -294,7 +294,7 @@ async function test7_ValidarRBAC() {
 async function cleanup() {
   console.log('\n🧹 Limpando fixtures...\n');
 
-  await supabase.from('tarefas_projeto').delete().eq('projeto_id', fixtureProjetoId);
+  await supabase.from('tarefa').delete().eq('projeto_id', fixtureProjetoId);
   await supabase.from('aprovacoes_cliente').delete().eq('cliente_id', fixtureClienteId);
   await supabase.from('logs_atividade').delete().eq('cliente_id', fixtureClienteId);
   await supabase.from('planejamentos').delete().eq('id', fixturePlanejamentoId);
