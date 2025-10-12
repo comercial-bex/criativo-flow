@@ -70,3 +70,12 @@ verify_jwt = false
 
 [functions.generate-reflexao]
 verify_jwt = false
+
+[functions.gerar-insights-diarios]
+verify_jwt = false
+
+[functions.avaliar-meta-smart]
+verify_jwt = false
+
+[functions.prever-horarios-foco]
+verify_jwt = false

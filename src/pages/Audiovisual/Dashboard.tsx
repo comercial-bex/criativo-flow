@@ -12,6 +12,9 @@ import { ptBR } from "date-fns/locale";
 import { GamificationWidget } from "@/components/GamificationWidget";
 import { useTutorial } from "@/hooks/useTutorial";
 import { TutorialButton } from "@/components/TutorialButton";
+import { PomodoroTimer } from "@/components/Produtividade/PomodoroTimer";
+import { MetasSmart } from "@/components/Produtividade/MetasSmart";
+import { InsightsIA } from "@/components/Produtividade/InsightsIA";
 
 interface AudiovisualMeta {
   id: string;
@@ -222,6 +225,16 @@ export default function AudiovisualDashboard() {
 
       {/* Gamification Widget */}
       <GamificationWidget setor="audiovisual" />
+
+      {/* Kit de Produtividade */}
+      <div>
+        <h2 className="text-xl font-semibold mb-4">Kit de Produtividade</h2>
+        <div className="grid gap-6 md:grid-cols-3">
+          <PomodoroTimer setor="audiovisual" />
+          <MetasSmart setor="audiovisual" />
+          <InsightsIA setor="audiovisual" />
+        </div>
+      </div>
 
       {/* Content Grid */}
       <div className="grid gap-6 lg:grid-cols-2">

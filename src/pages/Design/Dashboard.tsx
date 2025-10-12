@@ -21,6 +21,9 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useTutorial } from '@/hooks/useTutorial';
 import { TutorialButton } from '@/components/TutorialButton';
+import { PomodoroTimer } from "@/components/Produtividade/PomodoroTimer";
+import { MetasSmart } from "@/components/Produtividade/MetasSmart";
+import { InsightsIA } from "@/components/Produtividade/InsightsIA";
 
 interface DashboardStats {
   tarefasAbertas: number;
@@ -171,6 +174,16 @@ export default function DesignDashboard() {
               Calendário
             </Link>
           </Button>
+        </div>
+      </div>
+
+      {/* Kit de Produtividade */}
+      <div>
+        <h2 className="text-xl font-semibold mb-4">Kit de Produtividade</h2>
+        <div className="grid gap-6 md:grid-cols-3">
+          <PomodoroTimer setor="design" />
+          <MetasSmart setor="design" />
+          <InsightsIA setor="design" />
         </div>
       </div>
 
