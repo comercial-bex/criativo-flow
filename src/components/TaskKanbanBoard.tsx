@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { DndContext, DragEndEvent, DragOverlay, DragStartEvent } from '@dnd-kit/core';
+import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, useDroppable } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -142,8 +142,12 @@ function KanbanColumnComponent({
   onTaskCreate: (columnId: string) => void;
   onTaskClick: (task: KanbanTask) => void;
 }) {
+  const { setNodeRef } = useDroppable({
+    id: column.id,
+  });
+
   return (
-    <div className="flex-1 min-w-[280px]">
+    <div className="flex-1 min-w-[280px]" ref={setNodeRef}>
       <Card>
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
@@ -227,10 +231,24 @@ export function TaskKanbanBoard({ tasks, onTaskMove, onTaskCreate, onTaskClick, 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     
-    if (!over) return;
+    if (!over) {
+      console.log('❌ Nenhum drop zone detectado');
+      setActiveTask(null);
+      return;
+    }
     
     const taskId = active.id as string;
     const newColumnId = over.id as string;
+    
+    console.log('🎯 Drag end:', { taskId, newColumnId });
+    
+    // Verificar se é uma coluna válida
+    const validColumns = ['a_fazer', 'em_andamento', 'concluido'];
+    if (!validColumns.includes(newColumnId)) {
+      console.log('⚠️ Drop em tarefa, não em coluna. Ignorando.');
+      setActiveTask(null);
+      return;
+    }
     
     // Map column IDs to status values
     const statusMapping = {
@@ -239,7 +257,9 @@ export function TaskKanbanBoard({ tasks, onTaskMove, onTaskCreate, onTaskClick, 
       'concluido': 'concluido'
     };
 
-    const newStatus = statusMapping[newColumnId as keyof typeof statusMapping] || newColumnId;
+    const newStatus = statusMapping[newColumnId as keyof typeof statusMapping];
+    console.log('✅ Movendo para status:', newStatus);
+    
     onTaskMove(taskId, newStatus);
     setActiveTask(null);
   };

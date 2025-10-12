@@ -203,11 +203,8 @@ export default function ProjetoTarefasKanban() {
   };
 
   const handleTaskClick = (task: Tarefa) => {
-    // TODO: Implement task details modal
-    toast({
-      title: "Detalhes da tarefa",
-      description: `Abrindo detalhes de: ${task.titulo}`,
-    });
+    setSelectedTask(task);
+    setShowTaskDetails(true);
   };
 
   if (loading) {
