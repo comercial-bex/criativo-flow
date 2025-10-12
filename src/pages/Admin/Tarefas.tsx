@@ -79,55 +79,39 @@ export default function AdminTarefas() {
       setLoading(true);
       
       // Buscar tarefas de todos os setores
-      const { data: tarefasData, error: tarefasError } = await supabase
-        .from('tarefas_projeto')
-        .select(`
-          id,
-          titulo,
-          descricao,
-          status,
-          prioridade,
-          data_prazo,
-          responsavel_id,
-          setor_responsavel,
-          horas_estimadas,
-          horas_trabalhadas,
-          projeto_id,
-          created_at,
-          updated_at,
-          anexos,
-          observacoes
-        `)
-        .order('created_at', { ascending: false });
+      const { data: tarefasData, error: tarefasError } = await (supabase
+        .from('tarefa')
+        .select('*')
+        .order('created_at', { ascending: false }) as any);
 
       if (tarefasError) throw tarefasError;
 
       // Buscar dados dos responsáveis
-      const responsavelIds = [...new Set(tarefasData?.map(t => t.responsavel_id).filter(Boolean))];
+      const responsavelIds = [...new Set(tarefasData?.map((t: any) => t.responsavel_id).filter(Boolean))];
       const { data: profilesData } = await supabase
         .from('profiles')
         .select('id, nome')
-        .in('id', responsavelIds);
+        .in('id', responsavelIds as string[]);
 
       // Buscar dados dos projetos
-      const projetoIds = [...new Set(tarefasData?.map(t => t.projeto_id).filter(Boolean))];
+      const projetoIds = [...new Set(tarefasData?.map((t: any) => t.projeto_id).filter(Boolean))];
       const { data: projetosData } = await supabase
         .from('projetos')
         .select('id, titulo, cliente_id')
-        .in('id', projetoIds);
+        .in('id', projetoIds as string[]);
 
       // Buscar dados dos clientes
-      const clienteIds = [...new Set(projetosData?.map(p => p.cliente_id).filter(Boolean))];
+      const clienteIds = [...new Set(projetosData?.map((p: any) => p.cliente_id).filter(Boolean))];
       const { data: clientesData } = await supabase
         .from('clientes')
         .select('id, nome')
         .in('id', clienteIds);
 
       // Combinar dados
-      const tasksWithDetails = tarefasData?.map(task => {
-        const responsavel = profilesData?.find(p => p.id === task.responsavel_id);
-        const projeto = projetosData?.find(p => p.id === task.projeto_id);
-        const cliente = clientesData?.find(c => c.id === projeto?.cliente_id);
+      const tasksWithDetails = tarefasData?.map((task: any) => {
+        const responsavel = profilesData?.find((p: any) => p.id === task.responsavel_id);
+        const projeto = projetosData?.find((p: any) => p.id === task.projeto_id);
+        const cliente = clientesData?.find((c: any) => c.id === projeto?.cliente_id);
 
         return {
           ...task,
@@ -184,8 +168,8 @@ export default function AdminTarefas() {
   const handleTaskMove = async (taskId: string, newStatus: string) => {
     try {
       const { error } = await supabase
-        .from('tarefas_projeto')
-        .update({ status: newStatus, updated_at: new Date().toISOString() })
+        .from('tarefa')
+        .update({ status: newStatus as any, updated_at: new Date().toISOString() })
         .eq('id', taskId);
 
       if (error) throw error;

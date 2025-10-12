@@ -110,22 +110,22 @@ export default function TarefasUnificadasDesign() {
       setLoading(true);
 
       // Buscar tarefas de Design
-      const { data: tasksData, error: tasksError } = await supabase
-        .from('tarefas_projeto')
+      const { data: tasksData, error: tasksError } = await (supabase
+        .from('tarefa')
         .select('*')
-        .eq('setor_responsavel', 'design')
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false }) as any);
 
       if (tasksError) throw tasksError;
 
       // Processar tarefas
-      const processedTasks = tasksData?.map(task => ({
+      const processedTasks = tasksData?.map((task: any) => ({
         ...task,
         prioridade: task.prioridade as 'baixa' | 'media' | 'alta',
+        setor_responsavel: 'design',
         observacoes: task.observacoes || ''
       })) || [];
 
-      setTasks(processedTasks);
+      setTasks(processedTasks as any);
 
       // Buscar clientes
       const { data: clientesData, error: clientesError } = await supabase
@@ -184,9 +184,9 @@ export default function TarefasUnificadasDesign() {
       }
 
       const { error } = await supabase
-        .from('tarefas_projeto')
+        .from('tarefa')
         .update({ 
-          status: newStatus,
+          status: newStatus as any,
           observacoes: observations ? `${task.observacoes || ''}\n${observations}` : task.observacoes,
           updated_at: new Date().toISOString()
         })

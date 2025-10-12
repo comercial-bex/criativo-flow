@@ -515,6 +515,9 @@ export function CreateTaskModal({
       
       // Se houver equipamentos selecionados, criar reservas
       if (selectedEquipamentos.length > 0 && createdTask?.id) {
+        let reservasOk = 0;
+        let reservasFalha = 0;
+        
         for (const equipamento of selectedEquipamentos) {
           // Calcular período da reserva
           const dataInicio = formData.data_prazo || new Date();
@@ -533,15 +536,26 @@ export function CreateTaskModal({
               p_projeto_id: selectedProjeto,
               p_quantidade: 1
             });
+            reservasOk++;
           } catch (reservaError) {
+            reservasFalha++;
             console.error('Erro ao criar reserva:', reservaError);
           }
         }
         
-        toast({
-          title: "✅ Tarefa criada com equipamentos reservados!",
-          description: `${selectedEquipamentos.length} equipamento(s) foram reservados para "${formData.titulo}".`,
-        });
+        // Toast com resultado detalhado
+        if (reservasFalha === 0) {
+          toast({
+            title: "✅ Equipamentos reservados!",
+            description: `${reservasOk} item(ns) reservado(s) com sucesso`,
+          });
+        } else {
+          toast({
+            title: "⚠️ Reserva parcial",
+            description: `${reservasOk} OK, ${reservasFalha} falharam. Reserve manualmente.`,
+            variant: "destructive"
+          });
+        }
       } else {
         toast({
           title: "✅ Tarefa criada com sucesso!",

@@ -63,15 +63,14 @@ const TarefasUnificadasAudiovisual: React.FC = () => {
       setProjects(projectsData || []);
       setProfiles(profilesData || []);
 
-      // Agora buscar tarefas do setor audiovisual
-      const { data: audiovisualTasksData, error: audiovisualTasksError } = await supabase
-        .from('tarefas_projeto')
+      // Agora buscar tarefas do setor audiovisual  
+      const { data: audiovisualTasksData, error: audiovisualTasksError } = await (supabase
+        .from('tarefa')
         .select(`
           *,
           profiles!responsavel_id (id, nome)
         `)
-        .eq('setor_responsavel', 'audiovisual')
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false }) as any);
 
       if (audiovisualTasksError) {
         console.error('Erro ao buscar tarefas:', audiovisualTasksError);
@@ -81,12 +80,13 @@ const TarefasUnificadasAudiovisual: React.FC = () => {
           variant: "destructive"
         });
       } else {
-        const formattedTasks = audiovisualTasksData?.map(task => ({
+        const formattedTasks = audiovisualTasksData?.map((task: any) => ({
           ...task,
           prioridade: task.prioridade as 'baixa' | 'media' | 'alta',
           responsavel_nome: task.profiles?.nome || 'Não atribuído',
           cliente_nome: (clientsData || []).find(c => c.id === task.projeto_id)?.nome || 'Sem cliente',
-          projeto_nome: (projectsData || []).find(p => p.id === task.projeto_id)?.titulo || 'Sem projeto'
+          projeto_nome: (projectsData || []).find(p => p.id === task.projeto_id)?.titulo || 'Sem projeto',
+          setor_responsavel: task.setor_responsavel || (task.area && task.area[0]) || 'audiovisual'
         })) || [];
         
         setTasks(formattedTasks);
@@ -112,9 +112,9 @@ const TarefasUnificadasAudiovisual: React.FC = () => {
   const handleTaskMove = async (taskId: string, newStatus: string, observation?: string) => {
     try {
       const { error } = await supabase
-        .from('tarefas_projeto')
+        .from('tarefa')
         .update({ 
-          status: newStatus,
+          status: newStatus as any,
           ...(observation && { observacoes: observation }),
           updated_at: new Date().toISOString()
         })
@@ -150,19 +150,20 @@ const TarefasUnificadasAudiovisual: React.FC = () => {
       const base = { ...taskData, setor_responsavel: 'audiovisual' };
       const payload = sanitizeTaskPayload(base);
       const { data, error } = await supabase
-        .from('tarefas_projeto')
-        .insert([{ ...payload, status: 'roteiro' }])
+        .from('tarefa')
+        .insert([{ ...payload, status: 'roteiro' as any }])
         .select()
         .single();
 
       if (error) throw error;
 
-      const newTask = {
+      const newTask: any = {
         ...data,
         prioridade: data.prioridade as 'baixa' | 'media' | 'alta',
         responsavel_nome: profiles.find(p => p.id === data.responsavel_id)?.nome || 'Não atribuído',
         cliente_nome: clients.find(c => c.id === data.projeto_id)?.nome || 'Sem cliente',
-        projeto_nome: projects.find(p => p.id === data.projeto_id)?.nome || 'Sem projeto'
+        projeto_nome: projects.find(p => p.id === data.projeto_id)?.nome || 'Sem projeto',
+        setor_responsavel: 'audiovisual'
       };
 
       setTasks(prev => [newTask, ...prev]);
@@ -187,8 +188,8 @@ const TarefasUnificadasAudiovisual: React.FC = () => {
   const handleTaskUpdate = async (taskId: string, updates: Partial<AudiovisualTask>) => {
     try {
       const { error } = await supabase
-        .from('tarefas_projeto')
-        .update({ ...updates, updated_at: new Date().toISOString() })
+        .from('tarefa')
+        .update({ ...updates as any, updated_at: new Date().toISOString() })
         .eq('id', taskId);
 
       if (error) throw error;

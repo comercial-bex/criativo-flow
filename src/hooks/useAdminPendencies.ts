@@ -147,7 +147,7 @@ export function useAdminPendencies() {
       // 3. Buscar tarefas atrasadas
       const today = new Date().toISOString().split("T")[0];
       const { data: tasks, error: tasksError } = await supabase
-        .from("tarefas_projeto")
+        .from("tarefa")
         .select(`
           id,
           titulo,

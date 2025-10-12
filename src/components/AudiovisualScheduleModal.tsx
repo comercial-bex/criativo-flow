@@ -132,13 +132,13 @@ export function AudiovisualScheduleModal({
           .lte('data_inicio', `${targetDate}T23:59:59`),
         
         // 3. Tarefas prioritárias
-        supabase
-          .from('tarefas_projeto')
-          .select('id, titulo, data_prazo, prioridade, projetos(titulo)')
+        (supabase
+          .from('tarefa')
+          .select('id, titulo, prazo_executor, prioridade, projetos(titulo)')
           .eq('responsavel_id', formData.especialista_id)
-          .eq('data_prazo', targetDate)
-          .in('prioridade', ['alta', 'urgente'])
-          .neq('status', 'concluida')
+          .eq('prazo_executor', targetDate)
+          .in('prioridade', ['alta', 'critica'] as any)
+          .neq('status', 'concluido' as any) as any)
       ]);
 
       // Consolidar conflitos com identificação de tipo
@@ -233,7 +233,7 @@ export function AudiovisualScheduleModal({
       // 3. Criar tarefa vinculada para o Filmmaker
       if (projetoId) {
         const { error: tarefaError } = await supabase
-          .from('tarefas_projeto')
+          .from('tarefa')
           .insert({
             projeto_id: projetoId,
             titulo: `Captação: ${formData.titulo}`,

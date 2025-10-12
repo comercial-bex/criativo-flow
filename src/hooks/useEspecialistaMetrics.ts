@@ -13,14 +13,14 @@ export function useEspecialistaMetrics(especialistaId: string) {
 
       // Contar tarefas concluídas
       const { count: tarefasConcluidas } = await supabase
-        .from('tarefas_projeto')
+        .from('tarefa')
         .select('*', { count: 'exact', head: true })
         .eq('responsavel_id', especialistaId)
-        .eq('status', 'concluido');
+        .eq('status', 'publicado' as any);
 
       // Contar total de tarefas
       const { count: totalTarefas } = await supabase
-        .from('tarefas_projeto')
+        .from('tarefa')
         .select('*', { count: 'exact', head: true })
         .eq('responsavel_id', especialistaId);
 
