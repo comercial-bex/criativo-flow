@@ -50,7 +50,7 @@ export function CriarProjetoAvulsoModal({
     orcamento_estimado: '',
     responsavel_grs_id: '',
     prioridade: 'media' as 'baixa' | 'media' | 'alta',
-    status: 'em_andamento'
+    status: 'ativo'
   });
 
   useEffect(() => {
@@ -175,7 +175,7 @@ export function CriarProjetoAvulsoModal({
       orcamento_estimado: '',
       responsavel_grs_id: '',
       prioridade: 'media',
-      status: 'em_andamento'
+      status: 'ativo'
     });
   };
 
