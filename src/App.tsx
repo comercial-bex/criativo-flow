@@ -123,6 +123,7 @@ import TarefasUnificadasDesign from "./pages/Design/TarefasUnificadas";
 import DesignMinhasTarefas from "./pages/Design/MinhasTarefas";
 import Gamificacao from "./pages/Gamificacao";
 import GamificacaoAdmin from "./pages/GamificacaoAdmin";
+import StyleGuide from "./pages/StyleGuide";
 
 
 // RH pages
@@ -322,6 +323,12 @@ function App() {
                 <Route path="/gamificacao/admin" element={
                   <ProtectedRoute requiredRole="admin">
                     <Layout><GamificacaoAdmin /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/style-guide" element={
+                  <ProtectedRoute>
+                    <Layout><StyleGuide /></Layout>
                   </ProtectedRoute>
                 } />
                 

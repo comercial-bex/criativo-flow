@@ -1,9 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { BexCard, BexCardContent, BexCardHeader, BexCardTitle } from '@/components/ui/bex-card';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
 import { TrendingUp, Calendar, AlertCircle, Box } from 'lucide-react';
-import { startOfMonth, endOfMonth, format } from 'date-fns';
+import { startOfMonth, endOfMonth } from 'date-fns';
 
 interface CalendarioDashboardProps {
   responsavelId?: string;
@@ -45,7 +45,6 @@ export const CalendarioDashboard = ({ responsavelId }: CalendarioDashboardProps)
 
       const conflitosResolvidos = eventos?.filter(e => e.is_extra).length || 0;
 
-      // Calcular equipamentos reservados
       const equipamentosReservados = eventos?.reduce((acc, e) => {
         if (e.equipamentos_ids && Array.isArray(e.equipamentos_ids)) {
           return acc + e.equipamentos_ids.length;
@@ -125,7 +124,7 @@ export const CalendarioDashboard = ({ responsavelId }: CalendarioDashboardProps)
           return {
             dia: diasSemana[dia.getDay()],
             eventos: eventos?.length || 0,
-            capacidade: dia.getDay() === 6 ? 12 : 24, // Sábado = 12, outros = 24
+            capacidade: dia.getDay() === 6 ? 12 : 24,
           };
         })
       );
@@ -137,57 +136,57 @@ export const CalendarioDashboard = ({ responsavelId }: CalendarioDashboardProps)
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Taxa de Ocupação</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
+        <BexCard variant="glow">
+          <BexCardHeader className="flex flex-row items-center justify-between pb-2">
+            <BexCardTitle className="text-sm font-medium">Taxa de Ocupação</BexCardTitle>
+            <TrendingUp className="h-4 w-4 text-bex" />
+          </BexCardHeader>
+          <BexCardContent>
             <div className="text-2xl font-bold">{stats?.taxaOcupacao || '0%'}</div>
             <p className="text-xs text-muted-foreground">Eventos produtivos este mês</p>
-          </CardContent>
-        </Card>
+          </BexCardContent>
+        </BexCard>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Eventos Hoje</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
+        <BexCard variant="glow">
+          <BexCardHeader className="flex flex-row items-center justify-between pb-2">
+            <BexCardTitle className="text-sm font-medium">Eventos Hoje</BexCardTitle>
+            <Calendar className="h-4 w-4 text-bex" />
+          </BexCardHeader>
+          <BexCardContent>
             <div className="text-2xl font-bold">{stats?.eventosHoje || 0}</div>
             <p className="text-xs text-muted-foreground">Agendados para hoje</p>
-          </CardContent>
-        </Card>
+          </BexCardContent>
+        </BexCard>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Eventos Extra</CardTitle>
-            <AlertCircle className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
+        <BexCard variant="glow">
+          <BexCardHeader className="flex flex-row items-center justify-between pb-2">
+            <BexCardTitle className="text-sm font-medium">Eventos Extra</BexCardTitle>
+            <AlertCircle className="h-4 w-4 text-bex" />
+          </BexCardHeader>
+          <BexCardContent>
             <div className="text-2xl font-bold">{stats?.conflitosResolvidos || 0}</div>
             <p className="text-xs text-muted-foreground">Fora do expediente</p>
-          </CardContent>
-        </Card>
+          </BexCardContent>
+        </BexCard>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Equipamentos</CardTitle>
-            <Box className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
+        <BexCard variant="glow">
+          <BexCardHeader className="flex flex-row items-center justify-between pb-2">
+            <BexCardTitle className="text-sm font-medium">Equipamentos</BexCardTitle>
+            <Box className="h-4 w-4 text-bex" />
+          </BexCardHeader>
+          <BexCardContent>
             <div className="text-2xl font-bold">{stats?.equipamentosReservados || 0}</div>
             <p className="text-xs text-muted-foreground">Reservados este mês</p>
-          </CardContent>
-        </Card>
+          </BexCardContent>
+        </BexCard>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Distribuição por Tipo</CardTitle>
-          </CardHeader>
-          <CardContent>
+        <BexCard variant="default">
+          <BexCardHeader>
+            <BexCardTitle>Distribuição por Tipo</BexCardTitle>
+          </BexCardHeader>
+          <BexCardContent>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={eventosPorTipo || []}>
                 <CartesianGrid strokeDasharray="3 3" />
@@ -203,14 +202,14 @@ export const CalendarioDashboard = ({ responsavelId }: CalendarioDashboardProps)
                 <Bar dataKey="quantidade" fill="hsl(var(--primary))" />
               </BarChart>
             </ResponsiveContainer>
-          </CardContent>
-        </Card>
+          </BexCardContent>
+        </BexCard>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Capacidade vs. Uso Real (Últimos 7 dias)</CardTitle>
-          </CardHeader>
-          <CardContent>
+        <BexCard variant="default">
+          <BexCardHeader>
+            <BexCardTitle>Capacidade vs. Uso Real (Últimos 7 dias)</BexCardTitle>
+          </BexCardHeader>
+          <BexCardContent>
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={capacidadeVsUso || []}>
                 <CartesianGrid strokeDasharray="3 3" />
@@ -233,8 +232,8 @@ export const CalendarioDashboard = ({ responsavelId }: CalendarioDashboardProps)
                 />
               </LineChart>
             </ResponsiveContainer>
-          </CardContent>
-        </Card>
+          </BexCardContent>
+        </BexCard>
       </div>
     </div>
   );

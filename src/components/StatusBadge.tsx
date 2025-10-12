@@ -1,4 +1,4 @@
-import { Badge } from "@/components/ui/badge";
+import { BexBadge } from "@/components/ui/bex-badge";
 import { cn } from "@/lib/utils";
 
 export type StatusPadrao = 
@@ -57,11 +57,11 @@ export function StatusBadge({ status, className }: StatusBadgeProps) {
   const config = statusConfig[status];
   
   return (
-    <Badge 
-      variant={config.variant}
+    <BexBadge 
+      variant={config.variant as any}
       className={cn(config.className, className)}
     >
       {config.label}
-    </Badge>
+    </BexBadge>
   );
 }

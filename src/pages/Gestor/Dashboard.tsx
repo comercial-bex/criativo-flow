@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { BexCard, BexCardContent, BexCardDescription, BexCardHeader, BexCardTitle } from '@/components/ui/bex-card';
 import { SectionHeader } from '@/components/SectionHeader';
 import { StatsGrid } from '@/components/StatsGrid';
 import { Users, Target, TrendingUp, AlertTriangle } from 'lucide-react';
@@ -74,12 +74,12 @@ export default function GestorDashboard() {
       <StatsGrid stats={statsCards} />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Performance por Equipe</CardTitle>
-            <CardDescription>Indicadores principais de cada área</CardDescription>
-          </CardHeader>
-          <CardContent>
+        <BexCard variant="gaming">
+          <BexCardHeader>
+            <BexCardTitle>Performance por Equipe</BexCardTitle>
+            <BexCardDescription>Indicadores principais de cada área</BexCardDescription>
+          </BexCardHeader>
+          <BexCardContent>
             <div className="space-y-4">
               <div className="flex justify-between items-center">
                 <span className="text-sm font-medium">GRS</span>
@@ -110,15 +110,15 @@ export default function GestorDashboard() {
                 </div>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </BexCardContent>
+        </BexCard>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Alertas e Pendências</CardTitle>
-            <CardDescription>Itens que precisam de sua atenção</CardDescription>
-          </CardHeader>
-          <CardContent>
+        <BexCard variant="glass">
+          <BexCardHeader>
+            <BexCardTitle>Alertas e Pendências</BexCardTitle>
+            <BexCardDescription>Itens que precisam de sua atenção</BexCardDescription>
+          </BexCardHeader>
+          <BexCardContent>
             <div className="space-y-3">
               <div className="flex justify-between items-center p-3 border rounded-lg border-red-200">
                 <div>
@@ -142,8 +142,8 @@ export default function GestorDashboard() {
                 <span className="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded">Info</span>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </BexCardContent>
+        </BexCard>
       </div>
     </div>
   );

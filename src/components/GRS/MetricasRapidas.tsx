@@ -1,5 +1,5 @@
 import { useProjetosGRS } from "@/hooks/useProjetosGRS";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { BexCard, BexCardContent, BexCardHeader, BexCardTitle } from "@/components/ui/bex-card";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function MetricasRapidas() {
@@ -9,14 +9,14 @@ export default function MetricasRapidas() {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {[1, 2, 3, 4].map((i) => (
-          <Card key={i}>
-            <CardHeader>
+          <BexCard key={i} variant="gaming">
+            <BexCardHeader>
               <Skeleton className="h-4 w-24" />
-            </CardHeader>
-            <CardContent>
+            </BexCardHeader>
+            <BexCardContent>
               <Skeleton className="h-10 w-16" />
-            </CardContent>
-          </Card>
+            </BexCardContent>
+          </BexCard>
         ))}
       </div>
     );
@@ -26,38 +26,38 @@ export default function MetricasRapidas() {
     {
       titulo: "Projetos - Pendente",
       valor: metricas.projetosPendentes,
-      cor: "bg-blue-500 text-white"
+      corTitulo: "text-blue-400"
     },
     {
       titulo: "Tarefas - Novo",
       valor: metricas.tarefasNovo,
-      cor: "bg-green-500 text-white"
+      corTitulo: "text-bex"
     },
     {
       titulo: "Tarefas - Em andamento",
       valor: metricas.tarefasEmAndamento,
-      cor: "bg-red-500 text-white"
+      corTitulo: "text-red-400"
     },
     {
       titulo: "Tarefas - Concluído",
       valor: metricas.tarefasConcluido,
-      cor: "bg-orange-500 text-white"
+      corTitulo: "text-orange-400"
     }
   ];
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       {cards.map((card, idx) => (
-        <Card key={idx} className={card.cor}>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium opacity-90">
+        <BexCard key={idx} variant="gaming" className="group">
+          <BexCardHeader className="pb-2">
+            <BexCardTitle className={`text-sm font-medium ${card.corTitulo}`}>
               {card.titulo}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold">{card.valor}</p>
-          </CardContent>
-        </Card>
+            </BexCardTitle>
+          </BexCardHeader>
+          <BexCardContent>
+            <p className="text-3xl font-bold text-white">{card.valor}</p>
+          </BexCardContent>
+        </BexCard>
       ))}
     </div>
   );
