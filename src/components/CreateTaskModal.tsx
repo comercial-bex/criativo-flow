@@ -215,8 +215,12 @@ export function CreateTaskModal({
   // Auto-preencher cliente/projeto quando modal for aberto dentro de um projeto
   useEffect(() => {
     if (open && projetoId && clienteId) {
+      console.log('🎯 Auto-preenchendo projeto:', { clienteId, projetoId });
       setSelectedCliente(clienteId);
       setSelectedProjeto(projetoId);
+      
+      // Buscar projetos do cliente para popular o dropdown
+      fetchProjetosByCliente(clienteId);
     }
   }, [open, projetoId, clienteId]);
 
