@@ -224,9 +224,50 @@ export function mapExecutorArea(valor?: string | null): ExecutorAreaEnum | null 
   return mapeamento[key] ?? null;
 }
 
-// Não remove setor_responsavel; apenas garante executor_area válido para o enum
-export function sanitizeTaskPayload<T extends Record<string, any>>(p: T): T {
+// Remove propriedades circulares e garante apenas campos válidos do banco
+export function sanitizeTaskPayload<T extends Record<string, any>>(p: T): any {
   if (!p) return p;
-  const ea = mapExecutorArea((p as any).executor_area ?? (p as any).setor_responsavel ?? null);
-  return { ...(p as any), executor_area: ea };
+  
+  // Lista de campos válidos para a tabela tarefas_projeto
+  const validFields = [
+    'id',
+    'projeto_id',
+    'cliente_id',
+    'titulo',
+    'descricao',
+    'tipo',
+    'status',
+    'prioridade',
+    'setor_responsavel',
+    'executor_area',
+    'responsavel_id',
+    'executor_id',
+    'data_inicio',
+    'data_prazo',
+    'prazo_executor',
+    'horas_estimadas',
+    'horas_trabalhadas',
+    'tags',
+    'metadata',
+    'campanha_id',
+    'pacote_id',
+    'created_at',
+    'updated_at'
+  ];
+  
+  // Criar objeto limpo apenas com campos válidos
+  const cleanPayload: any = {};
+  validFields.forEach(field => {
+    if (p[field] !== undefined) {
+      cleanPayload[field] = p[field];
+    }
+  });
+  
+  // Mapear executor_area corretamente
+  const ea = mapExecutorArea(cleanPayload.executor_area ?? cleanPayload.setor_responsavel ?? null);
+  if (ea) {
+    cleanPayload.executor_area = ea;
+  }
+  
+  return cleanPayload;
 }
