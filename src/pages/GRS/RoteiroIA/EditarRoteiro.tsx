@@ -1,24 +1,22 @@
 import { useParams } from "react-router-dom";
-import { Film } from "lucide-react";
+import { useRoteiros } from "@/hooks/useRoteiros";
+import RoteiroWizard from "@/components/RoteiroIA/RoteiroWizard";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function EditarRoteiroPage() {
   const { id } = useParams();
+  const { roteiros, isLoading } = useRoteiros();
+  
+  const roteiro = roteiros?.find((r: any) => r.id === id);
 
-  return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center gap-3">
-        <Film className="h-8 w-8 text-primary" />
-        <h1 className="text-3xl font-bold">Editar Roteiro</h1>
+  if (isLoading) {
+    return (
+      <div className="container mx-auto p-6 space-y-4">
+        <Skeleton className="h-12 w-64" />
+        <Skeleton className="h-[600px] w-full" />
       </div>
-      <div className="rounded-lg border border-dashed border-muted-foreground/25 p-12 text-center">
-        <p className="text-xl text-muted-foreground">
-          🚧 Editor de Roteiro com Markdown (FASE 2)
-        </p>
-        <p className="text-sm text-muted-foreground mt-2">ID: {id}</p>
-        <p className="text-sm text-muted-foreground">
-          Preview em tempo real + Versionamento + Comentários
-        </p>
-      </div>
-    </div>
-  );
+    );
+  }
+
+  return <RoteiroWizard mode="edit" roteiroId={id} initialData={roteiro} />;
 }
