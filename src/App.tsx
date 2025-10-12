@@ -120,8 +120,6 @@ import DesignMinhasTarefas from "./pages/Design/MinhasTarefas";
 import Gamificacao from "./pages/Gamificacao";
 import GamificacaoAdmin from "./pages/GamificacaoAdmin";
 
-// Produtividade
-import DashboardProdutividade from "./pages/Produtividade/Dashboard";
 
 // RH pages
 import Colaboradores from "./pages/RH/Colaboradores";
@@ -767,12 +765,6 @@ function App() {
                   </ProtectedRoute>
                 } />
 
-                {/* Produtividade Dashboard */}
-                <Route path="/produtividade/dashboard" element={
-                  <ProtectedRoute>
-                    <Layout><DashboardProdutividade /></Layout>
-                  </ProtectedRoute>
-                } />
 
                 {/* Client routes */}
                 <Route path="/cliente/painel" element={
