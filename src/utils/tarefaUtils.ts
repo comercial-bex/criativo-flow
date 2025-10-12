@@ -228,7 +228,7 @@ export function mapExecutorArea(valor?: string | null): ExecutorAreaEnum | null 
 export function sanitizeTaskPayload<T extends Record<string, any>>(p: T): any {
   if (!p) return p;
   
-  // Lista de campos válidos para a tabela tarefas_projeto
+  // Lista de campos válidos para a tabela tarefa
   const validFields = [
     'id',
     'projeto_id',
@@ -243,7 +243,6 @@ export function sanitizeTaskPayload<T extends Record<string, any>>(p: T): any {
     'responsavel_id',
     'executor_id',
     'data_inicio',
-    'data_prazo',
     'prazo_executor',
     'horas_estimadas',
     'horas_trabalhadas',
@@ -251,6 +250,12 @@ export function sanitizeTaskPayload<T extends Record<string, any>>(p: T): any {
     'metadata',
     'campanha_id',
     'pacote_id',
+    'origem',
+    'grs_action_id',
+    'kpis',
+    'trace_id',
+    'created_by',
+    'updated_by',
     'created_at',
     'updated_at'
   ];

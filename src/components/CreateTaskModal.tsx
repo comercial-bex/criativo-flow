@@ -473,7 +473,7 @@ export function CreateTaskModal({
         executor_area: mapearExecutorArea(formData.setor_responsavel),
         prioridade: formData.prioridade,
         status: defaultStatus,
-        data_prazo: formData.data_prazo?.toISOString().split('T')[0],
+        prazo_executor: formData.data_prazo?.toISOString(),
         horas_estimadas: formData.horas_estimadas ? parseInt(formData.horas_estimadas) : null,
         origem: taskType,
         grs_action_id: vinculadaPlanejamento ? selectedPlanejamento : null,
