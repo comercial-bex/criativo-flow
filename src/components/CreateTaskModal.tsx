@@ -214,34 +214,39 @@ export function CreateTaskModal({
 
   // Auto-preencher cliente/projeto quando modal for aberto dentro de um projeto
   useEffect(() => {
-    if (open && projetoId) {
+    const autoPreencherProjeto = async () => {
+      if (!open || !projetoId) return;
+      
       console.log('🎯 Auto-preenchendo projeto:', { clienteId, projetoId });
       
+      // Se já tem clienteId, usar direto
       if (clienteId) {
-        // Cliente veio por props, usar direto
         setSelectedCliente(clienteId);
         setSelectedProjeto(projetoId);
         fetchProjetosByCliente(clienteId);
-      } else {
-        // Cliente não veio, buscar do projeto
-        const fetchClienteFromProjeto = async () => {
-          const { data, error } = await supabase
-            .from('projetos')
-            .select('cliente_id')
-            .eq('id', projetoId)
-            .single();
-          
-          if (!error && data) {
-            console.log('✅ Cliente encontrado do projeto:', data.cliente_id);
-            setSelectedCliente(data.cliente_id);
-            setSelectedProjeto(projetoId);
-            fetchProjetosByCliente(data.cliente_id);
-          }
-        };
-        
-        fetchClienteFromProjeto();
+        return;
       }
-    }
+      
+      // Buscar cliente_id do projeto
+      try {
+        const { data, error } = await supabase
+          .from('projetos')
+          .select('cliente_id')
+          .eq('id', projetoId)
+          .single();
+        
+        if (!error && data?.cliente_id) {
+          console.log('✅ Cliente encontrado do projeto:', data.cliente_id);
+          setSelectedCliente(data.cliente_id);
+          setSelectedProjeto(projetoId);
+          fetchProjetosByCliente(data.cliente_id);
+        }
+      } catch (err) {
+        console.error('Erro ao buscar cliente do projeto:', err);
+      }
+    };
+    
+    autoPreencherProjeto();
   }, [open, projetoId, clienteId]);
 
   const fetchClientes = async () => {
