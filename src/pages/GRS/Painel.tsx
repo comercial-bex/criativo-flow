@@ -1,7 +1,6 @@
 import { useAuth } from "@/hooks/useAuth";
 import ReflexaoDiaria from "@/components/GRS/ReflexaoDiaria";
 import MetricasRapidas from "@/components/GRS/MetricasRapidas";
-import KitProdutividade from "@/components/GRS/KitProdutividade";
 import TabelaProjetos from "@/components/GRS/TabelaProjetos";
 import TimelineAtividades from "@/components/GRS/TimelineAtividades";
 import { SecaoProdutividade } from "@/components/Produtividade/SecaoProdutividade";
@@ -25,21 +24,10 @@ export default function PainelGRS() {
       {/* Seção de Produtividade Pessoal */}
       <SecaoProdutividade setor="grs" defaultExpanded={false} />
 
-      {/* Layout Principal: Kit de Produtividade + Conteúdo */}
-      <div className="grid grid-cols-1 lg:grid-cols-[350px_1fr] gap-6">
-        {/* Coluna Esquerda: Kit de Produtividade */}
-        <aside className="space-y-6">
-          <KitProdutividade />
-        </aside>
-
-        {/* Coluna Direita: Projetos e Timeline */}
-        <main className="space-y-6">
-          {/* Tabela de Projetos */}
-          <TabelaProjetos />
-
-          {/* Timeline de Atividades */}
-          <TimelineAtividades />
-        </main>
+      {/* Projetos e Timeline */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <TabelaProjetos />
+        <TimelineAtividades />
       </div>
     </div>
   );
