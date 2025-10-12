@@ -55,6 +55,7 @@ interface Profile {
   aprovado_por?: string;
   observacoes_aprovacao?: string;
   last_sign_in_at?: string;
+  role?: string;
 }
 
 interface AccessLog {
@@ -91,7 +92,10 @@ const Usuarios = () => {
       // Buscar profiles
       const { data: profilesData, error: profilesError } = await supabase
         .from('profiles')
-        .select('*')
+        .select(`
+          *,
+          user_roles!left(role)
+        `)
         .order('created_at', { ascending: false });
 
       if (profilesError) throw profilesError;
@@ -105,7 +109,13 @@ const Usuarios = () => {
 
       if (logsError) throw logsError;
 
-      setProfiles(profilesData || []);
+      // Mapear role para cada profile
+      const profilesWithRole = (profilesData || []).map(profile => ({
+        ...profile,
+        role: (profile.user_roles as any)?.[0]?.role
+      }));
+
+      setProfiles(profilesWithRole);
       setAccessLogs(logsData || []);
     } catch (error) {
       console.error('Erro ao carregar dados:', error);
@@ -233,7 +243,10 @@ const Usuarios = () => {
   });
 
   // Separar por categorias
-  const specialists = filteredProfiles.filter(p => p.especialidade && !p.cliente_id);
+  const specialists = filteredProfiles.filter(p => 
+    (p.especialidade && !p.cliente_id) || 
+    (p.role === 'admin' && !p.cliente_id)
+  );
   const clients = filteredProfiles.filter(p => p.cliente_id);
   const pending = filteredProfiles.filter(p => p.status === 'pendente_aprovacao');
 
@@ -299,8 +312,10 @@ const Usuarios = () => {
                   {getStatusBadge(profile.status)}
                 </div>
                 <p className="text-sm text-muted-foreground truncate">{profile.email}</p>
-                {profile.especialidade && (
-                  <p className="text-xs text-muted-foreground mt-1 capitalize">{profile.especialidade}</p>
+                {(profile.especialidade || profile.role === 'admin') && (
+                  <p className="text-xs text-muted-foreground mt-1 capitalize">
+                    {profile.especialidade || 'Administrador'}
+                  </p>
                 )}
                 <div className="flex items-center text-xs text-muted-foreground mt-2 space-x-3">
                   <span className="flex items-center">
