@@ -35,7 +35,7 @@ export function AgendaUnificada() {
     try {
       const [captacoesRes, tarefasRes, eventosRes] = await Promise.all([
         supabase.from('captacoes_agenda').select('id, titulo, data_captacao, status'),
-        supabase.from('tarefas_projeto').select('id, titulo, data_prazo, status'),
+        supabase.from('tarefa').select('id, titulo, prazo_executor, status'),
         supabase.from('eventos_calendario').select('id, titulo, data_inicio, cor, status, tipo')
       ]);
 
@@ -57,12 +57,12 @@ export function AgendaUnificada() {
 
       // Tarefas com Prazo (azul)
       if (tarefasRes.data) {
-        tarefasRes.data.forEach((t) => {
-          if (t.data_prazo) {
+        tarefasRes.data.forEach((t: any) => {
+          if (t.prazo_executor) {
             allEvents.push({
               id: t.id,
               titulo: t.titulo,
-              data: new Date(t.data_prazo),
+              data: new Date(t.prazo_executor),
               tipo: 'tarefa',
               status: t.status,
               cor: '#3b82f6'

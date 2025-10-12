@@ -75,13 +75,9 @@ const MinhasTarefasAudiovisual: React.FC = () => {
 
       // Buscar APENAS tarefas atribuídas ao executor atual (audiovisual)
       const { data: audiovisualTasksData, error: audiovisualTasksError } = await supabase
-        .from('tarefas_projeto')
-        .select(`
-          *,
-          profiles!responsavel_id (id, nome)
-        `)
-        .eq('setor_responsavel', 'audiovisual')
-        .eq('responsavel_id', user.id) // FILTRO CRÍTICO: apenas tarefas do executor
+        .from('tarefa')
+        .select('*')
+        .eq('executor_id', user.id) // FILTRO CRÍTICO: apenas tarefas do executor
         .order('created_at', { ascending: false });
 
       if (audiovisualTasksError) {
@@ -92,10 +88,11 @@ const MinhasTarefasAudiovisual: React.FC = () => {
           variant: "destructive"
         });
       } else {
-        const formattedTasks = audiovisualTasksData?.map(task => ({
+        const formattedTasks = audiovisualTasksData?.map((task: any) => ({
           ...task,
           prioridade: task.prioridade as 'baixa' | 'media' | 'alta',
-          responsavel_nome: task.profiles?.nome || 'Não atribuído',
+          setor_responsavel: 'audiovisual',
+          responsavel_nome: 'Executor',
           cliente_nome: (clientsData || []).find(c => c.id === task.projeto_id)?.nome || 'Sem cliente',
           projeto_nome: (projectsData || []).find(p => p.id === task.projeto_id)?.titulo || 'Sem projeto'
         })) || [];
@@ -123,9 +120,9 @@ const MinhasTarefasAudiovisual: React.FC = () => {
   const handleTaskMove = async (taskId: string, newStatus: string, observation?: string) => {
     try {
       const { error } = await supabase
-        .from('tarefas_projeto')
+        .from('tarefa')
         .update({ 
-          status: newStatus,
+          status: newStatus as any,
           ...(observation && { observacoes: observation }),
           updated_at: new Date().toISOString()
         })
@@ -168,7 +165,7 @@ const MinhasTarefasAudiovisual: React.FC = () => {
         }, {});
 
       const { error } = await supabase
-        .from('tarefas_projeto')
+        .from('tarefa')
         .update({ ...filteredUpdates, updated_at: new Date().toISOString() })
         .eq('id', taskId);
 

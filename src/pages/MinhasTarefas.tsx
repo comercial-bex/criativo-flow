@@ -329,7 +329,7 @@ export default function MinhasTarefas() {
       setLoading(true);
       
       const { data, error } = await supabase
-        .from('tarefas_projeto')
+        .from('tarefa')
         .select('*')
         .eq('responsavel_id', user?.id)
         .order('created_at', { ascending: false });
@@ -378,10 +378,11 @@ export default function MinhasTarefas() {
         return {
           ...task,
           prioridade: task.prioridade as 'alta' | 'media' | 'baixa',
+          setor_responsavel: 'grs',
           responsavel_nome,
           cliente_nome,
           projeto_nome,
-          observacoes: task.observacoes || '',
+          observacoes: '',
           labels: [], // Placeholder para labels futuras
           checklist: [], // Placeholder para checklist futuro
           comments: [], // Placeholder para comentários futuros
@@ -427,8 +428,8 @@ export default function MinhasTarefas() {
   const handleTaskMove = async (taskId: string, newStatus: string) => {
     try {
       const { error } = await supabase
-        .from('tarefas_projeto')
-        .update({ status: newStatus })
+        .from('tarefa')
+        .update({ status: newStatus as any })
         .eq('id', taskId);
 
       if (error) throw error;
@@ -454,8 +455,8 @@ export default function MinhasTarefas() {
   const handleTaskUpdate = async (taskId: string, updates: Partial<MyTask>) => {
     try {
       const { error } = await supabase
-        .from('tarefas_projeto')
-        .update(updates)
+        .from('tarefa')
+        .update(updates as any)
         .eq('id', taskId);
 
       if (error) throw error;

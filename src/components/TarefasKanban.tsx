@@ -299,7 +299,7 @@ export function TarefasKanban({ planejamento, clienteId, projetoId, filters }: T
     try {
       // Buscar tarefas
       const { data: tarefasData, error: tarefasError } = await supabase
-        .from('tarefas_projeto')
+        .from('tarefa')
         .select('*')
         .eq('projeto_id', projetoId)
         .order('created_at', { ascending: false });

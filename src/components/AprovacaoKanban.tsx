@@ -15,13 +15,10 @@ interface Tarefa {
   id: string;
   titulo: string;
   descricao: string;
-  setor_responsavel: string;
-  data_inicio: string;
-  data_prazo: string;
-  aprovacao_status: string;
+  status: string;
   responsavel_id: string;
   projeto_id: string;
-  observacoes_aprovacao?: string;
+  observacoes?: string;
   profiles?: {
     nome: string;
   };
@@ -44,22 +41,26 @@ export function AprovacaoKanban({ clienteId }: AprovacaoKanbanProps) {
 
   const fetchTarefas = async () => {
     try {
+      // Buscar projetos do cliente primeiro
+      const { data: projData } = await supabase
+        .from('projetos')
+        .select('id')
+        .eq('cliente_id', clienteId);
+
+      const projetoIds = projData?.map(p => p.id) || [];
+      
+      if (projetoIds.length === 0) {
+        setTarefas([]);
+        return;
+      }
+
       const { data, error } = await supabase
-        .from('tarefas_projeto')
-        .select(`
-          *,
-          profiles!tarefas_projeto_responsavel_id_fkey (nome)
-        `)
-        .in('projeto_id', (
-          await supabase
-            .from('projetos')
-            .select('id')
-            .eq('cliente_id', clienteId)
-        ).data?.map(p => p.id) || [])
-        .neq('aprovacao_status', 'nao_requer');
+        .from('tarefa')
+        .select('*')
+        .in('projeto_id', projetoIds);
 
       if (error) throw error;
-      setTarefas(data || []);
+      setTarefas((data || []) as Tarefa[]);
     } catch (error) {
       console.error('Erro ao buscar tarefas:', error);
       toast({
@@ -77,12 +78,10 @@ export function AprovacaoKanban({ clienteId }: AprovacaoKanbanProps) {
 
     try {
       const { error } = await supabase
-        .from('tarefas_projeto')
+        .from('tarefa')
         .update({
-          aprovacao_status: novoStatus,
-          aprovado_por: user.id,
-          data_aprovacao: new Date().toISOString(),
-          observacoes_aprovacao: observacoes[tarefaId] || null
+          status: novoStatus as any,
+          observacoes: observacoes[tarefaId] || null
         })
         .eq('id', tarefaId);
 
@@ -118,18 +117,7 @@ export function AprovacaoKanban({ clienteId }: AprovacaoKanbanProps) {
   };
 
   const getStatusColumn = (status: string) => {
-    switch (status) {
-      case 'pendente':
-        return 'pendente';
-      case 'em_analise':
-        return 'em_analise';
-      case 'aprovado':
-        return 'aprovado';
-      case 'reprovado':
-        return 'reprovado';
-      default:
-        return 'pendente';
-    }
+    return status || 'pendente';
   };
 
   const columns = [
@@ -148,13 +136,13 @@ export function AprovacaoKanban({ clienteId }: AprovacaoKanbanProps) {
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold">Aprovações</h2>
         <Badge variant="outline">
-          {tarefas.filter(t => t.aprovacao_status === 'pendente').length} pendentes
+          {tarefas.filter(t => t.status === 'pendente').length} pendentes
         </Badge>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {columns.map((column) => {
-          const tarefasColuna = tarefas.filter(t => getStatusColumn(t.aprovacao_status) === column.id);
+          const tarefasColuna = tarefas.filter(t => getStatusColumn(t.status) === column.id);
           const Icon = column.icon;
 
           return (
@@ -178,21 +166,10 @@ export function AprovacaoKanban({ clienteId }: AprovacaoKanbanProps) {
                       </p>
                       
                       <div className="flex items-center justify-between">
-                        <StatusInteligente
-                          status={tarefa.aprovacao_status}
-                          dataInicio={tarefa.data_inicio}
-                          dataPrazo={tarefa.data_prazo}
-                        />
                         <Badge variant="outline" className="text-xs">
-                          {tarefa.setor_responsavel}
+                          {tarefa.status}
                         </Badge>
                       </div>
-
-                      {tarefa.data_prazo && (
-                        <p className="text-xs text-muted-foreground">
-                          Prazo: {format(new Date(tarefa.data_prazo), 'dd/MM/yyyy', { locale: ptBR })}
-                        </p>
-                      )}
 
                       {tarefa.profiles?.nome && (
                         <p className="text-xs text-muted-foreground">
@@ -235,10 +212,10 @@ export function AprovacaoKanban({ clienteId }: AprovacaoKanbanProps) {
                         </div>
                       )}
 
-                      {tarefa.observacoes_aprovacao && (
+                      {tarefa.observacoes && (
                         <div className="pt-2 border-t">
                           <p className="text-xs text-muted-foreground">
-                            <strong>Observações:</strong> {tarefa.observacoes_aprovacao}
+                            <strong>Observações:</strong> {tarefa.observacoes}
                           </p>
                         </div>
                       )}

@@ -408,6 +408,17 @@ export function CreateTaskModal({
 
     setLoading(true);
 
+    // 🛡️ VALIDAÇÃO FINAL
+    if (!selectedCliente?.trim() || !selectedProjeto?.trim()) {
+      toast({
+        title: "❌ Dados inválidos",
+        description: "Cliente e Projeto são obrigatórios",
+        variant: "destructive"
+      });
+      setLoading(false);
+      return;
+    }
+
     try {
       // Mapear setor_responsavel → executor_area_enum
       const mapearExecutorArea = (setor: string | null): string | null => {

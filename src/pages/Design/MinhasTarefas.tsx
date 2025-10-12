@@ -73,10 +73,9 @@ export default function MinhasTarefasDesign() {
 
       // Buscar APENAS tarefas atribuídas ao executor atual (design)
       const { data: tasksData, error: tasksError } = await supabase
-        .from('tarefas_projeto')
+        .from('tarefa')
         .select('*')
-        .eq('setor_responsavel', 'design')
-        .eq('responsavel_id', user.id) // FILTRO CRÍTICO: apenas tarefas do executor
+        .eq('executor_id', user.id) // FILTRO CRÍTICO: apenas tarefas do executor
         .order('created_at', { ascending: false });
 
       if (tasksError) throw tasksError;
@@ -85,7 +84,8 @@ export default function MinhasTarefasDesign() {
       const processedTasks = tasksData?.map(task => ({
         ...task,
         prioridade: task.prioridade as 'baixa' | 'media' | 'alta',
-        observacoes: task.observacoes || ''
+        setor_responsavel: 'design',
+        observacoes: (task as any).observacoes || ''
       })) || [];
 
       setTasks(processedTasks);
@@ -118,9 +118,9 @@ export default function MinhasTarefasDesign() {
       }
 
       const { error } = await supabase
-        .from('tarefas_projeto')
+        .from('tarefa')
         .update({ 
-          status: newStatus,
+          status: newStatus as any,
           observacoes: observations ? `${task.observacoes || ''}\n${observations}` : task.observacoes,
           updated_at: new Date().toISOString()
         })
@@ -163,7 +163,7 @@ export default function MinhasTarefasDesign() {
         }, {});
 
       const { error } = await supabase
-        .from('tarefas_projeto')
+        .from('tarefa')
         .update({ ...filteredUpdates, updated_at: new Date().toISOString() })
         .eq('id', taskId);
 
