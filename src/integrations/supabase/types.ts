@@ -1468,6 +1468,41 @@ export type Database = {
         }
         Relationships: []
       }
+      comentarios_roteiro: {
+        Row: {
+          autor_id: string | null
+          created_at: string
+          id: string
+          mensagem: string
+          roteiro_id: string
+          updated_at: string
+        }
+        Insert: {
+          autor_id?: string | null
+          created_at?: string
+          id?: string
+          mensagem: string
+          roteiro_id: string
+          updated_at?: string
+        }
+        Update: {
+          autor_id?: string | null
+          created_at?: string
+          id?: string
+          mensagem?: string
+          roteiro_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comentarios_roteiro_roteiro_id_fkey"
+            columns: ["roteiro_id"]
+            isOneToOne: false
+            referencedRelation: "roteiros"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       connector_status: {
         Row: {
           calls_this_hour: number | null
@@ -7599,6 +7634,152 @@ export type Database = {
         }
         Relationships: []
       }
+      roteiros: {
+        Row: {
+          cliente_id: string
+          created_at: string
+          created_by: string | null
+          cta: string | null
+          duracao_prevista_seg: number
+          estilo: Json | null
+          hash_publico: string | null
+          hashtags: string | null
+          id: string
+          objetivo: string | null
+          parent_id: string | null
+          persona_voz: string | null
+          pilares_mensagem: Json | null
+          plataforma: Database["public"]["Enums"]["plataforma_roteiro"]
+          projeto_id: string
+          prompt_usado: string | null
+          provedor_ia: Database["public"]["Enums"]["provedor_ia_roteiro"] | null
+          publico_alvo: Json | null
+          referencias: Json | null
+          roteiro_markdown: string | null
+          roteiro_struct: Json | null
+          status: Database["public"]["Enums"]["status_roteiro"]
+          storage_pdf_path: string | null
+          tarefa_id: string | null
+          titulo: string
+          tokens_custos: Json | null
+          tom: Json | null
+          updated_at: string
+          updated_by: string | null
+          versao: number
+        }
+        Insert: {
+          cliente_id: string
+          created_at?: string
+          created_by?: string | null
+          cta?: string | null
+          duracao_prevista_seg?: number
+          estilo?: Json | null
+          hash_publico?: string | null
+          hashtags?: string | null
+          id?: string
+          objetivo?: string | null
+          parent_id?: string | null
+          persona_voz?: string | null
+          pilares_mensagem?: Json | null
+          plataforma?: Database["public"]["Enums"]["plataforma_roteiro"]
+          projeto_id: string
+          prompt_usado?: string | null
+          provedor_ia?:
+            | Database["public"]["Enums"]["provedor_ia_roteiro"]
+            | null
+          publico_alvo?: Json | null
+          referencias?: Json | null
+          roteiro_markdown?: string | null
+          roteiro_struct?: Json | null
+          status?: Database["public"]["Enums"]["status_roteiro"]
+          storage_pdf_path?: string | null
+          tarefa_id?: string | null
+          titulo: string
+          tokens_custos?: Json | null
+          tom?: Json | null
+          updated_at?: string
+          updated_by?: string | null
+          versao?: number
+        }
+        Update: {
+          cliente_id?: string
+          created_at?: string
+          created_by?: string | null
+          cta?: string | null
+          duracao_prevista_seg?: number
+          estilo?: Json | null
+          hash_publico?: string | null
+          hashtags?: string | null
+          id?: string
+          objetivo?: string | null
+          parent_id?: string | null
+          persona_voz?: string | null
+          pilares_mensagem?: Json | null
+          plataforma?: Database["public"]["Enums"]["plataforma_roteiro"]
+          projeto_id?: string
+          prompt_usado?: string | null
+          provedor_ia?:
+            | Database["public"]["Enums"]["provedor_ia_roteiro"]
+            | null
+          publico_alvo?: Json | null
+          referencias?: Json | null
+          roteiro_markdown?: string | null
+          roteiro_struct?: Json | null
+          status?: Database["public"]["Enums"]["status_roteiro"]
+          storage_pdf_path?: string | null
+          tarefa_id?: string | null
+          titulo?: string
+          tokens_custos?: Json | null
+          tom?: Json | null
+          updated_at?: string
+          updated_by?: string | null
+          versao?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "roteiros_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "roteiros_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "mv_grs_dashboard_metrics"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "roteiros_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "vw_client_metrics"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "roteiros_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "roteiros"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "roteiros_projeto_id_fkey"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "projetos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "roteiros_tarefa_id_fkey"
+            columns: ["tarefa_id"]
+            isOneToOne: false
+            referencedRelation: "tarefa"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       social_auth_logs: {
         Row: {
           action: string
@@ -9652,8 +9833,23 @@ export type Database = {
         | "rejeitado"
         | "suspenso"
       pix_tipo_enum: "cpf" | "cnpj" | "email" | "telefone" | "aleatoria"
+      plataforma_roteiro:
+        | "reels"
+        | "tiktok"
+        | "short"
+        | "vt"
+        | "institucional"
+        | "spot_radio"
+        | "doc"
+        | "outro"
       prioridade_enum: "baixa" | "media" | "alta" | "critica"
       priority_type: "baixa" | "media" | "alta" | "urgente"
+      provedor_ia_roteiro:
+        | "openai"
+        | "google"
+        | "azure_openai"
+        | "lovable_ai"
+        | "outro"
       regime_trabalho: "clt" | "estagio" | "pj"
       status_acesso_enum: "ativo" | "suspenso" | "bloqueado"
       status_aprovacao_enum: "pendente" | "aprovado" | "ajustes" | "reprovado"
@@ -9684,6 +9880,7 @@ export type Database = {
         | "aprovado_gestor"
         | "aprovado_rh"
         | "rejeitado"
+      status_roteiro: "rascunho" | "em_revisao" | "aprovado" | "publicado"
       status_tarefa_enum:
         | "backlog"
         | "briefing"
@@ -9946,8 +10143,25 @@ export const Constants = {
         "suspenso",
       ],
       pix_tipo_enum: ["cpf", "cnpj", "email", "telefone", "aleatoria"],
+      plataforma_roteiro: [
+        "reels",
+        "tiktok",
+        "short",
+        "vt",
+        "institucional",
+        "spot_radio",
+        "doc",
+        "outro",
+      ],
       prioridade_enum: ["baixa", "media", "alta", "critica"],
       priority_type: ["baixa", "media", "alta", "urgente"],
+      provedor_ia_roteiro: [
+        "openai",
+        "google",
+        "azure_openai",
+        "lovable_ai",
+        "outro",
+      ],
       regime_trabalho: ["clt", "estagio", "pj"],
       status_acesso_enum: ["ativo", "suspenso", "bloqueado"],
       status_aprovacao_enum: ["pendente", "aprovado", "ajustes", "reprovado"],
@@ -9982,6 +10196,7 @@ export const Constants = {
         "aprovado_rh",
         "rejeitado",
       ],
+      status_roteiro: ["rascunho", "em_revisao", "aprovado", "publicado"],
       status_tarefa_enum: [
         "backlog",
         "briefing",
