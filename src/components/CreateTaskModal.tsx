@@ -302,6 +302,41 @@ export function CreateTaskModal({
     }
   };
 
+  const gerarRoteiroBackground = async (tarefaId: string, briefingData: any) => {
+    try {
+      toast({
+        title: "🎬 Gerando roteiro...",
+        description: "Isso pode levar alguns segundos",
+      });
+      
+      const { data: roteiroData, error } = await supabase.functions.invoke(
+        'generate-roteiro-audiovisual',
+        { body: { briefingData } }
+      );
+      
+      if (!error && roteiroData?.success) {
+        await supabase
+          .from('tarefa')
+          .update({
+            kpis: {
+              briefing: {
+                ...briefingData,
+                roteiro_audiovisual: roteiroData.roteiro
+              }
+            }
+          })
+          .eq('id', tarefaId);
+        
+        toast({
+          title: "✨ Roteiro adicionado!",
+          description: "Abra a tarefa para visualizar",
+        });
+      }
+    } catch (error) {
+      console.error('Erro ao gerar roteiro:', error);
+    }
+  };
+
   const resetForm = () => {
     setFormData({
       titulo: '',
@@ -431,48 +466,12 @@ export function CreateTaskModal({
         return setor ? (mapeamento[setor] || null) : null;
       };
 
-      // 🎬 GERAR ROTEIRO AUDIOVISUAL AUTOMATICAMENTE
-      let roteiroGerado = null;
-      const tiposAudiovisuais = ['criativo_vt', 'reels_instagram', 'stories_interativo', 'roteiro_reels'];
-      
-      if (tipoTarefaSelecionado && tiposAudiovisuais.includes(tipoTarefaSelecionado)) {
-        try {
-          // Buscar nome do cliente
-          const { data: clienteData } = await supabase
-            .from('clientes')
-            .select('nome')
-            .eq('id', selectedCliente)
-            .single();
-
-          const briefingParaRoteiro = {
-            cliente_nome: clienteData?.nome || 'Cliente',
-            titulo: formData.titulo,
-            objetivo: formData.objetivo_postagem || 'promocional',
-            tom: 'profissional',
-            veiculacao: ['digital'],
-            mensagem_chave: formData.contexto_estrategico || formData.descricao,
-            beneficios: [formData.call_to_action || 'Confira'],
-            cta: formData.call_to_action || 'Saiba mais',
-            ambiente: formData.ambiente || 'cidade',
-          };
-
-          const { data: roteiroData, error: roteiroError } = await supabase.functions.invoke(
-            'generate-roteiro-audiovisual',
-            { body: { briefingData: briefingParaRoteiro } }
-          );
-
-          if (!roteiroError && roteiroData?.success) {
-            roteiroGerado = roteiroData.roteiro;
-            toast({
-              title: "🎬 Roteiro gerado automaticamente!",
-              description: "Um roteiro técnico foi anexado à tarefa.",
-            });
-          }
-        } catch (error) {
-          console.error('Erro ao gerar roteiro:', error);
-          // Não bloquear criação da tarefa se roteiro falhar
-        }
-      }
+      // Buscar nome do cliente para roteiro background
+      const { data: clienteData } = await supabase
+        .from('clientes')
+        .select('nome')
+        .eq('id', selectedCliente)
+        .single();
 
       const taskData = {
         projeto_id: selectedProjeto,
@@ -499,7 +498,7 @@ export function CreateTaskModal({
             call_to_action: formData.call_to_action,
             hashtags: formData.hashtags ? formData.hashtags.split(',').map((h: string) => h.trim()) : [],
             observacoes_gerais: formData.observacoes,
-            roteiro_audiovisual: roteiroGerado
+            roteiro_audiovisual: null
           },
           referencias: {
             visuais: formData.referencias_visuais || [],
@@ -552,6 +551,22 @@ export function CreateTaskModal({
       
       onOpenChange(false);
       setTimeout(() => resetForm(), 300);
+      
+      // Gerar roteiro em background (não bloqueia criação)
+      const tiposAudiovisuais = ['criativo_vt', 'reels_instagram', 'stories_interativo', 'roteiro_reels'];
+      if (tipoTarefaSelecionado && tiposAudiovisuais.includes(tipoTarefaSelecionado) && clienteData) {
+        gerarRoteiroBackground(createdTask.id, {
+          cliente_nome: clienteData.nome || 'Cliente',
+          titulo: formData.titulo,
+          objetivo: formData.objetivo_postagem || 'promocional',
+          tom: 'profissional',
+          veiculacao: ['digital'],
+          mensagem_chave: formData.contexto_estrategico || formData.descricao,
+          beneficios: [formData.call_to_action || 'Confira'],
+          cta: formData.call_to_action || 'Saiba mais',
+          ambiente: formData.ambiente || 'cidade',
+        });
+      }
       
     } catch (error: any) {
       console.error('Erro ao criar tarefa:', error);

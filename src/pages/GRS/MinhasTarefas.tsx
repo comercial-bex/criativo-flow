@@ -78,7 +78,7 @@ export default function MinhasTarefas() {
       setLoading(true);
       
       const { data, error } = await supabase
-        .from('tarefas_projeto')
+        .from('tarefa')
         .select(`
           *,
           responsavel:profiles!responsavel_id (nome),
@@ -92,13 +92,14 @@ export default function MinhasTarefas() {
 
       if (error) throw error;
 
-      const formattedTasks = (data || []).map(task => ({
+      const formattedTasks = (data || []).map((task: any) => ({
         ...task,
         responsavel_nome: task.responsavel?.nome || 'Não atribuído',
-        prioridade: task.prioridade as 'baixa' | 'media' | 'alta'
+        prioridade: task.prioridade as 'baixa' | 'media' | 'alta',
+        setor_responsavel: task.setor_responsavel || (task.area && task.area[0]) || 'GRS'
       }));
 
-      setTasks(formattedTasks);
+      setTasks(formattedTasks as MyTask[]);
     } catch (error) {
       console.error('Erro ao carregar minhas tarefas:', error);
       toast({
@@ -136,8 +137,8 @@ export default function MinhasTarefas() {
   const handleTaskMove = async (taskId: string, newStatus: string) => {
     try {
       const { error } = await supabase
-        .from('tarefas_projeto')
-        .update({ status: newStatus })
+        .from('tarefa')
+        .update({ status: newStatus as any })
         .eq('id', taskId);
 
       if (error) throw error;
@@ -163,8 +164,8 @@ export default function MinhasTarefas() {
   const handleTaskUpdate = async (taskId: string, updates: Partial<MyTask>) => {
     try {
       const { error } = await supabase
-        .from('tarefas_projeto')
-        .update(updates)
+        .from('tarefa')
+        .update(updates as any)
         .eq('id', taskId);
 
       if (error) throw error;
