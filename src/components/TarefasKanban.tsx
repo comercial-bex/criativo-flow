@@ -785,7 +785,7 @@ export function TarefasKanban({ planejamento, clienteId, projetoId, filters }: T
                         descricao: editingTarefa.descricao,
                         tipo: editingTarefa.tipo,
                         prioridade: editingTarefa.prioridade,
-                        data_prazo: editingTarefa.data_prazo,
+                        prazo_executor: editingTarefa.data_prazo,
                         responsavel_id: editingTarefa.responsavel_id,
                         tempo_estimado: editingTarefa.tempo_estimado
                       });
