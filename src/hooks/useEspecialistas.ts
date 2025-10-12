@@ -7,17 +7,16 @@ export function useEspecialistas() {
   return useQuery({
     queryKey: ['especialistas'],
     queryFn: async () => {
-      // Buscar todos os aprovados com suas roles
+      // Buscar todos os aprovados com suas roles (left join para incluir todos)
       const { data, error } = await supabase
         .from('profiles')
         .select(`
           id, 
           nome, 
           especialidade,
-          user_roles!inner(role)
+          user_roles(role)
         `)
         .eq('status', 'aprovado')
-        .neq('user_roles.role', 'cliente')
         .order('nome');
       
       if (error) {
@@ -25,14 +24,20 @@ export function useEspecialistas() {
         throw error;
       }
       
-      console.log('✅ Especialistas do hook:', data);
+      // Filtrar apenas não-clientes
+      const especialistas = (data || []).filter(profile => {
+        const roles = (profile.user_roles as any) || [];
+        return roles.length === 0 || roles.some((r: any) => r.role !== 'cliente');
+      });
+      
+      console.log('✅ Especialistas do hook:', especialistas);
       
       // Mapear para formato esperado
-      return (data || []).map(profile => ({
+      return especialistas.map(profile => ({
         id: profile.id,
         nome: profile.nome,
         especialidade: profile.especialidade || 'admin',
-        role: (profile.user_roles as any)?.[0]?.role
+        role: ((profile.user_roles as any)?.[0]?.role) || 'admin'
       }));
     }
   });

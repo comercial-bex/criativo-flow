@@ -146,25 +146,39 @@ export function CreateTaskModal({
   
   // Filtrar especialistas por setor ou tipo de tarefa
   const especialistasPorSetor = useMemo(() => {
-    // Se tiver tipo de tarefa selecionado, usar filtro por tipo
+    if (!todosEspecialistas) return [];
+    
+    // PRIORIDADE 1: Se setor foi explicitamente selecionado, usar ele
+    if (formData.setor_responsavel) {
+      const setorMap: Record<string, string> = {
+        'design': 'design',
+        'audiovisual': 'audiovisual',
+        'grs': 'grs',
+        'atendimento': 'atendimento'
+      };
+      
+      return todosEspecialistas.filter(esp => 
+        esp.especialidade === setorMap[formData.setor_responsavel]
+      );
+    }
+    
+    // PRIORIDADE 2: Se não tem setor mas tem tipo, sugerir setor automaticamente
     if (tipoTarefaSelecionado) {
       return getEspecialistasDisponiveisPorTipo(tipoTarefaSelecionado);
     }
     
-    // Senão, usar filtro por setor
-    if (!formData.setor_responsavel || !todosEspecialistas) return [];
-    
-    const setorMap: Record<string, string> = {
-      'design': 'design',
-      'audiovisual': 'audiovisual',
-      'grs': 'grs',
-      'atendimento': 'atendimento'
-    };
-    
-    return todosEspecialistas.filter(esp => 
-      esp.especialidade === setorMap[formData.setor_responsavel]
-    );
+    return [];
   }, [formData.setor_responsavel, tipoTarefaSelecionado, todosEspecialistas]);
+
+  // Debug de especialistas
+  useEffect(() => {
+    console.log('🔍 DEBUG Especialistas:', {
+      setor: formData.setor_responsavel,
+      tipo: tipoTarefaSelecionado,
+      todosEspecialistas: todosEspecialistas?.length || 0,
+      filtrados: especialistasPorSetor.length
+    });
+  }, [formData.setor_responsavel, tipoTarefaSelecionado, todosEspecialistas, especialistasPorSetor]);
   
   // Bloquear acesso se não tiver permissão
   if (!permissions.canCreateTask && open) {
