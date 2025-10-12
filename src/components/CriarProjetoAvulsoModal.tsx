@@ -10,7 +10,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { CalendarIcon, Zap, Megaphone, Loader2 } from 'lucide-react';
+import { CalendarIcon, Zap, Megaphone, Loader2, Calendar as CalendarLucide } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -23,7 +23,7 @@ interface CriarProjetoAvulsoModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   clienteId?: string;
-  tipo?: 'avulso' | 'campanha';
+  tipo?: 'avulso' | 'campanha' | 'plano_editorial';
   onSuccess?: (projeto: any) => void;
 }
 
@@ -144,6 +144,8 @@ export function CriarProjetoAvulsoModal({
           title: "✅ Projeto criado!",
           description: formData.tipo_projeto === 'avulso' 
             ? "Job avulso criado com sucesso" 
+            : formData.tipo_projeto === 'plano_editorial'
+            ? "Plano editorial criado com sucesso"
             : "Campanha criada com sucesso"
         });
         
@@ -184,16 +186,22 @@ export function CriarProjetoAvulsoModal({
           <div className="flex items-center gap-2">
             {formData.tipo_projeto === 'avulso' ? (
               <Zap className="w-5 h-5 text-green-500" />
+            ) : formData.tipo_projeto === 'plano_editorial' ? (
+              <CalendarLucide className="w-5 h-5 text-blue-500" />
             ) : (
               <Megaphone className="w-5 h-5 text-purple-500" />
             )}
             <DialogTitle>
-              {formData.tipo_projeto === 'avulso' ? 'Novo Projeto Avulso' : 'Nova Campanha Publicitária'}
+              {formData.tipo_projeto === 'avulso' ? 'Novo Projeto Avulso' : 
+               formData.tipo_projeto === 'plano_editorial' ? 'Novo Plano Editorial' :
+               'Nova Campanha Publicitária'}
             </DialogTitle>
           </div>
           <DialogDescription>
             {formData.tipo_projeto === 'avulso' 
               ? 'Crie um projeto para jobs pontuais e produtos rápidos (ex: cartão de visita, folder, banner)'
+              : formData.tipo_projeto === 'plano_editorial'
+              ? 'Crie um planejamento mensal de conteúdo para redes sociais do cliente'
               : 'Crie uma campanha publicitária com múltiplas peças (ex: Black Friday, lançamento de produto)'}
           </DialogDescription>
         </DialogHeader>
@@ -204,7 +212,7 @@ export function CriarProjetoAvulsoModal({
             <Label>Tipo de Projeto</Label>
             <RadioGroup 
               value={formData.tipo_projeto} 
-              onValueChange={(value: 'avulso' | 'campanha') => 
+              onValueChange={(value: 'avulso' | 'campanha' | 'plano_editorial') => 
                 setFormData({ ...formData, tipo_projeto: value })
               }
             >
@@ -228,6 +236,16 @@ export function CriarProjetoAvulsoModal({
                   </div>
                 </Label>
               </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="plano_editorial" id="plano_editorial" />
+                <Label htmlFor="plano_editorial" className="flex items-center gap-2 cursor-pointer">
+                  <CalendarLucide className="w-4 h-4 text-blue-500" />
+                  <div>
+                    <div className="font-medium">Plano Editorial</div>
+                    <div className="text-xs text-muted-foreground">Planejamento mensal de conteúdo</div>
+                  </div>
+                </Label>
+              </div>
             </RadioGroup>
           </div>
 
@@ -242,6 +260,8 @@ export function CriarProjetoAvulsoModal({
               id="titulo"
               placeholder={formData.tipo_projeto === 'avulso' 
                 ? "Ex: Cartão de Visita - João Silva" 
+                : formData.tipo_projeto === 'plano_editorial'
+                ? "Ex: Plano Editorial Maio/2024"
                 : "Ex: Campanha Black Friday 2024"}
               value={formData.titulo}
               onChange={(e) => setFormData({ ...formData, titulo: e.target.value })}
@@ -275,6 +295,8 @@ export function CriarProjetoAvulsoModal({
               id="descricao"
               placeholder={formData.tipo_projeto === 'avulso'
                 ? "Descreva brevemente o que precisa ser feito..."
+                : formData.tipo_projeto === 'plano_editorial'
+                ? "Descreva o objetivo do plano editorial e público-alvo..."
                 : "Descreva os objetivos e entregáveis da campanha..."}
               value={formData.descricao}
               onChange={(e) => setFormData({ ...formData, descricao: e.target.value })}
@@ -371,7 +393,9 @@ export function CriarProjetoAvulsoModal({
             </Button>
             <Button type="submit" disabled={loading}>
               {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-              Criar {formData.tipo_projeto === 'avulso' ? 'Projeto' : 'Campanha'}
+              Criar {formData.tipo_projeto === 'avulso' ? 'Projeto' : 
+                     formData.tipo_projeto === 'plano_editorial' ? 'Plano Editorial' :
+                     'Campanha'}
             </Button>
           </div>
         </form>
