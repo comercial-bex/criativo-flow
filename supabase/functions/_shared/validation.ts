@@ -57,6 +57,7 @@ export interface CreateUserInput {
   especialidade?: string;
   role: string;
   cliente_id?: string;
+  role_cliente?: string;
 }
 
 export interface UpdateSpecialistInput {
@@ -215,6 +216,27 @@ function validateUUID(value: string, fieldName: string): ValidationError | null 
   return null;
 }
 
+const validClienteRoles = [
+  'proprietario',
+  'gerente_financeiro',
+  'gestor_marketing',
+  'social_media',
+] as const;
+
+function validateRoleCliente(
+  role_cliente?: string
+): ValidationError | null {
+  if (!role_cliente) return null;
+  if (!validClienteRoles.includes(role_cliente as any)) {
+    return {
+      field: 'role_cliente',
+      message: `role_cliente inválida. Valores permitidos: ${validClienteRoles.join(', ')}`,
+      code: 'invalid_value',
+    };
+  }
+  return null;
+}
+
 // ========================================
 // VALIDADORES DE SCHEMAS COMPLETOS
 // ========================================
@@ -243,6 +265,9 @@ export function validateCreateUser(
 
   const especialidadeError = validateEspecialidade(input.especialidade);
   if (especialidadeError) errors.push(especialidadeError);
+
+  const roleClienteError = validateRoleCliente(input.role_cliente);
+  if (roleClienteError) errors.push(roleClienteError);
 
   // Se houver UUID de cliente, validar
   if (input.cliente_id) {

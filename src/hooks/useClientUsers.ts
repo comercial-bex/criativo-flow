@@ -90,6 +90,7 @@ export function useClientUsers(clienteId: string) {
             password: userData.password,
             nome: userData.nome,
             cliente_id: clienteId,
+            role: 'cliente',
             role_cliente: userData.role_cliente
           }
         }

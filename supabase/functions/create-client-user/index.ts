@@ -13,6 +13,7 @@ interface CreateClientUserRequest {
   nome: string;
   cliente_id: string;
   role: string;
+  role_cliente?: string;
 }
 
 // Helper functions
@@ -66,7 +67,7 @@ async function createClienteUsuario(supabaseAdmin: any, userId: string, cliente_
     .insert({
       user_id: userId,
       cliente_id,
-      role_cliente: role === 'cliente' ? 'proprietario' : role,
+      role_cliente: role_cliente || (role === 'cliente' ? 'proprietario' : role),
       permissoes,
       ativo: true
     });
@@ -90,7 +91,7 @@ async function upsertClienteUsuario(supabaseAdmin: any, userId: string, cliente_
     .upsert({
       user_id: userId,
       cliente_id,
-      role_cliente: role === 'cliente' ? 'proprietario' : role,
+      role_cliente: role_cliente || (role === 'cliente' ? 'proprietario' : role),
       permissoes,
       ativo: true
     }, {
@@ -149,9 +150,9 @@ serve(async (req) => {
       );
     }
 
-    const { email, password, nome, cliente_id, role } = validation.data!;
+    const { email, password, nome, cliente_id, role, role_cliente } = validation.data!;
 
-    console.log('📝 Processando usuário cliente:', { email, nome, cliente_id, role });
+    console.log('📝 Processando usuário cliente:', { email, nome, cliente_id, role, role_cliente });
 
     // PASSO 1: Verificar se usuário existe no Auth
     const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers();
