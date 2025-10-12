@@ -12,6 +12,7 @@ interface BriefingData {
   titulo: string;
   objetivo: string;
   tom: string;
+  estilo?: string;
   veiculacao: string[];
   mensagem_chave: string;
   beneficios: string[];
@@ -22,6 +23,9 @@ interface BriefingData {
   agente_ia_id?: string;
   framework_id?: string;
   tom_criativo?: string[];
+  publico_alvo_descricao?: string;
+  persona_voz?: string;
+  referencias?: string;
 }
 
 interface SugestoesTecnicas {
@@ -180,6 +184,32 @@ AGENTE: ${agente.nome}
 Estilo: ${agente.especialidade}
 ${agente.descricao}
 ` : ''}
+
+${briefingData.publico_alvo_descricao ? `
+📊 PÚBLICO-ALVO DETALHADO: ${briefingData.publico_alvo_descricao}
+Adapte linguagem, exemplos e referências para ressoar com este perfil específico.
+` : ''}
+
+${briefingData.persona_voz ? `
+🗣️ PERSONA E VOZ: ${briefingData.persona_voz}
+Mantenha esta voz consistente em todas as narrações e falas.
+` : ''}
+
+${briefingData.referencias ? `
+📎 REFERÊNCIAS FORNECIDAS: ${briefingData.referencias}
+Use como inspiração de estilo visual e narrativo (não copie conteúdo literal).
+` : ''}
+
+🚨 DIRETRIZES CRÍTICAS DE CONTEÚDO:
+- NUNCA use placeholders genéricos como "mensagem principal", "benefício aqui", "[inserir texto]"
+- Escreva TODAS as falas e narrações COMPLETAS e ESPECÍFICAS baseadas no briefing
+- Cada cena deve ter texto SUBSTANTIVO e CONTEXTUALIZADO para o objetivo
+- Adapte terminologia ao contexto regional (Amapá, Norte) quando relevante
+- Se o briefing tiver poucos detalhes, CRIE conteúdo coerente baseado no objetivo principal
+- EVITE repetições - varie a abordagem em cada cena
+- Use números, dados e exemplos concretos quando possível
+- Seja criativo mas mantenha o profissionalismo
+- ${briefingData.estilo ? `Aplique o estilo narrativo: ${briefingData.estilo}` : 'Use storytelling envolvente'}
 `;
 
       try {

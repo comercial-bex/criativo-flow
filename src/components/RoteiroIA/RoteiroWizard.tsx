@@ -57,6 +57,7 @@ export default function RoteiroWizard({ mode, roteiroId, initialData }: RoteiroW
     cliente_nome: "",
     agencia: "BEX Communication",
     produtora: "INSPIRE FILMES",
+    cta: "",
   });
 
   const [isSaving, setIsSaving] = useState(false);
@@ -173,18 +174,46 @@ export default function RoteiroWizard({ mode, roteiroId, initialData }: RoteiroW
 
   const handleGenerateAI = async () => {
     const briefingData = {
-      cliente_nome: formData.titulo || "Cliente",
+      // IDENTIFICAÇÃO
+      cliente_nome: formData.cliente_nome || formData.titulo || "Cliente BEX",
       titulo: formData.titulo || "Roteiro Audiovisual",
-      objetivo: formData.objetivo || "Apresentar o produto/serviço",
-      tom: formData.tom.join(", ") || "Humanizado",
-      veiculacao: formData.plataforma ? [formData.plataforma] : ["Reel"],
-      mensagem_chave: formData.pilares_mensagem.join(", ") || "Mensagem principal",
-      beneficios: formData.publico_alvo,
-      cta: "Acesse nosso site e saiba mais!",
-      ambiente: "genérico",
+      agencia: "BEX Communication",
+      produtora: "INSPIRE FILMES",
+      
+      // CONTEXTO ESTRATÉGICO
+      objetivo: formData.objetivo || "Promover engajamento e conversões",
+      publico_alvo_descricao: formData.publico_alvo?.join(", ") || "Público interessado em soluções",
+      mensagem_chave: formData.pilares_mensagem?.join(" • ") || "Destaque benefícios principais",
+      
+      // TOM E ESTILO
+      tom: (Array.isArray(formData.tom) ? formData.tom : [formData.tom]).filter(Boolean).join(", ") || "Humanizado",
+      estilo: (Array.isArray(formData.estilo) ? formData.estilo : [formData.estilo]).filter(Boolean).join(", ") || "Narrativo",
+      persona_voz: formData.persona_voz || "Linguagem natural e acessível",
+      tom_criativo: formData.tom_criativo || [],
+      
+      // TÉCNICO
+      plataforma: formData.plataforma || "reels",
+      veiculacao: formData.plataforma ? [formData.plataforma] : ["Instagram Reels"],
+      duracao_prevista_seg: formData.duracao_prevista_seg || 30,
+      formato: formData.plataforma === 'youtube' ? 'Vídeo longo (2-5min)' : 
+               formData.plataforma === 'reels' ? 'Reels 30-60s' : 
+               'Vídeo institucional curto',
+      
+      // BENEFÍCIOS E CTA
+      beneficios: formData.publico_alvo?.length > 0 ? formData.publico_alvo : [
+        "Solução prática e imediata",
+        "Confiança e credibilidade comprovada",
+        "Resultados mensuráveis"
+      ],
+      cta: formData.cta || "Saiba mais! Entre em contato.",
+      
+      // IA E FRAMEWORKS
       agente_ia_id: formData.agente_ia_id,
       framework_id: formData.framework_id,
-      tom_criativo: formData.tom_criativo || [],
+      
+      // REFERÊNCIAS
+      referencias: formData.referencias || "",
+      ambiente: "externo",
     };
 
     try {
