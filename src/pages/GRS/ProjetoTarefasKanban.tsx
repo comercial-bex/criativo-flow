@@ -104,23 +104,24 @@ export default function ProjetoTarefasKanban() {
 
       // Fetch tasks with responsible person
       const { data: tarefasData, error: tarefasError } = await supabase
-        .from('tarefas_projeto')
+        .from('tarefa')
         .select(`
           *,
-          responsavel:profiles!tarefas_projeto_responsavel_id_fkey(nome)
+          responsavel:profiles!tarefa_responsavel_id_fkey(nome)
         `)
         .eq('projeto_id', projetoId)
         .order('created_at', { ascending: false });
 
       if (tarefasError) throw tarefasError;
       
-      const transformedTarefas = (tarefasData || []).map(tarefa => ({
+      const transformedTarefas = (tarefasData || []).map((tarefa: any) => ({
         ...tarefa,
         responsavel_nome: tarefa.responsavel?.nome,
-        prioridade: (tarefa.prioridade as 'baixa' | 'media' | 'alta') || 'media'
+        prioridade: (tarefa.prioridade as 'baixa' | 'media' | 'alta') || 'media',
+        setor_responsavel: tarefa.setor_responsavel || 'grs'
       }));
       
-      setTarefas(transformedTarefas);
+      setTarefas(transformedTarefas as Tarefa[]);
     } catch (error) {
       console.error('Erro ao buscar dados:', error);
       toast({
@@ -136,8 +137,8 @@ export default function ProjetoTarefasKanban() {
   const handleTaskMove = async (taskId: string, newStatus: string) => {
     try {
       const { error } = await supabase
-        .from('tarefas_projeto')
-        .update({ status: newStatus })
+        .from('tarefa')
+        .update({ status: newStatus as any })
         .eq('id', taskId);
 
       if (error) throw error;
@@ -145,7 +146,7 @@ export default function ProjetoTarefasKanban() {
       // Update local state
       setTarefas(prev => prev.map(tarefa => 
         tarefa.id === taskId 
-          ? { ...tarefa, status: newStatus }
+          ? { ...tarefa, status: newStatus as any }
           : tarefa
       ));
 
@@ -167,7 +168,7 @@ export default function ProjetoTarefasKanban() {
     try {
       const payload = sanitizeTaskPayload(taskData);
       const { data, error } = await supabase
-        .from('tarefas_projeto')
+        .from('tarefa')
         .insert(payload as any)
         .select()
         .single();
@@ -185,7 +186,7 @@ export default function ProjetoTarefasKanban() {
   const handleTaskUpdate = async (taskId: string, updates: any) => {
     try {
       const { error } = await supabase
-        .from('tarefas_projeto')
+        .from('tarefa')
         .update(updates)
         .eq('id', taskId);
 
