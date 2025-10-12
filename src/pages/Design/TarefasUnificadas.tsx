@@ -35,7 +35,6 @@ interface DesignTask {
   responsavel_id?: string;
   responsavel_nome?: string;
   setor_responsavel: string;
-  horas_estimadas?: number;
   horas_trabalhadas?: number;
   anexos?: any[];
   comentarios?: any[];
@@ -69,7 +68,6 @@ export default function TarefasUnificadasDesign() {
     responsavel_id: '',
     cliente_id: '',
     projeto_id: '',
-    horas_estimadas: '',
     tipo_criativo: '',
     formato: '',
     dimensoes: ''
@@ -237,7 +235,6 @@ export default function TarefasUnificadasDesign() {
         responsavel_id: newTask.responsavel_id || null,
         cliente_id: newTask.cliente_id || null,
         projeto_id: newTask.projeto_id || null,
-        horas_estimadas: newTask.horas_estimadas ? parseInt(newTask.horas_estimadas) : null,
         setor_responsavel: 'design',
         status: createColumnId as any,
         tipo: 'design',
@@ -299,7 +296,6 @@ export default function TarefasUnificadasDesign() {
         responsavel_id: '',
         cliente_id: '',
         projeto_id: '',
-        horas_estimadas: '',
         tipo_criativo: '',
         formato: '',
         dimensoes: ''
@@ -528,16 +524,6 @@ export default function TarefasUnificadasDesign() {
                     type="date"
                     value={newTask.data_prazo}
                     onChange={(e) => setNewTask(prev => ({ ...prev, data_prazo: e.target.value }))}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="horas_estimadas">Horas Estimadas</Label>
-                  <Input
-                    id="horas_estimadas"
-                    type="number"
-                    value={newTask.horas_estimadas}
-                    onChange={(e) => setNewTask(prev => ({ ...prev, horas_estimadas: e.target.value }))}
-                    placeholder="Ex: 4"
                   />
                 </div>
               </div>

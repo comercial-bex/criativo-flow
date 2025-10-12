@@ -44,7 +44,6 @@ interface Tarefa {
   prioridade: 'baixa' | 'media' | 'alta';
   data_prazo?: string;
   data_inicio?: string;
-  horas_estimadas?: number;
   horas_trabalhadas?: number;
   setor_responsavel: string;
   responsavel_id?: string;

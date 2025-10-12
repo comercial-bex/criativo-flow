@@ -30,7 +30,6 @@ interface ClienteTask {
   data_prazo?: string;
   responsavel_nome?: string;
   setor_responsavel: string;
-  horas_estimadas?: number;
   horas_trabalhadas?: number;
   projeto_nome?: string;
   created_at?: string;

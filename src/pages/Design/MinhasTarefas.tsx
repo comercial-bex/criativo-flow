@@ -26,7 +26,6 @@ interface DesignTask {
   responsavel_id?: string;
   responsavel_nome?: string;
   setor_responsavel: string;
-  horas_estimadas?: number;
   horas_trabalhadas?: number;
   anexos?: any[];
   comentarios?: any[];

@@ -30,7 +30,6 @@ interface MyTask extends TaskWithDeadline {
   responsavel_nome?: string;
   setor_responsavel: string;
   prioridade: 'baixa' | 'media' | 'alta';
-  horas_estimadas?: number;
   horas_trabalhadas?: number;
   observacoes?: string;
   projetos?: {

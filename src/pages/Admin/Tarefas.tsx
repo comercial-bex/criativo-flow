@@ -33,7 +33,6 @@ interface AdminTask {
   responsavel_id?: string;
   responsavel_nome?: string;
   setor_responsavel: string;
-  horas_estimadas?: number;
   horas_trabalhadas?: number;
   cliente_id?: string;
   cliente_nome?: string;

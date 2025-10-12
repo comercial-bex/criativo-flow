@@ -23,7 +23,6 @@ interface AudiovisualTask {
   cliente_nome?: string;
   projeto_nome?: string;
   setor_responsavel: string;
-  horas_estimadas?: number;
   created_at: string;
   updated_at: string;
   anexos?: string[];

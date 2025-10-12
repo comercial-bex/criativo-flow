@@ -39,7 +39,6 @@ interface MyTask {
   prioridade: 'alta' | 'media' | 'baixa';
   data_inicio?: string;
   data_prazo?: string;
-  horas_estimadas?: number;
   horas_trabalhadas?: number;
   responsavel_id?: string;
   responsavel_nome?: string;
@@ -142,11 +141,6 @@ const TaskListView = ({
               </div>
               
               <div className="flex items-center gap-2">
-                {task.horas_estimadas && (
-                  <Badge variant="outline">
-                    {task.horas_trabalhadas || 0}h / {task.horas_estimadas}h
-                  </Badge>
-                )}
                 {task.data_prazo && new Date(task.data_prazo) < new Date() && task.status !== 'concluido' && (
                   <AlertCircle className="h-4 w-4 text-red-500" />
                 )}
