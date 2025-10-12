@@ -23,7 +23,7 @@ interface KanbanTask extends TaskWithDeadline {
   responsavel_nome?: string;
   setor_responsavel: string;
   prioridade: 'baixa' | 'media' | 'alta';
-  horas_estimadas?: number;
+  
   horas_trabalhadas?: number;
 }
 
@@ -107,12 +107,6 @@ function SortableTaskCard({ task, onTaskClick }: { task: KanbanTask; onTaskClick
             </div>
           )}
 
-          {task.horas_estimadas && (
-            <div className="flex items-center gap-1">
-              <Clock className="h-3 w-3" />
-              <span>{task.horas_trabalhadas || 0}h / {task.horas_estimadas}h</span>
-            </div>
-          )}
         </div>
 
         {/* Additional indicators */}

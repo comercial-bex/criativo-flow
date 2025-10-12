@@ -39,7 +39,7 @@ interface UniversalTask {
   responsavel_id?: string;
   responsavel_nome?: string;
   setor_responsavel: string;
-  horas_estimadas?: number;
+  
   horas_trabalhadas?: number;
   anexos?: any[];
   comentarios?: any[];
@@ -229,12 +229,6 @@ function UniversalTaskCard({
           )}
 
           {/* Horas estimadas vs trabalhadas */}
-          {task.horas_estimadas && (
-            <div className="flex items-center gap-1 text-xs text-muted-foreground">
-              <Clock className="h-3 w-3" />
-              <span>{task.horas_trabalhadas || 0}h / {task.horas_estimadas}h</span>
-            </div>
-          )}
 
           {/* Responsável */}
           {task.responsavel_nome && (

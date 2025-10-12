@@ -32,7 +32,7 @@ interface KanbanTask extends TaskWithDeadline {
   responsavel_nome?: string;
   setor_responsavel: string;
   prioridade: 'baixa' | 'media' | 'alta';
-  horas_estimadas?: number;
+  
   horas_trabalhadas?: number;
   observacoes?: string;
 }
@@ -157,7 +157,7 @@ export function TaskDetailsModal({ open, onOpenChange, task, onTaskUpdate }: Tas
                 <div className="flex items-center gap-2">
                   <Clock className="h-4 w-4 text-muted-foreground" />
                   <span className="font-medium">Horas:</span>
-                  <span>{task.horas_trabalhadas || 0}h / {task.horas_estimadas || 0}h</span>
+                  <span>{task.horas_trabalhadas || 0}h</span>
                 </div>
               </div>
 

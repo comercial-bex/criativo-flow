@@ -81,10 +81,6 @@ export function TarefasPorSetor({ showAllSectors = true }: TarefasPorSetorProps)
     return colors[prioridade as keyof typeof colors] || 'bg-gray-100 text-gray-800';
   };
 
-  const calcularProgressoPorcentagem = (horas_trabalhadas: number, horas_estimadas?: number) => {
-    if (!horas_estimadas || horas_estimadas === 0) return 0;
-    return Math.min((horas_trabalhadas / horas_estimadas) * 100, 100);
-  };
 
   const getStatusStats = () => {
     const stats = STATUS_OPTIONS.map(status => ({
@@ -243,19 +239,6 @@ function TarefasGrid({ tarefas }: { tarefas: TarefaProjeto[] }) {
               <p className="text-sm text-muted-foreground line-clamp-2">
                 {tarefa.descricao}
               </p>
-            )}
-            
-            {tarefa.horas_estimadas && (
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-sm">
-                  <span>Progresso ({tarefa.horas_trabalhadas}h / {tarefa.horas_estimadas}h)</span>
-                  <span>{Math.round((tarefa.horas_trabalhadas / tarefa.horas_estimadas) * 100)}%</span>
-                </div>
-                <Progress 
-                  value={(tarefa.horas_trabalhadas / tarefa.horas_estimadas) * 100} 
-                  className="h-2" 
-                />
-              </div>
             )}
             
             <div className="flex items-center justify-between text-sm">
