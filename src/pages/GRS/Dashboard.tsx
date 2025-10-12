@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { BexCard, BexCardContent, BexCardHeader, BexCardTitle } from "@/components/ui/bex-card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { BexBadge } from "@/components/ui/bex-badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -159,28 +159,28 @@ export default function GRSDashboard() {
       value: metrics.clientesAtivos.toString(),
       icon: Users,
       change: "Clientes em operação",
-      color: "text-blue-600"
+      color: "text-bex"
     },
     {
       title: "Total Projetos",
       value: metrics.totalProjetos.toString(),
       icon: FileText,
       change: "Projetos + Planejamentos",
-      color: "text-green-600"
+      color: "text-bex"
     },
     {
       title: "Projetos Ativos",
       value: metrics.projetosAtivos.toString(),
       icon: Clock,
       change: "Em andamento",
-      color: "text-orange-500"
+      color: "text-orange-400"
     },
     {
       title: "Projetos Concluídos",
       value: metrics.projetosConcluidos.toString(),
       icon: CheckCircle,
       change: "Finalizados com sucesso",
-      color: "text-emerald-600"
+      color: "text-bex"
     }
   ];
 
@@ -275,32 +275,32 @@ export default function GRSDashboard() {
       {/* Metrics Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4" data-tour="metricas">
         {metricsData.map((item, index) => (
-          <Card key={index}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
+          <BexCard variant="glow" key={index} className="hover-lift-bex">
+            <BexCardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <BexCardTitle className="text-sm font-medium text-bex">
                 {item.title}
-              </CardTitle>
+              </BexCardTitle>
               <item.icon className={`h-4 w-4 ${item.color}`} />
-            </CardHeader>
-            <CardContent>
+            </BexCardHeader>
+            <BexCardContent>
               <div className="text-2xl font-bold">{item.value}</div>
               <p className="text-xs text-muted-foreground">
                 {item.change}
               </p>
-            </CardContent>
-          </Card>
+            </BexCardContent>
+          </BexCard>
         ))}
       </div>
 
       {/* Tabela Clientes e Projetos */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Users className="h-5 w-5" />
+      <BexCard variant="gaming">
+        <BexCardHeader>
+          <BexCardTitle className="flex items-center gap-2">
+            <Users className="h-5 w-5 text-bex" />
             Clientes e Projetos
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
+          </BexCardTitle>
+        </BexCardHeader>
+        <BexCardContent>
           {loading ? (
             <div className="text-center py-8">Carregando...</div>
           ) : clientesComProjetos.length === 0 ? (
@@ -340,46 +340,46 @@ export default function GRSDashboard() {
                         </div>
                       </TableCell>
                       <TableCell className="text-center">
-                        <Badge variant="outline">{cliente.totalProjetos}</Badge>
+                        <BexBadge variant="bexOutline">{cliente.totalProjetos}</BexBadge>
                       </TableCell>
                       <TableCell className="text-center">
-                        <Badge variant="default" className="bg-orange-100 text-orange-800 hover:bg-orange-200">
+                        <BexBadge variant="secondary" className="bg-orange-100 text-orange-800 hover:bg-orange-200">
                           {cliente.projetosAtivos}
-                        </Badge>
+                        </BexBadge>
                       </TableCell>
                       <TableCell className="text-center">
-                        <Badge variant="default" className="bg-green-100 text-green-800 hover:bg-green-200">
+                        <BexBadge variant="bex">
                           {cliente.projetosConcluidos}
-                        </Badge>
+                        </BexBadge>
                       </TableCell>
                       <TableCell className="text-center">
-                        <Badge variant="default" className="bg-yellow-100 text-yellow-800 hover:bg-yellow-200">
+                        <BexBadge variant="secondary" className="bg-yellow-100 text-yellow-800 hover:bg-yellow-200">
                           {cliente.projetosPendentes}
-                        </Badge>
+                        </BexBadge>
                       </TableCell>
                       <TableCell className="text-center">
-                        <Badge variant="default" className="bg-gray-100 text-gray-800 hover:bg-gray-200">
+                        <BexBadge variant="secondary">
                           {cliente.projetosPausados}
-                        </Badge>
+                        </BexBadge>
                       </TableCell>
                       <TableCell className="text-center">
-                        <Badge variant={getStatusVariant(cliente.status)}>
+                        <BexBadge variant={getStatusVariant(cliente.status)}>
                           {getStatusText(cliente.status)}
-                        </Badge>
+                        </BexBadge>
                       </TableCell>
                       <TableCell className="text-center">
                         <div className="flex items-center justify-center gap-1">
                           {cliente.aprovacoesPendentes > 0 && (
-                            <Badge variant="destructive" className="flex items-center gap-1">
+                            <BexBadge variant="destructive" className="flex items-center gap-1">
                               <Bell className="h-3 w-3" />
                               {cliente.aprovacoesPendentes}
-                            </Badge>
+                            </BexBadge>
                           )}
                           {cliente.mensagensNaoLidas > 0 && (
-                            <Badge variant="secondary" className="flex items-center gap-1">
+                            <BexBadge variant="secondary" className="flex items-center gap-1">
                               <MessageSquare className="h-3 w-3" />
                               {cliente.mensagensNaoLidas}
-                            </Badge>
+                            </BexBadge>
                           )}
                           {cliente.aprovacoesPendentes === 0 && cliente.mensagensNaoLidas === 0 && (
                             <span className="text-xs text-muted-foreground">-</span>
@@ -402,8 +402,8 @@ export default function GRSDashboard() {
               </Table>
             </div>
           )}
-        </CardContent>
-      </Card>
+        </BexCardContent>
+      </BexCard>
         </TabsContent>
         
         <TabsContent value="tarefas">
