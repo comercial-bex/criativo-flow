@@ -28,6 +28,8 @@ interface BriefingData {
   publico_alvo_descricao?: string;
   persona_voz?: string;
   referencias?: string;
+  referencias_analisadas?: any[];
+  insights_visuais?: string;
 }
 
 interface SugestoesTecnicas {
@@ -206,6 +208,17 @@ Mantenha esta voz consistente em todas as narrações e falas.
 ${briefingData.referencias ? `
 📎 REFERÊNCIAS FORNECIDAS: ${briefingData.referencias}
 Use como inspiração de estilo visual e narrativo (não copie conteúdo literal).
+` : ''}
+
+${briefingData.insights_visuais ? `
+🔍 ANÁLISE DE REFERÊNCIAS VISUAIS:
+${briefingData.insights_visuais}
+
+Use estes insights para:
+- Escolher enquadramentos e movimentos de câmera similares
+- Replicar o ritmo e tipo de transições detectado
+- Adaptar o tom narrativo ao estilo dos vídeos de referência
+- Incorporar elementos visuais (cores, texto em tela, etc.) identificados
 ` : ''}
 
 🚨 DIRETRIZES CRÍTICAS DE CONTEÚDO:

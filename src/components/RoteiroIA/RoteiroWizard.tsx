@@ -42,6 +42,8 @@ export default function RoteiroWizard({ mode, roteiroId, initialData }: RoteiroW
     publico_alvo: [] as string[],
     pilares_mensagem: [] as string[],
     referencias: "",
+    referencias_analisadas: [] as any[],
+    insights_visuais: "",
     tom: [] as string[],
     estilo: [] as string[],
     persona_voz: "Guilherme – social media, linguagem meiga, PT-BR padrão, inserções sutis do Norte (Amapá)...",
@@ -132,8 +134,14 @@ export default function RoteiroWizard({ mode, roteiroId, initialData }: RoteiroW
     if (!roteiroId) return;
     try {
       // Filtrar campos que não existem no schema
-      const { logo_url, cliente_nome, agencia, produtora, ...roteiroData } = formData;
-      await updateRoteiro({ id: roteiroId, data: roteiroData });
+      const { logo_url, cliente_nome, agencia, produtora, referencias_analisadas, insights_visuais, ...roteiroData } = formData;
+      
+      // Salvar apenas se houver dados de análise
+      const dataToSave = referencias_analisadas?.length > 0 
+        ? { ...roteiroData, referencias_analisadas, insights_visuais }
+        : roteiroData;
+        
+      await updateRoteiro({ id: roteiroId, data: dataToSave });
     } catch (error) {
       console.error("Autosave error:", error);
     }

@@ -7778,6 +7778,7 @@ export type Database = {
           hash_publico: string | null
           hashtags: string | null
           id: string
+          insights_visuais: string | null
           objetivo: string | null
           parent_id: string | null
           persona_voz: string | null
@@ -7788,6 +7789,7 @@ export type Database = {
           provedor_ia: Database["public"]["Enums"]["provedor_ia_roteiro"] | null
           publico_alvo: Json | null
           referencias: Json | null
+          referencias_analisadas: Json | null
           roteiro_markdown: string | null
           roteiro_struct: Json | null
           status: Database["public"]["Enums"]["status_roteiro"]
@@ -7815,6 +7817,7 @@ export type Database = {
           hash_publico?: string | null
           hashtags?: string | null
           id?: string
+          insights_visuais?: string | null
           objetivo?: string | null
           parent_id?: string | null
           persona_voz?: string | null
@@ -7827,6 +7830,7 @@ export type Database = {
             | null
           publico_alvo?: Json | null
           referencias?: Json | null
+          referencias_analisadas?: Json | null
           roteiro_markdown?: string | null
           roteiro_struct?: Json | null
           status?: Database["public"]["Enums"]["status_roteiro"]
@@ -7854,6 +7858,7 @@ export type Database = {
           hash_publico?: string | null
           hashtags?: string | null
           id?: string
+          insights_visuais?: string | null
           objetivo?: string | null
           parent_id?: string | null
           persona_voz?: string | null
@@ -7866,6 +7871,7 @@ export type Database = {
             | null
           publico_alvo?: Json | null
           referencias?: Json | null
+          referencias_analisadas?: Json | null
           roteiro_markdown?: string | null
           roteiro_struct?: Json | null
           status?: Database["public"]["Enums"]["status_roteiro"]

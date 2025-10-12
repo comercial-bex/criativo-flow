@@ -9,6 +9,7 @@ import { useProjetos } from "@/hooks/useProjetos";
 import { useTarefas } from "@/hooks/useTarefas";
 import { supabase } from "@/integrations/supabase/client";
 import { X } from "lucide-react";
+import LinkAnalysisCard from "../components/LinkAnalysisCard";
 
 const PLATAFORMAS = [
   { value: "reels", label: "Reels", emoji: "📱" },
@@ -256,16 +257,7 @@ export default function Step1Briefing({ formData, setFormData }: any) {
         </div>
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="referencias">Referências (Links, URLs)</Label>
-        <Textarea
-          id="referencias"
-          value={formData.referencias}
-          onChange={(e) => setFormData({ ...formData, referencias: e.target.value })}
-          placeholder="Cole links de referências visuais, vídeos inspiradores, etc."
-          rows={2}
-        />
-      </div>
+      <LinkAnalysisCard formData={formData} setFormData={setFormData} />
     </div>
   );
 }
