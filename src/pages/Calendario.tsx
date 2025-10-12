@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, addDays, eachDayOfInterval, isSameDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Calendar, ChevronLeft, ChevronRight, Plus } from 'lucide-react';
+import { Calendar, ChevronLeft, ChevronRight, Plus, Video } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -10,6 +10,7 @@ import { useCalendarioMultidisciplinar } from '@/hooks/useCalendarioMultidiscipl
 import { EventoCard } from '@/components/Calendario/EventoCard';
 import { ModalCriarEvento } from '@/components/Calendario/ModalCriarEvento';
 import { CalendarioDashboard } from '@/components/Calendario/CalendarioDashboard';
+import { AudiovisualScheduleModal } from '@/components/AudiovisualScheduleModal';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useUserRole } from '@/hooks/useUserRole';
@@ -24,6 +25,7 @@ export default function Calendario() {
   const [modalAberto, setModalAberto] = useState(false);
   const [dataInicialModal, setDataInicialModal] = useState<Date | undefined>();
   const [activeTab, setActiveTab] = useState('calendario');
+  const [modalCaptacaoAberto, setModalCaptacaoAberto] = useState(false);
   
   const startDate = viewMode === 'week' 
     ? startOfWeek(selectedDate, { weekStartsOn: 1 })
@@ -83,10 +85,26 @@ export default function Calendario() {
         </div>
         
         {canEdit && (
-          <Button size="lg" onClick={() => handleAbrirModal()}>
-            <Plus className="mr-2 h-4 w-4" />
-            Novo Evento
-          </Button>
+          <div className="flex items-center gap-3">
+            <Button 
+              size="lg" 
+              variant="default"
+              onClick={() => handleAbrirModal()}
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              Novo Evento
+            </Button>
+            
+            <Button 
+              size="lg" 
+              variant="outline"
+              onClick={() => setModalCaptacaoAberto(true)}
+              className="border-orange-500 text-orange-600 hover:bg-orange-50 dark:border-orange-400 dark:text-orange-400 dark:hover:bg-orange-950"
+            >
+              <Video className="mr-2 h-4 w-4" />
+              Agendar Captação
+            </Button>
+          </div>
         )}
       </div>
       
@@ -235,6 +253,15 @@ export default function Calendario() {
         open={modalAberto}
         onClose={() => setModalAberto(false)}
         dataInicial={dataInicialModal}
+      />
+      
+      <AudiovisualScheduleModal
+        open={modalCaptacaoAberto}
+        onOpenChange={setModalCaptacaoAberto}
+        onScheduleCreated={() => {
+          setModalCaptacaoAberto(false);
+          window.location.reload();
+        }}
       />
     </div>
   );
