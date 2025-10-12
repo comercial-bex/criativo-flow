@@ -73,7 +73,7 @@ export function PomodoroTimer({ setor }: PomodoroTimerProps) {
 
   const formatarTempo = (segundos: number) => {
     const mins = Math.floor(segundos / 60);
-    const secs = segundos % 60);
+    const secs = segundos % 60;
     return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
   };
 

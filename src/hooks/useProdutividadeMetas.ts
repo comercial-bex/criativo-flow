@@ -67,16 +67,19 @@ export function useProdutividadeMetas(setor: string) {
       .subscribe();
   };
 
-  const criarMeta = async (meta: Partial<Meta>) => {
+  const criarMeta = async (meta: { titulo: string; descricao: string; categoria?: string; data_limite?: string }) => {
     if (!user) return null;
 
     const { data, error } = await supabase
       .from('produtividade_metas')
-      .insert({
-        ...meta,
+      .insert([{
+        titulo: meta.titulo,
+        descricao: meta.descricao,
+        categoria: meta.categoria || null,
+        data_limite: meta.data_limite || null,
         user_id: user.id,
         setor
-      })
+      }])
       .select()
       .single();
 
