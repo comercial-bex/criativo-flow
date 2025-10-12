@@ -116,6 +116,20 @@ export function AppSidebar() {
       permissions: ["financeiro", "administrativo", "rh"]
     },
     {
+      id: "design",
+      title: "Design / Criativo",
+      icon: Icons.Palette,
+      items: [
+        { title: "🎨 Painel Design", url: "/design/dashboard", icon: Icons.LayoutDashboard },
+        { title: "Minhas Tarefas", url: "/design/minhas-tarefas", icon: Icons.CheckSquare },
+        { title: "Calendário", url: "/design/calendario", icon: Icons.Calendar },
+        { title: "Aprovações", url: "/design/aprovacoes", icon: Icons.Eye },
+        { title: "Biblioteca", url: "/design/biblioteca", icon: Icons.Images },
+        { title: "Metas", url: "/design/metas", icon: Icons.Target },
+      ],
+      permissions: ["design"]
+    },
+    {
       id: "audiovisual",
       title: "Audiovisual",
       icon: Icons.Video,
