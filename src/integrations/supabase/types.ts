@@ -6133,6 +6133,7 @@ export type Database = {
           humor: string | null
           id: string
           resumo_ia: string | null
+          resumo_semanal: string | null
           setor: string
           texto: string
           user_id: string
@@ -6143,6 +6144,7 @@ export type Database = {
           humor?: string | null
           id?: string
           resumo_ia?: string | null
+          resumo_semanal?: string | null
           setor: string
           texto: string
           user_id: string
@@ -6153,6 +6155,7 @@ export type Database = {
           humor?: string | null
           id?: string
           resumo_ia?: string | null
+          resumo_semanal?: string | null
           setor?: string
           texto?: string
           user_id?: string
