@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { CriarProjetoAvulsoModal } from '@/components/CriarProjetoAvulsoModal';
+import { CreatePlanejamentoModal } from '@/components/CreatePlanejamentoModal';
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
@@ -65,7 +66,7 @@ export default function ClienteProjetos() {
   const [cliente, setCliente] = useState<Cliente | null>(null);
   const [projetos, setProjetos] = useState<Projeto[]>([]);
   const [loading, setLoading] = useState(true);
-  const [tipoModal, setTipoModal] = useState<'avulso' | 'campanha' | null>(null);
+  const [tipoModal, setTipoModal] = useState<'avulso' | 'campanha' | 'plano_editorial' | null>(null);
 
   useEffect(() => {
     if (clienteId) {
@@ -185,18 +186,35 @@ export default function ClienteProjetos() {
               <Megaphone className="w-4 h-4 mr-2 text-purple-500" />
               Campanha Publicitária
             </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setTipoModal('plano_editorial')}>
+              <Calendar className="w-4 h-4 mr-2 text-blue-500" />
+              Plano Editorial
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
 
       {/* Modal de Projeto Avulso/Campanha */}
-      {tipoModal && (
+      {(tipoModal === 'avulso' || tipoModal === 'campanha') && (
         <CriarProjetoAvulsoModal
-          open={!!tipoModal}
+          open={true}
           onOpenChange={(open) => !open && setTipoModal(null)}
           clienteId={clienteId}
           tipo={tipoModal}
           onSuccess={() => fetchProjetos()}
+        />
+      )}
+
+      {/* Modal de Plano Editorial */}
+      {tipoModal === 'plano_editorial' && (
+        <CreatePlanejamentoModal
+          open={true}
+          onOpenChange={(open) => !open && setTipoModal(null)}
+          clienteId={clienteId}
+          onSuccess={() => {
+            fetchProjetos();
+            setTipoModal(null);
+          }}
         />
       )}
 
@@ -230,6 +248,10 @@ export default function ClienteProjetos() {
                 <DropdownMenuItem onClick={() => setTipoModal('campanha')}>
                   <Megaphone className="w-4 h-4 mr-2 text-purple-500" />
                   Campanha Publicitária
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setTipoModal('plano_editorial')}>
+                  <Calendar className="w-4 h-4 mr-2 text-blue-500" />
+                  Plano Editorial
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
