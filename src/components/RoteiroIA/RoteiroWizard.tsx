@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight, Save, FileText, Palette, Sparkles } from "lucide-react";
+import { ChevronLeft, ChevronRight, Save, FileText, Palette, Sparkles, FileDown, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -8,6 +8,8 @@ import { useNavigate } from "react-router-dom";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useRoteiros } from "@/hooks/useRoteiros";
 import { smartToast } from "@/lib/smart-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { downloadRoteiroAsPDF, exportRoteiroToPDF } from "@/utils/roteiroToPdf";
 import Step1Briefing from "./steps/Step1Briefing";
 import Step2TomEstilo from "./steps/Step2TomEstilo";
 import Step4Roteiro from "./steps/Step4Roteiro";
@@ -46,9 +48,11 @@ export default function RoteiroWizard({ mode, roteiroId, initialData }: RoteiroW
     roteiro_markdown: "",
     roteiro_struct: null,
     status: "rascunho" as any,
+    versao: 1,
   });
 
   const [isSaving, setIsSaving] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
   const debouncedFormData = useDebounce(formData, 1500);
 
   // Autosave quando dados mudam (apenas em modo edição)
@@ -133,6 +137,54 @@ export default function RoteiroWizard({ mode, roteiroId, initialData }: RoteiroW
     } catch (error: any) {
       smartToast.error("Erro ao gerar roteiro", error.message);
       console.error("Erro na geração:", error);
+    }
+  };
+
+  const handleExportPDF = () => {
+    try {
+      downloadRoteiroAsPDF(formData);
+      smartToast.success("PDF baixado com sucesso!");
+    } catch (error: any) {
+      smartToast.error("Erro ao exportar PDF", error.message);
+    }
+  };
+
+  const handleUploadToStorage = async () => {
+    if (!roteiroId) {
+      smartToast.error("Salve o roteiro antes de fazer upload");
+      return;
+    }
+
+    setIsExporting(true);
+    try {
+      // Gerar PDF
+      const pdfBlob = exportRoteiroToPDF(formData);
+      
+      // Definir caminho do arquivo
+      const fileName = `${formData.cliente_id || 'sem-cliente'}/${formData.projeto_id || 'sem-projeto'}/${roteiroId}_v${formData.versao || 1}.pdf`;
+      
+      // Upload para storage
+      const { error: uploadError } = await supabase.storage
+        .from('roteiros')
+        .upload(fileName, pdfBlob, { 
+          upsert: true,
+          contentType: 'application/pdf'
+        });
+
+      if (uploadError) throw uploadError;
+
+      // Atualizar roteiro com caminho do PDF
+      await updateRoteiro({ 
+        id: roteiroId, 
+        data: { storage_pdf_path: fileName } 
+      });
+
+      smartToast.success("PDF salvo no storage!");
+    } catch (error: any) {
+      smartToast.error("Erro ao fazer upload", error.message);
+      console.error("Upload error:", error);
+    } finally {
+      setIsExporting(false);
     }
   };
 
@@ -230,6 +282,31 @@ export default function RoteiroWizard({ mode, roteiroId, initialData }: RoteiroW
         </Button>
 
         <div className="flex gap-2">
+          {/* Exportar PDF */}
+          {formData.roteiro_markdown && (
+            <>
+              <Button 
+                variant="outline" 
+                onClick={handleExportPDF}
+                disabled={isExporting}
+              >
+                <FileDown className="h-4 w-4 mr-1" />
+                Baixar PDF
+              </Button>
+
+              {mode === "edit" && roteiroId && (
+                <Button 
+                  variant="outline" 
+                  onClick={handleUploadToStorage}
+                  disabled={isExporting}
+                >
+                  <Upload className="h-4 w-4 mr-1" />
+                  {isExporting ? "Salvando..." : "Salvar no Storage"}
+                </Button>
+              )}
+            </>
+          )}
+
           <Button variant="outline" onClick={handleSaveDraft} disabled={isSaving}>
             <Save className="h-4 w-4 mr-1" />
             {isSaving ? "Salvando..." : "Salvar Rascunho"}
