@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { BexCard, BexCardContent, BexCardHeader, BexCardTitle } from '@/components/ui/bex-card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -29,7 +29,6 @@ import {
 import { Alert } from '@/components/ui/alert';
 import { useTutorial } from '@/hooks/useTutorial';
 import { TutorialButton } from '@/components/TutorialButton';
-import { FloatingActionButton } from '@/components/FloatingActionButton';
 import { sanitizeTaskPayload } from '@/utils/tarefaUtils';
 
 interface GRSTask {
@@ -317,11 +316,11 @@ export default function TarefasUnificadasGRS() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="bex-title-primary flex items-center gap-2">
-            <Target className="h-8 w-8 text-bex" />
+          <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
+            <Target className="h-8 w-8 text-primary" />
             Gestão de Tarefas GRS
           </h1>
-          <p className="bex-text-muted mt-2">Planejamento estratégico e gestão de redes sociais</p>
+          <p className="text-muted-foreground">Planejamento estratégico e gestão de redes sociais</p>
         </div>
         
         <div className="flex gap-2">
@@ -398,53 +397,53 @@ export default function TarefasUnificadasGRS() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <BexCard variant="gaming" withGlow>
-          <BexCardContent className="p-4 flex items-center gap-3">
+        <Card>
+          <CardContent className="p-4 flex items-center gap-3">
             <div className="p-2 bg-blue-100 rounded-lg">
               <BarChart3 className="h-5 w-5 text-blue-600" />
             </div>
             <div>
-              <p className="bex-text-muted text-sm">Total</p>
+              <p className="text-sm text-muted-foreground">Total</p>
               <p className="text-2xl font-bold">{stats.total}</p>
             </div>
-          </BexCardContent>
-        </BexCard>
+          </CardContent>
+        </Card>
 
-        <BexCard variant="gaming" withGlow>
-          <BexCardContent className="p-4 flex items-center gap-3">
+        <Card>
+          <CardContent className="p-4 flex items-center gap-3">
             <div className="p-2 bg-yellow-100 rounded-lg">
               <Clock className="h-5 w-5 text-yellow-600" />
             </div>
             <div>
-              <p className="bex-text-muted text-sm">Em Andamento</p>
+              <p className="text-sm text-muted-foreground">Em Andamento</p>
               <p className="text-2xl font-bold">{stats.emAndamento}</p>
             </div>
-          </BexCardContent>
-        </BexCard>
+          </CardContent>
+        </Card>
 
-        <BexCard variant="gaming" withGlow>
-          <BexCardContent className="p-4 flex items-center gap-3">
+        <Card>
+          <CardContent className="p-4 flex items-center gap-3">
             <div className="p-2 bg-purple-100 rounded-lg">
               <Users className="h-5 w-5 text-purple-600" />
             </div>
             <div>
-              <p className="bex-text-muted text-sm">Em Revisão</p>
+              <p className="text-sm text-muted-foreground">Em Revisão</p>
               <p className="text-2xl font-bold">{stats.emRevisao}</p>
             </div>
-          </BexCardContent>
-        </BexCard>
+          </CardContent>
+        </Card>
 
-        <BexCard variant="gaming" withGlow>
-          <BexCardContent className="p-4 flex items-center gap-3">
+        <Card>
+          <CardContent className="p-4 flex items-center gap-3">
             <div className="p-2 bg-red-100 rounded-lg">
               <TrendingUp className="h-5 w-5 text-red-600" />
             </div>
             <div>
-              <p className="bex-text-muted text-sm">Atrasadas</p>
+              <p className="text-sm text-muted-foreground">Atrasadas</p>
               <p className="text-2xl font-bold">{stats.atrasadas}</p>
             </div>
-          </BexCardContent>
-        </BexCard>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Kanban Board */}
@@ -468,14 +467,6 @@ export default function TarefasUnificadasGRS() {
           onTaskUpdate={handleTaskUpdate}
           profiles={profiles}
           moduleType="grs"
-        />
-      )}
-
-      {/* FAB */}
-      {permissions.showCreateButton && (
-        <FloatingActionButton
-          onClick={() => setIsCreateModalOpen(true)}
-          label="Nova Tarefa GRS"
         />
       )}
     </div>

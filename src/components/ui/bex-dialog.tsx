@@ -21,7 +21,7 @@ const DialogOverlay = React.forwardRef<
       "fixed inset-0 z-50 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
       variant === "default" && "bg-black/80",
       variant === "glass" && "backdrop-blur-md bg-black/50",
-      variant === "gaming" && "bg-black/85 backdrop-blur-md",
+      variant === "gaming" && "backdrop-blur-lg bg-black/60",
       className
     )}
     {...props}
@@ -36,7 +36,7 @@ const bexDialogContentVariants = cva(
       variant: {
         default: "bg-background border",
         glass: "backdrop-blur-sm bg-white/5 dark:bg-black/30 border border-white/10",
-        gaming: "bg-[#0D0D0D] border-bex/40 shadow-2xl shadow-bex/30 backdrop-blur-xl relative before:absolute before:inset-0 before:bg-gradient-to-b before:from-bex/5 before:to-transparent before:pointer-events-none",
+        gaming: "backdrop-blur-md bg-black/40 border border-bex/20 shadow-2xl shadow-bex/20",
       },
     },
     defaultVariants: {

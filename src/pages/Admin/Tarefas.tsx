@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { BexCard, BexCardContent, BexCardHeader, BexCardTitle } from "@/components/ui/bex-card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -7,7 +7,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { UniversalKanbanBoard, moduleConfigurations } from "@/components/UniversalKanbanBoard";
 import { TrelloStyleTaskModal } from "@/components/TrelloStyleTaskModal";
-import { FloatingActionButton } from '@/components/FloatingActionButton';
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { 
@@ -235,63 +234,67 @@ export default function AdminTarefas() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="bex-title-primary">Todas as Tarefas</h1>
-        <p className="bex-text-muted mt-2">
-          Visualização completa de todas as tarefas do sistema
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Painel de Tarefas - Admin</h1>
+          <p className="text-muted-foreground">Visão completa de todas as tarefas do sistema</p>
+        </div>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <BexCard variant="gaming" withGlow>
-          <BexCardHeader className="pb-3">
-            <BexCardTitle className="bex-text-muted text-sm font-medium">
-              Total de Tarefas
-            </BexCardTitle>
-          </BexCardHeader>
-          <BexCardContent>
-            <div className="text-3xl font-bold">{stats.total}</div>
-          </BexCardContent>
-        </BexCard>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Total de Tarefas</p>
+                <p className="text-2xl font-bold">{stats.total}</p>
+              </div>
+              <BarChart3 className="h-8 w-8 text-muted-foreground" />
+            </div>
+          </CardContent>
+        </Card>
 
-        <BexCard variant="gaming" withGlow>
-          <BexCardHeader className="pb-3">
-            <BexCardTitle className="bex-text-muted text-sm font-medium">
-              Em Andamento
-            </BexCardTitle>
-          </BexCardHeader>
-          <BexCardContent>
-            <div className="text-3xl font-bold text-blue-600">{stats.emAndamento}</div>
-          </BexCardContent>
-        </BexCard>
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Em Andamento</p>
+                <p className="text-2xl font-bold text-blue-600">{stats.emAndamento}</p>
+              </div>
+              <Clock className="h-8 w-8 text-blue-600" />
+            </div>
+          </CardContent>
+        </Card>
 
-        <BexCard variant="gaming" withGlow>
-          <BexCardHeader className="pb-3">
-            <BexCardTitle className="bex-text-muted text-sm font-medium">
-              Atrasadas
-            </BexCardTitle>
-          </BexCardHeader>
-          <BexCardContent>
-            <div className="text-3xl font-bold text-destructive">{stats.atrasadas}</div>
-          </BexCardContent>
-        </BexCard>
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Atrasadas</p>
+                <p className="text-2xl font-bold text-red-600">{stats.atrasadas}</p>
+              </div>
+              <AlertTriangle className="h-8 w-8 text-red-600" />
+            </div>
+          </CardContent>
+        </Card>
 
-        <BexCard variant="gaming" withGlow>
-          <BexCardHeader className="pb-3">
-            <BexCardTitle className="bex-text-muted text-sm font-medium">
-              Concluídas
-            </BexCardTitle>
-          </BexCardHeader>
-          <BexCardContent>
-            <div className="text-3xl font-bold text-bex">{stats.concluidas}</div>
-          </BexCardContent>
-        </BexCard>
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Concluídas</p>
+                <p className="text-2xl font-bold text-green-600">{stats.concluidas}</p>
+              </div>
+              <CheckCircle2 className="h-8 w-8 text-green-600" />
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Filtros */}
-      <BexCard variant="gaming">
-        <BexCardContent className="p-4">
+      <Card>
+        <CardContent className="p-4">
           <div className="flex items-center gap-4 flex-wrap">
             <div className="relative flex-1 min-w-[200px] max-w-[400px]">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -327,8 +330,8 @@ export default function AdminTarefas() {
               </SelectContent>
             </Select>
           </div>
-        </BexCardContent>
-      </BexCard>
+        </CardContent>
+      </Card>
 
       {/* Tabs para diferentes visualizações */}
       <Tabs defaultValue="kanban" className="space-y-4">
@@ -354,14 +357,14 @@ export default function AdminTarefas() {
         <TabsContent value="setor">
           <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
             {Object.entries(stats.porSetor).map(([setor, count]) => (
-              <BexCard key={setor} variant="gaming">
-                <BexCardHeader>
-                  <BexCardTitle className="flex items-center justify-between">
+              <Card key={setor}>
+                <CardHeader>
+                  <CardTitle className="flex items-center justify-between">
                     <span>{setor}</span>
                     <Badge variant="secondary">{count}</Badge>
-                  </BexCardTitle>
-                </BexCardHeader>
-                <BexCardContent>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
                   <div className="space-y-2">
                     {filteredTasks
                       .filter(task => task.setor_responsavel === setor)
@@ -377,19 +380,19 @@ export default function AdminTarefas() {
                         </div>
                       ))}
                   </div>
-                </BexCardContent>
-              </BexCard>
+                </CardContent>
+              </Card>
             ))}
           </div>
         </TabsContent>
 
         <TabsContent value="stats">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <BexCard variant="gaming">
-              <BexCardHeader>
-                <BexCardTitle>Distribuição por Setor</BexCardTitle>
-              </BexCardHeader>
-              <BexCardContent>
+            <Card>
+              <CardHeader>
+                <CardTitle>Distribuição por Setor</CardTitle>
+              </CardHeader>
+              <CardContent>
                 <div className="space-y-3">
                   {Object.entries(stats.porSetor).map(([setor, count]) => (
                     <div key={setor} className="flex items-center justify-between">
@@ -406,14 +409,14 @@ export default function AdminTarefas() {
                     </div>
                   ))}
                 </div>
-              </BexCardContent>
-            </BexCard>
+              </CardContent>
+            </Card>
 
-            <BexCard variant="gaming">
-              <BexCardHeader>
-                <BexCardTitle>Resumo Geral</BexCardTitle>
-              </BexCardHeader>
-              <BexCardContent>
+            <Card>
+              <CardHeader>
+                <CardTitle>Resumo Geral</CardTitle>
+              </CardHeader>
+              <CardContent>
                 <div className="space-y-4">
                   <div className="text-center p-4 bg-muted rounded-lg">
                     <p className="text-2xl font-bold">{stats.total}</p>
@@ -434,8 +437,8 @@ export default function AdminTarefas() {
                     </div>
                   </div>
                 </div>
-              </BexCardContent>
-            </BexCard>
+              </CardContent>
+            </Card>
           </div>
         </TabsContent>
       </Tabs>
@@ -454,12 +457,6 @@ export default function AdminTarefas() {
           moduleType="geral"
         />
       )}
-
-      {/* FAB */}
-      <FloatingActionButton
-        onClick={() => setModalOpen(true)}
-        label="Nova Tarefa Admin"
-      />
     </div>
   );
 }
