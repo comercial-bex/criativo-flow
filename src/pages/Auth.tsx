@@ -7,7 +7,7 @@ import { LoginDiagnostic } from '@/components/Auth/LoginDiagnostic';
 import LoginPage from '@/components/ui/gaming-login';
 import { Bug } from 'lucide-react';
 import { toast } from 'sonner';
-import backgroundImg from '@/assets/background-login.png';
+import backgroundImg from '@/assets/background-login-new.png';
 
 export default function Auth() {
   const [loading, setLoading] = useState(false);
