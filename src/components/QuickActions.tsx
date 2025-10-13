@@ -32,7 +32,7 @@ export function QuickActions({
 
   return (
     <div className={className}>
-      <h2 className="text-xl font-semibold mb-4">{title}</h2>
+      <h2 className="bex-title-secondary mb-4">{title}</h2>
       <div className={`grid ${gridCols[columns]} gap-4`}>
         {actions.map((action, index) => (
           <Card 
@@ -48,14 +48,14 @@ export function QuickActions({
                   <action.icon className="h-6 w-6" />
                 </div>
                 <div className="flex-1">
-                  <CardTitle className="text-base font-medium">
+                  <CardTitle className="bex-body font-medium">
                     {action.title}
                   </CardTitle>
                 </div>
               </div>
             </CardHeader>
             <CardContent className="pt-0">
-              <p className="text-sm text-muted-foreground mb-4">
+              <p className="bex-text-muted mb-4">
                 {action.description}
               </p>
               <Button 

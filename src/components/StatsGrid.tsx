@@ -32,7 +32,7 @@ export function StatsGrid({ stats, columns = 4, className = '' }: StatsGridProps
       {stats.map((stat, index) => (
         <Card key={index} className="hover:shadow-md transition-all duration-300">
           <CardHeader className="flex flex-row items-center justify-between pb-2 px-4 sm:px-6 pt-4 sm:pt-6">
-            <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">
+            <CardTitle className="bex-text-muted">
               {stat.title}
             </CardTitle>
             <div className={`p-1.5 sm:p-2 rounded-lg ${stat.color || 'bg-primary/10 text-primary'}`}>
@@ -40,9 +40,9 @@ export function StatsGrid({ stats, columns = 4, className = '' }: StatsGridProps
             </div>
           </CardHeader>
           <CardContent className="px-4 sm:px-6 pb-4 sm:pb-6">
-            <div className="text-xl sm:text-2xl font-bold mb-1">{stat.value}</div>
+            <div className="bex-title-secondary">{stat.value}</div>
             {stat.description && (
-              <p className="text-xs text-muted-foreground mb-2">
+              <p className="bex-text-muted mb-2">
                 {stat.description}
               </p>
             )}
