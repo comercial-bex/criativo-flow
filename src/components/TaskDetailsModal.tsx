@@ -364,6 +364,10 @@ export function TaskDetailsModal({ open, onOpenChange, task, onTaskUpdate }: Tas
               <FileText className="h-3.5 w-3.5 mr-1.5" />
               Info
             </TabsTrigger>
+            <TabsTrigger value="progress" className="data-[state=active]:bg-bex/20 data-[state=active]:text-bex text-xs">
+              <TrendingUp className="h-3.5 w-3.5 mr-1.5" />
+              Progresso
+            </TabsTrigger>
             <TabsTrigger value="briefing" className="data-[state=active]:bg-bex/20 data-[state=active]:text-bex text-xs">
               <Target className="h-3.5 w-3.5 mr-1.5" />
               Briefing
@@ -376,10 +380,6 @@ export function TaskDetailsModal({ open, onOpenChange, task, onTaskUpdate }: Tas
                   {Math.round(progressPercentage)}%
                 </BexBadge>
               )}
-            </TabsTrigger>
-            <TabsTrigger value="progress" className="data-[state=active]:bg-bex/20 data-[state=active]:text-bex text-xs">
-              <TrendingUp className="h-3.5 w-3.5 mr-1.5" />
-              Progresso
             </TabsTrigger>
             <TabsTrigger value="anexos" className="data-[state=active]:bg-bex/20 data-[state=active]:text-bex text-xs">
               <Paperclip className="h-3.5 w-3.5 mr-1.5" />
