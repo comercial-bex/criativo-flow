@@ -162,6 +162,8 @@ export function AnexosGallery({ tarefaId, canEdit = false, capaAtualId, onSetCap
                 onDownload={downloadAnexo}
                 onDelete={deleteAnexo}
                 canDelete={canEdit}
+                onSetCapa={onSetCapa ? () => onSetCapa(anexo.id) : undefined}
+                isCurrentCapa={anexo.id === capaAtualId}
               />
             ))}
           </AnimatePresence>
