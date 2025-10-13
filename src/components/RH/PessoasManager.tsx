@@ -220,46 +220,55 @@ export function PessoasManager() {
                     {/* FASE 1: Select de Especialista BEX */}
                     <div>
                       <Label htmlFor="especialista_bex">Especialista BEX (opcional)</Label>
-                      <Select
-                        value={formData.profile_id || ''}
-                        onValueChange={(value) => {
-                          if (!value) {
-                            // Limpar vínculo
-                            setFormData({ 
-                              ...formData, 
-                              profile_id: undefined,
-                              nome: '',
-                              email: '',
-                              telefones: ['']
-                            });
-                            return;
-                          }
-                          
-                          // Auto-preencher dados do especialista
-                          const especialista = especialistas.find(e => e.id === value);
-                          if (especialista) {
-                            setFormData({
-                              ...formData,
-                              profile_id: value,
-                              nome: especialista.nome,
-                              email: '', // Profiles não expõem email
-                              telefones: formData.telefones || ['']
-                            });
-                          }
-                        }}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecionar especialista da equipe interna" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="">Nenhum (cadastro manual)</SelectItem>
-                          {especialistas.map((esp) => (
-                            <SelectItem key={esp.id} value={esp.id}>
-                              {esp.nome} - {esp.especialidade}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <div className="flex gap-2">
+                        <Select
+                          value={formData.profile_id || undefined}
+                          onValueChange={(value) => {
+                            // Auto-preencher dados do especialista
+                            const especialista = especialistas.find(e => e.id === value);
+                            if (especialista) {
+                              setFormData({
+                                ...formData,
+                                profile_id: value,
+                                nome: especialista.nome,
+                                email: '', // Profiles não expõem email
+                                telefones: formData.telefones || ['']
+                              });
+                            }
+                          }}
+                        >
+                          <SelectTrigger className="flex-1">
+                            <SelectValue placeholder="Selecionar especialista da equipe interna" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {especialistas.map((esp) => (
+                              <SelectItem key={esp.id} value={esp.id}>
+                                {esp.nome} - {esp.especialidade}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        
+                        {formData.profile_id && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            onClick={() => {
+                              setFormData({ 
+                                ...formData, 
+                                profile_id: undefined,
+                                nome: '',
+                                email: '',
+                                telefones: ['']
+                              });
+                            }}
+                            title="Limpar vínculo"
+                          >
+                            <UserX className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
                       <p className="text-xs text-muted-foreground mt-1">
                         💡 Vincule a um especialista da equipe para aproveitar dados já cadastrados
                       </p>
