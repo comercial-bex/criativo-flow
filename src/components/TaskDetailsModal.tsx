@@ -15,6 +15,8 @@ import { CircleProgress } from '@/components/ui/circle-progress';
 import { AnexosGallery } from '@/components/AnexosGallery';
 import { BriefingEditForm } from '@/components/BriefingEditForm';
 import { useTaskCover } from '@/hooks/useTaskCover';
+import { TaskActivities } from '@/components/TaskActivities';
+import { TaskActionsSidebar } from '@/components/TaskActionsSidebar';
 import { 
   Calendar, 
   Clock, 
@@ -32,7 +34,8 @@ import {
   Plus,
   X,
   TrendingUp,
-  Paperclip
+  Paperclip,
+  Activity
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -56,6 +59,7 @@ interface KanbanTask extends TaskWithDeadline {
   tipo?: TipoTarefa;
   cliente_id?: string;
   capa_anexo_id?: string | null;
+  numero_protocolo?: string | null;
 }
 
 interface TaskDetailsModalProps {
@@ -318,6 +322,12 @@ export function TaskDetailsModal({ open, onOpenChange, task, onTaskUpdate }: Tas
       <BexDialogContent variant="gaming" className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <BexDialogHeader>
           <div className="space-y-3">
+            {task.numero_protocolo && (
+              <BexBadge variant="bexGaming" className="font-mono text-xs">
+                📋 {task.numero_protocolo}
+              </BexBadge>
+            )}
+            
             <BexDialogTitle gaming className="text-2xl pr-8">
               {task.titulo}
             </BexDialogTitle>
@@ -339,7 +349,7 @@ export function TaskDetailsModal({ open, onOpenChange, task, onTaskUpdate }: Tas
         </BexDialogHeader>
 
         <Tabs defaultValue="info" className="w-full">
-          <TabsList className="grid w-full grid-cols-5 lg:grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6 lg:grid-cols-6">
             <TabsTrigger value="info" className="data-[state=active]:bg-bex/20 data-[state=active]:text-bex">
               <FileText className="h-4 w-4 mr-2" />
               Informações
@@ -364,6 +374,10 @@ export function TaskDetailsModal({ open, onOpenChange, task, onTaskUpdate }: Tas
             <TabsTrigger value="anexos" className="data-[state=active]:bg-bex/20 data-[state=active]:text-bex">
               <Paperclip className="h-4 w-4 mr-2" />
               Anexos
+            </TabsTrigger>
+            <TabsTrigger value="atividades" className="data-[state=active]:bg-bex/20 data-[state=active]:text-bex">
+              <Activity className="h-4 w-4 mr-2" />
+              Atividades
             </TabsTrigger>
           </TabsList>
 
@@ -769,7 +783,44 @@ export function TaskDetailsModal({ open, onOpenChange, task, onTaskUpdate }: Tas
               </BexCardContent>
             </BexCard>
           </TabsContent>
+
+          {/* Atividades */}
+          <TabsContent value="atividades" className="mt-4">
+            <BexCard variant="glass">
+              <BexCardHeader>
+                <BexCardTitle className="flex items-center gap-2">
+                  <Activity className="h-5 w-5 text-bex" />
+                  Timeline de Atividades
+                </BexCardTitle>
+              </BexCardHeader>
+              <BexCardContent>
+                <TaskActivities tarefaId={task.id} />
+              </BexCardContent>
+            </BexCard>
+          </TabsContent>
         </Tabs>
+
+        {/* Sidebar de Ações */}
+        <Separator className="my-6" />
+        
+        <BexCard variant="glass">
+          <BexCardHeader>
+            <BexCardTitle className="flex items-center gap-2">
+              <Zap className="h-5 w-5 text-bex" />
+              Ações da Tarefa
+            </BexCardTitle>
+          </BexCardHeader>
+          <BexCardContent>
+            <TaskActionsSidebar 
+              tarefaId={task.id}
+              onRefresh={() => {
+                if (onTaskUpdate && task) {
+                  onTaskUpdate(task.id, {});
+                }
+              }}
+            />
+          </BexCardContent>
+        </BexCard>
 
         {/* Footer com Risk Level */}
         <div className="flex items-center justify-between pt-4 mt-6 border-t border-bex/20">

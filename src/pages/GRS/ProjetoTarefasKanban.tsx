@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { TaskKanbanBoard } from '@/components/TaskKanbanBoard';
 import { ProjectStatusIndicator } from '@/components/ProjectStatusIndicator';
 import { CreateTaskModal } from '@/components/CreateTaskModal';
-import { TrelloStyleTaskModal } from '@/components/TrelloStyleTaskModal';
+import { TaskDetailsModal } from '@/components/TaskDetailsModal';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { 
@@ -348,15 +348,12 @@ export default function ProjetoTarefasKanban() {
       />
 
       {/* Task Details Modal */}
-      {selectedTask && (
-        <TrelloStyleTaskModal
-          isOpen={showTaskDetails}
-          onClose={() => setShowTaskDetails(false)}
-          task={selectedTask}
-          onTaskUpdate={handleTaskUpdate}
-          moduleType="grs"
-        />
-      )}
+      <TaskDetailsModal
+        open={showTaskDetails}
+        onOpenChange={setShowTaskDetails}
+        task={selectedTask}
+        onTaskUpdate={handleTaskUpdate}
+      />
         </CardContent>
       </Card>
     </div>
