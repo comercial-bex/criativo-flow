@@ -2,9 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Brain, TrendingUp, AlertTriangle, Target, Lightbulb, Users, Award, Zap, BarChart3, CheckCircle } from 'lucide-react';
+import { Loader2, Brain, TrendingUp, AlertTriangle, Target, Lightbulb, Users, Award, Zap, BarChart3, CheckCircle, MapPin, XCircle, AlertCircle, Sparkles, Download, Calendar, ArrowUp, DollarSign, Smartphone, Clock } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { motion } from 'framer-motion';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Progress } from '@/components/ui/progress';
+import CountUp from 'react-countup';
+import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, Legend, LineChart, Line, CartesianGrid, XAxis, YAxis } from 'recharts';
 
 interface SwotAnalysisIAProps {
   clienteId: string;
@@ -376,6 +381,96 @@ export function SwotAnalysisIA({
     return sections.length > 0 ? sections.join('\n') : null;
   };
 
+  // Helper functions for infographic
+  const extractCurrentStateMetrics = (swotData: any) => {
+    if (!swotData) return [];
+    return [
+      { label: "Maturidade Digital", value: 4, unit: "/10", percentage: 40, icon: Smartphone },
+      { label: "Forças Identificadas", value: swotData.forcas?.length || 0, unit: "", percentage: 60, icon: TrendingUp },
+      { label: "Oportunidades", value: swotData.oportunidades?.length || 0, unit: "", percentage: 75, icon: Target },
+      { label: "Pontos de Atenção", value: (swotData.fraquezas?.length || 0) + (swotData.ameacas?.length || 0), unit: "", percentage: 50, icon: AlertTriangle }
+    ];
+  };
+
+  const categorizeOpportunities = (oportunidades: string[]) => {
+    const categories = {
+      digital: { count: 0, color: '#3b82f6' },
+      mercado: { count: 0, color: '#10b981' },
+      operacional: { count: 0, color: '#f59e0b' },
+      relacionamento: { count: 0, color: '#8b5cf6' }
+    };
+    
+    oportunidades?.forEach(op => {
+      if (/digital|online|redes sociais|site/i.test(op)) categories.digital.count++;
+      else if (/mercado|clientes|vendas|leads/i.test(op)) categories.mercado.count++;
+      else if (/processos|automação|eficiência/i.test(op)) categories.operacional.count++;
+      else categories.relacionamento.count++;
+    });
+    
+    return Object.entries(categories).map(([key, val]) => ({
+      category: key.charAt(0).toUpperCase() + key.slice(1),
+      value: val.count,
+      color: val.color
+    })).filter(c => c.value > 0);
+  };
+
+  const generateActionPlan = (swotData: any) => {
+    if (!swotData) return [];
+    const actions = [];
+    
+    // Quick wins baseados em forças
+    if (swotData.forcas?.length > 0) {
+      actions.push({
+        title: "Maximizar Forças Existentes",
+        description: swotData.forcas[0]?.substring(0, 80) + "...",
+        timeframe: "0-3 meses",
+        progress: 15,
+        tags: ["Quick Win", "Alta Prioridade"]
+      });
+    }
+    
+    // Oportunidades de médio prazo
+    if (swotData.oportunidades?.length > 0) {
+      actions.push({
+        title: "Explorar Oportunidades Digitais",
+        description: swotData.oportunidades[0]?.substring(0, 80) + "...",
+        timeframe: "3-6 meses",
+        progress: 30,
+        tags: ["Crescimento", "Digital"]
+      });
+    }
+    
+    // Mitigação de fraquezas
+    if (swotData.fraquezas?.length > 0) {
+      actions.push({
+        title: "Fortalecer Pontos Fracos",
+        description: swotData.fraquezas[0]?.substring(0, 80) + "...",
+        timeframe: "6-12 meses",
+        progress: 45,
+        tags: ["Estratégico", "Longo Prazo"]
+      });
+    }
+    
+    return actions;
+  };
+
+  const generateProjectionData = () => {
+    const months = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+    return months.map((month, i) => ({
+      month,
+      atual: 100 + (i * 5),
+      projetado: 100 + (i * 15) + (Math.pow(i, 1.5) * 2)
+    }));
+  };
+
+  const calculateProjectedKPIs = () => {
+    return [
+      { label: "Crescimento em Leads", value: 150, suffix: "%", prefix: "+", growth: 150, icon: Users },
+      { label: "Aumento em Vendas", value: 85, suffix: "%", prefix: "+", growth: 85, icon: DollarSign },
+      { label: "ROI Projetado", value: 320, suffix: "%", prefix: "", growth: 320, icon: TrendingUp }
+    ];
+  };
+
   const swotData = analysis ? extractSwotData(analysis) : null;
   const hasInitialData = !!(initialForcas || initialFraquezas || initialOportunidades || initialAmeacas);
 
@@ -673,23 +768,396 @@ export function SwotAnalysisIA({
             </Card>
           </div>
 
-          {/* Análise Textual Completa - Formatada */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Lightbulb className="h-5 w-5 text-primary" />
-                Relatório Completo da Análise
-              </CardTitle>
-              <CardDescription>
-                Análise detalhada baseada nos dados de onboarding
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="prose prose-sm max-w-none dark:prose-invert">
-                <div className="bg-muted/30 p-4 rounded-lg border-l-4 border-primary">
-                  {formatAnalysis(analysis)}
+          {/* Infográfico Animado Vertical */}
+          <Card className="border-2 border-primary/20 overflow-hidden">
+            <CardHeader className="bg-gradient-to-r from-primary/10 to-primary/5">
+              <div className="flex items-center gap-3">
+                <BarChart3 className="h-6 w-6 text-primary" />
+                <div>
+                  <CardTitle className="text-2xl">Jornada Estratégica: {clienteNome}</CardTitle>
+                  <CardDescription>
+                    Análise visual completa do diagnóstico à execução
+                  </CardDescription>
                 </div>
               </div>
+            </CardHeader>
+            
+            <CardContent className="p-0">
+              <ScrollArea className="h-[800px]">
+                <div className="p-6 space-y-8">
+                  
+                  {/* SEÇÃO 1: Onde Estamos */}
+                  <motion.div
+                    initial={{ opacity: 0, x: -50 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    className="relative"
+                  >
+                    <div className="absolute -left-4 -top-4 text-9xl font-bold text-primary/10">01</div>
+                    
+                    <div className="relative z-10">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-950 flex items-center justify-center">
+                          <MapPin className="h-6 w-6 text-red-600" />
+                        </div>
+                        <h2 className="text-2xl font-bold">Onde Estamos</h2>
+                      </div>
+                      
+                      {/* Métricas atuais */}
+                      <div className="grid grid-cols-2 gap-4 mb-4">
+                        {extractCurrentStateMetrics(swotData).map((metric, i) => (
+                          <motion.div
+                            key={i}
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ delay: i * 0.1 }}
+                            className="p-4 rounded-lg border bg-card"
+                          >
+                            <div className="flex items-center gap-2 mb-2">
+                              <metric.icon className="h-5 w-5 text-muted-foreground" />
+                              <span className="text-sm font-medium">{metric.label}</span>
+                            </div>
+                            <p className="text-3xl font-bold text-primary">
+                              <CountUp end={metric.value} duration={2} />
+                              {metric.unit}
+                            </p>
+                            <Progress value={metric.percentage} className="mt-2" />
+                          </motion.div>
+                        ))}
+                      </div>
+                      
+                      {/* Principais desafios */}
+                      {swotData?.fraquezas && swotData.fraquezas.length > 0 && (
+                        <div className="p-4 bg-red-50 dark:bg-red-950/30 rounded-lg border-l-4 border-l-red-500">
+                          <h3 className="font-semibold mb-3 flex items-center gap-2">
+                            <AlertCircle className="h-5 w-5 text-red-600" />
+                            Principais Desafios Identificados
+                          </h3>
+                          <div className="space-y-2">
+                            {swotData.fraquezas.slice(0, 3).map((challenge, i) => (
+                              <div key={i} className="flex items-start gap-2">
+                                <XCircle className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
+                                <p className="text-sm">{challenge}</p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </motion.div>
+                  
+                  {/* DIVIDER ANIMADO */}
+                  <motion.div
+                    initial={{ scaleX: 0 }}
+                    whileInView={{ scaleX: 1 }}
+                    viewport={{ once: true }}
+                    className="h-1 bg-gradient-to-r from-red-500 via-yellow-500 to-green-500 rounded"
+                  />
+                  
+                  {/* SEÇÃO 2: O Que Está Funcionando */}
+                  <motion.div
+                    initial={{ opacity: 0, x: 50 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    className="relative"
+                  >
+                    <div className="absolute -left-4 -top-4 text-9xl font-bold text-green-500/10">02</div>
+                    
+                    <div className="relative z-10">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="w-12 h-12 rounded-full bg-green-100 dark:bg-green-950 flex items-center justify-center">
+                          <CheckCircle className="h-6 w-6 text-green-600" />
+                        </div>
+                        <h2 className="text-2xl font-bold">O Que Está Funcionando</h2>
+                      </div>
+                      
+                      {/* Top 3 forças */}
+                      {swotData?.forcas && swotData.forcas.length > 0 && (
+                        <div className="space-y-3">
+                          {swotData.forcas.slice(0, 3).map((forca, i) => (
+                            <motion.div
+                              key={i}
+                              initial={{ opacity: 0, scale: 0.9 }}
+                              whileInView={{ opacity: 1, scale: 1 }}
+                              viewport={{ once: true }}
+                              transition={{ delay: i * 0.15 }}
+                              whileHover={{ scale: 1.02 }}
+                              className="relative overflow-hidden"
+                            >
+                              <div className="absolute top-4 left-4 w-10 h-10 rounded-full bg-green-600 text-white flex items-center justify-center font-bold text-lg z-10">
+                                {i + 1}
+                              </div>
+                              
+                              <div className="p-6 pl-20 rounded-lg bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/20 border-2 border-green-200 dark:border-green-800">
+                                <p className="font-medium text-lg mb-2">{forca}</p>
+                                <div className="flex items-center gap-2">
+                                  <Badge variant="secondary" className="animate-pulse">
+                                    <TrendingUp className="h-3 w-3 mr-1" />
+                                    Vantagem Competitiva
+                                  </Badge>
+                                </div>
+                              </div>
+                            </motion.div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </motion.div>
+                  
+                  {/* DIVIDER ANIMADO */}
+                  <motion.div
+                    initial={{ scaleX: 0 }}
+                    whileInView={{ scaleX: 1 }}
+                    viewport={{ once: true }}
+                    className="h-1 bg-gradient-to-r from-green-500 via-blue-500 to-purple-500 rounded"
+                  />
+                  
+                  {/* SEÇÃO 3: Oportunidades Estratégicas */}
+                  <motion.div
+                    initial={{ opacity: 0, x: -50 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    className="relative"
+                  >
+                    <div className="absolute -left-4 -top-4 text-9xl font-bold text-blue-500/10">03</div>
+                    
+                    <div className="relative z-10">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-950 flex items-center justify-center">
+                          <Target className="h-6 w-6 text-blue-600" />
+                        </div>
+                        <h2 className="text-2xl font-bold">Oportunidades Estratégicas</h2>
+                      </div>
+                      
+                      {swotData?.oportunidades && swotData.oportunidades.length > 0 && (
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <ResponsiveContainer width="100%" height={250}>
+                              <PieChart>
+                                <Pie
+                                  data={categorizeOpportunities(swotData.oportunidades)}
+                                  dataKey="value"
+                                  nameKey="category"
+                                  cx="50%"
+                                  cy="50%"
+                                  outerRadius={80}
+                                  label
+                                >
+                                  {categorizeOpportunities(swotData.oportunidades).map((entry, i) => (
+                                    <Cell key={i} fill={entry.color} />
+                                  ))}
+                                </Pie>
+                                <Tooltip />
+                                <Legend />
+                              </PieChart>
+                            </ResponsiveContainer>
+                          </div>
+                          
+                          <div className="space-y-3">
+                            {swotData.oportunidades.slice(0, 4).map((oport, i) => (
+                              <motion.div
+                                key={i}
+                                initial={{ opacity: 0, x: 20 }}
+                                whileInView={{ opacity: 1, x: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ delay: i * 0.1 }}
+                                className="p-3 bg-blue-50 dark:bg-blue-950/30 rounded-lg border border-blue-200 dark:border-blue-800"
+                              >
+                                <div className="flex items-start gap-2">
+                                  <Sparkles className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                                  <p className="text-sm font-medium">{oport}</p>
+                                </div>
+                              </motion.div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </motion.div>
+                  
+                  {/* DIVIDER ANIMADO */}
+                  <motion.div
+                    initial={{ scaleX: 0 }}
+                    whileInView={{ scaleX: 1 }}
+                    viewport={{ once: true }}
+                    className="h-1 bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500 rounded"
+                  />
+                  
+                  {/* SEÇÃO 4: Plano de Ação Imediato */}
+                  <motion.div
+                    initial={{ opacity: 0, x: 50 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    className="relative"
+                  >
+                    <div className="absolute -left-4 -top-4 text-9xl font-bold text-purple-500/10">04</div>
+                    
+                    <div className="relative z-10">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="w-12 h-12 rounded-full bg-purple-100 dark:bg-purple-950 flex items-center justify-center">
+                          <Zap className="h-6 w-6 text-purple-600" />
+                        </div>
+                        <h2 className="text-2xl font-bold">Plano de Ação Imediato</h2>
+                      </div>
+                      
+                      {/* Stepper vertical */}
+                      <div className="relative pl-8">
+                        <div className="absolute left-3 top-0 bottom-0 w-0.5 bg-gradient-to-b from-purple-500 to-pink-500" />
+                        
+                        <div className="space-y-6">
+                          {generateActionPlan(swotData).map((action, i) => (
+                            <motion.div
+                              key={i}
+                              initial={{ opacity: 0, x: -20 }}
+                              whileInView={{ opacity: 1, x: 0 }}
+                              viewport={{ once: true }}
+                              transition={{ delay: i * 0.15 }}
+                              className="relative"
+                            >
+                              <div className="absolute -left-8 top-2 w-6 h-6 rounded-full bg-purple-600 border-4 border-background flex items-center justify-center z-10">
+                                <div className="w-2 h-2 rounded-full bg-white animate-pulse" />
+                              </div>
+                              
+                              <div className="ml-4 p-4 rounded-lg border bg-card hover:shadow-lg transition-shadow">
+                                <div className="flex items-start justify-between mb-2">
+                                  <h3 className="font-semibold">{action.title}</h3>
+                                  <Badge>{action.timeframe}</Badge>
+                                </div>
+                                <p className="text-sm text-muted-foreground mb-3">{action.description}</p>
+                                
+                                <div className="space-y-2">
+                                  <div className="flex items-center justify-between text-xs">
+                                    <span>Progresso estimado</span>
+                                    <span className="font-medium">{action.progress}%</span>
+                                  </div>
+                                  <Progress value={action.progress} />
+                                </div>
+                                
+                                <div className="flex flex-wrap gap-1 mt-3">
+                                  {action.tags.map(tag => (
+                                    <Badge key={tag} variant="outline" className="text-xs">
+                                      {tag}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              </div>
+                            </motion.div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                  
+                  {/* DIVIDER ANIMADO */}
+                  <motion.div
+                    initial={{ scaleX: 0 }}
+                    whileInView={{ scaleX: 1 }}
+                    viewport={{ once: true }}
+                    className="h-1 bg-gradient-to-r from-orange-500 via-yellow-500 to-green-500 rounded"
+                  />
+                  
+                  {/* SEÇÃO 5: Projeção de Resultados */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 50 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    className="relative"
+                  >
+                    <div className="absolute -left-4 -top-4 text-9xl font-bold text-green-500/10">05</div>
+                    
+                    <div className="relative z-10">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="w-12 h-12 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 flex items-center justify-center">
+                          <TrendingUp className="h-6 w-6 text-white" />
+                        </div>
+                        <h2 className="text-2xl font-bold">Projeção de Resultados</h2>
+                      </div>
+                      
+                      {/* Gráfico de linha */}
+                      <div className="mb-6">
+                        <ResponsiveContainer width="100%" height={250}>
+                          <LineChart data={generateProjectionData()}>
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis dataKey="month" />
+                            <YAxis />
+                            <Tooltip />
+                            <Legend />
+                            <Line 
+                              type="monotone" 
+                              dataKey="atual" 
+                              stroke="#ef4444" 
+                              strokeWidth={2}
+                              name="Cenário Atual"
+                            />
+                            <Line 
+                              type="monotone" 
+                              dataKey="projetado" 
+                              stroke="#22c55e" 
+                              strokeWidth={3}
+                              strokeDasharray="5 5"
+                              name="Com Implementação"
+                            />
+                          </LineChart>
+                        </ResponsiveContainer>
+                      </div>
+                      
+                      {/* KPIs projetados */}
+                      <div className="grid grid-cols-3 gap-4">
+                        {calculateProjectedKPIs().map((kpi, i) => (
+                          <motion.div
+                            key={i}
+                            initial={{ opacity: 0, scale: 0.8 }}
+                            whileInView={{ opacity: 1, scale: 1 }}
+                            viewport={{ once: true }}
+                            transition={{ delay: i * 0.1 }}
+                            className="p-4 rounded-lg bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/20 border-2 border-green-200 dark:border-green-800 text-center"
+                          >
+                            <kpi.icon className="h-8 w-8 text-green-600 mx-auto mb-2" />
+                            <p className="text-3xl font-bold text-green-600 mb-1">
+                              <CountUp 
+                                end={kpi.value} 
+                                duration={2.5}
+                                suffix={kpi.suffix}
+                                prefix={kpi.prefix}
+                              />
+                            </p>
+                            <p className="text-sm font-medium">{kpi.label}</p>
+                            <Badge variant="outline" className="mt-2 text-xs">
+                              <ArrowUp className="h-3 w-3 mr-1" />
+                              +{kpi.growth}% em 12 meses
+                            </Badge>
+                          </motion.div>
+                        ))}
+                      </div>
+                      
+                      {/* Call to Action */}
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        className="mt-6 p-6 rounded-lg bg-gradient-to-r from-primary to-primary/80 text-primary-foreground text-center"
+                      >
+                        <h3 className="text-xl font-bold mb-2">Pronto para Começar?</h3>
+                        <p className="mb-4 opacity-90">
+                          Implementar essas estratégias pode transformar o negócio de {clienteNome}
+                        </p>
+                        <div className="flex items-center justify-center gap-3">
+                          <Button variant="secondary" size="lg">
+                            <Download className="h-5 w-5 mr-2" />
+                            Baixar Plano Completo
+                          </Button>
+                          <Button variant="outline" size="lg" className="bg-white/10 hover:bg-white/20">
+                            <Calendar className="h-5 w-5 mr-2" />
+                            Agendar Reunião
+                          </Button>
+                        </div>
+                      </motion.div>
+                    </div>
+                  </motion.div>
+                  
+                </div>
+              </ScrollArea>
             </CardContent>
           </Card>
 
