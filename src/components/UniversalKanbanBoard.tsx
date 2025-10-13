@@ -23,7 +23,7 @@ interface UniversalTask {
   responsavel_nome?: string;
   executor_id?: string;
   executor_nome?: string;
-  setor_responsavel: string;
+  executor_area?: string;
   area?: string[];
   horas_trabalhadas?: number;
   horas_estimadas?: number;
@@ -299,7 +299,7 @@ const convertToKanbanTask = (task: UniversalTask): KanbanTask => ({
   checklist_completed: task.checklist_completed || task.checklist?.filter((item: any) => item.completed).length || 0,
   etiquetas: task.etiquetas,
   capa_anexo_id: task.capa_anexo_id || null,
-  area: task.area || (task.setor_responsavel ? [task.setor_responsavel] : [])
+  area: task.area || (task.executor_area ? [task.executor_area] : [])
 });
 
 // Componente da coluna

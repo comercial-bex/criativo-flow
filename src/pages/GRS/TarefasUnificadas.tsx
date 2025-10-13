@@ -40,7 +40,7 @@ interface GRSTask {
   data_prazo?: string;
   responsavel_id?: string;
   responsavel_nome?: string;
-  setor_responsavel: string;
+  executor_area?: string;
   horas_trabalhadas?: number;
   anexos?: any[];
   comentarios?: any[];
@@ -84,7 +84,7 @@ export default function TarefasUnificadasGRS() {
       const { data, error } = await supabase
         .from('tarefa')
         .select('*, capa_anexo_id')
-        .eq('setor_responsavel', 'grs')
+        .or('executor_area.is.null,executor_area.eq.Criativo')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -98,7 +98,7 @@ export default function TarefasUnificadasGRS() {
         prioridade: task.prioridade as 'baixa' | 'media' | 'alta',
         data_prazo: task.prazo_executor,
         responsavel_id: task.responsavel_id,
-        setor_responsavel: task.setor_responsavel || 'grs',
+        executor_area: task.executor_area || 'Criativo',
         cliente_id: task.cliente_id,
         projeto_id: task.projeto_id,
         observacoes: task.observacoes || '',
@@ -238,7 +238,7 @@ export default function TarefasUnificadasGRS() {
         data_prazo: (data as any).prazo_executor,
         responsavel_id: data.responsavel_id,
         responsavel_nome,
-        setor_responsavel: (data as any).setor_responsavel || 'grs',
+        executor_area: (data as any).executor_area || 'Criativo',
         cliente_id: taskData.cliente_id,
         cliente_nome,
         projeto_id: data.projeto_id,
