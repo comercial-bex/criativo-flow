@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { usePessoas, Pessoa } from '@/hooks/usePessoas';
 import { useColaboradorTempData } from '@/hooks/useColaboradorTempData';
 import { useQueryClient } from '@tanstack/react-query';
@@ -226,15 +226,15 @@ export function PessoasManager() {
                         <Select
                           value={formData.profile_id || undefined}
                           onValueChange={(value) => {
-                            // Auto-preencher dados do especialista
+                            // FASE 2: Auto-preencher dados do especialista (nome, email, telefone)
                             const especialista = especialistas.find(e => e.id === value);
                             if (especialista) {
                               setFormData({
                                 ...formData,
                                 profile_id: value,
                                 nome: especialista.nome,
-                                email: '', // Profiles não expõem email
-                                telefones: formData.telefones || ['']
+                                email: especialista.email || '',
+                                telefones: especialista.telefone ? [especialista.telefone] : ['']
                               });
                             }
                           }}
@@ -276,14 +276,21 @@ export function PessoasManager() {
                       </p>
                     </div>
 
-                    {/* FASE 3: Badge de vínculo */}
+                    {/* FASE 3: Feedback visual melhorado */}
                     {formData.profile_id && (
                       <Alert className="bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800">
                         <UserCheck className="h-4 w-4 text-green-600 dark:text-green-400" />
-                        <AlertDescription className="text-green-800 dark:text-green-200">
-                          <strong>Vinculado a Especialista BEX</strong>
-                          <br />
-                          Esta pessoa está conectada ao cadastro interno. Dados sincronizados automaticamente.
+                        <AlertTitle className="text-green-800 dark:text-green-200">Vinculado a Especialista BEX</AlertTitle>
+                        <AlertDescription className="text-green-700 dark:text-green-300">
+                          <p className="font-medium mb-2">Dados importados automaticamente:</p>
+                          <ul className="list-disc list-inside space-y-1 text-sm">
+                            <li>✅ Nome: <strong>{formData.nome}</strong></li>
+                            {formData.email && <li>✅ Email: <strong>{formData.email}</strong></li>}
+                            {formData.telefones?.[0] && <li>✅ Telefone: <strong>{formData.telefones[0]}</strong></li>}
+                          </ul>
+                          <p className="text-xs mt-3 text-muted-foreground">
+                            ℹ️ CPF deve ser preenchido manualmente por segurança
+                          </p>
                         </AlertDescription>
                       </Alert>
                     )}

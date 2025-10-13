@@ -12,7 +12,9 @@ export function useEspecialistas() {
         .from('profiles')
         .select(`
           id, 
-          nome, 
+          nome,
+          email,
+          telefone,
           especialidade,
           user_roles(role)
         `)
@@ -36,6 +38,8 @@ export function useEspecialistas() {
       return especialistas.map(profile => ({
         id: profile.id,
         nome: profile.nome,
+        email: profile.email,
+        telefone: profile.telefone,
         especialidade: profile.especialidade || 'admin',
         role: ((profile.user_roles as any)?.[0]?.role) || 'admin'
       }));
