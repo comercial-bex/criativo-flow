@@ -105,24 +105,7 @@ const Usuarios = () => {
       // Buscar profiles
       const { data: profilesData, error: profilesError } = await supabase
         .from('profiles')
-        .select(`
-          id,
-          nome,
-          email,
-          telefone,
-          avatar_url,
-          status,
-          especialidade,
-          cliente_id,
-          created_at,
-          data_aprovacao,
-          aprovado_por,
-          observacoes_aprovacao,
-          empresa,
-          role_requested,
-          cpf,
-          user_roles!left(role)
-        `)
+        .select('*, user_roles!left(role), clientes!cliente_id(nome, nome_fantasia, razao_social)')
         .order('created_at', { ascending: false });
 
       if (profilesError) throw profilesError;
@@ -139,7 +122,9 @@ const Usuarios = () => {
       // Mapear role para cada profile
       const profilesWithRole = (profilesData || []).map((profile: any) => ({
         ...profile,
-        role: profile.user_roles?.[0]?.role
+        role: profile.user_roles?.[0]?.role,
+        empresa: profile.clientes?.nome_fantasia || profile.clientes?.razao_social || profile.clientes?.nome || null,
+        cpf: profile.pessoas?.cpf || null,
       }));
 
       setProfiles(profilesWithRole);
