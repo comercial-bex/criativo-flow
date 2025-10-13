@@ -14,6 +14,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { SwotAnalysisIA } from "@/components/SwotAnalysisIA";
 import { ObjetivosAssinatura } from "@/components/ObjetivosAssinatura";
 import { SocialIntegrationsCard } from "@/components/SocialIntegrationsCard";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { FieldWithTooltip } from "@/components/OnboardingForm/FieldWithTooltip";
+import { ONBOARDING_TOOLTIPS } from "@/components/OnboardingForm/onboarding-tooltips";
 
 interface OnboardingFormProps {
   isOpen: boolean;
@@ -341,7 +344,8 @@ export function OnboardingForm({ isOpen, onClose, clienteId, cliente, readOnly =
         </DialogHeader>
         
         <ScrollArea className="h-[calc(90vh-120px)] pr-4">
-          <form onSubmit={handleSubmit} className="space-y-8">
+          <TooltipProvider>
+            <form onSubmit={handleSubmit} className="space-y-8">
             
             {/* 1. Identificação da Empresa */}
             <Card>
@@ -359,52 +363,87 @@ export function OnboardingForm({ isOpen, onClose, clienteId, cliente, readOnly =
                       readOnly
                     />
                   </div>
-                  <div className="space-y-2">
-                    <Label>Segmento de atuação</Label>
+                  <FieldWithTooltip
+                    label="Segmento de atuação"
+                    helpText={ONBOARDING_TOOLTIPS.segmentoAtuacao.help}
+                    example={ONBOARDING_TOOLTIPS.segmentoAtuacao.example}
+                  >
                     <Input
                       value={formData.segmentoAtuacao}
                       onChange={(e) => setFormData({...formData, segmentoAtuacao: e.target.value})}
+                      placeholder={ONBOARDING_TOOLTIPS.segmentoAtuacao.example}
                       readOnly={readOnly}
+                      className="placeholder:text-muted-foreground/40"
                     />
-                  </div>
+                  </FieldWithTooltip>
                 </div>
-                <div className="space-y-2">
-                  <Label>Produtos/Serviços principais</Label>
+                <FieldWithTooltip
+                  label="Produtos/Serviços principais"
+                  helpText={ONBOARDING_TOOLTIPS.produtosServicos.help}
+                  example={ONBOARDING_TOOLTIPS.produtosServicos.example}
+                >
                   <Textarea
                     value={formData.produtosServicos}
                     onChange={(e) => setFormData({...formData, produtosServicos: e.target.value})}
+                    placeholder={ONBOARDING_TOOLTIPS.produtosServicos.example}
+                    readOnly={readOnly}
+                    className="placeholder:text-muted-foreground/40"
                   />
-                </div>
+                </FieldWithTooltip>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Tempo de mercado</Label>
+                  <FieldWithTooltip
+                    label="Tempo de mercado"
+                    helpText={ONBOARDING_TOOLTIPS.tempoMercado.help}
+                    example={ONBOARDING_TOOLTIPS.tempoMercado.example}
+                  >
                     <Input
                       value={formData.tempoMercado}
                       onChange={(e) => setFormData({...formData, tempoMercado: e.target.value})}
+                      placeholder={ONBOARDING_TOOLTIPS.tempoMercado.example}
+                      readOnly={readOnly}
+                      className="placeholder:text-muted-foreground/40"
                     />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Localização</Label>
+                  </FieldWithTooltip>
+                  <FieldWithTooltip
+                    label="Localização"
+                    helpText={ONBOARDING_TOOLTIPS.localizacao.help}
+                    example={ONBOARDING_TOOLTIPS.localizacao.example}
+                  >
                     <Input
                       value={formData.localizacao}
                       onChange={(e) => setFormData({...formData, localizacao: e.target.value})}
+                      placeholder={ONBOARDING_TOOLTIPS.localizacao.example}
+                      readOnly={readOnly}
+                      className="placeholder:text-muted-foreground/40"
                     />
-                  </div>
+                  </FieldWithTooltip>
                 </div>
-                <div className="space-y-2">
-                  <Label>Estrutura atual (nº de colaboradores, cargos, funções)</Label>
+                <FieldWithTooltip
+                  label="Estrutura atual (nº de colaboradores, cargos, funções)"
+                  helpText={ONBOARDING_TOOLTIPS.estruturaAtual.help}
+                  example={ONBOARDING_TOOLTIPS.estruturaAtual.example}
+                >
                   <Textarea
                     value={formData.estruturaAtual}
                     onChange={(e) => setFormData({...formData, estruturaAtual: e.target.value})}
+                    placeholder={ONBOARDING_TOOLTIPS.estruturaAtual.example}
+                    readOnly={readOnly}
+                    className="placeholder:text-muted-foreground/40"
                   />
-                </div>
-                <div className="space-y-2">
-                  <Label>Canais de contato (telefone, e-mail, site, redes sociais)</Label>
+                </FieldWithTooltip>
+                <FieldWithTooltip
+                  label="Canais de contato (telefone, e-mail, site, redes sociais)"
+                  helpText={ONBOARDING_TOOLTIPS.canaisContato.help}
+                  example={ONBOARDING_TOOLTIPS.canaisContato.example}
+                >
                   <Textarea
                     value={formData.canaisContato}
                     onChange={(e) => setFormData({...formData, canaisContato: e.target.value})}
+                    placeholder={ONBOARDING_TOOLTIPS.canaisContato.example}
+                    readOnly={readOnly}
+                    className="placeholder:text-muted-foreground/40"
                   />
-                </div>
+                </FieldWithTooltip>
               </CardContent>
             </Card>
 
@@ -414,41 +453,71 @@ export function OnboardingForm({ isOpen, onClose, clienteId, cliente, readOnly =
                 <CardTitle className="text-lg">2. Diagnóstico de Mercado</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label>Quem são seus principais concorrentes diretos?</Label>
+                <FieldWithTooltip
+                  label="Quem são seus principais concorrentes diretos?"
+                  helpText={ONBOARDING_TOOLTIPS.concorrentesDiretos.help}
+                  example={ONBOARDING_TOOLTIPS.concorrentesDiretos.example}
+                >
                   <Textarea
                     value={formData.concorrentesDiretos}
                     onChange={(e) => setFormData({...formData, concorrentesDiretos: e.target.value})}
+                    placeholder={ONBOARDING_TOOLTIPS.concorrentesDiretos.example}
+                    readOnly={readOnly}
+                    className="placeholder:text-muted-foreground/40"
                   />
-                </div>
-                <div className="space-y-2">
-                  <Label>Quais são os diferenciais da sua empresa frente aos concorrentes?</Label>
+                </FieldWithTooltip>
+                <FieldWithTooltip
+                  label="Quais são os diferenciais da sua empresa frente aos concorrentes?"
+                  helpText={ONBOARDING_TOOLTIPS.diferenciais.help}
+                  example={ONBOARDING_TOOLTIPS.diferenciais.example}
+                >
                   <Textarea
                     value={formData.diferenciais}
                     onChange={(e) => setFormData({...formData, diferenciais: e.target.value})}
+                    placeholder={ONBOARDING_TOOLTIPS.diferenciais.example}
+                    readOnly={readOnly}
+                    className="placeholder:text-muted-foreground/40"
                   />
-                </div>
-                <div className="space-y-2">
-                  <Label>Existe algum fator de crise ou histórico de impacto (ex: pandemia, retração econômica)?</Label>
+                </FieldWithTooltip>
+                <FieldWithTooltip
+                  label="Existe algum fator de crise ou histórico de impacto (ex: pandemia, retração econômica)?"
+                  helpText={ONBOARDING_TOOLTIPS.fatoresCrise.help}
+                  example={ONBOARDING_TOOLTIPS.fatoresCrise.example}
+                >
                   <Textarea
                     value={formData.fatoresCrise}
                     onChange={(e) => setFormData({...formData, fatoresCrise: e.target.value})}
+                    placeholder={ONBOARDING_TOOLTIPS.fatoresCrise.example}
+                    readOnly={readOnly}
+                    className="placeholder:text-muted-foreground/40"
                   />
-                </div>
-                <div className="space-y-2">
-                  <Label>Área de atendimento/abrangência</Label>
+                </FieldWithTooltip>
+                <FieldWithTooltip
+                  label="Área de atendimento/abrangência"
+                  helpText={ONBOARDING_TOOLTIPS.areaAtendimento.help}
+                  example={ONBOARDING_TOOLTIPS.areaAtendimento.example}
+                >
                   <Input
                     value={formData.areaAtendimento}
                     onChange={(e) => setFormData({...formData, areaAtendimento: e.target.value})}
+                    placeholder={ONBOARDING_TOOLTIPS.areaAtendimento.example}
+                    readOnly={readOnly}
+                    className="placeholder:text-muted-foreground/40"
                   />
-                </div>
-                <div className="space-y-2">
-                  <Label>Quais os tipos de clientes mais comuns hoje (perfil)?</Label>
+                </FieldWithTooltip>
+                <FieldWithTooltip
+                  label="Quais os tipos de clientes mais comuns hoje (perfil)?"
+                  helpText={ONBOARDING_TOOLTIPS.tiposClientes.help}
+                  example={ONBOARDING_TOOLTIPS.tiposClientes.example}
+                >
                   <Textarea
                     value={formData.tiposClientes}
                     onChange={(e) => setFormData({...formData, tiposClientes: e.target.value})}
+                    placeholder={ONBOARDING_TOOLTIPS.tiposClientes.example}
+                    readOnly={readOnly}
+                    className="placeholder:text-muted-foreground/40"
                   />
-                </div>
+                </FieldWithTooltip>
               </CardContent>
             </Card>
 
@@ -479,20 +548,32 @@ export function OnboardingForm({ isOpen, onClose, clienteId, cliente, readOnly =
                     />
                   </div>
                 </div>
-                <div className="space-y-2">
-                  <Label>Principais dores/problemas que levam à compra do seu produto/serviço</Label>
+                <FieldWithTooltip
+                  label="Principais dores/problemas que levam à compra do seu produto/serviço"
+                  helpText={ONBOARDING_TOOLTIPS.doresProblemas.help}
+                  example={ONBOARDING_TOOLTIPS.doresProblemas.example}
+                >
                   <Textarea
                     value={formData.doresProblemas}
                     onChange={(e) => setFormData({...formData, doresProblemas: e.target.value})}
+                    placeholder={ONBOARDING_TOOLTIPS.doresProblemas.example}
+                    readOnly={readOnly}
+                    className="placeholder:text-muted-foreground/40"
                   />
-                </div>
-                <div className="space-y-2">
-                  <Label>O que seus clientes mais valorizam na sua marca (Preço, Qualidade, Atendimento, Prazo, Marca)?</Label>
+                </FieldWithTooltip>
+                <FieldWithTooltip
+                  label="O que seus clientes mais valorizam na sua marca (Preço, Qualidade, Atendimento, Prazo, Marca)?"
+                  helpText={ONBOARDING_TOOLTIPS.valorizado.help}
+                  example={ONBOARDING_TOOLTIPS.valorizado.example}
+                >
                   <Textarea
                     value={formData.valorizado}
                     onChange={(e) => setFormData({...formData, valorizado: e.target.value})}
+                    placeholder={ONBOARDING_TOOLTIPS.valorizado.example}
+                    readOnly={readOnly}
+                    className="placeholder:text-muted-foreground/40"
                   />
-                </div>
+                </FieldWithTooltip>
                 <div className="space-y-3">
                   <Label>Como seus clientes encontram sua empresa?</Label>
                   <div className="grid grid-cols-2 gap-3">
@@ -517,20 +598,32 @@ export function OnboardingForm({ isOpen, onClose, clienteId, cliente, readOnly =
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Frequência média de compra</Label>
+                  <FieldWithTooltip
+                    label="Frequência média de compra"
+                    helpText={ONBOARDING_TOOLTIPS.frequenciaCompra.help}
+                    example={ONBOARDING_TOOLTIPS.frequenciaCompra.example}
+                  >
                     <Input
                       value={formData.frequenciaCompra}
                       onChange={(e) => setFormData({...formData, frequenciaCompra: e.target.value})}
+                      placeholder={ONBOARDING_TOOLTIPS.frequenciaCompra.example}
+                      readOnly={readOnly}
+                      className="placeholder:text-muted-foreground/40"
                     />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Ticket médio por cliente</Label>
+                  </FieldWithTooltip>
+                  <FieldWithTooltip
+                    label="Ticket médio por cliente"
+                    helpText={ONBOARDING_TOOLTIPS.ticketMedio.help}
+                    example={ONBOARDING_TOOLTIPS.ticketMedio.example}
+                  >
                     <Input
                       value={formData.ticketMedio}
                       onChange={(e) => setFormData({...formData, ticketMedio: e.target.value})}
+                      placeholder={ONBOARDING_TOOLTIPS.ticketMedio.example}
+                      readOnly={readOnly}
+                      className="placeholder:text-muted-foreground/40"
                     />
-                  </div>
+                  </FieldWithTooltip>
                 </div>
                 <div className="space-y-3">
                   <Label>Forma de aquisição:</Label>
@@ -576,13 +669,19 @@ export function OnboardingForm({ isOpen, onClose, clienteId, cliente, readOnly =
                     />
                   </div>
                 </div>
-                <div className="space-y-2">
-                  <Label>Frequência de postagens</Label>
+                <FieldWithTooltip
+                  label="Frequência de postagens"
+                  helpText={ONBOARDING_TOOLTIPS.frequenciaPostagens.help}
+                  example={ONBOARDING_TOOLTIPS.frequenciaPostagens.example}
+                >
                   <Input
                     value={formData.frequenciaPostagens}
                     onChange={(e) => setFormData({...formData, frequenciaPostagens: e.target.value})}
+                    placeholder={ONBOARDING_TOOLTIPS.frequenciaPostagens.example}
+                    readOnly={readOnly}
+                    className="placeholder:text-muted-foreground/40"
                   />
-                </div>
+                </FieldWithTooltip>
                 <div className="space-y-3">
                   <Label>Tipos de conteúdo mais utilizados:</Label>
                   <div className="grid grid-cols-2 gap-3">
@@ -700,27 +799,45 @@ export function OnboardingForm({ isOpen, onClose, clienteId, cliente, readOnly =
                 <CardTitle className="text-lg">7. Objetivos (Plano de Ação 6 meses)</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label>Objetivos digitais (curto prazo)</Label>
+                <FieldWithTooltip
+                  label="Objetivos digitais (curto prazo)"
+                  helpText={ONBOARDING_TOOLTIPS.objetivosDigitais.help}
+                  example={ONBOARDING_TOOLTIPS.objetivosDigitais.example}
+                >
                   <Textarea
                     value={formData.objetivosDigitais}
                     onChange={(e) => setFormData({...formData, objetivosDigitais: e.target.value})}
+                    placeholder={ONBOARDING_TOOLTIPS.objetivosDigitais.example}
+                    readOnly={readOnly}
+                    className="placeholder:text-muted-foreground/40"
                   />
-                </div>
-                <div className="space-y-2">
-                  <Label>Objetivos offline (curto prazo)</Label>
+                </FieldWithTooltip>
+                <FieldWithTooltip
+                  label="Objetivos offline (curto prazo)"
+                  helpText={ONBOARDING_TOOLTIPS.objetivosOffline.help}
+                  example={ONBOARDING_TOOLTIPS.objetivosOffline.example}
+                >
                   <Textarea
                     value={formData.objetivosOffline}
                     onChange={(e) => setFormData({...formData, objetivosOffline: e.target.value})}
+                    placeholder={ONBOARDING_TOOLTIPS.objetivosOffline.example}
+                    readOnly={readOnly}
+                    className="placeholder:text-muted-foreground/40"
                   />
-                </div>
-                <div className="space-y-2">
-                  <Label>Onde a empresa deseja estar em 6 meses?</Label>
+                </FieldWithTooltip>
+                <FieldWithTooltip
+                  label="Onde a empresa deseja estar em 6 meses?"
+                  helpText={ONBOARDING_TOOLTIPS.onde6Meses.help}
+                  example={ONBOARDING_TOOLTIPS.onde6Meses.example}
+                >
                   <Textarea
                     value={formData.onde6Meses}
                     onChange={(e) => setFormData({...formData, onde6Meses: e.target.value})}
+                    placeholder={ONBOARDING_TOOLTIPS.onde6Meses.example}
+                    readOnly={readOnly}
+                    className="placeholder:text-muted-foreground/40"
                   />
-                </div>
+                </FieldWithTooltip>
                 <div className="space-y-3">
                   <Label>Quais resultados espera com as campanhas de marketing?</Label>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -763,13 +880,19 @@ export function OnboardingForm({ isOpen, onClose, clienteId, cliente, readOnly =
                     </div>
                   </div>
                 </div>
-                <div className="space-y-2">
-                  <Label>Canais de atendimento mais ativos</Label>
+                <FieldWithTooltip
+                  label="Canais de atendimento mais ativos"
+                  helpText={ONBOARDING_TOOLTIPS.canaisAtendimentoAtivos.help}
+                  example={ONBOARDING_TOOLTIPS.canaisAtendimentoAtivos.example}
+                >
                   <Textarea
                     value={formData.canaisAtendimentoAtivos}
                     onChange={(e) => setFormData({...formData, canaisAtendimentoAtivos: e.target.value})}
+                    placeholder={ONBOARDING_TOOLTIPS.canaisAtendimentoAtivos.example}
+                    readOnly={readOnly}
+                    className="placeholder:text-muted-foreground/40"
                   />
-                </div>
+                </FieldWithTooltip>
                 <div className="space-y-3">
                   <Label>Relacionamento com clientes é feito por:</Label>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -793,21 +916,33 @@ export function OnboardingForm({ isOpen, onClose, clienteId, cliente, readOnly =
                 <CardTitle className="text-lg">9. Plano de Comunicação (Baseado em Storytelling)</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label>História da marca</Label>
+                <FieldWithTooltip
+                  label="História da marca"
+                  helpText={ONBOARDING_TOOLTIPS.historiaMarca.help}
+                  example={ONBOARDING_TOOLTIPS.historiaMarca.example}
+                >
                   <Textarea
                     value={formData.historiaMarca}
                     onChange={(e) => setFormData({...formData, historiaMarca: e.target.value})}
+                    placeholder={ONBOARDING_TOOLTIPS.historiaMarca.example}
+                    readOnly={readOnly}
+                    className="placeholder:text-muted-foreground/40"
                     rows={4}
                   />
-                </div>
-                <div className="space-y-2">
-                  <Label>Valores principais</Label>
+                </FieldWithTooltip>
+                <FieldWithTooltip
+                  label="Valores principais"
+                  helpText={ONBOARDING_TOOLTIPS.valoresPrincipais.help}
+                  example={ONBOARDING_TOOLTIPS.valoresPrincipais.example}
+                >
                   <Textarea
                     value={formData.valoresPrincipais}
                     onChange={(e) => setFormData({...formData, valoresPrincipais: e.target.value})}
+                    placeholder={ONBOARDING_TOOLTIPS.valoresPrincipais.example}
+                    readOnly={readOnly}
+                    className="placeholder:text-muted-foreground/40"
                   />
-                </div>
+                </FieldWithTooltip>
                 <div className="space-y-3">
                   <Label>Tom de voz desejado na comunicação:</Label>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -822,14 +957,20 @@ export function OnboardingForm({ isOpen, onClose, clienteId, cliente, readOnly =
                     ))}
                   </div>
                 </div>
-                <div className="space-y-2">
-                  <Label>Como gostaria que sua marca fosse lembrada pelos clientes em 6 meses?</Label>
+                <FieldWithTooltip
+                  label="Como gostaria que sua marca fosse lembrada pelos clientes em 6 meses?"
+                  helpText={ONBOARDING_TOOLTIPS.comoLembrada.help}
+                  example={ONBOARDING_TOOLTIPS.comoLembrada.example}
+                >
                   <Textarea
                     value={formData.comoLembrada}
                     onChange={(e) => setFormData({...formData, comoLembrada: e.target.value})}
+                    placeholder={ONBOARDING_TOOLTIPS.comoLembrada.example}
+                    readOnly={readOnly}
+                    className="placeholder:text-muted-foreground/40"
                     rows={3}
                   />
-                </div>
+                </FieldWithTooltip>
               </CardContent>
             </Card>
 
@@ -875,6 +1016,7 @@ export function OnboardingForm({ isOpen, onClose, clienteId, cliente, readOnly =
               </div>
             )}
           </form>
+          </TooltipProvider>
         </ScrollArea>
       </DialogContent>
     </Dialog>
