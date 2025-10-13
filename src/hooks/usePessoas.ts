@@ -62,11 +62,8 @@ export function usePessoas(papel?: 'colaborador' | 'especialista' | 'cliente') {
 
   const criarMutation = useMutation({
     mutationFn: async (dados: Omit<Pessoa, 'id' | 'created_at' | 'updated_at'>) => {
-      // Validações
-      if (!dados.papeis || dados.papeis.length === 0) {
-        throw new Error('Pelo menos um papel deve ser selecionado');
-      }
-
+      // FASE 2: Validação de papéis removida - agora são inferidos automaticamente
+      
       // FASE 3: Usar maybeSingle() para evitar erros quando não há duplicatas
       if (dados.cpf) {
         const { data: existe } = await supabase

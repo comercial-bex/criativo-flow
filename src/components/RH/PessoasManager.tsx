@@ -14,6 +14,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { usePessoas, Pessoa } from '@/hooks/usePessoas';
 import { useColaboradorTempData } from '@/hooks/useColaboradorTempData';
 import { useQueryClient } from '@tanstack/react-query';
+import { useEspecialistas } from '@/hooks/useEspecialistas';
 import { Plus, Search, User, UserCheck, UserX, Pencil, AlertCircle, Database } from 'lucide-react';
 
 export function PessoasManager() {
@@ -24,6 +25,7 @@ export function PessoasManager() {
   const [pessoaEditando, setPessoaEditando] = useState<Pessoa | null>(null);
   const { pessoas, isLoading, criar, atualizar, desativar, isCriando, isAtualizando } = usePessoas(filtro);
   const { dadosPendentes } = useColaboradorTempData();
+  const { data: especialistas = [] } = useEspecialistas();
 
   const [formData, setFormData] = useState<Partial<Pessoa>>({
     nome: '',
@@ -64,17 +66,48 @@ export function PessoasManager() {
     p.email?.toLowerCase().includes(busca.toLowerCase())
   );
 
+  // FASE 2: Função para inferir papéis automaticamente
+  const inferirPapeis = (data: Partial<Pessoa>): string[] => {
+    // Se vinculado a especialista BEX
+    if (data.profile_id) {
+      return ['especialista'];
+    }
+    
+    // Se tem cliente_id
+    if (data.cliente_id) {
+      return ['cliente'];
+    }
+    
+    // Baseado no regime
+    if (data.regime === 'freelancer') {
+      return ['especialista'];
+    }
+    
+    if (['clt', 'pj', 'estagio'].includes(data.regime || '')) {
+      return ['colaborador'];
+    }
+    
+    // Padrão
+    return ['colaborador'];
+  };
+
   const handleSubmit = () => {
-    if (!formData.nome || !formData.papeis || formData.papeis.length === 0) {
+    if (!formData.nome) {
       return;
     }
 
+    // FASE 2: Inferir papéis automaticamente
+    const dadosComPapeis = {
+      ...formData,
+      papeis: inferirPapeis(formData)
+    };
+
     if (pessoaEditando) {
-      atualizar({ id: pessoaEditando.id, ...formData });
+      atualizar({ id: pessoaEditando.id, ...dadosComPapeis });
     } else {
-      criar(formData as Omit<Pessoa, 'id' | 'created_at' | 'updated_at'>);
+      criar(dadosComPapeis as Omit<Pessoa, 'id' | 'created_at' | 'updated_at'>);
       
-      // FASE 2: Forçar atualização da lista após criar pessoa
+      // Forçar atualização da lista após criar pessoa
       setTimeout(() => {
         queryClient.invalidateQueries({ queryKey: ['pessoas'] });
       }, 500);
@@ -184,13 +217,79 @@ export function PessoasManager() {
                   </TabsList>
 
                   <TabsContent value="pessoal" className="space-y-4">
+                    {/* FASE 1: Select de Especialista BEX */}
+                    <div>
+                      <Label htmlFor="especialista_bex">Especialista BEX (opcional)</Label>
+                      <Select
+                        value={formData.profile_id || ''}
+                        onValueChange={(value) => {
+                          if (!value) {
+                            // Limpar vínculo
+                            setFormData({ 
+                              ...formData, 
+                              profile_id: undefined,
+                              nome: '',
+                              email: '',
+                              telefones: ['']
+                            });
+                            return;
+                          }
+                          
+                          // Auto-preencher dados do especialista
+                          const especialista = especialistas.find(e => e.id === value);
+                          if (especialista) {
+                            setFormData({
+                              ...formData,
+                              profile_id: value,
+                              nome: especialista.nome,
+                              email: '', // Profiles não expõem email
+                              telefones: formData.telefones || ['']
+                            });
+                          }
+                        }}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecionar especialista da equipe interna" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="">Nenhum (cadastro manual)</SelectItem>
+                          {especialistas.map((esp) => (
+                            <SelectItem key={esp.id} value={esp.id}>
+                              {esp.nome} - {esp.especialidade}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        💡 Vincule a um especialista da equipe para aproveitar dados já cadastrados
+                      </p>
+                    </div>
+
+                    {/* FASE 3: Badge de vínculo */}
+                    {formData.profile_id && (
+                      <Alert className="bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800">
+                        <UserCheck className="h-4 w-4 text-green-600 dark:text-green-400" />
+                        <AlertDescription className="text-green-800 dark:text-green-200">
+                          <strong>Vinculado a Especialista BEX</strong>
+                          <br />
+                          Esta pessoa está conectada ao cadastro interno. Dados sincronizados automaticamente.
+                        </AlertDescription>
+                      </Alert>
+                    )}
+
                     <div>
                       <Label htmlFor="nome">Nome Completo *</Label>
                       <Input
                         id="nome"
                         value={formData.nome || ''}
                         onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
+                        disabled={!!formData.profile_id}
                       />
+                      {formData.profile_id && (
+                        <p className="text-xs text-muted-foreground mt-1">
+                          ✅ Preenchido automaticamente do cadastro do especialista
+                        </p>
+                      )}
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
@@ -219,30 +318,20 @@ export function PessoasManager() {
                         onChange={(e) => setFormData({ ...formData, telefones: [e.target.value] })}
                       />
                     </div>
-                    <div>
-                      <Label>Papéis *</Label>
-                      <div className="flex gap-4 mt-2">
-                        {['colaborador', 'especialista', 'cliente'].map((papel) => (
-                          <div key={papel} className="flex items-center space-x-2">
-                            <Checkbox
-                              id={papel}
-                              checked={formData.papeis?.includes(papel as any) || false}
-                              onCheckedChange={(checked) => {
-                                const papeis = formData.papeis || [];
-                                if (checked) {
-                                  setFormData({ ...formData, papeis: [...papeis, papel as any] });
-                                } else {
-                                  setFormData({ ...formData, papeis: papeis.filter((p) => p !== papel) });
-                                }
-                              }}
-                            />
-                            <label htmlFor={papel} className="capitalize cursor-pointer">
-                              {papel}
-                            </label>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
+                    
+                    {/* FASE 2: Papéis removidos - agora são inferidos automaticamente */}
+                    <Alert>
+                      <AlertCircle className="h-4 w-4" />
+                      <AlertDescription>
+                        <strong>Papéis definidos automaticamente:</strong>
+                        <ul className="text-xs mt-1 list-disc list-inside">
+                          <li>Vinculado a Especialista BEX → <strong>Especialista</strong></li>
+                          <li>Regime CLT/PJ/Estágio → <strong>Colaborador</strong></li>
+                          <li>Regime Freelancer → <strong>Especialista</strong></li>
+                          <li>Vinculado a Cliente → <strong>Cliente</strong></li>
+                        </ul>
+                      </AlertDescription>
+                    </Alert>
                   </TabsContent>
 
                   <TabsContent value="profissional" className="space-y-4">
