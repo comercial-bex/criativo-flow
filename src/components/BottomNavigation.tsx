@@ -37,8 +37,9 @@ export function BottomNavigation() {
   };
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card/95 backdrop-blur border-t border-border safe-area-inset-bottom">
-      <div className="flex items-center justify-around px-1 py-2">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border ios-optimized-fixed">
+      <div className="safe-area-inset-bottom">
+        <div className="flex items-center justify-around px-1 py-2">
         {mainNavItems.map((item) => {
           if (item.isMore) {
             return (
@@ -95,6 +96,7 @@ export function BottomNavigation() {
             </NavLink>
           );
         })}
+        </div>
       </div>
     </nav>
   );

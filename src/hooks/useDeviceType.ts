@@ -8,25 +8,53 @@ const BREAKPOINTS = {
 } as const;
 
 export function useDeviceType(): DeviceType {
-  const [deviceType, setDeviceType] = useState<DeviceType>('desktop');
+  const getInitialDeviceType = (): DeviceType => {
+    if (typeof window === 'undefined') return 'desktop';
+    
+    const width = window.innerWidth;
+    const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
+    
+    // iOS sempre usa layout mobile/tablet (mesmo em iPads grandes)
+    if (isIOS || isTouchDevice) {
+      return width < BREAKPOINTS.mobile ? 'mobile' : 'tablet';
+    }
+    
+    // Desktop tradicional
+    if (width < BREAKPOINTS.mobile) return 'mobile';
+    if (width < BREAKPOINTS.tablet) return 'tablet';
+    return 'desktop';
+  };
+
+  const [deviceType, setDeviceType] = useState<DeviceType>(getInitialDeviceType);
 
   useEffect(() => {
     const updateDeviceType = () => {
       const width = window.innerWidth;
+      const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+      const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
       
-      if (width < BREAKPOINTS.mobile) {
-        setDeviceType('mobile');
-      } else if (width < BREAKPOINTS.tablet) {
-        setDeviceType('tablet');
+      if (isIOS || isTouchDevice) {
+        setDeviceType(width < BREAKPOINTS.mobile ? 'mobile' : 'tablet');
       } else {
-        setDeviceType('desktop');
+        if (width < BREAKPOINTS.mobile) {
+          setDeviceType('mobile');
+        } else if (width < BREAKPOINTS.tablet) {
+          setDeviceType('tablet');
+        } else {
+          setDeviceType('desktop');
+        }
       }
     };
 
     updateDeviceType();
     window.addEventListener('resize', updateDeviceType);
+    window.addEventListener('orientationchange', updateDeviceType);
     
-    return () => window.removeEventListener('resize', updateDeviceType);
+    return () => {
+      window.removeEventListener('resize', updateDeviceType);
+      window.removeEventListener('orientationchange', updateDeviceType);
+    };
   }, []);
 
   return deviceType;
