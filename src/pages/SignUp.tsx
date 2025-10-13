@@ -1,15 +1,20 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { z } from 'zod';
-import { Mail, Lock, User, Phone, FileText, Building, Eye, EyeOff } from 'lucide-react';
+import { Mail, Lock, User, Phone, FileText, Building, Eye, EyeOff, CheckCircle2 } from 'lucide-react';
 import LoginPage from '@/components/ui/gaming-login';
 import { useSignUpWithValidation, ValidationResult } from '@/hooks/useSignUpWithValidation';
 import { smartToast } from '@/lib/smart-toast';
+import { formatCPF, cleanCPF, isValidCPF } from '@/lib/cpf-utils';
 
 const signUpSchema = z.object({
   nome: z.string().min(3, 'Nome deve ter no mínimo 3 caracteres'),
   email: z.string().email('Email inválido'),
-  cpf: z.string().optional(),
+  cpf: z.string()
+    .optional()
+    .refine((val) => !val || val.length === 0 || isValidCPF(val), {
+      message: 'CPF inválido'
+    }),
   telefone: z.string().optional(),
   password: z.string()
     .min(8, 'Senha deve ter no mínimo 8 caracteres')
@@ -26,7 +31,7 @@ type SignUpFormData = z.infer<typeof signUpSchema>;
 
 export default function SignUp() {
   const navigate = useNavigate();
-  const { validateSignUp, processSignUp, isValidating } = useSignUpWithValidation();
+  const { validateSignUp, processSignUp, isValidating, processingStep } = useSignUpWithValidation();
   
   const [formData, setFormData] = useState<SignUpFormData>({
     nome: '',
@@ -45,6 +50,11 @@ export default function SignUp() {
   const [isProcessing, setIsProcessing] = useState(false);
 
   const handleChange = (field: keyof SignUpFormData, value: string) => {
+    // Aplicar máscara de CPF
+    if (field === 'cpf') {
+      value = formatCPF(value);
+    }
+    
     setFormData(prev => ({ ...prev, [field]: value }));
     // Limpar erro do campo
     if (errors[field]) {
@@ -64,7 +74,7 @@ export default function SignUp() {
       const result = await validateSignUp({
         nome: validated.nome,
         email: validated.email,
-        cpf: validated.cpf,
+        cpf: validated.cpf ? cleanCPF(validated.cpf) : undefined,
         telefone: validated.telefone,
         password: validated.password,
         empresa: validated.empresa,
@@ -108,7 +118,7 @@ export default function SignUp() {
       const result = await processSignUp({
         nome: formData.nome,
         email: formData.email,
-        cpf: formData.cpf,
+        cpf: formData.cpf ? cleanCPF(formData.cpf) : undefined,
         telefone: formData.telefone,
         password: formData.password,
         empresa: formData.empresa,
@@ -195,9 +205,17 @@ export default function SignUp() {
                   placeholder="CPF (opcional)"
                   value={formData.cpf}
                   onChange={(e) => handleChange('cpf', e.target.value)}
-                  className="w-full pl-10 pr-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-white/60 focus:outline-none focus:border-purple-500/50 transition-colors"
+                  disabled={validationResult?.canProceed === true}
+                  maxLength={14}
+                  className="w-full pl-10 pr-10 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-white/60 focus:outline-none focus:border-purple-500/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 />
+                {validationResult?.canProceed && formData.cpf && (
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                    <CheckCircle2 className="text-green-400" size={18} />
+                  </div>
+                )}
               </div>
+              {errors.cpf && <p className="text-red-400 text-xs mt-1">{errors.cpf}</p>}
             </div>
 
             {/* Telefone */}
@@ -288,6 +306,19 @@ export default function SignUp() {
                   : 'bg-yellow-500/10 border border-yellow-500/30 text-yellow-400'
               }`}>
                 {validationResult.message}
+                {validationResult.canProceed && (
+                  <p className="text-xs mt-2 text-white/60">
+                    ℹ️ Após criar sua conta, aguarde a aprovação do administrador para ter acesso completo.
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* Loading Detalhado */}
+            {isProcessing && processingStep && (
+              <div className="p-3 rounded-lg bg-blue-500/10 border border-blue-500/30 text-blue-400 text-sm flex items-center gap-2">
+                <div className="animate-spin inline-block w-4 h-4 border-2 border-blue-400/20 border-t-blue-400 rounded-full" />
+                <span>{processingStep}</span>
               </div>
             )}
 
@@ -309,7 +340,7 @@ export default function SignUp() {
                 disabled={!validationResult || !validationResult.canProceed || isProcessing}
                 className="flex-1 py-3 rounded-lg bg-[#54C43D] hover:bg-[#47a834] text-white font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-[#54C43D]/20 hover:shadow-[#54C43D]/40"
               >
-                {isProcessing ? 'Cadastrando...' : 'Criar Conta'}
+                {isProcessing ? processingStep || 'Cadastrando...' : 'Criar Conta'}
               </button>
             </div>
           </form>

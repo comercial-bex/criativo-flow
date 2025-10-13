@@ -22,7 +22,25 @@ export interface ValidationResult {
 
 export function useSignUpWithValidation() {
   const [isValidating, setIsValidating] = useState(false);
+  const [processingStep, setProcessingStep] = useState<string>('');
   const { signUp } = useAuth();
+
+  // Função auxiliar para aguardar profile com retry inteligente
+  const waitForProfile = async (email: string, maxRetries = 5): Promise<{ id: string } | null> => {
+    for (let i = 0; i < maxRetries; i++) {
+      const { data } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('email', email)
+        .maybeSingle();
+      
+      if (data) return data;
+      
+      // Backoff exponencial: 500ms, 1s, 1.5s, 2s, 2.5s
+      await new Promise(resolve => setTimeout(resolve, 500 * (i + 1)));
+    }
+    return null;
+  };
 
   const validateSignUp = async (data: SignUpData): Promise<ValidationResult> => {
     setIsValidating(true);
@@ -100,6 +118,7 @@ export function useSignUpWithValidation() {
   const processSignUp = async (data: SignUpData, validationResult: ValidationResult) => {
     try {
       // 1. Criar login via Auth
+      setProcessingStep('Criando login...');
       const { error: authError } = await signUp(
         data.email,
         data.password,
@@ -111,53 +130,41 @@ export function useSignUpWithValidation() {
         throw authError;
       }
 
-      // 2. Se pessoa já existe, atualizar profile_id
-      if (validationResult.pessoaExiste && validationResult.pessoaId) {
-        // Aguardar um pouco para garantir que o profile foi criado
-        await new Promise(resolve => setTimeout(resolve, 1000));
+      // 2. Aguardar profile ser criado com retry inteligente
+      setProcessingStep('Aguardando confirmação...');
+      const newProfile = await waitForProfile(data.email);
 
-        // Buscar o profile recém-criado
-        const { data: newProfile } = await supabase
-          .from('profiles')
-          .select('id')
-          .eq('email', data.email)
-          .single();
-
-        if (newProfile) {
-          // Atualizar pessoa com profile_id
-          await supabase
-            .from('pessoas')
-            .update({ 
-              profile_id: newProfile.id,
-              email: data.email,
-            })
-            .eq('id', validationResult.pessoaId);
-        }
-      } else {
-        // 3. Criar nova pessoa se não existe
-        // O trigger handle_new_user já criou o profile
-        await new Promise(resolve => setTimeout(resolve, 1000));
-
-        const { data: newProfile } = await supabase
-          .from('profiles')
-          .select('id')
-          .eq('email', data.email)
-          .single();
-
-        if (newProfile) {
-          await supabase
-            .from('pessoas')
-            .insert({
-              nome: data.nome,
-              email: data.email,
-              cpf: data.cpf,
-              telefones: data.telefone ? [data.telefone] : null,
-              papeis: ['cliente'],
-              profile_id: newProfile.id,
-              cliente_id: null, // Será definido pelo admin
-            });
-        }
+      if (!newProfile) {
+        throw new Error('Não foi possível criar o perfil. Tente novamente.');
       }
+
+      // 3. Se pessoa já existe, atualizar profile_id
+      if (validationResult.pessoaExiste && validationResult.pessoaId) {
+        setProcessingStep('Vinculando dados existentes...');
+        await supabase
+          .from('pessoas')
+          .update({ 
+            profile_id: newProfile.id,
+            email: data.email,
+          })
+          .eq('id', validationResult.pessoaId);
+      } else {
+        // 4. Criar nova pessoa se não existe
+        setProcessingStep('Criando cadastro...');
+        await supabase
+          .from('pessoas')
+          .insert({
+            nome: data.nome,
+            email: data.email,
+            cpf: data.cpf,
+            telefones: data.telefone ? [data.telefone] : null,
+            papeis: ['cliente'],
+            profile_id: newProfile.id,
+            cliente_id: null, // Será definido pelo admin
+          });
+      }
+
+      setProcessingStep('Finalizando...');
 
       smartToast.success(
         'Cadastro realizado com sucesso!',
@@ -180,5 +187,6 @@ export function useSignUpWithValidation() {
     validateSignUp,
     processSignUp,
     isValidating,
+    processingStep,
   };
 }
