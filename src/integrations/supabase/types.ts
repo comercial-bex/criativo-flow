@@ -2051,8 +2051,8 @@ export type Database = {
           id: string
           plataforma: string
           projeto_id: string | null
-          secrets_cipher: string | null
-          senha_cipher: string
+          senha: string | null
+          tokens_api: Json | null
           updated_at: string
           updated_by: string | null
           usuario_login: string
@@ -2066,8 +2066,8 @@ export type Database = {
           id?: string
           plataforma: string
           projeto_id?: string | null
-          secrets_cipher?: string | null
-          senha_cipher: string
+          senha?: string | null
+          tokens_api?: Json | null
           updated_at?: string
           updated_by?: string | null
           usuario_login: string
@@ -2081,8 +2081,8 @@ export type Database = {
           id?: string
           plataforma?: string
           projeto_id?: string | null
-          secrets_cipher?: string | null
-          senha_cipher?: string
+          senha?: string | null
+          tokens_api?: Json | null
           updated_at?: string
           updated_by?: string | null
           usuario_login?: string
@@ -9855,25 +9855,15 @@ export type Database = {
         Args: { p_cliente_id: string; p_projeto_id?: string }
         Returns: {
           categoria: string
-          cliente_id: string
-          created_at: string
-          created_by: string
-          created_by_nome: string
           extra: Json
           id: string
           plataforma: string
-          projeto_id: string
+          senha: string
+          tokens_api: Json
           updated_at: string
-          updated_by: string
           updated_by_nome: string
+          url: string
           usuario_login: string
-        }[]
-      }
-      fn_cred_reveal: {
-        Args: { p_cred_id: string; p_motivo?: string }
-        Returns: {
-          secrets_plain: Json
-          senha_plain: string
         }[]
       }
       fn_cred_save: {
@@ -9887,7 +9877,6 @@ export type Database = {
               p_projeto_id: string
               p_secrets_json?: Json
               p_senha_plain: string
-              p_url?: string
               p_usuario_login: string
             }
           | {
@@ -9897,8 +9886,9 @@ export type Database = {
               p_extra_json?: Json
               p_plataforma: string
               p_projeto_id: string
-              p_secrets_json?: Json
-              p_senha_plain: string
+              p_senha: string
+              p_tokens_api?: Json
+              p_url?: string
               p_usuario_login: string
             }
           | {

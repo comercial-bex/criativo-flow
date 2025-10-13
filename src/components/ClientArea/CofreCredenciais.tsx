@@ -38,14 +38,10 @@ import {
 import { SmartForm } from "@/components/SmartForm";
 import { Badge } from "@/components/ui/badge";
 import { 
-  Eye, 
-  EyeOff, 
   Copy, 
   Plus, 
   Pencil, 
-  Trash2, 
-  Lock,
-  ShieldAlert
+  Lock
 } from "lucide-react";
 import { smartToast } from "@/lib/smart-toast";
 import { format } from "date-fns";
@@ -61,6 +57,9 @@ interface Credencial {
   categoria: string;
   plataforma: string;
   usuario_login: string;
+  senha: string;
+  tokens_api?: any;
+  url?: string;
   extra: any;
   updated_at: string;
   updated_by_nome?: string;
@@ -118,19 +117,15 @@ const PLATFORM_PRESETS: Record<string, {
 
 export function CofreCredenciais({ clienteId, projetoId, readOnly = false }: CofreCredenciaisProps) {
   const [editModalOpen, setEditModalOpen] = useState(false);
-  const [revealModalOpen, setRevealModalOpen] = useState(false);
   const [selectedCred, setSelectedCred] = useState<Credencial | null>(null);
-  const [revealedPassword, setRevealedPassword] = useState<string | null>(null);
-  const [revealReason, setRevealReason] = useState("");
-  const [passwordVisible, setPasswordVisible] = useState(false);
   const [formData, setFormData] = useState({
     categoria: 'social',
     plataforma: '',
     usuario_login: '',
     senha: '',
-    secrets: '',  // Tokens/API keys (criptografados separadamente)
+    tokens: '',  // Tokens/API keys em texto plano
+    url: '',
     notas: '',
-    // Campos dinâmicos da plataforma
     extra: {} as Record<string, string>,
   });
 
@@ -152,13 +147,13 @@ export function CofreCredenciais({ clienteId, projetoId, readOnly = false }: Cof
   // Salvar/Atualizar credencial
   const saveMutation = useMutation({
     mutationFn: async (values: typeof formData) => {
-      // Preparar secrets_json (tokens/API keys)
-      let secretsJson = {};
-      if (values.secrets && values.secrets.trim()) {
+      // Preparar tokens_api (texto plano)
+      let tokensJson = {};
+      if (values.tokens && values.tokens.trim()) {
         try {
-          secretsJson = JSON.parse(values.secrets);
+          tokensJson = JSON.parse(values.tokens);
         } catch {
-          secretsJson = { raw_text: values.secrets }; // Se não for JSON válido, salvar como texto
+          tokensJson = { raw_text: values.tokens };
         }
       }
 
@@ -168,9 +163,10 @@ export function CofreCredenciais({ clienteId, projetoId, readOnly = false }: Cof
         p_categoria: values.categoria,
         p_plataforma: values.plataforma,
         p_usuario_login: values.usuario_login,
-        p_senha_plain: values.senha,
+        p_senha: values.senha,
         p_extra_json: { notas: values.notas, ...values.extra },
-        p_secrets_json: secretsJson,
+        p_tokens_api: tokensJson,
+        p_url: values.url || null,
         p_cred_id: selectedCred?.id || null,
       });
       if (error) throw error;
@@ -184,44 +180,6 @@ export function CofreCredenciais({ clienteId, projetoId, readOnly = false }: Cof
     },
   });
 
-  // Revelar senha
-  const [revealedSecrets, setRevealedSecrets] = useState<any>(null);
-  const revealMutation = useMutation({
-    mutationFn: async ({ credId, motivo }: { credId: string; motivo: string }) => {
-      const { data, error } = await supabase.rpc('fn_cred_reveal', {
-        p_cred_id: credId,
-        p_motivo: motivo,
-      });
-      if (error) throw error;
-      return data[0]; // Retorna { senha_plain, secrets_plain }
-    },
-    onSuccess: (result) => {
-      setRevealedPassword(result.senha_plain);
-      setRevealedSecrets(result.secrets_plain);
-      setPasswordVisible(true);
-      queryClient.invalidateQueries({ queryKey: ['logs'] });
-
-      // Auto-hide após 30s
-      setTimeout(() => {
-        setPasswordVisible(false);
-        setRevealedPassword(null);
-        setRevealedSecrets(null);
-      }, 30000);
-    },
-  });
-
-  const handleRevealPassword = async () => {
-    if (!selectedCred || !revealReason.trim()) {
-      smartToast.error('Erro', 'Informe o motivo do acesso');
-      return;
-    }
-    await revealMutation.mutateAsync({
-      credId: selectedCred.id,
-      motivo: revealReason,
-    });
-    setRevealModalOpen(false);
-    setRevealReason("");
-  };
 
   const copyToClipboard = (text: string, tipo: string) => {
     navigator.clipboard.writeText(text);
@@ -239,7 +197,8 @@ export function CofreCredenciais({ clienteId, projetoId, readOnly = false }: Cof
       plataforma: '',
       usuario_login: '',
       senha: '',
-      secrets: '',
+      tokens: '',
+      url: '',
       notas: '',
       extra: {},
     });
@@ -252,8 +211,9 @@ export function CofreCredenciais({ clienteId, projetoId, readOnly = false }: Cof
       categoria: cred.categoria,
       plataforma: cred.plataforma,
       usuario_login: cred.usuario_login,
-      senha: '', // Não pré-preencher senha
-      secrets: '',
+      senha: cred.senha || '',
+      tokens: cred.tokens_api ? JSON.stringify(cred.tokens_api, null, 2) : '',
+      url: cred.url || '',
       notas: cred.extra?.notas || '',
       extra: cred.extra || {},
     });
@@ -270,7 +230,7 @@ export function CofreCredenciais({ clienteId, projetoId, readOnly = false }: Cof
               <div>
                 <CardTitle>Cofre de Credenciais</CardTitle>
                 <CardDescription>
-                  Armazenamento seguro de logins e senhas com criptografia
+                  Gerenciamento de logins e senhas (acesso restrito: Admin, Gestor, GRS)
                 </CardDescription>
               </div>
             </div>
@@ -297,6 +257,7 @@ export function CofreCredenciais({ clienteId, projetoId, readOnly = false }: Cof
                   <TableHead>Categoria</TableHead>
                   <TableHead>Plataforma</TableHead>
                   <TableHead>Login</TableHead>
+                  <TableHead>Senha</TableHead>
                   <TableHead>Última Atualização</TableHead>
                   <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
@@ -323,6 +284,23 @@ export function CofreCredenciais({ clienteId, projetoId, readOnly = false }: Cof
                         </Button>
                       </div>
                     </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <code className="text-xs bg-muted px-2 py-1 rounded">
+                          {cred.senha || '(não definida)'}
+                        </code>
+                        {cred.senha && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => copyToClipboard(cred.senha, 'Senha')}
+                            className="h-6 w-6 p-0"
+                          >
+                            <Copy className="h-3 w-3" />
+                          </Button>
+                        )}
+                      </div>
+                    </TableCell>
                     <TableCell className="text-sm text-muted-foreground">
                       {format(new Date(cred.updated_at), 'dd/MM/yyyy HH:mm')}
                       {cred.updated_by_nome && (
@@ -330,32 +308,16 @@ export function CofreCredenciais({ clienteId, projetoId, readOnly = false }: Cof
                       )}
                     </TableCell>
                     <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        {!readOnly && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              setSelectedCred(cred);
-                              setRevealModalOpen(true);
-                            }}
-                            className="gap-2"
-                          >
-                            <Eye className="h-4 w-4" />
-                            Revelar Senha
-                          </Button>
-                        )}
-                        {!readOnly && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleEdit(cred)}
-                            className="h-8 w-8 p-0"
-                          >
-                            <Pencil className="h-4 w-4" />
-                          </Button>
-                        )}
-                      </div>
+                      {!readOnly && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleEdit(cred)}
+                          className="h-8 w-8 p-0"
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                      )}
                     </TableCell>
                   </TableRow>
                 ))}
@@ -373,7 +335,7 @@ export function CofreCredenciais({ clienteId, projetoId, readOnly = false }: Cof
               {selectedCred ? 'Editar Credencial' : 'Nova Credencial'}
             </DialogTitle>
             <DialogDescription>
-              Todos os dados são criptografados antes de serem salvos
+              Preencha os dados da credencial (acesso restrito ao sistema)
             </DialogDescription>
           </DialogHeader>
           
@@ -430,8 +392,28 @@ export function CofreCredenciais({ clienteId, projetoId, readOnly = false }: Cof
                   type="password"
                   value={formData.senha}
                   onChange={(e) => setFormData({ ...formData, senha: e.target.value })}
-                  placeholder={selectedCred ? "Deixe vazio para manter a atual" : "Digite a senha"}
+                  placeholder="Digite a senha"
                   required={!selectedCred}
+                />
+              </div>
+
+              <div>
+                <Label>URL / Link (opcional)</Label>
+                <Input
+                  type="url"
+                  value={formData.url}
+                  onChange={(e) => setFormData({ ...formData, url: e.target.value })}
+                  placeholder="https://..."
+                />
+              </div>
+
+              <div>
+                <Label>Tokens / API Keys (opcional)</Label>
+                <Textarea
+                  value={formData.tokens}
+                  onChange={(e) => setFormData({ ...formData, tokens: e.target.value })}
+                  placeholder='{"api_key": "...", "secret": "..."}'
+                  rows={3}
                 />
               </div>
 
@@ -461,90 +443,6 @@ export function CofreCredenciais({ clienteId, projetoId, readOnly = false }: Cof
         </DialogContent>
       </Dialog>
 
-      {/* Modal de Revelar Senha */}
-      <Dialog open={revealModalOpen} onOpenChange={setRevealModalOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <div className="flex items-center gap-2 text-warning">
-              <ShieldAlert className="h-5 w-5" />
-              <DialogTitle>Revelar Senha</DialogTitle>
-            </div>
-            <DialogDescription>
-              Esta ação será registrada nos logs de auditoria
-            </DialogDescription>
-          </DialogHeader>
-
-          {!revealedPassword ? (
-            <div className="space-y-4">
-              <div>
-                <Label>Motivo do acesso</Label>
-                <Textarea
-                  value={revealReason}
-                  onChange={(e) => setRevealReason(e.target.value)}
-                  placeholder="Ex: Configuração de campanha, Atualização de perfil..."
-                  rows={3}
-                  required
-                />
-              </div>
-
-              <DialogFooter>
-                <Button variant="outline" onClick={() => {
-                  setRevealModalOpen(false);
-                  setRevealReason("");
-                }}>
-                  Cancelar
-                </Button>
-                <Button onClick={handleRevealPassword}>
-                  Confirmar e Revelar
-                </Button>
-              </DialogFooter>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              <div className="p-4 bg-muted rounded-lg">
-                <Label className="text-xs text-muted-foreground">Senha</Label>
-                <div className="flex items-center gap-2 mt-2">
-                  <code className="flex-1 p-3 bg-background rounded border font-mono text-sm">
-                    {passwordVisible ? revealedPassword : '••••••••••••'}
-                  </code>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setPasswordVisible(!passwordVisible)}
-                  >
-                    {passwordVisible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => copyToClipboard(revealedPassword!, 'Senha')}
-                  >
-                    <Copy className="h-4 w-4" />
-                  </Button>
-                </div>
-                <p className="text-xs text-muted-foreground mt-2">
-                  ⚠️ Senha será ocultada automaticamente em 30s e clipboard será limpo em 20s
-                </p>
-              </div>
-
-              <Badge variant="outline" className="w-full justify-center py-2">
-                Acesso registrado nos logs de auditoria
-              </Badge>
-
-              <DialogFooter>
-                <Button onClick={() => {
-                  setRevealModalOpen(false);
-                  setRevealedPassword(null);
-                  setPasswordVisible(false);
-                  setSelectedCred(null);
-                }}>
-                  Fechar
-                </Button>
-              </DialogFooter>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
     </>
   );
 }
