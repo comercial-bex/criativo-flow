@@ -75,6 +75,7 @@ import RoteiroIAListPage from "./pages/GRS/RoteiroIA/index";
 import NovoRoteiroPage from "./pages/GRS/RoteiroIA/NovoRoteiro";
 import EditarRoteiroPage from "./pages/GRS/RoteiroIA/EditarRoteiro";
 import EspecialistaDashboard from "./pages/Especialista/Dashboard";
+import DesignSystemShowcase from "./pages/DesignSystemShowcase";
 
 // Client pages
 import ClientePainel from "./pages/Cliente/Painel";
@@ -657,6 +658,13 @@ function App() {
                 <Route path="/admin/logs" element={
                   <ProtectedRoute requiredRole="admin">
                     <Layout><AdminLogs /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                {/* Design System Showcase */}
+                <Route path="/design-system" element={
+                  <ProtectedRoute>
+                    <Layout><DesignSystemShowcase /></Layout>
                   </ProtectedRoute>
                 } />
                 
