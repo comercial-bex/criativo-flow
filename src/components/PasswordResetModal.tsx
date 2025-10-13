@@ -60,9 +60,9 @@ export function PasswordResetModal({ open, onOpenChange }: PasswordResetModalPro
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>Recuperar Senha</DialogTitle>
+      <DialogContent size="sm" height="auto">
+        <DialogHeader className="modal-header-gaming">
+          <DialogTitle className="modal-title-gaming">Recuperar Senha</DialogTitle>
           <DialogDescription>
             Digite seu email para receber as instruções de recuperação de senha.
           </DialogDescription>

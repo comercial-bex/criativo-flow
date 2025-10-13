@@ -786,7 +786,7 @@ ${objetivosEscolhidos.includes('reconhecimento_marca') ? `🏆 RECONHECIMENTO DE
 
       {/* Dialog para criar planejamento */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-2xl bg-gradient-to-br from-background to-muted/30 border-primary/20">
+        <DialogContent size="xl" height="auto">
           <DialogHeader className="text-center pb-6">
             <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
               ✨ Criar Planejamento Estratégico

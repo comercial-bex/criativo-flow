@@ -161,10 +161,10 @@ Tom de voz: ${tomVoz}`;
       <DialogTrigger asChild>
         {trigger || defaultTrigger}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-2xl">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-purple-600" />
+      <DialogContent size="xl" height="lg">
+        <DialogHeader className="modal-header-gaming">
+          <DialogTitle className="modal-title-gaming flex items-center gap-2">
+            <Sparkles className="h-5 w-5" />
             {config.title}
           </DialogTitle>
         </DialogHeader>

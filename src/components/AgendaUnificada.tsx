@@ -332,9 +332,9 @@ export function AgendaUnificada() {
 
       {/* FASE 5 + PRIORIDADE 2: Modal de Reagendamento com Horário */}
       <Dialog open={!!rescheduleEvent} onOpenChange={() => setRescheduleEvent(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
+        <DialogContent size="md" height="auto">
+          <DialogHeader className="modal-header-gaming">
+            <DialogTitle className="modal-title-gaming flex items-center gap-2">
               <Clock className="h-5 w-5" />
               Reagendar Evento
             </DialogTitle>

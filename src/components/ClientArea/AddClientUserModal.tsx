@@ -90,9 +90,9 @@ export function AddClientUserModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader>
-          <DialogTitle>Adicionar Usuário</DialogTitle>
+      <DialogContent size="md" height="auto">
+        <DialogHeader className="modal-header-gaming">
+          <DialogTitle className="modal-title-gaming">Adicionar Usuário</DialogTitle>
           <DialogDescription>
             Crie um novo usuário para acessar a área do cliente.
           </DialogDescription>

@@ -138,9 +138,9 @@ export function CalendarModal() {
         </Button>
       </DialogTrigger>
       
-      <DialogContent className="max-w-4xl max-h-[90vh]">
-        <DialogHeader>
-          <DialogTitle>Calendário Geral da Agência</DialogTitle>
+      <DialogContent size="2xl" height="xl">
+        <DialogHeader className="modal-header-gaming">
+          <DialogTitle className="modal-title-gaming">Calendário Geral da Agência</DialogTitle>
           <DialogDescription>
             Visualize todos os eventos, captações, deadlines e reuniões da agência
           </DialogDescription>
@@ -258,9 +258,9 @@ export function CalendarModal() {
 
       {/* Modal de Visualização de Evento */}
       <Dialog open={!!viewEventModal} onOpenChange={() => setViewEventModal(null)}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>{viewEventModal?.titulo}</DialogTitle>
+        <DialogContent size="sm" height="auto">
+          <DialogHeader className="modal-header-gaming">
+            <DialogTitle className="modal-title-gaming">{viewEventModal?.titulo}</DialogTitle>
             <DialogDescription>
               Detalhes do evento
             </DialogDescription>
@@ -314,9 +314,9 @@ export function CalendarModal() {
 
       {/* Modal de Edição de Evento */}
       <Dialog open={!!editEventModal} onOpenChange={() => setEditEventModal(null)}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Editar Evento</DialogTitle>
+        <DialogContent size="sm" height="auto">
+          <DialogHeader className="modal-header-gaming">
+            <DialogTitle className="modal-title-gaming">Editar Evento</DialogTitle>
             <DialogDescription>
               Esta funcionalidade será implementada em breve
             </DialogDescription>

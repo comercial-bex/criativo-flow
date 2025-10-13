@@ -36,7 +36,7 @@ export function SimpleHelpModal({ content, children }: SimpleHelpModalProps) {
         {children}
       </DialogTrigger>
       
-      <DialogContent className="max-w-2xl max-h-[80vh]">
+      <DialogContent size="xl" height="lg">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Info className="h-5 w-5" />

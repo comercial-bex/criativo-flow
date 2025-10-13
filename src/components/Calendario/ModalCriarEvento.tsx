@@ -215,9 +215,9 @@ export const ModalCriarEvento = ({ open, onClose, dataInicial, responsavelIdInic
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Criar Novo Evento</DialogTitle>
+      <DialogContent size="xl" height="xl" overflow="auto">
+        <DialogHeader className="modal-header-gaming">
+          <DialogTitle className="modal-title-gaming">Criar Novo Evento</DialogTitle>
         </DialogHeader>
 
         <Tabs defaultValue="basico" className="w-full">

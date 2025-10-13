@@ -203,9 +203,9 @@ export function NewEventModal({ onEventCreated }: { onEventCreated?: () => void 
         </Button>
       </DialogTrigger>
       
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Criar Novo Evento</DialogTitle>
+      <DialogContent size="xl" height="xl" overflow="auto">
+        <DialogHeader className="modal-header-gaming">
+          <DialogTitle className="modal-title-gaming">Criar Novo Evento</DialogTitle>
           <DialogDescription>
             Adicione um novo evento ao calendário da agência
           </DialogDescription>

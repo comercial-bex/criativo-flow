@@ -308,7 +308,7 @@ export function RelatoriosFiscaisModal({ open, onOpenChange }: RelatoriosFiscais
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+      <DialogContent size="xl" height="xl" overflow="auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <FileText className="h-5 w-5 text-primary" />

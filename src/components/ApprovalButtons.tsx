@@ -101,9 +101,9 @@ export function ApprovalButtons({
               Reprovar
             </Button>
           </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Reprovar Item</DialogTitle>
+          <DialogContent size="sm" height="auto">
+            <DialogHeader className="modal-header-gaming">
+              <DialogTitle className="modal-title-gaming">Reprovar Item</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
               <div>
@@ -168,9 +168,9 @@ export function ApprovalButtons({
               Solicitar Ajuste
             </Button>
           </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Solicitar Ajuste</DialogTitle>
+          <DialogContent size="sm" height="auto">
+            <DialogHeader className="modal-header-gaming">
+              <DialogTitle className="modal-title-gaming">Solicitar Ajuste</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
               <div>

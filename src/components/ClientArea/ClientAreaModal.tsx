@@ -74,7 +74,7 @@ export function ClientAreaModal({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-[95vw] h-[90vh] p-0 gap-0">
+      <DialogContent size="screen" height="full" padding="none" overflow="hidden">
         <div className="flex h-full">
           {/* Left Sidebar - Client Summary */}
           <div className="w-72 border-r bg-muted/30 p-6 flex flex-col gap-4">

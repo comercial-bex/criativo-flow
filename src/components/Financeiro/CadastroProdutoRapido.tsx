@@ -64,7 +64,7 @@ export function CadastroProdutoRapido({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent size="md" height="auto">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>Cadastro Rápido de Produto</DialogTitle>

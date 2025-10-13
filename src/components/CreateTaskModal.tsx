@@ -611,9 +611,9 @@ export function CreateTaskModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Nova Tarefa</DialogTitle>
+      <DialogContent size="2xl" height="xl" overflow="auto">
+        <DialogHeader className="modal-header-gaming">
+          <DialogTitle className="modal-title-gaming">Nova Tarefa</DialogTitle>
           <DialogDescription>
             Crie uma nova tarefa com briefing detalhado para o projeto
           </DialogDescription>

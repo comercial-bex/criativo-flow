@@ -212,7 +212,7 @@ export function ImageUploadWithCrop({
       </div>
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="max-w-3xl">
+        <DialogContent size="xl" height="lg">
           <DialogHeader>
             <DialogTitle>Ajustar {guide.title}</DialogTitle>
             <DialogDescription>

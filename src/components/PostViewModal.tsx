@@ -65,9 +65,9 @@ export function PostViewModal({ isOpen, onClose, post, onApprove, isApproving }:
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="w-[95vw] max-w-4xl h-[95vh] p-0 overflow-hidden">
-        <DialogHeader className="p-4 sm:p-6 pb-0 flex-shrink-0">
-          <DialogTitle className="flex items-center justify-between gap-2 text-sm sm:text-base">
+      <DialogContent size="2xl" height="full" padding="none" overflow="hidden">
+        <DialogHeader className="modal-header-gaming p-4 sm:p-6 pb-0 flex-shrink-0">
+          <DialogTitle className="modal-title-gaming flex items-center justify-between gap-2 text-sm sm:text-base">
             <div className="flex items-center gap-2">
               <span className="text-2xl">{getTipoIcon(post.tipo_criativo, post.formato_postagem)}</span>
               <span>Visualização do Post</span>

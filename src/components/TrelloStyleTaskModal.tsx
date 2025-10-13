@@ -150,7 +150,7 @@ export function TrelloStyleTaskModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden p-0">
+      <DialogContent size="2xl" height="xl" padding="none" overflow="hidden">
         <div className="flex h-full">
           {/* Conteúdo principal */}
           <div className="flex-1 p-6 overflow-y-auto">

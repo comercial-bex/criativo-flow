@@ -59,7 +59,7 @@ export function ColaboradorQuickCreate({ open, onOpenChange, tempData, onSuccess
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent size="xl" height="auto">
         <DialogHeader>
           <DialogTitle>Cadastro Rápido de Colaborador</DialogTitle>
           <DialogDescription>

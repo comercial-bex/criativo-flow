@@ -203,11 +203,11 @@ export function CalendarioEditorial({ isOpen, onClose, posts, postsGerados, onPo
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-7xl max-h-[90vh] overflow-hidden">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-3 text-2xl">
+      <DialogContent size="full" height="xl" padding="none" overflow="hidden">
+        <DialogHeader className="modal-header-gaming px-6 pt-6">
+          <DialogTitle className="modal-title-gaming flex items-center gap-3 text-2xl">
             <div className="p-2 rounded-full bg-gradient-to-r from-primary/10 to-primary/20">
-              <CalendarDays className="h-6 w-6 text-primary" />
+              <CalendarDays className="h-6 w-6" />
             </div>
             Calendário Editorial
           </DialogTitle>

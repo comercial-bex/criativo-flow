@@ -148,9 +148,9 @@ export function CreatePlanejamentoModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl" data-tour="create-planejamento-modal">
-        <DialogHeader>
-          <DialogTitle className="flex items-center justify-between">
+      <DialogContent size="xl" height="auto" data-tour="create-planejamento-modal">
+        <DialogHeader className="modal-header-gaming">
+          <DialogTitle className="modal-title-gaming flex items-center justify-between">
             <span data-tour="create-planejamento-title">Novo Planejamento</span>
             <TutorialButton onStart={startTutorial} hasSeenTutorial={hasSeenTutorial} variant="default" />
           </DialogTitle>

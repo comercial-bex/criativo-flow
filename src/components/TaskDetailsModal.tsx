@@ -1039,11 +1039,13 @@ export function TaskDetailsModal({ open, onOpenChange, task, onTaskUpdate }: Tas
 
         {/* Dialog de Etiquetas */}
         <Dialog open={labelsDialogOpen} onOpenChange={setLabelsDialogOpen}>
-          <BexDialogContent variant="gaming" className="max-w-md">
-            <BexDialogHeader>
-              <BexDialogTitle gaming>🏷️ Gerenciar Etiquetas</BexDialogTitle>
+          <BexDialogContent variant="gaming" size="sm" height="auto">
+            <BexDialogHeader className="modal-header-gaming">
+              <BexDialogTitle className="modal-title-gaming">
+                🏷️ Gerenciar Etiquetas
+              </BexDialogTitle>
             </BexDialogHeader>
-            <div className="space-y-3 py-4 px-6">
+            <div className="modal-body-gaming space-y-3">
               {LABEL_COLORS.map((label) => {
                 const isSelected = taskLabels.some(l => l.color === label.value);
                 return (

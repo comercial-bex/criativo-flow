@@ -100,7 +100,7 @@ export function PropostaModal({ isOpen, onClose, orcamento }: PropostaModalProps
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent size="xl" height="auto">
         <DialogHeader>
           <DialogTitle>Gerar Proposta Comercial</DialogTitle>
         </DialogHeader>

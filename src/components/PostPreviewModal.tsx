@@ -120,9 +120,9 @@ export function PostPreviewModal({ isOpen, onClose, posts, onSave, onCancel, onA
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="w-[95vw] max-w-7xl h-[95vh] p-0 overflow-hidden">
-        <DialogHeader className="p-4 sm:p-6 pb-0 flex-shrink-0">
-          <DialogTitle className="flex items-center justify-between gap-2 text-sm sm:text-base">
+      <DialogContent size="full" height="full" padding="none" overflow="hidden">
+        <DialogHeader className="modal-header-gaming p-4 sm:p-6 pb-0 flex-shrink-0">
+          <DialogTitle className="modal-title-gaming flex items-center justify-between gap-2 text-sm sm:text-base">
             <div className="flex items-center gap-2">
               <Eye className="h-4 w-4 sm:h-5 sm:w-5" />
               Preview do Conteúdo Editorial

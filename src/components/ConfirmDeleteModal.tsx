@@ -20,9 +20,9 @@ export function ConfirmDeleteModal({
 }: ConfirmDeleteModalProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[400px]">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+      <DialogContent size="sm" height="auto">
+        <DialogHeader className="modal-header-gaming">
+          <DialogTitle className="modal-title-gaming flex items-center gap-2">
             <AlertTriangle className="w-5 h-5 text-destructive" />
             Confirmar Exclusão
           </DialogTitle>

@@ -333,7 +333,7 @@ export function OnboardingForm({ isOpen, onClose, clienteId, cliente, readOnly =
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh]">
+      <DialogContent size="2xl" height="xl">
         <DialogHeader>
           <div className="flex items-center justify-between">
             <DialogTitle>Formulário de Onboarding - {cliente.nome}</DialogTitle>

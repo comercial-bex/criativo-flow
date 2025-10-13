@@ -50,7 +50,7 @@ export function FolhaPagamentoStepper({ open, onOpenChange, competencia, onCompl
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden flex flex-col">
+      <DialogContent size="full" height="xl" padding="none" overflow="hidden">
         <DialogHeader>
           <DialogTitle className="text-2xl font-montserrat">
             Processamento da Folha de Pagamento

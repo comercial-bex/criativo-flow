@@ -150,7 +150,7 @@ export function PessoasManager() {
                   Nova Pessoa
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+              <DialogContent size="xl" height="xl" overflow="auto">
                 <DialogHeader>
                   <DialogTitle>{pessoaEditando ? 'Editar Pessoa' : 'Nova Pessoa'}</DialogTitle>
                   <DialogDescription>Preencha os dados da pessoa</DialogDescription>

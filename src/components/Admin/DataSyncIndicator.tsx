@@ -53,9 +53,9 @@ export function DataSyncIndicator() {
           Pendentes
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-4xl max-h-[80vh] overflow-auto">
-        <DialogHeader>
-          <DialogTitle>Dados Pendentes de Sincronização</DialogTitle>
+      <DialogContent size="2xl" height="xl" overflow="auto">
+        <DialogHeader className="modal-header-gaming">
+          <DialogTitle className="modal-title-gaming">Dados Pendentes de Sincronização</DialogTitle>
           <DialogDescription>
             Registros criados em outros módulos aguardando sincronização
           </DialogDescription>

@@ -74,7 +74,7 @@ export function WhatsAppNotifier({ clienteNome, clienteTelefone, mensagem, trigg
       <DialogTrigger asChild>
         {trigger || defaultTrigger}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent size="sm" height="auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <MessageCircle className="h-5 w-5 text-green-600" />

@@ -126,9 +126,9 @@ export function NewUserModal({ open, onOpenChange, onSuccess }: NewUserModalProp
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle>Novo Usuário Interno</DialogTitle>
+      <DialogContent size="sm" height="auto">
+        <DialogHeader className="modal-header-gaming">
+          <DialogTitle className="modal-title-gaming">Novo Usuário Interno</DialogTitle>
           <DialogDescription>Criar especialista ou colaborador do time</DialogDescription>
         </DialogHeader>
 

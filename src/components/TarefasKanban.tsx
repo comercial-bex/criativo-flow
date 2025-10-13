@@ -601,7 +601,7 @@ export function TarefasKanban({ planejamento, clienteId, projetoId, filters }: T
 
       {/* Modal de Edição */}
       <Dialog open={!!editingTarefa} onOpenChange={() => setEditingTarefa(null)}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogContent size="xl" height="xl" overflow="auto">
           <DialogHeader>
             <DialogTitle>Editar Tarefa</DialogTitle>
             <DialogDescription>

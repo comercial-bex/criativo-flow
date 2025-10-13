@@ -48,9 +48,9 @@ export function CredentialsModal({ open, onOpenChange, email, senha, nomeCliente
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md" data-tour="credentials-modal-container">
-        <DialogHeader>
-          <DialogTitle className="flex items-center justify-between text-center text-green-600">
+      <DialogContent size="sm" height="auto" data-tour="credentials-modal-container">
+        <DialogHeader className="modal-header-gaming">
+          <DialogTitle className="modal-title-gaming flex items-center justify-between text-center">
             <span data-tour="credentials-title">✅ Conta criada com sucesso!</span>
             <TutorialButton onStart={startTutorial} hasSeenTutorial={hasSeenTutorial} variant="default" />
           </DialogTitle>

@@ -80,8 +80,8 @@ export function ApprovalActionsModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader>
+      <DialogContent size="md" height="auto">
+        <DialogHeader className="modal-header-gaming">
           <div className="flex items-center gap-3">
             <div className={`p-2 rounded-full ${
               action === 'approve' ? 'bg-green-100 text-green-600' :

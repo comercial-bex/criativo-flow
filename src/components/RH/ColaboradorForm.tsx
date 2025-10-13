@@ -102,7 +102,7 @@ export function ColaboradorForm({ pessoa, open, onOpenChange }: ColaboradorFormP
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent size="2xl" height="xl" overflow="auto">
         <DialogHeader>
           <DialogTitle className="text-2xl font-montserrat">
             {pessoa ? 'Editar Pessoa' : 'Nova Pessoa'}

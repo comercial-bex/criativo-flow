@@ -42,7 +42,7 @@ export function ViewClienteModal({ isOpen, onClose, cliente }: ViewClienteModalP
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+      <DialogContent size="lg" height="xl" overflow="auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-blue-600 dark:text-blue-400">
             <Building2 className="w-5 h-5" />

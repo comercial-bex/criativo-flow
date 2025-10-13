@@ -137,7 +137,7 @@ export function ProjetoManager({ clienteId }: ProjetoManagerProps) {
             </Button>
           </DialogTrigger>
           
-          <DialogContent className="sm:max-w-[600px]">
+          <DialogContent size="lg" height="auto">
             <form onSubmit={handleSubmit}>
               <DialogHeader>
                 <DialogTitle>

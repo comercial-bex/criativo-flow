@@ -97,9 +97,9 @@ export function HelpModal() {
         </Button>
       </DialogTrigger>
       
-      <DialogContent className="max-w-4xl max-h-[90vh]">
-        <DialogHeader>
-          <DialogTitle>Central de Ajuda</DialogTitle>
+      <DialogContent size="2xl" height="xl">
+        <DialogHeader className="modal-header-gaming">
+          <DialogTitle className="modal-title-gaming">Central de Ajuda</DialogTitle>
           <DialogDescription>
             Encontre respostas para suas dúvidas e aprenda a usar o sistema
           </DialogDescription>

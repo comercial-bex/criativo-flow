@@ -129,8 +129,8 @@ export function StandardTaskModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-6xl max-h-[90vh] p-0 overflow-hidden">
-        <DialogHeader className="px-6 pt-6 pb-4 space-y-4">
+      <DialogContent size="2xl" height="xl" padding="none" overflow="hidden">
+        <DialogHeader className="modal-header-gaming space-y-4">
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1 space-y-2">
               {isEditing ? (

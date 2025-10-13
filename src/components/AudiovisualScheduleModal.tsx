@@ -342,10 +342,10 @@ export function AudiovisualScheduleModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Video className="h-5 w-5 text-orange-500" />
+      <DialogContent size="xl" height="xl" overflow="auto">
+        <DialogHeader className="modal-header-gaming">
+          <DialogTitle className="modal-title-gaming flex items-center gap-2">
+            <Video className="h-5 w-5" />
             Agendar Captação Audiovisual
           </DialogTitle>
           <DialogDescription>

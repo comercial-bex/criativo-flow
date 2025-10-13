@@ -72,9 +72,9 @@ export function ClientViewModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-3">
+      <DialogContent size="xl" height="xl" overflow="auto">
+        <DialogHeader className="modal-header-gaming">
+          <DialogTitle className="modal-title-gaming flex items-center gap-3">
             <Avatar className="h-12 w-12 ring-2 ring-background shadow-sm">
               {cliente.logo_url ? (
                 <AvatarImage 
