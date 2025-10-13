@@ -7,6 +7,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { UniversalKanbanBoard } from '@/components/UniversalKanbanBoard';
 import { TrelloStyleTaskModal } from '@/components/TrelloStyleTaskModal';
 import { CreateTaskModal } from '@/components/CreateTaskModal';
+import { FloatingActionButton } from '@/components/FloatingActionButton';
 import { useToast } from '@/hooks/use-toast';
 import { sanitizeTaskPayload } from '@/utils/tarefaUtils';
 
@@ -257,45 +258,53 @@ const TarefasUnificadasAudiovisual: React.FC = () => {
 
       {/* Cards de Estatísticas */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total de Tarefas</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.total}</div>
-          </CardContent>
-        </Card>
+        <BexCard variant="gaming" withGlow>
+          <BexCardContent className="p-4 flex items-center gap-3">
+            <div className="p-2 bg-blue-100 rounded-lg">
+              <Users className="h-4 w-4 text-blue-600" />
+            </div>
+            <div>
+              <p className="bex-text-muted text-sm">Total</p>
+              <p className="text-2xl font-bold">{stats.total}</p>
+            </div>
+          </BexCardContent>
+        </BexCard>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Em Produção</CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-yellow-600">{stats.emAndamento}</div>
-          </CardContent>
-        </Card>
+        <BexCard variant="gaming" withGlow>
+          <BexCardContent className="p-4 flex items-center gap-3">
+            <div className="p-2 bg-yellow-100 rounded-lg">
+              <Clock className="h-4 w-4 text-yellow-600" />
+            </div>
+            <div>
+              <p className="bex-text-muted text-sm">Em Produção</p>
+              <p className="text-2xl font-bold">{stats.emAndamento}</p>
+            </div>
+          </BexCardContent>
+        </BexCard>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pós-Produção</CardTitle>
-            <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-blue-600">{stats.revisao}</div>
-          </CardContent>
-        </Card>
+        <BexCard variant="gaming" withGlow>
+          <BexCardContent className="p-4 flex items-center gap-3">
+            <div className="p-2 bg-blue-100 rounded-lg">
+              <CheckCircle2 className="h-4 w-4 text-blue-600" />
+            </div>
+            <div>
+              <p className="bex-text-muted text-sm">Pós-Produção</p>
+              <p className="text-2xl font-bold">{stats.revisao}</p>
+            </div>
+          </BexCardContent>
+        </BexCard>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Atrasadas</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-600">{stats.atrasadas}</div>
-          </CardContent>
-        </Card>
+        <BexCard variant="gaming" withGlow>
+          <BexCardContent className="p-4 flex items-center gap-3">
+            <div className="p-2 bg-red-100 rounded-lg">
+              <AlertTriangle className="h-4 w-4 text-red-600" />
+            </div>
+            <div>
+              <p className="bex-text-muted text-sm">Atrasadas</p>
+              <p className="text-2xl font-bold">{stats.atrasadas}</p>
+            </div>
+          </BexCardContent>
+        </BexCard>
       </div>
 
       {/* Kanban Board */}
@@ -335,6 +344,12 @@ const TarefasUnificadasAudiovisual: React.FC = () => {
           defaultStatus="roteiro"
         />
       )}
+
+      {/* FAB */}
+      <FloatingActionButton
+        onClick={() => setShowCreateModal(true)}
+        label="Nova Tarefa Audiovisual"
+      />
     </div>
   );
 };

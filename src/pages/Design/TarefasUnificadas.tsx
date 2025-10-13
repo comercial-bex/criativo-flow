@@ -402,10 +402,10 @@ export default function TarefasUnificadasDesign() {
               Nova Tarefa
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-3xl">
-            <DialogHeader>
-              <DialogTitle>Nova Tarefa de Design</DialogTitle>
-            </DialogHeader>
+          <BexDialogContent className="max-w-3xl" variant="gaming">
+            <BexDialogHeader>
+              <BexDialogTitle gaming>Nova Tarefa de Design</BexDialogTitle>
+            </BexDialogHeader>
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -539,71 +539,71 @@ export default function TarefasUnificadasDesign() {
                 </Button>
               </div>
             </div>
-          </DialogContent>
+          </BexDialogContent>
         </Dialog>
       </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-        <Card>
-          <CardContent className="p-4 flex items-center gap-3">
+        <BexCard variant="gaming" withGlow>
+          <BexCardContent className="p-4 flex items-center gap-3">
             <div className="p-2 bg-blue-100 rounded-lg">
               <BarChart3 className="h-5 w-5 text-blue-600" />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Total</p>
+              <p className="bex-text-muted text-sm">Total</p>
               <p className="text-2xl font-bold">{stats.total}</p>
             </div>
-          </CardContent>
-        </Card>
+          </BexCardContent>
+        </BexCard>
 
-        <Card>
-          <CardContent className="p-4 flex items-center gap-3">
+        <BexCard variant="gaming" withGlow>
+          <BexCardContent className="p-4 flex items-center gap-3">
             <div className="p-2 bg-blue-100 rounded-lg">
               <Layers className="h-5 w-5 text-blue-600" />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Briefing</p>
+              <p className="bex-text-muted text-sm">Briefing</p>
               <p className="text-2xl font-bold">{stats.briefing}</p>
             </div>
-          </CardContent>
-        </Card>
+          </BexCardContent>
+        </BexCard>
 
-        <Card>
-          <CardContent className="p-4 flex items-center gap-3">
+        <BexCard variant="gaming" withGlow>
+          <BexCardContent className="p-4 flex items-center gap-3">
             <div className="p-2 bg-purple-100 rounded-lg">
               <Palette className="h-5 w-5 text-purple-600" />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Em Criação</p>
+              <p className="bex-text-muted text-sm">Em Criação</p>
               <p className="text-2xl font-bold">{stats.emCriacao}</p>
             </div>
-          </CardContent>
-        </Card>
+          </BexCardContent>
+        </BexCard>
 
-        <Card>
-          <CardContent className="p-4 flex items-center gap-3">
+        <BexCard variant="gaming" withGlow>
+          <BexCardContent className="p-4 flex items-center gap-3">
             <div className="p-2 bg-orange-100 rounded-lg">
               <Eye className="h-5 w-5 text-orange-600" />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Aprovação</p>
+              <p className="bex-text-muted text-sm">Aprovação</p>
               <p className="text-2xl font-bold">{stats.aprovacaoCliente}</p>
             </div>
-          </CardContent>
-        </Card>
+          </BexCardContent>
+        </BexCard>
 
-        <Card>
-          <CardContent className="p-4 flex items-center gap-3">
+        <BexCard variant="gaming" withGlow>
+          <BexCardContent className="p-4 flex items-center gap-3">
             <div className="p-2 bg-green-100 rounded-lg">
               <CheckCircle className="h-5 w-5 text-green-600" />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Entregues</p>
+              <p className="bex-text-muted text-sm">Entregues</p>
               <p className="text-2xl font-bold">{stats.entregues}</p>
             </div>
-          </CardContent>
-        </Card>
+          </BexCardContent>
+        </BexCard>
       </div>
 
       {/* Kanban Board */}

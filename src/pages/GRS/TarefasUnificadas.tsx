@@ -398,53 +398,53 @@ export default function TarefasUnificadasGRS() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-4 flex items-center gap-3">
+        <BexCard variant="gaming" withGlow>
+          <BexCardContent className="p-4 flex items-center gap-3">
             <div className="p-2 bg-blue-100 rounded-lg">
               <BarChart3 className="h-5 w-5 text-blue-600" />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Total</p>
+              <p className="bex-text-muted text-sm">Total</p>
               <p className="text-2xl font-bold">{stats.total}</p>
             </div>
-          </CardContent>
-        </Card>
+          </BexCardContent>
+        </BexCard>
 
-        <Card>
-          <CardContent className="p-4 flex items-center gap-3">
+        <BexCard variant="gaming" withGlow>
+          <BexCardContent className="p-4 flex items-center gap-3">
             <div className="p-2 bg-yellow-100 rounded-lg">
               <Clock className="h-5 w-5 text-yellow-600" />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Em Andamento</p>
+              <p className="bex-text-muted text-sm">Em Andamento</p>
               <p className="text-2xl font-bold">{stats.emAndamento}</p>
             </div>
-          </CardContent>
-        </Card>
+          </BexCardContent>
+        </BexCard>
 
-        <Card>
-          <CardContent className="p-4 flex items-center gap-3">
+        <BexCard variant="gaming" withGlow>
+          <BexCardContent className="p-4 flex items-center gap-3">
             <div className="p-2 bg-purple-100 rounded-lg">
               <Users className="h-5 w-5 text-purple-600" />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Em Revisão</p>
+              <p className="bex-text-muted text-sm">Em Revisão</p>
               <p className="text-2xl font-bold">{stats.emRevisao}</p>
             </div>
-          </CardContent>
-        </Card>
+          </BexCardContent>
+        </BexCard>
 
-        <Card>
-          <CardContent className="p-4 flex items-center gap-3">
+        <BexCard variant="gaming" withGlow>
+          <BexCardContent className="p-4 flex items-center gap-3">
             <div className="p-2 bg-red-100 rounded-lg">
               <TrendingUp className="h-5 w-5 text-red-600" />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Atrasadas</p>
+              <p className="bex-text-muted text-sm">Atrasadas</p>
               <p className="text-2xl font-bold">{stats.atrasadas}</p>
             </div>
-          </CardContent>
-        </Card>
+          </BexCardContent>
+        </BexCard>
       </div>
 
       {/* Kanban Board */}
