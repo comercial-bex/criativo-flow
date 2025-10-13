@@ -5170,6 +5170,7 @@ export type Database = {
           lida: boolean
           link_acao: string | null
           mensagem: string
+          metadata: Json | null
           tipo: string
           titulo: string
           updated_at: string
@@ -5182,6 +5183,7 @@ export type Database = {
           lida?: boolean
           link_acao?: string | null
           mensagem: string
+          metadata?: Json | null
           tipo?: string
           titulo: string
           updated_at?: string
@@ -5194,6 +5196,7 @@ export type Database = {
           lida?: boolean
           link_acao?: string | null
           mensagem?: string
+          metadata?: Json | null
           tipo?: string
           titulo?: string
           updated_at?: string
