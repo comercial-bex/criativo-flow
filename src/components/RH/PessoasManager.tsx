@@ -17,6 +17,8 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useEspecialistas } from '@/hooks/useEspecialistas';
 import { formatCPF, isValidCPF, cleanCPF } from '@/lib/cpf-utils';
 import { Plus, Search, User, UserCheck, UserX, Pencil, AlertCircle, Database } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { smartToast } from '@/lib/smart-toast';
 
 export function PessoasManager() {
   const queryClient = useQueryClient();
@@ -225,10 +227,31 @@ export function PessoasManager() {
                       <div className="flex gap-2">
                         <Select
                           value={formData.profile_id || undefined}
-                          onValueChange={(value) => {
-                            // FASE 2: Auto-preencher dados do especialista (nome, email, telefone)
+                          onValueChange={async (value) => {
+                            // FASE 1: Verificar se pessoa já existe com este profile_id
                             const especialista = especialistas.find(e => e.id === value);
-                            if (especialista) {
+                            if (!especialista) return;
+                            
+                            const { data: pessoaExistente } = await supabase
+                              .from('pessoas')
+                              .select('*')
+                              .eq('profile_id', value)
+                              .maybeSingle();
+                            
+                            if (pessoaExistente) {
+                              // Já existe: carregar para EDIÇÃO
+                              setPessoaEditando(pessoaExistente);
+                              setFormData({
+                                ...pessoaExistente,
+                                telefones: pessoaExistente.telefones || ['']
+                              });
+                              
+                              smartToast.info(
+                                'Pessoa já cadastrada', 
+                                `${pessoaExistente.nome} já existe. Editando registro existente.`
+                              );
+                            } else {
+                              // Não existe: importar dados para CRIAÇÃO
                               setFormData({
                                 ...formData,
                                 profile_id: value,
