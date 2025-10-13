@@ -520,8 +520,12 @@ All colors MUST be HSL.
   
   /* Modal Scrollable Area */
   .modal-scroll-area {
-    @apply scrollbar-thin scrollbar-thumb-bex/30 scrollbar-track-transparent;
+    @apply scrollbar-thin scrollbar-thumb-bex/30;
     @apply hover:scrollbar-thumb-bex/50;
+  }
+  
+  .modal-scroll-area::-webkit-scrollbar-track {
+    @apply bg-transparent;
   }
 }
 
