@@ -40,6 +40,7 @@ import { useAdminUserManagement } from '@/hooks/useAdminUserManagement';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { NewUserModal } from '@/components/Admin/NewUserModal';
 import { DataSyncIndicator } from '@/components/Admin/DataSyncIndicator';
+import { EditRoleDialog } from '@/components/Admin/EditRoleDialog';
 
 interface Profile {
   id: string;
@@ -80,6 +81,8 @@ const Usuarios = () => {
   const [selectedRole, setSelectedRole] = useState<'admin' | 'gestor' | 'grs' | 'designer' | 'filmmaker' | 'atendimento' | 'financeiro' | 'trafego' | 'cliente' | 'fornecedor' | 'rh' | ''>('');
   const [updatingRole, setUpdatingRole] = useState(false);
   const [newUserModalOpen, setNewUserModalOpen] = useState(false);
+  const [editRoleProfile, setEditRoleProfile] = useState<Profile | null>(null);
+  const [editRoleOpen, setEditRoleOpen] = useState(false);
   const { toast } = useToast();
   const { deleteUser, loading: deleting } = useAdminUserManagement();
 
@@ -195,6 +198,40 @@ const Usuarios = () => {
         description: error.message || "Não foi possível atualizar a role do usuário",
         variant: "destructive",
       });
+    } finally {
+      setUpdatingRole(false);
+    }
+  };
+
+  const handleUpdateRoleFromDialog = async (profileId: string, newRole: string) => {
+    const profile = profiles.find(p => p.id === profileId);
+    if (!profile) return;
+
+    setUpdatingRole(true);
+    try {
+      const { error } = await supabase.rpc('update_user_role', {
+        p_user_id: profileId,
+        p_new_role: newRole as 'admin' | 'gestor' | 'grs' | 'designer' | 'filmmaker' | 'atendimento' | 'financeiro' | 'trafego' | 'cliente' | 'fornecedor' | 'rh'
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "✅ Role atualizada com sucesso!",
+        description: `${profile.nome} agora tem a role: ${newRole}`,
+      });
+
+      fetchData();
+      setEditRoleOpen(false);
+      setEditRoleProfile(null);
+    } catch (error: any) {
+      console.error('Erro ao atualizar role:', error);
+      toast({
+        title: "❌ Erro ao atualizar role",
+        description: error.message || "Não foi possível atualizar a role do usuário",
+        variant: "destructive",
+      });
+      throw error;
     } finally {
       setUpdatingRole(false);
     }
@@ -342,9 +379,25 @@ const Usuarios = () => {
                       setSelectedProfile(profile);
                       setDetailsOpen(true);
                     }}
+                    title="Ver detalhes completos"
                   >
                     <Eye className="h-4 w-4" />
                   </Button>
+
+                  {profile.status === 'aprovado' && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setEditRoleProfile(profile);
+                        setEditRoleOpen(true);
+                      }}
+                      className="text-primary hover:text-primary hover:bg-primary/10"
+                      title="Editar função/role"
+                    >
+                      <Settings className="h-4 w-4" />
+                    </Button>
+                  )}
                   
                   <Button
                     variant="ghost"
@@ -751,6 +804,13 @@ Tem certeza que deseja continuar?`
           open={newUserModalOpen}
           onOpenChange={setNewUserModalOpen}
           onSuccess={fetchData}
+        />
+
+        <EditRoleDialog
+          open={editRoleOpen}
+          onOpenChange={setEditRoleOpen}
+          profile={editRoleProfile}
+          onRoleUpdate={handleUpdateRoleFromDialog}
         />
       </div>
     </PermissionGate>
