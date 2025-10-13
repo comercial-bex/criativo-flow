@@ -8354,6 +8354,7 @@ export type Database = {
           horas_trabalhadas: number | null
           id: string
           kpis: Json | null
+          labels: Json | null
           numero_protocolo: string | null
           origem: string | null
           prazo_executor: string | null
@@ -8395,6 +8396,7 @@ export type Database = {
           horas_trabalhadas?: number | null
           id?: string
           kpis?: Json | null
+          labels?: Json | null
           numero_protocolo?: string | null
           origem?: string | null
           prazo_executor?: string | null
@@ -8436,6 +8438,7 @@ export type Database = {
           horas_trabalhadas?: number | null
           id?: string
           kpis?: Json | null
+          labels?: Json | null
           numero_protocolo?: string | null
           origem?: string | null
           prazo_executor?: string | null

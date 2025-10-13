@@ -67,6 +67,7 @@ interface KanbanTask extends TaskWithDeadline {
   projeto_id?: string;
   capa_anexo_id?: string | null;
   numero_protocolo?: string | null;
+  labels?: Array<{color: string; text: string}>;
 }
 
 interface TaskDetailsModalProps {
@@ -90,14 +91,22 @@ export function TaskDetailsModal({ open, onOpenChange, task, onTaskUpdate }: Tas
   const [briefingEditData, setBriefingEditData] = useState<any>({});
   const [quickTimeDialogOpen, setQuickTimeDialogOpen] = useState(false);
   const [labelsDialogOpen, setLabelsDialogOpen] = useState(false);
-  const [datePickerOpen, setDatePickerOpen] = useState(false);
-  const [taskLabels, setTaskLabels] = useState<string[]>([]);
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(task?.data_prazo ? new Date(task.data_prazo) : undefined);
+  const [taskLabels, setTaskLabels] = useState<Array<{color: string; text: string}>>([]);
   const { updateCoverAnexo } = useTaskCover(task?.id || '', task?.capa_anexo_id);
+
+  const LABEL_COLORS = [
+    { name: 'Verde', value: 'bg-green-500', textClass: 'text-white' },
+    { name: 'Azul', value: 'bg-blue-500', textClass: 'text-white' },
+    { name: 'Amarelo', value: 'bg-yellow-500', textClass: 'text-white' },
+    { name: 'Vermelho', value: 'bg-red-500', textClass: 'text-white' },
+    { name: 'Roxo', value: 'bg-purple-500', textClass: 'text-white' },
+    { name: 'Rosa', value: 'bg-pink-500', textClass: 'text-white' },
+  ];
 
   useEffect(() => {
     if (task) {
       setChecklistItems(task.checklist || []);
+      setTaskLabels(task.labels || []);
       setEditData({
         horas_trabalhadas: task.horas_trabalhadas || 0,
         observacoes_trabalho: ''
@@ -132,6 +141,25 @@ export function TaskDetailsModal({ open, onOpenChange, task, onTaskUpdate }: Tas
       loadBriefing();
     }
   }, [task]);
+
+  const handleToggleLabel = async (color: string, name: string) => {
+    if (!task) return;
+    const exists = taskLabels.find(l => l.color === color);
+    let newLabels;
+    
+    if (exists) {
+      newLabels = taskLabels.filter(l => l.color !== color);
+    } else {
+      newLabels = [...taskLabels, { color, text: name }];
+    }
+    
+    setTaskLabels(newLabels);
+    await onTaskUpdate(task.id, { labels: newLabels });
+    toast({
+      title: exists ? 'Etiqueta removida' : 'Etiqueta adicionada',
+      variant: 'default'
+    });
+  };
 
   if (!task) return null;
 
@@ -384,22 +412,7 @@ export function TaskDetailsModal({ open, onOpenChange, task, onTaskUpdate }: Tas
     });
   };
 
-  const handleSaveDate = async (date: Date | undefined) => {
-    if (!date || !task) return;
-    
-    try {
-      await onTaskUpdate(task.id, { data_prazo: date.toISOString() });
-      setSelectedDate(date);
-      setDatePickerOpen(false);
-      toast({ 
-        title: '✅ Prazo atualizado',
-        description: `Novo prazo: ${format(date, "dd/MM/yyyy", { locale: ptBR })}`
-      });
-    } catch (error) {
-      console.error('Erro ao atualizar prazo:', error);
-      toast({ title: '❌ Erro ao atualizar prazo', variant: 'destructive' });
-    }
-  };
+  // Removed handleSaveDate - prazo field exists in header
 
   const handleScrollToChecklist = () => {
     const checklistTrigger = document.querySelector('[data-value="checklist"]') as HTMLElement;
@@ -447,6 +460,20 @@ export function TaskDetailsModal({ open, onOpenChange, task, onTaskUpdate }: Tas
                 </div>
               )}
             </div>
+
+            {/* Labels */}
+            {taskLabels.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {taskLabels.map((label, idx) => (
+                  <BexBadge 
+                    key={idx}
+                    className={cn(label.color, "text-white")}
+                  >
+                    {label.text}
+                  </BexBadge>
+                ))}
+              </div>
+            )}
 
             {/* Participantes da Tarefa */}
             <TaskParticipants
@@ -922,8 +949,6 @@ export function TaskDetailsModal({ open, onOpenChange, task, onTaskUpdate }: Tas
                 }
               }}
               onOpenLabelsDialog={() => setLabelsDialogOpen(true)}
-              onOpenDatePicker={() => setDatePickerOpen(true)}
-              onScrollToChecklist={handleScrollToChecklist}
             />
           </div>
 
@@ -990,31 +1015,32 @@ export function TaskDetailsModal({ open, onOpenChange, task, onTaskUpdate }: Tas
 
         {/* Dialog de Etiquetas */}
         <Dialog open={labelsDialogOpen} onOpenChange={setLabelsDialogOpen}>
-          <BexDialogContent variant="gaming" className="sm:max-w-md">
+          <BexDialogContent variant="gaming" className="max-w-md">
             <BexDialogHeader>
-              <BexDialogTitle gaming>Gerenciar Etiquetas</BexDialogTitle>
+              <BexDialogTitle gaming>🏷️ Gerenciar Etiquetas</BexDialogTitle>
             </BexDialogHeader>
             <div className="space-y-3 py-4 px-6">
-              <p className="text-sm text-muted-foreground">
-                Funcionalidade em desenvolvimento
-              </p>
-            </div>
-          </BexDialogContent>
-        </Dialog>
-
-        {/* DatePicker de Prazo */}
-        <Dialog open={datePickerOpen} onOpenChange={setDatePickerOpen}>
-          <BexDialogContent variant="gaming" className="sm:max-w-md">
-            <BexDialogHeader>
-              <BexDialogTitle gaming>Alterar Prazo</BexDialogTitle>
-            </BexDialogHeader>
-            <div className="py-4 px-6 flex justify-center">
-              <CalendarComponent
-                mode="single"
-                selected={selectedDate}
-                onSelect={handleSaveDate}
-                className="rounded-md border pointer-events-auto"
-              />
+              {LABEL_COLORS.map((label) => {
+                const isSelected = taskLabels.some(l => l.color === label.value);
+                return (
+                  <button
+                    key={label.value}
+                    onClick={() => handleToggleLabel(label.value, label.name)}
+                    className={cn(
+                      "w-full p-3 rounded-lg border-2 transition-all text-left hover:scale-[1.02]",
+                      isSelected 
+                        ? "border-bex bg-bex/10" 
+                        : "border-border hover:border-bex/50"
+                    )}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={cn("w-6 h-6 rounded", label.value)} />
+                      <span className="font-medium">{label.name}</span>
+                      {isSelected && <CheckCircle2 className="h-5 w-5 ml-auto text-bex" />}
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           </BexDialogContent>
         </Dialog>

@@ -4,7 +4,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { BexCard } from '@/components/ui/bex-card';
-import { MessageSquare, Send, Clock, CheckCircle2, Paperclip, AlertCircle, RefreshCw, User } from 'lucide-react';
+import { MessageSquare, Send, Clock, CheckCircle2, Paperclip, AlertCircle, RefreshCw, User, Bell } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -32,9 +32,13 @@ export function TaskActivities({ tarefaId, className }: TaskActivitiesProps) {
   const [comentario, setComentario] = useState('');
   const [loading, setLoading] = useState(false);
   const [loadingActivities, setLoadingActivities] = useState(true);
+  const [canComment, setCanComment] = useState(false);
+  const [needsToFollow, setNeedsToFollow] = useState(false);
+  const [checkingPermissions, setCheckingPermissions] = useState(true);
 
   useEffect(() => {
     loadActivities();
+    checkCanComment();
     
     // Subscription para updates em tempo real
     const channel = supabase
@@ -58,6 +62,45 @@ export function TaskActivities({ tarefaId, className }: TaskActivitiesProps) {
       supabase.removeChannel(channel);
     };
   }, [tarefaId]);
+
+  const checkCanComment = async () => {
+    try {
+      setCheckingPermissions(true);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        setCanComment(false);
+        setNeedsToFollow(true);
+        return;
+      }
+
+      // Verificar se é responsável/executor/admin/GRS
+      const { data: tarefa } = await supabase
+        .from('tarefa')
+        .select('responsavel_id, executor_id, cliente_id')
+        .eq('id', tarefaId)
+        .single();
+
+      const isResponsible = tarefa?.responsavel_id === user.id;
+      const isExecutor = tarefa?.executor_id === user.id;
+      
+      // Verificar se está seguindo
+      const { data: seguindo } = await supabase
+        .from('tarefa_seguidores')
+        .select('id')
+        .eq('tarefa_id', tarefaId)
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      setCanComment(isResponsible || isExecutor || !!seguindo);
+      setNeedsToFollow(!isResponsible && !isExecutor && !seguindo);
+    } catch (error) {
+      console.error('Erro ao verificar permissões:', error);
+      setCanComment(false);
+      setNeedsToFollow(true);
+    } finally {
+      setCheckingPermissions(false);
+    }
+  };
 
   const loadActivities = async () => {
     try {
@@ -163,32 +206,56 @@ export function TaskActivities({ tarefaId, className }: TaskActivitiesProps) {
   return (
     <div className={cn("space-y-4", className)}>
       {/* Campo de comentário */}
-      <BexCard variant="glass">
-        <div className="p-4 space-y-3">
-          <label className="bex-body font-medium text-muted-foreground flex items-center gap-2">
-            <MessageSquare className="h-4 w-4" />
-            Escrever um comentário...
-          </label>
-          <div className="flex gap-2">
-            <Textarea
-              placeholder="Adicione uma atualização, pergunta ou observação..."
-              value={comentario}
-              onChange={(e) => setComentario(e.target.value)}
-              rows={3}
-              className="flex-1 resize-none"
-              disabled={loading}
-            />
-            <Button
-              onClick={handleAddComentario}
-              disabled={!comentario.trim() || loading}
-              className="self-end bg-bex hover:bg-bex-dark"
-              size="sm"
+      {checkingPermissions ? (
+        <BexCard variant="glass">
+          <div className="p-4 animate-pulse">
+            <div className="h-20 bg-muted rounded" />
+          </div>
+        </BexCard>
+      ) : needsToFollow ? (
+        <BexCard variant="glass">
+          <div className="p-4 text-center space-y-3">
+            <MessageSquare className="h-8 w-8 mx-auto text-muted-foreground/50" />
+            <p className="bex-body text-muted-foreground">
+              Você precisa seguir esta tarefa para adicionar comentários
+            </p>
+            <Button 
+              onClick={() => window.location.reload()}
+              className="bg-bex hover:bg-bex-dark"
             >
-              <Send className="h-4 w-4" />
+              <Bell className="h-4 w-4 mr-2" />
+              Seguir Tarefa para Comentar
             </Button>
           </div>
-        </div>
-      </BexCard>
+        </BexCard>
+      ) : (
+        <BexCard variant="glass">
+          <div className="p-4 space-y-3">
+            <label className="bex-body font-medium text-muted-foreground flex items-center gap-2">
+              <MessageSquare className="h-4 w-4" />
+              Escrever um comentário...
+            </label>
+            <div className="flex gap-2">
+              <Textarea
+                placeholder="Adicione uma atualização, pergunta ou observação..."
+                value={comentario}
+                onChange={(e) => setComentario(e.target.value)}
+                rows={3}
+                className="flex-1 resize-none"
+                disabled={loading}
+              />
+              <Button
+                onClick={handleAddComentario}
+                disabled={!comentario.trim() || loading}
+                className="self-end bg-bex hover:bg-bex-dark"
+                size="sm"
+              >
+                <Send className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        </BexCard>
+      )}
 
       {/* Timeline de atividades */}
       <div className="space-y-3">

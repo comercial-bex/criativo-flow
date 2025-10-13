@@ -5,10 +5,7 @@ import {
   Bell, 
   Archive, 
   Share2, 
-  Tag, 
-  Calendar, 
-  CheckSquare, 
-  Paperclip,
+  Tag,
   BellOff
 } from 'lucide-react';
 import { smartToast } from '@/lib/smart-toast';
@@ -18,16 +15,12 @@ interface TaskActionsSidebarProps {
   tarefaId: string;
   onRefresh?: () => void;
   onOpenLabelsDialog?: () => void;
-  onOpenDatePicker?: () => void;
-  onScrollToChecklist?: () => void;
 }
 
 export function TaskActionsSidebar({ 
   tarefaId,
   onRefresh,
-  onOpenLabelsDialog,
-  onOpenDatePicker,
-  onScrollToChecklist
+  onOpenLabelsDialog
 }: TaskActionsSidebarProps) {
   const [seguindo, setSeguindo] = useState(false);
   const [loadingSeguir, setLoadingSeguir] = useState(false);
@@ -195,35 +188,15 @@ export function TaskActionsSidebar({
         <h4 className="bex-text-muted font-semibold uppercase text-xs tracking-wider">
           Adicionar ao cartão
         </h4>
-        <div className="grid grid-cols-2 gap-2">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="justify-start"
-            onClick={onOpenLabelsDialog}
-          >
-            <Tag className="h-4 w-4 mr-2" />
-            Etiquetas
-          </Button>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="justify-start"
-            onClick={onOpenDatePicker}
-          >
-            <Calendar className="h-4 w-4 mr-2" />
-            Datas
-          </Button>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="justify-start col-span-2"
-            onClick={onScrollToChecklist}
-          >
-            <CheckSquare className="h-4 w-4 mr-2" />
-            Checklist
-          </Button>
-        </div>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          className="w-full justify-start"
+          onClick={onOpenLabelsDialog}
+        >
+          <Tag className="h-4 w-4 mr-2" />
+          Etiquetas
+        </Button>
       </div>
     </div>
   );
