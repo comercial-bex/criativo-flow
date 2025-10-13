@@ -15,6 +15,7 @@ import { usePessoas, Pessoa } from '@/hooks/usePessoas';
 import { useColaboradorTempData } from '@/hooks/useColaboradorTempData';
 import { useQueryClient } from '@tanstack/react-query';
 import { useEspecialistas } from '@/hooks/useEspecialistas';
+import { formatCPF, isValidCPF, cleanCPF } from '@/lib/cpf-utils';
 import { Plus, Search, User, UserCheck, UserX, Pencil, AlertCircle, Database } from 'lucide-react';
 
 export function PessoasManager() {
@@ -23,6 +24,7 @@ export function PessoasManager() {
   const [busca, setBusca] = useState('');
   const [modalAberto, setModalAberto] = useState(false);
   const [pessoaEditando, setPessoaEditando] = useState<Pessoa | null>(null);
+  const [cpfError, setCpfError] = useState<string>('');
   const { pessoas, isLoading, criar, atualizar, desativar, isCriando, isAtualizando } = usePessoas(filtro);
   const { dadosPendentes } = useColaboradorTempData();
   const { data: especialistas = [] } = useEspecialistas();
@@ -315,8 +317,34 @@ export function PessoasManager() {
                         <Input
                           id="cpf"
                           value={formData.cpf || ''}
-                          onChange={(e) => setFormData({ ...formData, cpf: e.target.value })}
+                          onChange={(e) => {
+                            // FASE 2/4: Formatar CPF em tempo real
+                            const formatted = formatCPF(e.target.value);
+                            setFormData({ ...formData, cpf: formatted });
+                            
+                            // Limpar erro ao digitar
+                            if (cpfError) setCpfError('');
+                          }}
+                          onBlur={() => {
+                            // FASE 2: Validar CPF ao sair do campo
+                            if (formData.cpf && formData.cpf.length > 0) {
+                              const cpfLimpo = cleanCPF(formData.cpf);
+                              if (cpfLimpo.length === 11 && !isValidCPF(formData.cpf)) {
+                                setCpfError('CPF inválido');
+                              } else {
+                                setCpfError('');
+                              }
+                            }
+                          }}
+                          placeholder="000.000.000-00"
+                          className={cpfError ? 'border-red-500' : ''}
                         />
+                        {cpfError && (
+                          <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
+                            <AlertCircle className="h-3 w-3" />
+                            {cpfError}
+                          </p>
+                        )}
                       </div>
                     </div>
                     <div>
@@ -543,7 +571,10 @@ export function PessoasManager() {
                   <Button variant="outline" onClick={() => setModalAberto(false)}>
                     Cancelar
                   </Button>
-                  <Button onClick={handleSubmit} disabled={isCriando || isAtualizando}>
+                  <Button 
+                    onClick={handleSubmit} 
+                    disabled={isCriando || isAtualizando || !!cpfError}
+                  >
                     {pessoaEditando ? 'Atualizar' : 'Cadastrar'}
                   </Button>
                 </DialogFooter>
