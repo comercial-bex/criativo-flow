@@ -67,12 +67,13 @@ export function usePessoas(papel?: 'colaborador' | 'especialista' | 'cliente') {
         throw new Error('Pelo menos um papel deve ser selecionado');
       }
 
+      // FASE 3: Usar maybeSingle() para evitar erros quando não há duplicatas
       if (dados.cpf) {
         const { data: existe } = await supabase
           .from('pessoas')
           .select('id')
           .eq('cpf', dados.cpf)
-          .single();
+          .maybeSingle();
         
         if (existe) {
           throw new Error('CPF já cadastrado');
@@ -84,7 +85,7 @@ export function usePessoas(papel?: 'colaborador' | 'especialista' | 'cliente') {
           .from('pessoas')
           .select('id')
           .eq('email', dados.email)
-          .single();
+          .maybeSingle();
         
         if (existe) {
           throw new Error('Email já cadastrado');

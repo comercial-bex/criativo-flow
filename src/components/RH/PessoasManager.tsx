@@ -13,9 +13,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { usePessoas, Pessoa } from '@/hooks/usePessoas';
 import { useColaboradorTempData } from '@/hooks/useColaboradorTempData';
+import { useQueryClient } from '@tanstack/react-query';
 import { Plus, Search, User, UserCheck, UserX, Pencil, AlertCircle, Database } from 'lucide-react';
 
 export function PessoasManager() {
+  const queryClient = useQueryClient();
   const [filtro, setFiltro] = useState<'colaborador' | 'especialista' | 'cliente' | undefined>();
   const [busca, setBusca] = useState('');
   const [modalAberto, setModalAberto] = useState(false);
@@ -71,6 +73,11 @@ export function PessoasManager() {
       atualizar({ id: pessoaEditando.id, ...formData });
     } else {
       criar(formData as Omit<Pessoa, 'id' | 'created_at' | 'updated_at'>);
+      
+      // FASE 2: Forçar atualização da lista após criar pessoa
+      setTimeout(() => {
+        queryClient.invalidateQueries({ queryKey: ['pessoas'] });
+      }, 500);
     }
 
     setModalAberto(false);
