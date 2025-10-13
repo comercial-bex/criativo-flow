@@ -8354,6 +8354,7 @@ export type Database = {
           horas_trabalhadas: number | null
           id: string
           kpis: Json | null
+          numero_protocolo: string | null
           origem: string | null
           prazo_executor: string | null
           prioridade: Database["public"]["Enums"]["prioridade_enum"] | null
@@ -8394,6 +8395,7 @@ export type Database = {
           horas_trabalhadas?: number | null
           id?: string
           kpis?: Json | null
+          numero_protocolo?: string | null
           origem?: string | null
           prazo_executor?: string | null
           prioridade?: Database["public"]["Enums"]["prioridade_enum"] | null
@@ -8434,6 +8436,7 @@ export type Database = {
           horas_trabalhadas?: number | null
           id?: string
           kpis?: Json | null
+          numero_protocolo?: string | null
           origem?: string | null
           prazo_executor?: string | null
           prioridade?: Database["public"]["Enums"]["prioridade_enum"] | null
