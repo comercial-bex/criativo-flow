@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { Save, X, Download } from "lucide-react";
+import { Save, X, Download, ChevronLeft, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { SwotAnalysisIA } from "@/components/SwotAnalysisIA";
@@ -17,6 +17,11 @@ import { SocialIntegrationsCard } from "@/components/SocialIntegrationsCard";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { FieldWithTooltip } from "@/components/OnboardingForm/FieldWithTooltip";
 import { ONBOARDING_TOOLTIPS } from "@/components/OnboardingForm/onboarding-tooltips";
+import { StepperNav } from "@/components/OnboardingV3/StepperNav";
+import { ConcorrentesSection } from "@/components/OnboardingV3/ConcorrentesSection";
+import { VisualizacaoComparativa } from "@/components/OnboardingV3/VisualizacaoComparativa";
+import { RelatorioIA } from "@/components/OnboardingV3/RelatorioIA";
+import { bexThemeV3 } from "@/styles/bex-theme";
 
 interface OnboardingFormProps {
   isOpen: boolean;
@@ -97,6 +102,20 @@ interface OnboardingData {
   ameacas: string;
 }
 
+interface ConcorrenteData {
+  id?: string;
+  nome: string;
+  site?: string;
+  instagram?: string;
+  facebook?: string;
+  tiktok?: string;
+  youtube?: string;
+  linkedin?: string;
+  observacoes?: string;
+  analise_ia?: any;
+  analisado_em?: string;
+}
+
 export function OnboardingForm({ isOpen, onClose, clienteId, cliente, readOnly = false }: OnboardingFormProps) {
   const [formData, setFormData] = useState<OnboardingData>({
     nomeEmpresa: cliente.nome,
@@ -145,13 +164,58 @@ export function OnboardingForm({ isOpen, onClose, clienteId, cliente, readOnly =
   });
 
   const [loading, setLoading] = useState(false);
+  const [currentStep, setCurrentStep] = useState(1);
+  const [concorrentes, setConcorrentes] = useState<ConcorrenteData[]>([]);
 
-  // Carregar dados existentes do onboarding
+  // Definir steps de navegação
+  const steps = [
+    { id: 1, label: 'Identificação', icon: '🏢', completed: currentStep > 1 },
+    { id: 2, label: 'Mercado & SWOT', icon: '📊', completed: currentStep > 2 },
+    { id: 3, label: 'Concorrentes', icon: '🎯', completed: currentStep > 3 },
+    { id: 4, label: 'Análise IA', icon: '🤖', completed: currentStep > 4 },
+    { id: 5, label: 'Relatório', icon: '📄', completed: currentStep > 5 },
+  ];
+
+  // Carregar dados existentes do onboarding e concorrentes
   useEffect(() => {
     if (clienteId && isOpen) {
       carregarDadosOnboarding();
+      carregarConcorrentes();
     }
   }, [clienteId, isOpen]);
+
+  // Carregar concorrentes do banco
+  const carregarConcorrentes = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('concorrentes_analise')
+        .select('*')
+        .eq('cliente_id', clienteId);
+
+      if (error) {
+        console.error('Erro ao carregar concorrentes:', error);
+        return;
+      }
+
+      if (data) {
+        setConcorrentes(data.map(c => ({
+          id: c.id,
+          nome: c.nome,
+          site: c.site,
+          instagram: c.instagram,
+          facebook: c.facebook,
+          tiktok: c.tiktok,
+          youtube: c.youtube,
+          linkedin: c.linkedin,
+          observacoes: c.observacoes,
+          analise_ia: c.analise_ia,
+          analisado_em: c.analisado_em
+        })));
+      }
+    } catch (error) {
+      console.error('Erro ao carregar concorrentes:', error);
+    }
+  };
 
   // Carregar dados do onboarding existente
   const carregarDadosOnboarding = async () => {
@@ -336,19 +400,36 @@ export function OnboardingForm({ isOpen, onClose, clienteId, cliente, readOnly =
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent size="2xl" height="xl">
+      <DialogContent 
+        className="max-w-5xl max-h-[90vh]"
+        style={{ 
+          background: bexThemeV3.colors.bg,
+          color: bexThemeV3.colors.text,
+          fontFamily: bexThemeV3.typography.body
+        }}
+      >
         <DialogHeader>
-          <div className="flex items-center justify-between">
-            <DialogTitle>Formulário de Onboarding - {cliente.nome}</DialogTitle>
-          </div>
+          <DialogTitle style={{ color: bexThemeV3.colors.text, fontFamily: bexThemeV3.typography.heading }}>
+            Formulário de Onboarding - {cliente.nome}
+          </DialogTitle>
         </DialogHeader>
         
-        <ScrollArea className="h-[calc(90vh-120px)] pr-4">
+        {/* Stepper Navigation */}
+        <StepperNav 
+          steps={steps} 
+          currentStep={currentStep} 
+          onStepClick={(step) => !readOnly && setCurrentStep(step)} 
+        />
+        
+        <ScrollArea className="h-[calc(90vh-200px)] pr-4">
           <TooltipProvider>
             <form onSubmit={handleSubmit} className="space-y-8">
             
-            {/* 1. Identificação da Empresa */}
-            <Card>
+            {/* STEP 1: Identificação + Mercado + Cliente + Consumo + Marketing */}
+            {currentStep === 1 && (
+              <div className="space-y-6">
+                {/* 1. Identificação da Empresa */}
+                <Card style={{ background: bexThemeV3.colors.surface, borderColor: bexThemeV3.colors.primary + '30' }}>
               <CardHeader>
                 <CardTitle className="text-lg">1. Identificação da Empresa</CardTitle>
               </CardHeader>
@@ -448,7 +529,7 @@ export function OnboardingForm({ isOpen, onClose, clienteId, cliente, readOnly =
             </Card>
 
             {/* 2. Diagnóstico de Mercado */}
-            <Card>
+            <Card style={{ background: bexThemeV3.colors.surface, borderColor: bexThemeV3.colors.primary + '30' }}>
               <CardHeader>
                 <CardTitle className="text-lg">2. Diagnóstico de Mercado</CardTitle>
               </CardHeader>
@@ -522,7 +603,7 @@ export function OnboardingForm({ isOpen, onClose, clienteId, cliente, readOnly =
             </Card>
 
             {/* 3. Estudo do Cliente */}
-            <Card>
+            <Card style={{ background: bexThemeV3.colors.surface, borderColor: bexThemeV3.colors.primary + '30' }}>
               <CardHeader>
                 <CardTitle className="text-lg">3. Estudo do Cliente</CardTitle>
               </CardHeader>
@@ -592,7 +673,7 @@ export function OnboardingForm({ isOpen, onClose, clienteId, cliente, readOnly =
             </Card>
 
             {/* 4. Comportamento de Consumo */}
-            <Card>
+            <Card style={{ background: bexThemeV3.colors.surface, borderColor: bexThemeV3.colors.primary + '30' }}>
               <CardHeader>
                 <CardTitle className="text-lg">4. Comportamento de Consumo</CardTitle>
               </CardHeader>
@@ -643,7 +724,7 @@ export function OnboardingForm({ isOpen, onClose, clienteId, cliente, readOnly =
             </Card>
 
             {/* 5. Marketing e Comunicação */}
-            <Card>
+            <Card style={{ background: bexThemeV3.colors.surface, borderColor: bexThemeV3.colors.primary + '30' }}>
               <CardHeader>
                 <CardTitle className="text-lg">5. Marketing e Comunicação</CardTitle>
               </CardHeader>
@@ -717,10 +798,14 @@ export function OnboardingForm({ isOpen, onClose, clienteId, cliente, readOnly =
                 </div>
               </CardContent>
             </Card>
+              </div>
+            )}
 
-
-            {/* 6. Ações Promocionais & Publicidade */}
-            <Card>
+            {/* STEP 2: Ações + Social + Objetivos + Comercial + Comunicação + SWOT */}
+            {currentStep === 2 && (
+              <div className="space-y-6">
+                {/* 6. Ações Promocionais & Publicidade */}
+                <Card style={{ background: bexThemeV3.colors.surface, borderColor: bexThemeV3.colors.primary + '30' }}>
               <CardHeader>
                 <CardTitle className="text-lg">6. Ações Promocionais & Publicidade</CardTitle>
               </CardHeader>
@@ -771,7 +856,7 @@ export function OnboardingForm({ isOpen, onClose, clienteId, cliente, readOnly =
             </Card>
 
             {/* Integração com Redes Sociais */}
-            <Card data-intro="social-integration">
+            <Card data-intro="social-integration" style={{ background: bexThemeV3.colors.surface, borderColor: bexThemeV3.colors.accent + '30' }}>
               <CardHeader>
                 <CardTitle className="text-lg">🔗 Conectar Redes Sociais</CardTitle>
                 <p className="text-sm text-muted-foreground">
@@ -794,7 +879,7 @@ export function OnboardingForm({ isOpen, onClose, clienteId, cliente, readOnly =
             </Card>
 
             {/* 7. Objetivos (Plano de Ação 6 meses) */}
-            <Card>
+            <Card style={{ background: bexThemeV3.colors.surface, borderColor: bexThemeV3.colors.primary + '30' }}>
               <CardHeader>
                 <CardTitle className="text-lg">7. Objetivos (Plano de Ação 6 meses)</CardTitle>
               </CardHeader>
@@ -856,7 +941,7 @@ export function OnboardingForm({ isOpen, onClose, clienteId, cliente, readOnly =
             </Card>
 
             {/* 8. Estrutura Comercial */}
-            <Card>
+            <Card style={{ background: bexThemeV3.colors.surface, borderColor: bexThemeV3.colors.primary + '30' }}>
               <CardHeader>
                 <CardTitle className="text-lg">8. Estrutura Comercial</CardTitle>
               </CardHeader>
@@ -911,7 +996,7 @@ export function OnboardingForm({ isOpen, onClose, clienteId, cliente, readOnly =
             </Card>
 
             {/* 9. Plano de Comunicação (Baseado em Storytelling) */}
-            <Card>
+            <Card style={{ background: bexThemeV3.colors.surface, borderColor: bexThemeV3.colors.primary + '30' }}>
               <CardHeader>
                 <CardTitle className="text-lg">9. Plano de Comunicação (Baseado em Storytelling)</CardTitle>
               </CardHeader>
@@ -992,29 +1077,77 @@ export function OnboardingForm({ isOpen, onClose, clienteId, cliente, readOnly =
                 }));
               }}
             />
+              </div>
+            )}
+
+            {/* STEP 3: Concorrentes */}
+            {currentStep === 3 && (
+              <ConcorrentesSection 
+                concorrentes={concorrentes}
+                setConcorrentes={setConcorrentes}
+                clienteId={clienteId}
+              />
+            )}
+
+            {/* STEP 4: Visualizações Comparativas */}
+            {currentStep === 4 && (
+              <VisualizacaoComparativa 
+                clienteId={clienteId}
+                concorrentes={concorrentes}
+              />
+            )}
+
+            {/* STEP 5: Relatório IA */}
+            {currentStep === 5 && (
+              <RelatorioIA
+                clienteId={clienteId}
+                concorrentes={concorrentes}
+              />
+            )}
 
             <Separator />
             
-            {!readOnly && (
-              <div className="flex justify-end gap-2 pt-4">
+            {/* Navegação entre Steps */}
+            <div className="flex justify-between pt-4">
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={() => setCurrentStep(Math.max(1, currentStep - 1))}
+                disabled={currentStep === 1 || readOnly}
+                style={{ borderColor: bexThemeV3.colors.primary }}
+              >
+                <ChevronLeft className="h-4 w-4 mr-2" />
+                Anterior
+              </Button>
+              
+              <div className="flex gap-2">
+                {!readOnly && currentStep < 5 && (
+                  <Button 
+                    type="button"
+                    onClick={() => setCurrentStep(currentStep + 1)}
+                    style={{ background: bexThemeV3.colors.primary, color: bexThemeV3.colors.bg }}
+                  >
+                    Próximo
+                    <ChevronRight className="h-4 w-4 ml-2" />
+                  </Button>
+                )}
+                
+                {!readOnly && currentStep === 5 && (
+                  <Button 
+                    type="submit"
+                    style={{ background: bexThemeV3.colors.accent, color: bexThemeV3.colors.bg }}
+                  >
+                    <Save className="h-4 w-4 mr-2" />
+                    Salvar Onboarding
+                  </Button>
+                )}
+                
                 <Button type="button" variant="outline" onClick={onClose}>
                   <X className="h-4 w-4 mr-2" />
-                  Cancelar
-                </Button>
-                <Button type="submit">
-                  <Save className="h-4 w-4 mr-2" />
-                  Salvar Onboarding
+                  {readOnly ? 'Fechar' : 'Cancelar'}
                 </Button>
               </div>
-            )}
-            {readOnly && (
-              <div className="flex justify-end pt-4">
-                <Button type="button" onClick={onClose}>
-                  <X className="h-4 w-4 mr-2" />
-                  Fechar
-                </Button>
-              </div>
-            )}
+            </div>
           </form>
           </TooltipProvider>
         </ScrollArea>
