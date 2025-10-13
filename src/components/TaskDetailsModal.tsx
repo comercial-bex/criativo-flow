@@ -53,6 +53,7 @@ interface KanbanTask extends TaskWithDeadline {
   checklist?: ChecklistItem[];
   checklist_progress?: number;
   tipo?: TipoTarefa;
+  cliente_id?: string;
 }
 
 interface TaskDetailsModalProps {
@@ -83,15 +84,33 @@ export function TaskDetailsModal({ open, onOpenChange, task, onTaskUpdate }: Tas
         observacoes_trabalho: ''
       });
       
-      // Parse briefing data
-      try {
-        if (task.observacoes) {
-          const parsed = JSON.parse(task.observacoes);
-          setBriefingEditData(parsed);
+      // Carregar briefing da tabela briefings
+      const loadBriefing = async () => {
+        const { supabase } = await import('@/integrations/supabase/client');
+        const { data } = await supabase
+          .from('briefings')
+          .select('*')
+          .eq('tarefa_id', task.id)
+          .maybeSingle();
+        
+        if (data) {
+          setBriefingEditData({
+            objetivo_postagem: data.objetivo_postagem || '',
+            publico_alvo: data.publico_alvo || '',
+            formato_postagem: data.formato_postagem || '',
+            call_to_action: data.call_to_action || '',
+            hashtags: data.hashtags || '',
+            descricao: data.descricao || '',
+            observacoes: data.observacoes || '',
+            contexto_estrategico: data.contexto_estrategico || '',
+            data_fim: data.data_entrega || '',
+            ambiente: data.ambiente || '',
+            locucao: data.locucao || '',
+          });
         }
-      } catch (e) {
-        setBriefingEditData({});
-      }
+      };
+      
+      loadBriefing();
     }
   }, [task]);
 
@@ -197,18 +216,45 @@ export function TaskDetailsModal({ open, onOpenChange, task, onTaskUpdate }: Tas
     if (!task) return;
     
     try {
-      const updatedObservacoes = briefingData 
-        ? { ...briefingData, observacoes_trabalho: editData.observacoes_trabalho }
-        : { observacoes_trabalho: editData.observacoes_trabalho };
-      
+      // Atualizar horas trabalhadas na tarefa
       await onTaskUpdate(task.id, {
         horas_trabalhadas: editData.horas_trabalhadas,
-        observacoes: JSON.stringify(updatedObservacoes)
       });
+
+      // Se houver observações de trabalho, adicionar ao briefing
+      if (editData.observacoes_trabalho) {
+        const { supabase } = await import('@/integrations/supabase/client');
+        const timestamp = new Date().toLocaleString('pt-BR');
+        const novaObservacao = `[${timestamp}] ${editData.observacoes_trabalho}`;
+        
+        const { data: briefingAtual } = await supabase
+          .from('briefings')
+          .select('observacoes')
+          .eq('tarefa_id', task.id)
+          .maybeSingle();
+
+        const observacoesAtualizadas = briefingAtual?.observacoes 
+          ? `${briefingAtual.observacoes}\n\n${novaObservacao}`
+          : novaObservacao;
+
+        await supabase
+          .from('briefings')
+          .upsert({
+            tarefa_id: task.id,
+            cliente_id: task.cliente_id,
+            titulo: task.titulo,
+            observacoes: observacoesAtualizadas,
+          }, {
+            onConflict: 'tarefa_id'
+          });
+      }
       
       setIsEditing(false);
+      setEditData(prev => ({ ...prev, observacoes_trabalho: '' }));
+      toast({ title: "Progresso salvo com sucesso!" });
     } catch (error) {
       console.error('Error saving work progress:', error);
+      toast({ title: "Erro ao salvar progresso", variant: "destructive" });
     }
   };
 
@@ -216,9 +262,31 @@ export function TaskDetailsModal({ open, onOpenChange, task, onTaskUpdate }: Tas
     if (!task) return;
     
     try {
-      await onTaskUpdate(task.id, {
-        observacoes: JSON.stringify(briefingEditData)
-      });
+      const { supabase } = await import('@/integrations/supabase/client');
+      
+      // Salvar briefing na tabela briefings
+      const { error } = await supabase
+        .from('briefings')
+        .upsert({
+          tarefa_id: task.id,
+          cliente_id: task.cliente_id,
+          titulo: task.titulo,
+          objetivo_postagem: briefingEditData.objetivo_postagem || null,
+          publico_alvo: briefingEditData.publico_alvo || null,
+          formato_postagem: briefingEditData.formato_postagem || null,
+          call_to_action: briefingEditData.call_to_action || null,
+          hashtags: briefingEditData.hashtags || null,
+          descricao: briefingEditData.descricao || null,
+          observacoes: briefingEditData.observacoes || null,
+          contexto_estrategico: briefingEditData.contexto_estrategico || null,
+          data_entrega: briefingEditData.data_fim || null,
+          ambiente: briefingEditData.ambiente || null,
+          locucao: briefingEditData.locucao || null,
+        }, {
+          onConflict: 'tarefa_id'
+        });
+
+      if (error) throw error;
       
       setIsEditingBriefing(false);
       toast({ title: "Briefing salvo com sucesso!" });
