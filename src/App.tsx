@@ -10,6 +10,7 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { SmartRedirect } from "@/components/SmartRedirect";
 import { SpecialistGuard } from "@/components/SpecialistGuard";
 import { DeprecatedRouteRedirect } from "@/components/DeprecatedRouteRedirect";
+import { BexThemeProvider } from "@/contexts/BexThemeContext";
 
 
 import Index from "./pages/Index";
@@ -208,11 +209,12 @@ function App() {
         forcedTheme="dark"
         disableTransitionOnChange
       >
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <AuthProvider>
+        <BexThemeProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <AuthProvider>
               <Routes>
                 {/* Public routes */}
                 <Route path="/auth" element={<PublicRoute><Auth /></PublicRoute>} />
@@ -1037,6 +1039,7 @@ function App() {
             </AuthProvider>
           </BrowserRouter>
         </TooltipProvider>
+        </BexThemeProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );

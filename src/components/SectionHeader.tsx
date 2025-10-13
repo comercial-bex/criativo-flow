@@ -29,19 +29,19 @@ export function SectionHeader({
       <div className="space-y-2">
         <div className="flex items-center space-x-3">
           {Icon && (
-            <div className="p-2 rounded-lg bg-primary/10 text-primary">
+            <div className="p-2 rounded-lg bg-bex/10 text-bex">
               <Icon className="h-6 w-6" />
             </div>
           )}
           <div>
             <div className="flex items-center space-x-2">
-              <h1 className="text-3xl font-bold tracking-tight">{title}</h1>
+              <h1 className="bex-title-primary">{title}</h1>
               {badge && (
                 <Badge variant="secondary">{badge}</Badge>
               )}
             </div>
             {description && (
-              <p className="text-muted-foreground mt-1">{description}</p>
+              <p className="bex-text-muted mt-1">{description}</p>
             )}
           </div>
         </div>
