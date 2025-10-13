@@ -153,7 +153,19 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-inter antialiased;
+    letter-spacing: -0.01em;
+  }
+  
+  /* Headings usam Montserrat automaticamente */
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-montserrat font-semibold;
+    letter-spacing: -0.02em;
+  }
+  
+  /* Buttons e labels também usam Montserrat */
+  button, label {
+    @apply font-montserrat;
   }
 }
 
@@ -209,8 +221,40 @@ All colors MUST be HSL.
   }
   
   @keyframes pulseGlow {
-    0%, 100% { box-shadow: 0 0 5px rgba(188, 241, 37, 0.3); }
-    50% { box-shadow: 0 0 15px rgba(188, 241, 37, 0.6); }
+    0%, 100% { 
+      box-shadow: 
+        0 0 5px rgba(84, 196, 61, 0.3),
+        0 0 10px rgba(84, 196, 61, 0.2);
+      transform: scale(1);
+    }
+    50% { 
+      box-shadow: 
+        0 0 15px rgba(84, 196, 61, 0.6),
+        0 0 25px rgba(84, 196, 61, 0.4),
+        0 0 35px rgba(84, 196, 61, 0.2);
+      transform: scale(1.02);
+    }
+  }
+  
+  /* Shimmer loading animation */
+  @keyframes shimmer {
+    0% {
+      background-position: -1000px 0;
+    }
+    100% {
+      background-position: 1000px 0;
+    }
+  }
+  
+  .animate-shimmer {
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(84, 196, 61, 0.1),
+      transparent
+    );
+    background-size: 1000px 100%;
+    animation: shimmer 2s infinite;
   }
   
   /* BEX Gaming utilities */
@@ -264,6 +308,139 @@ All colors MUST be HSL.
   .fab-primary {
     @apply fab-base bg-gradient-to-r from-bex to-bex-light;
     @apply animate-pulse-glow;
+  }
+  
+  /* === BEX Gaming Scrollbar === */
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+  
+  .scrollbar-thumb-bex\/30::-webkit-scrollbar-thumb {
+    @apply bg-bex/30 rounded-full;
+  }
+  
+  .scrollbar-thumb-bex\/50::-webkit-scrollbar-thumb {
+    @apply bg-bex/50 rounded-full;
+  }
+  
+  .hover\:scrollbar-thumb-bex\/50:hover::-webkit-scrollbar-thumb {
+    @apply bg-bex/50;
+  }
+  
+  /* === Text Gradients Gaming === */
+  .text-gradient-bex {
+    @apply bg-gradient-to-r from-bex via-bex-light to-bex bg-clip-text text-transparent;
+  }
+  
+  .text-gradient-gold {
+    @apply bg-gradient-to-r from-yellow-400 via-yellow-200 to-yellow-400 bg-clip-text text-transparent;
+  }
+  
+  /* === Gaming Borders === */
+  .border-gradient-bex {
+    border-image: linear-gradient(135deg, hsl(var(--bex-green)), hsl(var(--bex-green-glow))) 1;
+  }
+  
+  /* === Neon Glow Effect === */
+  .neon-bex {
+    text-shadow: 
+      0 0 10px rgba(84, 196, 61, 0.8),
+      0 0 20px rgba(84, 196, 61, 0.6),
+      0 0 30px rgba(84, 196, 61, 0.4);
+  }
+  
+  /* === Background Patterns Gaming === */
+  .bg-grid-bex {
+    background-image: 
+      linear-gradient(rgba(84, 196, 61, 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(84, 196, 61, 0.05) 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
+  
+  .bg-dots-bex {
+    background-image: radial-gradient(rgba(84, 196, 61, 0.1) 1px, transparent 1px);
+    background-size: 16px 16px;
+  }
+}
+
+/* === BEX Gaming Component Classes === */
+@layer components {
+  /* Gaming Card Base */
+  .card-gaming {
+    @apply bg-black/40 backdrop-blur-md border border-bex/20;
+    @apply shadow-lg shadow-bex/10 rounded-lg;
+    @apply hover:border-bex/40 hover:shadow-xl hover:shadow-bex/20;
+    @apply transition-all duration-300;
+  }
+  
+  /* Gaming Button Primary */
+  .btn-gaming-primary {
+    @apply bg-gradient-to-r from-bex to-bex-light;
+    @apply text-white font-montserrat font-semibold;
+    @apply px-6 py-3 rounded-lg;
+    @apply shadow-md shadow-bex/30;
+    @apply hover:shadow-lg hover:shadow-bex/50;
+    @apply hover:scale-105 active:scale-95;
+    @apply transition-all duration-200;
+  }
+  
+  /* Gaming Button Secondary */
+  .btn-gaming-secondary {
+    @apply bg-black/40 backdrop-blur-md;
+    @apply border border-bex/30 text-bex;
+    @apply font-montserrat font-semibold;
+    @apply px-6 py-3 rounded-lg;
+    @apply hover:bg-bex/10 hover:border-bex/50;
+    @apply transition-all duration-200;
+  }
+  
+  /* Gaming Input */
+  .input-gaming {
+    @apply bg-black/30 backdrop-blur-sm;
+    @apply border border-bex/30 text-foreground;
+    @apply px-4 py-2 rounded-lg;
+    @apply focus:border-bex focus:ring-2 focus:ring-bex/20;
+    @apply placeholder:text-muted-foreground/50;
+    @apply transition-all duration-200;
+  }
+  
+  /* Gaming Badge */
+  .badge-gaming {
+    @apply inline-flex items-center gap-1;
+    @apply bg-bex/10 text-bex border border-bex/30;
+    @apply px-2 py-1 rounded-md text-xs font-montserrat font-semibold;
+    @apply shadow-sm shadow-bex/20;
+  }
+  
+  /* Gaming Section Header */
+  .section-header-gaming {
+    @apply flex items-center gap-3 mb-6;
+    @apply border-l-4 border-bex pl-4;
+  }
+  
+  .section-header-gaming h2 {
+    @apply text-2xl font-montserrat font-bold text-white;
+  }
+  
+  /* Gaming Stats Card */
+  .stat-card-gaming {
+    @apply card-gaming p-6;
+    @apply hover:-translate-y-1;
+  }
+  
+  .stat-card-gaming .stat-value {
+    @apply text-4xl font-montserrat font-bold;
+    @apply bg-gradient-to-r from-bex to-bex-light;
+    @apply bg-clip-text text-transparent;
+  }
+  
+  .stat-card-gaming .stat-label {
+    @apply text-sm text-muted-foreground font-inter uppercase tracking-wide;
   }
 }
 

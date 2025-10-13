@@ -268,6 +268,7 @@ export function AppSidebar() {
         {/* Coluna Esquerda - Módulos (Verde) */}
         <div className={cn(
           "bg-bex-green flex flex-col items-center py-4 space-y-2 relative z-50",
+          "shadow-lg shadow-bex/20",
           state === "collapsed" ? "w-full" : "w-16"
         )}>
           {displayModules.map((module, index) => {
@@ -280,9 +281,10 @@ export function AppSidebar() {
                 onClick={() => setSelectedModule(module.id)}
                 className={cn(
                   "w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-300",
+                  "backdrop-blur-md",
                   isSelected 
-                    ? 'bg-bex-dark text-bex-green shadow-lg' 
-                    : 'bg-bex-green/90 text-bex-dark hover:bg-white/90'
+                    ? 'bg-bex-dark text-bex-green shadow-lg shadow-bex/30 scale-105' 
+                    : 'bg-bex-green/90 text-bex-dark hover:bg-white/90 hover:scale-110 hover:shadow-md'
                 )}
                 title={module.title}
               >
@@ -321,7 +323,11 @@ export function AppSidebar() {
             )}
 
             {/* Navigation Items */}
-            <div className="flex-1 px-2 overflow-y-auto">
+            <div className={cn(
+              "flex-1 px-2 overflow-y-auto",
+              "scrollbar-thin scrollbar-thumb-bex/30 scrollbar-track-transparent",
+              "hover:scrollbar-thumb-bex/50 transition-all"
+            )}>
               {currentModule?.items.map((item, index) => {
                 const isItemActive = isActive(item.url);
                 const Icon = item.icon;
@@ -330,11 +336,13 @@ export function AppSidebar() {
                   <NavLink
                     key={item.url}
                     to={item.url}
-                    className={`flex items-center px-4 py-3 mb-1 text-sm rounded-lg transition-all duration-300 ${
-                      isItemActive
-                        ? 'bg-sidebar-accent text-bex-green border-l-2 border-bex-green'
-                        : 'text-sidebar-foreground hover:bg-bex-green/10 hover:text-bex-green'
-                    }`}
+                    className={({ isActive }) => cn(
+                      "flex items-center px-4 py-3 mb-1 text-sm rounded-lg transition-all duration-300",
+                      "hover:translate-x-1",
+                      isActive
+                        ? 'bg-gradient-to-r from-bex/20 to-transparent text-bex-green border-l-2 border-bex-green shadow-md shadow-bex/20'
+                        : 'text-sidebar-foreground hover:bg-bex-green/10 hover:text-bex-green hover:border-l-2 hover:border-bex/50'
+                    )}
                   >
                     <Icon className="mr-3 h-4 w-4" />
                     <span>{item.title}</span>
