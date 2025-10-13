@@ -387,12 +387,7 @@ export function TaskDetailsModal({ open, onOpenChange, task, onTaskUpdate }: Tas
             </TabsTrigger>
           </TabsList>
 
-          {/* Atividades Tab - PRIMEIRA */}
-          <TabsContent value="atividades" className="mt-3 space-y-3">
-            <TaskActivities tarefaId={task.id} />
-          </TabsContent>
-
-          {/* Informações Básicas */}
+          {/* Informações Básicas - PRIMEIRA */}
           <TabsContent value="info" className="mt-3 space-y-3">
             <div className="space-y-3">
               <div className="grid grid-cols-2 gap-3 text-sm">
@@ -448,6 +443,76 @@ export function TaskDetailsModal({ open, onOpenChange, task, onTaskUpdate }: Tas
                 Criado em {task.created_at ? format(new Date(task.created_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR }) : 'N/A'}
               </div>
             </div>
+          </TabsContent>
+
+          {/* Progresso do Trabalho - SEGUNDA */}
+          <TabsContent value="progress" className="mt-4">
+            <BexCard variant="glass">
+              <BexCardHeader>
+                <BexCardTitle className="flex items-center gap-2">
+                  <MessageSquare className="h-5 w-5 text-bex" />
+                  Progresso do Trabalho
+                </BexCardTitle>
+              </BexCardHeader>
+              <BexCardContent className="space-y-4">
+                {isEditing ? (
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="horas_trabalhadas">Horas Trabalhadas</Label>
+                      <Input
+                        id="horas_trabalhadas"
+                        type="number"
+                        value={editData.horas_trabalhadas}
+                        onChange={(e) => setEditData({ ...editData, horas_trabalhadas: parseInt(e.target.value) || 0 })}
+                        min="0"
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="observacoes_trabalho">Observações do Trabalho</Label>
+                      <Textarea
+                        id="observacoes_trabalho"
+                        value={editData.observacoes_trabalho}
+                        onChange={(e) => setEditData({ ...editData, observacoes_trabalho: e.target.value })}
+                        placeholder="Atualizações sobre o progresso, dificuldades encontradas, próximos passos..."
+                        rows={5}
+                      />
+                    </div>
+
+                    <Button onClick={handleSaveWork} className="w-full bg-bex hover:bg-bex/80">
+                      <Save className="h-4 w-4 mr-2" />
+                      Salvar Progresso
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2 p-3 bg-bex/5 rounded-lg">
+                      <Clock className="h-5 w-5 text-bex" />
+                      <span className="text-sm text-muted-foreground">
+                        Horas trabalhadas: <span className="font-semibold text-foreground">{task.horas_trabalhadas || 0}h</span>
+                      </span>
+                    </div>
+                    
+                    {briefingData?.observacoes_trabalho ? (
+                      <div className="p-3 bg-muted/50 rounded-lg">
+                        <h4 className="font-medium mb-2 text-sm text-bex">Última atualização:</h4>
+                        <p className="text-sm text-muted-foreground leading-relaxed">{briefingData.observacoes_trabalho}</p>
+                      </div>
+                    ) : (
+                      <div className="text-center py-8 text-muted-foreground">
+                        <MessageSquare className="h-12 w-12 mx-auto mb-3 opacity-30" />
+                        <p className="text-sm">Nenhuma atualização de progresso registrada.</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </BexCardContent>
+            </BexCard>
+          </TabsContent>
+
+          {/* Atividades Tab - TERCEIRA */}
+          <TabsContent value="atividades" className="mt-3 space-y-3">
+            <TaskActivities tarefaId={task.id} />
           </TabsContent>
 
           {/* Briefing */}
