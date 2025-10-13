@@ -457,9 +457,9 @@ export function TaskDetailsModal({ open, onOpenChange, task, onTaskUpdate }: Tas
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <BexDialogContent variant="gaming" className="max-w-6xl max-h-[90vh] overflow-hidden p-0">
+      <BexDialogContent variant="gaming" size="2xl" height="xl" padding="none" overflow="hidden">
         {/* Header */}
-        <BexDialogHeader className="px-6 pt-6 pb-4 border-b border-border/50">
+        <BexDialogHeader className="modal-header-gaming">
           <div className="space-y-3">
             {task.numero_protocolo && (
               <BexBadge variant="bexGaming" className="font-mono text-xs">
@@ -467,11 +467,11 @@ export function TaskDetailsModal({ open, onOpenChange, task, onTaskUpdate }: Tas
               </BexBadge>
             )}
             
-            <BexDialogTitle gaming className="text-2xl pr-8">
+            <BexDialogTitle className="modal-title-gaming">
               {task.titulo}
             </BexDialogTitle>
             
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="modal-badge-row">
               <BexBadge variant="bexGlow" className="text-xs">{task.status}</BexBadge>
               <BexBadge variant={priorityVariant[task.prioridade] || 'outline'} className="text-xs">
                 {task.prioridade.charAt(0).toUpperCase() + task.prioridade.slice(1)}
@@ -511,21 +511,21 @@ export function TaskDetailsModal({ open, onOpenChange, task, onTaskUpdate }: Tas
         </BexDialogHeader>
 
         {/* Layout 2 colunas: Conteúdo + Sidebar */}
-        <div className="flex h-[calc(90vh-180px)]">
+        <div className="modal-body-2col h-[calc(90vh-180px)]">
           {/* Coluna Principal */}
-          <div className="flex-1 overflow-y-auto px-6 py-4">
+          <div className="modal-body-2col-main modal-scroll-area">
 
         <Tabs defaultValue="overview" className="w-full">
-          <TabsList className="grid w-full grid-cols-4 bg-muted/30">
-            <TabsTrigger value="overview" className="data-[state=active]:bg-bex/20 data-[state=active]:text-bex text-xs">
+          <TabsList className="modal-tabs-gaming grid w-full grid-cols-4">
+            <TabsTrigger value="overview" className="modal-tab-trigger-gaming">
               <FileText className="h-3.5 w-3.5 mr-1.5" />
               Visão Geral
             </TabsTrigger>
-            <TabsTrigger value="briefing" className="data-[state=active]:bg-bex/20 data-[state=active]:text-bex text-xs">
+            <TabsTrigger value="briefing" className="modal-tab-trigger-gaming">
               <Target className="h-3.5 w-3.5 mr-1.5" />
               Briefing
             </TabsTrigger>
-            <TabsTrigger value="checklist" className="data-[state=active]:bg-bex/20 data-[state=active]:text-bex text-xs">
+            <TabsTrigger value="checklist" className="modal-tab-trigger-gaming">
               <CheckCircle2 className="h-3.5 w-3.5 mr-1.5" />
               Checklist
               {totalCount > 0 && (
@@ -534,7 +534,7 @@ export function TaskDetailsModal({ open, onOpenChange, task, onTaskUpdate }: Tas
                 </BexBadge>
               )}
             </TabsTrigger>
-            <TabsTrigger value="anexos" className="data-[state=active]:bg-bex/20 data-[state=active]:text-bex text-xs">
+            <TabsTrigger value="anexos" className="modal-tab-trigger-gaming">
               <Paperclip className="h-3.5 w-3.5 mr-1.5" />
               Anexos
             </TabsTrigger>
@@ -544,7 +544,7 @@ export function TaskDetailsModal({ open, onOpenChange, task, onTaskUpdate }: Tas
           <TabsContent value="overview" className="mt-3 space-y-4">
             {/* SEÇÃO 1: Informações da Tarefa */}
             <div className="space-y-2">
-              <h3 className="text-sm font-semibold text-bex flex items-center gap-2 pb-2 border-b border-border/30">
+              <h3 className="modal-section-header">
                 <FileText className="h-4 w-4" />
                 Informações da Tarefa
               </h3>
@@ -606,7 +606,7 @@ export function TaskDetailsModal({ open, onOpenChange, task, onTaskUpdate }: Tas
 
             {/* SEÇÃO 2: Progresso do Trabalho */}
             <div className="space-y-2">
-              <h3 className="text-sm font-semibold text-bex flex items-center gap-2 pb-2 border-b border-border/30">
+              <h3 className="modal-section-header">
                 <TrendingUp className="h-4 w-4" />
                 Progresso do Trabalho
               </h3>
@@ -957,7 +957,7 @@ export function TaskDetailsModal({ open, onOpenChange, task, onTaskUpdate }: Tas
       </div>
 
       {/* Sidebar de Ações - Estilo Trello */}
-      <div className="w-64 border-l border-border/50 bg-muted/10 p-4 overflow-y-auto">
+      <div className="modal-body-2col-sidebar modal-scroll-area">
         <div className="space-y-4">
           {/* Ações */}
           <div>

@@ -442,6 +442,87 @@ All colors MUST be HSL.
   .stat-card-gaming .stat-label {
     @apply text-sm text-muted-foreground font-inter uppercase tracking-wide;
   }
+
+  /* === BEX Gaming Modal System === */
+  
+  /* Modal Header Gaming */
+  .modal-header-gaming {
+    @apply px-6 pt-6 pb-4;
+    @apply border-b border-border/50;
+    @apply space-y-3;
+  }
+  
+  /* Modal Header Compact */
+  .modal-header-compact {
+    @apply px-4 pt-4 pb-3;
+    @apply border-b border-bex/20;
+  }
+  
+  /* Modal Footer Gaming */
+  .modal-footer-gaming {
+    @apply px-6 py-4;
+    @apply border-t border-border/50;
+    @apply flex items-center justify-end gap-3;
+  }
+  
+  /* Modal Body Gaming */
+  .modal-body-gaming {
+    @apply px-6 py-4;
+    @apply overflow-y-auto;
+  }
+  
+  /* Modal Body 2 Columns */
+  .modal-body-2col {
+    @apply flex h-full;
+  }
+  
+  .modal-body-2col-main {
+    @apply flex-1 overflow-y-auto px-6 py-4;
+  }
+  
+  .modal-body-2col-sidebar {
+    @apply w-80 border-l border-border/50 px-4 py-4 overflow-y-auto;
+    @apply bg-muted/20;
+  }
+  
+  /* Modal Tabs Gaming */
+  .modal-tabs-gaming {
+    @apply bg-muted/30;
+  }
+  
+  .modal-tab-trigger-gaming {
+    @apply data-[state=active]:bg-bex/20;
+    @apply data-[state=active]:text-bex;
+    @apply data-[state=active]:shadow-md;
+    @apply data-[state=active]:shadow-bex/30;
+    @apply text-xs;
+  }
+  
+  /* Modal Badge Row */
+  .modal-badge-row {
+    @apply flex flex-wrap items-center gap-2;
+  }
+  
+  /* Modal Title Gaming */
+  .modal-title-gaming {
+    @apply text-2xl font-montserrat font-bold;
+    @apply bg-gradient-to-r from-bex to-bex-light;
+    @apply bg-clip-text text-transparent;
+    @apply pr-8;
+  }
+  
+  /* Modal Section Header */
+  .modal-section-header {
+    @apply text-sm font-semibold text-bex;
+    @apply flex items-center gap-2;
+    @apply pb-2 border-b border-border/30;
+  }
+  
+  /* Modal Scrollable Area */
+  .modal-scroll-area {
+    @apply scrollbar-thin scrollbar-thumb-bex/30 scrollbar-track-transparent;
+    @apply hover:scrollbar-thumb-bex/50;
+  }
 }
 
 /* Interactive Guide Customizations */

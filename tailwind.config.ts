@@ -79,6 +79,10 @@ export default {
         "bex-green": "hsl(var(--bex-green))",
         "bex-dark": "hsl(var(--bex-dark))",
       },
+      spacing: {
+        'modal-header': '180px',
+        'modal-sidebar': '320px',
+      },
       borderRadius: {
         lg: "12px",
         md: "8px",
