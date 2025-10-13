@@ -6,6 +6,8 @@ import { toast } from "sonner";
 import { Loader2, FileText, Download } from "lucide-react";
 import { bexThemeV3 } from "@/styles/bex-theme";
 import ReactMarkdown from "react-markdown";
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 interface Props {
   clienteId: string;
@@ -19,6 +21,22 @@ export function RelatorioIA({ clienteId, concorrentes, onRelatorioGenerated }: P
 
   const handleGenerateReport = async () => {
     setLoading(true);
+    
+    // ✅ FASE 2: Validação prévia
+    const { data: onboardingCheck } = await supabase
+      .from('cliente_onboarding')
+      .select('id')
+      .eq('cliente_id', clienteId)
+      .maybeSingle();
+    
+    if (!onboardingCheck) {
+      toast.error('Complete o onboarding antes de gerar o relatório');
+      setLoading(false);
+      return;
+    }
+    
+    console.log('📝 [RELATORIO] Iniciando geração para cliente:', clienteId);
+    
     try {
       // Buscar análise do cliente
       const { data: clienteData } = await supabase
@@ -42,10 +60,15 @@ export function RelatorioIA({ clienteId, concorrentes, onRelatorioGenerated }: P
           analise: c.analise_ia
         }));
 
+      console.log('📝 [RELATORIO] Concorrentes analisados:', concorrentesAnalises.length);
+
       if (concorrentesAnalises.length === 0) {
         toast.error('Analise pelo menos um concorrente antes de gerar o relatório');
+        setLoading(false);
         return;
       }
+
+      console.log('📝 [RELATORIO] Chamando edge function...');
 
       const { data: result, error } = await supabase.functions.invoke('generate-competitive-report', {
         body: {
@@ -55,7 +78,12 @@ export function RelatorioIA({ clienteId, concorrentes, onRelatorioGenerated }: P
         }
       });
 
-      if (error) throw error;
+      console.log('📝 [RELATORIO] Resposta:', { success: result?.success, hasRelatorio: !!result?.relatorio });
+
+      if (error) {
+        console.error('❌ [RELATORIO] Erro:', error);
+        throw error;
+      }
 
       if (result.success) {
         setRelatorio(result.relatorio);
@@ -76,18 +104,17 @@ export function RelatorioIA({ clienteId, concorrentes, onRelatorioGenerated }: P
 
         toast.success('Relatório gerado com sucesso!');
       } else {
-        throw new Error(result.error);
+        throw new Error(result.error || 'Erro ao gerar relatório');
       }
     } catch (error: any) {
-      console.error('Erro ao gerar relatório:', error);
-      toast.error(error.message || 'Erro ao gerar relatório');
+      console.error('❌ [RELATORIO] Erro completo:', error);
+      toast.error(error.message || 'Erro ao gerar relatório. Verifique os logs.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDownloadPDF = () => {
-    // Para simplicidade, vamos fazer download do markdown
+  const handleDownloadMarkdown = () => {
     const element = document.createElement('a');
     const file = new Blob([relatorio], { type: 'text/markdown' });
     element.href = URL.createObjectURL(file);
@@ -95,7 +122,51 @@ export function RelatorioIA({ clienteId, concorrentes, onRelatorioGenerated }: P
     document.body.appendChild(element);
     element.click();
     document.body.removeChild(element);
-    toast.success('Relatório baixado!');
+    toast.success('Markdown baixado!');
+  };
+
+  // ✅ FASE 3: Implementar geração de PDF
+  const handleDownloadPDF = async () => {
+    try {
+      toast.info('Gerando PDF... Aguarde alguns segundos.');
+      
+      const element = document.querySelector('.markdown-content');
+      if (!element) {
+        toast.error('Conteúdo do relatório não encontrado');
+        return;
+      }
+
+      const canvas = await html2canvas(element as HTMLElement, {
+        scale: 2,
+        useCORS: true,
+        logging: false
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      
+      const imgWidth = 210;
+      const pageHeight = 295;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+
+      pdf.save(`relatorio-benchmark-${new Date().getTime()}.pdf`);
+      toast.success('PDF baixado com sucesso!');
+    } catch (error) {
+      console.error('Erro ao gerar PDF:', error);
+      toast.error('Erro ao gerar PDF. Tente baixar o Markdown.');
+    }
   };
 
   return (
@@ -109,14 +180,27 @@ export function RelatorioIA({ clienteId, concorrentes, onRelatorioGenerated }: P
         </div>
         <div className="flex gap-2">
           {relatorio && (
-            <Button
-              onClick={handleDownloadPDF}
-              variant="outline"
-              className="border-primary/20"
-            >
-              <Download className="h-4 w-4 mr-2" />
-              Baixar Markdown
-            </Button>
+            <>
+              <Button
+                onClick={handleDownloadPDF}
+                variant="default"
+                style={{
+                  background: `linear-gradient(to right, ${bexThemeV3.colors.primary}, ${bexThemeV3.colors.accent})`,
+                  color: bexThemeV3.colors.bg
+                }}
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Baixar PDF
+              </Button>
+              <Button
+                onClick={handleDownloadMarkdown}
+                variant="outline"
+                className="border-primary/20"
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Baixar Markdown
+              </Button>
+            </>
           )}
           <Button
             onClick={handleGenerateReport}

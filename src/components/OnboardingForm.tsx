@@ -1060,23 +1060,31 @@ export function OnboardingForm({ isOpen, onClose, clienteId, cliente, readOnly =
             </Card>
 
             {/* 10. Matriz F.O.F.A com IA */}
-            <SwotAnalysisIA 
-              clienteId={clienteId} 
-              clienteNome={formData.nomeEmpresa}
-              initialForcas={formData.forcas}
-              initialFraquezas={formData.fraquezas}
-              initialOportunidades={formData.oportunidades}
-              initialAmeacas={formData.ameacas}
-              onSwotDataUpdate={(swotData) => {
-                setFormData(prev => ({
-                  ...prev,
-                  forcas: swotData.forcas,
-                  fraquezas: swotData.fraquezas,
-                  oportunidades: swotData.oportunidades,
-                  ameacas: swotData.ameacas
-                }));
-              }}
-            />
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold">10. Análise SWOT com IA</h3>
+                <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 dark:bg-green-950 dark:text-green-400 dark:border-green-800">
+                  ✅ Funcional
+                </Badge>
+              </div>
+              <SwotAnalysisIA 
+                clienteId={clienteId} 
+                clienteNome={formData.nomeEmpresa}
+                initialForcas={formData.forcas}
+                initialFraquezas={formData.fraquezas}
+                initialOportunidades={formData.oportunidades}
+                initialAmeacas={formData.ameacas}
+                onSwotDataUpdate={(swotData) => {
+                  setFormData(prev => ({
+                    ...prev,
+                    forcas: swotData.forcas,
+                    fraquezas: swotData.fraquezas,
+                    oportunidades: swotData.oportunidades,
+                    ameacas: swotData.ameacas
+                  }));
+                }}
+              />
+            </div>
               </div>
             )}
 

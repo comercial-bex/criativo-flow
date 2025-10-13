@@ -37,12 +37,23 @@ export function SwotAnalysisIA({
   const analyzeSwot = async () => {
     setLoading(true);
     
+    // ✅ FASE 1: Toast informativo
+    toast({
+      title: "🧠 Iniciando análise IA",
+      description: "Analisando dados de onboarding... Isso pode levar até 30 segundos.",
+    });
+    
+    console.log('🔍 [SWOT] Iniciando análise para cliente:', clienteId);
+    
     try {
       const { data, error } = await supabase.functions.invoke('analyze-swot', {
         body: { clienteId }
       });
 
+      console.log('📊 [SWOT] Resposta recebida:', { success: data?.success, hasAnalysis: !!data?.analysis });
+
       if (error) {
+        console.error('❌ [SWOT] Erro na edge function:', error);
         throw error;
       }
 
@@ -74,10 +85,12 @@ export function SwotAnalysisIA({
         throw new Error(data.error || 'Erro na análise');
       }
     } catch (error) {
-      console.error('Erro ao analisar SWOT:', error);
+      console.error('❌ [SWOT] Erro completo:', error);
       toast({
-        title: "Erro na análise",
-        description: error instanceof Error ? error.message : 'Erro desconhecido',
+        title: "Erro na análise SWOT",
+        description: error instanceof Error 
+          ? `Detalhes: ${error.message}` 
+          : 'Erro desconhecido. Verifique se os dados de onboarding estão preenchidos.',
         variant: "destructive",
       });
     } finally {
