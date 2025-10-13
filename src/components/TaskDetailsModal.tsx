@@ -12,6 +12,8 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { SmartStatusBadge } from '@/components/SmartStatusBadge';
 import { CircleProgress } from '@/components/ui/circle-progress';
+import { AnexosGallery } from '@/components/AnexosGallery';
+import { BriefingEditForm } from '@/components/BriefingEditForm';
 import { 
   Calendar, 
   Clock, 
@@ -23,18 +25,20 @@ import {
   Tag,
   MessageSquare,
   Save,
-  Edit3,
+  Edit,
   CheckCircle2,
   AlertCircle,
   Plus,
   X,
-  TrendingUp
+  TrendingUp,
+  Paperclip
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { TaskWithDeadline } from '@/utils/statusUtils';
 import { useToast } from '@/hooks/use-toast';
 import { ChecklistItem } from '@/types/tarefa';
+import type { TipoTarefa } from '@/types/tarefa';
 import { cn } from '@/lib/utils';
 
 interface KanbanTask extends TaskWithDeadline {
@@ -48,6 +52,7 @@ interface KanbanTask extends TaskWithDeadline {
   observacoes?: string;
   checklist?: ChecklistItem[];
   checklist_progress?: number;
+  tipo?: TipoTarefa;
 }
 
 interface TaskDetailsModalProps {
@@ -60,6 +65,7 @@ interface TaskDetailsModalProps {
 export function TaskDetailsModal({ open, onOpenChange, task, onTaskUpdate }: TaskDetailsModalProps) {
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
+  const [isEditingBriefing, setIsEditingBriefing] = useState(false);
   const [checklistItems, setChecklistItems] = useState<ChecklistItem[]>([]);
   const [isEditingChecklist, setIsEditingChecklist] = useState(false);
   const [newItemText, setNewItemText] = useState("");
@@ -67,6 +73,7 @@ export function TaskDetailsModal({ open, onOpenChange, task, onTaskUpdate }: Tas
     horas_trabalhadas: 0,
     observacoes_trabalho: ''
   });
+  const [briefingEditData, setBriefingEditData] = useState<any>({});
 
   useEffect(() => {
     if (task) {
@@ -75,6 +82,16 @@ export function TaskDetailsModal({ open, onOpenChange, task, onTaskUpdate }: Tas
         horas_trabalhadas: task.horas_trabalhadas || 0,
         observacoes_trabalho: ''
       });
+      
+      // Parse briefing data
+      try {
+        if (task.observacoes) {
+          const parsed = JSON.parse(task.observacoes);
+          setBriefingEditData(parsed);
+        }
+      } catch (e) {
+        setBriefingEditData({});
+      }
     }
   }, [task]);
 
@@ -88,165 +105,170 @@ export function TaskDetailsModal({ open, onOpenChange, task, onTaskUpdate }: Tas
     }
   } catch (e) {
     // If parsing fails, treat as regular observacoes
+    briefingData = null;
   }
 
-  // Checklist calculations
-  const completedCount = checklistItems.filter(item => item.completed).length;
+  // Calculate checklist progress
   const totalCount = checklistItems.length;
+  const completedCount = checklistItems.filter(item => item.completed).length;
   const progressPercentage = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
 
-  // Risk level calculation
-  const calculateRiskLevel = (): { level: "low" | "medium" | "high"; color: string; label: string } => {
+  // Calculate risk level based on deadline and progress
+  const getRiskLevel = () => {
+    if (!task.data_prazo) {
+      return { label: 'Sem Prazo', color: 'text-gray-500' };
+    }
+
     const now = new Date();
-    const prazo = task.data_prazo ? new Date(task.data_prazo) : null;
-    const progress = progressPercentage;
-    
-    if (!prazo) return { level: "medium", color: "text-amber-500", label: "Médio" };
-    
-    const daysRemaining = Math.ceil((prazo.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-    
-    // Alto risco: <3 dias OU (<7 dias E <50% progresso)
-    if (daysRemaining < 3 || (daysRemaining < 7 && progress < 50)) {
-      return { level: "high", color: "text-red-500", label: "Alto" };
+    const deadline = new Date(task.data_prazo);
+    const daysRemaining = Math.ceil((deadline.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+
+    if (daysRemaining < 0) {
+      return { label: 'Vencida', color: 'text-red-500' };
     }
-    
-    // Médio risco: <7 dias OU (<14 dias E <70% progresso)
-    if (daysRemaining < 7 || (daysRemaining < 14 && progress < 70)) {
-      return { level: "medium", color: "text-amber-500", label: "Médio" };
+
+    if (daysRemaining <= 1 && progressPercentage < 80) {
+      return { label: 'Crítico', color: 'text-red-500' };
     }
-    
-    return { level: "low", color: "text-bex", label: "Baixo" };
+
+    if (daysRemaining <= 2 && progressPercentage < 50) {
+      return { label: 'Alto', color: 'text-orange-500' };
+    }
+
+    if (daysRemaining <= 3 || progressPercentage < 30) {
+      return { label: 'Médio', color: 'text-yellow-500' };
+    }
+
+    return { label: 'Baixo', color: 'text-green-500' };
   };
 
-  const riskLevel = calculateRiskLevel();
+  const riskLevel = getRiskLevel();
 
-  const getPriorityVariant = (prioridade: string): "destructive" | "secondary" | "outline" => {
-    switch (prioridade) {
-      case 'alta': return 'destructive';
-      case 'media': return 'secondary';
-      default: return 'outline';
-    }
-  };
-
-  const getPriorityText = (prioridade: string) => {
-    switch (prioridade) {
-      case 'alta': return '🔴 Alta';
-      case 'media': return '🟡 Média';
-      default: return '🟢 Baixa';
-    }
-  };
-
+  // Checklist handlers
   const toggleChecklistItem = (itemId: string) => {
-    const updatedItems = checklistItems.map(item =>
+    const updated = checklistItems.map(item =>
       item.id === itemId ? { ...item, completed: !item.completed } : item
     );
-    setChecklistItems(updatedItems);
+    setChecklistItems(updated);
     
-    const newCompletedCount = updatedItems.filter(i => i.completed).length;
-    const newProgress = totalCount > 0 ? Math.round((newCompletedCount / totalCount) * 100) : 0;
+    const newCompletedCount = updated.filter(item => item.completed).length;
+    const newProgress = updated.length > 0 ? (newCompletedCount / updated.length) * 100 : 0;
     
     onTaskUpdate(task.id, {
-      checklist: updatedItems,
+      checklist: updated,
       checklist_progress: newProgress
-    });
-
-    toast({
-      title: "Checklist atualizado!",
-      description: `${newProgress}% completo`,
     });
   };
 
   const addChecklistItem = () => {
     if (!newItemText.trim()) return;
-    
-    const newItem: ChecklistItem = {
-      id: crypto.randomUUID(),
-      text: newItemText.trim(),
-      completed: false,
-      ordem: checklistItems.length
-    };
-    
-    const updatedItems = [...checklistItems, newItem];
-    setChecklistItems(updatedItems);
-    onTaskUpdate(task.id, { checklist: updatedItems });
-    setNewItemText("");
-    
-    toast({
-      title: "Item adicionado!",
-      description: "Novo item no checklist",
-    });
-  };
 
-  const removeChecklistItem = (itemId: string) => {
-    const updatedItems = checklistItems.filter(item => item.id !== itemId);
-    setChecklistItems(updatedItems);
+    const newItem: ChecklistItem = {
+      id: `item-${Date.now()}`,
+      text: newItemText.trim(),
+      completed: false
+    };
+
+    const updated = [...checklistItems, newItem];
+    setChecklistItems(updated);
+    setNewItemText("");
+
+    const newProgress = updated.length > 0 ? (updated.filter(i => i.completed).length / updated.length) * 100 : 0;
     
-    const newCompletedCount = updatedItems.filter(i => i.completed).length;
-    const newProgress = updatedItems.length > 0 ? Math.round((newCompletedCount / updatedItems.length) * 100) : 0;
-    
-    onTaskUpdate(task.id, { 
-      checklist: updatedItems,
+    onTaskUpdate(task.id, {
+      checklist: updated,
       checklist_progress: newProgress
     });
   };
 
-  const handleSaveWork = () => {
-    const updates = {
-      horas_trabalhadas: editData.horas_trabalhadas,
-      observacoes: briefingData 
-        ? JSON.stringify({
-            ...briefingData,
-            observacoes_trabalho: editData.observacoes_trabalho
-          })
-        : editData.observacoes_trabalho
-    };
+  const removeChecklistItem = (itemId: string) => {
+    const updated = checklistItems.filter(item => item.id !== itemId);
+    setChecklistItems(updated);
 
-    onTaskUpdate(task.id, updates);
+    const newProgress = updated.length > 0 ? (updated.filter(i => i.completed).length / updated.length) * 100 : 0;
     
-    toast({
-      title: "Trabalho atualizado!",
-      description: "As informações de progresso foram salvas.",
+    onTaskUpdate(task.id, {
+      checklist: updated,
+      checklist_progress: newProgress
     });
+  };
+
+  const handleSaveWork = async () => {
+    if (!task) return;
     
-    setIsEditing(false);
+    try {
+      const updatedObservacoes = briefingData 
+        ? { ...briefingData, observacoes_trabalho: editData.observacoes_trabalho }
+        : { observacoes_trabalho: editData.observacoes_trabalho };
+      
+      await onTaskUpdate(task.id, {
+        horas_trabalhadas: editData.horas_trabalhadas,
+        observacoes: JSON.stringify(updatedObservacoes)
+      });
+      
+      setIsEditing(false);
+    } catch (error) {
+      console.error('Error saving work progress:', error);
+    }
+  };
+
+  const handleSaveBriefing = async () => {
+    if (!task) return;
+    
+    try {
+      await onTaskUpdate(task.id, {
+        observacoes: JSON.stringify(briefingEditData)
+      });
+      
+      setIsEditingBriefing(false);
+      toast({ title: "Briefing salvo com sucesso!" });
+    } catch (error) {
+      console.error('Error saving briefing:', error);
+      toast({ title: "Erro ao salvar briefing", variant: "destructive" });
+    }
+  };
+
+  const handleBriefingFieldChange = (field: string, value: any) => {
+    setBriefingEditData((prev: any) => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const priorityVariant = {
+    'critica': 'destructive' as const,
+    'alta': 'destructive' as const,
+    'media': 'secondary' as const,
+    'baixa': 'outline' as const
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <BexDialogContent variant="gaming" className="max-w-5xl max-h-[90vh] overflow-y-auto">
+      <BexDialogContent variant="gaming" className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <BexDialogHeader>
-          <div className="flex items-start justify-between gap-4">
-            <div className="space-y-3 flex-1">
-              <BexDialogTitle gaming className="text-2xl">{task.titulo}</BexDialogTitle>
-              <div className="flex items-center flex-wrap gap-2">
-                <SmartStatusBadge task={task} />
-                <BexBadge variant={getPriorityVariant(task.prioridade)}>
-                  {getPriorityText(task.prioridade)}
-                </BexBadge>
-                {task.setor_responsavel && (
-                  <BexBadge variant="bexOutline">{task.setor_responsavel}</BexBadge>
-                )}
-                {totalCount > 0 && (
-                  <BexBadge variant="bexGlow">
-                    {completedCount}/{totalCount} ✓
-                  </BexBadge>
-                )}
-              </div>
+          <div className="space-y-3">
+            <BexDialogTitle gaming className="text-2xl pr-8">
+              {task.titulo}
+            </BexDialogTitle>
+            
+            <div className="flex flex-wrap items-center gap-3">
+              <BexBadge variant="bexGlow">{task.status}</BexBadge>
+              <BexBadge variant={priorityVariant[task.prioridade] || 'outline'}>
+                {task.prioridade.charAt(0).toUpperCase() + task.prioridade.slice(1)}
+              </BexBadge>
+              
+              {task.data_prazo && (
+                <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                  <Calendar className="h-4 w-4" />
+                  {format(new Date(task.data_prazo), "PPP", { locale: ptBR })}
+                </div>
+              )}
             </div>
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={() => setIsEditing(!isEditing)}
-              className="shrink-0"
-            >
-              <Edit3 className="h-4 w-4 mr-2" />
-              {isEditing ? 'Cancelar' : 'Editar'}
-            </Button>
           </div>
         </BexDialogHeader>
 
-        <Tabs defaultValue="info" className="w-full mt-6">
-          <TabsList className="grid w-full grid-cols-4 bg-black/20">
+        <Tabs defaultValue="info" className="w-full">
+          <TabsList className="grid w-full grid-cols-5 lg:grid-cols-5">
             <TabsTrigger value="info" className="data-[state=active]:bg-bex/20 data-[state=active]:text-bex">
               <FileText className="h-4 w-4 mr-2" />
               Informações
@@ -267,6 +289,10 @@ export function TaskDetailsModal({ open, onOpenChange, task, onTaskUpdate }: Tas
             <TabsTrigger value="progress" className="data-[state=active]:bg-bex/20 data-[state=active]:text-bex">
               <TrendingUp className="h-4 w-4 mr-2" />
               Progresso
+            </TabsTrigger>
+            <TabsTrigger value="anexos" className="data-[state=active]:bg-bex/20 data-[state=active]:text-bex">
+              <Paperclip className="h-4 w-4 mr-2" />
+              Anexos
             </TabsTrigger>
           </TabsList>
 
@@ -333,91 +359,135 @@ export function TaskDetailsModal({ open, onOpenChange, task, onTaskUpdate }: Tas
 
           {/* Briefing */}
           <TabsContent value="briefing" className="mt-4">
-            {briefingData ? (
-              <BexCard variant="glass">
-                <BexCardHeader>
+            <BexCard variant="glass">
+              <BexCardHeader>
+                <div className="flex items-center justify-between">
                   <BexCardTitle className="flex items-center gap-2">
                     <Target className="h-5 w-5 text-bex" />
                     Briefing da Tarefa
                   </BexCardTitle>
-                </BexCardHeader>
-                <BexCardContent className="space-y-4">
-                  {briefingData.objetivo_postagem && (
-                    <div>
-                      <h4 className="font-medium flex items-center gap-2 mb-2 text-bex">
-                        <Target className="h-4 w-4" />
-                        Objetivo
-                      </h4>
-                      <p className="text-sm text-muted-foreground">{briefingData.objetivo_postagem}</p>
-                    </div>
-                  )}
-
-                  {briefingData.publico_alvo && (
-                    <div>
-                      <h4 className="font-medium flex items-center gap-2 mb-2 text-bex">
-                        <Users className="h-4 w-4" />
-                        Público-Alvo
-                      </h4>
-                      <p className="text-sm text-muted-foreground">{briefingData.publico_alvo}</p>
-                    </div>
-                  )}
-
-                  {briefingData.formato_postagem && (
-                    <div>
-                      <h4 className="font-medium mb-2 text-bex">Formato</h4>
-                      <BexBadge variant="bexOutline">{briefingData.formato_postagem}</BexBadge>
-                    </div>
-                  )}
-
-                  {briefingData.contexto_estrategico && (
-                    <div>
-                      <h4 className="font-medium mb-2 text-bex">Contexto Estratégico</h4>
-                      <p className="text-sm text-muted-foreground">{briefingData.contexto_estrategico}</p>
-                    </div>
-                  )}
-
-                  {briefingData.call_to_action && (
-                    <div>
-                      <h4 className="font-medium flex items-center gap-2 mb-2 text-bex">
-                        <Zap className="h-4 w-4" />
-                        Call to Action
-                      </h4>
-                      <p className="text-sm text-muted-foreground">{briefingData.call_to_action}</p>
-                    </div>
-                  )}
-
-                  {briefingData.hashtags && briefingData.hashtags.length > 0 && (
-                    <div>
-                      <h4 className="font-medium flex items-center gap-2 mb-2 text-bex">
-                        <Tag className="h-4 w-4" />
-                        Hashtags
-                      </h4>
-                      <div className="flex flex-wrap gap-1">
-                        {briefingData.hashtags.map((tag: string, index: number) => (
-                          <BexBadge key={index} variant="secondary">
-                            #{tag}
-                          </BexBadge>
-                        ))}
+                  <div className="flex gap-2">
+                    {isEditingBriefing && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setIsEditingBriefing(false)}
+                      >
+                        Cancelar
+                      </Button>
+                    )}
+                    <Button
+                      variant={isEditingBriefing ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => {
+                        if (isEditingBriefing) {
+                          handleSaveBriefing();
+                        } else {
+                          setIsEditingBriefing(true);
+                        }
+                      }}
+                      className={isEditingBriefing ? "bg-bex hover:bg-bex/80" : ""}
+                    >
+                      {isEditingBriefing ? (
+                        <>
+                          <Save className="h-4 w-4 mr-2" />
+                          Salvar
+                        </>
+                      ) : (
+                        <>
+                          <Edit className="h-4 w-4 mr-2" />
+                          Editar
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              </BexCardHeader>
+              <BexCardContent>
+                {isEditingBriefing ? (
+                  <BriefingEditForm
+                    tipoTarefa={task.tipo || 'outro'}
+                    briefingData={briefingEditData}
+                    onChange={handleBriefingFieldChange}
+                  />
+                ) : briefingData ? (
+                  <div className="space-y-4">
+                    {briefingData.objetivo_postagem && (
+                      <div>
+                        <h4 className="font-medium flex items-center gap-2 mb-2 text-bex">
+                          <Target className="h-4 w-4" />
+                          Objetivo
+                        </h4>
+                        <p className="text-sm text-muted-foreground">{briefingData.objetivo_postagem}</p>
                       </div>
-                    </div>
-                  )}
+                    )}
 
-                  {briefingData.observacoes && (
-                    <div>
-                      <h4 className="font-medium mb-2 text-bex">Observações do Briefing</h4>
-                      <p className="text-sm text-muted-foreground">{briefingData.observacoes}</p>
-                    </div>
-                  )}
-                </BexCardContent>
-              </BexCard>
-            ) : (
-              <BexCard variant="glass">
-                <BexCardContent className="py-12 text-center text-muted-foreground">
-                  <Target className="h-12 w-12 mx-auto mb-4 opacity-30" />
-                  <p>Nenhum briefing disponível para esta tarefa.</p>
-                </BexCardContent>
-              </BexCard>
-            )}
+                    {briefingData.publico_alvo && (
+                      <div>
+                        <h4 className="font-medium flex items-center gap-2 mb-2 text-bex">
+                          <Users className="h-4 w-4" />
+                          Público-Alvo
+                        </h4>
+                        <p className="text-sm text-muted-foreground">{briefingData.publico_alvo}</p>
+                      </div>
+                    )}
+
+                    {briefingData.formato_postagem && (
+                      <div>
+                        <h4 className="font-medium mb-2 text-bex">Formato</h4>
+                        <BexBadge variant="bexOutline">{briefingData.formato_postagem}</BexBadge>
+                      </div>
+                    )}
+
+                    {briefingData.contexto_estrategico && (
+                      <div>
+                        <h4 className="font-medium mb-2 text-bex">Contexto Estratégico</h4>
+                        <p className="text-sm text-muted-foreground">{briefingData.contexto_estrategico}</p>
+                      </div>
+                    )}
+
+                    {briefingData.call_to_action && (
+                      <div>
+                        <h4 className="font-medium flex items-center gap-2 mb-2 text-bex">
+                          <Zap className="h-4 w-4" />
+                          Call to Action
+                        </h4>
+                        <p className="text-sm text-muted-foreground">{briefingData.call_to_action}</p>
+                      </div>
+                    )}
+
+                    {briefingData.hashtags && briefingData.hashtags.length > 0 && (
+                      <div>
+                        <h4 className="font-medium flex items-center gap-2 mb-2 text-bex">
+                          <Tag className="h-4 w-4" />
+                          Hashtags
+                        </h4>
+                        <div className="flex flex-wrap gap-1">
+                          {briefingData.hashtags.map((tag: string, index: number) => (
+                            <BexBadge key={index} variant="secondary">
+                              #{tag}
+                            </BexBadge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {briefingData.observacoes && (
+                      <div>
+                        <h4 className="font-medium mb-2 text-bex">Observações do Briefing</h4>
+                        <p className="text-sm text-muted-foreground">{briefingData.observacoes}</p>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="py-12 text-center text-muted-foreground">
+                    <Target className="h-12 w-12 mx-auto mb-4 opacity-30" />
+                    <p className="text-sm">Nenhum briefing disponível para esta tarefa.</p>
+                    <p className="text-xs mt-1">Clique em "Editar" para adicionar informações.</p>
+                  </div>
+                )}
+              </BexCardContent>
+            </BexCard>
           </TabsContent>
 
           {/* Checklist */}
@@ -608,6 +678,24 @@ export function TaskDetailsModal({ open, onOpenChange, task, onTaskUpdate }: Tas
               </BexCardContent>
             </BexCard>
           </TabsContent>
+
+          {/* Anexos */}
+          <TabsContent value="anexos" className="mt-4">
+            <BexCard variant="glass">
+              <BexCardHeader>
+                <BexCardTitle className="flex items-center gap-2">
+                  <Paperclip className="h-5 w-5 text-bex" />
+                  Anexos da Tarefa
+                </BexCardTitle>
+              </BexCardHeader>
+              <BexCardContent>
+                <AnexosGallery
+                  tarefaId={task.id}
+                  canEdit={true}
+                />
+              </BexCardContent>
+            </BexCard>
+          </TabsContent>
         </Tabs>
 
         {/* Footer com Risk Level */}
@@ -641,3 +729,4 @@ export function TaskDetailsModal({ open, onOpenChange, task, onTaskUpdate }: Tas
     </Dialog>
   );
 }
+
