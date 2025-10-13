@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { BexCard, BexCardContent, BexCardHeader, BexCardTitle } from "@/components/ui/bex-card";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -243,66 +244,90 @@ export default function AdminTarefas() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-6">
+        <BexCard variant="gaming" className="hover-lift-bex group">
+          <BexCardContent className="p-6">
             <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Total de Tarefas</p>
-                <p className="text-2xl font-bold">{stats.total}</p>
+              <div className="space-y-1">
+                <p className="text-xs font-medium text-bex/70 uppercase tracking-wide">
+                  Total de Tarefas
+                </p>
+                <p className="text-3xl font-bold bg-gradient-to-r from-bex to-bex-light bg-clip-text text-transparent">
+                  {stats.total}
+                </p>
               </div>
-              <BarChart3 className="h-8 w-8 text-muted-foreground" />
+              <div className="p-3 rounded-lg bg-bex/10 group-hover:bg-bex/20 transition-all">
+                <BarChart3 className="h-8 w-8 text-bex group-hover:scale-110 transition-transform" />
+              </div>
             </div>
-          </CardContent>
-        </Card>
+          </BexCardContent>
+        </BexCard>
 
-        <Card>
-          <CardContent className="p-6">
+        <BexCard variant="gaming" className="hover-lift-bex group border-blue-500/30">
+          <BexCardContent className="p-6">
             <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Em Andamento</p>
-                <p className="text-2xl font-bold text-blue-600">{stats.emAndamento}</p>
+              <div className="space-y-1">
+                <p className="text-xs font-medium text-blue-400/70 uppercase tracking-wide">
+                  Em Andamento
+                </p>
+                <p className="text-3xl font-bold text-blue-400">
+                  {stats.emAndamento}
+                </p>
               </div>
-              <Clock className="h-8 w-8 text-blue-600" />
+              <div className="p-3 rounded-lg bg-blue-500/10 group-hover:bg-blue-500/20 transition-all">
+                <Clock className="h-8 w-8 text-blue-400 group-hover:scale-110 transition-transform" />
+              </div>
             </div>
-          </CardContent>
-        </Card>
+          </BexCardContent>
+        </BexCard>
 
-        <Card>
-          <CardContent className="p-6">
+        <BexCard variant="gaming" className="hover-lift-bex group border-red-500/30 shadow-lg shadow-red-500/10">
+          <BexCardContent className="p-6">
             <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Atrasadas</p>
-                <p className="text-2xl font-bold text-red-600">{stats.atrasadas}</p>
+              <div className="space-y-1">
+                <p className="text-xs font-medium text-red-400/70 uppercase tracking-wide">
+                  Atrasadas
+                </p>
+                <p className="text-3xl font-bold text-red-400 animate-pulse-glow">
+                  {stats.atrasadas}
+                </p>
               </div>
-              <AlertTriangle className="h-8 w-8 text-red-600" />
+              <div className="p-3 rounded-lg bg-red-500/10 group-hover:bg-red-500/20 transition-all">
+                <AlertTriangle className="h-8 w-8 text-red-400 group-hover:scale-110 transition-transform" />
+              </div>
             </div>
-          </CardContent>
-        </Card>
+          </BexCardContent>
+        </BexCard>
 
-        <Card>
-          <CardContent className="p-6">
+        <BexCard variant="gaming" className="hover-lift-bex group border-green-500/30 shadow-lg shadow-green-500/10">
+          <BexCardContent className="p-6">
             <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Concluídas</p>
-                <p className="text-2xl font-bold text-green-600">{stats.concluidas}</p>
+              <div className="space-y-1">
+                <p className="text-xs font-medium text-green-400/70 uppercase tracking-wide">
+                  Concluídas
+                </p>
+                <p className="text-3xl font-bold text-green-400">
+                  {stats.concluidas}
+                </p>
               </div>
-              <CheckCircle2 className="h-8 w-8 text-green-600" />
+              <div className="p-3 rounded-lg bg-green-500/10 group-hover:bg-green-500/20 transition-all">
+                <CheckCircle2 className="h-8 w-8 text-green-400 group-hover:scale-110 transition-transform" />
+              </div>
             </div>
-          </CardContent>
-        </Card>
+          </BexCardContent>
+        </BexCard>
       </div>
 
       {/* Filtros */}
-      <Card>
-        <CardContent className="p-4">
+      <BexCard variant="glass" className="border-bex/20">
+        <BexCardContent className="p-4">
           <div className="flex items-center gap-4 flex-wrap">
-            <div className="relative flex-1 min-w-[200px] max-w-[400px]">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <div className="relative flex-1 min-w-[200px] max-w-[400px] group">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-bex group-hover:text-bex-light transition-colors" />
               <Input
                 placeholder="Buscar tarefas, clientes, responsáveis..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
+                className="pl-10 bg-black/20 border-bex/30 focus:border-bex focus:ring-2 focus:ring-bex/20"
               />
             </div>
             
@@ -330,15 +355,30 @@ export default function AdminTarefas() {
               </SelectContent>
             </Select>
           </div>
-        </CardContent>
-      </Card>
+        </BexCardContent>
+      </BexCard>
 
       {/* Tabs para diferentes visualizações */}
       <Tabs defaultValue="kanban" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="kanban">Kanban</TabsTrigger>
-          <TabsTrigger value="setor">Por Setor</TabsTrigger>
-          <TabsTrigger value="stats">Estatísticas</TabsTrigger>
+        <TabsList className="bg-black/30 border border-bex/20">
+          <TabsTrigger 
+            value="kanban"
+            className="data-[state=active]:bg-bex data-[state=active]:text-white data-[state=active]:shadow-md data-[state=active]:shadow-bex/30"
+          >
+            Kanban
+          </TabsTrigger>
+          <TabsTrigger 
+            value="setor"
+            className="data-[state=active]:bg-bex data-[state=active]:text-white data-[state=active]:shadow-md data-[state=active]:shadow-bex/30"
+          >
+            Por Setor
+          </TabsTrigger>
+          <TabsTrigger 
+            value="stats"
+            className="data-[state=active]:bg-bex data-[state=active]:text-white data-[state=active]:shadow-md data-[state=active]:shadow-bex/30"
+          >
+            Estatísticas
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="kanban">

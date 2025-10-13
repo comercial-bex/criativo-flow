@@ -18,7 +18,7 @@ export function ResponsiveLayout({ children }: ResponsiveLayoutProps) {
     return (
       <div className="min-h-screen flex flex-col w-full bg-background">
         {/* Mobile Header - Compacto */}
-        <header className="h-14 flex items-center border-b bg-background px-4 sticky top-0 z-50">
+        <header className="h-14 flex items-center border-b border-bex/20 bg-black/40 backdrop-blur-md px-4 sticky top-0 z-50 shadow-lg shadow-bex/10">
           <GlobalHeader />
         </header>
         
@@ -42,9 +42,9 @@ export function ResponsiveLayout({ children }: ResponsiveLayoutProps) {
         <AppSidebar />
         
         <div className="flex flex-col min-h-screen flex-1 overflow-hidden">
-          <header className={`${isTablet ? 'h-14' : 'h-16'} flex items-center border-b bg-background/95 backdrop-blur-sm px-4 sticky top-0 z-40 shadow-sm`}>
+          <header className={`${isTablet ? 'h-14' : 'h-16'} flex items-center border-b border-bex/20 bg-black/40 backdrop-blur-md px-4 sticky top-0 z-40 shadow-lg shadow-bex/10`}>
             <div className="flex items-center gap-3 flex-1">
-              <SidebarTrigger className="hover:bg-muted/50 p-2 rounded-md transition-colors" />
+              <SidebarTrigger className="hover:bg-bex/10 hover:text-bex p-2 rounded-md transition-all border border-transparent hover:border-bex/30" />
               <GlobalHeader />
             </div>
           </header>

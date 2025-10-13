@@ -105,11 +105,11 @@ export function GlobalHeader() {
         <>
           {/* Desktop/Tablet Layout */}
           <div className="flex items-center gap-4">
-            <div className="relative w-96">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
+            <div className="relative w-96 group">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-bex group-hover:text-bex-light transition-colors z-10" />
               <Input
                 placeholder="Buscar clientes, projetos, planejamentos..."
-                className="pl-10 relative z-10"
+                className="pl-10 relative z-10 bg-black/30 border-bex/30 focus:border-bex focus:ring-2 focus:ring-bex/20 hover:border-bex/50 transition-all"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onFocus={() => setShowResults(true)}
@@ -129,7 +129,7 @@ export function GlobalHeader() {
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <CalendarModal />
             <NotificationDropdown />
             <HelpModal />
