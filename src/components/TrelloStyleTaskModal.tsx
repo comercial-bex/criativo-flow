@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { BexBadge } from '@/components/ui/bex-badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -11,6 +12,8 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { TaskActivities } from '@/components/TaskActivities';
+import { TaskActionsSidebar } from '@/components/TaskActionsSidebar';
 import { 
   Plus, 
   Calendar as CalendarIcon, 
@@ -151,10 +154,18 @@ export function TrelloStyleTaskModal({
         <div className="flex h-full">
           {/* Conteúdo principal */}
           <div className="flex-1 p-6 overflow-y-auto">
-            {/* Header com título */}
+            {/* Header com título e protocolo */}
             <div className="flex items-start gap-3 mb-6">
               <CreditCard className="h-5 w-5 text-muted-foreground mt-1" />
-              <div className="flex-1">
+              <div className="flex-1 space-y-2">
+                {/* Número de Protocolo */}
+                {task.numero_protocolo && (
+                  <BexBadge variant="bexGaming" className="font-mono text-xs">
+                    📋 {task.numero_protocolo}
+                  </BexBadge>
+                )}
+                
+                {/* Título */}
                 {isEditing ? (
                   <Input
                     value={editedTask.titulo || ''}
@@ -163,9 +174,9 @@ export function TrelloStyleTaskModal({
                     placeholder="Título da tarefa"
                   />
                 ) : (
-                  <h2 className="text-xl font-semibold">{task.titulo}</h2>
+                  <h2 className="bex-title-secondary">{task.titulo}</h2>
                 )}
-                <p className="text-sm text-muted-foreground mt-1">
+                <p className="bex-text-muted">
                   em lista <strong>{task.status?.replace('_', ' ').toUpperCase()}</strong>
                 </p>
               </div>
@@ -307,50 +318,9 @@ export function TrelloStyleTaskModal({
               </div>
             )}
 
-            {/* Atividades/Comentários */}
+            {/* Sistema de Atividades e Comentários */}
             <div className="mb-6">
-              <div className="flex items-center gap-2 mb-4">
-                <Activity className="h-4 w-4" />
-                <p className="font-medium">Atividade</p>
-              </div>
-
-              {/* Adicionar comentário */}
-              <div className="flex gap-2 mb-4">
-                <Avatar className="h-8 w-8">
-                  <AvatarFallback>U</AvatarFallback>
-                </Avatar>
-                <div className="flex-1 space-y-2">
-                  <Textarea
-                    placeholder="Escrever um comentário..."
-                    value={newComment}
-                    onChange={(e) => setNewComment(e.target.value)}
-                    rows={3}
-                  />
-                  <Button size="sm" onClick={handleAddComment}>
-                    Comentar
-                  </Button>
-                </div>
-              </div>
-
-              {/* Lista de comentários */}
-              <div className="space-y-3">
-                {editedTask.comentarios?.map((comment: any) => (
-                  <div key={comment.id} className="flex gap-2">
-                    <Avatar className="h-8 w-8">
-                      <AvatarFallback>{comment.author?.[0] || 'U'}</AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1">
-                      <div className="bg-muted p-3 rounded-md">
-                        <p className="font-medium text-sm">{comment.author}</p>
-                        <p className="text-sm mt-1">{comment.text}</p>
-                      </div>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {format(new Date(comment.created_at), 'dd MMM yyyy HH:mm', { locale: ptBR })}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <TaskActivities tarefaId={task.id} />
             </div>
           </div>
 
@@ -407,25 +377,11 @@ export function TrelloStyleTaskModal({
 
               <Separator />
 
-              <div>
-                <p className="text-sm font-medium mb-2">Ações</p>
-                <div className="space-y-2">
-                  <Button variant="ghost" size="sm" className="w-full justify-start">
-                    <Eye className="h-4 w-4 mr-2" />
-                    Seguir
-                  </Button>
-                  
-                  <Button variant="ghost" size="sm" className="w-full justify-start">
-                    <Archive className="h-4 w-4 mr-2" />
-                    Arquivar
-                  </Button>
-                  
-                  <Button variant="ghost" size="sm" className="w-full justify-start">
-                    <Share className="h-4 w-4 mr-2" />
-                    Compartilhar
-                  </Button>
-                </div>
-              </div>
+              {/* Sidebar de Ações Integrada */}
+              <TaskActionsSidebar 
+                tarefaId={task.id}
+                onRefresh={() => onTaskUpdate(task.id, {})}
+              />
 
               {/* Informações da tarefa */}
               <Separator />

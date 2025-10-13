@@ -97,6 +97,7 @@ export interface Tarefa {
   checklist?: ChecklistItem[] | null;
   checklist_progress?: number | null;
   capa_anexo_id?: string | null;
+  numero_protocolo?: string | null;
   created_by?: string | null;
   updated_by?: string | null;
   created_at?: string;

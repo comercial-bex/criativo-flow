@@ -8561,6 +8561,47 @@ export type Database = {
           },
         ]
       }
+      tarefa_atividades: {
+        Row: {
+          conteudo: string | null
+          created_at: string
+          id: string
+          metadata: Json | null
+          tarefa_id: string
+          tipo_atividade: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          conteudo?: string | null
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          tarefa_id: string
+          tipo_atividade: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          conteudo?: string | null
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          tarefa_id?: string
+          tipo_atividade?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tarefa_atividades_tarefa_id_fkey"
+            columns: ["tarefa_id"]
+            isOneToOne: false
+            referencedRelation: "tarefa"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tarefa_conteudo: {
         Row: {
           bloco_json: Json | null
@@ -8592,6 +8633,35 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "tarefa_conteudo_tarefa_id_fkey"
+            columns: ["tarefa_id"]
+            isOneToOne: false
+            referencedRelation: "tarefa"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tarefa_seguidores: {
+        Row: {
+          created_at: string
+          id: string
+          tarefa_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          tarefa_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          tarefa_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tarefa_seguidores_tarefa_id_fkey"
             columns: ["tarefa_id"]
             isOneToOne: false
             referencedRelation: "tarefa"
