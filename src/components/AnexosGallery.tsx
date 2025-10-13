@@ -15,6 +15,8 @@ import { AnimatePresence } from 'framer-motion';
 interface AnexosGalleryProps {
   tarefaId: string;
   canEdit?: boolean;
+  capaAtualId?: string | null;
+  onSetCapa?: (anexoId: string) => void;
 }
 
 const tipoOptions: { value: TipoAnexo; label: string }[] = [
@@ -30,7 +32,7 @@ const tipoOptions: { value: TipoAnexo; label: string }[] = [
   { value: 'outro', label: 'Outro' }
 ];
 
-export function AnexosGallery({ tarefaId, canEdit = false }: AnexosGalleryProps) {
+export function AnexosGallery({ tarefaId, canEdit = false, capaAtualId, onSetCapa }: AnexosGalleryProps) {
   const { anexos, uploadProgress, fetchAnexos, uploadAnexo, deleteAnexo, downloadAnexo } = useAnexos();
   const [selectedTipo, setSelectedTipo] = useState<TipoAnexo>('referencia');
   const [legenda, setLegenda] = useState('');

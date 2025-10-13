@@ -1,4 +1,4 @@
-import { Download, Trash2, FileText, Image, Video, File } from 'lucide-react';
+import { Download, Trash2, FileText, Image, Video, File, ImagePlus } from 'lucide-react';
 import { Button } from './ui/button';
 import { BexCard, BexCardContent } from './ui/bex-card';
 import { BexBadge } from './ui/bex-badge';
@@ -11,6 +11,8 @@ interface AnexoCardProps {
   anexo: Anexo;
   onDownload: (anexo: Anexo) => void;
   onDelete: (anexoId: string, arquivoUrl: string) => void;
+  onSetCapa?: () => void;
+  isCurrentCapa?: boolean;
   canDelete?: boolean;
 }
 
@@ -27,7 +29,7 @@ const tipoLabels: Record<string, string> = {
   outro: 'Outro'
 };
 
-export function AnexoCard({ anexo, onDownload, onDelete, canDelete = false }: AnexoCardProps) {
+export function AnexoCard({ anexo, onDownload, onDelete, onSetCapa, isCurrentCapa, canDelete = false }: AnexoCardProps) {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   
   const getFileIcon = () => {
@@ -40,6 +42,7 @@ export function AnexoCard({ anexo, onDownload, onDelete, canDelete = false }: An
 
   const isImage = anexo.arquivo_url.toLowerCase().match(/\.(jpg|jpeg|png|gif|webp)$/);
   const isVideo = anexo.arquivo_url.toLowerCase().match(/\.(mp4|webm|mov)$/);
+  const isImageFile = anexo.arquivo_url.toLowerCase().match(/\.(jpg|jpeg|png)$/i);
   const Icon = getFileIcon();
 
   return (
@@ -88,6 +91,17 @@ export function AnexoCard({ anexo, onDownload, onDelete, canDelete = false }: An
                   <Download className="h-4 w-4 mr-2" />
                   Baixar
                 </Button>
+                {isImageFile && onSetCapa && (
+                  <Button
+                    variant={isCurrentCapa ? "default" : "outline"}
+                    size="sm"
+                    onClick={onSetCapa}
+                    className={isCurrentCapa ? "bg-bex hover:bg-bex/90" : "bg-white/10 border-white/20 hover:bg-white/20 text-white"}
+                  >
+                    <ImagePlus className="h-4 w-4 mr-2" />
+                    {isCurrentCapa ? "Capa Atual" : "Usar como Capa"}
+                  </Button>
+                )}
                 {canDelete && (
                   <Button
                     variant="destructive"

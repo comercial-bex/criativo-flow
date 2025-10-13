@@ -17,6 +17,8 @@ import { ModernBadge } from "@/components/ui/modern-badge";
 import { CircleProgress } from "@/components/ui/circle-progress";
 import { ModernAvatar } from "@/components/ui/modern-avatar";
 import { useTaskTimer } from "@/hooks/useTaskTimer";
+import { TaskCoverImage } from "@/components/ui/task-cover-image";
+import { useTaskCover } from "@/hooks/useTaskCover";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -36,6 +38,7 @@ export interface KanbanTask {
   horas_trabalhadas?: number;
   horas_estimadas?: number;
   created_at?: string;
+  capa_anexo_id?: string | null;
 }
 
 interface ModernKanbanCardProps {
@@ -65,6 +68,7 @@ export const ModernKanbanCard = React.memo(({
 
   // Timer em tempo real
   const { formattedTime, status: deadlineStatus, isUrgent } = useTaskTimer(task.prazo_executor);
+  const { coverUrl } = useTaskCover(task.id, task.capa_anexo_id);
 
   // Normalizar campos
   const taskTitle = task.title || task.titulo || "Sem título";
@@ -152,10 +156,12 @@ export const ModernKanbanCard = React.memo(({
         <GripVertical className="w-4 h-4 text-muted-foreground" />
       </div>
 
-      {/* Cover com Gradiente */}
-      <div className="relative h-20 sm:h-24 overflow-hidden">
-        <div className={`w-full h-full bg-gradient-to-br ${coverGradient}`} />
-        
+      {/* Cover com Gradiente ou Imagem */}
+      <TaskCoverImage
+        coverUrl={coverUrl}
+        fallbackGradient={coverGradient}
+        height="h-20 sm:h-24"
+      >
         {/* Countdown Timer */}
         {task.prazo_executor && (
           <div className="absolute top-2 right-2">
@@ -174,7 +180,7 @@ export const ModernKanbanCard = React.memo(({
             </ModernBadge>
           </div>
         )}
-      </div>
+      </TaskCoverImage>
 
       {/* Content */}
       <div className="p-3 sm:p-4 space-y-3">

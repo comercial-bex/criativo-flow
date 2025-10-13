@@ -8334,6 +8334,7 @@ export type Database = {
           area: Database["public"]["Enums"]["area_enum"][] | null
           campanha_id: string | null
           canais: Database["public"]["Enums"]["canal_enum"][] | null
+          capa_anexo_id: string | null
           checklist: Json | null
           checklist_progress: number | null
           cliente_id: string | null
@@ -8373,6 +8374,7 @@ export type Database = {
           area?: Database["public"]["Enums"]["area_enum"][] | null
           campanha_id?: string | null
           canais?: Database["public"]["Enums"]["canal_enum"][] | null
+          capa_anexo_id?: string | null
           checklist?: Json | null
           checklist_progress?: number | null
           cliente_id?: string | null
@@ -8412,6 +8414,7 @@ export type Database = {
           area?: Database["public"]["Enums"]["area_enum"][] | null
           campanha_id?: string | null
           canais?: Database["public"]["Enums"]["canal_enum"][] | null
+          capa_anexo_id?: string | null
           checklist?: Json | null
           checklist_progress?: number | null
           cliente_id?: string | null
@@ -8453,6 +8456,13 @@ export type Database = {
             columns: ["campanha_id"]
             isOneToOne: false
             referencedRelation: "campanha"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tarefa_capa_anexo_id_fkey"
+            columns: ["capa_anexo_id"]
+            isOneToOne: false
+            referencedRelation: "anexo"
             referencedColumns: ["id"]
           },
           {

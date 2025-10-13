@@ -14,6 +14,7 @@ import { SmartStatusBadge } from '@/components/SmartStatusBadge';
 import { CircleProgress } from '@/components/ui/circle-progress';
 import { AnexosGallery } from '@/components/AnexosGallery';
 import { BriefingEditForm } from '@/components/BriefingEditForm';
+import { useTaskCover } from '@/hooks/useTaskCover';
 import { 
   Calendar, 
   Clock, 
@@ -54,6 +55,7 @@ interface KanbanTask extends TaskWithDeadline {
   checklist_progress?: number;
   tipo?: TipoTarefa;
   cliente_id?: string;
+  capa_anexo_id?: string | null;
 }
 
 interface TaskDetailsModalProps {
@@ -75,6 +77,7 @@ export function TaskDetailsModal({ open, onOpenChange, task, onTaskUpdate }: Tas
     observacoes_trabalho: ''
   });
   const [briefingEditData, setBriefingEditData] = useState<any>({});
+  const { updateCoverAnexo } = useTaskCover(task?.id || '', task?.capa_anexo_id);
 
   useEffect(() => {
     if (task) {
@@ -757,9 +760,11 @@ export function TaskDetailsModal({ open, onOpenChange, task, onTaskUpdate }: Tas
                 </BexCardTitle>
               </BexCardHeader>
               <BexCardContent>
-                <AnexosGallery
-                  tarefaId={task.id}
+                <AnexosGallery 
+                  tarefaId={task.id} 
                   canEdit={true}
+                  capaAtualId={task.capa_anexo_id}
+                  onSetCapa={updateCoverAnexo}
                 />
               </BexCardContent>
             </BexCard>
