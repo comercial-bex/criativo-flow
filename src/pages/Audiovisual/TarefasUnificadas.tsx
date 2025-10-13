@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Plus, Users, Clock, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { BexCard, BexCardContent } from '@/components/ui/bex-card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { UniversalKanbanBoard } from '@/components/UniversalKanbanBoard';
 import { TrelloStyleTaskModal } from '@/components/TrelloStyleTaskModal';

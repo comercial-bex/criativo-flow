@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { BexCard, BexCardContent, BexCardHeader, BexCardTitle } from '@/components/ui/bex-card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -29,6 +29,7 @@ import {
 import { Alert } from '@/components/ui/alert';
 import { useTutorial } from '@/hooks/useTutorial';
 import { TutorialButton } from '@/components/TutorialButton';
+import { FloatingActionButton } from '@/components/FloatingActionButton';
 import { sanitizeTaskPayload } from '@/utils/tarefaUtils';
 
 interface GRSTask {
@@ -316,11 +317,11 @@ export default function TarefasUnificadasGRS() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
-            <Target className="h-8 w-8 text-primary" />
+          <h1 className="bex-title-primary flex items-center gap-2">
+            <Target className="h-8 w-8 text-bex" />
             Gestão de Tarefas GRS
           </h1>
-          <p className="text-muted-foreground">Planejamento estratégico e gestão de redes sociais</p>
+          <p className="bex-text-muted mt-2">Planejamento estratégico e gestão de redes sociais</p>
         </div>
         
         <div className="flex gap-2">
@@ -467,6 +468,14 @@ export default function TarefasUnificadasGRS() {
           onTaskUpdate={handleTaskUpdate}
           profiles={profiles}
           moduleType="grs"
+        />
+      )}
+
+      {/* FAB */}
+      {permissions.showCreateButton && (
+        <FloatingActionButton
+          onClick={() => setIsCreateModalOpen(true)}
+          label="Nova Tarefa GRS"
         />
       )}
     </div>
