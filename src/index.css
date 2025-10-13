@@ -81,11 +81,11 @@ All colors MUST be HSL.
   }
 
   .dark {
-    --background: 0 0% 15%;
-    --foreground: 0 0% 85%;
+    --background: 0 0% 5%;        /* #0D0D0D - background escuro elegante */
+    --foreground: 0 0% 100%;       /* branco puro */
 
-    --card: 0 0% 15%;
-    --card-foreground: 0 0% 85%;
+    --card: 0 0% 7%;               /* #121212 - cards escuros */
+    --card-foreground: 0 0% 100%;  /* branco puro */
 
     --popover: 0 0% 15%;
     --popover-foreground: 0 0% 85%;
@@ -107,7 +107,7 @@ All colors MUST be HSL.
 
     --border: 0 0% 25%;
     --input: 0 0% 25%;
-    --ring: 83 100% 50%;
+    --ring: 84 65% 47%;            /* BEX green para focus rings */
     
     --sidebar-background: 0 0% 11%;        /* #1D1D1D */
     --sidebar-foreground: 0 0% 85%;
@@ -232,6 +232,38 @@ All colors MUST be HSL.
   
   .border-glow-bex {
     @apply border border-bex/30 shadow-lg shadow-bex/20;
+  }
+  
+  /* === BEX Gaming Typography === */
+  .bex-heading {
+    @apply font-montserrat font-semibold text-white;
+  }
+
+  .bex-body {
+    @apply font-inter text-gray-300;
+  }
+
+  .bex-title-primary {
+    @apply text-2xl font-montserrat font-bold text-white;
+  }
+
+  .bex-title-secondary {
+    @apply text-lg font-montserrat font-semibold text-gray-100;
+  }
+
+  .bex-text-muted {
+    @apply text-sm font-inter text-gray-400;
+  }
+  
+  /* === FAB Variants === */
+  .fab-base {
+    @apply fixed z-40 rounded-full shadow-2xl transition-all duration-300;
+    @apply hover:scale-110 hover:shadow-bex-glow;
+  }
+
+  .fab-primary {
+    @apply fab-base bg-gradient-to-r from-bex to-bex-light;
+    @apply animate-pulse-glow;
   }
 }
 
