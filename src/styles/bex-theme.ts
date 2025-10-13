@@ -48,3 +48,78 @@ export const bexTheme = {
     scale: 'transition-transform duration-200 hover:scale-105',
   }
 };
+
+// BEX Gaming V3 - Dark Clean Theme
+export const bexThemeV3 = {
+  colors: {
+    // Base
+    bg: '#0F1320',
+    surface: '#151A2B',
+    surfaceHover: '#1A2035',
+    
+    // Primary (Cyan Neon)
+    primary: '#00D1FF',
+    primaryHover: '#00B8E6',
+    primaryGlow: 'rgba(0, 209, 255, 0.3)',
+    
+    // Accent (Lime Neon)
+    accent: '#C3F012',
+    accentHover: '#AAD60F',
+    accentGlow: 'rgba(195, 240, 18, 0.3)',
+    
+    // Text
+    text: '#E8ECF3',
+    textMuted: '#9BA3B4',
+    textDark: '#6B7280',
+    
+    // Semantic
+    success: '#00D38D',
+    warning: '#FFC857',
+    danger: '#FF5C5C',
+    info: '#00D1FF',
+    
+    // Charts
+    chart1: '#00D1FF',
+    chart2: '#C3F012',
+    chart3: '#FF5C5C',
+    chart4: '#FFC857',
+    chart5: '#00D38D',
+  },
+  
+  typography: {
+    heading: '"Poppins", system-ui, sans-serif',
+    body: '"Montserrat", system-ui, sans-serif',
+    mono: '"Fira Code", "Courier New", monospace',
+  },
+  
+  spacing: {
+    xs: '0.25rem',
+    sm: '0.5rem',
+    md: '1rem',
+    lg: '1.5rem',
+    xl: '2rem',
+    '2xl': '3rem',
+  },
+  
+  radius: {
+    sm: '0.5rem',
+    md: '1rem',
+    lg: '1.5rem',
+    xl: '2rem',
+    full: '9999px',
+  },
+  
+  shadows: {
+    sm: '0 2px 8px rgba(0, 0, 0, 0.1)',
+    md: '0 4px 16px rgba(0, 0, 0, 0.15)',
+    lg: '0 8px 32px rgba(0, 0, 0, 0.2)',
+    glow: '0 0 20px var(--glow-color, rgba(0, 209, 255, 0.3))',
+    glowLg: '0 0 40px var(--glow-color, rgba(0, 209, 255, 0.4))',
+  },
+  
+  animation: {
+    fast: '150ms ease-in-out',
+    normal: '300ms ease-in-out',
+    slow: '500ms ease-in-out',
+  },
+};

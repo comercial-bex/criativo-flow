@@ -175,6 +175,64 @@ export type Database = {
         }
         Relationships: []
       }
+      analise_competitiva: {
+        Row: {
+          cliente_analise: Json | null
+          cliente_id: string
+          created_at: string | null
+          gerado_em: string | null
+          id: string
+          relatorio_markdown: string | null
+          resumo_ia: string | null
+          updated_at: string | null
+          versao: number | null
+        }
+        Insert: {
+          cliente_analise?: Json | null
+          cliente_id: string
+          created_at?: string | null
+          gerado_em?: string | null
+          id?: string
+          relatorio_markdown?: string | null
+          resumo_ia?: string | null
+          updated_at?: string | null
+          versao?: number | null
+        }
+        Update: {
+          cliente_analise?: Json | null
+          cliente_id?: string
+          created_at?: string | null
+          gerado_em?: string | null
+          id?: string
+          relatorio_markdown?: string | null
+          resumo_ia?: string | null
+          updated_at?: string | null
+          versao?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "analise_competitiva_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "analise_competitiva_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "mv_grs_dashboard_metrics"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "analise_competitiva_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "vw_client_metrics"
+            referencedColumns: ["cliente_id"]
+          },
+        ]
+      }
       anexo: {
         Row: {
           arquivo_url: string
@@ -1539,6 +1597,79 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "roteiros"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      concorrentes_analise: {
+        Row: {
+          analisado_em: string | null
+          analise_ia: Json | null
+          cliente_id: string
+          created_at: string | null
+          facebook: string | null
+          id: string
+          instagram: string | null
+          linkedin: string | null
+          nome: string
+          observacoes: string | null
+          site: string | null
+          tiktok: string | null
+          updated_at: string | null
+          youtube: string | null
+        }
+        Insert: {
+          analisado_em?: string | null
+          analise_ia?: Json | null
+          cliente_id: string
+          created_at?: string | null
+          facebook?: string | null
+          id?: string
+          instagram?: string | null
+          linkedin?: string | null
+          nome: string
+          observacoes?: string | null
+          site?: string | null
+          tiktok?: string | null
+          updated_at?: string | null
+          youtube?: string | null
+        }
+        Update: {
+          analisado_em?: string | null
+          analise_ia?: Json | null
+          cliente_id?: string
+          created_at?: string | null
+          facebook?: string | null
+          id?: string
+          instagram?: string | null
+          linkedin?: string | null
+          nome?: string
+          observacoes?: string | null
+          site?: string | null
+          tiktok?: string | null
+          updated_at?: string | null
+          youtube?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "concorrentes_analise_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "concorrentes_analise_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "mv_grs_dashboard_metrics"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "concorrentes_analise_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "vw_client_metrics"
+            referencedColumns: ["cliente_id"]
           },
         ]
       }
