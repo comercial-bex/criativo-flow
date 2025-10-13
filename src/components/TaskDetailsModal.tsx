@@ -20,6 +20,8 @@ import { TaskActionsSidebar } from '@/components/TaskActionsSidebar';
 import { TaskParticipants } from '@/components/TaskParticipants';
 import { TaskTimer } from '@/components/TaskTimer';
 import { TaskQuickTimeDialog } from '@/components/TaskQuickTimeDialog';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import {
   Calendar, 
   Clock, 
@@ -87,6 +89,10 @@ export function TaskDetailsModal({ open, onOpenChange, task, onTaskUpdate }: Tas
   });
   const [briefingEditData, setBriefingEditData] = useState<any>({});
   const [quickTimeDialogOpen, setQuickTimeDialogOpen] = useState(false);
+  const [labelsDialogOpen, setLabelsDialogOpen] = useState(false);
+  const [datePickerOpen, setDatePickerOpen] = useState(false);
+  const [taskLabels, setTaskLabels] = useState<string[]>([]);
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(task?.data_prazo ? new Date(task.data_prazo) : undefined);
   const { updateCoverAnexo } = useTaskCover(task?.id || '', task?.capa_anexo_id);
 
   useEffect(() => {
@@ -376,6 +382,33 @@ export function TaskDetailsModal({ open, onOpenChange, task, onTaskUpdate }: Tas
       title: `⏱️ Cronômetro salvo!`, 
       description: `${hours.toFixed(2)}h adicionadas. Total: ${newTotal.toFixed(2)}h` 
     });
+  };
+
+  const handleSaveDate = async (date: Date | undefined) => {
+    if (!date || !task) return;
+    
+    try {
+      await onTaskUpdate(task.id, { data_prazo: date.toISOString() });
+      setSelectedDate(date);
+      setDatePickerOpen(false);
+      toast({ 
+        title: '✅ Prazo atualizado',
+        description: `Novo prazo: ${format(date, "dd/MM/yyyy", { locale: ptBR })}`
+      });
+    } catch (error) {
+      console.error('Erro ao atualizar prazo:', error);
+      toast({ title: '❌ Erro ao atualizar prazo', variant: 'destructive' });
+    }
+  };
+
+  const handleScrollToChecklist = () => {
+    const checklistTrigger = document.querySelector('[data-value="checklist"]') as HTMLElement;
+    if (checklistTrigger) {
+      checklistTrigger.click();
+      setTimeout(() => {
+        checklistTrigger.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }, 100);
+    }
   };
 
   const priorityVariant = {
@@ -888,6 +921,9 @@ export function TaskDetailsModal({ open, onOpenChange, task, onTaskUpdate }: Tas
                   onTaskUpdate(task.id, {});
                 }
               }}
+              onOpenLabelsDialog={() => setLabelsDialogOpen(true)}
+              onOpenDatePicker={() => setDatePickerOpen(true)}
+              onScrollToChecklist={handleScrollToChecklist}
             />
           </div>
 
@@ -951,6 +987,37 @@ export function TaskDetailsModal({ open, onOpenChange, task, onTaskUpdate }: Tas
           onOpenChange={setQuickTimeDialogOpen}
           onSave={handleQuickTimeSave}
         />
+
+        {/* Dialog de Etiquetas */}
+        <Dialog open={labelsDialogOpen} onOpenChange={setLabelsDialogOpen}>
+          <BexDialogContent variant="gaming" className="sm:max-w-md">
+            <BexDialogHeader>
+              <BexDialogTitle gaming>Gerenciar Etiquetas</BexDialogTitle>
+            </BexDialogHeader>
+            <div className="space-y-3 py-4 px-6">
+              <p className="text-sm text-muted-foreground">
+                Funcionalidade em desenvolvimento
+              </p>
+            </div>
+          </BexDialogContent>
+        </Dialog>
+
+        {/* DatePicker de Prazo */}
+        <Dialog open={datePickerOpen} onOpenChange={setDatePickerOpen}>
+          <BexDialogContent variant="gaming" className="sm:max-w-md">
+            <BexDialogHeader>
+              <BexDialogTitle gaming>Alterar Prazo</BexDialogTitle>
+            </BexDialogHeader>
+            <div className="py-4 px-6 flex justify-center">
+              <CalendarComponent
+                mode="single"
+                selected={selectedDate}
+                onSelect={handleSaveDate}
+                className="rounded-md border pointer-events-auto"
+              />
+            </div>
+          </BexDialogContent>
+        </Dialog>
       </BexDialogContent>
     </Dialog>
   );

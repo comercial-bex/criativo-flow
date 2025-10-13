@@ -122,7 +122,7 @@ export function TaskParticipants({
 
   return (
     <TooltipProvider>
-      <div className="flex items-center gap-1 -space-x-2">
+      <div className="flex items-center gap-2">
         {participants.map((participant, index) => (
           <Tooltip key={participant.id}>
             <TooltipTrigger asChild>
@@ -148,7 +148,12 @@ export function TaskParticipants({
                 </BexAvatar>
               </div>
             </TooltipTrigger>
-            <TooltipContent side="bottom" className="bg-popover border border-bex/30">
+              <TooltipContent 
+                side="right" 
+                align="start"
+                sideOffset={8}
+                className="bg-popover border border-bex/30"
+              >
               <div className="text-xs">
                 <p className="font-semibold text-bex">{participant.name}</p>
                 <p className="text-muted-foreground">{participant.role}</p>

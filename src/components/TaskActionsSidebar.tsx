@@ -17,11 +17,17 @@ import { supabase } from '@/integrations/supabase/client';
 interface TaskActionsSidebarProps {
   tarefaId: string;
   onRefresh?: () => void;
+  onOpenLabelsDialog?: () => void;
+  onOpenDatePicker?: () => void;
+  onScrollToChecklist?: () => void;
 }
 
 export function TaskActionsSidebar({ 
   tarefaId,
-  onRefresh
+  onRefresh,
+  onOpenLabelsDialog,
+  onOpenDatePicker,
+  onScrollToChecklist
 }: TaskActionsSidebarProps) {
   const [seguindo, setSeguindo] = useState(false);
   const [loadingSeguir, setLoadingSeguir] = useState(false);
@@ -194,7 +200,7 @@ export function TaskActionsSidebar({
             variant="outline" 
             size="sm" 
             className="justify-start"
-            disabled
+            onClick={onOpenLabelsDialog}
           >
             <Tag className="h-4 w-4 mr-2" />
             Etiquetas
@@ -203,7 +209,7 @@ export function TaskActionsSidebar({
             variant="outline" 
             size="sm" 
             className="justify-start"
-            disabled
+            onClick={onOpenDatePicker}
           >
             <Calendar className="h-4 w-4 mr-2" />
             Datas
@@ -211,20 +217,11 @@ export function TaskActionsSidebar({
           <Button 
             variant="outline" 
             size="sm" 
-            className="justify-start"
-            disabled
+            className="justify-start col-span-2"
+            onClick={onScrollToChecklist}
           >
             <CheckSquare className="h-4 w-4 mr-2" />
             Checklist
-          </Button>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="justify-start"
-            disabled
-          >
-            <Paperclip className="h-4 w-4 mr-2" />
-            Anexo
           </Button>
         </div>
       </div>
