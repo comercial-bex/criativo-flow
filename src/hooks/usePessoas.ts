@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { smartToast } from '@/lib/smart-toast';
+import { cleanCPF } from '@/lib/cpf-utils';
 
 export interface Pessoa {
   id: string;
@@ -64,12 +65,15 @@ export function usePessoas(papel?: 'colaborador' | 'especialista' | 'cliente') {
     mutationFn: async (dados: Omit<Pessoa, 'id' | 'created_at' | 'updated_at'>) => {
       // FASE 2: Validação de papéis removida - agora são inferidos automaticamente
       
-      // FASE 3: Usar maybeSingle() para evitar erros quando não há duplicatas
-      if (dados.cpf) {
+      // FASE 1: Normalizar CPF antes de validar e salvar
+      const cpfNormalizado = dados.cpf ? cleanCPF(dados.cpf) : null;
+      
+      // Validar CPF duplicado
+      if (cpfNormalizado) {
         const { data: existe } = await supabase
           .from('pessoas')
           .select('id')
-          .eq('cpf', dados.cpf)
+          .eq('cpf', cpfNormalizado)
           .maybeSingle();
         
         if (existe) {
@@ -77,6 +81,7 @@ export function usePessoas(papel?: 'colaborador' | 'especialista' | 'cliente') {
         }
       }
 
+      // Validar email duplicado
       if (dados.email) {
         const { data: existe } = await supabase
           .from('pessoas')
@@ -89,9 +94,15 @@ export function usePessoas(papel?: 'colaborador' | 'especialista' | 'cliente') {
         }
       }
 
+      // Salvar com CPF normalizado
+      const dadosNormalizados = {
+        ...dados,
+        cpf: cpfNormalizado
+      };
+
       const { data, error } = await supabase
         .from('pessoas')
-        .insert([dados as any]) // Cast para evitar conflito de tipos com enum do banco
+        .insert([dadosNormalizados as any])
         .select()
         .single();
       
@@ -109,9 +120,15 @@ export function usePessoas(papel?: 'colaborador' | 'especialista' | 'cliente') {
 
   const atualizarMutation = useMutation({
     mutationFn: async ({ id, ...updates }: Partial<Pessoa> & { id: string }) => {
+      // FASE 1: Normalizar CPF se estiver sendo atualizado
+      const updatesNormalizados = {
+        ...updates,
+        cpf: updates.cpf ? cleanCPF(updates.cpf) : updates.cpf
+      };
+
       const { data, error } = await supabase
         .from('pessoas')
-        .update(updates as any) // Cast para evitar erro de tipo
+        .update(updatesNormalizados as any)
         .eq('id', id)
         .select()
         .single();
