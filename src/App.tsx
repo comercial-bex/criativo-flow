@@ -15,6 +15,7 @@ import { BexThemeProvider } from "@/contexts/BexThemeContext";
 
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
+import SignUp from "./pages/SignUp";
 import NotFound from "./pages/NotFound";
 import Unauthorized from "./pages/Unauthorized";
 
@@ -219,6 +220,7 @@ function App() {
               <Routes>
                 {/* Public routes */}
                 <Route path="/auth" element={<PublicRoute><Auth /></PublicRoute>} />
+                <Route path="/signup" element={<PublicRoute><SignUp /></PublicRoute>} />
 
                 {/* Smart redirect for root path */}
                 <Route path="/" element={<SmartRedirect />} />

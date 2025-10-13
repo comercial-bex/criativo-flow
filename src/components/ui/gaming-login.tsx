@@ -208,7 +208,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit, onForgotPassword, loadi
 
             <p className="mt-8 text-center text-sm text-white/60">
                 Não tem uma conta?{' '}
-                <a href="#" className="font-medium text-white hover:text-[#54C43D] transition-colors">
+                <a href="/signup" className="font-medium text-white hover:text-[#54C43D] transition-colors">
                     Inscrever-se
                 </a>
             </p>
