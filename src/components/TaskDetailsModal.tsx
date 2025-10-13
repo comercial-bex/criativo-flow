@@ -319,8 +319,9 @@ export function TaskDetailsModal({ open, onOpenChange, task, onTaskUpdate }: Tas
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <BexDialogContent variant="gaming" className="max-w-4xl max-h-[90vh] overflow-y-auto">
-        <BexDialogHeader>
+      <BexDialogContent variant="gaming" className="max-w-6xl max-h-[90vh] overflow-hidden p-0">
+        {/* Header */}
+        <BexDialogHeader className="px-6 pt-6 pb-4 border-b border-border/50">
           <div className="space-y-3">
             {task.numero_protocolo && (
               <BexBadge variant="bexGaming" className="font-mono text-xs">
@@ -332,114 +333,121 @@ export function TaskDetailsModal({ open, onOpenChange, task, onTaskUpdate }: Tas
               {task.titulo}
             </BexDialogTitle>
             
-            <div className="flex flex-wrap items-center gap-3">
-              <BexBadge variant="bexGlow">{task.status}</BexBadge>
-              <BexBadge variant={priorityVariant[task.prioridade] || 'outline'}>
+            <div className="flex flex-wrap items-center gap-2">
+              <BexBadge variant="bexGlow" className="text-xs">{task.status}</BexBadge>
+              <BexBadge variant={priorityVariant[task.prioridade] || 'outline'} className="text-xs">
                 {task.prioridade.charAt(0).toUpperCase() + task.prioridade.slice(1)}
               </BexBadge>
               
               {task.data_prazo && (
-                <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                  <Calendar className="h-4 w-4" />
-                  {format(new Date(task.data_prazo), "PPP", { locale: ptBR })}
+                <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                  <Calendar className="h-3 w-3" />
+                  {format(new Date(task.data_prazo), "dd/MM/yyyy", { locale: ptBR })}
                 </div>
               )}
             </div>
           </div>
         </BexDialogHeader>
 
-        <Tabs defaultValue="info" className="w-full">
-          <TabsList className="grid w-full grid-cols-6 lg:grid-cols-6">
-            <TabsTrigger value="info" className="data-[state=active]:bg-bex/20 data-[state=active]:text-bex">
-              <FileText className="h-4 w-4 mr-2" />
-              Informações
+        {/* Layout 2 colunas: Conteúdo + Sidebar */}
+        <div className="flex h-[calc(90vh-180px)]">
+          {/* Coluna Principal */}
+          <div className="flex-1 overflow-y-auto px-6 py-4">
+
+        <Tabs defaultValue="atividades" className="w-full">
+          <TabsList className="grid w-full grid-cols-6 bg-muted/30">
+            <TabsTrigger value="atividades" className="data-[state=active]:bg-bex/20 data-[state=active]:text-bex text-xs">
+              <Activity className="h-3.5 w-3.5 mr-1.5" />
+              Atividades
             </TabsTrigger>
-            <TabsTrigger value="briefing" className="data-[state=active]:bg-bex/20 data-[state=active]:text-bex">
-              <Target className="h-4 w-4 mr-2" />
+            <TabsTrigger value="info" className="data-[state=active]:bg-bex/20 data-[state=active]:text-bex text-xs">
+              <FileText className="h-3.5 w-3.5 mr-1.5" />
+              Info
+            </TabsTrigger>
+            <TabsTrigger value="briefing" className="data-[state=active]:bg-bex/20 data-[state=active]:text-bex text-xs">
+              <Target className="h-3.5 w-3.5 mr-1.5" />
               Briefing
             </TabsTrigger>
-            <TabsTrigger value="checklist" className="data-[state=active]:bg-bex/20 data-[state=active]:text-bex">
-              <CheckCircle2 className="h-4 w-4 mr-2" />
+            <TabsTrigger value="checklist" className="data-[state=active]:bg-bex/20 data-[state=active]:text-bex text-xs">
+              <CheckCircle2 className="h-3.5 w-3.5 mr-1.5" />
               Checklist
-                {totalCount > 0 && (
-                  <BexBadge variant="bexGlow" className="ml-2">
-                    {Math.round(progressPercentage)}%
-                  </BexBadge>
-                )}
+              {totalCount > 0 && (
+                <BexBadge variant="bexGlow" className="ml-1.5 text-[10px] px-1 py-0">
+                  {Math.round(progressPercentage)}%
+                </BexBadge>
+              )}
             </TabsTrigger>
-            <TabsTrigger value="progress" className="data-[state=active]:bg-bex/20 data-[state=active]:text-bex">
-              <TrendingUp className="h-4 w-4 mr-2" />
+            <TabsTrigger value="progress" className="data-[state=active]:bg-bex/20 data-[state=active]:text-bex text-xs">
+              <TrendingUp className="h-3.5 w-3.5 mr-1.5" />
               Progresso
             </TabsTrigger>
-            <TabsTrigger value="anexos" className="data-[state=active]:bg-bex/20 data-[state=active]:text-bex">
-              <Paperclip className="h-4 w-4 mr-2" />
+            <TabsTrigger value="anexos" className="data-[state=active]:bg-bex/20 data-[state=active]:text-bex text-xs">
+              <Paperclip className="h-3.5 w-3.5 mr-1.5" />
               Anexos
-            </TabsTrigger>
-            <TabsTrigger value="atividades" className="data-[state=active]:bg-bex/20 data-[state=active]:text-bex">
-              <Activity className="h-4 w-4 mr-2" />
-              Atividades
             </TabsTrigger>
           </TabsList>
 
+          {/* Atividades Tab - PRIMEIRA */}
+          <TabsContent value="atividades" className="mt-3 space-y-3">
+            <TaskActivities tarefaId={task.id} />
+          </TabsContent>
+
           {/* Informações Básicas */}
-          <TabsContent value="info" className="mt-4 space-y-4">
-            <BexCard variant="glow">
-              <BexCardHeader>
-                <BexCardTitle className="flex items-center gap-2">
-                  <FileText className="h-5 w-5 text-bex" />
-                  Informações Básicas
-                </BexCardTitle>
-              </BexCardHeader>
-              <BexCardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                  {task.responsavel_nome && (
-                    <div className="flex items-center gap-2">
-                      <User className="h-4 w-4 text-bex" />
-                      <span className="font-medium">Responsável:</span>
-                      <span className="text-muted-foreground">{task.responsavel_nome}</span>
+          <TabsContent value="info" className="mt-3 space-y-3">
+            <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                {task.responsavel_nome && (
+                  <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/30">
+                    <User className="h-4 w-4 text-bex shrink-0" />
+                    <div className="min-w-0">
+                      <p className="text-[10px] uppercase text-muted-foreground font-medium">Responsável</p>
+                      <p className="text-xs font-medium truncate">{task.responsavel_nome}</p>
                     </div>
-                  )}
-                  
-                  {task.data_prazo && (
-                    <div className="flex items-center gap-2">
-                      <Calendar className="h-4 w-4 text-bex" />
-                      <span className="font-medium">Prazo:</span>
-                      <span className="text-muted-foreground">
-                        {format(new Date(task.data_prazo), "PPP", { locale: ptBR })}
-                      </span>
-                    </div>
-                  )}
-
-                  <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-bex" />
-                    <span className="font-medium">Horas:</span>
-                    <span className="text-muted-foreground">{task.horas_trabalhadas || 0}h</span>
                   </div>
-
-                  {task.executor_area && (
-                    <div className="flex items-center gap-2">
-                      <Tag className="h-4 w-4 text-bex" />
-                      <span className="font-medium">Área:</span>
-                      <span className="text-muted-foreground">{task.executor_area}</span>
+                )}
+                
+                {task.data_prazo && (
+                  <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/30">
+                    <Calendar className="h-4 w-4 text-bex shrink-0" />
+                    <div className="min-w-0">
+                      <p className="text-[10px] uppercase text-muted-foreground font-medium">Prazo</p>
+                      <p className="text-xs font-medium">
+                        {format(new Date(task.data_prazo), "dd/MM/yyyy", { locale: ptBR })}
+                      </p>
                     </div>
-                  )}
-                </div>
-
-                {task.descricao && (
-                  <>
-                    <Separator className="bg-bex/20" />
-                    <div>
-                      <h4 className="font-medium mb-2 text-bex">Descrição</h4>
-                      <p className="text-sm text-muted-foreground leading-relaxed">{task.descricao}</p>
-                    </div>
-                  </>
+                  </div>
                 )}
 
-                <div className="text-xs text-muted-foreground pt-2 border-t border-border/50">
-                  Criado em {task.created_at ? format(new Date(task.created_at), "PPP 'às' HH:mm", { locale: ptBR }) : 'N/A'}
+                <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/30">
+                  <Clock className="h-4 w-4 text-bex shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-[10px] uppercase text-muted-foreground font-medium">Horas</p>
+                    <p className="text-xs font-medium">{task.horas_trabalhadas || 0}h</p>
+                  </div>
                 </div>
-              </BexCardContent>
-            </BexCard>
+
+                {task.executor_area && (
+                  <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/30">
+                    <Tag className="h-4 w-4 text-bex shrink-0" />
+                    <div className="min-w-0">
+                      <p className="text-[10px] uppercase text-muted-foreground font-medium">Área</p>
+                      <p className="text-xs font-medium truncate">{task.executor_area}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {task.descricao && (
+                <div className="p-3 rounded-lg bg-muted/30">
+                  <h4 className="text-xs font-semibold mb-2 text-bex uppercase">Descrição</h4>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{task.descricao}</p>
+                </div>
+              )}
+
+              <div className="text-[10px] text-muted-foreground pt-2 border-t border-border/30">
+                Criado em {task.created_at ? format(new Date(task.created_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR }) : 'N/A'}
+              </div>
+            </div>
           </TabsContent>
 
           {/* Briefing */}
@@ -765,52 +773,26 @@ export function TaskDetailsModal({ open, onOpenChange, task, onTaskUpdate }: Tas
           </TabsContent>
 
           {/* Anexos */}
-          <TabsContent value="anexos" className="mt-4">
-            <BexCard variant="glass">
-              <BexCardHeader>
-                <BexCardTitle className="flex items-center gap-2">
-                  <Paperclip className="h-5 w-5 text-bex" />
-                  Anexos da Tarefa
-                </BexCardTitle>
-              </BexCardHeader>
-              <BexCardContent>
-                <AnexosGallery 
-                  tarefaId={task.id} 
-                  canEdit={true}
-                  capaAtualId={task.capa_anexo_id}
-                  onSetCapa={updateCoverAnexo}
-                />
-              </BexCardContent>
-            </BexCard>
-          </TabsContent>
-
-          {/* Atividades */}
-          <TabsContent value="atividades" className="mt-4">
-            <BexCard variant="glass">
-              <BexCardHeader>
-                <BexCardTitle className="flex items-center gap-2">
-                  <Activity className="h-5 w-5 text-bex" />
-                  Timeline de Atividades
-                </BexCardTitle>
-              </BexCardHeader>
-              <BexCardContent>
-                <TaskActivities tarefaId={task.id} />
-              </BexCardContent>
-            </BexCard>
+          <TabsContent value="anexos" className="mt-3">
+            <AnexosGallery 
+              tarefaId={task.id} 
+              canEdit={true}
+              capaAtualId={task.capa_anexo_id}
+              onSetCapa={updateCoverAnexo}
+            />
           </TabsContent>
         </Tabs>
+      </div>
 
-        {/* Sidebar de Ações */}
-        <Separator className="my-6" />
-        
-        <BexCard variant="glass">
-          <BexCardHeader>
-            <BexCardTitle className="flex items-center gap-2">
-              <Zap className="h-5 w-5 text-bex" />
-              Ações da Tarefa
-            </BexCardTitle>
-          </BexCardHeader>
-          <BexCardContent>
+      {/* Sidebar de Ações - Estilo Trello */}
+      <div className="w-64 border-l border-border/50 bg-muted/10 p-4 overflow-y-auto">
+        <div className="space-y-4">
+          {/* Ações */}
+          <div>
+            <h3 className="text-xs font-semibold uppercase text-muted-foreground mb-3 flex items-center gap-1.5">
+              <Zap className="h-3.5 w-3.5" />
+              Ações
+            </h3>
             <TaskActionsSidebar 
               tarefaId={task.id}
               onRefresh={() => {
@@ -819,36 +801,51 @@ export function TaskDetailsModal({ open, onOpenChange, task, onTaskUpdate }: Tas
                 }
               }}
             />
-          </BexCardContent>
-        </BexCard>
-
-        {/* Footer com Risk Level */}
-        <div className="flex items-center justify-between pt-4 mt-6 border-t border-bex/20">
-          <div className="flex items-center gap-2">
-            <AlertCircle className={cn("h-5 w-5", riskLevel.color)} />
-            <span className="text-sm text-muted-foreground">
-              Nível de Risco: <span className={cn("font-semibold", riskLevel.color)}>
-                {riskLevel.label}
-              </span>
-            </span>
           </div>
-          
-          <div className="flex items-center gap-3">
-            {totalCount > 0 && (
-              <CircleProgress
-                value={completedCount}
-                maxValue={totalCount}
-                size={48}
-                strokeWidth={4}
-                getColor={(percentage) => {
-                  if (percentage < 0.5) return "stroke-red-500";
-                  if (percentage < 0.8) return "stroke-amber-500";
-                  return "stroke-bex";
-                }}
-              />
-            )}
+
+          <Separator className="bg-border/30" />
+
+          {/* Indicador de Risco */}
+          <div>
+            <h3 className="text-xs font-semibold uppercase text-muted-foreground mb-3">
+              Status da Tarefa
+            </h3>
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 p-2 rounded-lg bg-background/50">
+                <AlertCircle className={cn("h-4 w-4", riskLevel.color)} />
+                <div>
+                  <p className="text-[10px] uppercase text-muted-foreground">Risco</p>
+                  <p className={cn("text-xs font-semibold", riskLevel.color)}>
+                    {riskLevel.label}
+                  </p>
+                </div>
+              </div>
+
+              {totalCount > 0 && (
+                <div className="flex items-center justify-between p-2 rounded-lg bg-background/50">
+                  <div>
+                    <p className="text-[10px] uppercase text-muted-foreground">Progresso</p>
+                    <p className="text-xs font-semibold">{completedCount}/{totalCount} itens</p>
+                  </div>
+                  <CircleProgress
+                    value={completedCount}
+                    maxValue={totalCount}
+                    size={40}
+                    strokeWidth={3}
+                    getColor={(percentage) => {
+                      if (percentage >= 80) return 'hsl(var(--bex))';
+                      if (percentage >= 50) return 'hsl(142, 76%, 36%)';
+                      if (percentage >= 25) return 'hsl(48, 96%, 53%)';
+                      return 'hsl(0, 84%, 60%)';
+                    }}
+                  />
+                </div>
+              )}
+            </div>
           </div>
         </div>
+      </div>
+    </div>
       </BexDialogContent>
     </Dialog>
   );
