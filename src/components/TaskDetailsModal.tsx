@@ -17,7 +17,10 @@ import { BriefingEditForm } from '@/components/BriefingEditForm';
 import { useTaskCover } from '@/hooks/useTaskCover';
 import { TaskActivities } from '@/components/TaskActivities';
 import { TaskActionsSidebar } from '@/components/TaskActionsSidebar';
-import { 
+import { TaskParticipants } from '@/components/TaskParticipants';
+import { TaskTimer } from '@/components/TaskTimer';
+import { TaskQuickTimeDialog } from '@/components/TaskQuickTimeDialog';
+import {
   Calendar, 
   Clock, 
   User, 
@@ -49,6 +52,7 @@ interface KanbanTask extends TaskWithDeadline {
   descricao?: string;
   responsavel_id?: string;
   responsavel_nome?: string;
+  executor_id?: string;
   executor_area?: string;
   setor_responsavel?: string;
   prioridade: 'baixa' | 'media' | 'alta';
@@ -58,6 +62,7 @@ interface KanbanTask extends TaskWithDeadline {
   checklist_progress?: number;
   tipo?: TipoTarefa;
   cliente_id?: string;
+  projeto_id?: string;
   capa_anexo_id?: string | null;
   numero_protocolo?: string | null;
 }
@@ -81,6 +86,7 @@ export function TaskDetailsModal({ open, onOpenChange, task, onTaskUpdate }: Tas
     observacoes_trabalho: ''
   });
   const [briefingEditData, setBriefingEditData] = useState<any>({});
+  const [quickTimeDialogOpen, setQuickTimeDialogOpen] = useState(false);
   const { updateCoverAnexo } = useTaskCover(task?.id || '', task?.capa_anexo_id);
 
   useEffect(() => {
@@ -310,6 +316,68 @@ export function TaskDetailsModal({ open, onOpenChange, task, onTaskUpdate }: Tas
     }));
   };
 
+  const handleQuickTimeSave = async (hours: number, observation: string) => {
+    if (!task) return;
+
+    const currentHours = task.horas_trabalhadas || 0;
+    await handleSaveWork();
+    
+    setEditData({
+      horas_trabalhadas: currentHours + hours,
+      observacoes_trabalho: observation
+    });
+
+    // Trigger save
+    await onTaskUpdate(task.id, {
+      horas_trabalhadas: currentHours + hours,
+    });
+
+    if (observation) {
+      const { supabase } = await import('@/integrations/supabase/client');
+      const timestamp = new Date().toLocaleString('pt-BR');
+      const novaObservacao = `[${timestamp}] ${observation}`;
+      
+      const { data: briefingAtual } = await supabase
+        .from('briefings')
+        .select('observacoes')
+        .eq('tarefa_id', task.id)
+        .maybeSingle();
+
+      const observacoesAtualizadas = briefingAtual?.observacoes 
+        ? `${briefingAtual.observacoes}\n\n${novaObservacao}`
+        : novaObservacao;
+
+      await supabase
+        .from('briefings')
+        .upsert({
+          tarefa_id: task.id,
+          cliente_id: task.cliente_id,
+          titulo: task.titulo,
+          observacoes: observacoesAtualizadas,
+        }, {
+          onConflict: 'tarefa_id'
+        });
+    }
+
+    toast({ title: `✅ ${hours}h registradas com sucesso!` });
+  };
+
+  const handleTimerSave = async (hours: number) => {
+    if (!task) return;
+
+    const currentHours = task.horas_trabalhadas || 0;
+    const newTotal = currentHours + hours;
+
+    await onTaskUpdate(task.id, {
+      horas_trabalhadas: newTotal,
+    });
+
+    toast({ 
+      title: `⏱️ Cronômetro salvo!`, 
+      description: `${hours.toFixed(2)}h adicionadas. Total: ${newTotal.toFixed(2)}h` 
+    });
+  };
+
   const priorityVariant = {
     'critica': 'destructive' as const,
     'alta': 'destructive' as const,
@@ -346,6 +414,15 @@ export function TaskDetailsModal({ open, onOpenChange, task, onTaskUpdate }: Tas
                 </div>
               )}
             </div>
+
+            {/* Participantes da Tarefa */}
+            <TaskParticipants
+              tarefaId={task.id}
+              responsavelId={task.responsavel_id}
+              executorId={task.executor_id}
+              clienteId={task.cliente_id}
+              projetoId={task.projeto_id}
+            />
           </div>
         </BexDialogHeader>
 
@@ -449,6 +526,17 @@ export function TaskDetailsModal({ open, onOpenChange, task, onTaskUpdate }: Tas
                 <TrendingUp className="h-4 w-4" />
                 Progresso do Trabalho
               </h3>
+
+              {/* Botão Registrar Tempo Rápido */}
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => setQuickTimeDialogOpen(true)}
+                className="w-full border-bex/30 hover:bg-bex/10 hover:border-bex text-bex"
+              >
+                <Clock className="h-4 w-4 mr-2" />
+                ⏱️ Registrar Tempo Rápido
+              </Button>
               {isEditing ? (
                 <div className="space-y-4">
                   <div>
@@ -771,70 +859,6 @@ export function TaskDetailsModal({ open, onOpenChange, task, onTaskUpdate }: Tas
             </BexCard>
           </TabsContent>
 
-          {/* Progresso do Trabalho */}
-          <TabsContent value="progress" className="mt-4">
-            <BexCard variant="glass">
-              <BexCardHeader>
-                <BexCardTitle className="flex items-center gap-2">
-                  <MessageSquare className="h-5 w-5 text-bex" />
-                  Progresso do Trabalho
-                </BexCardTitle>
-              </BexCardHeader>
-              <BexCardContent className="space-y-4">
-                {isEditing ? (
-                  <div className="space-y-4">
-                    <div>
-                      <Label htmlFor="horas_trabalhadas">Horas Trabalhadas</Label>
-                      <Input
-                        id="horas_trabalhadas"
-                        type="number"
-                        value={editData.horas_trabalhadas}
-                        onChange={(e) => setEditData({ ...editData, horas_trabalhadas: parseInt(e.target.value) || 0 })}
-                        min="0"
-                      />
-                    </div>
-                    
-                    <div>
-                      <Label htmlFor="observacoes_trabalho">Observações do Trabalho</Label>
-                      <Textarea
-                        id="observacoes_trabalho"
-                        value={editData.observacoes_trabalho}
-                        onChange={(e) => setEditData({ ...editData, observacoes_trabalho: e.target.value })}
-                        placeholder="Atualizações sobre o progresso, dificuldades encontradas, próximos passos..."
-                        rows={5}
-                      />
-                    </div>
-
-                    <Button onClick={handleSaveWork} className="w-full bg-bex hover:bg-bex/80">
-                      <Save className="h-4 w-4 mr-2" />
-                      Salvar Progresso
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-2 p-3 bg-bex/5 rounded-lg">
-                      <Clock className="h-5 w-5 text-bex" />
-                      <span className="text-sm text-muted-foreground">
-                        Horas trabalhadas: <span className="font-semibold text-foreground">{task.horas_trabalhadas || 0}h</span>
-                      </span>
-                    </div>
-                    
-                    {briefingData?.observacoes_trabalho ? (
-                      <div className="p-3 bg-muted/50 rounded-lg">
-                        <h4 className="font-medium mb-2 text-sm text-bex">Última atualização:</h4>
-                        <p className="text-sm text-muted-foreground leading-relaxed">{briefingData.observacoes_trabalho}</p>
-                      </div>
-                    ) : (
-                      <div className="text-center py-8 text-muted-foreground">
-                        <MessageSquare className="h-12 w-12 mx-auto mb-3 opacity-30" />
-                        <p className="text-sm">Nenhuma atualização de progresso registrada.</p>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </BexCardContent>
-            </BexCard>
-          </TabsContent>
 
           {/* Anexos */}
           <TabsContent value="anexos" className="mt-3">
@@ -907,9 +931,26 @@ export function TaskDetailsModal({ open, onOpenChange, task, onTaskUpdate }: Tas
               )}
             </div>
           </div>
+
+          <Separator className="bg-border/30" />
+
+          {/* Cronômetro de Trabalho */}
+          <div>
+            <TaskTimer 
+              taskId={task.id} 
+              onSaveTime={handleTimerSave}
+            />
+          </div>
         </div>
       </div>
     </div>
+
+        {/* Dialog de Registro Rápido de Tempo */}
+        <TaskQuickTimeDialog
+          open={quickTimeDialogOpen}
+          onOpenChange={setQuickTimeDialogOpen}
+          onSave={handleQuickTimeSave}
+        />
       </BexDialogContent>
     </Dialog>
   );
