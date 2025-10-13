@@ -9881,12 +9881,14 @@ export type Database = {
           | {
               p_categoria: string
               p_cliente_id: string
-              p_cred_id: string
+              p_cred_id?: string
+              p_extra_json?: Json
               p_plataforma: string
+              p_projeto_id: string
               p_secrets_json?: Json
               p_senha_plain: string
               p_url?: string
-              p_usuario: string
+              p_usuario_login: string
             }
           | {
               p_categoria: string
