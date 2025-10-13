@@ -9,7 +9,9 @@ export interface SignUpData {
   cpf?: string;
   telefone?: string;
   password: string;
-  empresa?: string;
+  tipoCadastro: 'especialista' | 'cliente';
+  departamento?: string;
+  nomeEmpresa?: string;
 }
 
 export interface ValidationResult {
@@ -123,7 +125,7 @@ export function useSignUpWithValidation() {
         data.email,
         data.password,
         data.nome,
-        data.empresa
+        data.nomeEmpresa
       );
 
       if (authError) {
@@ -151,17 +153,66 @@ export function useSignUpWithValidation() {
       } else {
         // 4. Criar nova pessoa se não existe
         setProcessingStep('Criando cadastro...');
-        await supabase
-          .from('pessoas')
-          .insert({
-            nome: data.nome,
-            email: data.email,
-            cpf: data.cpf,
-            telefones: data.telefone ? [data.telefone] : null,
-            papeis: ['cliente'],
-            profile_id: newProfile.id,
-            cliente_id: null, // Será definido pelo admin
-          });
+        
+        if (data.tipoCadastro === 'especialista') {
+          // Especialista BEX - colaborador interno
+          const { error: pessoaError } = await supabase
+            .from('pessoas')
+            .insert({
+              nome: data.nome,
+              email: data.email,
+              cpf: data.cpf,
+              telefones: data.telefone ? [data.telefone] : null,
+              papeis: ['colaborador'],
+              profile_id: newProfile.id,
+              cliente_id: null,
+            });
+
+          if (pessoaError) throw pessoaError;
+
+          // Mapear departamento para especialidade válida
+          type EspecialidadeType = 'videomaker' | 'filmmaker' | 'design' | 'gerente_redes_sociais' | 'grs' | 'atendimento' | 'audiovisual' | 'financeiro' | 'gestor';
+          
+          const especialidadeMap: Record<string, EspecialidadeType> = {
+            'grs': 'grs',
+            'designer': 'design',
+            'filmmaker': 'filmmaker',
+            'atendimento': 'atendimento',
+            'financeiro': 'financeiro',
+            'rh': 'atendimento'
+          };
+
+          const especialidade = especialidadeMap[data.departamento || ''] || 'atendimento';
+
+          // Salvar especialidade para aprovação admin
+          await supabase.from('profiles').update({
+            especialidade: especialidade,
+            status: 'pendente_aprovacao'
+          }).eq('id', newProfile.id);
+
+        } else {
+          // Cliente - aguarda vinculação a empresa
+          const { error: pessoaError } = await supabase
+            .from('pessoas')
+            .insert({
+              nome: data.nome,
+              email: data.email,
+              cpf: data.cpf,
+              telefones: data.telefone ? [data.telefone] : null,
+              papeis: ['cliente'],
+              profile_id: newProfile.id,
+              cliente_id: null, // Será definido pelo admin
+            });
+
+          if (pessoaError) throw pessoaError;
+
+          // Salvar info da empresa e departamento para o admin
+          await supabase.from('profiles').update({
+            empresa: data.nomeEmpresa,
+            role_requested: data.departamento,
+            status: 'pendente_aprovacao'
+          }).eq('id', newProfile.id);
+        }
       }
 
       setProcessingStep('Finalizando...');

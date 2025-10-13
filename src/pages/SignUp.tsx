@@ -21,10 +21,25 @@ const signUpSchema = z.object({
     .regex(/[A-Z]/, 'Senha deve conter pelo menos uma letra maiúscula')
     .regex(/[0-9]/, 'Senha deve conter pelo menos um número'),
   confirmPassword: z.string(),
-  empresa: z.string().optional(),
+  tipoCadastro: z.enum(['especialista', 'cliente'], {
+    required_error: 'Selecione o tipo de cadastro'
+  }),
+  departamento: z.string().optional(),
+  nomeEmpresa: z.string().optional(),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "As senhas não coincidem",
   path: ["confirmPassword"],
+}).refine((data) => {
+  if (data.tipoCadastro === 'especialista') {
+    return !!data.departamento;
+  }
+  if (data.tipoCadastro === 'cliente') {
+    return !!data.nomeEmpresa && !!data.departamento;
+  }
+  return true;
+}, {
+  message: "Preencha todos os campos obrigatórios",
+  path: ["departamento"],
 });
 
 type SignUpFormData = z.infer<typeof signUpSchema>;
@@ -40,7 +55,9 @@ export default function SignUp() {
     telefone: '',
     password: '',
     confirmPassword: '',
-    empresa: '',
+    tipoCadastro: 'cliente',
+    departamento: '',
+    nomeEmpresa: '',
   });
 
   const [showPassword, setShowPassword] = useState(false);
@@ -77,7 +94,9 @@ export default function SignUp() {
         cpf: validated.cpf ? cleanCPF(validated.cpf) : undefined,
         telefone: validated.telefone,
         password: validated.password,
-        empresa: validated.empresa,
+        tipoCadastro: validated.tipoCadastro,
+        departamento: validated.departamento,
+        nomeEmpresa: validated.nomeEmpresa,
       });
 
       setValidationResult(result);
@@ -121,7 +140,9 @@ export default function SignUp() {
         cpf: formData.cpf ? cleanCPF(formData.cpf) : undefined,
         telefone: formData.telefone,
         password: formData.password,
-        empresa: formData.empresa,
+        tipoCadastro: formData.tipoCadastro,
+        departamento: formData.departamento,
+        nomeEmpresa: formData.nomeEmpresa,
       }, validationResult);
 
       if (result.success) {
@@ -234,21 +255,111 @@ export default function SignUp() {
               </div>
             </div>
 
-            {/* Empresa */}
+            {/* Tipo de Cadastro */}
             <div>
-              <div className="relative">
-                <div className="absolute left-3 top-1/2 -translate-y-1/2">
-                  <Building className="text-white/60" size={18} />
-                </div>
-                <input
-                  type="text"
-                  placeholder="Empresa (opcional)"
-                  value={formData.empresa}
-                  onChange={(e) => handleChange('empresa', e.target.value)}
-                  className="w-full pl-10 pr-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-white/60 focus:outline-none focus:border-purple-500/50 transition-colors"
-                />
+              <label className="text-white/80 text-sm mb-2 block">
+                Tipo de Cadastro *
+              </label>
+              <div className="space-y-2">
+                <label className="flex items-center gap-3 p-3 bg-white/5 border border-white/10 rounded-lg cursor-pointer hover:bg-white/10 transition-colors">
+                  <input
+                    type="radio"
+                    name="tipoCadastro"
+                    value="especialista"
+                    checked={formData.tipoCadastro === 'especialista'}
+                    onChange={(e) => handleChange('tipoCadastro', e.target.value)}
+                    className="w-4 h-4 text-[#54C43D]"
+                  />
+                  <div className="flex-1">
+                    <div className="text-white font-medium">Especialista BEX</div>
+                    <div className="text-white/60 text-xs">Colaborador interno</div>
+                  </div>
+                </label>
+                
+                <label className="flex items-center gap-3 p-3 bg-white/5 border border-white/10 rounded-lg cursor-pointer hover:bg-white/10 transition-colors">
+                  <input
+                    type="radio"
+                    name="tipoCadastro"
+                    value="cliente"
+                    checked={formData.tipoCadastro === 'cliente'}
+                    onChange={(e) => handleChange('tipoCadastro', e.target.value)}
+                    className="w-4 h-4 text-[#54C43D]"
+                  />
+                  <div className="flex-1">
+                    <div className="text-white font-medium">Cliente</div>
+                    <div className="text-white/60 text-xs">Empresa parceira</div>
+                  </div>
+                </label>
               </div>
+              {errors.tipoCadastro && <p className="text-red-400 text-xs mt-1">{errors.tipoCadastro}</p>}
             </div>
+
+            {/* Campos condicionais - Especialista */}
+            {formData.tipoCadastro === 'especialista' && (
+              <div>
+                <div className="relative">
+                  <div className="absolute left-3 top-1/2 -translate-y-1/2">
+                    <Building className="text-white/60" size={18} />
+                  </div>
+                  <select
+                    value={formData.departamento}
+                    onChange={(e) => handleChange('departamento', e.target.value)}
+                    className="w-full pl-10 pr-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-white/60 focus:outline-none focus:border-purple-500/50 transition-colors appearance-none"
+                  >
+                    <option value="" className="bg-gray-900">Selecione o departamento *</option>
+                    <option value="grs" className="bg-gray-900">GRS (Gestão de Redes Sociais)</option>
+                    <option value="designer" className="bg-gray-900">Designer</option>
+                    <option value="filmmaker" className="bg-gray-900">Filmmaker</option>
+                    <option value="atendimento" className="bg-gray-900">Atendimento</option>
+                    <option value="financeiro" className="bg-gray-900">Financeiro</option>
+                    <option value="rh" className="bg-gray-900">RH</option>
+                  </select>
+                </div>
+                {errors.departamento && <p className="text-red-400 text-xs mt-1">{errors.departamento}</p>}
+              </div>
+            )}
+
+            {/* Campos condicionais - Cliente */}
+            {formData.tipoCadastro === 'cliente' && (
+              <>
+                <div>
+                  <div className="relative">
+                    <div className="absolute left-3 top-1/2 -translate-y-1/2">
+                      <Building className="text-white/60" size={18} />
+                    </div>
+                    <input
+                      type="text"
+                      placeholder="Nome da Empresa *"
+                      value={formData.nomeEmpresa}
+                      onChange={(e) => handleChange('nomeEmpresa', e.target.value)}
+                      className="w-full pl-10 pr-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-white/60 focus:outline-none focus:border-purple-500/50 transition-colors"
+                    />
+                  </div>
+                  {errors.nomeEmpresa && <p className="text-red-400 text-xs mt-1">{errors.nomeEmpresa}</p>}
+                </div>
+                
+                <div>
+                  <div className="relative">
+                    <div className="absolute left-3 top-1/2 -translate-y-1/2">
+                      <User className="text-white/60" size={18} />
+                    </div>
+                    <select
+                      value={formData.departamento}
+                      onChange={(e) => handleChange('departamento', e.target.value)}
+                      className="w-full pl-10 pr-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-white/60 focus:outline-none focus:border-purple-500/50 transition-colors appearance-none"
+                    >
+                      <option value="" className="bg-gray-900">Selecione o departamento *</option>
+                      <option value="financeiro" className="bg-gray-900">Financeiro</option>
+                      <option value="marketing" className="bg-gray-900">Marketing</option>
+                      <option value="proprietario" className="bg-gray-900">Proprietário/Decisor</option>
+                      <option value="operacional" className="bg-gray-900">Operacional</option>
+                      <option value="rh" className="bg-gray-900">RH</option>
+                    </select>
+                  </div>
+                  {errors.departamento && <p className="text-red-400 text-xs mt-1">{errors.departamento}</p>}
+                </div>
+              </>
+            )}
 
             {/* Senha */}
             <div>
