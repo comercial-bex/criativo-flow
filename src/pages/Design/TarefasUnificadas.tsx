@@ -49,6 +49,7 @@ interface DesignTask {
   dimensoes?: string;
   created_at?: string;
   updated_at?: string;
+  capa_anexo_id?: string | null;
 }
 
 export default function TarefasUnificadasDesign() {
@@ -110,7 +111,7 @@ export default function TarefasUnificadasDesign() {
       // Buscar tarefas de Design
       const { data: tasksData, error: tasksError } = await (supabase
         .from('tarefa')
-        .select('*')
+        .select('*, capa_anexo_id')
         .order('created_at', { ascending: false }) as any);
 
       if (tasksError) throw tasksError;

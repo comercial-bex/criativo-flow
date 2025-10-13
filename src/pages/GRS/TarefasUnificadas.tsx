@@ -52,6 +52,7 @@ interface GRSTask {
   observacoes?: string;
   created_at?: string;
   updated_at?: string;
+  capa_anexo_id?: string | null;
 }
 
 export default function TarefasUnificadasGRS() {
@@ -82,7 +83,7 @@ export default function TarefasUnificadasGRS() {
       // @ts-ignore - Evitar erro de tipo recursivo do Supabase
       const { data, error } = await supabase
         .from('tarefa')
-        .select('*')
+        .select('*, capa_anexo_id')
         .eq('setor_responsavel', 'grs')
         .order('created_at', { ascending: false });
 

@@ -29,6 +29,7 @@ interface AudiovisualTask {
   observacoes?: string;
   tipo_tarefa?: string;
   projeto_id?: string;
+  capa_anexo_id?: string | null;
 }
 
 const TarefasUnificadasAudiovisual: React.FC = () => {
@@ -67,6 +68,7 @@ const TarefasUnificadasAudiovisual: React.FC = () => {
         .from('tarefa')
         .select(`
           *,
+          capa_anexo_id,
           profiles!responsavel_id (id, nome)
         `)
         .order('created_at', { ascending: false }) as any);

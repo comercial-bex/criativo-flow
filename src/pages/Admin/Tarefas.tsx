@@ -44,6 +44,7 @@ interface AdminTask {
   comentarios?: any[];
   etiquetas?: string[];
   checklist?: any[];
+  capa_anexo_id?: string | null;
 }
 
 interface AdminStats {
@@ -80,7 +81,7 @@ export default function AdminTarefas() {
       // Buscar tarefas de todos os setores
       const { data: tarefasData, error: tarefasError } = await (supabase
         .from('tarefa')
-        .select('*')
+        .select('*, capa_anexo_id')
         .order('created_at', { ascending: false }) as any);
 
       if (tarefasError) throw tarefasError;

@@ -32,13 +32,23 @@ export interface KanbanTask {
   priority?: "alta" | "média" | "baixa";
   prioridade?: "baixa" | "media" | "alta";
   executor_area?: string;
+  executor_nome?: string;
   responsavel_nome?: string;
   responsavel_avatar?: string;
+  cliente_nome?: string;
   prazo_executor?: string | null;
+  prazo_conclusao?: string | null;
+  data_prazo?: string;
   horas_trabalhadas?: number;
   horas_estimadas?: number;
   created_at?: string;
   capa_anexo_id?: string | null;
+  comentarios_count?: number;
+  anexos_count?: number;
+  checklist_items?: number;
+  checklist_completed?: number;
+  etiquetas?: string[];
+  area?: string[];
 }
 
 interface ModernKanbanCardProps {

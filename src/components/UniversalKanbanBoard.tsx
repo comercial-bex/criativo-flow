@@ -1,17 +1,13 @@
 import { useState, useEffect, useMemo } from 'react';
 import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, closestCorners } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
-import { useSortable } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Calendar, User, Clock, AlertTriangle, FileText, Search, Filter, MessageSquare, Paperclip, CheckSquare, MoreHorizontal, Eye, Zap } from 'lucide-react';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { Plus, Search, Filter } from 'lucide-react';
+import { ModernKanbanCard, type KanbanTask } from './ModernKanbanCard';
 
 // Tipos unificados
 interface UniversalTask {
@@ -21,19 +17,30 @@ interface UniversalTask {
   status: string;
   prioridade: 'baixa' | 'media' | 'alta';
   data_prazo?: string;
+  prazo_executor?: string;
+  prazo_conclusao?: string;
   responsavel_id?: string;
   responsavel_nome?: string;
+  executor_id?: string;
+  executor_nome?: string;
   setor_responsavel: string;
+  area?: string[];
   horas_trabalhadas?: number;
+  horas_estimadas?: number;
   anexos?: any[];
   comentarios?: any[];
+  comentarios_count?: number;
+  anexos_count?: number;
   etiquetas?: string[];
   checklist?: any[];
+  checklist_items?: number;
+  checklist_completed?: number;
   cliente_id?: string;
   cliente_nome?: string;
   projeto_id?: string;
   created_at?: string;
   updated_at?: string;
+  capa_anexo_id?: string | null;
 }
 interface UniversalColumn {
   id: string;
@@ -271,143 +278,29 @@ export const moduleConfigurations = {
   }]
 };
 
-// Componente do card de tarefa
-function UniversalTaskCard({
-  task,
-  onTaskClick
-}: {
-  task: UniversalTask;
-  onTaskClick: (task: UniversalTask) => void;
-}) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging
-  } = useSortable({
-    id: task.id
-  });
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1
-  };
-  const getPriorityColor = (prioridade: string) => {
-    switch (prioridade) {
-      case 'alta':
-        return 'bg-red-500';
-      case 'media':
-        return 'bg-yellow-500';
-      default:
-        return 'bg-green-500';
-    }
-  };
-  const getPriorityBadge = (prioridade: string) => {
-    switch (prioridade) {
-      case 'alta':
-        return 'bg-red-50 text-red-700 border-red-200 dark:bg-red-950 dark:text-red-300';
-      case 'media':
-        return 'bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-950 dark:text-yellow-300';
-      default:
-        return 'bg-green-50 text-green-700 border-green-200 dark:bg-green-950 dark:text-green-300';
-    }
-  };
-  const isOverdue = task.data_prazo && new Date(task.data_prazo) < new Date();
-  const hasComments = task.comentarios && task.comentarios.length > 0;
-  const hasAttachments = task.anexos && task.anexos.length > 0;
-  const hasChecklist = task.checklist && task.checklist.length > 0;
-  return <Card ref={setNodeRef} style={style} {...attributes} {...listeners} className={`cursor-grab active:cursor-grabbing hover:shadow-lg hover:scale-[1.02] transition-all duration-200 mb-3 group ${isDragging ? 'rotate-2 scale-105 shadow-2xl ring-2 ring-primary/20' : ''} ${isOverdue ? 'ring-2 ring-red-200' : ''}`} onClick={() => onTaskClick(task)}>
-      {/* Barra de prioridade superior */}
-      <div className={`absolute top-0 left-0 right-0 h-1 rounded-t-lg ${getPriorityColor(task.prioridade)}`} />
-      
-      <CardContent className="p-4 space-y-3">
-        {/* Header com etiquetas */}
-        {task.etiquetas && task.etiquetas.length > 0 && <div className="flex gap-1 flex-wrap">
-            {task.etiquetas.slice(0, 3).map((etiqueta, index) => <div key={index} className="h-2 w-8 rounded-full bg-gradient-to-r from-primary to-secondary" />)}
-          </div>}
-
-        {/* Título da tarefa */}
-        <div className="space-y-1">
-          <h4 className="font-medium text-sm leading-tight text-foreground line-clamp-2">
-            {task.titulo}
-          </h4>
-          {task.descricao && <p className="text-xs text-muted-foreground line-clamp-2">
-              {task.descricao}
-            </p>}
-        </div>
-
-        {/* Badges e indicadores */}
-        <div className="flex items-center gap-2 flex-wrap">
-          <Badge className={`text-xs px-2 py-0.5 border ${getPriorityBadge(task.prioridade)}`}>
-            {task.prioridade}
-          </Badge>
-          
-          {task.setor_responsavel && <Badge variant="outline" className="text-xs">
-              {task.setor_responsavel}
-            </Badge>}
-        </div>
-
-        {/* Informações principais */}
-        <div className="space-y-2">
-          {/* Data de prazo */}
-          {task.data_prazo && <div className="flex items-center gap-1 text-xs text-muted-foreground">
-              <Calendar className="h-3 w-3" />
-              <span className={isOverdue ? 'text-red-500 font-medium' : ''}>
-                {format(new Date(task.data_prazo), 'dd MMM', {
-              locale: ptBR
-            })}
-              </span>
-              {isOverdue && <AlertTriangle className="h-3 w-3 text-red-500" />}
-            </div>}
-
-          {/* Horas estimadas vs trabalhadas */}
-
-          {/* Responsável */}
-          {task.responsavel_nome && <div className="flex items-center gap-2">
-              <Avatar className="h-5 w-5">
-                <AvatarFallback className="text-xs bg-primary text-primary-foreground">
-                  {task.responsavel_nome.charAt(0).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-              <span className="text-xs text-muted-foreground truncate">
-                {task.responsavel_nome.split(' ')[0]}
-              </span>
-            </div>}
-
-          {/* Cliente */}
-          {task.cliente_nome && <div className="text-xs text-muted-foreground">
-              📧 {task.cliente_nome}
-            </div>}
-        </div>
-
-        {/* Footer com ícones de atividade */}
-        <div className="flex items-center justify-between pt-2 border-t border-border">
-          <div className="flex items-center gap-2">
-            {hasComments && <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                <MessageSquare className="h-3 w-3" />
-                <span>{task.comentarios?.length}</span>
-              </div>}
-            
-            {hasAttachments && <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                <Paperclip className="h-3 w-3" />
-                <span>{task.anexos?.length}</span>
-              </div>}
-            
-            {hasChecklist && <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                <CheckSquare className="h-3 w-3" />
-                <span>{task.checklist?.filter(item => item.completed).length}/{task.checklist?.length}</span>
-              </div>}
-          </div>
-
-          <Button variant="ghost" size="sm" className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity">
-            <Eye className="h-3 w-3" />
-          </Button>
-        </div>
-      </CardContent>
-    </Card>;
-}
+// Helper para converter UniversalTask em KanbanTask
+const convertToKanbanTask = (task: UniversalTask): KanbanTask => ({
+  id: task.id,
+  titulo: task.titulo,
+  descricao: task.descricao,
+  status: task.status,
+  prioridade: task.prioridade,
+  data_prazo: task.data_prazo,
+  prazo_executor: task.prazo_executor,
+  prazo_conclusao: task.prazo_conclusao,
+  responsavel_nome: task.responsavel_nome,
+  executor_nome: task.executor_nome,
+  cliente_nome: task.cliente_nome,
+  horas_trabalhadas: task.horas_trabalhadas,
+  horas_estimadas: task.horas_estimadas,
+  comentarios_count: task.comentarios_count || task.comentarios?.length || 0,
+  anexos_count: task.anexos_count || task.anexos?.length || 0,
+  checklist_items: task.checklist_items || task.checklist?.length || 0,
+  checklist_completed: task.checklist_completed || task.checklist?.filter((item: any) => item.completed).length || 0,
+  etiquetas: task.etiquetas,
+  capa_anexo_id: task.capa_anexo_id || null,
+  area: task.area || (task.setor_responsavel ? [task.setor_responsavel] : [])
+});
 
 // Componente da coluna
 function UniversalKanbanColumn({
@@ -439,7 +332,14 @@ function UniversalKanbanColumn({
         
         <CardContent className="space-y-3 max-h-[calc(100vh-300px)] overflow-y-auto">
           <SortableContext items={column.tasks.map(task => task.id)} strategy={verticalListSortingStrategy}>
-            {column.tasks.map(task => <UniversalTaskCard key={task.id} task={task} onTaskClick={onTaskClick} />)}
+            {column.tasks.map(task => (
+              <ModernKanbanCard 
+                key={task.id} 
+                task={convertToKanbanTask(task)} 
+                onTaskClick={() => onTaskClick(task)}
+                isDragging={false}
+              />
+            ))}
           </SortableContext>
           
           {column.tasks.length === 0}
@@ -557,7 +457,15 @@ export function UniversalKanbanBoard({
         </div>
 
         <DragOverlay>
-          {activeTask ? <UniversalTaskCard task={activeTask} onTaskClick={() => {}} /> : null}
+          {activeTask ? (
+            <div className="cursor-grabbing">
+              <ModernKanbanCard 
+                task={convertToKanbanTask(activeTask)} 
+                onTaskClick={() => {}}
+                isDragging={true}
+              />
+            </div>
+          ) : null}
         </DragOverlay>
       </DndContext>
     </div>;
