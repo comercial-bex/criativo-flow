@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { PermissionGate } from '@/components/PermissionGate';
 import { 
   Users, 
@@ -32,7 +33,9 @@ import {
   Wifi,
   WifiOff,
   Trash2,
-  Plus
+  Plus,
+  User,
+  Edit
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useProfileData } from '@/hooks/useProfileData';
@@ -57,6 +60,9 @@ interface Profile {
   observacoes_aprovacao?: string;
   last_sign_in_at?: string;
   role?: string;
+  empresa?: string;
+  role_requested?: string;
+  cpf?: string;
 }
 
 interface AccessLog {
@@ -83,6 +89,10 @@ const Usuarios = () => {
   const [newUserModalOpen, setNewUserModalOpen] = useState(false);
   const [editRoleProfile, setEditRoleProfile] = useState<Profile | null>(null);
   const [editRoleOpen, setEditRoleOpen] = useState(false);
+  const [editingPendingUser, setEditingPendingUser] = useState(false);
+  const [editedTipoCadastro, setEditedTipoCadastro] = useState<'especialista' | 'cliente'>('cliente');
+  const [editedDepartamento, setEditedDepartamento] = useState('');
+  const [editedEmpresa, setEditedEmpresa] = useState('');
   const { toast } = useToast();
   const { deleteUser, loading: deleting } = useAdminUserManagement();
 
@@ -96,7 +106,21 @@ const Usuarios = () => {
       const { data: profilesData, error: profilesError } = await supabase
         .from('profiles')
         .select(`
-          *,
+          id,
+          nome,
+          email,
+          telefone,
+          avatar_url,
+          status,
+          especialidade,
+          cliente_id,
+          created_at,
+          data_aprovacao,
+          aprovado_por,
+          observacoes_aprovacao,
+          empresa,
+          role_requested,
+          cpf,
           user_roles!left(role)
         `)
         .order('created_at', { ascending: false });
@@ -113,9 +137,9 @@ const Usuarios = () => {
       if (logsError) throw logsError;
 
       // Mapear role para cada profile
-      const profilesWithRole = (profilesData || []).map(profile => ({
+      const profilesWithRole = (profilesData || []).map((profile: any) => ({
         ...profile,
-        role: (profile.user_roles as any)?.[0]?.role
+        role: profile.user_roles?.[0]?.role
       }));
 
       setProfiles(profilesWithRole);
@@ -232,6 +256,71 @@ const Usuarios = () => {
         variant: "destructive",
       });
       throw error;
+    } finally {
+      setUpdatingRole(false);
+    }
+  };
+
+  const handleSavePendingEdits = async () => {
+    if (!selectedProfile) return;
+
+    setUpdatingRole(true);
+    try {
+      const updates: any = {};
+
+      if (editedTipoCadastro === 'especialista') {
+        const especialidadeMap: Record<string, string> = {
+          'grs': 'grs',
+          'designer': 'design',
+          'filmmaker': 'filmmaker',
+          'atendimento': 'atendimento',
+          'financeiro': 'financeiro',
+          'rh': 'atendimento'
+        };
+
+        updates.especialidade = especialidadeMap[editedDepartamento] || 'atendimento';
+        updates.empresa = null;
+        updates.role_requested = null;
+        updates.cliente_id = null;
+
+        await supabase
+          .from('pessoas')
+          .update({ papeis: ['colaborador'] })
+          .eq('profile_id', selectedProfile.id);
+
+      } else {
+        updates.empresa = editedEmpresa;
+        updates.role_requested = editedDepartamento;
+        updates.especialidade = null;
+
+        await supabase
+          .from('pessoas')
+          .update({ papeis: ['cliente'] })
+          .eq('profile_id', selectedProfile.id);
+      }
+
+      const { error } = await supabase
+        .from('profiles')
+        .update(updates)
+        .eq('id', selectedProfile.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "✅ Alterações salvas com sucesso!",
+        description: `Tipo de cadastro atualizado para: ${editedTipoCadastro === 'especialista' ? 'Especialista BEX' : 'Cliente'}`,
+      });
+
+      setEditingPendingUser(false);
+      fetchData();
+
+    } catch (error: any) {
+      console.error('Erro ao salvar alterações:', error);
+      toast({
+        title: "❌ Erro ao salvar alterações",
+        description: error.message || "Não foi possível salvar as alterações",
+        variant: "destructive",
+      });
     } finally {
       setUpdatingRole(false);
     }
@@ -680,39 +769,187 @@ const Usuarios = () => {
                 </DialogHeader>
                 
                 <div className="space-y-6">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-sm font-medium text-muted-foreground">Email</label>
-                      <p className="text-sm">{selectedProfile.email}</p>
-                    </div>
-                    {selectedProfile.telefone && (
+                  {/* SEÇÃO 1: DADOS PESSOAIS */}
+                  <div>
+                    <h3 className="text-sm font-semibold mb-3 flex items-center">
+                      <User className="h-4 w-4 mr-2" />
+                      Dados Pessoais
+                    </h3>
+                    <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="text-sm font-medium text-muted-foreground">Telefone</label>
-                        <p className="text-sm">{selectedProfile.telefone}</p>
+                        <label className="text-sm font-medium text-muted-foreground">Email</label>
+                        <p className="text-sm">{selectedProfile.email}</p>
                       </div>
-                    )}
-                    <div>
-                      <label className="text-sm font-medium text-muted-foreground">Status</label>
-                      <div className="mt-1">{getStatusBadge(selectedProfile.status)}</div>
-                    </div>
-                    {selectedProfile.especialidade && (
+                      {selectedProfile.telefone && (
+                        <div>
+                          <label className="text-sm font-medium text-muted-foreground">Telefone</label>
+                          <p className="text-sm">{selectedProfile.telefone}</p>
+                        </div>
+                      )}
+                      {selectedProfile.cpf && (
+                        <div>
+                          <label className="text-sm font-medium text-muted-foreground">CPF</label>
+                          <p className="text-sm">{selectedProfile.cpf}</p>
+                        </div>
+                      )}
                       <div>
-                        <label className="text-sm font-medium text-muted-foreground">Especialidade</label>
-                        <p className="text-sm capitalize">{selectedProfile.especialidade}</p>
+                        <label className="text-sm font-medium text-muted-foreground">Status</label>
+                        <div className="mt-1">{getStatusBadge(selectedProfile.status)}</div>
                       </div>
-                    )}
-                    <div>
-                      <label className="text-sm font-medium text-muted-foreground">Data de Cadastro</label>
-                      <p className="text-sm">{new Date(selectedProfile.created_at).toLocaleString('pt-BR')}</p>
-                    </div>
-                    {selectedProfile.last_sign_in_at && (
                       <div>
-                        <label className="text-sm font-medium text-muted-foreground">Último Acesso</label>
-                        <p className="text-sm">{new Date(selectedProfile.last_sign_in_at).toLocaleString('pt-BR')}</p>
+                        <label className="text-sm font-medium text-muted-foreground">Data de Cadastro</label>
+                        <p className="text-sm">{new Date(selectedProfile.created_at).toLocaleString('pt-BR')}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  {/* SEÇÃO 2: TIPO DE CADASTRO */}
+                  <div>
+                    <h3 className="text-sm font-semibold mb-3 flex items-center">
+                      <Shield className="h-4 w-4 mr-2" />
+                      Tipo de Cadastro
+                    </h3>
+                    
+                    {selectedProfile.status === 'pendente_aprovacao' && editingPendingUser ? (
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium">Tipo de Cadastro</label>
+                          <RadioGroup 
+                            value={editedTipoCadastro} 
+                            onValueChange={(value) => setEditedTipoCadastro(value as 'especialista' | 'cliente')}
+                          >
+                            <div className="flex items-center space-x-2">
+                              <RadioGroupItem value="especialista" id="edit-especialista" />
+                              <label htmlFor="edit-especialista" className="text-sm cursor-pointer">
+                                Especialista BEX (Colaborador Interno)
+                              </label>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <RadioGroupItem value="cliente" id="edit-cliente" />
+                              <label htmlFor="edit-cliente" className="text-sm cursor-pointer">
+                                Cliente (Externo)
+                              </label>
+                            </div>
+                          </RadioGroup>
+                        </div>
+
+                        {editedTipoCadastro === 'especialista' ? (
+                          <div className="space-y-2">
+                            <label className="text-sm font-medium">Departamento/Área</label>
+                            <Select value={editedDepartamento} onValueChange={setEditedDepartamento}>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Selecione..." />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="grs">GRS - Gestão de Redes Sociais</SelectItem>
+                                <SelectItem value="designer">Designer - Criação Visual</SelectItem>
+                                <SelectItem value="filmmaker">Filmmaker - Produção Audiovisual</SelectItem>
+                                <SelectItem value="atendimento">Atendimento - Suporte ao Cliente</SelectItem>
+                                <SelectItem value="financeiro">Financeiro - Contabilidade</SelectItem>
+                                <SelectItem value="rh">RH - Recursos Humanos</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        ) : (
+                          <div className="space-y-3">
+                            <div>
+                              <label className="text-sm font-medium">Nome da Empresa</label>
+                              <Input
+                                value={editedEmpresa}
+                                onChange={(e) => setEditedEmpresa(e.target.value)}
+                                placeholder="Ex: Minha Empresa Ltda"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-sm font-medium">Departamento</label>
+                              <Select value={editedDepartamento} onValueChange={setEditedDepartamento}>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Selecione..." />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="financeiro">Financeiro</SelectItem>
+                                  <SelectItem value="marketing">Marketing</SelectItem>
+                                  <SelectItem value="proprietario">Proprietário/Decisor</SelectItem>
+                                  <SelectItem value="operacional">Operacional</SelectItem>
+                                  <SelectItem value="rh">RH</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          </div>
+                        )}
+
+                        <div className="flex gap-2 pt-2">
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            onClick={() => setEditingPendingUser(false)}
+                          >
+                            Cancelar
+                          </Button>
+                          <Button 
+                            size="sm"
+                            onClick={handleSavePendingEdits}
+                            disabled={updatingRole || (editedTipoCadastro === 'cliente' && !editedEmpresa)}
+                          >
+                            {updatingRole ? 'Salvando...' : 'Salvar Alterações'}
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        <div>
+                          <label className="text-sm font-medium text-muted-foreground">Tipo</label>
+                          <div className="flex items-center gap-2 mt-1">
+                            <Badge variant={selectedProfile.cliente_id ? 'default' : 'secondary'}>
+                              {selectedProfile.cliente_id ? 'Cliente' : 'Especialista BEX'}
+                            </Badge>
+                            {selectedProfile.status === 'pendente_aprovacao' && (
+                              <Button 
+                                size="sm" 
+                                variant="ghost"
+                                onClick={() => {
+                                  setEditingPendingUser(true);
+                                  setEditedTipoCadastro(selectedProfile.cliente_id ? 'cliente' : 'especialista');
+                                  setEditedDepartamento(selectedProfile.role_requested || selectedProfile.especialidade || '');
+                                  setEditedEmpresa(selectedProfile.empresa || '');
+                                }}
+                              >
+                                <Edit className="h-3 w-3 mr-1" />
+                                Editar
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+
+                        {!selectedProfile.cliente_id && selectedProfile.especialidade && (
+                          <div>
+                            <label className="text-sm font-medium text-muted-foreground">Especialidade</label>
+                            <p className="text-sm capitalize">{selectedProfile.especialidade}</p>
+                          </div>
+                        )}
+
+                        {selectedProfile.cliente_id && (
+                          <>
+                            {selectedProfile.empresa && (
+                              <div>
+                                <label className="text-sm font-medium text-muted-foreground">Empresa</label>
+                                <p className="text-sm">{selectedProfile.empresa}</p>
+                              </div>
+                            )}
+                            {selectedProfile.role_requested && (
+                              <div>
+                                <label className="text-sm font-medium text-muted-foreground">Departamento Solicitado</label>
+                                <p className="text-sm capitalize">{selectedProfile.role_requested}</p>
+                              </div>
+                            )}
+                          </>
+                        )}
                       </div>
                     )}
                   </div>
-                  
+
                   {selectedProfile.observacoes_aprovacao && (
                     <>
                       <Separator />
@@ -722,10 +959,10 @@ const Usuarios = () => {
                       </div>
                     </>
                   )}
-                  
+
                   <Separator />
-                  
-                  {/* Edição de Role */}
+
+                  {/* SEÇÃO 3: EDIÇÃO DE ROLE (apenas aprovados) */}
                   {selectedProfile.status === 'aprovado' && (
                     <>
                       <div className="space-y-3">
@@ -757,10 +994,41 @@ const Usuarios = () => {
                     </>
                   )}
                   
+                  {/* BOTÕES DE AÇÃO */}
                   <div className="flex justify-end space-x-3">
-                    <Button variant="outline" onClick={() => setDetailsOpen(false)}>
+                    <Button variant="outline" onClick={() => {
+                      setDetailsOpen(false);
+                      setEditingPendingUser(false);
+                    }}>
                       Fechar
                     </Button>
+
+                    {selectedProfile.status === 'pendente_aprovacao' && !editingPendingUser && (
+                      <>
+                        <Button
+                          variant="outline"
+                          className="border-destructive/20 text-destructive hover:bg-destructive/10"
+                          onClick={() => {
+                            setDetailsOpen(false);
+                            handleApproval(selectedProfile.id, 'rejeitar');
+                          }}
+                        >
+                          <XCircle className="h-4 w-4 mr-2" />
+                          Rejeitar
+                        </Button>
+                        <Button
+                          className="bg-success hover:bg-success/90"
+                          onClick={() => {
+                            setDetailsOpen(false);
+                            handleApproval(selectedProfile.id, 'aprovar');
+                          }}
+                        >
+                          <CheckCircle className="h-4 w-4 mr-2" />
+                          Aprovar
+                        </Button>
+                      </>
+                    )}
+
                     {selectedProfile.status === 'aprovado' && selectedRole && (
                       <Button 
                         onClick={handleUpdateRole}
