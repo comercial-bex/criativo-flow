@@ -30,7 +30,9 @@ export const useSystemHealth = () => {
       if (error) throw error;
       return data?.[0] as IntegrityCheck;
     },
-    refetchInterval: 60000, // Auto-refresh a cada 1 minuto
+    staleTime: 3 * 60 * 1000, // 3 min - health check não muda tanto
+    gcTime: 10 * 60 * 1000, // 10 min em cache
+    refetchInterval: 5 * 60 * 1000, // 5 min - reduzido de 1 min
   });
 
   // Buscar logs de saúde

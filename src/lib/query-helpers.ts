@@ -56,6 +56,43 @@ export const createInvalidateHelpers = (queryClient: QueryClient) => ({
   usuarios: () => {
     queryClient.invalidateQueries({ queryKey: ['usuarios'] });
   },
+  
+  // 🆕 Invalidação financeira seletiva
+  financeiro: (tipo?: 'receita' | 'despesa') => {
+    if (tipo === 'receita') {
+      queryClient.invalidateQueries({ 
+        queryKey: ['composicao-receitas'],
+        refetchType: 'none' // Não refetch imediato
+      });
+      queryClient.invalidateQueries({ 
+        queryKey: ['receita-por-cliente'],
+        refetchType: 'none'
+      });
+    } else if (tipo === 'despesa') {
+      queryClient.invalidateQueries({ 
+        queryKey: ['composicao-despesas'],
+        refetchType: 'none'
+      });
+    } else {
+      // Invalidar tudo relacionado a financeiro
+      queryClient.invalidateQueries({ 
+        queryKey: ['financial-kpis'],
+        exact: false // Invalida todas as variações
+      });
+      queryClient.invalidateQueries({ 
+        queryKey: ['receitas-despesas-mensais'],
+        exact: false
+      });
+    }
+  },
+  
+  // 🆕 Invalidação comercial
+  comercial: () => {
+    queryClient.invalidateQueries({ 
+      predicate: (query) => 
+        (query.queryKey[0] as string)?.startsWith('comercial-')
+    });
+  },
 });
 
 export type InvalidateHelpers = ReturnType<typeof createInvalidateHelpers>;

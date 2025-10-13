@@ -57,7 +57,9 @@ export function useComercialAnalytics(filters: ComercialFilters) {
 
       if (error) throw error;
       return data;
-    }
+    },
+    staleTime: 2 * 60 * 1000, // 2 min - dados comerciais mais dinâmicos
+    gcTime: 8 * 60 * 1000, // 8 min (gcTime é o novo nome do cacheTime)
   });
 
   // Buscar propostas
@@ -82,7 +84,9 @@ export function useComercialAnalytics(filters: ComercialFilters) {
 
       if (error) throw error;
       return data;
-    }
+    },
+    staleTime: 2 * 60 * 1000, // 2 min
+    gcTime: 8 * 60 * 1000, // 8 min
   });
 
   // Calcular estatísticas

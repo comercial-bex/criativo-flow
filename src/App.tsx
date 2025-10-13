@@ -174,13 +174,15 @@ import NotesPage from "./pages/ClientDetails/NotesPage";
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutos - dados considerados frescos
+      gcTime: 10 * 60 * 1000, // 10 minutos - manter em cache (novo nome do cacheTime)
       refetchOnWindowFocus: false,
       refetchOnReconnect: false,
       refetchOnMount: false,
-      retry: 0,
-      staleTime: 5 * 60 * 1000, // 5 minutos
+      retry: 1, // Retry uma vez em caso de erro
     },
     mutations: {
+      retry: 1, // Retry mutations também
       // Evitar invalidação global automática
       onSuccess: () => {},
     },

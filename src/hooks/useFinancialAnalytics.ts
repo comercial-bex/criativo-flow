@@ -6,6 +6,7 @@ export interface FinancialFilters {
   startDate: Date;
   endDate: Date;
   type?: "receita" | "despesa" | "all";
+  tipo?: "receita" | "despesa"; // Alias para compatibilidade
   clienteId?: string;
   projetoId?: string;
   categoriaId?: string;
@@ -55,72 +56,94 @@ export function useFinancialAnalytics(filters: FinancialFilters) {
   const { data: kpis, isLoading: loadingKPIs } = useQuery({
     queryKey: ["financial-kpis", filters],
     queryFn: async () => {
-      const currentStart = filters.startDate.toISOString();
-      const currentEnd = filters.endDate.toISOString();
-      
-      const previousStart = subMonths(filters.startDate, 1).toISOString();
-      const previousEnd = subMonths(filters.endDate, 1).toISOString();
-
-      // Receitas e despesas do período atual
-      let currentQuery = supabase
+      const { data: transacoes, error } = await supabase
         .from("transacoes_financeiras")
-        .select("tipo, valor, status")
-        .gte("data_vencimento", currentStart)
-        .lte("data_vencimento", currentEnd);
+        .select("*")
+        .gte("data_vencimento", filters.startDate)
+        .lte("data_vencimento", filters.endDate);
 
-      if (filters.clienteId) currentQuery = currentQuery.eq("cliente_id", filters.clienteId);
-      if (filters.categoriaId) currentQuery = currentQuery.eq("categoria_id", filters.categoriaId);
+      if (error) throw error;
 
-      const { data: currentTransactions } = await currentQuery;
+      // Filtros adicionais
+      const filteredData = (transacoes || []).filter((t) => {
+        if (filters.tipo && t.tipo !== filters.tipo) return false;
+        if (filters.clienteId && t.cliente_id !== filters.clienteId) return false;
+        if (filters.categoriaId && t.categoria_id !== filters.categoriaId) return false;
+        return true;
+      });
 
-      // Período anterior
-      let previousQuery = supabase
+      // Cálculos de KPIs
+      const totalReceitas = filteredData
+        .filter((t) => t.tipo === "receita")
+        .reduce((acc, t) => acc + Number(t.valor), 0);
+
+      const totalDespesas = filteredData
+        .filter((t) => t.tipo === "despesa")
+        .reduce((acc, t) => acc + Number(t.valor), 0);
+
+      const lucro = totalReceitas - totalDespesas;
+
+      // Calcular variação de lucro (comparar com período anterior)
+      const periodoAnterior = new Date(filters.startDate);
+      const diasPeriodo = Math.ceil(
+        (new Date(filters.endDate).getTime() - new Date(filters.startDate).getTime()) /
+          (1000 * 60 * 60 * 24)
+      );
+
+      periodoAnterior.setDate(periodoAnterior.getDate() - diasPeriodo);
+      const startDateAnterior = periodoAnterior.toISOString().split("T")[0];
+
+      const { data: transacoesAnteriores } = await supabase
         .from("transacoes_financeiras")
         .select("tipo, valor")
-        .gte("data_vencimento", previousStart)
-        .lte("data_vencimento", previousEnd);
+        .gte("data_vencimento", startDateAnterior)
+        .lt("data_vencimento", filters.startDate);
 
-      if (filters.clienteId) previousQuery = previousQuery.eq("cliente_id", filters.clienteId);
+      const receitasAnteriores = (transacoesAnteriores || [])
+        .filter((t) => t.tipo === "receita")
+        .reduce((acc, t) => acc + Number(t.valor), 0);
 
-      const { data: previousTransactions } = await previousQuery;
+      const despesasAnteriores = (transacoesAnteriores || [])
+        .filter((t) => t.tipo === "despesa")
+        .reduce((acc, t) => acc + Number(t.valor), 0);
 
-      const currentReceitas = currentTransactions?.filter(t => t.tipo === "receita").reduce((acc, t) => acc + Number(t.valor), 0) || 0;
-      const currentDespesas = currentTransactions?.filter(t => t.tipo === "despesa").reduce((acc, t) => acc + Number(t.valor), 0) || 0;
-      
-      const previousReceitas = previousTransactions?.filter(t => t.tipo === "receita").reduce((acc, t) => acc + Number(t.valor), 0) || 0;
-      const previousDespesas = previousTransactions?.filter(t => t.tipo === "despesa").reduce((acc, t) => acc + Number(t.valor), 0) || 0;
+      const lucroAnterior = receitasAnteriores - despesasAnteriores;
+      const variacaoLucro = lucroAnterior !== 0 
+        ? ((lucro - lucroAnterior) / lucroAnterior) * 100 
+        : 0;
 
-      const receitaVariacao = previousReceitas > 0 ? ((currentReceitas - previousReceitas) / previousReceitas) * 100 : 0;
-      const despesaVariacao = previousDespesas > 0 ? ((currentDespesas - previousDespesas) / previousDespesas) * 100 : 0;
-      
-      const lucroLiquido = currentReceitas - currentDespesas;
-      const previousLucro = previousReceitas - previousDespesas;
-      const lucroVariacao = previousLucro > 0 ? ((lucroLiquido - previousLucro) / previousLucro) * 100 : 0;
+      const margemLucro = totalReceitas !== 0 
+        ? (lucro / totalReceitas) * 100 
+        : 0;
 
-      const margemLucro = currentReceitas > 0 ? (lucroLiquido / currentReceitas) * 100 : 0;
+      const inadimplencia = filteredData
+        .filter((t) => t.status === "pendente" && new Date(t.data_vencimento) < new Date())
+        .reduce((acc, t) => acc + Number(t.valor), 0);
 
-      // Inadimplência
-      const atrasadas = currentTransactions?.filter(t => 
-        t.tipo === "receita" && t.status === "atrasado"
-      ).reduce((acc, t) => acc + Number(t.valor), 0) || 0;
-      
-      const inadimplencia = currentReceitas > 0 ? (atrasadas / currentReceitas) * 100 : 0;
+      const variacaoReceita = receitasAnteriores !== 0 
+        ? ((totalReceitas - receitasAnteriores) / receitasAnteriores) * 100 
+        : 0;
 
-      const kpiData: KPIData = {
-        receitaTotal: currentReceitas,
-        receitaVariacao,
-        despesaTotal: currentDespesas,
-        despesaVariacao,
-        lucroLiquido,
-        lucroVariacao,
+      const variacaoDespesa = despesasAnteriores !== 0 
+        ? ((totalDespesas - despesasAnteriores) / despesasAnteriores) * 100 
+        : 0;
+
+      const kpisData: KPIData = {
+        receitaTotal: totalReceitas,
+        receitaVariacao: variacaoReceita,
+        despesaTotal: totalDespesas,
+        despesaVariacao: variacaoDespesa,
+        lucroLiquido: lucro,
+        lucroVariacao: variacaoLucro,
         margemLucro,
         inadimplencia,
-        saldoCaixa: lucroLiquido,
+        saldoCaixa: lucro, // Simplificado - pode ser melhorado depois
       };
 
-      return kpiData;
+      return kpisData;
     },
-    refetchInterval: 300000, // 5 minutos
+    staleTime: 3 * 60 * 1000, // 3 min - KPIs financeiros mudam pouco
+    gcTime: 10 * 60 * 1000, // 10 min - manter em cache
   });
 
   // Receitas x Despesas por mês
@@ -149,7 +172,8 @@ export function useFinancialAnalytics(filters: FinancialFilters) {
 
       return Object.values(grouped || {});
     },
-    refetchInterval: 600000, // 10 minutos
+    staleTime: 5 * 60 * 1000, // 5 min - dados agregados mensais
+    gcTime: 15 * 60 * 1000, // 15 min
   });
 
   // Composição de receitas por categoria
@@ -182,7 +206,8 @@ export function useFinancialAnalytics(filters: FinancialFilters) {
         ticketMedio: item.count > 0 ? item.valor / item.count : 0,
       })) as ComposicaoCategoria[];
     },
-    refetchInterval: 600000,
+    staleTime: 5 * 60 * 1000, // 5 min - composição de categorias
+    gcTime: 15 * 60 * 1000, // 15 min
   });
 
   // Composição de despesas
@@ -213,7 +238,8 @@ export function useFinancialAnalytics(filters: FinancialFilters) {
         percentual: total > 0 ? (item.valor / total) * 100 : 0,
       })) as ComposicaoCategoria[];
     },
-    refetchInterval: 600000,
+    staleTime: 5 * 60 * 1000, // 5 min
+    gcTime: 15 * 60 * 1000, // 15 min
   });
 
   // Receita por cliente
@@ -241,7 +267,8 @@ export function useFinancialAnalytics(filters: FinancialFilters) {
         .sort((a, b) => b.valor - a.valor)
         .slice(0, 10);
     },
-    refetchInterval: 600000,
+    staleTime: 5 * 60 * 1000, // 5 min
+    gcTime: 15 * 60 * 1000, // 15 min
   });
 
   return {

@@ -378,7 +378,9 @@ export function useAdminPendencies() {
         totalInfo,
       };
     },
-    refetchInterval: 30000, // Atualizar a cada 30 segundos
+    staleTime: 2 * 60 * 1000, // 2 min - pendências não mudam tão rápido
+    gcTime: 10 * 60 * 1000, // 10 min em cache
+    // refetchInterval removido - usar botão de refresh manual
   });
 
   return {
