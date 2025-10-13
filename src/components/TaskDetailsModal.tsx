@@ -211,7 +211,7 @@ export function TaskDetailsModal({ open, onOpenChange, task, onTaskUpdate }: Tas
   const riskLevel = getRiskLevel();
 
   // Checklist handlers
-  const toggleChecklistItem = (itemId: string) => {
+  const toggleChecklistItem = async (itemId: string) => {
     const updated = checklistItems.map(item =>
       item.id === itemId ? { ...item, completed: !item.completed } : item
     );
@@ -220,13 +220,21 @@ export function TaskDetailsModal({ open, onOpenChange, task, onTaskUpdate }: Tas
     const newCompletedCount = updated.filter(item => item.completed).length;
     const newProgress = updated.length > 0 ? (newCompletedCount / updated.length) * 100 : 0;
     
-    onTaskUpdate(task.id, {
-      checklist: updated,
-      checklist_progress: newProgress
-    });
+    try {
+      const { supabase } = await import('@/integrations/supabase/client');
+      await supabase
+        .from('tarefa')
+        .update({
+          checklist: updated as any,
+          checklist_progress: newProgress
+        })
+        .eq('id', task.id);
+    } catch (error) {
+      console.error('Erro ao atualizar checklist:', error);
+    }
   };
 
-  const addChecklistItem = () => {
+  const addChecklistItem = async () => {
     if (!newItemText.trim()) return;
 
     const newItem: ChecklistItem = {
@@ -241,22 +249,38 @@ export function TaskDetailsModal({ open, onOpenChange, task, onTaskUpdate }: Tas
 
     const newProgress = updated.length > 0 ? (updated.filter(i => i.completed).length / updated.length) * 100 : 0;
     
-    onTaskUpdate(task.id, {
-      checklist: updated,
-      checklist_progress: newProgress
-    });
+    try {
+      const { supabase } = await import('@/integrations/supabase/client');
+      await supabase
+        .from('tarefa')
+        .update({
+          checklist: updated as any,
+          checklist_progress: newProgress
+        })
+        .eq('id', task.id);
+    } catch (error) {
+      console.error('Erro ao adicionar item:', error);
+    }
   };
 
-  const removeChecklistItem = (itemId: string) => {
+  const removeChecklistItem = async (itemId: string) => {
     const updated = checklistItems.filter(item => item.id !== itemId);
     setChecklistItems(updated);
 
     const newProgress = updated.length > 0 ? (updated.filter(i => i.completed).length / updated.length) * 100 : 0;
     
-    onTaskUpdate(task.id, {
-      checklist: updated,
-      checklist_progress: newProgress
-    });
+    try {
+      const { supabase } = await import('@/integrations/supabase/client');
+      await supabase
+        .from('tarefa')
+        .update({
+          checklist: updated as any,
+          checklist_progress: newProgress
+        })
+        .eq('id', task.id);
+    } catch (error) {
+      console.error('Erro ao remover item:', error);
+    }
   };
 
   const handleSaveWork = async () => {

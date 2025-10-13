@@ -220,7 +220,29 @@ export function TaskActivities({ tarefaId, className }: TaskActivitiesProps) {
               Você precisa seguir esta tarefa para adicionar comentários
             </p>
             <Button 
-              onClick={() => window.location.reload()}
+              onClick={async () => {
+                try {
+                  const { data: { user } } = await supabase.auth.getUser();
+                  if (!user) return;
+
+                  const { error } = await supabase
+                    .from('tarefa_seguidores')
+                    .insert({
+                      tarefa_id: tarefaId,
+                      user_id: user.id
+                    });
+
+                  if (error) throw error;
+
+                  setCanComment(true);
+                  setNeedsToFollow(false);
+                  smartToast.success('✅ Agora você está seguindo esta tarefa!');
+                  loadActivities();
+                } catch (error) {
+                  console.error('Erro ao seguir tarefa:', error);
+                  smartToast.error('Erro ao seguir tarefa');
+                }
+              }}
               className="bg-bex hover:bg-bex-dark"
             >
               <Bell className="h-4 w-4 mr-2" />
