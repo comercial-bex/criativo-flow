@@ -12,6 +12,9 @@ import { SpecialistGuard } from "@/components/SpecialistGuard";
 import { DeprecatedRouteRedirect } from "@/components/DeprecatedRouteRedirect";
 import { BexThemeProvider } from "@/contexts/BexThemeContext";
 import { PWADebugPanel } from "@/components/PWADebugPanel";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { logWebVitals } from "@/lib/web-vitals";
+import { analytics } from "@/lib/analytics";
 
 
 import Index from "./pages/Index";
@@ -193,6 +196,15 @@ const queryClient = new QueryClient({
   },
 });
 
+// Initialize Web Vitals & Analytics em produção
+if (import.meta.env.PROD) {
+  logWebVitals();
+  analytics.trackPageView({
+    path: window.location.pathname,
+    title: document.title
+  });
+}
+
 function App() {
   // Move PublicRoute inside App component so it has access to AuthProvider context
   const PublicRoute = ({ children }: { children: React.ReactNode }) => {
@@ -209,21 +221,22 @@ function App() {
     return <>{children}</>;
   };
   return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider
-        attribute="class"
-        defaultTheme="dark"
-        enableSystem={false}
-        forcedTheme="dark"
-        disableTransitionOnChange
-      >
-        <BexThemeProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <PWADebugPanel />
-            <BrowserRouter>
-              <AuthProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem={false}
+          forcedTheme="dark"
+          disableTransitionOnChange
+        >
+          <BexThemeProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              {import.meta.env.DEV && <PWADebugPanel />}
+              <BrowserRouter>
+                <AuthProvider>
               <Routes>
                 {/* Public routes */}
                 <Route path="/auth" element={<PublicRoute><Auth /></PublicRoute>} />
@@ -1066,6 +1079,7 @@ function App() {
         </BexThemeProvider>
       </ThemeProvider>
     </QueryClientProvider>
+    </ErrorBoundary>
   );
 }
 
