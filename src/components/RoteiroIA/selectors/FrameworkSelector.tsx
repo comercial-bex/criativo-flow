@@ -6,12 +6,14 @@ interface FrameworkSelectorProps {
   selectedIds: string[];
   onSelect: (ids: string[]) => void;
   multiSelect?: boolean;
+  showError?: boolean;
 }
 
 export default function FrameworkSelector({ 
   selectedIds, 
   onSelect, 
-  multiSelect = false 
+  multiSelect = false,
+  showError = false
 }: FrameworkSelectorProps) {
   const { data: frameworks = [], isLoading } = useFrameworks();
 
@@ -45,7 +47,7 @@ export default function FrameworkSelector({
   }
 
   return (
-    <div className="space-y-6">
+    <div className={`space-y-6 p-4 rounded-md ${showError && selectedIds.length === 0 ? "ring-2 ring-destructive" : "border"}`}>
       <h3 className="text-lg font-semibold flex items-center gap-2">
         📚 Frameworks de Conteúdo
         {selectedIds.length > 0 && (

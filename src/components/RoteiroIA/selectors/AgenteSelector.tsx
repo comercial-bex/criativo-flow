@@ -7,9 +7,10 @@ import { InfoIcon } from "lucide-react";
 interface AgenteSelectorProps {
   selectedIds: string[];
   onSelect: (ids: string[]) => void;
+  showError?: boolean;
 }
 
-export default function AgenteSelector({ selectedIds, onSelect }: AgenteSelectorProps) {
+export default function AgenteSelector({ selectedIds, onSelect, showError = false }: AgenteSelectorProps) {
   const { data: agentes = [], isLoading } = useAgentesIA();
 
   if (isLoading) {
@@ -42,7 +43,7 @@ export default function AgenteSelector({ selectedIds, onSelect }: AgenteSelector
   });
 
   return (
-    <div className="space-y-8">
+    <div className={`space-y-8 p-4 rounded-md ${showError && selectedIds.length === 0 ? "ring-2 ring-destructive" : "border"}`}>
       {categoriasOrdenadas.map(categoria => (
         <div key={categoria} className="space-y-4">
           <div className="flex items-center gap-2">

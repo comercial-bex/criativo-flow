@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import RoteiroPreview from "../RoteiroPreview";
 import LogoUploader from "../LogoUploader";
 import { marked } from "marked";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger, TooltipPortal } from "@/components/ui/tooltip";
 
 export default function Step4Roteiro({ formData, setFormData, onGenerateAI }: any) {
   const [isGenerating, setIsGenerating] = useState(false);
@@ -36,24 +37,45 @@ export default function Step4Roteiro({ formData, setFormData, onGenerateAI }: an
       </div>
 
       <div className="flex justify-center mb-4">
-        <Button
-          onClick={handleGenerate}
-          disabled={isGenerating || !formData.objetivo}
-          size="lg"
-          className="gap-2"
-        >
-          {isGenerating ? (
-            <>
-              <Loader2 className="h-5 w-5 animate-spin" />
-              Gerando com IA...
-            </>
-          ) : (
-            <>
-              <Sparkles className="h-5 w-5" />
-              Gerar Roteiro com IA
-            </>
-          )}
-        </Button>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div>
+                <Button
+                  onClick={handleGenerate}
+                  disabled={isGenerating || !formData.objetivo}
+                  size="lg"
+                  className="gap-2"
+                >
+                  {isGenerating ? (
+                    <>
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                      Gerando com IA...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="h-5 w-5" />
+                      Gerar Roteiro com IA
+                    </>
+                  )}
+                </Button>
+              </div>
+            </TooltipTrigger>
+            <TooltipPortal>
+              <TooltipContent className="max-w-md p-4 z-[9999]">
+                <div className="space-y-2">
+                  <h4 className="font-bold text-sm">🤖 Como funciona a geração?</h4>
+                  <p className="text-xs text-muted-foreground">
+                    A IA GPT-4.1 combina dados do cliente (onboarding), agentes selecionados, frameworks e seu briefing para gerar um roteiro profissional formatado com cenas, locuções e CTAs.
+                  </p>
+                  <div className="mt-2 pt-2 border-t">
+                    <p className="text-xs font-semibold">✅ Pré-requisitos preenchidos</p>
+                  </div>
+                </div>
+              </TooltipContent>
+            </TooltipPortal>
+          </Tooltip>
+        </TooltipProvider>
       </div>
 
       {/* Upload de Logo */}

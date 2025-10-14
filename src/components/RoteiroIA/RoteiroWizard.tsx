@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useRoteiros } from "@/hooks/useRoteiros";
 import { smartToast } from "@/lib/smart-toast";
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider, TooltipPortal } from "@/components/ui/tooltip";
 import { supabase } from "@/integrations/supabase/client";
 import { downloadRoteiroAsPDF, exportRoteiroToPDF } from "@/utils/roteiroToPdf";
 import Step1Briefing from "./steps/Step1Briefing";
@@ -22,10 +23,46 @@ interface RoteiroWizardProps {
 }
 
 const STEPS = [
-  { id: 1, label: "Briefing", icon: FileText },
-  { id: 2, label: "Tom & Estilo", icon: Palette },
-  { id: 3, label: "Personalização IA", icon: Sparkles },
-  { id: 4, label: "Roteiro & IA", icon: FileDown },
+  { 
+    id: 1, 
+    label: "Briefing", 
+    icon: FileText,
+    tooltip: {
+      titulo: "📝 Por que preencher o Briefing?",
+      descricao: "O briefing alimenta a IA com contexto do cliente, projeto e objetivo. Sem essas informações, o roteiro será genérico e sem relevância estratégica.",
+      campos_obrigatorios: ["Cliente", "Projeto", "Plataforma", "Objetivo"]
+    }
+  },
+  { 
+    id: 2, 
+    label: "Tom & Estilo", 
+    icon: Palette,
+    tooltip: {
+      titulo: "🎨 Como o Tom & Estilo afetam o roteiro?",
+      descricao: "O tom (ex: humanizado, épico) e o estilo (ex: narrativo, bullet points) definem a linguagem e estrutura do roteiro. A IA adapta locução e cenas baseadas nessas escolhas.",
+      campos_obrigatorios: ["Tom (1+)", "Estilo (1+)"]
+    }
+  },
+  { 
+    id: 3, 
+    label: "Personalização IA", 
+    icon: Sparkles,
+    tooltip: {
+      titulo: "🤖 O que são Agentes e Frameworks?",
+      descricao: "Agentes são especialistas virtuais (ex: copywriter, estrategista). Frameworks são estruturas criativas (ex: AIDA, Storytelling). A combinação deles molda o system prompt da IA para criar roteiros profissionais.",
+      campos_obrigatorios: ["Agentes IA (1+)", "Frameworks (1+)"]
+    }
+  },
+  { 
+    id: 4, 
+    label: "Roteiro & IA", 
+    icon: FileDown,
+    tooltip: {
+      titulo: "✨ Como a IA gera o roteiro?",
+      descricao: "A IA combina todos os dados anteriores (briefing, tom, agentes, frameworks) + dados do Supabase (onboarding do cliente) para gerar um roteiro profissional formatado em Markdown com cenas, locuções e CTAs.",
+      campos_obrigatorios: []
+    }
+  },
 ];
 
 export default function RoteiroWizard({ mode, roteiroId, initialData }: RoteiroWizardProps) {
@@ -298,8 +335,9 @@ export default function RoteiroWizard({ mode, roteiroId, initialData }: RoteiroW
   const progressValue = ((STEPS.findIndex((s) => s.id === currentStep) + 1) / STEPS.length) * 100;
 
   return (
-    <div className="container mx-auto p-6 max-w-5xl">
-      {/* Header */}
+    <TooltipProvider>
+      <div className="container mx-auto p-6 max-w-5xl">
+        {/* Header */}
       <div className="mb-6">
         <h1 className="text-3xl font-bold flex items-center gap-2">
           🎬 {mode === "create" ? "Novo Roteiro" : "Editar Roteiro"}
@@ -318,18 +356,40 @@ export default function RoteiroWizard({ mode, roteiroId, initialData }: RoteiroW
             const isCompleted = STEPS.findIndex((s) => s.id === currentStep) > idx;
 
             return (
-              <div key={step.id} className="flex flex-col items-center flex-1">
-                <div
-                  className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 transition-colors ${
-                    isActive
-                      ? "bg-primary text-primary-foreground"
-                      : isCompleted
-                      ? "bg-primary/20 text-primary"
-                      : "bg-muted text-muted-foreground"
-                  }`}
-                >
-                  <StepIcon className="h-5 w-5" />
-                </div>
+              <div key={step.id} className="flex flex-col items-center flex-1 relative">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div
+                      className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 transition-colors cursor-pointer ${
+                        isActive
+                          ? "bg-primary text-primary-foreground"
+                          : isCompleted
+                          ? "bg-primary/20 text-primary"
+                          : "bg-muted text-muted-foreground"
+                      }`}
+                    >
+                      <StepIcon className="h-5 w-5" />
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipPortal>
+                    <TooltipContent side="bottom" className="max-w-md p-4 z-[9999]">
+                      <div className="space-y-2">
+                        <h4 className="font-bold text-sm">{step.tooltip.titulo}</h4>
+                        <p className="text-xs text-muted-foreground">{step.tooltip.descricao}</p>
+                        {step.tooltip.campos_obrigatorios.length > 0 && (
+                          <div className="mt-2 pt-2 border-t">
+                            <p className="text-xs font-semibold mb-1">Campos obrigatórios:</p>
+                            <ul className="text-xs space-y-0.5">
+                              {step.tooltip.campos_obrigatorios.map((campo) => (
+                                <li key={campo}>• {campo}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                    </TooltipContent>
+                  </TooltipPortal>
+                </Tooltip>
                 <span className={`text-sm ${isActive ? "font-semibold" : ""}`}>{step.label}</span>
               </div>
             );
@@ -424,6 +484,7 @@ export default function RoteiroWizard({ mode, roteiroId, initialData }: RoteiroW
           )}
         </div>
       </div>
-    </div>
+      </div>
+    </TooltipProvider>
   );
 }

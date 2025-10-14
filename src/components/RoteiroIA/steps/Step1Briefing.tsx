@@ -78,22 +78,33 @@ export default function Step1Briefing({ formData, setFormData }: any) {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="cliente">Cliente *</Label>
-          <ClientSelector
-            selectedClientId={formData.cliente_id}
-            onClientSelect={handleClienteChange}
-            showContext={false}
-          />
+          <Label htmlFor="cliente" className="flex items-center gap-1">
+            Cliente 
+            <span className="text-destructive">*</span>
+          </Label>
+          <div className={!formData.cliente_id ? "ring-2 ring-destructive rounded-md" : ""}>
+            <ClientSelector
+              selectedClientId={formData.cliente_id}
+              onClientSelect={handleClienteChange}
+              showContext={false}
+            />
+          </div>
+          {!formData.cliente_id && (
+            <p className="text-xs text-destructive">⚠️ Cliente é obrigatório para gerar o roteiro</p>
+          )}
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="projeto">Projeto *</Label>
+          <Label htmlFor="projeto" className="flex items-center gap-1">
+            Projeto 
+            <span className="text-destructive">*</span>
+          </Label>
           <Select
             value={formData.projeto_id}
             onValueChange={(value) => setFormData({ ...formData, projeto_id: value, tarefa_id: "" })}
             disabled={!formData.cliente_id}
           >
-            <SelectTrigger>
+            <SelectTrigger className={!formData.projeto_id ? "ring-2 ring-destructive" : ""}>
               <SelectValue placeholder="Selecione um projeto" />
             </SelectTrigger>
             <SelectContent>
@@ -104,6 +115,9 @@ export default function Step1Briefing({ formData, setFormData }: any) {
               ))}
             </SelectContent>
           </Select>
+          {!formData.projeto_id && (
+            <p className="text-xs text-destructive">⚠️ Projeto é obrigatório</p>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -127,13 +141,20 @@ export default function Step1Briefing({ formData, setFormData }: any) {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="titulo">Título do Roteiro *</Label>
+          <Label htmlFor="titulo" className="flex items-center gap-1">
+            Título do Roteiro 
+            <span className="text-destructive">*</span>
+          </Label>
           <Input
             id="titulo"
             value={formData.titulo}
             onChange={(e) => setFormData({ ...formData, titulo: e.target.value })}
             placeholder="Ex: Roteiro Reels - Black Friday 2024"
+            className={!formData.titulo ? "ring-2 ring-destructive" : ""}
           />
+          {!formData.titulo && (
+            <p className="text-xs text-destructive">⚠️ Título é obrigatório</p>
+          )}
         </div>
       </div>
 
@@ -171,8 +192,11 @@ export default function Step1Briefing({ formData, setFormData }: any) {
       </div>
 
       <div className="space-y-2">
-        <Label>Plataforma *</Label>
-        <div className="flex flex-wrap gap-2">
+        <Label className="flex items-center gap-1">
+          Plataforma 
+          <span className="text-destructive">*</span>
+        </Label>
+        <div className={`flex flex-wrap gap-2 p-3 rounded-md ${!formData.plataforma ? "ring-2 ring-destructive" : "border"}`}>
           {PLATAFORMAS.map((plat) => (
             <Badge
               key={plat.value}
@@ -184,17 +208,27 @@ export default function Step1Briefing({ formData, setFormData }: any) {
             </Badge>
           ))}
         </div>
+        {!formData.plataforma && (
+          <p className="text-xs text-destructive">⚠️ Selecione uma plataforma</p>
+        )}
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="objetivo">Objetivo do Vídeo *</Label>
+        <Label htmlFor="objetivo" className="flex items-center gap-1">
+          Objetivo do Vídeo 
+          <span className="text-destructive">*</span>
+        </Label>
         <Textarea
           id="objetivo"
           value={formData.objetivo}
           onChange={(e) => setFormData({ ...formData, objetivo: e.target.value })}
           placeholder="Ex: Aumentar engajamento e conversões na Black Friday"
           rows={3}
+          className={!formData.objetivo ? "ring-2 ring-destructive" : ""}
         />
+        {!formData.objetivo && (
+          <p className="text-xs text-destructive">⚠️ Objetivo é obrigatório para contextualizar a IA</p>
+        )}
       </div>
 
       <div className="space-y-2">

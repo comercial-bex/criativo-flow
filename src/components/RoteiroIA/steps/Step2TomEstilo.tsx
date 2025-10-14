@@ -42,9 +42,13 @@ export default function Step2TomEstilo({ formData, setFormData }: any) {
       </div>
 
       <div className="space-y-3">
-        <Label>Tom de Voz * (selecione um ou mais)</Label>
+        <Label className="flex items-center gap-1">
+          Tom de Voz 
+          <span className="text-destructive">*</span>
+          <span className="text-muted-foreground text-xs">(selecione um ou mais)</span>
+        </Label>
         <TooltipProvider>
-          <div className="flex flex-wrap gap-2">
+          <div className={`flex flex-wrap gap-2 p-3 rounded-md ${(!formData.tom || formData.tom.length === 0) ? "ring-2 ring-destructive" : "border"}`}>
             {TONS.map((tom) => (
               <Tooltip key={tom.value}>
                 <TooltipTrigger asChild>
@@ -63,12 +67,19 @@ export default function Step2TomEstilo({ formData, setFormData }: any) {
             ))}
           </div>
         </TooltipProvider>
+        {(!formData.tom || formData.tom.length === 0) && (
+          <p className="text-xs text-destructive">⚠️ Selecione pelo menos um tom de voz</p>
+        )}
       </div>
 
       <div className="space-y-3">
-        <Label>Estilo Narrativo * (selecione um ou mais)</Label>
+        <Label className="flex items-center gap-1">
+          Estilo Narrativo 
+          <span className="text-destructive">*</span>
+          <span className="text-muted-foreground text-xs">(selecione um ou mais)</span>
+        </Label>
         <TooltipProvider>
-          <div className="flex flex-wrap gap-2">
+          <div className={`flex flex-wrap gap-2 p-3 rounded-md ${(!formData.estilo || formData.estilo.length === 0) ? "ring-2 ring-destructive" : "border"}`}>
             {ESTILOS.map((estilo) => (
               <Tooltip key={estilo.value}>
                 <TooltipTrigger asChild>
@@ -87,6 +98,9 @@ export default function Step2TomEstilo({ formData, setFormData }: any) {
             ))}
           </div>
         </TooltipProvider>
+        {(!formData.estilo || formData.estilo.length === 0) && (
+          <p className="text-xs text-destructive">⚠️ Selecione pelo menos um estilo narrativo</p>
+        )}
       </div>
 
       <div className="space-y-2">

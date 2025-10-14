@@ -3,6 +3,7 @@ import FrameworkSelector from "../selectors/FrameworkSelector";
 import TomCreativoSelector from "../selectors/TomCreativoSelector";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Lightbulb } from "lucide-react";
+import { Label } from "@/components/ui/label";
 
 interface Step3PersonalizacaoProps {
   formData: any;
@@ -39,16 +40,38 @@ export default function Step3Personalizacao({ formData, setFormData }: Step3Pers
         </p>
       </div>
 
-      <AgenteSelector
-        selectedIds={formData.agentes_ia_ids || []}
-        onSelect={handleAgenteSelect}
-      />
+      <div className="space-y-2">
+        <h4 className="text-md font-semibold flex items-center gap-1">
+          🤖 Agentes IA 
+          <span className="text-destructive">*</span>
+          <span className="text-muted-foreground text-xs font-normal">(selecione um ou mais)</span>
+        </h4>
+        <AgenteSelector 
+          selectedIds={formData.agentes_ia_ids || []}
+          onSelect={handleAgenteSelect}
+          showError={!formData.agentes_ia_ids || formData.agentes_ia_ids.length === 0}
+        />
+        {(!formData.agentes_ia_ids || formData.agentes_ia_ids.length === 0) && (
+          <p className="text-xs text-destructive">⚠️ Selecione pelo menos um agente IA</p>
+        )}
+      </div>
 
-      <FrameworkSelector
-        selectedIds={formData.frameworks_ids || []}
-        onSelect={handleFrameworkSelect}
-        multiSelect={true}
-      />
+      <div className="space-y-2">
+        <h4 className="text-md font-semibold flex items-center gap-1">
+          📚 Frameworks 
+          <span className="text-destructive">*</span>
+          <span className="text-muted-foreground text-xs font-normal">(selecione um ou mais)</span>
+        </h4>
+        <FrameworkSelector
+          selectedIds={formData.frameworks_ids || []}
+          onSelect={handleFrameworkSelect}
+          multiSelect={true}
+          showError={!formData.frameworks_ids || formData.frameworks_ids.length === 0}
+        />
+        {(!formData.frameworks_ids || formData.frameworks_ids.length === 0) && (
+          <p className="text-xs text-destructive">⚠️ Selecione pelo menos um framework</p>
+        )}
+      </div>
 
       <TomCreativoSelector
         selectedTons={formData.tom_criativo || []}
