@@ -1,7 +1,7 @@
 // BEX 3.0 - Advanced Service Worker
 // Version: 3.0.0
 
-const CACHE_VERSION = 'bex-v3.1.0';
+const CACHE_VERSION = 'bex-v3.1.1';
 const STATIC_CACHE = 'bex-static-v3';
 const API_CACHE = 'bex-api-v3';
 const PAGES_CACHE = 'bex-pages-v3';
@@ -107,8 +107,8 @@ self.addEventListener('fetch', (event) => {
     // ESTRATÉGIA 2: Network-First com Fallback para APIs
     event.respondWith(networkFirst(request, API_CACHE));
   } else if (request.mode === 'navigate') {
-    // ESTRATÉGIA 3: Stale-While-Revalidate para páginas HTML
-    event.respondWith(staleWhileRevalidate(request, PAGES_CACHE));
+    // ESTRATÉGIA 3: Network-First para páginas HTML (com fallback)
+    event.respondWith(networkFirst(request, PAGES_CACHE, 1500));
   } else {
     // Default: Network-First
     event.respondWith(networkFirst(request, API_CACHE));
