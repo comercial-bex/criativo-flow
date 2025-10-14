@@ -18,17 +18,8 @@ export async function registerServiceWorker(): Promise<ServiceWorkerRegistration
       await Promise.all(cacheNames.map(name => caches.delete(name)));
     }
 
-    // Desregistrar Service Workers antigos
-    const registrations = await navigator.serviceWorker.getRegistrations();
-    for (const registration of registrations) {
-      const wasUnregistered = await registration.unregister();
-      if (wasUnregistered) {
-        console.log('🧹 Service Worker antigo desregistrado');
-      }
-    }
-
-    // Aguardar um pouco antes de registrar o novo
-    await new Promise(resolve => setTimeout(resolve, 100));
+    // Não desregistrar SWs antigos - deixar o novo assumir o controle
+    // A versão do cache (CACHE_VERSION) vai invalidar os caches antigos automaticamente
 
     // Registrar novo Service Worker
     const registration = await navigator.serviceWorker.register('/sw-advanced.js', {
@@ -48,25 +39,18 @@ export async function registerServiceWorker(): Promise<ServiceWorkerRegistration
         newWorker.addEventListener('statechange', () => {
           console.log('📊 Estado do novo SW:', newWorker.state);
 
-          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-            // Nova versão instalada e há um SW ativo anterior
-            console.log('🆕 Nova versão do app disponível!');
+          if (newWorker.state === 'installed') {
+            // Nova versão instalada - atualizar automaticamente
+            console.log('🆕 Nova versão do app disponível! Atualizando...');
             
-            // Perguntar ao usuário se deseja atualizar
-            const shouldUpdate = confirm(
-              'Uma nova versão do BEX está disponível! Deseja atualizar agora?'
-            );
-
-            if (shouldUpdate) {
-              // Pedir ao novo SW para pular a espera
-              newWorker.postMessage({ type: 'SKIP_WAITING' });
-              
-              // Recarregar a página quando o novo SW estiver ativo
-              navigator.serviceWorker.addEventListener('controllerchange', () => {
-                console.log('🔄 Recarregando para aplicar atualização...');
-                window.location.reload();
-              });
-            }
+            // Pedir ao novo SW para pular a espera (auto-update)
+            newWorker.postMessage({ type: 'SKIP_WAITING' });
+            
+            // Recarregar a página quando o novo SW estiver ativo
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+              console.log('🔄 Recarregando para aplicar atualização...');
+              window.location.reload();
+            });
           }
         });
       }

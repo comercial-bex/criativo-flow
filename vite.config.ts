@@ -27,6 +27,15 @@ export default defineConfig(({ mode }) => ({
     } : undefined,
     rollupOptions: {
       output: {
+        // Cache busting com hash de assets
+        assetFileNames: (assetInfo) => {
+          if (assetInfo.name?.endsWith('.mp4') || assetInfo.name?.endsWith('.webm')) {
+            return 'assets/video/[name]-[hash][extname]';
+          }
+          return 'assets/[name]-[hash][extname]';
+        },
+        chunkFileNames: 'assets/js/[name]-[hash].js',
+        entryFileNames: 'assets/js/[name]-[hash].js',
         manualChunks: (id) => {
           if (id.includes('node_modules')) {
             if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {

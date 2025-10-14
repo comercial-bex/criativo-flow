@@ -4,6 +4,9 @@ import { GlobalHeader } from "@/components/GlobalHeader";
 import { BottomNavigation } from "@/components/BottomNavigation";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { useDeviceType } from "@/hooks/useDeviceType";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import { useState } from "react";
 
 interface ResponsiveLayoutProps {
   children: React.ReactNode;
@@ -13,6 +16,20 @@ export function ResponsiveLayout({ children }: ResponsiveLayoutProps) {
   const deviceType = useDeviceType();
   const isMobile = deviceType === 'mobile';
   const isTablet = deviceType === 'tablet';
+  const [showVersion, setShowVersion] = useState(false);
+  
+  const handleForceUpdate = async () => {
+    try {
+      const keys = await caches.keys();
+      await Promise.all(keys.map(k => caches.delete(k)));
+      toast.success('Cache limpo! Recarregando...');
+      setTimeout(() => {
+        window.location.href = window.location.origin + '?v=' + Date.now();
+      }, 500);
+    } catch (error) {
+      toast.error('Erro ao limpar cache');
+    }
+  };
 
   if (isMobile) {
     return (
@@ -52,6 +69,30 @@ export function ResponsiveLayout({ children }: ResponsiveLayoutProps) {
           <main className="flex-1 overflow-y-auto bg-muted/20 ios-optimized-scroll">
             {children}
           </main>
+          
+          {/* Footer com versão e botão de atualização */}
+          <footer className="border-t border-border/50 bg-card/50 backdrop-blur-sm px-4 py-2 flex items-center justify-between text-xs text-muted-foreground">
+            <div className="flex items-center gap-2">
+              <span 
+                className="cursor-pointer hover:text-bex transition-colors"
+                onClick={() => setShowVersion(!showVersion)}
+              >
+                🎮 BEX Flow v4.0.0
+              </span>
+              {showVersion && (
+                <span className="text-[10px] opacity-60">- Gamer Edition</span>
+              )}
+            </div>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="h-6 px-2 text-[10px] hover:text-bex hover:bg-bex/10"
+              onClick={handleForceUpdate}
+            >
+              🔄 Forçar Atualização
+            </Button>
+          </footer>
         </div>
         
         <PWAInstallPrompt />

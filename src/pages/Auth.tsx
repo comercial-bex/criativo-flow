@@ -7,7 +7,7 @@ import { LoginDiagnostic } from '@/components/Auth/LoginDiagnostic';
 import LoginPage from '@/components/ui/gaming-login';
 import { Bug } from 'lucide-react';
 import { toast } from 'sonner';
-import backgroundVideo from '@/assets/bex_fundo.mp4';
+const backgroundVideo = '/bex_fundo.mp4';
 
 export default function Auth() {
   const [loading, setLoading] = useState(false);
@@ -75,9 +75,35 @@ export default function Auth() {
 
 
 
+  const handleClearCache = async () => {
+    try {
+      const keys = await caches.keys();
+      await Promise.all(keys.map(k => caches.delete(k)));
+      toast.success('Cache limpo! Recarregando...');
+      setTimeout(() => {
+        window.location.href = window.location.origin + '?v=' + Date.now();
+      }, 500);
+    } catch (error) {
+      toast.error('Erro ao limpar cache');
+    }
+  };
+
   return (
     <div className="relative min-h-screen w-full flex items-center justify-center px-4 py-12">
       <LoginPage.VideoBackground videoUrl={backgroundVideo} />
+      
+      {/* Botão Force Update */}
+      <div className="absolute top-4 left-4 z-20">
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="text-xs text-white/80 hover:text-white gap-2 bg-black/40 backdrop-blur-sm border border-bex/30 hover:border-bex/50"
+          onClick={handleClearCache}
+        >
+          🔄 Limpar Cache
+        </Button>
+      </div>
 
       <div className="relative z-20 w-full max-w-md">
         <LoginPage.LoginForm 

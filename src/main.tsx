@@ -65,6 +65,28 @@ try {
   }
 }
 
+// Detecção de versão antiga e limpeza automática
+if (import.meta.env.PROD) {
+  const APP_VERSION = '4.0.0';
+  const storedVersion = localStorage.getItem('app-version');
+  
+  if (storedVersion && storedVersion !== APP_VERSION) {
+    console.log(`🔄 Nova versão detectada (${storedVersion} → ${APP_VERSION}), limpando cache antigo...`);
+    caches.keys().then(keys => 
+      Promise.all(keys.map(k => {
+        if (k.includes('bex-v3') || k.includes('bex-v2')) {
+          console.log(`🧹 Removendo cache antigo: ${k}`);
+          return caches.delete(k);
+        }
+        return Promise.resolve();
+      }))
+    );
+  }
+  
+  localStorage.setItem('app-version', APP_VERSION);
+  console.log(`🎮 BEX Flow v${APP_VERSION} - Gamer Edition`);
+}
+
 // Registrar Service Worker APENAS para mobile/PWA instalado
 if (import.meta.env.PROD) {
   const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
