@@ -16,7 +16,7 @@ import { useColaboradorTempData } from '@/hooks/useColaboradorTempData';
 import { useQueryClient } from '@tanstack/react-query';
 import { useEspecialistas } from '@/hooks/useEspecialistas';
 import { formatCPF, isValidCPF, cleanCPF } from '@/lib/cpf-utils';
-import { Plus, User, UserCheck, UserX, Pencil, AlertCircle, Database } from 'lucide-react';
+import { Plus, User, UserCheck, UserX, Pencil, AlertCircle, Database, FileText, Briefcase, CreditCard, MessageSquare } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { smartToast } from '@/lib/smart-toast';
 
@@ -109,12 +109,35 @@ export function PessoasManager() {
   };
 
   const getStatusBadge = (status: string) => {
-    const variants: Record<string, 'default' | 'secondary' | 'destructive'> = {
-      ativo: 'default',
-      afastado: 'secondary',
-      desligado: 'destructive',
+    const statusConfig = {
+      ativo: {
+        variant: 'default' as const,
+        className: 'bg-green-100 text-green-700 border-green-300 dark:bg-green-900/20 dark:text-green-400',
+        icon: <UserCheck className="h-3 w-3 mr-1" />,
+        label: 'Ativo'
+      },
+      afastado: {
+        variant: 'secondary' as const,
+        className: 'bg-yellow-100 text-yellow-700 border-yellow-300 dark:bg-yellow-900/20 dark:text-yellow-400',
+        icon: <User className="h-3 w-3 mr-1" />,
+        label: 'Afastado'
+      },
+      desligado: {
+        variant: 'destructive' as const,
+        className: 'bg-red-100 text-red-700 border-red-300 dark:bg-red-900/20 dark:text-red-400',
+        icon: <UserX className="h-3 w-3 mr-1" />,
+        label: 'Desligado'
+      },
     };
-    return <Badge variant={variants[status] || 'default'}>{status}</Badge>;
+
+    const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.ativo;
+
+    return (
+      <Badge variant={config.variant} className={`${config.className} flex items-center w-fit`}>
+        {config.icon}
+        {config.label}
+      </Badge>
+    );
   };
 
   const stats = {
@@ -125,48 +148,77 @@ export function PessoasManager() {
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Ativos</CardTitle>
-            <UserCheck className="h-4 w-4 text-muted-foreground" />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Card Ativos - Verde */}
+        <Card className="border-l-4 border-l-green-500 hover:shadow-lg transition-all cursor-pointer group">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <div>
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                Colaboradores Ativos
+              </CardTitle>
+              <div className="text-3xl font-bold text-green-600 dark:text-green-400 mt-2">
+                {stats.ativos}
+              </div>
+            </div>
+            <div className="p-3 bg-green-100 dark:bg-green-900/20 rounded-lg group-hover:scale-110 transition-transform">
+              <UserCheck className="h-8 w-8 text-green-600 dark:text-green-400" />
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.ativos}</div>
-          </CardContent>
         </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Afastados</CardTitle>
-            <User className="h-4 w-4 text-muted-foreground" />
+
+        {/* Card Afastados - Amarelo */}
+        <Card className="border-l-4 border-l-yellow-500 hover:shadow-lg transition-all cursor-pointer group">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <div>
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                Colaboradores Afastados
+              </CardTitle>
+              <div className="text-3xl font-bold text-yellow-600 dark:text-yellow-400 mt-2">
+                {stats.afastados}
+              </div>
+            </div>
+            <div className="p-3 bg-yellow-100 dark:bg-yellow-900/20 rounded-lg group-hover:scale-110 transition-transform">
+              <User className="h-8 w-8 text-yellow-600 dark:text-yellow-400" />
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.afastados}</div>
-          </CardContent>
         </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Desligados</CardTitle>
-            <UserX className="h-4 w-4 text-muted-foreground" />
+
+        {/* Card Desligados - Vermelho */}
+        <Card className="border-l-4 border-l-red-500 hover:shadow-lg transition-all cursor-pointer group">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <div>
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                Colaboradores Desligados
+              </CardTitle>
+              <div className="text-3xl font-bold text-red-600 dark:text-red-400 mt-2">
+                {stats.desligados}
+              </div>
+            </div>
+            <div className="p-3 bg-red-100 dark:bg-red-900/20 rounded-lg group-hover:scale-110 transition-transform">
+              <UserX className="h-8 w-8 text-red-600 dark:text-red-400" />
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.desligados}</div>
-          </CardContent>
         </Card>
       </div>
 
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-              <CardTitle>Gestão de Colaboradores</CardTitle>
-              <CardDescription>Gerencie sua equipe interna (CLT, PJ, Estágio)</CardDescription>
+              <CardTitle className="text-2xl">Gestão de Colaboradores</CardTitle>
+              <CardDescription className="mt-1">
+                {pessoas.length} {pessoas.length === 1 ? 'colaborador cadastrado' : 'colaboradores cadastrados'}
+              </CardDescription>
             </div>
             <Dialog open={modalAberto} onOpenChange={setModalAberto}>
               <DialogTrigger asChild>
-                <Button onClick={() => abrirModal()}>
-                  <Plus className="mr-2 h-4 w-4" />
-                  Nova Pessoa
+                <Button 
+                  onClick={() => abrirModal()} 
+                  size="lg"
+                  className="bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 shadow-lg"
+                >
+                  <Plus className="mr-2 h-5 w-5" />
+                  Novo Colaborador
                 </Button>
               </DialogTrigger>
               <DialogContent size="xl" height="xl" overflow="auto">
@@ -188,11 +240,23 @@ export function PessoasManager() {
                 )}
 
                 <Tabs defaultValue="pessoal" className="w-full">
-                  <TabsList className="grid w-full grid-cols-4">
-                    <TabsTrigger value="pessoal">Dados Pessoais</TabsTrigger>
-                    <TabsTrigger value="profissional">Profissional</TabsTrigger>
-                    <TabsTrigger value="bancario">Bancário</TabsTrigger>
-                    <TabsTrigger value="observacoes">Observações</TabsTrigger>
+                  <TabsList className="grid w-full grid-cols-4 h-auto">
+                    <TabsTrigger value="pessoal" className="flex flex-col sm:flex-row items-center gap-1 py-2">
+                      <FileText className="h-4 w-4" />
+                      <span className="text-xs sm:text-sm">Pessoais</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="profissional" className="flex flex-col sm:flex-row items-center gap-1 py-2">
+                      <Briefcase className="h-4 w-4" />
+                      <span className="text-xs sm:text-sm">Profissional</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="bancario" className="flex flex-col sm:flex-row items-center gap-1 py-2">
+                      <CreditCard className="h-4 w-4" />
+                      <span className="text-xs sm:text-sm">Bancário</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="observacoes" className="flex flex-col sm:flex-row items-center gap-1 py-2">
+                      <MessageSquare className="h-4 w-4" />
+                      <span className="text-xs sm:text-sm">Observações</span>
+                    </TabsTrigger>
                   </TabsList>
 
                   <TabsContent value="pessoal" className="space-y-4">
@@ -588,71 +652,101 @@ export function PessoasManager() {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            <div className="flex justify-start items-center">
-              <p className="text-sm text-muted-foreground">
-                Gerencie seus colaboradores internos (CLT, PJ, Estágio). Use a busca no topo para encontrar rapidamente.
-              </p>
-            </div>
-
-            <Table>
-              <TableHeader>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Nome</TableHead>
+                <TableHead>CPF</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead>Regime</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-right">Ações</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {isLoading ? (
                 <TableRow>
-                  <TableHead>Nome</TableHead>
-                  <TableHead>CPF</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Papéis</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Ações</TableHead>
+                  <TableCell colSpan={6} className="text-center h-32">
+                    <div className="flex flex-col items-center justify-center gap-2">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                      <p className="text-sm text-muted-foreground">Carregando colaboradores...</p>
+                    </div>
+                  </TableCell>
                 </TableRow>
-              </TableHeader>
-              <TableBody>
-                {isLoading ? (
-                  <TableRow>
-                    <TableCell colSpan={6} className="text-center">
-                      Carregando...
+              ) : pessoas.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center h-32">
+                    <div className="flex flex-col items-center justify-center gap-2">
+                      <UserCheck className="h-12 w-12 text-muted-foreground/50" />
+                      <p className="text-lg font-medium">Nenhum colaborador cadastrado</p>
+                      <p className="text-sm text-muted-foreground">
+                        Clique em "Novo Colaborador" para adicionar sua equipe
+                      </p>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ) : (
+                pessoas.map((pessoa) => (
+                  <TableRow 
+                    key={pessoa.id} 
+                    className="hover:bg-muted/50 transition-colors"
+                  >
+                    <TableCell className="font-medium">{pessoa.nome}</TableCell>
+                    <TableCell>
+                      {pessoa.cpf ? (
+                        <span className="font-mono text-sm">{formatCPF(pessoa.cpf)}</span>
+                      ) : (
+                        <span className="text-muted-foreground text-sm italic">Não informado</span>
+                      )}
                     </TableCell>
-                  </TableRow>
-                ) : pessoas.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={6} className="text-center">
-                      Nenhuma pessoa encontrada
+                    <TableCell>
+                      {pessoa.email ? (
+                        <span className="text-sm truncate max-w-[200px] block" title={pessoa.email}>
+                          {pessoa.email}
+                        </span>
+                      ) : (
+                        <span className="text-muted-foreground text-sm italic">Não informado</span>
+                      )}
                     </TableCell>
-                  </TableRow>
-                ) : (
-                  pessoas.map((pessoa) => (
-                    <TableRow key={pessoa.id}>
-                      <TableCell className="font-medium">{pessoa.nome}</TableCell>
-                      <TableCell>{pessoa.cpf}</TableCell>
-                      <TableCell>{pessoa.email}</TableCell>
-                      <TableCell>
-                        <div className="flex gap-1">
-                          {pessoa.papeis.map((papel) => (
-                            <Badge key={papel} variant="outline" className="text-xs capitalize">
-                              {papel}
-                            </Badge>
-                          ))}
-                        </div>
-                      </TableCell>
-                      <TableCell>{getStatusBadge(pessoa.status)}</TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex gap-2 justify-end">
-                          <Button size="sm" variant="outline" onClick={() => abrirModal(pessoa)}>
-                            <Pencil className="h-3 w-3" />
+                    <TableCell>
+                      {pessoa.regime ? (
+                        <Badge variant="secondary" className="uppercase text-xs">
+                          {pessoa.regime}
+                        </Badge>
+                      ) : (
+                        <span className="text-muted-foreground text-sm italic">-</span>
+                      )}
+                    </TableCell>
+                    <TableCell>{getStatusBadge(pessoa.status)}</TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex gap-2 justify-end">
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          onClick={() => abrirModal(pessoa)}
+                          className="hover:bg-blue-50 hover:text-blue-600 hover:border-blue-600 dark:hover:bg-blue-950 dark:hover:text-blue-400"
+                        >
+                          <Pencil className="h-4 w-4 mr-1" />
+                          Editar
+                        </Button>
+                        {pessoa.status === 'ativo' && (
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            onClick={() => desativar(pessoa.id)}
+                            className="hover:bg-red-50 hover:text-red-600 hover:border-red-600 dark:hover:bg-red-950 dark:hover:text-red-400"
+                          >
+                            <UserX className="h-4 w-4 mr-1" />
+                            Desativar
                           </Button>
-                          {pessoa.status === 'ativo' && (
-                            <Button size="sm" variant="destructive" onClick={() => desativar(pessoa.id)}>
-                              Desativar
-                            </Button>
-                          )}
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
+                        )}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
         </CardContent>
       </Card>
     </div>
