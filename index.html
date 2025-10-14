@@ -44,7 +44,9 @@
           if (!window.__reactMounted) {
             var elapsed = ((performance.now() - window.__bootStart) / 1000).toFixed(1);
             console.error('⏱️ [TIMEOUT] React não montou em ' + elapsed + 's');
-            showBootError('Falha ao iniciar em ' + elapsed + 's');
+            console.error('🔍 [DEBUG] __reactStarted:', window.__reactStarted);
+            console.error('🔍 [DEBUG] __reactMounted:', window.__reactMounted);
+            showBootError('Falha ao iniciar em ' + elapsed + 's. Verifique o console (F12) para detalhes.');
           }
         }, 10000);
         

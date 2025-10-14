@@ -15,15 +15,15 @@ export function SmartRedirect() {
   useEffect(() => {
     console.log('🔄 SmartRedirect: Auth loading:', authLoading, 'User:', !!user, 'Path:', location.pathname);
 
-    // Emergency timeout
+    // Emergency timeout - reduced to 1.5s
     const emergencyTimeout = setTimeout(() => {
-      console.log('🚨 SmartRedirect: Emergency timeout - forcing navigation');
+      console.error('🚨 SmartRedirect: TIMEOUT 1.5s - Forçando navegação');
       if (!user) {
         navigate('/auth', { replace: true });
       } else {
         navigate('/dashboard', { replace: true });
       }
-    }, 3000);
+    }, 1500);
 
     // Wait for auth and role to load
     if (authLoading || roleLoading) {
@@ -42,45 +42,52 @@ export function SmartRedirect() {
 
     // NOVA LÓGICA: Validar acesso via função do banco
     const validateAndRedirect = async () => {
-      const { data, error } = await supabase.rpc('validate_specialist_access', {
-        p_user_id: user.id
-      });
+      try {
+        console.log('🔄 SmartRedirect: Chamando validate_specialist_access...');
+        const { data, error } = await supabase.rpc('validate_specialist_access', {
+          p_user_id: user.id
+        });
 
-      if (error) {
-        console.error('🔄 SmartRedirect: Error validating access:', error);
-        navigate('/dashboard', { replace: true });
-        return;
-      }
+        if (error) {
+          console.error('🚨 SmartRedirect: ERRO na RPC:', error);
+          navigate('/dashboard', { replace: true });
+          return;
+        }
 
-      const accessData = data as { can_access: boolean; redirect_to: string | null; reason: string };
+        console.log('✅ SmartRedirect: RPC retornou:', data);
+        const accessData = data as { can_access: boolean; redirect_to: string | null; reason: string };
 
-      // Se não pode acessar e tem redirecionamento, redirecionar
-      if (!accessData.can_access && accessData.redirect_to) {
-        console.log('🔄 SmartRedirect: Access denied, redirecting to:', accessData.redirect_to);
-        navigate(accessData.redirect_to, { replace: true });
-        return;
-      }
+        // Se não pode acessar e tem redirecionamento, redirecionar
+        if (!accessData.can_access && accessData.redirect_to) {
+          console.log('🔄 SmartRedirect: Access denied, redirecting to:', accessData.redirect_to);
+          navigate(accessData.redirect_to, { replace: true });
+          return;
+        }
 
-      // Se pode acessar, aplicar lógica normal de redirecionamento
-      if (location.pathname === '/' || location.pathname === '/index') {
-        if (role === 'cliente') {
-          navigate('/cliente/painel', { replace: true });
-        } else if (role && ['grs', 'designer', 'filmmaker'].includes(role)) {
-          // Check if first login for collaborators
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('avatar_url, telefone')
-            .eq('id', user.id)
-            .single();
+        // Se pode acessar, aplicar lógica normal de redirecionamento
+        if (location.pathname === '/' || location.pathname === '/index') {
+          if (role === 'cliente') {
+            navigate('/cliente/painel', { replace: true });
+          } else if (role && ['grs', 'designer', 'filmmaker'].includes(role)) {
+            // Check if first login for collaborators
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('avatar_url, telefone')
+              .eq('id', user.id)
+              .single();
 
-          if (!profile?.avatar_url && !profile?.telefone) {
-            navigate('/perfil', { replace: true });
+            if (!profile?.avatar_url && !profile?.telefone) {
+              navigate('/perfil', { replace: true });
+            } else {
+              navigate('/dashboard', { replace: true });
+            }
           } else {
             navigate('/dashboard', { replace: true });
           }
-        } else {
-          navigate('/dashboard', { replace: true });
         }
+      } catch (err) {
+        console.error('🚨 SmartRedirect: EXCEÇÃO:', err);
+        navigate('/dashboard', { replace: true });
       }
     };
 

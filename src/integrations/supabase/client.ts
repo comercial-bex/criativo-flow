@@ -5,6 +5,10 @@ import type { Database } from './types';
 const SUPABASE_URL = "https://xvpqgwbktpfodbuhwqhh.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2cHFnd2JrdHBmb2RidWh3cWhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc1NDA0MzUsImV4cCI6MjA3MzExNjQzNX0.slj0vNEGfgTFv_vB_4ieLH1zuHSP_A6dAZsMmHVWnto";
 
+// Verificar configuração do Supabase
+console.log('🔗 Supabase URL:', SUPABASE_URL ? '✅ Configurado' : '❌ FALTANDO');
+console.log('🔗 Supabase Anon Key:', SUPABASE_PUBLISHABLE_KEY ? '✅ Configurado' : '❌ FALTANDO');
+
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
