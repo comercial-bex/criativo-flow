@@ -1,7 +1,7 @@
 // BEX 3.0 - Advanced Service Worker
 // Version: 3.0.0
 
-const CACHE_VERSION = 'bex-v3.0.1';
+const CACHE_VERSION = 'bex-v3.1.0';
 const STATIC_CACHE = 'bex-static-v3';
 const API_CACHE = 'bex-api-v3';
 const PAGES_CACHE = 'bex-pages-v3';
@@ -94,8 +94,12 @@ self.addEventListener('fetch', (event) => {
 
   // Determinar estratégia baseada no tipo de recurso
   if (matchesPattern(request.url, CACHE_PATTERNS.static)) {
-    // ESTRATÉGIA 1: Cache-First para assets estáticos
-    event.respondWith(cacheFirst(request, STATIC_CACHE));
+    // ESTRATÉGIA 1: Network-First para JS/CSS, Cache-First para outros
+    if (request.url.match(/\.(js|css)$/)) {
+      event.respondWith(networkFirst(request, STATIC_CACHE, 1000));
+    } else {
+      event.respondWith(cacheFirst(request, STATIC_CACHE));
+    }
   } else if (matchesPattern(request.url, CACHE_PATTERNS.images)) {
     // Cache-First para imagens
     event.respondWith(cacheFirst(request, IMAGE_CACHE));

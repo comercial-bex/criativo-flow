@@ -101,16 +101,21 @@ const VideoBackground: React.FC<VideoBackgroundProps> = ({ videoUrl, imageUrl })
                     className="absolute inset-0 w-full h-full object-cover"
                 />
             ) : videoUrl ? (
-                <video
-                    ref={videoRef}
-                    className="absolute inset-0 min-w-full min-h-full object-cover w-auto h-auto"
-                    autoPlay
-                    loop
-                    muted
-                    playsInline
-                >
-                    <source src={videoUrl} type="video/mp4" />
-                </video>
+      <video
+        ref={videoRef}
+        className="absolute inset-0 min-w-full min-h-full object-cover w-auto h-auto"
+        autoPlay
+        loop
+        muted
+        playsInline
+        preload="metadata"
+        onError={(e) => {
+          console.warn('Erro ao carregar vídeo de fundo');
+          e.currentTarget.style.display = 'none';
+        }}
+      >
+        <source src={videoUrl} type="video/mp4" />
+      </video>
             ) : null}
         </div>
     );
