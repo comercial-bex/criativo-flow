@@ -46,7 +46,8 @@ export interface CacheEntry {
   key: string;
   data: any;
   timestamp: number;
-  ttl: number;
+  expiresAt: number;
+  tags: string[];
 }
 
 export function openDatabase(): Promise<IDBDatabase> {
