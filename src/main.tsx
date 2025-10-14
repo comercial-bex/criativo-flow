@@ -67,7 +67,7 @@ try {
 
 // Detecção de versão antiga e limpeza automática
 if (import.meta.env.PROD) {
-  const APP_VERSION = '4.0.1';
+  const APP_VERSION = '4.0.2';
   const storedVersion = localStorage.getItem('app-version');
   
   if (storedVersion && storedVersion !== APP_VERSION) {
@@ -84,11 +84,11 @@ if (import.meta.env.PROD) {
   }
   
   localStorage.setItem('app-version', APP_VERSION);
-  console.log(`🎮 BEX Flow v${APP_VERSION} - Gamer Edition`);
-}
-
-// Registrar Service Worker APENAS para mobile/PWA instalado
-if (import.meta.env.PROD) {
+  console.log(`🎮 BEX Flow v${APP_VERSION} - Diagnostic Build`);
+  
+  // ⚠️ TEMPORARIAMENTE DESATIVADO PARA DEBUG DE TELA BRANCA
+  /*
+  // Registrar Service Worker APENAS para mobile/PWA instalado
   const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
                        (window.navigator as any).standalone === true;
   const isMobileUA = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
@@ -106,6 +106,10 @@ if (import.meta.env.PROD) {
     console.log('🌐 Desktop/Tablet Web - PWA desativado, modo navegador padrão');
     syncManager.startMonitoring();
   }
+  */
+  
+  console.log('⚠️ Service Worker temporariamente DESATIVADO para diagnóstico v4.0.2');
+  syncManager.startMonitoring();
 } else {
   console.log('🔧 Modo desenvolvimento - Service Worker desativado');
   syncManager.startMonitoring();

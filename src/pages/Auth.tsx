@@ -89,7 +89,7 @@ export default function Auth() {
   };
 
   return (
-    <div className="relative min-h-screen w-full flex items-center justify-center px-4 py-12">
+    <div className="relative min-h-screen w-full flex items-center justify-center px-4 py-12 bg-black">
       <LoginPage.VideoBackground videoUrl={backgroundVideo} />
       
       {/* Botão Force Update */}

@@ -5,6 +5,7 @@ import { componentTagger } from "lovable-tagger";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
+  base: '/',
   server: {
     host: "::",
     port: 8080,
@@ -20,7 +21,7 @@ export default defineConfig(({ mode }) => ({
     minify: mode === 'production' ? 'terser' : false,
     terserOptions: mode === 'production' ? {
       compress: {
-        drop_console: mode === 'production',
+        drop_console: false,
         drop_debugger: mode === 'production',
         pure_funcs: mode === 'production' ? ['console.log', 'console.debug'] : []
       }

@@ -1,7 +1,7 @@
 // BEX 4.0 - Advanced Service Worker
 // Version: 4.0.0
 
-const CACHE_VERSION = 'bex-v4.0.1';
+const CACHE_VERSION = 'bex-v4.0.2';
 const STATIC_CACHE = 'bex-static-v3';
 const API_CACHE = 'bex-api-v3';
 const PAGES_CACHE = 'bex-pages-v3';
