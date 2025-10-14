@@ -40,6 +40,7 @@ import ProdutosFinanceiro from "./pages/Financeiro/Produtos";
 import ProdutoHistorico from "./pages/Financeiro/ProdutoHistorico";
 import Configuracoes from "./pages/Configuracoes";
 import Funcoes from "./pages/Configuracoes/Funcoes";
+import Monitor from "./pages/Configuracoes/Monitor";
 import Perfil from "./pages/Perfil";
 import Relatorios from "./pages/Relatorios";
 import Planos from "./pages/Planos";
@@ -303,6 +304,12 @@ function App() {
                 <Route path="/configuracoes/funcoes" element={
                   <ProtectedRoute module="configuracoes" action="canEdit" requiredRole="admin">
                     <Layout><Funcoes /></Layout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/configuracoes/monitor" element={
+                  <ProtectedRoute module="configuracoes" requiredRole="admin">
+                    <Layout><Monitor /></Layout>
                   </ProtectedRoute>
                 } />
                 

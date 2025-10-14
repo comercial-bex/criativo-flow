@@ -8509,6 +8509,186 @@ export type Database = {
           },
         ]
       }
+      system_chat_messages: {
+        Row: {
+          attachments: Json | null
+          content: string
+          created_at: string | null
+          id: string
+          role: string
+          thread_id: string | null
+        }
+        Insert: {
+          attachments?: Json | null
+          content: string
+          created_at?: string | null
+          id?: string
+          role: string
+          thread_id?: string | null
+        }
+        Update: {
+          attachments?: Json | null
+          content?: string
+          created_at?: string | null
+          id?: string
+          role?: string
+          thread_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "system_chat_messages_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "system_chat_threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      system_chat_threads: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          id: string
+          tags: Json | null
+          title: string
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          tags?: Json | null
+          title: string
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          tags?: Json | null
+          title?: string
+        }
+        Relationships: []
+      }
+      system_checks: {
+        Row: {
+          check_type: string
+          connection_id: string | null
+          created_at: string | null
+          details: Json | null
+          id: string
+          result: string
+        }
+        Insert: {
+          check_type: string
+          connection_id?: string | null
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          result: string
+        }
+        Update: {
+          check_type?: string
+          connection_id?: string | null
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          result?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "system_checks_connection_id_fkey"
+            columns: ["connection_id"]
+            isOneToOne: false
+            referencedRelation: "system_connections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      system_connections: {
+        Row: {
+          created_at: string | null
+          deps: Json | null
+          error_code: string | null
+          error_message: string | null
+          group: string
+          id: string
+          last_ping: string | null
+          latency_ms: number | null
+          monitoring_enabled: boolean | null
+          name: string
+          related_route: string | null
+          severity: string | null
+          status: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          deps?: Json | null
+          error_code?: string | null
+          error_message?: string | null
+          group: string
+          id?: string
+          last_ping?: string | null
+          latency_ms?: number | null
+          monitoring_enabled?: boolean | null
+          name: string
+          related_route?: string | null
+          severity?: string | null
+          status?: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          deps?: Json | null
+          error_code?: string | null
+          error_message?: string | null
+          group?: string
+          id?: string
+          last_ping?: string | null
+          latency_ms?: number | null
+          monitoring_enabled?: boolean | null
+          name?: string
+          related_route?: string | null
+          severity?: string | null
+          status?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      system_events_bus: {
+        Row: {
+          acknowledged: boolean | null
+          connection_id: string | null
+          created_at: string | null
+          event_type: string
+          id: string
+          payload: Json | null
+        }
+        Insert: {
+          acknowledged?: boolean | null
+          connection_id?: string | null
+          created_at?: string | null
+          event_type: string
+          id?: string
+          payload?: Json | null
+        }
+        Update: {
+          acknowledged?: boolean | null
+          connection_id?: string | null
+          created_at?: string | null
+          event_type?: string
+          id?: string
+          payload?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "system_events_bus_connection_id_fkey"
+            columns: ["connection_id"]
+            isOneToOne: false
+            referencedRelation: "system_connections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       system_health_logs: {
         Row: {
           check_type: string
@@ -8530,6 +8710,39 @@ export type Database = {
           details?: Json | null
           id?: string
           status?: string
+        }
+        Relationships: []
+      }
+      system_playbooks: {
+        Row: {
+          created_at: string | null
+          doc_url: string | null
+          estimated_effort_min: number | null
+          id: string
+          match_error: string
+          steps: Json
+          tags: string[] | null
+          title: string
+        }
+        Insert: {
+          created_at?: string | null
+          doc_url?: string | null
+          estimated_effort_min?: number | null
+          id?: string
+          match_error: string
+          steps: Json
+          tags?: string[] | null
+          title: string
+        }
+        Update: {
+          created_at?: string | null
+          doc_url?: string | null
+          estimated_effort_min?: number | null
+          id?: string
+          match_error?: string
+          steps?: Json
+          tags?: string[] | null
+          title?: string
         }
         Relationships: []
       }
