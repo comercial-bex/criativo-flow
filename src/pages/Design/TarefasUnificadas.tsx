@@ -1,11 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { UniversalKanbanBoard, moduleConfigurations } from '@/components/UniversalKanbanBoard';
 import { TaskDetailsModal } from '@/components/TaskDetailsModal';
@@ -60,46 +55,11 @@ export default function TarefasUnificadasDesign() {
   const [profiles, setProfiles] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedTask, setSelectedTask] = useState<DesignTask | null>(null);
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [createColumnId, setCreateColumnId] = useState<string>('');
-  const [newTask, setNewTask] = useState({
-    titulo: '',
-    descricao: '',
-    prioridade: 'media',
-    data_prazo: '',
-    responsavel_id: '',
-    cliente_id: '',
-    projeto_id: '',
-    tipo_criativo: '',
-    formato: '',
-    dimensoes: ''
-  });
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [selectedColumnId, setSelectedColumnId] = useState<string | null>(null);
 
   const { user } = useAuth();
   const { toast } = useToast();
-
-  // Tipos de conteúdo criativo
-  const tiposCreativos = [
-    'post-feed',
-    'stories',
-    'reels',
-    'banner',
-    'flyer',
-    'logo',
-    'identidade-visual',
-    'website',
-    'material-grafico'
-  ];
-
-  const formatos = [
-    'quadrado-1080x1080',
-    'retrato-1080x1350',
-    'stories-1080x1920',
-    'banner-facebook-1200x630',
-    'banner-instagram-1080x566',
-    'a4-210x297mm',
-    'custom'
-  ];
 
   useEffect(() => {
     fetchData();
@@ -213,111 +173,14 @@ export default function TarefasUnificadasDesign() {
     }
   };
 
-  const handleTaskCreate = (status?: string) => {
-    setCreateColumnId(status || 'briefing');
-    setIsCreateModalOpen(true);
+  const handleTaskCreate = (columnId?: string) => {
+    setSelectedColumnId(columnId || 'briefing');
+    setShowCreateModal(true);
   };
 
-  const createTask = async () => {
-    if (!newTask.titulo.trim()) {
-      toast({
-        title: "Erro",
-        description: "O título é obrigatório.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    try {
-      const tarefaPayload = {
-        titulo: newTask.titulo,
-        descricao: newTask.descricao || null,
-        prioridade: newTask.prioridade as any,
-        prazo_executor: newTask.data_prazo || null,
-        responsavel_id: newTask.responsavel_id || null,
-        cliente_id: newTask.cliente_id || null,
-        projeto_id: newTask.projeto_id || null,
-        setor_responsavel: 'design',
-        status: createColumnId as any,
-        tipo: 'design',
-        observacoes: `Tipo: ${newTask.tipo_criativo} | Formato: ${newTask.formato} | Dimensões: ${newTask.dimensoes}`
-      };
-
-      const { data, error } = await supabase
-        .from('tarefa')
-        .insert(tarefaPayload as any)
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      // Buscar nomes relacionados separadamente
-      let responsavel_nome = '';
-      let cliente_nome = '';
-
-      if (data.responsavel_id) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('nome')
-          .eq('id', data.responsavel_id)
-          .single();
-        responsavel_nome = profile?.nome || '';
-      }
-
-      if (newTask.cliente_id) {
-        const { data: cliente } = await supabase
-          .from('clientes')
-          .select('nome')
-          .eq('id', newTask.cliente_id)
-          .single();
-        cliente_nome = cliente?.nome || '';
-      }
-
-      const processedTask: DesignTask = {
-        id: data.id,
-        titulo: data.titulo,
-        descricao: data.descricao,
-        status: data.status,
-        prioridade: data.prioridade as 'baixa' | 'media' | 'alta',
-        responsavel_nome,
-        cliente_nome,
-        setor_responsavel: 'design',
-        data_prazo: data.prazo_executor,
-        created_at: data.created_at,
-        updated_at: data.updated_at
-      };
-
-      setTasks(prev => [processedTask, ...prev]);
-      
-      // Reset form
-      setNewTask({
-        titulo: '',
-        descricao: '',
-        prioridade: 'media',
-        data_prazo: '',
-        responsavel_id: '',
-        cliente_id: '',
-        projeto_id: '',
-        tipo_criativo: '',
-        formato: '',
-        dimensoes: ''
-      });
-      
-      setIsCreateModalOpen(false);
-
-      toast({
-        title: "Sucesso",
-        description: "Tarefa de design criada com sucesso!",
-      });
-
-    } catch (error) {
-      console.error('Erro ao criar tarefa:', error);
-      toast({
-        title: "Erro",
-        description: "Erro ao criar tarefa.",
-        variant: "destructive",
-      });
-    }
+  const handleTaskCreated = async () => {
+    await fetchData();
+    setShowCreateModal(false);
   };
 
   const handleTaskClick = (task: DesignTask) => {
@@ -395,156 +258,14 @@ export default function TarefasUnificadasDesign() {
           <p className="text-muted-foreground">Gestão visual da produção criativa</p>
         </div>
         
-        <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
-          <DialogTrigger asChild>
-            <Button onClick={() => handleTaskCreate()}>
-              <Plus className="h-4 w-4 mr-2" />
-              Nova Tarefa
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-3xl">
-            <DialogHeader>
-              <DialogTitle>Nova Tarefa de Design</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="titulo">Título *</Label>
-                  <Input
-                    id="titulo"
-                    value={newTask.titulo}
-                    onChange={(e) => setNewTask(prev => ({ ...prev, titulo: e.target.value }))}
-                    placeholder="Ex: Post Instagram - Campanha Verão"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="tipo_criativo">Tipo de Conteúdo</Label>
-                  <Select value={newTask.tipo_criativo} onValueChange={(value) => setNewTask(prev => ({ ...prev, tipo_criativo: value }))}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecionar tipo" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {tiposCreativos.map(tipo => (
-                        <SelectItem key={tipo} value={tipo}>
-                          {tipo.replace('-', ' ').toUpperCase()}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div>
-                <Label htmlFor="descricao">Briefing</Label>
-                <Textarea
-                  id="descricao"
-                  value={newTask.descricao}
-                  onChange={(e) => setNewTask(prev => ({ ...prev, descricao: e.target.value }))}
-                  placeholder="Detalhe o briefing: conceito, cores, estilo, referências..."
-                  rows={4}
-                />
-              </div>
-
-              <div className="grid grid-cols-3 gap-4">
-                <div>
-                  <Label htmlFor="formato">Formato</Label>
-                  <Select value={newTask.formato} onValueChange={(value) => setNewTask(prev => ({ ...prev, formato: value }))}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Formato" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {formatos.map(formato => (
-                        <SelectItem key={formato} value={formato}>
-                          {formato}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label htmlFor="dimensoes">Dimensões Customizadas</Label>
-                  <Input
-                    id="dimensoes"
-                    value={newTask.dimensoes}
-                    onChange={(e) => setNewTask(prev => ({ ...prev, dimensoes: e.target.value }))}
-                    placeholder="Ex: 1920x1080px"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="prioridade">Prioridade</Label>
-                  <Select value={newTask.prioridade} onValueChange={(value) => setNewTask(prev => ({ ...prev, prioridade: value }))}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="baixa">Baixa</SelectItem>
-                      <SelectItem value="media">Média</SelectItem>
-                      <SelectItem value="alta">Alta</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="cliente">Cliente</Label>
-                  <Select value={newTask.cliente_id} onValueChange={(value) => setNewTask(prev => ({ ...prev, cliente_id: value }))}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecionar cliente" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {clientes.map(cliente => (
-                        <SelectItem key={cliente.id} value={cliente.id}>
-                          {cliente.nome}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label htmlFor="responsavel">Designer</Label>
-                  <Select value={newTask.responsavel_id} onValueChange={(value) => setNewTask(prev => ({ ...prev, responsavel_id: value }))}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecionar designer" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {profiles.filter(p => p.especialidade === 'designer').map(profile => (
-                        <SelectItem key={profile.id} value={profile.id}>
-                          {profile.nome}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="data_prazo">Prazo de Entrega</Label>
-                  <Input
-                    id="data_prazo"
-                    type="date"
-                    value={newTask.data_prazo}
-                    onChange={(e) => setNewTask(prev => ({ ...prev, data_prazo: e.target.value }))}
-                  />
-                </div>
-              </div>
-
-              <div className="flex justify-end gap-2 pt-4">
-                <Button variant="outline" onClick={() => setIsCreateModalOpen(false)}>
-                  Cancelar
-                </Button>
-                <Button onClick={createTask}>
-                  Criar Tarefa
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
+        <Button onClick={() => handleTaskCreate()}>
+          <Plus className="h-4 w-4 mr-2" />
+          Nova Tarefa
+        </Button>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardContent className="p-4 flex items-center gap-3">
             <div className="p-2 bg-blue-100 rounded-lg">
@@ -559,8 +280,8 @@ export default function TarefasUnificadasDesign() {
 
         <Card>
           <CardContent className="p-4 flex items-center gap-3">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <Layers className="h-5 w-5 text-blue-600" />
+            <div className="p-2 bg-purple-100 rounded-lg">
+              <Layers className="h-5 w-5 text-purple-600" />
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Briefing</p>
@@ -571,24 +292,12 @@ export default function TarefasUnificadasDesign() {
 
         <Card>
           <CardContent className="p-4 flex items-center gap-3">
-            <div className="p-2 bg-purple-100 rounded-lg">
-              <Palette className="h-5 w-5 text-purple-600" />
+            <div className="p-2 bg-orange-100 rounded-lg">
+              <Palette className="h-5 w-5 text-orange-600" />
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Em Criação</p>
               <p className="text-2xl font-bold">{stats.emCriacao}</p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4 flex items-center gap-3">
-            <div className="p-2 bg-orange-100 rounded-lg">
-              <Eye className="h-5 w-5 text-orange-600" />
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Aprovação</p>
-              <p className="text-2xl font-bold">{stats.aprovacaoCliente}</p>
             </div>
           </CardContent>
         </Card>
@@ -630,6 +339,14 @@ export default function TarefasUnificadasDesign() {
           }}
         />
       )}
+
+      {/* Create Task Modal */}
+      <CreateTaskModal
+        open={showCreateModal}
+        onOpenChange={setShowCreateModal}
+        onTaskCreate={handleTaskCreated}
+        defaultStatus={selectedColumnId || 'briefing'}
+      />
     </div>
   );
 }

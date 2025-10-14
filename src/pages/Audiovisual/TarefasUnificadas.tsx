@@ -146,43 +146,13 @@ const TarefasUnificadasAudiovisual: React.FC = () => {
   };
 
   // Criar nova tarefa
-  const handleTaskCreate = async (taskData: any) => {
-    try {
-      const base = { ...taskData, setor_responsavel: 'audiovisual' };
-      const payload = sanitizeTaskPayload(base);
-      const { data, error } = await supabase
-        .from('tarefa')
-        .insert([{ ...payload, status: 'roteiro' as any }])
-        .select()
-        .single();
+  const handleTaskCreate = (columnId?: string) => {
+    setShowCreateModal(true);
+  };
 
-      if (error) throw error;
-
-      const newTask: any = {
-        ...data,
-        prioridade: data.prioridade as 'baixa' | 'media' | 'alta',
-        responsavel_nome: profiles.find(p => p.id === data.responsavel_id)?.nome || 'Não atribuído',
-        cliente_nome: clients.find(c => c.id === data.projeto_id)?.nome || 'Sem cliente',
-        projeto_nome: projects.find(p => p.id === data.projeto_id)?.nome || 'Sem projeto',
-        setor_responsavel: 'audiovisual'
-      };
-
-      setTasks(prev => [newTask, ...prev]);
-      setShowCreateModal(false);
-
-      toast({
-        title: "Sucesso",
-        description: "Tarefa criada com sucesso",
-      });
-
-    } catch (error) {
-      console.error('Erro ao criar tarefa:', error);
-      toast({
-        title: "Erro",
-        description: "Erro ao criar tarefa",
-        variant: "destructive"
-      });
-    }
+  const handleTaskCreated = async () => {
+    await fetchData();
+    setShowCreateModal(false);
   };
 
   // Atualizar tarefa
@@ -329,15 +299,12 @@ const TarefasUnificadasAudiovisual: React.FC = () => {
         />
       )}
 
-      {showCreateModal && (
-        <CreateTaskModal
-          open={showCreateModal}
-          onOpenChange={(open) => !open && setShowCreateModal(false)}
-          onTaskCreate={handleTaskCreate}
-          projetoId="audiovisual-tasks"
-          defaultStatus="roteiro"
-        />
-      )}
+      <CreateTaskModal
+        open={showCreateModal}
+        onOpenChange={setShowCreateModal}
+        onTaskCreate={handleTaskCreated}
+        defaultStatus="roteiro"
+      />
     </div>
   );
 };
