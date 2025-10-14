@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from './useAuth';
 import { useProfileData } from './useProfileData';
 import { useUserRole } from './useUserRole';
+import { getDashboardForRole } from '@/utils/roleRoutes';
 
 export function useAccessControl() {
   const { user } = useAuth();
@@ -52,12 +53,18 @@ export function useAccessControl() {
     return userProfile?.status === 'pendente_aprovacao';
   };
 
+  const getDefaultRoute = () => {
+    if (!role) return '/dashboard';
+    return getDashboardForRole(role);
+  };
+
   return {
     canAccess: canAccess(),
     isBlocked: isBlocked(),
     isPending: isPending(),
     userProfile,
     loading,
-    role
+    role,
+    defaultRoute: getDefaultRoute(), // ✅ NOVO
   };
 }

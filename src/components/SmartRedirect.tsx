@@ -4,6 +4,7 @@ import { usePermissions } from '@/hooks/usePermissions';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useUserRole } from '@/hooks/useUserRole';
+import { getDashboardForRole } from '@/utils/roleRoutes';
 
 export function SmartRedirect() {
   const { user, loading: authLoading } = useAuth();
@@ -20,6 +21,9 @@ export function SmartRedirect() {
       console.error('🚨 SmartRedirect: TIMEOUT 1.5s - Forçando navegação');
       if (!user) {
         navigate('/auth', { replace: true });
+      } else if (role) {
+        // ✅ Usar dashboard correto baseado na role
+        navigate(getDashboardForRole(role), { replace: true });
       } else {
         navigate('/dashboard', { replace: true });
       }
@@ -50,7 +54,8 @@ export function SmartRedirect() {
 
         if (error) {
           console.error('🚨 SmartRedirect: ERRO na RPC:', error);
-          navigate('/dashboard', { replace: true });
+          const safeDashboard = role ? getDashboardForRole(role) : '/dashboard';
+          navigate(safeDashboard, { replace: true });
           return;
         }
 
@@ -66,10 +71,10 @@ export function SmartRedirect() {
 
         // Se pode acessar, aplicar lógica normal de redirecionamento
         if (location.pathname === '/' || location.pathname === '/index') {
-          if (role === 'cliente') {
-            navigate('/cliente/painel', { replace: true });
-          } else if (role && ['grs', 'designer', 'filmmaker'].includes(role)) {
-            // Check if first login for collaborators
+          const targetDashboard = getDashboardForRole(role || 'cliente');
+          
+          // Verificar primeiro acesso (apenas para colaboradores)
+          if (role && !['cliente', 'admin'].includes(role)) {
             const { data: profile } = await supabase
               .from('profiles')
               .select('avatar_url, telefone')
@@ -78,16 +83,16 @@ export function SmartRedirect() {
 
             if (!profile?.avatar_url && !profile?.telefone) {
               navigate('/perfil', { replace: true });
-            } else {
-              navigate('/dashboard', { replace: true });
+              return;
             }
-          } else {
-            navigate('/dashboard', { replace: true });
           }
+          
+          navigate(targetDashboard, { replace: true });
         }
       } catch (err) {
         console.error('🚨 SmartRedirect: EXCEÇÃO:', err);
-        navigate('/dashboard', { replace: true });
+        const safeDashboard = role ? getDashboardForRole(role) : '/dashboard';
+        navigate(safeDashboard, { replace: true });
       }
     };
 
