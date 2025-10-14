@@ -18,6 +18,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useProjetos } from '@/hooks/useProjetos';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { EspecialistasSelector } from '@/components/EspecialistasSelector';
 
 interface CriarProjetoAvulsoModalProps {
   open: boolean;
@@ -40,6 +41,13 @@ export function CriarProjetoAvulsoModal({
   const [loading, setLoading] = useState(false);
   const [clientes, setClientes] = useState<any[]>([]);
   const [especialistas, setEspecialistas] = useState<any[]>([]);
+  
+  const [especialistasSelecionados, setEspecialistasSelecionados] = useState({
+    grs_id: null,
+    designer_id: null,
+    filmmaker_id: null,
+    gerente_id: null
+  });
 
   const [formData, setFormData] = useState({
     titulo: '',
@@ -59,6 +67,16 @@ export function CriarProjetoAvulsoModal({
       fetchEspecialistas();
     }
   }, [open]);
+  
+  // Sincronizar responsavel_grs_id com especialistas
+  useEffect(() => {
+    if (formData.responsavel_grs_id && !especialistasSelecionados.grs_id) {
+      setEspecialistasSelecionados(prev => ({
+        ...prev,
+        grs_id: formData.responsavel_grs_id
+      }));
+    }
+  }, [formData.responsavel_grs_id]);
 
   useEffect(() => {
     setFormData(prev => ({
@@ -141,13 +159,55 @@ export function CriarProjetoAvulsoModal({
       const novoProjeto = await createProjeto(projetoData);
 
       if (novoProjeto) {
+        // Vincular especialistas ao projeto
+        const especialistasParaSalvar = [];
+        
+        if (especialistasSelecionados.grs_id) {
+          especialistasParaSalvar.push({
+            projeto_id: novoProjeto.id,
+            especialista_id: especialistasSelecionados.grs_id,
+            especialidade: 'grs',
+            is_gerente: especialistasSelecionados.gerente_id === especialistasSelecionados.grs_id
+          });
+        }
+        
+        if (especialistasSelecionados.designer_id) {
+          especialistasParaSalvar.push({
+            projeto_id: novoProjeto.id,
+            especialista_id: especialistasSelecionados.designer_id,
+            especialidade: 'design',
+            is_gerente: especialistasSelecionados.gerente_id === especialistasSelecionados.designer_id
+          });
+        }
+        
+        if (especialistasSelecionados.filmmaker_id) {
+          especialistasParaSalvar.push({
+            projeto_id: novoProjeto.id,
+            especialista_id: especialistasSelecionados.filmmaker_id,
+            especialidade: 'audiovisual',
+            is_gerente: especialistasSelecionados.gerente_id === especialistasSelecionados.filmmaker_id
+          });
+        }
+        
+        // Salvar especialistas no banco
+        if (especialistasParaSalvar.length > 0) {
+          const { error: especialistasError } = await supabase
+            .from('projeto_especialistas')
+            .insert(especialistasParaSalvar);
+          
+          if (especialistasError) {
+            console.error('Erro ao vincular especialistas:', especialistasError);
+            toast({
+              title: "⚠️ Projeto criado com ressalva",
+              description: "Projeto criado, mas houve erro ao vincular especialistas",
+              variant: "default"
+            });
+          }
+        }
+        
         toast({
           title: "✅ Projeto criado!",
-          description: formData.tipo_projeto === 'avulso' 
-            ? "Job avulso criado com sucesso" 
-            : formData.tipo_projeto === 'plano_editorial'
-            ? "Plano editorial criado com sucesso"
-            : "Campanha criada com sucesso"
+          description: `${especialistasParaSalvar.length} especialista(s) vinculado(s)`
         });
         
         onSuccess?.(novoProjeto);
@@ -177,6 +237,13 @@ export function CriarProjetoAvulsoModal({
       responsavel_grs_id: '',
       prioridade: 'media',
       status: 'ativo'
+    });
+    
+    setEspecialistasSelecionados({
+      grs_id: null,
+      designer_id: null,
+      filmmaker_id: null,
+      gerente_id: null
     });
   };
 
@@ -380,6 +447,14 @@ export function CriarProjetoAvulsoModal({
                 </SelectContent>
               </Select>
             </div>
+          </div>
+
+          {/* Equipe do Projeto */}
+          <div className="col-span-2">
+            <EspecialistasSelector
+              value={especialistasSelecionados}
+              onChange={setEspecialistasSelecionados}
+            />
           </div>
 
           {/* Botões */}
