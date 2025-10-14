@@ -14,6 +14,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
+import { ModalCriarEvento } from '@/components/Calendario/ModalCriarEvento';
 
 interface AgendaEvent {
   id: string;
@@ -29,7 +30,8 @@ export function AgendaUnificada() {
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [events, setEvents] = useState<AgendaEvent[]>([]);
-  const [rescheduleEvent, setRescheduleEvent] = useState<any>(null); // FASE 5
+  const [rescheduleEvent, setRescheduleEvent] = useState<any>(null);
+  const [modalNovoEvento, setModalNovoEvento] = useState(false);
 
   const fetchEvents = async () => {
     try {
@@ -168,10 +170,10 @@ export function AgendaUnificada() {
             Visualize todas as captações, tarefas e eventos em um só lugar
           </p>
         </div>
-        <Button>
-          <Plus className="h-4 w-4 mr-2" />
-          Novo Evento
-        </Button>
+          <Button onClick={() => setModalNovoEvento(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Novo Evento
+          </Button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -439,6 +441,15 @@ export function AgendaUnificada() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Modal Criar Evento */}
+      <ModalCriarEvento
+        open={modalNovoEvento}
+        onClose={() => {
+          setModalNovoEvento(false);
+          fetchEvents(); // Recarregar eventos após criar
+        }}
+      />
     </div>
   );
 }
