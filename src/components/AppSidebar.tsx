@@ -154,6 +154,7 @@ export function AppSidebar() {
         { title: "Usuários", url: "/usuarios", icon: Icons.Users2 },
         { title: "Equipamentos", url: "/inventario", icon: Icons.Package },
         { title: "Sistema", url: "/admin/system-health", icon: Icons.Settings },
+        { title: "🔌 Monitor de Conexões", url: "/configuracoes/monitor", icon: Icons.Activity },
         { title: "Relatórios", url: "/relatorios", icon: Icons.FileText },
         { title: "Homologação", url: "/admin/homologacao-mvp", icon: Icons.ClipboardList },
         { title: "Logs", url: "/admin/logs", icon: Icons.Activity },
