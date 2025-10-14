@@ -167,7 +167,7 @@ export function AppSidebar() {
   // Filtrar módulos por permissões e roles
   const getVisibleModules = (): Module[] => {
     if (role === 'admin') {
-      return fallbackModules; // Admin vê tudo
+      return fallbackModules;
     }
 
     return fallbackModules.filter((module) => {
@@ -175,8 +175,14 @@ export function AppSidebar() {
       if (module.roles && module.roles.length > 0) {
         return module.roles.includes(role || "");
       }
-      // Caso contrário, verificar permissões - usar module.id como ModulePermissions
-      return module.permissions?.some(p => hasModuleAccess(p as any)) || false;
+      
+      // Se não tem permissões definidas, não mostrar
+      if (!module.permissions || module.permissions.length === 0) {
+        return false;
+      }
+      
+      // Verificar se o usuário tem TODAS as permissões necessárias
+      return module.permissions.every(p => hasModuleAccess(p as any));
     });
   };
 

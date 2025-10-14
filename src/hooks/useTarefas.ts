@@ -73,14 +73,27 @@ export function useTarefas(options: UseTarefasOptions = {}) {
 
   const createTarefa = async (novaTarefa: Partial<Tarefa>) => {
     try {
+      console.log('🔍 [useTarefas] Criando tarefa:', {
+        user_id: (await supabase.auth.getUser()).data.user?.id,
+        payload: novaTarefa
+      });
+
       const payload = sanitizeTaskPayload(novaTarefa as any);
+      
+      console.log('📦 [useTarefas] Payload sanitizado:', payload);
+      
       const { data, error } = await supabase
         .from('tarefa')
         .insert(payload as any)
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ [useTarefas] Erro ao criar tarefa:', error);
+        throw error;
+      }
+
+      console.log('✅ [useTarefas] Tarefa criada com sucesso:', data);
 
       setTarefas((prev) => [{
         ...data,

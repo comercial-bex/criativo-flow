@@ -102,19 +102,20 @@ export function CriarProjetoAvulsoModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.titulo.trim()) {
+    // Validação de cliente obrigatório PRIMEIRO
+    if (!formData.cliente_id) {
       toast({
-        title: "Campo obrigatório",
-        description: "O título do projeto é obrigatório",
+        title: "❌ Cliente obrigatório",
+        description: "Selecione um cliente antes de criar o projeto",
         variant: "destructive"
       });
       return;
     }
 
-    if (!formData.cliente_id) {
+    if (!formData.titulo.trim()) {
       toast({
         title: "Campo obrigatório",
-        description: "Selecione um cliente",
+        description: "O título do projeto é obrigatório",
         variant: "destructive"
       });
       return;
