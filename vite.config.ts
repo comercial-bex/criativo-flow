@@ -17,7 +17,7 @@ export default defineConfig(({ mode }) => ({
   },
   build: {
     target: 'esnext',
-    minify: mode === 'production' ? 'terser' : 'esbuild',
+    minify: mode === 'production' ? 'terser' : false,
     terserOptions: mode === 'production' ? {
       compress: {
         drop_console: mode === 'production',
@@ -27,19 +27,28 @@ export default defineConfig(({ mode }) => ({
     } : undefined,
     rollupOptions: {
       output: {
-        manualChunks: {
-          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-          'ui-vendor': [
-            '@radix-ui/react-dialog',
-            '@radix-ui/react-select',
-            '@radix-ui/react-dropdown-menu',
-            '@radix-ui/react-tabs',
-            '@radix-ui/react-popover'
-          ],
-          'query-vendor': ['@tanstack/react-query'],
-          'supabase-vendor': ['@supabase/supabase-js'],
-          'chart-vendor': ['recharts'],
-          'utils-vendor': ['date-fns', 'clsx', 'tailwind-merge']
+        manualChunks: (id) => {
+          if (id.includes('node_modules')) {
+            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
+              return 'react-vendor';
+            }
+            if (id.includes('@radix-ui')) {
+              return 'ui-vendor';
+            }
+            if (id.includes('@tanstack')) {
+              return 'query-vendor';
+            }
+            if (id.includes('supabase')) {
+              return 'supabase-vendor';
+            }
+            if (id.includes('recharts')) {
+              return 'chart-vendor';
+            }
+            if (id.includes('date-fns') || id.includes('clsx') || id.includes('tailwind-merge')) {
+              return 'utils-vendor';
+            }
+            return 'vendor';
+          }
         }
       },
       onwarn(warning, warn) {
@@ -51,7 +60,7 @@ export default defineConfig(({ mode }) => ({
       }
     },
     chunkSizeWarningLimit: 1000,
-    sourcemap: mode === 'development'
+    sourcemap: false
   },
   optimizeDeps: {
     include: [
