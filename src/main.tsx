@@ -65,16 +65,25 @@ try {
   }
 }
 
-// Registrar Service Worker e iniciar monitoramento de sync
+// Registrar Service Worker APENAS para mobile/PWA instalado
 if (import.meta.env.PROD) {
-  registerServiceWorker().then((registration) => {
-    if (registration) {
-      console.log('🚀 PWA ativo! Service Worker registrado');
-      syncManager.startMonitoring();
-    }
-  }).catch(error => {
-    console.error('❌ Erro ao ativar PWA:', error);
-  });
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
+                       (window.navigator as any).standalone === true;
+  const isMobileUA = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+  
+  if (isStandalone || isMobileUA) {
+    registerServiceWorker().then((registration) => {
+      if (registration) {
+        console.log('🚀 PWA ativo! Service Worker registrado (Mobile/Standalone)');
+        syncManager.startMonitoring();
+      }
+    }).catch(error => {
+      console.error('❌ Erro ao ativar PWA:', error);
+    });
+  } else {
+    console.log('🌐 Desktop/Tablet Web - PWA desativado, modo navegador padrão');
+    syncManager.startMonitoring();
+  }
 } else {
   console.log('🔧 Modo desenvolvimento - Service Worker desativado');
   syncManager.startMonitoring();
