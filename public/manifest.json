@@ -5,30 +5,48 @@
   "start_url": "/",
   "display": "standalone",
   "background_color": "#1D1D1D",
-  "theme_color": "#54C43D",
+  "theme_color": "#b9ce1d",
   "orientation": "portrait-primary",
   "scope": "/",
   "lang": "pt-BR",
   "icons": [
     {
-      "src": "/logo_bex_verde.png",
+      "src": "/logo-bex-apk.svg",
       "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/svg+xml",
+      "purpose": "any"
     },
     {
-      "src": "/logo_bex_verde.png",
+      "src": "/logo-bex-apk.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/logo-bex-apk.svg",
       "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/logo-bex-apk.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
     }
   ],
   "categories": ["productivity", "business"],
   "screenshots": [
     {
-      "src": "/logo_bex_verde.png",
-      "sizes": "1280x720",
-      "type": "image/png",
+      "src": "/logo-bex-apk.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "/logo-bex-apk.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
       "form_factor": "wide"
     }
   ]
