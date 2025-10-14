@@ -4,21 +4,21 @@ import { BexCard, BexCardContent, BexCardHeader, BexCardTitle } from "@/componen
 import { Button } from "@/components/ui/button";
 import { BexBadge } from "@/components/ui/bex-badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Calendar, Users, Clock, AlertCircle, TrendingUp, BarChart3, Plus, Send, Info, FileText, CheckCircle, Eye, Bell, MessageSquare } from "lucide-react";
+import { Calendar, Users, Clock, AlertCircle, TrendingUp, BarChart3, Plus, Send, Info, FileText, CheckCircle, Eye, Bell, MessageSquare, Zap, Megaphone, ChevronDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { GamificationWidget } from "@/components/GamificationWidget";
 import { CalendarWidget } from "@/components/CalendarWidget";
 import { SimpleHelpModal } from "@/components/SimpleHelpModal";
 import { TarefasPorSetor } from "@/components/TarefasPorSetor";
-import { CreatePlanejamentoModal } from "@/components/CreatePlanejamentoModal";
+import { CriarProjetoAvulsoModal } from "@/components/CriarProjetoAvulsoModal";
 import { useTutorial } from '@/hooks/useTutorial';
 import { TutorialButton } from '@/components/TutorialButton';
 
@@ -59,6 +59,7 @@ export default function GRSDashboard() {
   const [clientesComProjetos, setClientesComProjetos] = useState<ClienteComProjetos[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [tipoModal, setTipoModal] = useState<'avulso' | 'campanha' | 'plano_editorial'>('avulso');
 
   useEffect(() => {
     fetchClientesEProjetos();
@@ -258,17 +259,64 @@ export default function GRSDashboard() {
 
         <div className="flex items-center justify-between">
           <div className="flex gap-2">
-            <Button onClick={() => setDialogOpen(true)} data-tour="criar-planejamento">
-              <Plus className="h-4 w-4 mr-2" />
-              Novo Projeto
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button data-tour="criar-planejamento">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Novo Projeto
+                  <ChevronDown className="h-4 w-4 ml-2" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-72">
+                <DropdownMenuItem 
+                  onClick={() => {
+                    setTipoModal('avulso');
+                    setDialogOpen(true);
+                  }}
+                  className="cursor-pointer"
+                >
+                  <Zap className="h-4 w-4 mr-2 text-green-500" />
+                  <div className="flex flex-col">
+                    <div className="font-medium">Projeto Avulso</div>
+                    <div className="text-xs text-muted-foreground">Job pontual, produto rápido</div>
+                  </div>
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => {
+                    setTipoModal('campanha');
+                    setDialogOpen(true);
+                  }}
+                  className="cursor-pointer"
+                >
+                  <Megaphone className="h-4 w-4 mr-2 text-purple-500" />
+                  <div className="flex flex-col">
+                    <div className="font-medium">Campanha Publicitária</div>
+                    <div className="text-xs text-muted-foreground">Ação com múltiplas peças</div>
+                  </div>
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => {
+                    setTipoModal('plano_editorial');
+                    setDialogOpen(true);
+                  }}
+                  className="cursor-pointer"
+                >
+                  <Calendar className="h-4 w-4 mr-2 text-blue-500" />
+                  <div className="flex flex-col">
+                    <div className="font-medium">Plano Editorial</div>
+                    <div className="text-xs text-muted-foreground">Planejamento mensal de conteúdo</div>
+                  </div>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
 
-        {/* Modal de Criação usando o componente atualizado */}
-        <CreatePlanejamentoModal
+        {/* Modal de Criação */}
+        <CriarProjetoAvulsoModal
           open={dialogOpen}
           onOpenChange={setDialogOpen}
+          tipo={tipoModal}
           onSuccess={() => fetchClientesEProjetos()}
         />
 
