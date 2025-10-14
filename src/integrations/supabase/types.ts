@@ -10567,6 +10567,26 @@ export type Database = {
         | "publicado"
         | "pausado"
         | "cancelado"
+        | "a_fazer"
+        | "em_andamento"
+        | "concluido"
+        | "em_cadastro"
+        | "em_analise"
+        | "em_criacao"
+        | "revisao_interna"
+        | "entregue"
+        | "roteiro"
+        | "pre_producao"
+        | "gravacao"
+        | "pos_producao"
+        | "novo"
+        | "qualificado"
+        | "proposta"
+        | "negociacao"
+        | "fechado"
+        | "contato"
+        | "oportunidade"
+        | "convertido"
       status_type: "ativo" | "inativo" | "pendente" | "arquivado"
       tipo_anexo_enum:
         | "referencia"
@@ -10883,6 +10903,26 @@ export const Constants = {
         "publicado",
         "pausado",
         "cancelado",
+        "a_fazer",
+        "em_andamento",
+        "concluido",
+        "em_cadastro",
+        "em_analise",
+        "em_criacao",
+        "revisao_interna",
+        "entregue",
+        "roteiro",
+        "pre_producao",
+        "gravacao",
+        "pos_producao",
+        "novo",
+        "qualificado",
+        "proposta",
+        "negociacao",
+        "fechado",
+        "contato",
+        "oportunidade",
+        "convertido",
       ],
       status_type: ["ativo", "inativo", "pendente", "arquivado"],
       tipo_anexo_enum: [
