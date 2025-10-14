@@ -23,6 +23,7 @@ import { ConcorrentesSection } from "@/components/OnboardingV3/ConcorrentesSecti
 import { VisualizacaoComparativa } from "@/components/OnboardingV3/VisualizacaoComparativa";
 import { RelatorioIA } from "@/components/OnboardingV3/RelatorioIA";
 import { bexThemeV3 } from "@/styles/bex-theme";
+import { STEP_DESCRIPTIONS } from "@/components/OnboardingV3/step-descriptions";
 
 interface OnboardingFormProps {
   isOpen: boolean;
@@ -170,11 +171,11 @@ export function OnboardingForm({ isOpen, onClose, clienteId, cliente, readOnly =
 
   // Definir steps de navegação
   const steps = [
-    { id: 1, label: 'Identificação', icon: '🏢', completed: currentStep > 1 },
-    { id: 2, label: 'Mercado & SWOT', icon: '📊', completed: currentStep > 2 },
-    { id: 3, label: 'Concorrentes', icon: '🎯', completed: currentStep > 3 },
-    { id: 4, label: 'Análise IA', icon: '🤖', completed: currentStep > 4 },
-    { id: 5, label: 'Relatório', icon: '📄', completed: currentStep > 5 },
+    { id: 1, label: 'Identificação', icon: '🏢', completed: currentStep > 1, description: STEP_DESCRIPTIONS[1] },
+    { id: 2, label: 'Mercado & SWOT', icon: '📊', completed: currentStep > 2, description: STEP_DESCRIPTIONS[2] },
+    { id: 3, label: 'Concorrentes', icon: '🎯', completed: currentStep > 3, description: STEP_DESCRIPTIONS[3] },
+    { id: 4, label: 'Análise IA', icon: '🤖', completed: currentStep > 4, description: STEP_DESCRIPTIONS[4] },
+    { id: 5, label: 'Relatório', icon: '📄', completed: currentStep > 5, description: STEP_DESCRIPTIONS[5] },
   ];
 
   // Carregar dados existentes do onboarding e concorrentes
