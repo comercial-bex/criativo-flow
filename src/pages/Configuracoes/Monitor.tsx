@@ -4,7 +4,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { MonitorGrid } from '@/components/Monitor/MonitorGrid';
 import { MonitorAudit } from '@/components/Monitor/MonitorAudit';
 import { MonitorChat } from '@/components/Monitor/MonitorChat';
-import { Activity, BarChart3, Grid3X3 } from 'lucide-react';
+import { MonitorNetworkMap } from '@/components/Monitor/MonitorNetworkMap';
+import { BarChart3, Grid3X3, Network } from 'lucide-react';
 
 const Monitor = () => {
   useEffect(() => {
@@ -19,10 +20,14 @@ const Monitor = () => {
       />
 
       <Tabs defaultValue="grid" className="space-y-6">
-        <TabsList className="grid w-full max-w-md grid-cols-2">
+        <TabsList className="grid w-full max-w-2xl grid-cols-3">
           <TabsTrigger value="grid" className="gap-2">
             <Grid3X3 className="h-4 w-4" />
             Grade de Status
+          </TabsTrigger>
+          <TabsTrigger value="map" className="gap-2">
+            <Network className="h-4 w-4" />
+            Mapa de Rede
           </TabsTrigger>
           <TabsTrigger value="audit" className="gap-2">
             <BarChart3 className="h-4 w-4" />
@@ -32,6 +37,10 @@ const Monitor = () => {
 
         <TabsContent value="grid">
           <MonitorGrid />
+        </TabsContent>
+
+        <TabsContent value="map">
+          <MonitorNetworkMap />
         </TabsContent>
 
         <TabsContent value="audit">
