@@ -17,14 +17,14 @@ export default defineConfig(({ mode }) => ({
   },
   build: {
     target: 'esnext',
-    minify: 'terser',
-    terserOptions: {
+    minify: mode === 'production' ? 'terser' : 'esbuild',
+    terserOptions: mode === 'production' ? {
       compress: {
         drop_console: mode === 'production',
         drop_debugger: mode === 'production',
         pure_funcs: mode === 'production' ? ['console.log', 'console.debug'] : []
       }
-    },
+    } : undefined,
     rollupOptions: {
       output: {
         manualChunks: {
