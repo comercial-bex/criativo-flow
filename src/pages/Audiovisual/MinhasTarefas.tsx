@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { UniversalKanbanBoard } from '@/components/UniversalKanbanBoard';
-import { TrelloStyleTaskModal } from '@/components/TrelloStyleTaskModal';
+import { TaskDetailsModal } from '@/components/TaskDetailsModal';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { useTutorial } from '@/hooks/useTutorial';
@@ -291,14 +291,17 @@ const MinhasTarefasAudiovisual: React.FC = () => {
 
       {/* Modal de Detalhes */}
       {showTaskModal && selectedTask && (
-        <TrelloStyleTaskModal
-          task={selectedTask}
-          isOpen={showTaskModal}
-          onClose={() => {
-            setShowTaskModal(false);
-            setSelectedTask(null);
+        <TaskDetailsModal
+          open={showTaskModal}
+          onOpenChange={(open) => {
+            setShowTaskModal(open);
+            if (!open) setSelectedTask(null);
           }}
-          onTaskUpdate={(taskId, updates) => handleTaskUpdate(taskId, updates)}
+          task={selectedTask}
+          onTaskUpdate={async (taskId, updates) => {
+            await handleTaskUpdate(taskId, updates);
+            fetchData();
+          }}
         />
       )}
     </div>

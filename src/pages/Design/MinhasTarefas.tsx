@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { UniversalKanbanBoard } from '@/components/UniversalKanbanBoard';
-import { TrelloStyleTaskModal } from '@/components/TrelloStyleTaskModal';
+import { TaskDetailsModal } from '@/components/TaskDetailsModal';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
@@ -289,11 +289,14 @@ export default function MinhasTarefasDesign() {
 
       {/* Modal de Detalhes */}
       {selectedTask && (
-        <TrelloStyleTaskModal
-          task={selectedTask}
-          isOpen={!!selectedTask}
-          onClose={() => setSelectedTask(null)}
-          onTaskUpdate={handleTaskUpdate}
+        <TaskDetailsModal
+          open={!!selectedTask}
+          onOpenChange={(open) => !open && setSelectedTask(null)}
+          task={selectedTask as any}
+          onTaskUpdate={async (taskId, updates) => {
+            await handleTaskUpdate(taskId, updates);
+            fetchData();
+          }}
         />
       )}
     </div>

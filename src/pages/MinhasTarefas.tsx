@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { UniversalKanbanBoard } from '@/components/UniversalKanbanBoard';
-import { TrelloStyleTaskModal } from '@/components/TrelloStyleTaskModal';
+import { TaskDetailsModal } from '@/components/TaskDetailsModal';
 import { 
   CheckSquare, 
   Clock, 
@@ -676,12 +676,20 @@ export default function MinhasTarefas() {
       </Tabs>
 
       {/* Task Modal */}
-      <TrelloStyleTaskModal
-        isOpen={showTaskModal}
-        onClose={() => setShowTaskModal(false)}
-        task={selectedTask}
-        onTaskUpdate={handleTaskUpdate}
-      />
+      {showTaskModal && selectedTask && (
+        <TaskDetailsModal
+          open={showTaskModal}
+          onOpenChange={(open) => {
+            setShowTaskModal(open);
+            if (!open) setSelectedTask(null);
+          }}
+          task={selectedTask as any}
+          onTaskUpdate={async (taskId, updates) => {
+            await handleTaskUpdate(taskId, updates as any);
+            fetchMyTasks();
+          }}
+        />
+      )}
     </div>
   );
 }

@@ -19,6 +19,7 @@ import { ptBR } from "date-fns/locale";
 import { TarefasKanban } from "@/components/TarefasKanban";
 import { CreateTaskDropdown } from "@/components/CreateTaskDropdown";
 import { TaskFilters } from "@/components/TaskFilters";
+import { TaskDetailsModal } from "@/components/TaskDetailsModal";
 
 interface Cliente {
   id: string;
@@ -50,6 +51,8 @@ export default function ProjetoTarefas() {
   const [cliente, setCliente] = useState<Cliente | null>(null);
   const [projeto, setProjeto] = useState<Projeto | null>(null);
   const [loading, setLoading] = useState(true);
+  const [selectedTask, setSelectedTask] = useState<any | null>(null);
+  const [showTaskModal, setShowTaskModal] = useState(false);
   const [filters, setFilters] = useState({});
 
   useEffect(() => {
@@ -266,6 +269,21 @@ export default function ProjetoTarefas() {
           filters={filters}
         />
       </div>
+
+      {/* Task Details Modal */}
+      {showTaskModal && selectedTask && (
+        <TaskDetailsModal
+          open={showTaskModal}
+          onOpenChange={(open) => {
+            setShowTaskModal(open);
+            if (!open) setSelectedTask(null);
+          }}
+          task={selectedTask}
+          onTaskUpdate={async () => {
+            fetchData();
+          }}
+        />
+      )}
     </div>
   );
 }

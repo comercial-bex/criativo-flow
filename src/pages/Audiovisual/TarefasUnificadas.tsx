@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { UniversalKanbanBoard } from '@/components/UniversalKanbanBoard';
-import { TrelloStyleTaskModal } from '@/components/TrelloStyleTaskModal';
+import { TaskDetailsModal } from '@/components/TaskDetailsModal';
 import { CreateTaskModal } from '@/components/CreateTaskModal';
 import { useToast } from '@/hooks/use-toast';
 import { sanitizeTaskPayload } from '@/utils/tarefaUtils';
@@ -315,14 +315,17 @@ const TarefasUnificadasAudiovisual: React.FC = () => {
 
       {/* Modais */}
       {showTaskModal && selectedTask && (
-        <TrelloStyleTaskModal
-          task={selectedTask}
-          isOpen={showTaskModal}
-          onClose={() => {
-            setShowTaskModal(false);
-            setSelectedTask(null);
+        <TaskDetailsModal
+          open={showTaskModal}
+          onOpenChange={(open) => {
+            setShowTaskModal(open);
+            if (!open) setSelectedTask(null);
           }}
-          onTaskUpdate={(taskId, updates) => handleTaskUpdate(taskId, updates)}
+          task={selectedTask}
+          onTaskUpdate={async (taskId, updates) => {
+            await handleTaskUpdate(taskId, updates);
+            fetchData();
+          }}
         />
       )}
 

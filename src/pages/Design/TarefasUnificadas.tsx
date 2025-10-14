@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { UniversalKanbanBoard, moduleConfigurations } from '@/components/UniversalKanbanBoard';
-import { TrelloStyleTaskModal } from '@/components/TrelloStyleTaskModal';
+import { TaskDetailsModal } from '@/components/TaskDetailsModal';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
@@ -619,13 +619,14 @@ export default function TarefasUnificadasDesign() {
 
       {/* Task Detail Modal */}
       {selectedTask && (
-        <TrelloStyleTaskModal
-          isOpen={!!selectedTask}
-          onClose={() => setSelectedTask(null)}
-          task={selectedTask}
-          onTaskUpdate={handleTaskUpdate}
-          profiles={profiles}
-          moduleType="design"
+        <TaskDetailsModal
+          open={!!selectedTask}
+          onOpenChange={(open) => !open && setSelectedTask(null)}
+          task={selectedTask as any}
+          onTaskUpdate={async (taskId, updates) => {
+            await handleTaskUpdate(taskId, updates);
+            fetchData();
+          }}
         />
       )}
     </div>

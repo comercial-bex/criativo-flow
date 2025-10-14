@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { UniversalKanbanBoard, moduleConfigurations } from "@/components/UniversalKanbanBoard";
-import { TrelloStyleTaskModal } from "@/components/TrelloStyleTaskModal";
+import { TaskDetailsModal } from "@/components/TaskDetailsModal";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -383,12 +383,11 @@ export default function ClienteTarefas() {
 
       {/* Modal da tarefa */}
       {selectedTask && (
-        <TrelloStyleTaskModal
-          isOpen={modalOpen}
-          onClose={() => setModalOpen(false)}
-          task={selectedTask}
-          onTaskUpdate={() => {}} // Cliente não pode editar tarefas
-          moduleType="geral"
+        <TaskDetailsModal
+          open={modalOpen}
+          onOpenChange={setModalOpen}
+          task={selectedTask as any}
+          onTaskUpdate={async () => {}} // Cliente não pode editar tarefas
         />
       )}
     </div>

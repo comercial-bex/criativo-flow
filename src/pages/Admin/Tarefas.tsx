@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { UniversalKanbanBoard, moduleConfigurations } from "@/components/UniversalKanbanBoard";
-import { TrelloStyleTaskModal } from "@/components/TrelloStyleTaskModal";
+import { TaskDetailsModal } from "@/components/TaskDetailsModal";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { 
@@ -485,16 +485,16 @@ export default function AdminTarefas() {
 
       {/* Modal da tarefa */}
       {selectedTask && (
-        <TrelloStyleTaskModal
-          isOpen={modalOpen}
-          onClose={() => setModalOpen(false)}
-          task={selectedTask}
-          onTaskUpdate={(taskId, updates) => {
+        <TaskDetailsModal
+          open={modalOpen}
+          onOpenChange={setModalOpen}
+          task={selectedTask as any}
+          onTaskUpdate={async (taskId, updates) => {
             setTasks(prev => prev.map(t => 
               t.id === taskId ? { ...t, ...updates } : t
             ));
+            fetchAllTasks();
           }}
-          moduleType="geral"
         />
       )}
     </div>
