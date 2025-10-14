@@ -16,14 +16,13 @@ import { useColaboradorTempData } from '@/hooks/useColaboradorTempData';
 import { useQueryClient } from '@tanstack/react-query';
 import { useEspecialistas } from '@/hooks/useEspecialistas';
 import { formatCPF, isValidCPF, cleanCPF } from '@/lib/cpf-utils';
-import { Plus, Search, User, UserCheck, UserX, Pencil, AlertCircle, Database } from 'lucide-react';
+import { Plus, User, UserCheck, UserX, Pencil, AlertCircle, Database } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { smartToast } from '@/lib/smart-toast';
 
 export function PessoasManager() {
   const queryClient = useQueryClient();
   const [filtro, setFiltro] = useState<'colaborador' | 'especialista' | 'cliente' | undefined>();
-  const [busca, setBusca] = useState('');
   const [modalAberto, setModalAberto] = useState(false);
   const [pessoaEditando, setPessoaEditando] = useState<Pessoa | null>(null);
   const [cpfError, setCpfError] = useState<string>('');
@@ -64,11 +63,6 @@ export function PessoasManager() {
     }
   }, [tempDataSelecionado]);
 
-  const pessoasFiltradas = pessoas.filter((p) =>
-    p.nome.toLowerCase().includes(busca.toLowerCase()) ||
-    p.cpf?.includes(busca) ||
-    p.email?.toLowerCase().includes(busca.toLowerCase())
-  );
 
   // FASE 2: Função para inferir papéis automaticamente
   const inferirPapeis = (data: Partial<Pessoa>): string[] => {
@@ -614,16 +608,10 @@ export function PessoasManager() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            <div className="flex gap-4">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Buscar por nome, CPF ou email..."
-                  value={busca}
-                  onChange={(e) => setBusca(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
+            <div className="flex justify-between items-center">
+              <p className="text-sm text-muted-foreground">
+                Use a busca no topo para encontrar pessoas rapidamente
+              </p>
               <Select value={filtro || 'todos'} onValueChange={(v) => setFiltro(v === 'todos' ? undefined : v as any)}>
                 <SelectTrigger className="w-48">
                   <SelectValue />
@@ -655,14 +643,14 @@ export function PessoasManager() {
                       Carregando...
                     </TableCell>
                   </TableRow>
-                ) : pessoasFiltradas.length === 0 ? (
+                ) : pessoas.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={6} className="text-center">
                       Nenhuma pessoa encontrada
                     </TableCell>
                   </TableRow>
                 ) : (
-                  pessoasFiltradas.map((pessoa) => (
+                  pessoas.map((pessoa) => (
                     <TableRow key={pessoa.id}>
                       <TableCell className="font-medium">{pessoa.nome}</TableCell>
                       <TableCell>{pessoa.cpf}</TableCell>
