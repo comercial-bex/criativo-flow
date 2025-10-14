@@ -88,14 +88,14 @@ export default function Especialistas() {
   const fetchEspecialistas = useCallback(async () => {
     setLoading(true);
     try {
-      // Buscar ALL profiles com user_roles (incluindo admins SEM especialidade)
+      // ✅ FASE 1: LEFT JOIN para incluir usuários sem role (pendentes)
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select(`
           *,
-          user_roles!inner(role)
+          user_roles(role)
         `)
-        .neq('user_roles.role', 'cliente'); // Excluir apenas clientes
+        .or('user_roles.role.neq.cliente,user_roles.is.null'); // Excluir apenas clientes confirmados
 
       if (profilesError) {
         console.error('❌ Erro ao buscar profiles:', profilesError);

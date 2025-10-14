@@ -190,6 +190,12 @@ export function useSignUpWithValidation() {
             status: 'pendente_aprovacao'
           }).eq('id', newProfile.id);
 
+          // ✅ FASE 2: Criar role temporária para permitir visualização
+          await supabase.from('user_roles').insert({
+            user_id: newProfile.id,
+            role: 'atendimento' // Role temporária - será substituída na aprovação
+          });
+
         } else {
           // Cliente - aguarda vinculação a empresa
           const { error: pessoaError } = await supabase
@@ -212,6 +218,12 @@ export function useSignUpWithValidation() {
             role_requested: data.departamento,
             status: 'pendente_aprovacao'
           }).eq('id', newProfile.id);
+
+          // ✅ FASE 2: Criar role temporária para clientes pendentes
+          await supabase.from('user_roles').insert({
+            user_id: newProfile.id,
+            role: 'cliente' // Role temporária
+          });
         }
       }
 
