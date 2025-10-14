@@ -98,6 +98,7 @@ import Propostas from "./pages/Administrativo/Propostas";
 import Contratos from "./pages/Admin/Contratos";
 import ContratoForm from "./pages/Admin/ContratoForm";
 import ContratoDetails from "./pages/Admin/ContratoDetails";
+import ApresentacaoRelatorio from "./pages/ApresentacaoRelatorio";
 import ContractTemplates from "./pages/Admin/ContractTemplates";
 import ContractTemplateForm from "./pages/Admin/ContractTemplateForm";
 import OrcamentoDetails from "./pages/Admin/OrcamentoDetails";
@@ -223,6 +224,7 @@ function App() {
                 {/* Public routes */}
                 <Route path="/auth" element={<PublicRoute><Auth /></PublicRoute>} />
                 <Route path="/signup" element={<PublicRoute><SignUp /></PublicRoute>} />
+                <Route path="/apresentacao/:link_hash" element={<ApresentacaoRelatorio />} />
 
                 {/* Smart redirect for root path */}
                 <Route path="/" element={<SmartRedirect />} />

@@ -1,4 +1,5 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { createClient } from 'jsr:@supabase/supabase-js@2';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -11,7 +12,12 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { clienteNome, clienteAnalise, concorrentesAnalises } = await req.json();
+    const { clienteId, clienteNome, clienteAnalise, concorrentesAnalises } = await req.json();
+    
+    // Inicializar cliente Supabase
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
     
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
@@ -131,10 +137,60 @@ Gere o relatório completo seguindo a estrutura especificada.`;
 
     console.log('✅ Relatório gerado');
 
+    // Contar versões existentes para este cliente
+    const { count: versaoAtual } = await supabase
+      .from('relatorios_benchmark')
+      .select('*', { count: 'exact', head: true })
+      .eq('cliente_id', clienteId);
+
+    const novaVersao = (versaoAtual || 0) + 1;
+
+    // Extrair user_id do token de autenticação se disponível
+    let userId = null;
+    const authHeader = req.headers.get('authorization');
+    if (authHeader) {
+      try {
+        const { data: { user } } = await supabase.auth.getUser(authHeader.replace('Bearer ', ''));
+        userId = user?.id;
+      } catch (e) {
+        console.log('Sem autenticação - relatório público');
+      }
+    }
+
+    // Salvar relatório na tabela
+    const { data: novoRelatorio, error: dbError } = await supabase
+      .from('relatorios_benchmark')
+      .insert({
+        cliente_id: clienteId,
+        titulo: `Relatório de Benchmark Digital - ${clienteNome}`,
+        relatorio_markdown: relatorioMarkdown,
+        cliente_analise: clienteAnalise,
+        concorrentes_analises: concorrentesAnalises,
+        versao: novaVersao,
+        gerado_por: userId
+      })
+      .select('id, link_hash, versao')
+      .single();
+
+    if (dbError) {
+      console.error('❌ Erro ao salvar relatório:', dbError);
+      throw new Error('Erro ao salvar relatório no banco de dados');
+    }
+
+    console.log('✅ Relatório salvo:', novoRelatorio.id);
+
+    // Construir URL da apresentação
+    const baseUrl = supabaseUrl.replace('.supabase.co', '');
+    const linkApresentacao = `${baseUrl}/apresentacao/${novoRelatorio.link_hash}`;
+
     return new Response(
       JSON.stringify({ 
         success: true, 
         relatorio: relatorioMarkdown,
+        relatorio_id: novoRelatorio.id,
+        link_hash: novoRelatorio.link_hash,
+        versao: novoRelatorio.versao,
+        link_apresentacao: linkApresentacao,
         timestamp: new Date().toISOString()
       }),
       { 

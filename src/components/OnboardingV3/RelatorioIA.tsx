@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
@@ -18,6 +18,25 @@ interface Props {
 export function RelatorioIA({ clienteId, concorrentes, onRelatorioGenerated }: Props) {
   const [loading, setLoading] = useState(false);
   const [relatorio, setRelatorio] = useState<string>('');
+  const [linkApresentacao, setLinkApresentacao] = useState<string>('');
+  const [historico, setHistorico] = useState<any[]>([]);
+
+  // Carregar histórico de relatórios
+  const loadHistorico = async () => {
+    const { data } = await supabase
+      .from('relatorios_benchmark')
+      .select('id, titulo, versao, gerado_em, link_hash')
+      .eq('cliente_id', clienteId)
+      .eq('is_ativo', true)
+      .order('gerado_em', { ascending: false })
+      .limit(5);
+      
+    if (data) setHistorico(data);
+  };
+
+  useEffect(() => {
+    loadHistorico();
+  }, [clienteId]);
 
   const handleGenerateReport = async () => {
     setLoading(true);
@@ -72,6 +91,7 @@ export function RelatorioIA({ clienteId, concorrentes, onRelatorioGenerated }: P
 
       const { data: result, error } = await supabase.functions.invoke('generate-competitive-report', {
         body: {
+          clienteId,
           clienteNome: clienteData?.nome || 'Cliente',
           clienteAnalise: analiseData?.cliente_analise || {},
           concorrentesAnalises
@@ -87,22 +107,11 @@ export function RelatorioIA({ clienteId, concorrentes, onRelatorioGenerated }: P
 
       if (result.success) {
         setRelatorio(result.relatorio);
+        setLinkApresentacao(result.link_apresentacao);
         onRelatorioGenerated?.(result.relatorio);
 
-        // Salvar relatório no banco
-        await supabase
-          .from('analise_competitiva')
-          .upsert({
-            cliente_id: clienteId,
-            cliente_analise: analiseData?.cliente_analise || {},
-            relatorio_markdown: result.relatorio,
-            gerado_em: result.timestamp,
-            versao: 1
-          }, {
-            onConflict: 'cliente_id'
-          });
-
         toast.success('Relatório gerado com sucesso!');
+        loadHistorico(); // Recarregar histórico
       } else {
         throw new Error(result.error || 'Erro ao gerar relatório');
       }
@@ -248,6 +257,25 @@ export function RelatorioIA({ clienteId, concorrentes, onRelatorioGenerated }: P
         </Card>
       )}
 
+      {linkApresentacao && (
+        <Card style={{ background: bexThemeV3.colors.surface }}>
+          <CardContent className="py-6">
+            <Button
+              onClick={() => window.open(linkApresentacao, '_blank')}
+              className="w-full"
+              size="lg"
+              style={{
+                background: `linear-gradient(to right, ${bexThemeV3.colors.primary}, ${bexThemeV3.colors.accent})`,
+                color: bexThemeV3.colors.bg
+              }}
+            >
+              <FileText className="h-5 w-5 mr-2" />
+              Abrir Apresentação One-Page
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
       {relatorio && !loading && (
         <Card style={{ background: bexThemeV3.colors.surface }}>
           <CardHeader>
@@ -262,6 +290,35 @@ export function RelatorioIA({ clienteId, concorrentes, onRelatorioGenerated }: P
               }}
             >
               <ReactMarkdown>{relatorio}</ReactMarkdown>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {historico.length > 0 && (
+        <Card style={{ background: bexThemeV3.colors.surface }}>
+          <CardHeader>
+            <CardTitle>Relatórios Anteriores</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {historico.map(rel => (
+                <div key={rel.id} className="flex items-center justify-between p-3 bg-muted/50 rounded">
+                  <div>
+                    <p className="font-medium">{rel.titulo}</p>
+                    <p className="text-sm text-muted-foreground">
+                      Versão {rel.versao} • {new Date(rel.gerado_em).toLocaleDateString('pt-BR')}
+                    </p>
+                  </div>
+                  <Button
+                    onClick={() => window.open(`/apresentacao/${rel.link_hash}`, '_blank')}
+                    variant="outline"
+                  >
+                    <FileText className="h-4 w-4 mr-2" />
+                    Abrir Apresentação
+                  </Button>
+                </div>
+              ))}
             </div>
           </CardContent>
         </Card>

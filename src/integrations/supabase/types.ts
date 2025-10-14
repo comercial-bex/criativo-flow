@@ -7365,6 +7365,76 @@ export type Database = {
           },
         ]
       }
+      relatorios_benchmark: {
+        Row: {
+          cliente_analise: Json
+          cliente_id: string
+          concorrentes_analises: Json
+          created_at: string
+          gerado_em: string
+          gerado_por: string | null
+          id: string
+          is_ativo: boolean
+          link_hash: string
+          relatorio_markdown: string
+          titulo: string
+          updated_at: string
+          versao: number
+        }
+        Insert: {
+          cliente_analise?: Json
+          cliente_id: string
+          concorrentes_analises?: Json
+          created_at?: string
+          gerado_em?: string
+          gerado_por?: string | null
+          id?: string
+          is_ativo?: boolean
+          link_hash?: string
+          relatorio_markdown: string
+          titulo: string
+          updated_at?: string
+          versao?: number
+        }
+        Update: {
+          cliente_analise?: Json
+          cliente_id?: string
+          concorrentes_analises?: Json
+          created_at?: string
+          gerado_em?: string
+          gerado_por?: string | null
+          id?: string
+          is_ativo?: boolean
+          link_hash?: string
+          relatorio_markdown?: string
+          titulo?: string
+          updated_at?: string
+          versao?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "relatorios_benchmark_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "relatorios_benchmark_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "mv_grs_dashboard_metrics"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "relatorios_benchmark_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "vw_client_metrics"
+            referencedColumns: ["cliente_id"]
+          },
+        ]
+      }
       rh_cargos: {
         Row: {
           ativo: boolean | null
