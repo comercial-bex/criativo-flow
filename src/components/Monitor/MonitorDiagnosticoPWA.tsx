@@ -281,6 +281,28 @@ export function MonitorDiagnosticoPWA() {
                 Forçar Ativação do Service Worker
               </Button>
             )}
+            
+            <Button 
+              onClick={async () => {
+                console.log('🧹 Limpando todos os caches...');
+                
+                // Limpar todos os caches
+                const cacheNames = await caches.keys();
+                await Promise.all(cacheNames.map(name => caches.delete(name)));
+                
+                // Desregistrar Service Worker
+                const registrations = await navigator.serviceWorker.getRegistrations();
+                await Promise.all(registrations.map(r => r.unregister()));
+                
+                // Recarregar com force refresh
+                window.location.href = window.location.href.split('?')[0] + '?force-refresh=true';
+              }}
+              variant="outline" 
+              size="sm"
+              className="w-full mt-2"
+            >
+              🧹 Limpar Cache e Recarregar
+            </Button>
           </div>
         </Card>
 

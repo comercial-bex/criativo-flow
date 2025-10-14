@@ -1,7 +1,7 @@
 // BEX 4.0 - Advanced Service Worker
-// Version: 4.0.4
+// Version: 4.0.6
 
-const CACHE_VERSION = 'bex-v4.0.4';
+const CACHE_VERSION = 'bex-v4.0.6';
 const STATIC_CACHE = 'bex-static-v3';
 const API_CACHE = 'bex-api-v3';
 const PAGES_CACHE = 'bex-pages-v3';
@@ -94,9 +94,17 @@ self.addEventListener('fetch', (event) => {
 
   // Determinar estratégia baseada no tipo de recurso
   if (matchesPattern(request.url, CACHE_PATTERNS.static)) {
+    // 🆕 FASE 2: Detectar chunks dinâmicos e usar Network-Only
+    if (request.url.match(/\/assets\/js\/[A-Z][a-z]+-[A-Za-z0-9]+\.js$/)) {
+      console.log('[SW] Dynamic chunk detected, using network-only:', request.url);
+      event.respondWith(fetch(request)); // Network-only, sem cache
+      return;
+    }
+    
     // ESTRATÉGIA 1: Network-First para JS/CSS, Cache-First para outros
     if (request.url.match(/\.(js|css)$/)) {
-      event.respondWith(networkFirst(request, STATIC_CACHE, 500));
+      // 🆕 FASE 1: Aumentar timeout para 5000ms
+      event.respondWith(networkFirst(request, STATIC_CACHE, 5000));
     } else {
       event.respondWith(cacheFirst(request, STATIC_CACHE));
     }
@@ -195,14 +203,24 @@ async function networkFirst(request, cacheName, timeout = 3000) {
     // Tentar buscar da rede com timeout
     const response = await fetchWithTimeout(request, timeout);
     
-    // Cachear resposta bem-sucedida
-    if (response.ok) {
+    // 🆕 FASE 4: Não cachear erros 404/500
+    if (response.ok && response.status === 200) {
       cache.put(request, response.clone());
+    } else if (response.status === 404) {
+      console.warn('[SW] Chunk não encontrado (404):', request.url);
+      // Não usar cache para 404 - deixar erro propagar
+      return response;
     }
     
     return response;
   } catch (error) {
     console.log('[SW] Network failed, trying cache:', request.url);
+    
+    // 🆕 FASE 4: Para chunks JS dinâmicos, NÃO usar cache desatualizado
+    if (request.url.match(/\/assets\/js\/[A-Z][a-z]+-[A-Za-z0-9]+\.js$/)) {
+      console.error('[SW] Dynamic chunk failed, not using stale cache');
+      throw error; // Deixar React Suspense lidar com erro
+    }
     
     // Fallback para cache
     const cached = await cache.match(request);

@@ -40,16 +40,25 @@ export async function registerServiceWorker(): Promise<ServiceWorkerRegistration
           console.log('📊 Estado do novo SW:', newWorker.state);
 
           if (newWorker.state === 'installed') {
-            // Nova versão instalada - atualizar automaticamente
-            console.log('🆕 Nova versão do app disponível! Atualizando...');
+            // 🆕 FASE 3: Limpar TODOS os caches antes de atualizar
+            console.log('🆕 Nova versão do app disponível! Limpando cache...');
             
-            // Pedir ao novo SW para pular a espera (auto-update)
-            newWorker.postMessage({ type: 'SKIP_WAITING' });
-            
-            // Recarregar a página quando o novo SW estiver ativo
-            navigator.serviceWorker.addEventListener('controllerchange', () => {
-              console.log('🔄 Recarregando para aplicar atualização...');
-              window.location.reload();
+            caches.keys().then(cacheNames => {
+              return Promise.all(
+                cacheNames.map(name => {
+                  console.log('[SW] Deletando cache antigo:', name);
+                  return caches.delete(name);
+                })
+              );
+            }).then(() => {
+              // Pedir ao novo SW para pular a espera
+              newWorker.postMessage({ type: 'SKIP_WAITING' });
+              
+              // Recarregar após limpar cache (usar 'once' para evitar loops)
+              navigator.serviceWorker.addEventListener('controllerchange', () => {
+                console.log('🔄 Cache limpo, recarregando...');
+                window.location.reload();
+              }, { once: true });
             });
           }
         });
