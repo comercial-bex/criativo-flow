@@ -71,14 +71,14 @@ try {
 
 // Detecção de versão antiga e limpeza automática
 if (import.meta.env.PROD) {
-  const APP_VERSION = '4.0.3';
+  const APP_VERSION = '4.0.4';
   const storedVersion = localStorage.getItem('app-version');
   
   if (storedVersion && storedVersion !== APP_VERSION) {
     console.log(`🔄 Nova versão detectada (${storedVersion} → ${APP_VERSION}), limpando cache antigo...`);
     caches.keys().then(keys => 
       Promise.all(keys.map(k => {
-        if (k.includes('bex-v3') || k.includes('bex-v2') || k.includes('bex-v4.0.2')) {
+        if (k.includes('bex-v3') || k.includes('bex-v2') || k.includes('bex-v4.0.2') || k.includes('bex-v4.0.3')) {
           console.log(`🧹 Removendo cache antigo: ${k}`);
           return caches.delete(k);
         }
@@ -88,32 +88,33 @@ if (import.meta.env.PROD) {
   }
   
   localStorage.setItem('app-version', APP_VERSION);
-  console.log(`🎮 BEX Flow v${APP_VERSION} - Boot Optimization`);
+  console.log(`🎮 BEX Flow v${APP_VERSION} - Performance Fix`);
   
-  // ⚠️ TEMPORARIAMENTE DESATIVADO PARA DEBUG DE TELA BRANCA
-  /*
-  // Registrar Service Worker APENAS para mobile/PWA instalado
-  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
-                       (window.navigator as any).standalone === true;
-  const isMobileUA = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
-  
-  if (isStandalone || isMobileUA) {
-    registerServiceWorker().then((registration) => {
-      if (registration) {
-        console.log('🚀 PWA ativo! Service Worker registrado (Mobile/Standalone)');
-        syncManager.startMonitoring();
-      }
-    }).catch(error => {
-      console.error('❌ Erro ao ativar PWA:', error);
-    });
-  } else {
-    console.log('🌐 Desktop/Tablet Web - PWA desativado, modo navegador padrão');
+  // ✅ Service Worker REATIVADO
+  registerServiceWorker().then((registration) => {
+    if (registration) {
+      console.log('✅ Service Worker ativo');
+      syncManager.startMonitoring();
+    }
+  }).catch(error => {
+    console.error('❌ Erro ao registrar SW:', error);
     syncManager.startMonitoring();
-  }
-  */
-  
-  console.log('⚠️ Service Worker temporariamente DESATIVADO para diagnóstico v4.0.2');
-  syncManager.startMonitoring();
+  });
+
+  // 📊 Diagnóstico de performance no boot
+  window.addEventListener('load', () => {
+    const perfData = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
+    if (perfData) {
+      console.log('📊 [BOOT METRICS]', {
+        'DNS': `${perfData.domainLookupEnd - perfData.domainLookupStart}ms`,
+        'TCP': `${perfData.connectEnd - perfData.connectStart}ms`,
+        'TTFB': `${perfData.responseStart - perfData.requestStart}ms`,
+        'Download': `${perfData.responseEnd - perfData.responseStart}ms`,
+        'DOM Processing': `${perfData.domComplete - perfData.domContentLoadedEventStart}ms`,
+        'Total Load': `${perfData.loadEventEnd - perfData.fetchStart}ms`
+      });
+    }
+  });
 } else {
   console.log('🔧 Modo desenvolvimento - Service Worker desativado');
   syncManager.startMonitoring();

@@ -108,11 +108,26 @@ export async function collectPWAMetrics(): Promise<PWAMetrics> {
     console.error('Erro ao coletar métricas:', error);
   }
 
-  // Coletar tamanho do bundle
+  // Coletar tamanho do bundle (melhorado)
   const resources = performance.getEntriesByType('resource') as PerformanceResourceTiming[];
-  metrics.bundleSize = resources
-    .filter(r => r.name.includes('.js') || r.name.includes('.css'))
-    .reduce((total, r) => total + (r.transferSize || 0), 0);
+  let bundleSize = 0;
+  
+  resources.forEach(resource => {
+    // Filtrar apenas JS/CSS do bundle
+    if (resource.name.includes('/assets/') && 
+        (resource.name.endsWith('.js') || resource.name.endsWith('.css'))) {
+      bundleSize += resource.transferSize || resource.encodedBodySize || 0;
+    }
+  });
+  
+  // Se ainda for 0, estimar baseado em recursos JS/CSS
+  if (bundleSize === 0 && resources.length > 0) {
+    bundleSize = resources
+      .filter(r => r.initiatorType === 'script' || r.initiatorType === 'link')
+      .reduce((sum, r) => sum + (r.transferSize || r.encodedBodySize || 100000), 0);
+  }
+  
+  metrics.bundleSize = bundleSize;
 
   // Cache hit rate (aproximado)
   const cachedResources = resources.filter(r => r.transferSize === 0).length;

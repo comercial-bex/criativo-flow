@@ -84,10 +84,18 @@ const VideoBackground: React.FC<VideoBackgroundProps> = ({ videoUrl, imageUrl })
     const videoRef = useRef<HTMLVideoElement>(null);
 
     useEffect(() => {
-        if (videoRef.current && videoUrl) {
-            videoRef.current.play().catch(error => {
-                console.error("Video autoplay failed:", error);
+        const video = videoRef.current;
+        if (video && videoUrl && 'IntersectionObserver' in window) {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        video.load();
+                        observer.disconnect();
+                    }
+                });
             });
+            observer.observe(video);
+            return () => observer.disconnect();
         }
     }, [videoUrl]);
 
@@ -101,22 +109,23 @@ const VideoBackground: React.FC<VideoBackgroundProps> = ({ videoUrl, imageUrl })
                     className="absolute inset-0 w-full h-full object-cover"
                 />
             ) : videoUrl ? (
-      <video
-        ref={videoRef}
-        className="absolute inset-0 min-w-full min-h-full object-cover w-auto h-auto"
-        poster="/logo_bex_verde.png"
-        autoPlay
-        loop
-        muted
-        playsInline
-        preload="metadata"
-        onError={(e) => {
-          console.warn('Erro ao carregar vídeo de fundo');
-          e.currentTarget.style.display = 'none';
-        }}
-      >
-        <source src={videoUrl} type="video/mp4" />
-      </video>
+                <video
+                    ref={videoRef}
+                    className="absolute inset-0 min-w-full min-h-full object-cover w-auto h-auto"
+                    poster="/logo_bex_verde.png"
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    preload="none"
+                    style={{ willChange: 'opacity' }}
+                    onError={(e) => {
+                        console.warn('Erro ao carregar vídeo de fundo');
+                        e.currentTarget.style.display = 'none';
+                    }}
+                >
+                    <source src={videoUrl} type="video/mp4" />
+                </video>
             ) : null}
         </div>
     );
