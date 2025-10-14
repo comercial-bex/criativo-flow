@@ -5,7 +5,8 @@ import { MonitorGrid } from '@/components/Monitor/MonitorGrid';
 import { MonitorAudit } from '@/components/Monitor/MonitorAudit';
 import { MonitorChat } from '@/components/Monitor/MonitorChat';
 import { MonitorNetworkMap } from '@/components/Monitor/MonitorNetworkMap';
-import { BarChart3, Grid3X3, Network } from 'lucide-react';
+import { MonitorDiagnosticoPWA } from '@/components/Monitor/MonitorDiagnosticoPWA';
+import { BarChart3, Grid3X3, Network, Activity } from 'lucide-react';
 
 const Monitor = () => {
   useEffect(() => {
@@ -20,7 +21,7 @@ const Monitor = () => {
       />
 
       <Tabs defaultValue="grid" className="space-y-6">
-        <TabsList className="grid w-full max-w-2xl grid-cols-3">
+        <TabsList className="grid w-full max-w-3xl grid-cols-4">
           <TabsTrigger value="grid" className="gap-2">
             <Grid3X3 className="h-4 w-4" />
             Grade de Status
@@ -29,9 +30,13 @@ const Monitor = () => {
             <Network className="h-4 w-4" />
             Mapa de Rede
           </TabsTrigger>
+          <TabsTrigger value="pwa" className="gap-2">
+            <Activity className="h-4 w-4" />
+            Diagnóstico PWA
+          </TabsTrigger>
           <TabsTrigger value="audit" className="gap-2">
             <BarChart3 className="h-4 w-4" />
-            Auditoria & Diagnóstico
+            Auditoria
           </TabsTrigger>
         </TabsList>
 
@@ -41,6 +46,10 @@ const Monitor = () => {
 
         <TabsContent value="map">
           <MonitorNetworkMap />
+        </TabsContent>
+
+        <TabsContent value="pwa">
+          <MonitorDiagnosticoPWA />
         </TabsContent>
 
         <TabsContent value="audit">
