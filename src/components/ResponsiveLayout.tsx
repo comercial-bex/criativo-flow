@@ -7,17 +7,16 @@ import { useDeviceType } from "@/hooks/useDeviceType";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useState } from "react";
-
 interface ResponsiveLayoutProps {
   children: React.ReactNode;
 }
-
-export function ResponsiveLayout({ children }: ResponsiveLayoutProps) {
+export function ResponsiveLayout({
+  children
+}: ResponsiveLayoutProps) {
   const deviceType = useDeviceType();
   const isMobile = deviceType === 'mobile';
   const isTablet = deviceType === 'tablet';
   const [showVersion, setShowVersion] = useState(false);
-  
   const handleForceUpdate = async () => {
     try {
       const keys = await caches.keys();
@@ -30,10 +29,8 @@ export function ResponsiveLayout({ children }: ResponsiveLayoutProps) {
       toast.error('Erro ao limpar cache');
     }
   };
-
   if (isMobile) {
-    return (
-      <div className="min-h-screen flex flex-col w-full bg-background">
+    return <div className="min-h-screen flex flex-col w-full bg-background">
         {/* Mobile Header - Compacto */}
         <header className="h-14 flex items-center border-b border-bex/20 bg-black/95 px-4 sticky top-0 z-50 shadow-lg shadow-bex/10 safe-area-inset-top ios-optimized-fixed">
           <GlobalHeader />
@@ -49,12 +46,9 @@ export function ResponsiveLayout({ children }: ResponsiveLayoutProps) {
         
         {/* PWA Install Prompt */}
         <PWAInstallPrompt />
-      </div>
-    );
+      </div>;
   }
-
-  return (
-    <SidebarProvider defaultOpen={true}>
+  return <SidebarProvider defaultOpen={true}>
       <div className="min-h-screen w-full bg-background flex">
         <AppSidebar />
         
@@ -73,23 +67,12 @@ export function ResponsiveLayout({ children }: ResponsiveLayoutProps) {
           {/* Footer com versão e botão de atualização */}
           <footer className="border-t border-border/50 bg-card/50 backdrop-blur-sm px-4 py-2 flex items-center justify-between text-xs text-muted-foreground">
             <div className="flex items-center gap-2">
-              <span 
-                className="cursor-pointer hover:text-bex transition-colors"
-                onClick={() => setShowVersion(!showVersion)}
-              >
+              <span onClick={() => setShowVersion(!showVersion)} className="cursor-pointer hover:text-bex transition-colors mx-[19px]">
                 🎮 BEX Flow v4.0.2
               </span>
-              {showVersion && (
-                <span className="text-[10px] opacity-60">- Gamer Edition</span>
-              )}
+              {showVersion && <span className="text-[10px] opacity-60">- Gamer Edition</span>}
             </div>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className="h-6 px-2 text-[10px] hover:text-bex hover:bg-bex/10"
-              onClick={handleForceUpdate}
-            >
+            <Button type="button" variant="ghost" size="sm" className="h-6 px-2 text-[10px] hover:text-bex hover:bg-bex/10" onClick={handleForceUpdate}>
               🔄 Forçar Atualização
             </Button>
           </footer>
@@ -97,6 +80,5 @@ export function ResponsiveLayout({ children }: ResponsiveLayoutProps) {
         
         <PWAInstallPrompt />
       </div>
-    </SidebarProvider>
-  );
+    </SidebarProvider>;
 }
