@@ -11,7 +11,7 @@ import { SmartRedirect } from "@/components/SmartRedirect";
 import { SpecialistGuard } from "@/components/SpecialistGuard";
 import { DeprecatedRouteRedirect } from "@/components/DeprecatedRouteRedirect";
 import { BexThemeProvider } from "@/contexts/BexThemeContext";
-import { PWADebugPanel } from "@/components/PWADebugPanel";
+
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { logWebVitals } from "@/lib/web-vitals";
 import { analytics } from "@/lib/analytics";
@@ -234,7 +234,7 @@ function App() {
             <TooltipProvider>
               <Toaster />
               <Sonner />
-              {import.meta.env.DEV && <PWADebugPanel />}
+              
               <BrowserRouter>
                 <AuthProvider>
               <Routes>
