@@ -151,7 +151,7 @@ export function useRoteiros(filters?: UseRoteirosFilters) {
   const generateWithAI = useMutation({
     mutationFn: async (briefing: any) => {
       const { data, error } = await supabase.functions.invoke(
-        "generate-roteiro-audiovisual",
+        "generate-roteiro-gpt4",
         { body: briefing }
       );
 
@@ -160,8 +160,8 @@ export function useRoteiros(filters?: UseRoteirosFilters) {
     },
     onSuccess: () => {
       toast({
-        title: "🤖 Roteiro gerado com IA",
-        description: "Roteiro criado com sucesso!",
+        title: "🤖 Roteiro gerado com GPT-4.1",
+        description: "Roteiro profissional criado com contexto completo!",
       });
     },
     onError: (error: Error) => {

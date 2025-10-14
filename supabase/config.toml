@@ -88,3 +88,6 @@ verify_jwt = false
 
 [functions.generate-competitive-report]
 verify_jwt = false
+
+[functions.generate-roteiro-gpt4]
+verify_jwt = false
