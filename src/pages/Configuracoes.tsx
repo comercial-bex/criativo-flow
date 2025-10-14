@@ -29,6 +29,7 @@ import { useUserRole } from '@/hooks/useUserRole';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useToast } from '@/hooks/use-toast';
 import { SecurityTestPanel } from '@/components/SecurityTestPanel';
+import { MonitorAlerts } from '@/components/Monitor/MonitorAlerts';
 
 const Configuracoes = () => {
   const { toast } = useToast();
@@ -75,14 +76,15 @@ const Configuracoes = () => {
       />
 
       <Tabs defaultValue="geral" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-7">
+        <TabsList className="grid w-full grid-cols-8">
           <TabsTrigger value="geral">Geral</TabsTrigger>
           <TabsTrigger value="perfil">Perfil</TabsTrigger>
           <TabsTrigger value="seguranca">Segurança</TabsTrigger>
           <TabsTrigger value="notificacoes">Notificações</TabsTrigger>
           <TabsTrigger value="aparencia">Aparência</TabsTrigger>
           <TabsTrigger value="funcoes">Funções</TabsTrigger>
-          <TabsTrigger value="servidor">Status do Servidor</TabsTrigger>
+          <TabsTrigger value="servidor">Status</TabsTrigger>
+          <TabsTrigger value="monitor">🔔 Alertas</TabsTrigger>
         </TabsList>
 
         <TabsContent value="geral" className="space-y-6">
@@ -555,6 +557,10 @@ const Configuracoes = () => {
               </Card>
             )}
           </div>
+        </TabsContent>
+
+        <TabsContent value="monitor" className="space-y-4">
+          <MonitorAlerts />
         </TabsContent>
       </Tabs>
     </div>

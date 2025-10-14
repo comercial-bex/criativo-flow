@@ -4,6 +4,10 @@ import "./index.css";
 import "./styles/introjs-theme.ts";
 import { registerServiceWorker } from "./lib/sw-register";
 import { syncManager } from "./lib/sync-manager";
+import { initializeSentry } from "./lib/sentry-config";
+
+// 🔍 FASE 3: Initialize Sentry (production only)
+initializeSentry();
 
 // 🛡️ Signal React is starting
 (window as any).__reactStarted = true;
