@@ -2,7 +2,7 @@ import { BexAvatar, BexAvatarFallback, BexAvatarImage } from "@/components/ui/be
 import { useAuth } from "@/hooks/useAuth";
 import { useProfileData } from "@/hooks/useProfileData";
 import { useEffect, useState } from "react";
-import bexLogo from "@/assets/logo_bex_verde.png";
+import bexLogo from "@/assets/logo_bex_verde.svg";
 
 export function UserProfileSection() {
   const { user } = useAuth();
