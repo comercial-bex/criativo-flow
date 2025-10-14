@@ -6,6 +6,7 @@ import { TasksStore, TaskFilters } from '@/lib/db/tasks-store';
 import { ApprovalsStore, ApprovalFilters } from '@/lib/db/approvals-store';
 import { OfflineTask, OfflineApproval } from '@/lib/db/indexeddb';
 import { syncManager } from '@/lib/sync-manager';
+import { cacheStore, CacheOptions } from '@/lib/db/cache-store';
 
 export function useOfflineStorage() {
   const tasksStore = useMemo(() => new TasksStore(), []);
@@ -132,6 +133,30 @@ export function useOfflineStorage() {
     };
   }, [tasksStore, approvalsStore, getUnsyncedCount]);
 
+  // ============================================================================
+  // CACHE (FASE 5)
+  // ============================================================================
+
+  const setCache = useCallback(async <T = any>(
+    key: string, 
+    data: T, 
+    options?: CacheOptions
+  ): Promise<void> => {
+    return cacheStore.set(key, data, options);
+  }, []);
+
+  const getCache = useCallback(async <T = any>(key: string): Promise<T | null> => {
+    return cacheStore.get<T>(key);
+  }, []);
+
+  const invalidateCache = useCallback(async (tag: string): Promise<number> => {
+    return cacheStore.invalidateByTag(tag);
+  }, []);
+
+  const clearExpiredCache = useCallback(async (): Promise<number> => {
+    return cacheStore.clearExpired();
+  }, []);
+
   return {
     // Tasks
     saveTask,
@@ -151,6 +176,12 @@ export function useOfflineStorage() {
     isOnline,
     
     // Stats
-    getStats
+    getStats,
+    
+    // Cache (FASE 5)
+    setCache,
+    getCache,
+    invalidateCache,
+    clearExpiredCache
   };
 }
