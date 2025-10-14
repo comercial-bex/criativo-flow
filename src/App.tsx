@@ -11,171 +11,163 @@ import { SmartRedirect } from "@/components/SmartRedirect";
 import { SpecialistGuard } from "@/components/SpecialistGuard";
 import { DeprecatedRouteRedirect } from "@/components/DeprecatedRouteRedirect";
 import { BexThemeProvider } from "@/contexts/BexThemeContext";
+import { Suspense, lazy, useEffect } from "react";
+import { FullScreenLoader } from "@/components/FullScreenLoader";
 
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { logWebVitals } from "@/lib/web-vitals";
 import { analytics } from "@/lib/analytics";
 
-
-import Index from "./pages/Index";
+// Critical pages (loaded immediately)
 import Auth from "./pages/Auth";
 import SignUp from "./pages/SignUp";
 import NotFound from "./pages/NotFound";
 import Unauthorized from "./pages/Unauthorized";
 
-// Core pages
-import Dashboard from "./pages/Dashboard";
-import CRM from "./pages/CRM";
-import Clientes from "./pages/Clientes";
-import Financeiro from "./pages/Financeiro";
+// Lazy-loaded pages (code-splitting)
+const Index = lazy(() => import("./pages/Index"));
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const CRM = lazy(() => import("./pages/CRM"));
+const Clientes = lazy(() => import("./pages/Clientes"));
+const Financeiro = lazy(() => import("./pages/Financeiro"));
 
-// Inicio pages
-import InicioFavoritos from "./pages/Inicio/Favoritos";
-import InicioRecentes from "./pages/Inicio/Recentes";
+const InicioFavoritos = lazy(() => import("./pages/Inicio/Favoritos"));
+const InicioRecentes = lazy(() => import("./pages/Inicio/Recentes"));
 
-// Inteligencia pages
-import Inteligencia from "./pages/Inteligencia";
-import InteligenciaAnalises from "./pages/Inteligencia/Analises";
-import InteligenciaInsights from "./pages/Inteligencia/Insights";
-import InteligenciaPrevisoes from "./pages/Inteligencia/Previsoes";
-import InteligenciaMetricas from "./pages/Inteligencia/Metricas";
-import CategoriasFinanceiras from "./pages/CategoriasFinanceiras";
-import ProdutosFinanceiro from "./pages/Financeiro/Produtos";
-import ProdutoHistorico from "./pages/Financeiro/ProdutoHistorico";
-import Configuracoes from "./pages/Configuracoes";
-import Funcoes from "./pages/Configuracoes/Funcoes";
-import Monitor from "./pages/Configuracoes/Monitor";
-import Perfil from "./pages/Perfil";
-import Relatorios from "./pages/Relatorios";
-import Planos from "./pages/Planos";
-import Especialistas from "./pages/Especialistas";
+const Inteligencia = lazy(() => import("./pages/Inteligencia"));
+const InteligenciaAnalises = lazy(() => import("./pages/Inteligencia/Analises"));
+const InteligenciaInsights = lazy(() => import("./pages/Inteligencia/Insights"));
+const InteligenciaPrevisoes = lazy(() => import("./pages/Inteligencia/Previsoes"));
+const InteligenciaMetricas = lazy(() => import("./pages/Inteligencia/Metricas"));
+const CategoriasFinanceiras = lazy(() => import("./pages/CategoriasFinanceiras"));
+const ProdutosFinanceiro = lazy(() => import("./pages/Financeiro/Produtos"));
+const ProdutoHistorico = lazy(() => import("./pages/Financeiro/ProdutoHistorico"));
+const Configuracoes = lazy(() => import("./pages/Configuracoes"));
+const Funcoes = lazy(() => import("./pages/Configuracoes/Funcoes"));
+const Monitor = lazy(() => import("./pages/Configuracoes/Monitor"));
+const Perfil = lazy(() => import("./pages/Perfil"));
+const Relatorios = lazy(() => import("./pages/Relatorios"));
+const Planos = lazy(() => import("./pages/Planos"));
+const Especialistas = lazy(() => import("./pages/Especialistas"));
 
-// Role-specific pages
-import GRSDashboard from "./pages/GRS/Dashboard";
-import GRSPainel from "./pages/GRS/Painel";
-import GRSPlanejamentos from "./pages/GRS/Planejamentos";
-import GRSRelatorios from "./pages/GRS/Relatorios";
-import GRSAgendamentoSocial from "./pages/GRS/AgendamentoSocial";
-import GRSPlanejamentoDetalhes from "./pages/GRS/PlanejamentoDetalhes";
-import GRSPlanejamentoEstrategico from "./pages/GRS/PlanejamentoEstrategico";
-import GRSCalendarioEditorial from "./pages/GRS/CalendarioEditorial";
-import GRSAprovacoes from "./pages/GRS/Aprovacoes";
-import GRSClienteProjetos from "./pages/GRS/ClienteProjetosFluxo";
-import GRSClientes from "./pages/GRS/Clientes";
-import GRSProjetoTarefas from "./pages/GRS/ProjetoTarefasKanban";
-import GRSProjetos from "./pages/GRS/Projetos";
-import GRSNovaOrdem from "./pages/GRS/NovaOrdem";
-import CRMContatos from "./pages/CRM/Contatos";
-import CRMHistorico from "./pages/CRM/Historico";
-import AdminLogs from "./pages/Admin/Logs";
-import AtendimentoInbox from "./pages/Atendimento/Inbox";
-import AtendimentoDashboard from "./pages/Atendimento/Dashboard";
-import TrafegoDashboard from "./pages/Trafego/Dashboard";
-import FinanceiroDashboard from "./pages/Financeiro/Dashboard";
-import FornecedorDashboard from "./pages/Fornecedor/Dashboard";
-import GestorDashboard from "./pages/Gestor/Dashboard";
-import MinhasTarefas from "./pages/MinhasTarefas";
-import GestaoDashboard from "./pages/Gestao/Dashboard";
-import TarefasUnificadasGRS from "./pages/GRS/TarefasUnificadas";
-import RoteiroIAListPage from "./pages/GRS/RoteiroIA/index";
-import NovoRoteiroPage from "./pages/GRS/RoteiroIA/NovoRoteiro";
-import EditarRoteiroPage from "./pages/GRS/RoteiroIA/EditarRoteiro";
-import EspecialistaDashboard from "./pages/Especialista/Dashboard";
-import DesignSystemShowcase from "./pages/DesignSystemShowcase";
+const GRSDashboard = lazy(() => import("./pages/GRS/Dashboard"));
+const GRSPainel = lazy(() => import("./pages/GRS/Painel"));
+const GRSPlanejamentos = lazy(() => import("./pages/GRS/Planejamentos"));
+const GRSRelatorios = lazy(() => import("./pages/GRS/Relatorios"));
+const GRSAgendamentoSocial = lazy(() => import("./pages/GRS/AgendamentoSocial"));
+const GRSPlanejamentoDetalhes = lazy(() => import("./pages/GRS/PlanejamentoDetalhes"));
+const GRSPlanejamentoEstrategico = lazy(() => import("./pages/GRS/PlanejamentoEstrategico"));
+const GRSCalendarioEditorial = lazy(() => import("./pages/GRS/CalendarioEditorial"));
+const GRSAprovacoes = lazy(() => import("./pages/GRS/Aprovacoes"));
+const GRSClienteProjetos = lazy(() => import("./pages/GRS/ClienteProjetosFluxo"));
+const GRSClientes = lazy(() => import("./pages/GRS/Clientes"));
+const GRSProjetoTarefas = lazy(() => import("./pages/GRS/ProjetoTarefasKanban"));
+const GRSProjetos = lazy(() => import("./pages/GRS/Projetos"));
+const GRSNovaOrdem = lazy(() => import("./pages/GRS/NovaOrdem"));
+const CRMContatos = lazy(() => import("./pages/CRM/Contatos"));
+const CRMHistorico = lazy(() => import("./pages/CRM/Historico"));
+const AdminLogs = lazy(() => import("./pages/Admin/Logs"));
+const AtendimentoInbox = lazy(() => import("./pages/Atendimento/Inbox"));
+const AtendimentoDashboard = lazy(() => import("./pages/Atendimento/Dashboard"));
+const TrafegoDashboard = lazy(() => import("./pages/Trafego/Dashboard"));
+const FinanceiroDashboard = lazy(() => import("./pages/Financeiro/Dashboard"));
+const FornecedorDashboard = lazy(() => import("./pages/Fornecedor/Dashboard"));
+const GestorDashboard = lazy(() => import("./pages/Gestor/Dashboard"));
+const MinhasTarefas = lazy(() => import("./pages/MinhasTarefas"));
+const GestaoDashboard = lazy(() => import("./pages/Gestao/Dashboard"));
+const TarefasUnificadasGRS = lazy(() => import("./pages/GRS/TarefasUnificadas"));
+const RoteiroIAListPage = lazy(() => import("./pages/GRS/RoteiroIA/index"));
+const NovoRoteiroPage = lazy(() => import("./pages/GRS/RoteiroIA/NovoRoteiro"));
+const EditarRoteiroPage = lazy(() => import("./pages/GRS/RoteiroIA/EditarRoteiro"));
+const EspecialistaDashboard = lazy(() => import("./pages/Especialista/Dashboard"));
+const DesignSystemShowcase = lazy(() => import("./pages/DesignSystemShowcase"));
 
-// Client pages
-import ClientePainel from "./pages/Cliente/Painel";
-import ClienteProjetos from "./pages/Cliente/Projetos";
-import ClienteDetalheProjetos from "./pages/Cliente/DetalheProjetos";
-import ClienteProjetoDetalhes from "./pages/Cliente/ProjetoDetalhes";
-import ClientePlanejamentoVisual from "./pages/Cliente/PlanejamentoVisual";
-import ClienteEditar from "./pages/Cliente/Editar";
-import ClientePerfil from "./pages/Cliente/Perfil";
-import ClienteAprovacoes from "./pages/Cliente/Aprovacoes";
-import ClientePlanos from "./pages/Cliente/Planos";
-import ClienteExportacoes from "./pages/Cliente/Exportacoes";
-import Preditiva from "./pages/Inteligencia/Preditiva";
+const ClientePainel = lazy(() => import("./pages/Cliente/Painel"));
+const ClienteProjetos = lazy(() => import("./pages/Cliente/Projetos"));
+const ClienteDetalheProjetos = lazy(() => import("./pages/Cliente/DetalheProjetos"));
+const ClienteProjetoDetalhes = lazy(() => import("./pages/Cliente/ProjetoDetalhes"));
+const ClientePlanejamentoVisual = lazy(() => import("./pages/Cliente/PlanejamentoVisual"));
+const ClienteEditar = lazy(() => import("./pages/Cliente/Editar"));
+const ClientePerfil = lazy(() => import("./pages/Cliente/Perfil"));
+const ClienteAprovacoes = lazy(() => import("./pages/Cliente/Aprovacoes"));
+const ClientePlanos = lazy(() => import("./pages/Cliente/Planos"));
+const ClienteExportacoes = lazy(() => import("./pages/Cliente/Exportacoes"));
+const Preditiva = lazy(() => import("./pages/Inteligencia/Preditiva"));
 
-// Administrative pages
-import AdminDashboard from "./pages/Administrativo/Dashboard";
-import Orcamentos from "./pages/Administrativo/Orcamentos";
-import Propostas from "./pages/Administrativo/Propostas";
-import Contratos from "./pages/Admin/Contratos";
-import ContratoForm from "./pages/Admin/ContratoForm";
-import ContratoDetails from "./pages/Admin/ContratoDetails";
-import ApresentacaoRelatorio from "./pages/ApresentacaoRelatorio";
-import ContractTemplates from "./pages/Admin/ContractTemplates";
-import ContractTemplateForm from "./pages/Admin/ContractTemplateForm";
-import OrcamentoDetails from "./pages/Admin/OrcamentoDetails";
-import PropostaDetails from "./pages/Admin/PropostaDetails";
-import PropostaView from "./pages/Public/PropostaView";
-import Produtos from "./pages/Admin/Produtos";
-import ProdutoForm from "./components/Admin/ProdutoForm";
-import ProdutoDetails from "./pages/Admin/ProdutoDetails";
-import HomologacaoMVP from "./pages/Admin/HomologacaoMVP";
+const AdminDashboard = lazy(() => import("./pages/Administrativo/Dashboard"));
+const Orcamentos = lazy(() => import("./pages/Administrativo/Orcamentos"));
+const Propostas = lazy(() => import("./pages/Administrativo/Propostas"));
+const Contratos = lazy(() => import("./pages/Admin/Contratos"));
+const ContratoForm = lazy(() => import("./pages/Admin/ContratoForm"));
+const ContratoDetails = lazy(() => import("./pages/Admin/ContratoDetails"));
+const ApresentacaoRelatorio = lazy(() => import("./pages/ApresentacaoRelatorio"));
+const ContractTemplates = lazy(() => import("./pages/Admin/ContractTemplates"));
+const ContractTemplateForm = lazy(() => import("./pages/Admin/ContractTemplateForm"));
+const OrcamentoDetails = lazy(() => import("./pages/Admin/OrcamentoDetails"));
+const PropostaDetails = lazy(() => import("./pages/Admin/PropostaDetails"));
+const PropostaView = lazy(() => import("./pages/Public/PropostaView"));
+const Produtos = lazy(() => import("./pages/Admin/Produtos"));
+const ProdutoForm = lazy(() => import("./components/Admin/ProdutoForm"));
+const ProdutoDetails = lazy(() => import("./pages/Admin/ProdutoDetails"));
+const HomologacaoMVP = lazy(() => import("./pages/Admin/HomologacaoMVP"));
 
-// Audiovisual pages
-import AudiovisualDashboard from "./pages/Audiovisual/Dashboard";
-import AudiovisualCaptacoes from "./pages/Audiovisual/Captacoes";
-import AudiovisualProjetos from "./pages/Audiovisual/Projetos";
-import AudiovisualEquipamentos from "./pages/Audiovisual/Equipamentos";
-import TarefasUnificadasAudiovisual from "./pages/Audiovisual/TarefasUnificadas";
-import AudiovisualMinhasTarefas from "./pages/Audiovisual/MinhasTarefas";
+const AudiovisualDashboard = lazy(() => import("./pages/Audiovisual/Dashboard"));
+const AudiovisualCaptacoes = lazy(() => import("./pages/Audiovisual/Captacoes"));
+const AudiovisualProjetos = lazy(() => import("./pages/Audiovisual/Projetos"));
+const AudiovisualEquipamentos = lazy(() => import("./pages/Audiovisual/Equipamentos"));
+const TarefasUnificadasAudiovisual = lazy(() => import("./pages/Audiovisual/TarefasUnificadas"));
+const AudiovisualMinhasTarefas = lazy(() => import("./pages/Audiovisual/MinhasTarefas"));
 
-// Design pages
-import DesignDashboard from "./pages/Design/Dashboard";
-import DesignCalendario from "./pages/Design/Calendario";
-import DesignMetas from "./pages/Design/Metas";
-import DesignBiblioteca from "./pages/Design/Biblioteca";
-import DesignAprovacoes from "./pages/Design/Aprovacoes";
-import TarefasUnificadasDesign from "./pages/Design/TarefasUnificadas";
-import DesignMinhasTarefas from "./pages/Design/MinhasTarefas";
-import Gamificacao from "./pages/Gamificacao";
-import GamificacaoAdmin from "./pages/GamificacaoAdmin";
-import StyleGuide from "./pages/StyleGuide";
+const DesignDashboard = lazy(() => import("./pages/Design/Dashboard"));
+const DesignCalendario = lazy(() => import("./pages/Design/Calendario"));
+const DesignMetas = lazy(() => import("./pages/Design/Metas"));
+const DesignBiblioteca = lazy(() => import("./pages/Design/Biblioteca"));
+const DesignAprovacoes = lazy(() => import("./pages/Design/Aprovacoes"));
+const TarefasUnificadasDesign = lazy(() => import("./pages/Design/TarefasUnificadas"));
+const DesignMinhasTarefas = lazy(() => import("./pages/Design/MinhasTarefas"));
+const Gamificacao = lazy(() => import("./pages/Gamificacao"));
+const GamificacaoAdmin = lazy(() => import("./pages/GamificacaoAdmin"));
+const StyleGuide = lazy(() => import("./pages/StyleGuide"));
 
 
-// RH pages
-import Colaboradores from "./pages/RH/Colaboradores";
-import ColaboradorDetalhes from "./pages/RH/ColaboradorDetalhes";
-import FolhaPonto from "./pages/RH/FolhaPonto";
-import FolhaPagamento from "./pages/Financeiro/FolhaPagamento";
-import Pessoas from "./pages/RH/Pessoas";
-import Ponto from "./pages/RH/Ponto";
-import BalanceteContabil from "./pages/Financeiro/BalanceteContabil";
-import Calendario from "./pages/Calendario";
-import Inventario from "./pages/Inventario";
+const Colaboradores = lazy(() => import("./pages/RH/Colaboradores"));
+const ColaboradorDetalhes = lazy(() => import("./pages/RH/ColaboradorDetalhes"));
+const FolhaPonto = lazy(() => import("./pages/RH/FolhaPonto"));
+const FolhaPagamento = lazy(() => import("./pages/Financeiro/FolhaPagamento"));
+const Pessoas = lazy(() => import("./pages/RH/Pessoas"));
+const Ponto = lazy(() => import("./pages/RH/Ponto"));
+const BalanceteContabil = lazy(() => import("./pages/Financeiro/BalanceteContabil"));
+const Calendario = lazy(() => import("./pages/Calendario"));
+const Inventario = lazy(() => import("./pages/Inventario"));
 
-// Access control pages
-import AccessRejectedPage from "./pages/AccessRejectedPage";
-import AccessSuspendedPage from "./pages/AccessSuspendedPage";
-import VerifyEmailPage from "./pages/VerifyEmailPage";
-import { PendingApprovalPage } from "./components/PendingApprovalPage";
+const AccessRejectedPage = lazy(() => import("./pages/AccessRejectedPage"));
+const AccessSuspendedPage = lazy(() => import("./pages/AccessSuspendedPage"));
+const VerifyEmailPage = lazy(() => import("./pages/VerifyEmailPage"));
+const PendingApprovalPage = lazy(() => import("./components/PendingApprovalPage").then(m => ({ default: m.PendingApprovalPage })));
 
-import AprovacaoJob from "./pages/AprovacaoJob";
-import AdminPainel from "./pages/Admin/Painel";
-import AdminTarefas from "./pages/Admin/Tarefas";
-import CentralNotificacoes from "./pages/Admin/CentralNotificacoes";
-import ClienteTarefas from "./pages/Cliente/Tarefas";
-import ClienteTimeline from "./pages/Cliente/Timeline";
-import GRSAgenda from "./pages/GRS/Agenda";
-import GRSMensagens from "./pages/GRS/Mensagens";
-import Aprovacoes from "./pages/Aprovacoes";
-import Usuarios from "./pages/Usuarios";
-import SystemHealth from "./pages/Admin/SystemHealth";
-import BalancoPatrimonial from "./pages/Financeiro/BalancoPatrimonial";
+const AprovacaoJob = lazy(() => import("./pages/AprovacaoJob"));
+const AdminPainel = lazy(() => import("./pages/Admin/Painel"));
+const AdminTarefas = lazy(() => import("./pages/Admin/Tarefas"));
+const CentralNotificacoes = lazy(() => import("./pages/Admin/CentralNotificacoes"));
+const ClienteTarefas = lazy(() => import("./pages/Cliente/Tarefas"));
+const ClienteTimeline = lazy(() => import("./pages/Cliente/Timeline"));
+const GRSAgenda = lazy(() => import("./pages/GRS/Agenda"));
+const GRSMensagens = lazy(() => import("./pages/GRS/Mensagens"));
+const Aprovacoes = lazy(() => import("./pages/Aprovacoes"));
+const Usuarios = lazy(() => import("./pages/Usuarios"));
+const SystemHealth = lazy(() => import("./pages/Admin/SystemHealth"));
+const BalancoPatrimonial = lazy(() => import("./pages/Financeiro/BalancoPatrimonial"));
 
-// Client Details Pages
-import ClientDetails from "./pages/ClientDetails";
-import TimelinePage from "./pages/ClientDetails/TimelinePage";
-import DetailsPage from "./pages/ClientDetails/DetailsPage";
-import ContactsPage from "./pages/ClientDetails/ContactsPage";
-import ProjectsPage from "./pages/ClientDetails/ProjectsPage";
-import FilesPage from "./pages/ClientDetails/FilesPage";
-import RequestsPage from "./pages/ClientDetails/RequestsPage";
-import ContractsPage from "./pages/ClientDetails/ContractsPage";
-import FinancePage from "./pages/ClientDetails/FinancePage";
-import NotesPage from "./pages/ClientDetails/NotesPage";
+const ClientDetails = lazy(() => import("./pages/ClientDetails"));
+const TimelinePage = lazy(() => import("./pages/ClientDetails/TimelinePage"));
+const DetailsPage = lazy(() => import("./pages/ClientDetails/DetailsPage"));
+const ContactsPage = lazy(() => import("./pages/ClientDetails/ContactsPage"));
+const ProjectsPage = lazy(() => import("./pages/ClientDetails/ProjectsPage"));
+const FilesPage = lazy(() => import("./pages/ClientDetails/FilesPage"));
+const RequestsPage = lazy(() => import("./pages/ClientDetails/RequestsPage"));
+const ContractsPage = lazy(() => import("./pages/ClientDetails/ContractsPage"));
+const FinancePage = lazy(() => import("./pages/ClientDetails/FinancePage"));
+const NotesPage = lazy(() => import("./pages/ClientDetails/NotesPage"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -196,22 +188,43 @@ const queryClient = new QueryClient({
   },
 });
 
-// Initialize Web Vitals & Analytics em produção
-if (import.meta.env.PROD) {
-  logWebVitals();
-  analytics.trackPageView({
-    path: window.location.pathname,
-    title: document.title
-  });
-}
+// Defer Web Vitals & Analytics to after mount (non-blocking boot)
+const initAnalytics = () => {
+  if (import.meta.env.PROD) {
+    if (typeof requestIdleCallback !== 'undefined') {
+      requestIdleCallback(() => {
+        logWebVitals();
+        analytics.trackPageView({
+          path: window.location.pathname,
+          title: document.title
+        });
+      });
+    } else {
+      setTimeout(() => {
+        logWebVitals();
+        analytics.trackPageView({
+          path: window.location.pathname,
+          title: document.title
+        });
+      }, 3000);
+    }
+  }
+};
 
 function App() {
+  // Signal React has mounted
+  useEffect(() => {
+    (window as any).__reactMounted = true;
+    console.log('✅ React mounted successfully');
+    initAnalytics();
+  }, []);
+
   // Move PublicRoute inside App component so it has access to AuthProvider context
   const PublicRoute = ({ children }: { children: React.ReactNode }) => {
     const { user, loading } = useAuth();
     
     if (loading) {
-      return <div className="min-h-screen flex items-center justify-center">Carregando...</div>;
+      return <FullScreenLoader />;
     }
     
     if (user) {
@@ -220,6 +233,7 @@ function App() {
     
     return <>{children}</>;
   };
+  
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
@@ -237,7 +251,8 @@ function App() {
               
               <BrowserRouter>
                 <AuthProvider>
-              <Routes>
+                  <Suspense fallback={<FullScreenLoader />}>
+                    <Routes>
                 {/* Public routes */}
                 <Route path="/auth" element={<PublicRoute><Auth /></PublicRoute>} />
                 <Route path="/signup" element={<PublicRoute><SignUp /></PublicRoute>} />
@@ -1073,6 +1088,7 @@ function App() {
                 {/* 404 route */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
+            </Suspense>
             </AuthProvider>
           </BrowserRouter>
         </TooltipProvider>

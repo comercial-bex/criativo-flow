@@ -5,6 +5,10 @@ import "./styles/introjs-theme.ts";
 import { registerServiceWorker } from "./lib/sw-register";
 import { syncManager } from "./lib/sync-manager";
 
+// 🛡️ Signal React is starting
+(window as any).__reactStarted = true;
+console.log('🚀 React starting...');
+
 // 🛡️ Global error handlers (captura erros antes do React montar)
 window.onerror = (msg, src, line, col, err) => {
   console.error('[GLOBAL ERROR]', { msg, src, line, col, err });
@@ -67,14 +71,14 @@ try {
 
 // Detecção de versão antiga e limpeza automática
 if (import.meta.env.PROD) {
-  const APP_VERSION = '4.0.2';
+  const APP_VERSION = '4.0.3';
   const storedVersion = localStorage.getItem('app-version');
   
   if (storedVersion && storedVersion !== APP_VERSION) {
     console.log(`🔄 Nova versão detectada (${storedVersion} → ${APP_VERSION}), limpando cache antigo...`);
     caches.keys().then(keys => 
       Promise.all(keys.map(k => {
-        if (k.includes('bex-v3') || k.includes('bex-v2')) {
+        if (k.includes('bex-v3') || k.includes('bex-v2') || k.includes('bex-v4.0.2')) {
           console.log(`🧹 Removendo cache antigo: ${k}`);
           return caches.delete(k);
         }
@@ -84,7 +88,7 @@ if (import.meta.env.PROD) {
   }
   
   localStorage.setItem('app-version', APP_VERSION);
-  console.log(`🎮 BEX Flow v${APP_VERSION} - Diagnostic Build`);
+  console.log(`🎮 BEX Flow v${APP_VERSION} - Boot Optimization`);
   
   // ⚠️ TEMPORARIAMENTE DESATIVADO PARA DEBUG DE TELA BRANCA
   /*
