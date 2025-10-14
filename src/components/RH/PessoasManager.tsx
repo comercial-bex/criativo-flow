@@ -22,7 +22,7 @@ import { smartToast } from '@/lib/smart-toast';
 
 export function PessoasManager() {
   const queryClient = useQueryClient();
-  const [filtro, setFiltro] = useState<'colaborador' | 'especialista' | 'cliente' | undefined>();
+  const [filtro, setFiltro] = useState<'colaborador' | 'especialista' | 'cliente' | undefined>('colaborador');
   const [modalAberto, setModalAberto] = useState(false);
   const [pessoaEditando, setPessoaEditando] = useState<Pessoa | null>(null);
   const [cpfError, setCpfError] = useState<string>('');
@@ -65,27 +65,8 @@ export function PessoasManager() {
 
 
   // FASE 2: Função para inferir papéis automaticamente
+  // Sempre retorna 'colaborador' pois essa tela é só para colaboradores
   const inferirPapeis = (data: Partial<Pessoa>): string[] => {
-    // Se vinculado a especialista BEX
-    if (data.profile_id) {
-      return ['especialista'];
-    }
-    
-    // Se tem cliente_id
-    if (data.cliente_id) {
-      return ['cliente'];
-    }
-    
-    // Baseado no regime
-    if (data.regime === 'freelancer') {
-      return ['especialista'];
-    }
-    
-    if (['clt', 'pj', 'estagio'].includes(data.regime || '')) {
-      return ['colaborador'];
-    }
-    
-    // Padrão
     return ['colaborador'];
   };
 
@@ -178,8 +159,8 @@ export function PessoasManager() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>Gestão de Pessoas</CardTitle>
-              <CardDescription>Gerenciar colaboradores, especialistas e clientes</CardDescription>
+              <CardTitle>Gestão de Colaboradores</CardTitle>
+              <CardDescription>Gerencie sua equipe interna (CLT, PJ, Estágio)</CardDescription>
             </div>
             <Dialog open={modalAberto} onOpenChange={setModalAberto}>
               <DialogTrigger asChild>
@@ -608,21 +589,10 @@ export function PessoasManager() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            <div className="flex justify-between items-center">
+            <div className="flex justify-start items-center">
               <p className="text-sm text-muted-foreground">
-                Use a busca no topo para encontrar pessoas rapidamente
+                Gerencie seus colaboradores internos (CLT, PJ, Estágio). Use a busca no topo para encontrar rapidamente.
               </p>
-              <Select value={filtro || 'todos'} onValueChange={(v) => setFiltro(v === 'todos' ? undefined : v as any)}>
-                <SelectTrigger className="w-48">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="todos">Todos</SelectItem>
-                  <SelectItem value="colaborador">Colaboradores</SelectItem>
-                  <SelectItem value="especialista">Especialistas</SelectItem>
-                  <SelectItem value="cliente">Clientes</SelectItem>
-                </SelectContent>
-              </Select>
             </div>
 
             <Table>
