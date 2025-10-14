@@ -11,6 +11,7 @@ import { SmartRedirect } from "@/components/SmartRedirect";
 import { SpecialistGuard } from "@/components/SpecialistGuard";
 import { DeprecatedRouteRedirect } from "@/components/DeprecatedRouteRedirect";
 import { BexThemeProvider } from "@/contexts/BexThemeContext";
+import { PWADebugPanel } from "@/components/PWADebugPanel";
 
 
 import Index from "./pages/Index";
@@ -176,16 +177,17 @@ import NotesPage from "./pages/ClientDetails/NotesPage";
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 5 * 60 * 1000, // 5 minutos - dados considerados frescos
-      gcTime: 10 * 60 * 1000, // 10 minutos - manter em cache (novo nome do cacheTime)
+      staleTime: 10 * 60 * 1000, // 10 minutos (otimizado para PWA)
+      gcTime: 30 * 60 * 1000, // 30 minutos
       refetchOnWindowFocus: false,
-      refetchOnReconnect: false,
+      refetchOnReconnect: true, // ✅ Ativar para PWA
       refetchOnMount: false,
-      retry: 1, // Retry uma vez em caso de erro
+      retry: 2, // 2 tentativas
+      networkMode: 'offlineFirst' as const, // ✅ Suporte offline
     },
     mutations: {
-      retry: 1, // Retry mutations também
-      // Evitar invalidação global automática
+      retry: 2,
+      networkMode: 'offlineFirst' as const, // ✅ Suporte offline
       onSuccess: () => {},
     },
   },
@@ -219,6 +221,7 @@ function App() {
           <TooltipProvider>
             <Toaster />
             <Sonner />
+            <PWADebugPanel />
             <BrowserRouter>
               <AuthProvider>
               <Routes>
