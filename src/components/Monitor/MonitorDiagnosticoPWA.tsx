@@ -70,12 +70,17 @@ export function MonitorDiagnosticoPWA() {
       });
       
       if (registration) {
+        // Detectar versão dinâmica do Service Worker
+        const swVersion = registration.active?.scriptURL.includes('sw-advanced.js') 
+          ? 'bex-v4.0.7' 
+          : 'Unknown';
+        
         setSwStatus({
           registered: true,
           active: !!registration.active,
           waiting: !!registration.waiting,
           cacheSize: 0,
-          version: 'bex-v4.0.4'
+          version: swVersion
         });
 
         // Tentar obter tamanho do cache
@@ -164,10 +169,25 @@ export function MonitorDiagnosticoPWA() {
               </p>
             </div>
           </div>
-          <Button onClick={handleRefresh} variant="outline" size="sm" disabled={loading}>
-            <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-            Atualizar
-          </Button>
+          <div className="flex gap-2">
+            {swStatus.version !== 'bex-v4.0.7' && swStatus.registered && (
+              <Button 
+                onClick={async () => {
+                  const { forceServiceWorkerUpdate } = await import('@/lib/sw-register');
+                  await forceServiceWorkerUpdate();
+                  window.location.reload();
+                }}
+                variant="destructive" 
+                size="sm"
+              >
+                ⚠️ Forçar Atualização v4.0.7
+              </Button>
+            )}
+            <Button onClick={handleRefresh} variant="outline" size="sm" disabled={loading}>
+              <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+              Atualizar
+            </Button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

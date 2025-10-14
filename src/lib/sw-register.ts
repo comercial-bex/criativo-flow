@@ -83,6 +83,41 @@ export async function registerServiceWorker(): Promise<ServiceWorkerRegistration
   }
 }
 
+export async function forceServiceWorkerUpdate(): Promise<void> {
+  if (!('serviceWorker' in navigator)) {
+    return;
+  }
+
+  try {
+    console.log('🔄 Forçando atualização do Service Worker...');
+    
+    // Limpar TODOS os caches
+    const cacheNames = await caches.keys();
+    await Promise.all(cacheNames.map(name => {
+      console.log('[SW] Deletando cache:', name);
+      return caches.delete(name);
+    }));
+    
+    // Desregistrar TODOS os Service Workers
+    const registrations = await navigator.serviceWorker.getRegistrations();
+    await Promise.all(registrations.map(r => {
+      console.log('[SW] Desregistrando:', r.scope);
+      return r.unregister();
+    }));
+    
+    // Aguardar 500ms para garantir que tudo foi limpo
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    // Registrar novamente
+    await registerServiceWorker();
+    
+    console.log('✅ Service Worker atualizado com sucesso!');
+  } catch (error) {
+    console.error('❌ Erro ao forçar atualização do Service Worker:', error);
+    throw error;
+  }
+}
+
 export async function unregisterServiceWorker(): Promise<boolean> {
   if (!('serviceWorker' in navigator)) {
     return false;
