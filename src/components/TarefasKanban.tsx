@@ -23,7 +23,7 @@ import {
   Download,
   X
 } from "lucide-react";
-import { DndContext, DragEndEvent, closestCorners } from "@dnd-kit/core";
+import { DndContext, DragEndEvent, closestCorners, useDroppable } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -805,12 +805,12 @@ export function TarefasKanban({ planejamento, clienteId, projetoId, filters }: T
         <div className="grid grid-cols-5 gap-6">
           {colunas.map((coluna) => {
             const tarefasColuna = getTarefasPorStatus(coluna.id);
+            const { setNodeRef, isOver } = useDroppable({ id: coluna.id });
             
             return (
-              <SortableContext 
-                key={coluna.id} 
-                items={tarefasColuna.map(t => t.id)} 
-                strategy={verticalListSortingStrategy}
+              <div 
+                key={coluna.id}
+                className={`transition-all ${isOver ? 'scale-[1.02]' : ''}`}
               >
                 <Card className={`${coluna.cor} border-2 ${coluna.accentColor} rounded-xl shadow-sm hover:shadow-md transition-all duration-200`}>
                   <CardHeader className="pb-3 border-b border-gray-200/50 dark:border-gray-700/50">
@@ -827,19 +827,28 @@ export function TarefasKanban({ planejamento, clienteId, projetoId, filters }: T
                       </Badge>
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-3 min-h-[500px] p-4">
-                    {tarefasColuna.map((tarefa) => (
-                      <TarefaCard
-                        key={tarefa.id}
-                        tarefa={tarefa}
-                        profiles={profiles}
-                        onUpdateStatus={updateTarefaStatus}
-                        onEditTarefa={setEditingTarefa}
-                      />
-                    ))}
+                  <CardContent 
+                    ref={setNodeRef}
+                    className="space-y-3 min-h-[500px] p-4"
+                  >
+                    <SortableContext 
+                      id={coluna.id}
+                      items={tarefasColuna.map(t => t.id)} 
+                      strategy={verticalListSortingStrategy}
+                    >
+                      {tarefasColuna.map((tarefa) => (
+                        <TarefaCard
+                          key={tarefa.id}
+                          tarefa={tarefa}
+                          profiles={profiles}
+                          onUpdateStatus={updateTarefaStatus}
+                          onEditTarefa={setEditingTarefa}
+                        />
+                      ))}
+                    </SortableContext>
                   </CardContent>
                 </Card>
-              </SortableContext>
+              </div>
             );
           })}
         </div>

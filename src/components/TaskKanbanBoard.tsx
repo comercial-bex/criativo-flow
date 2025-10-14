@@ -84,7 +84,11 @@ function KanbanColumnComponent({
             isOver ? 'bg-bex/10 border-bex/50 shadow-bex' : ''
           }`}
         >
-          <SortableContext items={column.tasks.map(task => task.id)} strategy={verticalListSortingStrategy}>
+          <SortableContext 
+            id={column.id}
+            items={column.tasks.map(task => task.id)} 
+            strategy={verticalListSortingStrategy}
+          >
             <AnimatePresence mode="popLayout">
               {column.tasks.map((task) => (
                 <ModernKanbanCard 

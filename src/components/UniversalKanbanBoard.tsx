@@ -317,7 +317,7 @@ function UniversalKanbanColumn({
     id: column.id,
   });
 
-  return <div ref={setNodeRef} className="flex-1 min-w-[300px] max-w-[350px]">
+  return <div className="flex-1 min-w-[300px] max-w-[350px]">
       <Card className={`h-full transition-all ${isOver ? 'ring-2 ring-bex shadow-bex-glow' : ''}`}>
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
@@ -335,19 +335,30 @@ function UniversalKanbanColumn({
           {column.descricao && <p className="text-xs text-muted-foreground mt-1">{column.descricao}</p>}
         </CardHeader>
         
-        <CardContent className="space-y-3 max-h-[calc(100vh-300px)] overflow-y-auto">
-          <SortableContext items={column.tasks.map(task => task.id)} strategy={verticalListSortingStrategy}>
-            {column.tasks.map(task => (
-              <ModernKanbanCard 
-                key={task.id} 
-                task={convertToKanbanTask(task)} 
-                onTaskClick={() => onTaskClick(task)}
-                isDragging={false}
-              />
-            ))}
+        <CardContent 
+          ref={setNodeRef}
+          className="space-y-3 max-h-[calc(100vh-300px)] overflow-y-auto"
+        >
+          <SortableContext 
+            id={column.id}
+            items={column.tasks.map(task => task.id)} 
+            strategy={verticalListSortingStrategy}
+          >
+            {column.tasks.length === 0 ? (
+              <div className="flex items-center justify-center h-24 border-2 border-dashed border-muted-foreground/20 rounded-lg">
+                <p className="text-sm text-muted-foreground">Solte aqui</p>
+              </div>
+            ) : (
+              column.tasks.map(task => (
+                <ModernKanbanCard 
+                  key={task.id} 
+                  task={convertToKanbanTask(task)} 
+                  onTaskClick={() => onTaskClick(task)}
+                  isDragging={false}
+                />
+              ))
+            )}
           </SortableContext>
-          
-          {column.tasks.length === 0}
         </CardContent>
       </Card>
     </div>;
