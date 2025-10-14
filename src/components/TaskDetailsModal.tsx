@@ -250,7 +250,6 @@ export function TaskDetailsModal({ open, onOpenChange, task, onTaskUpdate }: Tas
     const newProgress = updated.length > 0 ? (updated.filter(i => i.completed).length / updated.length) * 100 : 0;
     
     try {
-      const { supabase } = await import('@/integrations/supabase/client');
       await supabase
         .from('tarefa')
         .update({
