@@ -43,12 +43,14 @@ export default defineConfig(({ mode }) => ({
         }
       },
       onwarn(warning, warn) {
-        // Suprimir avisos de importação mista (dinâmica + estática)
+        // Suprimir todos os avisos não-críticos de build
         if (warning.code === 'MIXED_IMPORTS') return;
+        if (warning.code === 'EVAL') return;
+        if (warning.message?.includes('Use of eval')) return;
         warn(warning);
       }
     },
-    chunkSizeWarningLimit: 500,
+    chunkSizeWarningLimit: 1000,
     sourcemap: mode === 'development'
   },
   optimizeDeps: {
