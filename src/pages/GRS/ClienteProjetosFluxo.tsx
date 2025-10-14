@@ -45,6 +45,7 @@ import { useClientAccessPermissions } from '@/hooks/useClientAccessPermissions';
 import { OnboardingForm } from '@/components/OnboardingForm';
 import { ArquivosTab } from '@/components/ClientArea/ArquivosTab';
 import { CofreCredenciais } from '@/components/ClientArea/CofreCredenciais';
+import { RelatorioIAWrapper } from '@/components/RelatorioIAWrapper';
 
 interface Cliente {
   id: string;
@@ -109,6 +110,7 @@ export default function ClienteProjetosFluxo() {
   const [onboardingOpen, setOnboardingOpen] = useState(false);
   const [filesOpen, setFilesOpen] = useState(false);
   const [credentialsOpen, setCredentialsOpen] = useState(false);
+  const [relatorioOpen, setRelatorioOpen] = useState(false);
   
   // Modal de criação de projeto
   const [tipoModal, setTipoModal] = useState<'avulso' | 'campanha' | null>(null);
@@ -386,14 +388,24 @@ export default function ClienteProjetosFluxo() {
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               {permissions.canManageOnboarding && (
-                <Button 
-                  variant="outline" 
-                  onClick={() => setOnboardingOpen(true)} 
-                  className="gap-2 justify-start"
-                >
-                  <FileEdit className="h-4 w-4" />
-                  Onboarding
-                </Button>
+                <>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setOnboardingOpen(true)} 
+                    className="gap-2 justify-start"
+                  >
+                    <FileEdit className="h-4 w-4" />
+                    Onboarding
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setRelatorioOpen(true)} 
+                    className="gap-2 justify-start"
+                  >
+                    <TrendingUp className="h-4 w-4" />
+                    Benchmark
+                  </Button>
+                </>
               )}
               {permissions.canViewFiles && (
                 <Button 
@@ -778,6 +790,22 @@ export default function ClienteProjetosFluxo() {
                   readOnly={!permissions.canEditCredentials}
                 />
               </div>
+            </DialogContent>
+          </Dialog>
+
+          <Dialog open={relatorioOpen} onOpenChange={setRelatorioOpen}>
+            <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle className="text-2xl font-bold flex items-center gap-2">
+                  <TrendingUp className="h-6 w-6" />
+                  Relatório de Benchmark - {cliente.nome}
+                </DialogTitle>
+                <DialogDescription>
+                  Gere e visualize relatórios de benchmark digital comparativo
+                </DialogDescription>
+              </DialogHeader>
+              
+              <RelatorioIAWrapper clienteId={cliente.id} />
             </DialogContent>
           </Dialog>
 
