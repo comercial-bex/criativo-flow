@@ -7,7 +7,7 @@ import { LoginDiagnostic } from '@/components/Auth/LoginDiagnostic';
 import LoginPage from '@/components/ui/gaming-login';
 import { Bug } from 'lucide-react';
 import { toast } from 'sonner';
-import backgroundImg from '@/assets/background-login-new.png';
+import backgroundVideo from '@/assets/bex_fundo.mp4';
 
 export default function Auth() {
   const [loading, setLoading] = useState(false);
@@ -77,7 +77,7 @@ export default function Auth() {
 
   return (
     <div className="relative min-h-screen w-full flex items-center justify-center px-4 py-12">
-      <LoginPage.VideoBackground imageUrl={backgroundImg} />
+      <LoginPage.VideoBackground videoUrl={backgroundVideo} />
 
       <div className="relative z-20 w-full max-w-md">
         <LoginPage.LoginForm 
