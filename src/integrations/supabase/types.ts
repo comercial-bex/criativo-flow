@@ -8773,6 +8773,7 @@ export type Database = {
           kpis: Json | null
           labels: Json | null
           numero_protocolo: string | null
+          observacoes: string | null
           origem: string | null
           prazo_executor: string | null
           prioridade: Database["public"]["Enums"]["prioridade_enum"] | null
@@ -8815,6 +8816,7 @@ export type Database = {
           kpis?: Json | null
           labels?: Json | null
           numero_protocolo?: string | null
+          observacoes?: string | null
           origem?: string | null
           prazo_executor?: string | null
           prioridade?: Database["public"]["Enums"]["prioridade_enum"] | null
@@ -8857,6 +8859,7 @@ export type Database = {
           kpis?: Json | null
           labels?: Json | null
           numero_protocolo?: string | null
+          observacoes?: string | null
           origem?: string | null
           prazo_executor?: string | null
           prioridade?: Database["public"]["Enums"]["prioridade_enum"] | null
