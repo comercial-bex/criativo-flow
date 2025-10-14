@@ -4,7 +4,7 @@ import { useFrameworks } from "@/hooks/useFrameworks";
 
 interface FrameworkSelectorProps {
   selectedIds: string[];
-  onSelect: (id: string) => void;
+  onSelect: (ids: string[]) => void;
   multiSelect?: boolean;
 }
 
@@ -28,9 +28,9 @@ export default function FrameworkSelector({
       const newSelection = isSelected 
         ? selectedIds.filter(sid => sid !== id)
         : [...selectedIds, id];
-      onSelect(newSelection[0] || ''); // Manter apenas 1 por enquanto mas preparar para múltiplos
+      onSelect(newSelection);
     } else {
-      onSelect(id);
+      onSelect([id]);
     }
   };
 

@@ -14,8 +14,12 @@ export default function Step3Personalizacao({ formData, setFormData }: Step3Pers
     setFormData({ ...formData, agentes_ia_ids: agenteIds });
   };
 
-  const handleFrameworkSelect = (frameworkId: string) => {
-    setFormData({ ...formData, frameworks_ids: frameworkId ? [frameworkId] : [] });
+  const handleFrameworkSelect = (frameworkIds: string[]) => {
+    setFormData({ 
+      ...formData, 
+      frameworks_ids: frameworkIds,
+      framework_id: frameworkIds[0] || '' // Manter compatibilidade
+    });
   };
 
   const handleTomToggle = (ton: string) => {

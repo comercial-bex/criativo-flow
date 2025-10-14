@@ -184,49 +184,37 @@ export default function RoteiroWizard({ mode, roteiroId, initialData }: RoteiroW
 
   const handleGenerateAI = async () => {
     const briefingData = {
+      // IDS necessários para buscar dados do Supabase
+      cliente_id: formData.cliente_id,
+      projeto_id: formData.projeto_id,
+      
       // IDENTIFICAÇÃO
-      cliente_nome: formData.cliente_nome || formData.titulo || "Cliente BEX",
       titulo: formData.titulo || "Roteiro Audiovisual",
-      agencia: "BEX Communication",
-      produtora: "INSPIRE FILMES",
       
       // CONTEXTO ESTRATÉGICO
       objetivo: formData.objetivo || "Promover engajamento e conversões",
-      publico_alvo_descricao: formData.publico_alvo?.join(", ") || "Público interessado em soluções",
-      mensagem_chave: formData.pilares_mensagem?.join(" • ") || "Destaque benefícios principais",
+      publico_alvo: formData.publico_alvo || [],
+      pilares_mensagem: formData.pilares_mensagem || [],
       
       // TOM E ESTILO
-      tom: (Array.isArray(formData.tom) ? formData.tom : [formData.tom]).filter(Boolean).join(", ") || "Humanizado",
-      estilo: (Array.isArray(formData.estilo) ? formData.estilo : [formData.estilo]).filter(Boolean).join(", ") || "Narrativo",
+      tom: formData.tom || [],
+      estilo: formData.estilo || [],
       persona_voz: formData.persona_voz || "Linguagem natural e acessível",
       tom_criativo: formData.tom_criativo || [],
       
       // TÉCNICO
       plataforma: formData.plataforma || "reels",
-      veiculacao: formData.plataforma ? [formData.plataforma] : ["Instagram Reels"],
       duracao_prevista_seg: formData.duracao_prevista_seg || 30,
-      formato: formData.plataforma === 'youtube' ? 'Vídeo longo (2-5min)' : 
-               formData.plataforma === 'reels' ? 'Reels 30-60s' : 
-               'Vídeo institucional curto',
       
-      // BENEFÍCIOS E CTA
-      beneficios: formData.publico_alvo?.length > 0 ? formData.publico_alvo : [
-        "Solução prática e imediata",
-        "Confiança e credibilidade comprovada",
-        "Resultados mensuráveis"
-      ],
+      // CTA
       cta: formData.cta || "Saiba mais! Entre em contato.",
       
       // IA E FRAMEWORKS (múltiplos)
       agentes_ia_ids: formData.agentes_ia_ids || [],
       frameworks_ids: formData.frameworks_ids || [],
-      // Manter campos antigos por compatibilidade
-      agente_ia_id: formData.agentes_ia_ids?.[0] || formData.agente_ia_id,
-      framework_id: formData.frameworks_ids?.[0] || formData.framework_id,
       
       // REFERÊNCIAS
       referencias: formData.referencias || "",
-      ambiente: "externo",
     };
 
     try {
@@ -302,7 +290,7 @@ export default function RoteiroWizard({ mode, roteiroId, initialData }: RoteiroW
       return formData.tom.length > 0 && formData.estilo.length > 0;
     }
     if (currentStep === 3) {
-      return formData.agente_ia_id && formData.framework_id;
+      return formData.agentes_ia_ids?.length > 0 && formData.frameworks_ids?.length > 0;
     }
     return true;
   };
