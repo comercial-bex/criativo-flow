@@ -9,7 +9,9 @@ import {
   Calendar,
   FileText,
   GripVertical,
-  AlertCircle
+  AlertCircle,
+  MoreVertical,
+  MoveRight
 } from "lucide-react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -21,6 +23,12 @@ import { TaskCoverImage } from "@/components/ui/task-cover-image";
 import { useTaskCover } from "@/hooks/useTaskCover";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuTrigger 
+} from "@/components/ui/dropdown-menu";
 
 export interface KanbanTask {
   id: string;
@@ -55,12 +63,18 @@ interface ModernKanbanCardProps {
   task: KanbanTask;
   onTaskClick: (task: KanbanTask) => void;
   isDragging?: boolean;
+  quickMoveColumns?: Array<{ id: string; titulo: string }>;
+  onQuickMove?: (taskId: string, statusId: string) => void;
+  currentStatus?: string;
 }
 
 export const ModernKanbanCard = React.memo(({ 
   task, 
   onTaskClick,
-  isDragging = false 
+  isDragging = false,
+  quickMoveColumns,
+  onQuickMove,
+  currentStatus
 }: ModernKanbanCardProps) => {
   const {
     attributes,
@@ -150,21 +164,51 @@ export const ModernKanbanCard = React.memo(({
     <motion.div
       ref={setNodeRef}
       style={style}
+      {...attributes} 
+      {...listeners}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.9 }}
       transition={{ duration: 0.3 }}
-      className={`bg-card border-2 ${borderColor} rounded-xl shadow-lg overflow-hidden cursor-pointer hover:shadow-bex-glow hover:-translate-y-1 transition-all duration-200 ${isSortableDragging ? 'opacity-50 glass-bex' : ''}`}
-      onClick={handleClick}
+      className={`bg-card border-2 ${borderColor} rounded-xl shadow-lg overflow-hidden cursor-grab active:cursor-grabbing hover:shadow-bex-glow hover:-translate-y-1 transition-all duration-200 ${isSortableDragging ? 'opacity-50 glass-bex' : ''}`}
     >
-      {/* Drag Handle */}
-      <div 
-        {...attributes} 
-        {...listeners}
-        className="absolute top-2 left-2 z-10 cursor-grab active:cursor-grabbing opacity-50 hover:opacity-100 transition-opacity"
-      >
+      {/* Grip Icon - Visual Only */}
+      <div className="absolute top-2 left-2 z-10 opacity-50 pointer-events-none">
         <GripVertical className="w-4 h-4 text-muted-foreground" />
       </div>
+
+      {/* Quick Move Menu */}
+      {quickMoveColumns && onQuickMove && (
+        <div className="absolute top-2 right-2 z-10" onClick={(e) => e.stopPropagation()}>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="p-1.5 rounded-lg bg-black/60 backdrop-blur-md hover:bg-black/80 transition-colors">
+                <MoreVertical className="w-4 h-4 text-white" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
+                Mover para...
+              </div>
+              {quickMoveColumns
+                .filter(col => col.id !== currentStatus)
+                .map((col) => (
+                  <DropdownMenuItem
+                    key={col.id}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onQuickMove(task.id, col.id);
+                    }}
+                    className="cursor-pointer"
+                  >
+                    <MoveRight className="w-4 h-4 mr-2" />
+                    {col.titulo}
+                  </DropdownMenuItem>
+                ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      )}
 
       {/* Cover com Gradiente ou Imagem */}
       <TaskCoverImage
@@ -173,7 +217,7 @@ export const ModernKanbanCard = React.memo(({
         height="h-20 sm:h-24"
       >
         {/* Countdown Timer */}
-        {task.prazo_executor && (
+        {task.prazo_executor && !quickMoveColumns && (
           <div className="absolute top-2 right-2">
             <div className={`bg-black/60 backdrop-blur-md rounded-lg px-2 sm:px-3 py-1 sm:py-1.5 flex items-center gap-1 sm:gap-2 ${countdownColor}`}>
               <Clock className="w-3 h-3 sm:w-4 sm:h-4" />
@@ -193,7 +237,10 @@ export const ModernKanbanCard = React.memo(({
       </TaskCoverImage>
 
       {/* Content */}
-      <div className="p-3 sm:p-4 space-y-3">
+      <div className="p-3 sm:p-4 space-y-3" onClick={(e) => {
+        e.stopPropagation();
+        handleClick();
+      }}>
         {/* Header com Avatar */}
         <div className="flex items-start justify-between gap-2 sm:gap-3">
           <div className="flex-1 min-w-0">

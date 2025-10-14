@@ -41,11 +41,13 @@ interface TaskKanbanBoardProps {
 function KanbanColumnComponent({ 
   column, 
   onTaskCreate, 
-  onTaskClick 
+  onTaskClick,
+  onTaskMove
 }: { 
   column: KanbanColumn; 
   onTaskCreate: (columnId: string) => void;
   onTaskClick: (task: KanbanTask) => void;
+  onTaskMove: (taskId: string, newStatus: string) => void;
 }) {
   const { setNodeRef, isOver } = useDroppable({
     id: column.id,
@@ -95,6 +97,21 @@ function KanbanColumnComponent({
                   key={task.id} 
                   task={task} 
                   onTaskClick={onTaskClick}
+                  quickMoveColumns={[
+                    { id: 'a_fazer', titulo: 'A Fazer' },
+                    { id: 'em_andamento', titulo: 'Em Andamento' },
+                    { id: 'concluido', titulo: 'Concluído' }
+                  ]}
+                  onQuickMove={(taskId, statusId) => {
+                    const statusMapping = {
+                      'a_fazer': 'backlog',
+                      'em_andamento': 'em_andamento',
+                      'concluido': 'concluido'
+                    };
+                    const newStatus = statusMapping[statusId as keyof typeof statusMapping];
+                    onTaskMove(taskId, newStatus);
+                  }}
+                  currentStatus={task.status === 'backlog' ? 'a_fazer' : task.status === 'em_progresso' ? 'em_andamento' : task.status === 'finalizado' ? 'concluido' : task.status}
                 />
               ))}
             </AnimatePresence>
@@ -201,6 +218,7 @@ export function TaskKanbanBoard({ tasks, onTaskMove, onTaskCreate, onTaskClick, 
             column={column}
             onTaskCreate={onTaskCreate}
             onTaskClick={onTaskClick}
+            onTaskMove={onTaskMove}
           />
         ))}
       </div>
