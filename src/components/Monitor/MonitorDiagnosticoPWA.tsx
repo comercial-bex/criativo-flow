@@ -62,13 +62,20 @@ export function MonitorDiagnosticoPWA() {
     if ('serviceWorker' in navigator) {
       const registration = await navigator.serviceWorker.getRegistration();
       
+      console.log('[SW Diagnostic]', {
+        registered: !!registration,
+        active: !!registration?.active,
+        waiting: !!registration?.waiting,
+        controlling: !!navigator.serviceWorker.controller,
+      });
+      
       if (registration) {
         setSwStatus({
           registered: true,
           active: !!registration.active,
           waiting: !!registration.waiting,
           cacheSize: 0,
-          version: 'bex-flow-v2'
+          version: 'bex-v4.0.4'
         });
 
         // Tentar obter tamanho do cache
@@ -257,6 +264,23 @@ export function MonitorDiagnosticoPWA() {
                 {(swStatus.cacheSize / 1024 / 1024).toFixed(2)} MB
               </span>
             </div>
+
+            {swStatus.registered && !swStatus.active && (
+              <Button 
+                onClick={async () => {
+                  const registration = await navigator.serviceWorker.getRegistration();
+                  if (registration?.waiting) {
+                    registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+                    window.location.reload();
+                  }
+                }}
+                variant="destructive" 
+                size="sm"
+                className="w-full mt-2"
+              >
+                Forçar Ativação do Service Worker
+              </Button>
+            )}
           </div>
         </Card>
 

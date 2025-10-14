@@ -105,14 +105,33 @@ if (import.meta.env.PROD) {
   window.addEventListener('load', () => {
     const perfData = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
     if (perfData) {
+      const metrics = {
+        'DNS': perfData.domainLookupEnd - perfData.domainLookupStart,
+        'TCP': perfData.connectEnd - perfData.connectStart,
+        'TTFB': perfData.responseStart - perfData.requestStart,
+        'Download': perfData.responseEnd - perfData.responseStart,
+        'DOM Processing': perfData.domComplete - perfData.domContentLoadedEventStart,
+        'Total Load': perfData.loadEventEnd - perfData.fetchStart
+      };
+      
       console.log('📊 [BOOT METRICS]', {
-        'DNS': `${perfData.domainLookupEnd - perfData.domainLookupStart}ms`,
-        'TCP': `${perfData.connectEnd - perfData.connectStart}ms`,
-        'TTFB': `${perfData.responseStart - perfData.requestStart}ms`,
-        'Download': `${perfData.responseEnd - perfData.responseStart}ms`,
-        'DOM Processing': `${perfData.domComplete - perfData.domContentLoadedEventStart}ms`,
-        'Total Load': `${perfData.loadEventEnd - perfData.fetchStart}ms`
+        'DNS': `${metrics.DNS}ms`,
+        'TCP': `${metrics.TCP}ms`,
+        'TTFB': `${metrics.TTFB}ms`,
+        'Download': `${metrics.Download}ms`,
+        'DOM Processing': `${metrics['DOM Processing']}ms`,
+        'Total Load': `${metrics['Total Load']}ms`
       });
+      
+      // Calcular saúde estimada
+      const health = {
+        ttfb: metrics.TTFB < 600 ? 'good' : metrics.TTFB < 1000 ? 'ok' : 'poor',
+        total: metrics['Total Load'] < 3000 ? 'good' : metrics['Total Load'] < 5000 ? 'ok' : 'poor',
+        estimatedScore: metrics.TTFB < 600 && metrics['Total Load'] < 3000 ? 90 :
+                       metrics.TTFB < 1000 && metrics['Total Load'] < 5000 ? 65 : 35
+      };
+      
+      console.log('💚 [HEALTH]', health);
     }
   });
 } else {

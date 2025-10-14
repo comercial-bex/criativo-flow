@@ -99,6 +99,35 @@ const VideoBackground: React.FC<VideoBackgroundProps> = ({ videoUrl, imageUrl })
         }
     }, [videoUrl]);
 
+    // Play vídeo apenas APÓS interação ou 2s (melhora LCP)
+    useEffect(() => {
+        const video = videoRef.current;
+        if (!video) return;
+        
+        const startVideo = () => {
+            video.play().catch(err => console.log('Video autoplay prevented:', err));
+        };
+        
+        // Opção 1: Após 2s (garante LCP primeiro)
+        const timer = setTimeout(startVideo, 2000);
+        
+        // Opção 2: Ao scroll/click
+        const handleInteraction = () => {
+            startVideo();
+            window.removeEventListener('scroll', handleInteraction);
+            window.removeEventListener('click', handleInteraction);
+        };
+        
+        window.addEventListener('scroll', handleInteraction, { once: true });
+        window.addEventListener('click', handleInteraction, { once: true });
+        
+        return () => {
+            clearTimeout(timer);
+            window.removeEventListener('scroll', handleInteraction);
+            window.removeEventListener('click', handleInteraction);
+        };
+    }, []);
+
     return (
         <div className="absolute inset-0 w-full h-full overflow-hidden">
             <div className="absolute inset-0 bg-black/50 z-10" />
@@ -113,7 +142,6 @@ const VideoBackground: React.FC<VideoBackgroundProps> = ({ videoUrl, imageUrl })
                     ref={videoRef}
                     className="absolute inset-0 min-w-full min-h-full object-cover w-auto h-auto"
                     poster="/logo_bex_verde.png"
-                    autoPlay
                     loop
                     muted
                     playsInline

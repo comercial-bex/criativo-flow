@@ -37,29 +37,12 @@ export default defineConfig(({ mode }) => ({
         },
         chunkFileNames: 'assets/js/[name]-[hash].js',
         entryFileNames: 'assets/js/[name]-[hash].js',
-        manualChunks: (id) => {
-          if (id.includes('node_modules')) {
-            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
-              return 'react-vendor';
-            }
-            if (id.includes('@radix-ui')) {
-              return 'ui-vendor';
-            }
-            if (id.includes('@tanstack')) {
-              return 'query-vendor';
-            }
-            if (id.includes('supabase')) {
-              return 'supabase-vendor';
-            }
-            if (id.includes('recharts')) {
-              return 'chart-vendor';
-            }
-            if (id.includes('date-fns') || id.includes('clsx') || id.includes('tailwind-merge')) {
-              return 'utils-vendor';
-            }
-            return 'vendor';
-          }
-        }
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          'vendor-supabase': ['@supabase/supabase-js'],
+          'vendor-ui': ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-select'],
+          'vendor-charts': ['recharts'],
+        },
       },
       onwarn(warning, warn) {
         // Suprimir todos os avisos não-críticos de build
@@ -69,7 +52,7 @@ export default defineConfig(({ mode }) => ({
         warn(warning);
       }
     },
-    chunkSizeWarningLimit: 1000,
+    chunkSizeWarningLimit: 600,
     sourcemap: mode === 'development'
   },
   optimizeDeps: {

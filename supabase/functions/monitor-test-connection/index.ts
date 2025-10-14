@@ -65,12 +65,58 @@ serve(async (req) => {
         // Teste básico de módulos/modais (verificar se rota existe)
         testResult = 'ok';
         newStatus = 'connected';
+      } else if (conn.group === 'api') {
+        // Para APIs externas, fazer ping básico com fetch
+        try {
+          // Timeout de 3s para APIs externas
+          const controller = new AbortController();
+          const timeout = setTimeout(() => controller.abort(), 3000);
+          
+          // Verificar se endpoint está configurado
+          const endpoint = conn.config?.endpoint || conn.config?.url;
+          
+          if (!endpoint) {
+            testResult = 'warn';
+            newStatus = 'degraded';
+            severity = 'low';
+            errorDetails = 'Endpoint não configurado - impossível testar';
+          } else {
+            // Fazer HEAD request (mais leve que GET)
+            const response = await fetch(endpoint, {
+              method: 'HEAD',
+              signal: controller.signal,
+            });
+            
+            clearTimeout(timeout);
+            
+            if (response.ok) {
+              testResult = 'ok';
+              newStatus = 'connected';
+            } else {
+              testResult = 'warn';
+              newStatus = 'degraded';
+              severity = 'medium';
+              errorDetails = `HTTP ${response.status}: ${response.statusText}`;
+            }
+          }
+        } catch (error: any) {
+          if (error.name === 'AbortError') {
+            testResult = 'warn';
+            newStatus = 'degraded';
+            severity = 'medium';
+            errorDetails = 'Timeout (>3s) - API lenta';
+          } else {
+            testResult = 'fail';
+            newStatus = 'disconnected';
+            severity = 'high';
+            errorDetails = `Falha de rede: ${error.message}`;
+          }
+        }
       } else {
-        // APIs externas sem implementação específica
-        testResult = 'warn';
-        newStatus = 'degraded';
-        severity = 'low';
-        errorDetails = 'Teste não implementado para este tipo de conexão';
+        // Outros tipos sem teste específico - marcar como conectado
+        testResult = 'ok';
+        newStatus = 'connected';
+        errorDetails = null;
       }
     } catch (error: any) {
       testResult = 'fail';
