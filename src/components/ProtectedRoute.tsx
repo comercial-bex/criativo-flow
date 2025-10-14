@@ -75,20 +75,25 @@ export function ProtectedRoute({
 
   // Check module access only if module is specified
   if (module) {
-    const hasAccess = hasModuleAccess(module);
-    console.log('🛡️ ProtectedRoute: Module access check', { module, hasAccess });
-    
-    if (!hasAccess) {
-      console.log('🛡️ ProtectedRoute: Module access denied');
-      return <Navigate to="/unauthorized" replace />;
-    }
+    try {
+      const hasAccess = hasModuleAccess(module);
+      console.log('🛡️ ProtectedRoute: Module access check', { module, hasAccess });
+      
+      if (!hasAccess) {
+        console.log('🛡️ ProtectedRoute: Module access denied');
+        return <Navigate to="/unauthorized" replace />;
+      }
 
-    // Check specific action permission
-    const canPerform = canPerformAction(module, action);
-    console.log('🛡️ ProtectedRoute: Action permission check', { module, action, canPerform });
-    
-    if (!canPerform) {
-      console.log('🛡️ ProtectedRoute: Action permission denied');
+      // Check specific action permission
+      const canPerform = canPerformAction(module, action);
+      console.log('🛡️ ProtectedRoute: Action permission check', { module, action, canPerform });
+      
+      if (!canPerform) {
+        console.log('🛡️ ProtectedRoute: Action permission denied');
+        return <Navigate to="/unauthorized" replace />;
+      }
+    } catch (error) {
+      console.error('❌ ProtectedRoute: Error checking permissions', error);
       return <Navigate to="/unauthorized" replace />;
     }
   }

@@ -8,6 +8,16 @@ export async function registerServiceWorker(): Promise<ServiceWorkerRegistration
   }
 
   try {
+    // 🆕 Hard refresh flag - force cache clear
+    const urlParams = new URLSearchParams(window.location.search);
+    const forceRefresh = urlParams.has('force-refresh');
+    
+    if (forceRefresh) {
+      console.log('🔥 Force refresh detected - clearing all caches');
+      const cacheNames = await caches.keys();
+      await Promise.all(cacheNames.map(name => caches.delete(name)));
+    }
+
     // Desregistrar Service Workers antigos
     const registrations = await navigator.serviceWorker.getRegistrations();
     for (const registration of registrations) {

@@ -93,7 +93,7 @@ export class ErrorBoundary extends Component<Props, State> {
               Desculpe, ocorreu um erro inesperado. Tente recarregar a página.
             </p>
 
-            {process.env.NODE_ENV === 'development' && this.state.error && (
+            {this.state.error && (
               <details className="text-left bg-muted p-4 rounded-lg">
                 <summary className="cursor-pointer font-semibold mb-2">
                   Detalhes do erro
@@ -102,6 +102,16 @@ export class ErrorBoundary extends Component<Props, State> {
                   {this.state.error.toString()}
                   {this.state.errorInfo?.componentStack}
                 </pre>
+                <button
+                  onClick={() => {
+                    const errorText = `${this.state.error}\n${this.state.errorInfo?.componentStack}`;
+                    navigator.clipboard.writeText(errorText);
+                    alert('Erro copiado para área de transferência');
+                  }}
+                  className="mt-2 px-3 py-1 bg-primary text-primary-foreground rounded text-sm"
+                >
+                  📋 Copiar logs
+                </button>
               </details>
             )}
 
