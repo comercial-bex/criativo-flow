@@ -39,10 +39,7 @@ export function usePessoas(papel?: 'colaborador' | 'especialista' | 'cliente') {
     queryFn: async () => {
       let query = supabase
         .from('pessoas')
-        .select(`
-          *,
-          user_roles(role)
-        `)
+        .select('*')
         .order('nome', { ascending: true });
       
       if (papel) {
@@ -50,12 +47,21 @@ export function usePessoas(papel?: 'colaborador' | 'especialista' | 'cliente') {
       }
       
       const { data, error } = await query;
-      if (error) throw error;
+      
+      console.log('🔍 Query pessoas - Resultado:', {
+        total: data?.length || 0,
+        papel: papel || 'todos',
+        primeiros3: data?.slice(0, 3).map(p => ({ nome: p.nome, papeis: p.papeis }))
+      });
+      
+      if (error) {
+        console.error('❌ Erro ao buscar pessoas:', error);
+        throw error;
+      }
       
       // Processar dados retornados
       return (data || []).map((p: any) => ({
         ...p,
-        role: p.user_roles?.[0]?.role || null,
         tem_acesso_sistema: !!p.profile_id
       })) as Pessoa[];
     },
