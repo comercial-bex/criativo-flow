@@ -8,6 +8,8 @@ import { StatsGrid } from '@/components/StatsGrid';
 import { QuickActions } from '@/components/QuickActions';
 import { useTutorial } from '@/hooks/useTutorial';
 import { TutorialButton } from '@/components/TutorialButton';
+import { SkeletonDashboard } from '@/components/ui/skeleton-dashboard';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface DashboardStats {
   totalClientes: number;
@@ -28,6 +30,9 @@ function Dashboard() {
   const { startTutorial, hasSeenTutorial } = useTutorial('dashboard');
 
   useEffect(() => {
+    // FASE 3: Renderizar UI imediatamente
+    setLoading(false);
+    
     const fetchStats = async () => {
       try {
         // Try to fetch stats, but use fallbacks if tables don't exist
@@ -76,25 +81,27 @@ function Dashboard() {
         });
       } catch (error) {
         console.error('Erro ao carregar estatísticas:', error);
-        // Set mock data if database is not available
         setStats({
           totalClientes: 0,
           totalProjetos: 0,
           totalLeads: 0,
           tarefasPendentes: 0
         });
-      } finally {
-        setLoading(false);
       }
     };
 
-    fetchStats();
+    // FASE 3: Buscar dados em background usando requestIdleCallback
+    if (typeof requestIdleCallback !== 'undefined') {
+      requestIdleCallback(() => fetchStats());
+    } else {
+      setTimeout(() => fetchStats(), 0);
+    }
   }, []);
 
   const statsData = [
     {
       title: 'Total de Clientes',
-      value: loading ? '...' : stats.totalClientes,
+      value: stats.totalClientes,
       icon: Users,
       description: 'Clientes cadastrados',
       trend: { value: '12%', isPositive: true },
@@ -102,7 +109,7 @@ function Dashboard() {
     },
     {
       title: 'Projetos Ativos',
-      value: loading ? '...' : stats.totalProjetos,
+      value: stats.totalProjetos,
       icon: FolderOpen,
       description: 'Projetos em andamento',
       trend: { value: '5%', isPositive: true },
@@ -110,7 +117,7 @@ function Dashboard() {
     },
     {
       title: 'Leads no Funil',
-      value: loading ? '...' : stats.totalLeads,
+      value: stats.totalLeads,
       icon: Target,
       description: 'Oportunidades ativas',
       trend: { value: '3%', isPositive: true },
@@ -118,7 +125,7 @@ function Dashboard() {
     },
     {
       title: 'Tarefas Pendentes',
-      value: loading ? '...' : stats.tarefasPendentes,
+      value: stats.tarefasPendentes,
       icon: Clock,
       description: 'Aguardando execução',
       trend: { value: '2%', isPositive: false },

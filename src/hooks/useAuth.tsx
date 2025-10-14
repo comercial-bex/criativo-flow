@@ -1,6 +1,7 @@
 import { useState, useEffect, createContext, useContext } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { authCache } from '@/lib/auth-cache';
 
 interface AuthContextType {
   user: User | null;
@@ -217,6 +218,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     } catch (error) {
       console.error('Erro no logout:', error);
     } finally {
+      // FASE 1: Limpar cache ao fazer logout
+      authCache.clear();
       // Limpar estado local mesmo se logout falhar
       setSession(null);
       setUser(null);

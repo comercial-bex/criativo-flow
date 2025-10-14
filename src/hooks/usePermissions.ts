@@ -1,6 +1,7 @@
 import { useUserRole, UserRole } from './useUserRole';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { authCache } from '@/lib/auth-cache';
 
 export interface PermissionActions {
   canView: boolean;
@@ -152,55 +153,76 @@ export function usePermissions() {
     
     if (!role || loading) {
       console.log('🔑 Permissions: Waiting for role or still loading...');
+      setPermissionsLoading(false);
+      return;
+    }
+
+    // FASE 1: Tentar cache primeiro
+    const cachedPermissions = authCache.get<Record<string, PermissionActions>>(`permissions_${role}`);
+    if (cachedPermissions) {
+      console.log('✅ Permissions: Using cached permissions');
+      setDynamicPermissions(cachedPermissions);
+      setPermissionsLoading(false);
       return;
     }
 
     console.log('🔑 Permissions: Fetching permissions for role:', role);
     
-    // Timeout para permissões
-    const permTimeout = setTimeout(() => {
-      console.log('⚠️ Permissions: Timeout reached, using static permissions');
-      setPermissionsLoading(false);
-    }, 1000);
+    // FASE 3: Renderizar primeiro, buscar em background
+    setPermissionsLoading(false);
+    
+    // Defer para background
+    const fetchInBackground = () => {
+      const permTimeout = setTimeout(() => {
+        console.log('⚠️ Permissions: Timeout reached, using static permissions');
+      }, 1000);
 
-    const fetchPermissions = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('role_permissions')
-          .select('*')
-          .eq('role', role);
+      const fetchPermissions = async () => {
+        try {
+          const { data, error } = await supabase
+            .from('role_permissions')
+            .select('*')
+            .eq('role', role);
 
-        clearTimeout(permTimeout);
+          clearTimeout(permTimeout);
 
-        if (error) {
-          console.warn('🔑 Permissions: Error fetching permissions:', error);
-          setPermissionsLoading(false);
-          return;
+          if (error) {
+            console.warn('🔑 Permissions: Error fetching permissions:', error);
+            return;
+          }
+
+          const permissions: Record<string, PermissionActions> = {};
+          data?.forEach((perm: RolePermission) => {
+            permissions[perm.module] = {
+              canView: perm.can_view,
+              canCreate: perm.can_create,
+              canEdit: perm.can_edit,
+              canDelete: perm.can_delete,
+            };
+          });
+
+          console.log('🔑 Permissions: Dynamic permissions loaded:', permissions);
+          
+          // FASE 1: Cachear permissões
+          authCache.set(`permissions_${role}`, permissions);
+          
+          setDynamicPermissions(permissions);
+        } catch (error) {
+          console.error('🔑 Permissions: Error fetching permissions:', error);
+          clearTimeout(permTimeout);
         }
+      };
 
-        const permissions: Record<string, PermissionActions> = {};
-        data?.forEach((perm: RolePermission) => {
-          permissions[perm.module] = {
-            canView: perm.can_view,
-            canCreate: perm.can_create,
-            canEdit: perm.can_edit,
-            canDelete: perm.can_delete,
-          };
-        });
-
-        console.log('🔑 Permissions: Dynamic permissions loaded:', permissions);
-        setDynamicPermissions(permissions);
-      } catch (error) {
-        console.error('🔑 Permissions: Error fetching permissions:', error);
-        clearTimeout(permTimeout);
-      } finally {
-        setPermissionsLoading(false);
-      }
+      fetchPermissions();
+      return () => clearTimeout(permTimeout);
     };
 
-    fetchPermissions();
-    
-    return () => clearTimeout(permTimeout);
+    // Usar requestIdleCallback se disponível
+    if (typeof requestIdleCallback !== 'undefined') {
+      requestIdleCallback(fetchInBackground);
+    } else {
+      setTimeout(fetchInBackground, 0);
+    }
   }, [role, loading]);
 
   const getModulePermissions = (module: keyof ModulePermissions): PermissionActions => {
