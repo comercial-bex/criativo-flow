@@ -77,7 +77,7 @@ export function ResponsiveLayout({ children }: ResponsiveLayoutProps) {
                 className="cursor-pointer hover:text-bex transition-colors"
                 onClick={() => setShowVersion(!showVersion)}
               >
-                🎮 BEX Flow v4.0.0
+                🎮 BEX Flow v4.0.1
               </span>
               {showVersion && (
                 <span className="text-[10px] opacity-60">- Gamer Edition</span>

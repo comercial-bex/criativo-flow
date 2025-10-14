@@ -67,7 +67,7 @@ try {
 
 // Detecção de versão antiga e limpeza automática
 if (import.meta.env.PROD) {
-  const APP_VERSION = '4.0.0';
+  const APP_VERSION = '4.0.1';
   const storedVersion = localStorage.getItem('app-version');
   
   if (storedVersion && storedVersion !== APP_VERSION) {
