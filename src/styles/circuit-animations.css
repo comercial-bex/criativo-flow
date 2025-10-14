@@ -1,0 +1,53 @@
+/* Circuit Line Animations */
+@keyframes circuit-flow {
+  0% {
+    stroke-dashoffset: 30;
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes circuit-warning {
+  0%, 100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes circuit-error {
+  0%, 100% {
+    stroke-dashoffset: 10;
+  }
+  50% {
+    stroke-dashoffset: 0;
+  }
+}
+
+.circuit-flow {
+  animation: circuit-flow 2s linear infinite;
+}
+
+.circuit-warning {
+  animation: circuit-warning 1.5s ease-in-out infinite;
+}
+
+.circuit-error {
+  animation: circuit-error 1s ease-in-out infinite;
+}
+
+/* Node Glow Effect */
+@keyframes node-glow {
+  0%, 100% {
+    box-shadow: 0 0 10px currentColor;
+  }
+  50% {
+    box-shadow: 0 0 20px currentColor;
+  }
+}
+
+.node-glow {
+  animation: node-glow 2s ease-in-out infinite;
+}
