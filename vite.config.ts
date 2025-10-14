@@ -41,6 +41,11 @@ export default defineConfig(({ mode }) => ({
           'chart-vendor': ['recharts'],
           'utils-vendor': ['date-fns', 'clsx', 'tailwind-merge']
         }
+      },
+      onwarn(warning, warn) {
+        // Suprimir avisos de importação mista (dinâmica + estática)
+        if (warning.code === 'MIXED_IMPORTS') return;
+        warn(warning);
       }
     },
     chunkSizeWarningLimit: 500,
