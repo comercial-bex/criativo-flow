@@ -1,7 +1,7 @@
 // BEX 4.0 - Advanced Service Worker
-// Version: 4.0.6
+// Version: 4.0.7
 
-const CACHE_VERSION = 'bex-v4.0.6';
+const CACHE_VERSION = 'bex-v4.0.7';
 const STATIC_CACHE = 'bex-static-v3';
 const API_CACHE = 'bex-api-v3';
 const PAGES_CACHE = 'bex-pages-v3';
@@ -82,6 +82,12 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
+  // 🛡️ PROTEÇÃO GLOBAL: Ignorar métodos mutáveis (POST/PUT/PATCH/DELETE)
+  // Cache API só aceita GET - evita erro "Request method 'POST' is unsupported"
+  if (request.method !== 'GET') {
+    return;
+  }
+
   // Ignorar requisições não-HTTP
   if (!request.url.startsWith('http')) {
     return;
@@ -92,9 +98,15 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // 🎥 Vídeos grandes: Network-Only (evitar bloquear cache e timeout)
+  if (request.url.match(/\.(mp4|webm)$/)) {
+    event.respondWith(fetch(request));
+    return;
+  }
+
   // Determinar estratégia baseada no tipo de recurso
   if (matchesPattern(request.url, CACHE_PATTERNS.static)) {
-    // 🆕 FASE 2: Detectar chunks dinâmicos e usar Network-Only
+    // 🆕 Detectar chunks dinâmicos e usar Network-Only
     if (request.url.match(/\/assets\/js\/[A-Z][a-z]+-[A-Za-z0-9]+\.js$/)) {
       console.log('[SW] Dynamic chunk detected, using network-only:', request.url);
       event.respondWith(fetch(request)); // Network-only, sem cache
@@ -103,7 +115,6 @@ self.addEventListener('fetch', (event) => {
     
     // ESTRATÉGIA 1: Network-First para JS/CSS, Cache-First para outros
     if (request.url.match(/\.(js|css)$/)) {
-      // 🆕 FASE 1: Aumentar timeout para 5000ms
       event.respondWith(networkFirst(request, STATIC_CACHE, 5000));
     } else {
       event.respondWith(cacheFirst(request, STATIC_CACHE));
@@ -112,14 +123,14 @@ self.addEventListener('fetch', (event) => {
     // Cache-First para imagens
     event.respondWith(cacheFirst(request, IMAGE_CACHE));
   } else if (matchesPattern(request.url, CACHE_PATTERNS.api)) {
-    // ESTRATÉGIA 2: Network-First com Fallback para APIs
-    event.respondWith(networkFirst(request, API_CACHE));
+    // ESTRATÉGIA 2: Network-First com Fallback para APIs (somente GET)
+    event.respondWith(networkFirst(request, API_CACHE, 5000));
   } else if (request.mode === 'navigate') {
     // ESTRATÉGIA 3: Network-First para páginas HTML (com fallback)
-    event.respondWith(networkFirst(request, PAGES_CACHE, 800));
+    event.respondWith(networkFirst(request, PAGES_CACHE, 3000));
   } else {
     // Default: Network-First
-    event.respondWith(networkFirst(request, API_CACHE));
+    event.respondWith(networkFirst(request, API_CACHE, 5000));
   }
 });
 
@@ -173,8 +184,8 @@ async function cacheFirst(request, cacheName) {
   try {
     const response = await fetch(request);
     
-    // Cachear apenas respostas válidas
-    if (response.ok) {
+    // 🛡️ Cachear apenas GET com respostas válidas
+    if (request.method === 'GET' && response.ok) {
       cache.put(request, response.clone());
     }
     
@@ -203,8 +214,8 @@ async function networkFirst(request, cacheName, timeout = 3000) {
     // Tentar buscar da rede com timeout
     const response = await fetchWithTimeout(request, timeout);
     
-    // 🆕 FASE 4: Não cachear erros 404/500
-    if (response.ok && response.status === 200) {
+    // 🛡️ Cachear apenas GET com respostas válidas (não cachear 404/500)
+    if (request.method === 'GET' && response.ok && response.status === 200) {
       cache.put(request, response.clone());
     } else if (response.status === 404) {
       console.warn('[SW] Chunk não encontrado (404):', request.url);
@@ -216,7 +227,7 @@ async function networkFirst(request, cacheName, timeout = 3000) {
   } catch (error) {
     console.log('[SW] Network failed, trying cache:', request.url);
     
-    // 🆕 FASE 4: Para chunks JS dinâmicos, NÃO usar cache desatualizado
+    // Para chunks JS dinâmicos, NÃO usar cache desatualizado
     if (request.url.match(/\/assets\/js\/[A-Z][a-z]+-[A-Za-z0-9]+\.js$/)) {
       console.error('[SW] Dynamic chunk failed, not using stale cache');
       throw error; // Deixar React Suspense lidar com erro
