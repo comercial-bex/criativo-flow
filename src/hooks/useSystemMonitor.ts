@@ -67,16 +67,35 @@ export const useSystemMonitor = () => {
   // Testar uma conexão
   const testConnection = useMutation({
     mutationFn: async (connectionId: string) => {
-      const { data, error } = await supabase.functions.invoke('monitor-test-connection', {
-        body: { connection_id: connectionId }
-      });
-      if (error) throw error;
-      return data;
+      try {
+        const { data, error } = await supabase.functions.invoke('monitor-test-connection', {
+          body: { connection_id: connectionId }
+        });
+        
+        if (error) {
+          // Se Edge Function não estiver disponível, usar fallback
+          if (error.message?.includes('Failed to send') || error.message?.includes('FunctionsRelayError')) {
+            const { testConnectionFallback } = await import('@/lib/monitor-fallback');
+            return await testConnectionFallback(connectionId);
+          }
+          throw error;
+        }
+        
+        return data;
+      } catch (err: any) {
+        console.error('[Monitor] Erro ao testar conexão:', err);
+        throw err;
+      }
     },
-    onSuccess: () => {
+    onSuccess: (data: any) => {
       queryClient.invalidateQueries({ queryKey: ['system-connections'] });
       queryClient.invalidateQueries({ queryKey: ['system-checks-recent'] });
-      smartToast.success('Teste concluído', 'Conexão verificada com sucesso');
+      
+      if (data?.fallback_mode) {
+        smartToast.success('Teste concluído (modo local)', 'Conexão verificada');
+      } else {
+        smartToast.success('Teste concluído', 'Conexão verificada com sucesso');
+      }
     },
     onError: (error: any) => {
       smartToast.error('Erro no teste', error.message);
@@ -86,21 +105,71 @@ export const useSystemMonitor = () => {
   // Testar todas as conexões
   const testAll = useMutation({
     mutationFn: async () => {
-      const { data, error } = await supabase.functions.invoke('monitor-test-all');
-      if (error) throw error;
-      return data;
+      try {
+        const { data, error } = await supabase.functions.invoke('monitor-test-all');
+        
+        if (error) {
+          // Se Edge Function não estiver disponível, usar fallback
+          if (error.message?.includes('Failed to send') || error.message?.includes('FunctionsRelayError')) {
+            const { testConnectionFallback } = await import('@/lib/monitor-fallback');
+            
+            // Buscar todas as conexões com monitoramento ativo
+            const { data: connections } = await supabase
+              .from('system_connections')
+              .select('id')
+              .eq('monitoring_enabled', true);
+            
+            if (!connections?.length) {
+              return { total: 0, successful: 0, failed: 0, fallback_mode: true };
+            }
+            
+            // Testar em lote (até 5 simultâneos)
+            const batchSize = 5;
+            let successful = 0;
+            let failed = 0;
+            
+            for (let i = 0; i < connections.length; i += batchSize) {
+              const batch = connections.slice(i, i + batchSize);
+              const results = await Promise.allSettled(
+                batch.map(conn => testConnectionFallback(conn.id))
+              );
+              
+              successful += results.filter(r => r.status === 'fulfilled').length;
+              failed += results.filter(r => r.status === 'rejected').length;
+            }
+            
+            return { 
+              total: connections.length, 
+              successful, 
+              failed,
+              fallback_mode: true 
+            };
+          }
+          throw error;
+        }
+        
+        return data;
+      } catch (err: any) {
+        console.error('[Monitor] Erro ao testar todas conexões:', err);
+        throw err;
+      }
     },
     onSuccess: (data: any) => {
       queryClient.invalidateQueries({ queryKey: ['system-connections'] });
       queryClient.invalidateQueries({ queryKey: ['system-checks-recent'] });
       queryClient.invalidateQueries({ queryKey: ['system-events-critical'] });
+      
+      const mode = data?.fallback_mode ? ' (modo local)' : '';
       smartToast.success(
-        'Testes concluídos',
+        `Testes concluídos${mode}`,
         `${data.successful}/${data.total} conexões OK`
       );
     },
     onError: (error: any) => {
-      smartToast.error('Erro ao testar conexões', error.message);
+      smartToast.error(
+        'Erro ao testar conexões', 
+        error.message || 'Verifique se as Edge Functions estão disponíveis'
+      );
     },
   });
 

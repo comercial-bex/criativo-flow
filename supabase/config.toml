@@ -91,3 +91,12 @@ verify_jwt = false
 
 [functions.generate-roteiro-gpt4]
 verify_jwt = false
+
+[functions.monitor-test-connection]
+verify_jwt = true
+
+[functions.monitor-test-all]
+verify_jwt = true
+
+[functions.monitor-chat-assistant]
+verify_jwt = true

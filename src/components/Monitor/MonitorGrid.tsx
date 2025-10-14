@@ -1,16 +1,19 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, RefreshCw, Download } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Search, RefreshCw, Download, AlertCircle } from 'lucide-react';
 import { ConnectionCard } from './ConnectionCard';
 import { useSystemMonitor } from '@/hooks/useSystemMonitor';
 import { Skeleton } from '@/components/ui/skeleton';
+import { supabase } from '@/integrations/supabase/client';
 
 export function MonitorGrid() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterGroup, setFilterGroup] = useState<string>('all');
   const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [functionsAvailable, setFunctionsAvailable] = useState<boolean | null>(null);
 
   const {
     connections,
@@ -35,6 +38,24 @@ export function MonitorGrid() {
     acc[conn.group].push(conn);
     return acc;
   }, {} as Record<string, any[]>);
+
+  // Verificar disponibilidade das Edge Functions
+  useEffect(() => {
+    const checkFunctions = async () => {
+      try {
+        const { error } = await supabase.functions.invoke('monitor-test-connection', {
+          body: { connection_id: 'check-availability' }
+        });
+        setFunctionsAvailable(
+          !error?.message?.includes('Failed to send') && 
+          !error?.message?.includes('FunctionsRelayError')
+        );
+      } catch {
+        setFunctionsAvailable(false);
+      }
+    };
+    checkFunctions();
+  }, []);
 
   const exportCSV = () => {
     if (!connections) return;
@@ -73,6 +94,18 @@ export function MonitorGrid() {
 
   return (
     <div className="space-y-6">
+      {/* Aviso de Edge Functions indisponíveis */}
+      {functionsAvailable === false && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Edge Functions não disponíveis</AlertTitle>
+          <AlertDescription>
+            Os testes estão rodando em modo local (fallback). Para melhor performance, 
+            implante as Edge Functions: <code className="bg-black/10 px-2 py-1 rounded text-xs">supabase functions deploy monitor-test-all</code>
+          </AlertDescription>
+        </Alert>
+      )}
+
       {/* Filtros e Ações */}
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="relative flex-1">
