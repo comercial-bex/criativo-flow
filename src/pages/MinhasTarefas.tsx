@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { UniversalKanbanBoard } from '@/components/UniversalKanbanBoard';
 import { TaskDetailsModal } from '@/components/TaskDetailsModal';
+import { CreateTaskModal } from '@/components/CreateTaskModal';
 import { 
   CheckSquare, 
   Clock, 

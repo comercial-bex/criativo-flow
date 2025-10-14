@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { UniversalKanbanBoard } from '@/components/UniversalKanbanBoard';
 import { TaskDetailsModal } from '@/components/TaskDetailsModal';
+import { CreateTaskModal } from '@/components/CreateTaskModal';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { useTutorial } from '@/hooks/useTutorial';
@@ -39,7 +40,22 @@ const MinhasTarefasAudiovisual: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [selectedTask, setSelectedTask] = useState<AudiovisualTask | null>(null);
   const [showTaskModal, setShowTaskModal] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [selectedColumnId, setSelectedColumnId] = useState<string | null>(null);
   const { toast } = useToast();
+
+  const handleTaskCreate = (columnId?: string) => {
+    toast({
+      title: "⛔ Sem Permissão",
+      description: "Apenas GRS e Administradores podem criar tarefas.",
+      variant: "destructive"
+    });
+  };
+
+  const handleTaskCreated = async () => {
+    await fetchData();
+    setShowCreateModal(false);
+  };
   const { user } = useAuth();
   const { startTutorial, hasSeenTutorial } = useTutorial('audiovisual-minhas-tarefas');
 
@@ -278,13 +294,7 @@ const MinhasTarefasAudiovisual: React.FC = () => {
           setSelectedTask(task);
           setShowTaskModal(true);
         }}
-        onTaskCreate={() => {
-          toast({
-            title: "⛔ Sem Permissão",
-            description: "Apenas GRS e Administradores podem criar tarefas.",
-            variant: "destructive"
-          });
-        }}
+        onTaskCreate={handleTaskCreate}
         showSearch={true}
         showFilters={true}
       />
@@ -304,6 +314,13 @@ const MinhasTarefasAudiovisual: React.FC = () => {
           }}
         />
       )}
+
+      <CreateTaskModal
+        open={showCreateModal}
+        onOpenChange={setShowCreateModal}
+        onTaskCreate={handleTaskCreated}
+        defaultStatus={selectedColumnId || 'roteiro'}
+      />
     </div>
   );
 };

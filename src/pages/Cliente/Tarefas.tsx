@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { UniversalKanbanBoard, moduleConfigurations } from "@/components/UniversalKanbanBoard";
 import { TaskDetailsModal } from "@/components/TaskDetailsModal";
+import { CreateTaskModal } from "@/components/CreateTaskModal";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -54,6 +55,8 @@ export default function ClienteTarefas() {
   const [loading, setLoading] = useState(true);
   const [selectedTask, setSelectedTask] = useState<ClienteTask | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [selectedColumnId, setSelectedColumnId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [stats, setStats] = useState<ClienteStats>({
     total: 0,
@@ -166,6 +169,16 @@ export default function ClienteTarefas() {
   const handleTaskClick = (task: ClienteTask) => {
     setSelectedTask(task);
     setModalOpen(true);
+  };
+
+  const handleTaskCreate = (columnId?: string) => {
+    setSelectedColumnId(columnId || 'backlog');
+    setShowCreateModal(true);
+  };
+
+  const handleTaskCreated = async (taskData: any) => {
+    await fetchClienteTasks();
+    setShowCreateModal(false);
   };
 
   // Filtrar tarefas
@@ -338,7 +351,7 @@ export default function ClienteTarefas() {
             moduleColumns={moduleConfigurations.geral.map(col => ({ ...col, tasks: [] }))}
             moduleType="geral"
             onTaskMove={() => {}} // Cliente não pode mover tarefas
-            onTaskCreate={() => {}} // Cliente não pode criar tarefas
+            onTaskCreate={handleTaskCreate}
             onTaskClick={handleTaskClick}
             showFilters={false}
             showSearch={false}
@@ -390,6 +403,13 @@ export default function ClienteTarefas() {
           onTaskUpdate={async () => {}} // Cliente não pode editar tarefas
         />
       )}
+
+      <CreateTaskModal
+        open={showCreateModal}
+        onOpenChange={setShowCreateModal}
+        onTaskCreate={handleTaskCreated}
+        defaultStatus={selectedColumnId || 'backlog'}
+      />
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
-import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, closestCorners } from '@dnd-kit/core';
+import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, closestCorners, PointerSensor, useSensor, useSensors, DragOverEvent } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { useDroppable } from '@dnd-kit/core';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -312,8 +313,12 @@ function UniversalKanbanColumn({
   onTaskCreate: (columnId: string) => void;
   onTaskClick: (task: UniversalTask) => void;
 }) {
-  return <div className="flex-1 min-w-[300px] max-w-[350px]">
-      <Card className="h-full">
+  const { setNodeRef, isOver } = useDroppable({
+    id: column.id,
+  });
+
+  return <div ref={setNodeRef} className="flex-1 min-w-[300px] max-w-[350px]">
+      <Card className={`h-full transition-all ${isOver ? 'ring-2 ring-bex shadow-bex-glow' : ''}`}>
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <CardTitle className="text-sm font-semibold flex items-center gap-2">
@@ -364,6 +369,15 @@ export function UniversalKanbanBoard({
   const [selectedResponsavel, setSelectedResponsavel] = useState('all');
   const [selectedPrioridade, setSelectedPrioridade] = useState('all');
 
+  // Sensors para drag & drop
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    })
+  );
+
   // Filtrar tarefas
   const filteredTasks = useMemo(() => {
     return tasks.filter(task => {
@@ -400,20 +414,30 @@ export function UniversalKanbanBoard({
     const task = tasks.find(t => t.id === event.active.id);
     setActiveTask(task || null);
   };
-  const handleDragEnd = (event: DragEndEvent) => {
-    const {
-      active,
-      over
-    } = event;
-    if (!over) return;
-    const taskId = active.id as string;
-    const newStatus = over.id as string;
 
-    // Verificar se é uma coluna válida
-    const validColumn = columns.find(col => col.id === newStatus);
-    if (!validColumn) return;
-    onTaskMove(taskId, newStatus);
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    
     setActiveTask(null);
+    
+    if (!over) return;
+    
+    const taskId = active.id as string;
+    const overId = over.id as string;
+    
+    // Verificar se dropped em uma coluna
+    const targetColumn = columns.find(col => col.id === overId);
+    
+    if (targetColumn) {
+      // Dropped na coluna
+      onTaskMove(taskId, targetColumn.id);
+    } else {
+      // Dropped em outro card - pegar a coluna do card de destino
+      const targetTask = tasks.find(t => t.id === overId);
+      if (targetTask) {
+        onTaskMove(taskId, targetTask.status);
+      }
+    }
   };
   return <div className="space-y-6">
       {/* Filtros e busca */}
@@ -451,7 +475,12 @@ export function UniversalKanbanBoard({
         </div>}
 
       {/* Board Kanban */}
-      <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd} collisionDetection={closestCorners}>
+      <DndContext 
+        sensors={sensors}
+        onDragStart={handleDragStart} 
+        onDragEnd={handleDragEnd} 
+        collisionDetection={closestCorners}
+      >
         <div className="flex gap-6 overflow-x-auto pb-4 min-h-[600px]">
           {columns.map(column => <UniversalKanbanColumn key={column.id} column={column} onTaskCreate={onTaskCreate} onTaskClick={onTaskClick} />)}
         </div>

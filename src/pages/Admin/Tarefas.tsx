@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { UniversalKanbanBoard, moduleConfigurations } from "@/components/UniversalKanbanBoard";
 import { TaskDetailsModal } from "@/components/TaskDetailsModal";
+import { CreateTaskModal } from "@/components/CreateTaskModal";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { 
@@ -61,6 +62,8 @@ export default function AdminTarefas() {
   const [loading, setLoading] = useState(true);
   const [selectedTask, setSelectedTask] = useState<AdminTask | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [selectedColumnId, setSelectedColumnId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedSetor, setSelectedSetor] = useState('all');
   const [selectedStatus, setSelectedStatus] = useState('all');
@@ -197,6 +200,16 @@ export default function AdminTarefas() {
   const handleTaskClick = (task: AdminTask) => {
     setSelectedTask(task);
     setModalOpen(true);
+  };
+
+  const handleTaskCreate = (columnId?: string) => {
+    setSelectedColumnId(columnId || 'backlog');
+    setShowCreateModal(true);
+  };
+
+  const handleTaskCreated = async (taskData: any) => {
+    await fetchAllTasks();
+    setShowCreateModal(false);
   };
 
   // Filtrar tarefas
@@ -387,7 +400,7 @@ export default function AdminTarefas() {
             moduleColumns={moduleConfigurations.geral.map(col => ({ ...col, tasks: [] }))}
             moduleType="geral"
             onTaskMove={handleTaskMove}
-            onTaskCreate={() => {}}
+            onTaskCreate={handleTaskCreate}
             onTaskClick={handleTaskClick}
             showFilters={false}
             showSearch={false}
@@ -497,6 +510,13 @@ export default function AdminTarefas() {
           }}
         />
       )}
+
+      <CreateTaskModal
+        open={showCreateModal}
+        onOpenChange={setShowCreateModal}
+        onTaskCreate={handleTaskCreated}
+        defaultStatus={selectedColumnId || 'backlog'}
+      />
     </div>
   );
 }

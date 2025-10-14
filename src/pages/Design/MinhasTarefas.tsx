@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { UniversalKanbanBoard } from '@/components/UniversalKanbanBoard';
 import { TaskDetailsModal } from '@/components/TaskDetailsModal';
+import { CreateTaskModal } from '@/components/CreateTaskModal';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
@@ -46,9 +47,20 @@ export default function MinhasTarefasDesign() {
   const [tasks, setTasks] = useState<DesignTask[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedTask, setSelectedTask] = useState<DesignTask | null>(null);
+  const [showTaskModal, setShowTaskModal] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [selectedColumnId, setSelectedColumnId] = useState<string | null>(null);
 
   const { user } = useAuth();
   const { toast } = useToast();
+
+  const handleTaskCreate = () => {
+    toast({
+      title: "⛔ Sem Permissão",
+      description: "Apenas GRS e Administradores podem criar tarefas.",
+      variant: "destructive"
+    });
+  };
   const { startTutorial, hasSeenTutorial } = useTutorial('design-minhas-tarefas');
 
   useEffect(() => {
@@ -149,6 +161,7 @@ export default function MinhasTarefasDesign() {
 
   const handleTaskClick = (task: DesignTask) => {
     setSelectedTask(task);
+    setShowTaskModal(true);
   };
 
   const handleTaskUpdate = async (taskId: string, updates: any) => {
@@ -276,13 +289,7 @@ export default function MinhasTarefasDesign() {
         moduleColumns={[]}
         onTaskMove={handleTaskMove}
         onTaskClick={handleTaskClick}
-        onTaskCreate={() => {
-          toast({
-            title: "⛔ Sem Permissão",
-            description: "Apenas GRS e Administradores podem criar tarefas.",
-            variant: "destructive"
-          });
-        }}
+        onTaskCreate={handleTaskCreate}
         showSearch={true}
         showFilters={true}
       />
@@ -290,8 +297,8 @@ export default function MinhasTarefasDesign() {
       {/* Modal de Detalhes */}
       {selectedTask && (
         <TaskDetailsModal
-          open={!!selectedTask}
-          onOpenChange={(open) => !open && setSelectedTask(null)}
+          open={showTaskModal}
+          onOpenChange={setShowTaskModal}
           task={selectedTask as any}
           onTaskUpdate={async (taskId, updates) => {
             await handleTaskUpdate(taskId, updates);
