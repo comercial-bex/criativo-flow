@@ -509,13 +509,13 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
         setPostsGerados(postsFormatados);
         setPostsTemporarios(data);
         
-        // Backup no LocalStorage
-        localStorage.setItem(`posts_temp_${planejamento.id}`, JSON.stringify(postsFormatados));
+        // 🔒 SECURITY FIX: Usar sessionStorage em vez de localStorage para dados temporários sensíveis
+        sessionStorage.setItem(`posts_temp_${planejamento.id}`, JSON.stringify(postsFormatados));
         
         toast.info(`${data.length} posts temporários recuperados`);
       } else {
-        // Tentar recuperar do LocalStorage como fallback
-        const postsLocal = localStorage.getItem(`posts_temp_${planejamento.id}`);
+        // 🔒 SECURITY FIX: Tentar recuperar do sessionStorage como fallback
+        const postsLocal = sessionStorage.getItem(`posts_temp_${planejamento.id}`);
         if (postsLocal) {
           const posts = JSON.parse(postsLocal);
           setPostsGerados(posts);
@@ -646,14 +646,14 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
         throw error;
       }
 
-      // Backup no LocalStorage
-      localStorage.setItem(`posts_temp_${planejamento.id}`, JSON.stringify(postsGerados));
+      // 🔒 SECURITY FIX: Backup no sessionStorage (dados apagados ao fechar aba)
+      sessionStorage.setItem(`posts_temp_${planejamento.id}`, JSON.stringify(postsGerados));
       
       console.log('Posts temporários salvos automaticamente');
     } catch (error) {
       console.error('Erro ao salvar posts temporários:', error);
-      // Salvar pelo menos no LocalStorage como fallback
-      localStorage.setItem(`posts_temp_${planejamento.id}`, JSON.stringify(postsGerados));
+      // 🔒 SECURITY FIX: Salvar pelo menos no sessionStorage como fallback
+      sessionStorage.setItem(`posts_temp_${planejamento.id}`, JSON.stringify(postsGerados));
     }
   };
 
@@ -1844,9 +1844,9 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
       // Atualizar estado local
       setPostsGerados(prev => prev.filter(p => p.id !== postId));
       
-      // Atualizar localStorage
+      // 🔒 SECURITY FIX: Atualizar sessionStorage
       const updatedTempPosts = postsGerados.filter(p => p.id !== postId);
-      localStorage.setItem(`posts_temp_${planejamento.id}`, JSON.stringify(updatedTempPosts));
+      sessionStorage.setItem(`posts_temp_${planejamento.id}`, JSON.stringify(updatedTempPosts));
       
       // Recarregar posts salvos usando setPosts (sem verificações aqui pois já foi salvo no DB)
       // setPosts será atualizado automaticamente quando o componente pai recarregar
