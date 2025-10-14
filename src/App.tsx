@@ -261,6 +261,12 @@ function App() {
                 {/* Smart redirect for root path */}
                 <Route path="/" element={<SmartRedirect />} />
 
+                {/* Convenience redirects for specialists */}
+                <Route path="/grs" element={<Navigate to="/grs/painel" replace />} />
+                <Route path="/design" element={<Navigate to="/design/dashboard" replace />} />
+                <Route path="/audiovisual" element={<Navigate to="/audiovisual/dashboard" replace />} />
+                <Route path="/filmmaker" element={<Navigate to="/audiovisual/dashboard" replace />} />
+
                 {/* Unauthorized access */}
                 <Route path="/unauthorized" element={<Unauthorized />} />
 
