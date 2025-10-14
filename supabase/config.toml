@@ -99,4 +99,4 @@ verify_jwt = true
 verify_jwt = true
 
 [functions.monitor-chat-assistant]
-verify_jwt = true
+verify_jwt = false

@@ -64,8 +64,20 @@ export const useMonitorChat = (connectionId?: string) => {
   // Enviar mensagem
   const sendMessage = useMutation({
     mutationFn: async (message: string) => {
-      if (!thread || !connectionId) throw new Error('Thread não inicializado');
+      console.log('🔵 useMonitorChat.sendMessage - Iniciando', { 
+        threadId: thread?.id, 
+        connectionId, 
+        message 
+      });
 
+      if (!thread || !connectionId) {
+        const error = 'Thread não inicializado';
+        console.error('❌ useMonitorChat.sendMessage - Erro:', error);
+        throw new Error(error);
+      }
+
+      console.log('📡 Chamando edge function monitor-chat-assistant...');
+      
       const { data, error } = await supabase.functions.invoke('monitor-chat-assistant', {
         body: {
           thread_id: thread.id,
@@ -74,14 +86,25 @@ export const useMonitorChat = (connectionId?: string) => {
         }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Edge function retornou erro:', error);
+        throw error;
+      }
+
+      console.log('✅ Edge function respondeu com sucesso:', data);
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log('✅ useMonitorChat.sendMessage - Sucesso, invalidando queries');
       queryClient.invalidateQueries({ queryKey: ['monitor-chat-messages', thread?.id] });
+      smartToast.success('Mensagem enviada', 'Assistente respondeu com sucesso');
     },
     onError: (error: any) => {
-      smartToast.error('Erro ao enviar mensagem', error.message);
+      console.error('❌ useMonitorChat.sendMessage - Erro final:', error);
+      smartToast.error(
+        'Erro ao enviar mensagem', 
+        error.message || 'Verifique se a edge function está configurada'
+      );
     },
   });
 

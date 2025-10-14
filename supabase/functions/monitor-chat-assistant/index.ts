@@ -13,18 +13,26 @@ serve(async (req) => {
   }
 
   try {
+    console.log('🔵 monitor-chat-assistant - Nova requisição');
     const { thread_id, message, connection_id } = await req.json();
+    console.log('📥 Dados recebidos:', { thread_id, message, connection_id });
+    
     const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
 
     if (!OPENAI_API_KEY) {
+      console.error('❌ OPENAI_API_KEY não configurada');
       throw new Error('OPENAI_API_KEY não configurada');
     }
+
+    console.log('✅ OPENAI_API_KEY encontrada');
 
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
     );
 
+    console.log('🔍 Buscando contexto do sistema...');
+    
     // Buscar contexto: eventos recentes + checks + playbooks
     const { data: events } = await supabaseAdmin
       .from('system_events_bus')
@@ -33,6 +41,8 @@ serve(async (req) => {
       .eq('acknowledged', false)
       .order('created_at', { ascending: false })
       .limit(5);
+    
+    console.log('📊 Eventos encontrados:', events?.length || 0);
 
     const { data: checks } = await supabaseAdmin
       .from('system_checks')
@@ -87,6 +97,8 @@ ${playbooks?.map(p => `• ${p.title} (match: ${p.match_error})`).join('\n') || 
 💡 **Contexto Adicional:**
 [Se houver informações relevantes sobre o sistema]`;
 
+    console.log('🤖 Chamando OpenAI API...');
+    
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -105,17 +117,29 @@ ${playbooks?.map(p => `• ${p.title} (match: ${p.match_error})`).join('\n') || 
 
     if (!response.ok) {
       const errorData = await response.text();
+      console.error('❌ Erro OpenAI:', response.status, errorData);
       throw new Error(`OpenAI API error: ${response.status} - ${errorData}`);
     }
+    
+    console.log('✅ Resposta OpenAI recebida');
 
     const aiResult = await response.json();
     const assistantMessage = aiResult.choices[0].message.content;
+    
+    console.log('💾 Salvando mensagens no banco...');
 
     // Salvar mensagens no thread
-    await supabaseAdmin.from('system_chat_messages').insert([
+    const { error: insertError } = await supabaseAdmin.from('system_chat_messages').insert([
       { thread_id, role: 'user', content: message },
       { thread_id, role: 'assistant', content: assistantMessage }
     ]);
+    
+    if (insertError) {
+      console.error('❌ Erro ao salvar mensagens:', insertError);
+      throw insertError;
+    }
+    
+    console.log('✅ Mensagens salvas com sucesso');
 
     // Buscar playbook sugerido (se mencionado)
     let suggestedPlaybook = null;
@@ -126,6 +150,8 @@ ${playbooks?.map(p => `• ${p.title} (match: ${p.match_error})`).join('\n') || 
       }
     }
 
+    console.log('📤 Retornando resposta para o cliente');
+    
     return new Response(
       JSON.stringify({ 
         success: true, 
@@ -136,9 +162,13 @@ ${playbooks?.map(p => `• ${p.title} (match: ${p.match_error})`).join('\n') || 
     );
 
   } catch (error: any) {
-    console.error('Error in chat assistant:', error);
+    console.error('❌ Error in chat assistant:', error);
     return new Response(
-      JSON.stringify({ success: false, error: error.message }),
+      JSON.stringify({ 
+        success: false, 
+        error: error.message,
+        details: error.toString()
+      }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
     );
   }

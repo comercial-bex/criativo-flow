@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { MessageSquare, Send, X, Bot, User, AlertTriangle, BookOpen } from 'lucide-react';
+import { MessageSquare, Send, X, Bot, User, AlertTriangle, BookOpen, Loader2 } from 'lucide-react';
 import { useSystemMonitor } from '@/hooks/useSystemMonitor';
 import { useMonitorChat } from '@/hooks/useMonitorChat';
 
@@ -35,8 +35,15 @@ export function MonitorChat() {
   const handleSend = () => {
     if (!message.trim() || !selectedConnectionId) return;
     
+    console.log('📤 Enviando mensagem:', { message, selectedConnectionId });
     sendMessage(message);
     setMessage('');
+  };
+
+  const handleClose = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    console.log('🔴 Fechando chat');
+    setIsOpen(false);
   };
 
   const criticalCount = criticalEvents?.length || 0;
@@ -80,8 +87,12 @@ export function MonitorChat() {
           <Button
             size="icon"
             variant="ghost"
-            onClick={() => setIsOpen(false)}
-            className="text-primary-foreground hover:bg-primary-foreground/20"
+            onClick={handleClose}
+            onPointerDown={(e) => {
+              e.stopPropagation();
+              setIsOpen(false);
+            }}
+            className="text-primary-foreground hover:bg-primary-foreground/20 hover:bg-white/20"
           >
             <X className="h-4 w-4" />
           </Button>
@@ -148,6 +159,18 @@ export function MonitorChat() {
                   )}
                 </div>
               ))}
+              
+              {isSending && (
+                <div className="flex gap-3 justify-start">
+                  <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+                    <Bot className="h-4 w-4 text-primary-foreground" />
+                  </div>
+                  <div className="rounded-lg p-3 bg-muted flex items-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <p className="text-sm text-muted-foreground">Analisando...</p>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </ScrollArea>
@@ -175,13 +198,26 @@ export function MonitorChat() {
               size="sm"
               className="flex-1 gap-2"
             >
-              <Send className="h-4 w-4" />
-              {isSending ? 'Enviando...' : 'Enviar'}
+              {isSending ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Analisando...
+                </>
+              ) : (
+                <>
+                  <Send className="h-4 w-4" />
+                  Enviar
+                </>
+              )}
             </Button>
             
-            <Button variant="outline" size="sm" className="gap-2">
-              <BookOpen className="h-4 w-4" />
-              Playbooks
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleClose}
+              className="gap-2"
+            >
+              Fechar
             </Button>
           </div>
 
