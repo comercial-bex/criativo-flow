@@ -6,6 +6,7 @@ import {
   TooltipContent,
   TooltipTrigger,
   TooltipProvider,
+  TooltipPortal,
 } from "@/components/ui/tooltip";
 import { StepDescription } from "./step-descriptions";
 
@@ -84,47 +85,49 @@ export function StepperNav({ steps, currentStep, onStepClick }: StepperNavProps)
                         <HelpCircle className="h-3.5 w-3.5 text-primary" />
                       </button>
                     </TooltipTrigger>
-                    <TooltipContent 
-                      side="bottom" 
-                      className="max-w-sm p-4 bg-surface border-primary/20"
-                      style={{ background: bexThemeV3.colors.surface }}
-                    >
-                      <div className="space-y-3">
-                        <div>
-                          <h4 className="font-semibold text-sm mb-1 flex items-center gap-2" 
-                              style={{ color: bexThemeV3.colors.primary }}>
-                            {step.icon} {step.description.title}
-                          </h4>
+                    <TooltipPortal>
+                      <TooltipContent 
+                        side="bottom" 
+                        className="max-w-sm p-4 bg-surface border-primary/20 z-[9999]"
+                        style={{ background: bexThemeV3.colors.surface }}
+                      >
+                        <div className="space-y-3">
+                          <div>
+                            <h4 className="font-semibold text-sm mb-1 flex items-center gap-2" 
+                                style={{ color: bexThemeV3.colors.primary }}>
+                              {step.icon} {step.description.title}
+                            </h4>
+                          </div>
+                          
+                          <div className="space-y-2 text-xs">
+                            <div>
+                              <span className="font-medium" style={{ color: bexThemeV3.colors.accent }}>
+                                💡 Importância:
+                              </span>
+                              <p className="text-textMuted mt-0.5">{step.description.importance}</p>
+                            </div>
+                            
+                            <div>
+                              <span className="font-medium" style={{ color: bexThemeV3.colors.info }}>
+                                🔗 Conexão:
+                              </span>
+                              <p className="text-textMuted mt-0.5">{step.description.connection}</p>
+                            </div>
+                            
+                            <div>
+                              <span className="font-medium" style={{ color: bexThemeV3.colors.warning }}>
+                                ⚠️ Impacto:
+                              </span>
+                              <p className="text-textMuted mt-0.5">{step.description.impact}</p>
+                            </div>
+                            
+                            <div className="pt-2 border-t border-primary/10">
+                              <span className="text-textDark italic">Ex: {step.description.examples}</span>
+                            </div>
+                          </div>
                         </div>
-                        
-                        <div className="space-y-2 text-xs">
-                          <div>
-                            <span className="font-medium" style={{ color: bexThemeV3.colors.accent }}>
-                              💡 Importância:
-                            </span>
-                            <p className="text-textMuted mt-0.5">{step.description.importance}</p>
-                          </div>
-                          
-                          <div>
-                            <span className="font-medium" style={{ color: bexThemeV3.colors.info }}>
-                              🔗 Conexão:
-                            </span>
-                            <p className="text-textMuted mt-0.5">{step.description.connection}</p>
-                          </div>
-                          
-                          <div>
-                            <span className="font-medium" style={{ color: bexThemeV3.colors.warning }}>
-                              ⚠️ Impacto:
-                            </span>
-                            <p className="text-textMuted mt-0.5">{step.description.impact}</p>
-                          </div>
-                          
-                          <div className="pt-2 border-t border-primary/10">
-                            <span className="text-textDark italic">Ex: {step.description.examples}</span>
-                          </div>
-                        </div>
-                      </div>
-                    </TooltipContent>
+                      </TooltipContent>
+                    </TooltipPortal>
                   </Tooltip>
                 )}
               </div>
