@@ -22,6 +22,7 @@ import { TaskTimer } from '@/components/TaskTimer';
 import { TaskQuickTimeDialog } from '@/components/TaskQuickTimeDialog';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+import { supabase } from '@/integrations/supabase/client';
 import {
   Calendar, 
   Clock, 
@@ -114,12 +115,12 @@ export function TaskDetailsModal({ open, onOpenChange, task, onTaskUpdate }: Tas
       
       // Carregar briefing da tabela briefings
       const loadBriefing = async () => {
-        const { supabase } = await import('@/integrations/supabase/client');
         const { data } = await supabase
           .from('briefings')
           .select('*')
           .eq('tarefa_id', task.id)
           .maybeSingle();
+        
         
         if (data) {
           setBriefingEditData({
@@ -221,7 +222,6 @@ export function TaskDetailsModal({ open, onOpenChange, task, onTaskUpdate }: Tas
     const newProgress = updated.length > 0 ? (newCompletedCount / updated.length) * 100 : 0;
     
     try {
-      const { supabase } = await import('@/integrations/supabase/client');
       await supabase
         .from('tarefa')
         .update({
@@ -270,7 +270,6 @@ export function TaskDetailsModal({ open, onOpenChange, task, onTaskUpdate }: Tas
     const newProgress = updated.length > 0 ? (updated.filter(i => i.completed).length / updated.length) * 100 : 0;
     
     try {
-      const { supabase } = await import('@/integrations/supabase/client');
       await supabase
         .from('tarefa')
         .update({
@@ -294,9 +293,9 @@ export function TaskDetailsModal({ open, onOpenChange, task, onTaskUpdate }: Tas
 
       // Se houver observações de trabalho, adicionar ao briefing
       if (editData.observacoes_trabalho) {
-        const { supabase } = await import('@/integrations/supabase/client');
         const timestamp = new Date().toLocaleString('pt-BR');
         const novaObservacao = `[${timestamp}] ${editData.observacoes_trabalho}`;
+        
         
         const { data: briefingAtual } = await supabase
           .from('briefings')
@@ -333,7 +332,6 @@ export function TaskDetailsModal({ open, onOpenChange, task, onTaskUpdate }: Tas
     if (!task) return;
     
     try {
-      const { supabase } = await import('@/integrations/supabase/client');
       
       // Salvar briefing na tabela briefings
       const { error } = await supabase
@@ -391,9 +389,9 @@ export function TaskDetailsModal({ open, onOpenChange, task, onTaskUpdate }: Tas
     });
 
     if (observation) {
-      const { supabase } = await import('@/integrations/supabase/client');
       const timestamp = new Date().toLocaleString('pt-BR');
       const novaObservacao = `[${timestamp}] ${observation}`;
+      
       
       const { data: briefingAtual } = await supabase
         .from('briefings')
