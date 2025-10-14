@@ -46,6 +46,8 @@ interface DashboardMetrics {
   projetosConcluidos: number;
 }
 
+type FiltroStatus = 'todos' | 'ativos' | 'concluidos';
+
 export default function GRSDashboard() {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -60,6 +62,7 @@ export default function GRSDashboard() {
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [tipoModal, setTipoModal] = useState<'avulso' | 'campanha' | 'plano_editorial'>('avulso');
+  const [filtroStatus, setFiltroStatus] = useState<FiltroStatus>('todos');
 
   useEffect(() => {
     fetchClientesEProjetos();
@@ -67,28 +70,48 @@ export default function GRSDashboard() {
 
   const fetchClientesEProjetos = async () => {
     try {
-      // Fetch clientes ativos
+      // 🔍 FASE 1: Buscar usuário logado
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({
+          title: "Erro de autenticação",
+          description: "Usuário não autenticado",
+          variant: "destructive",
+        });
+        setLoading(false);
+        return;
+      }
+
+      console.log('🔍 Buscando dados para GRS:', user.id);
+
+      // 🎯 FASE 1: Filtrar clientes por GRS responsável
       const { data: clientes, error: clientesError } = await supabase
         .from('clientes')
         .select('id, nome, email, status')
         .eq('status', 'ativo')
+        .eq('responsavel_id', user.id)  // ✅ Filtrar por GRS responsável
         .order('nome');
 
       if (clientesError) throw clientesError;
+      console.log('📊 Clientes vinculados ao GRS:', clientes?.length || 0);
 
-      // Fetch projetos
+      // 🎯 FASE 2: Buscar projetos onde GRS está vinculado
       const { data: projetos, error: projetosError } = await supabase
         .from('projetos')
-        .select('id, cliente_id, status');
+        .select('id, cliente_id, status, responsavel_grs_id')
+        .or(`responsavel_grs_id.eq.${user.id},id.in.(select projeto_id from projeto_especialistas where especialista_id='${user.id}' and especialidade='grs')`);
 
       if (projetosError) throw projetosError;
+      console.log('📁 Projetos vinculados ao GRS:', projetos?.length || 0);
 
-      // Fetch planejamentos
+      // 🎯 FASE 3: Filtrar planejamentos vinculados
       const { data: planejamentos, error: planejamentosError } = await supabase
         .from('planejamentos')
-        .select('id, cliente_id, status');
+        .select('id, cliente_id, status')
+        .eq('responsavel_grs_id', user.id);  // ✅ Filtrar por GRS responsável
 
       if (planejamentosError) throw planejamentosError;
+      console.log('📅 Planejamentos vinculados ao GRS:', planejamentos?.length || 0);
 
       // Simulação de dados de aprovações e mensagens para demonstração
       // Em produção, buscar das tabelas reais
@@ -259,6 +282,30 @@ export default function GRSDashboard() {
 
         <div className="flex items-center justify-between">
           <div className="flex gap-2">
+            {/* 🎯 FASE 4: Filtros de Status */}
+            <Button
+              variant={filtroStatus === 'todos' ? 'default' : 'outline'}
+              onClick={() => setFiltroStatus('todos')}
+              size="sm"
+            >
+              Todos os Clientes
+            </Button>
+            <Button
+              variant={filtroStatus === 'ativos' ? 'default' : 'outline'}
+              onClick={() => setFiltroStatus('ativos')}
+              size="sm"
+            >
+              Com Projetos Ativos
+            </Button>
+            <Button
+              variant={filtroStatus === 'concluidos' ? 'default' : 'outline'}
+              onClick={() => setFiltroStatus('concluidos')}
+              size="sm"
+            >
+              Com Projetos Concluídos
+            </Button>
+          </div>
+          <div className="flex gap-2">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button data-tour="criar-planejamento">
@@ -353,9 +400,23 @@ export default function GRSDashboard() {
             <div className="text-center py-8">Carregando...</div>
           ) : clientesComProjetos.length === 0 ? (
             <div className="text-center py-8">
-              <p className="text-muted-foreground">Nenhum cliente ativo encontrado</p>
+              <p className="text-muted-foreground">Nenhum cliente vinculado a você encontrado</p>
             </div>
-          ) : (
+          ) : (() => {
+            // 🎯 Aplicar filtro de status
+            const clientesFiltrados = clientesComProjetos.filter(cliente => {
+              if (filtroStatus === 'ativos') return cliente.projetosAtivos > 0;
+              if (filtroStatus === 'concluidos') return cliente.projetosConcluidos > 0;
+              return true; // 'todos'
+            });
+
+            return clientesFiltrados.length === 0 ? (
+              <div className="text-center py-8">
+                <p className="text-muted-foreground">
+                  Nenhum cliente com {filtroStatus === 'ativos' ? 'projetos ativos' : 'projetos concluídos'}
+                </p>
+              </div>
+            ) : (
             <div className="rounded-md border">
               <Table>
                 <TableHeader>
@@ -372,7 +433,7 @@ export default function GRSDashboard() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {clientesComProjetos.map((cliente) => (
+                  {clientesFiltrados.map((cliente) => (
                     <TableRow key={cliente.id}>
                       <TableCell>
                         <div className="flex items-center space-x-3">
@@ -449,7 +510,8 @@ export default function GRSDashboard() {
                 </TableBody>
               </Table>
             </div>
-          )}
+            );
+          })()}
         </BexCardContent>
       </BexCard>
         </TabsContent>
