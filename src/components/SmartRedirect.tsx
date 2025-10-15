@@ -16,18 +16,29 @@ export function SmartRedirect() {
   useEffect(() => {
     console.log('🔄 SmartRedirect: Auth loading:', authLoading, 'User:', !!user, 'Path:', location.pathname);
 
-    // Emergency timeout - reduced to 1.5s
+    // Emergency timeout - 3s to allow proper auth validation
     const emergencyTimeout = setTimeout(() => {
-      console.error('🚨 SmartRedirect: TIMEOUT 1.5s - Forçando navegação');
+      console.error('🚨 SmartRedirect: TIMEOUT 3s - Forçando navegação');
+      console.log('📊 SmartRedirect Debug:', {
+        hasUser: !!user,
+        hasRole: !!role,
+        authLoading,
+        roleLoading,
+        currentPath: location.pathname
+      });
+      
       if (!user) {
+        console.log('➡️ Redirecionando para /auth (sem usuário)');
         navigate('/auth', { replace: true });
       } else if (role) {
-        // ✅ Usar dashboard correto baseado na role
-        navigate(getDashboardForRole(role), { replace: true });
+        const dashboard = getDashboardForRole(role);
+        console.log('➡️ Redirecionando para dashboard da role:', dashboard);
+        navigate(dashboard, { replace: true });
       } else {
+        console.log('➡️ Redirecionando para /dashboard (fallback)');
         navigate('/dashboard', { replace: true });
       }
-    }, 1500);
+    }, 3000); // ✅ Aumentado de 1.5s para 3s
 
     // Wait for auth and role to load
     if (authLoading || roleLoading) {

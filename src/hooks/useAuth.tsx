@@ -24,9 +24,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     
     // Aggressive timeout to prevent infinite loading
     const emergencyTimeout = setTimeout(() => {
-      console.error('🚨 Auth: TIMEOUT 1s - Forçando loading=false');
+      console.error('🚨 Auth: TIMEOUT 5s - Forçando loading=false');
+      console.log('📊 Auth Debug: User:', !!user, 'Session:', !!session);
       setLoading(false);
-    }, 1000);
+    }, 5000); // ✅ Aumentado de 1s para 5s
 
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
