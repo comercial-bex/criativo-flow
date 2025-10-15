@@ -715,7 +715,7 @@ function App() {
                   </ProtectedRoute>} />
                 
                 <Route path="/grs/tarefas" element={<ProtectedRoute requiredRole="grs">
-                    <Layout><TarefasUnificadasGRS /></Layout>
+                    <Layout className="px-[71px]"><TarefasUnificadasGRS /></Layout>
                   </ProtectedRoute>} />
 
                 <Route path="/grs/roteiro-ia" element={<ProtectedRoute requiredRole="grs">
