@@ -11,8 +11,7 @@ import {
   GripVertical,
   AlertCircle,
   MoreVertical,
-  MoveRight,
-  Maximize2
+  MoveRight
 } from "lucide-react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -165,23 +164,13 @@ export const ModernKanbanCard = React.memo(({
       style={style}
       {...attributes}
       {...listeners}
+      onClick={handleClick}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.9 }}
       transition={{ duration: 0.3 }}
       className={`bg-card border-2 ${borderColor} rounded-xl shadow-lg overflow-hidden cursor-grab active:cursor-grabbing hover:shadow-bex-glow hover:-translate-y-1 transition-all duration-200 ${isSortableDragging ? 'opacity-50 glass-bex' : ''}`}
     >
-      {/* Botão Abrir Modal */}
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          handleClick();
-        }}
-        className="absolute top-2 left-2 z-20 p-1.5 rounded-lg bg-black/60 hover:bg-bex hover:scale-110 transition-all duration-200 backdrop-blur-md group"
-        title="Abrir detalhes"
-      >
-        <Maximize2 className="w-4 h-4 text-white group-hover:text-white" />
-      </button>
 
       {/* Quick Move Menu */}
       {quickMoveColumns && onQuickMove && (
@@ -234,7 +223,7 @@ export const ModernKanbanCard = React.memo(({
 
         {/* Badge de Prioridade */}
         {taskPriority && (
-          <div className="absolute top-2 left-12 sm:left-14">
+          <div className="absolute top-2 left-2">
             <ModernBadge variant={priorityBadge.variant} size="sm" icon={priorityBadge.icon}>
               {priorityBadge.label}
             </ModernBadge>

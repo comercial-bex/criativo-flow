@@ -140,11 +140,13 @@ function KanbanColumnComponent({
 export function TaskKanbanBoard({ tasks, onTaskMove, onTaskCreate, onTaskClick, projetoId }: TaskKanbanBoardProps) {
   const [activeTask, setActiveTask] = useState<KanbanTask | null>(null);
 
-  // Configure sensors for better drag experience
+  // Configure sensors for better drag experience with delay
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 5, // Requires 5px movement before drag starts
+        distance: 8, // Requires 8px movement before drag starts
+        delay: 200, // Requires 200ms hold before drag starts
+        tolerance: 5, // Allows 5px of movement during delay
       },
     })
   );
