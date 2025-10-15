@@ -3,7 +3,14 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Building, Calendar, DollarSign, Eye, BarChart3 } from "lucide-react";
+import { Building, Calendar, DollarSign, Eye, BarChart3, MoreVertical, Edit, Trash2 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface Projeto {
   id: string;
@@ -34,6 +41,8 @@ interface ClienteComProjetos {
 interface MobileProjetoCardProps {
   cliente: ClienteComProjetos;
   onViewDetails: () => void;
+  onEditProjeto?: (projeto: Projeto) => void;
+  onDeleteProjeto?: (projetoId: string) => void;
   getStatusColor: (status: string) => string;
   getStatusText: (status: string) => string;
   getClienteStatusColor: (status: string) => string;
@@ -42,6 +51,8 @@ interface MobileProjetoCardProps {
 export function MobileProjetoCard({ 
   cliente, 
   onViewDetails,
+  onEditProjeto,
+  onDeleteProjeto,
   getStatusColor,
   getStatusText,
   getClienteStatusColor 
@@ -139,9 +150,56 @@ export function MobileProjetoCard({
                     <h4 className="text-sm font-medium text-foreground truncate">{projeto.titulo}</h4>
                     <p className="text-xs text-muted-foreground">{projeto.tipo}</p>
                   </div>
-                  <Badge className={`${getStatusColor(projeto.status)} text-xs ml-2 shrink-0`}>
-                    {getStatusText(projeto.status)}
-                  </Badge>
+                  
+                  <div className="flex items-center gap-2 shrink-0">
+                    <Badge className={`${getStatusColor(projeto.status)} text-xs`}>
+                      {getStatusText(projeto.status)}
+                    </Badge>
+                    
+                    {/* Dropdown Menu de Ações */}
+                    {(onEditProjeto || onDeleteProjeto) && (
+                      <DropdownMenu>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <DropdownMenuTrigger asChild>
+                                <Button 
+                                  variant="ghost" 
+                                  size="icon" 
+                                  className="h-7 w-7 hover:bg-accent hover:text-accent-foreground"
+                                >
+                                  <MoreVertical className="h-3.5 w-3.5" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Mais opções</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                        <DropdownMenuContent 
+                          align="end" 
+                          className="bg-background dark:bg-gray-800 border-2 border-border shadow-xl z-[100]"
+                        >
+                          {onEditProjeto && (
+                            <DropdownMenuItem onClick={() => onEditProjeto(projeto)}>
+                              <Edit className="w-4 h-4 mr-2" />
+                              Editar Projeto
+                            </DropdownMenuItem>
+                          )}
+                          {onDeleteProjeto && (
+                            <DropdownMenuItem 
+                              onClick={() => onDeleteProjeto(projeto.id)}
+                              className="text-destructive focus:text-destructive"
+                            >
+                              <Trash2 className="w-4 h-4 mr-2" />
+                              Excluir Projeto
+                            </DropdownMenuItem>
+                          )}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
+                  </div>
                 </div>
                 
                 <div className="flex items-center justify-between text-xs text-muted-foreground">

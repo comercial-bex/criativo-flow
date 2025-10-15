@@ -12,6 +12,8 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Search, Filter, FolderOpen, Users, BarChart3, Plus, Eye } from "lucide-react";
 import { SectionHeader } from "@/components/SectionHeader";
 import { MobileProjetoCard } from "@/components/MobileProjetoCard";
+import { EditProjetoModal } from '@/components/EditProjetoModal';
+import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { useDeviceType } from "@/hooks/useDeviceType";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -404,6 +406,8 @@ export default function ClienteProjetos() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("todos");
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [projetoEdit, setProjetoEdit] = useState<any>(null);
+  const [projetoDeleteId, setProjetoDeleteId] = useState<string | null>(null);
   const { toast } = useToast();
 
   
@@ -508,6 +512,62 @@ export default function ClienteProjetos() {
     } catch (e) {
       console.error('Falha ao abrir detalhes do cliente:', e);
       toast({ title: 'Erro', description: 'Falha ao abrir detalhes do cliente.', variant: 'destructive' });
+    }
+  };
+
+  const handleUpdateProjeto = async (projetoId: string, updates: any) => {
+    try {
+      const { error } = await supabase
+        .from('projetos')
+        .update(updates)
+        .eq('id', projetoId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Projeto atualizado",
+        description: "As alterações foram salvas com sucesso",
+      });
+
+      setProjetoEdit(null);
+      fetchClientesComProjetos();
+      return true;
+    } catch (error) {
+      console.error('Erro ao atualizar projeto:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível atualizar o projeto",
+        variant: "destructive",
+      });
+      return false;
+    }
+  };
+
+  const handleDeleteProjeto = async () => {
+    if (!projetoDeleteId) return;
+
+    try {
+      const { error } = await supabase
+        .from('projetos')
+        .delete()
+        .eq('id', projetoDeleteId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Projeto excluído",
+        description: "O projeto foi removido com sucesso",
+      });
+
+      setProjetoDeleteId(null);
+      fetchClientesComProjetos();
+    } catch (error) {
+      console.error('Erro ao excluir projeto:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível excluir o projeto",
+        variant: "destructive",
+      });
     }
   };
 
@@ -627,6 +687,8 @@ export default function ClienteProjetos() {
               key={cliente.id}
               cliente={cliente}
               onViewDetails={() => goToClienteDetalhes(cliente)}
+              onEditProjeto={(projeto) => setProjetoEdit(projeto)}
+              onDeleteProjeto={(projetoId) => setProjetoDeleteId(projetoId)}
               getStatusColor={getStatusColor}
               getStatusText={getStatusText}
               getClienteStatusColor={getClienteStatusColor}
@@ -727,6 +789,35 @@ export default function ClienteProjetos() {
           }} />
         </DialogContent>
       </Dialog>
+
+      {/* Modal de Edição de Projeto */}
+      <EditProjetoModal
+        open={!!projetoEdit}
+        onOpenChange={(open) => !open && setProjetoEdit(null)}
+        projeto={projetoEdit ? {
+          id: projetoEdit.id,
+          titulo: projetoEdit.titulo,
+          descricao: null,
+          status: projetoEdit.status,
+          data_inicio: projetoEdit.dataInicio,
+          data_fim: projetoEdit.dataFim || null,
+          orcamento: projetoEdit.valor,
+          responsavel_id: null,
+        } : null}
+        onSave={handleUpdateProjeto}
+      />
+
+      {/* Modal de Confirmação de Exclusão */}
+      <ConfirmationDialog
+        open={!!projetoDeleteId}
+        onOpenChange={(open) => !open && setProjetoDeleteId(null)}
+        title="Excluir Projeto?"
+        description="Esta ação não pode ser desfeita. O projeto e todas as suas tarefas vinculadas serão permanentemente removidos."
+        confirmText="Excluir"
+        cancelText="Cancelar"
+        onConfirm={handleDeleteProjeto}
+        variant="destructive"
+      />
     </div>
   );
 }
