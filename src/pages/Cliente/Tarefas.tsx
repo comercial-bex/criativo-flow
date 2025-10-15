@@ -277,10 +277,11 @@ export default function ClienteTarefas() {
           <h1 className="text-2xl font-bold text-foreground">Minhas Tarefas</h1>
           <p className="text-muted-foreground">Acompanhe o progresso dos seus projetos</p>
         </div>
+        <TutorialButton onStart={startTutorial} hasSeenTutorial={hasSeenTutorial} />
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4" data-tour="estatisticas">
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
@@ -319,7 +320,7 @@ export default function ClienteTarefas() {
       </div>
 
       {/* Busca */}
-      <Card>
+      <Card data-tour="busca">
         <CardContent className="p-4">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />

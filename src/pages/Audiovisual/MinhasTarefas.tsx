@@ -239,10 +239,11 @@ const MinhasTarefasAudiovisual: React.FC = () => {
           <h1 className="text-2xl font-bold">Audiovisual - Minhas Tarefas</h1>
           <p className="text-muted-foreground">Tarefas atribuídas para execução</p>
         </div>
+        <TutorialButton onStart={startTutorial} hasSeenTutorial={hasSeenTutorial} />
       </div>
 
       {/* Cards de Estatísticas */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4" data-tour="estatisticas">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Minhas Tarefas</CardTitle>
@@ -285,19 +286,21 @@ const MinhasTarefasAudiovisual: React.FC = () => {
       </div>
 
       {/* Kanban Board - SEM botão de criação (executores não criam) */}
-      <UniversalKanbanBoard
-        tasks={tasks}
-        moduleType="audiovisual"
-        moduleColumns={[]}
-        onTaskMove={handleTaskMove}
-        onTaskClick={(task: any) => {
-          setSelectedTask(task);
-          setShowTaskModal(true);
-        }}
-        onTaskCreate={handleTaskCreate}
-        showSearch={true}
-        showFilters={true}
-      />
+      <div data-tour="kanban">
+        <UniversalKanbanBoard
+          tasks={tasks}
+          moduleType="audiovisual"
+          moduleColumns={[]}
+          onTaskMove={handleTaskMove}
+          onTaskClick={(task: any) => {
+            setSelectedTask(task);
+            setShowTaskModal(true);
+          }}
+          onTaskCreate={handleTaskCreate}
+          showSearch={true}
+          showFilters={true}
+        />
+      </div>
 
       {/* Modal de Detalhes */}
       {showTaskModal && selectedTask && (

@@ -246,13 +246,15 @@ export default function CaptacoesPage() {
             Gerencie suas gravações e captações de conteúdo
           </p>
         </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button className="gap-2">
-              <Plus className="h-4 w-4" />
-              Nova Captação
-            </Button>
-          </DialogTrigger>
+        <div className="flex gap-2">
+          <TutorialButton onStart={startTutorial} hasSeenTutorial={hasSeenTutorial} />
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button className="gap-2" data-tour="nova-captacao">
+                <Plus className="h-4 w-4" />
+                Nova Captação
+              </Button>
+            </DialogTrigger>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>
@@ -355,11 +357,12 @@ export default function CaptacoesPage() {
               </div>
             </form>
           </DialogContent>
-        </Dialog>
+          </Dialog>
+        </div>
       </div>
 
       {/* Captações List */}
-      <div className="grid gap-4">
+      <div className="grid gap-4" data-tour="lista-captacoes">
         {captacoes.length === 0 ? (
           <Card>
             <CardContent className="p-8 text-center">

@@ -1,5 +1,47 @@
 # 📝 Tutorial System - Changelog
 
+## 2025-01-15 (Noite) - Correção Cirúrgica Final
+
+### ✅ Páginas Corrigidas (5)
+
+1. **`/audiovisual/captacoes`**
+   - ✅ Adicionado `TutorialButton` no header
+   - ✅ Adicionado `data-tour="nova-captacao"` no botão
+   - ✅ Adicionado `data-tour="lista-captacoes"` na lista
+
+2. **`/audiovisual/equipamentos`**
+   - ✅ Adicionado `TutorialButton` no header
+   - ✅ Adicionado `data-tour="novo-equipamento"` no botão
+   - ✅ Adicionado `data-tour="estatisticas"` nas estatísticas
+   - ✅ Adicionado `data-tour="lista-equipamentos"` na lista
+
+3. **`/audiovisual/minhas-tarefas`**
+   - ✅ Adicionado `TutorialButton` no header
+   - ✅ Adicionado `data-tour="estatisticas"` nas estatísticas
+   - ✅ Adicionado `data-tour="kanban"` no board kanban
+
+4. **`/cliente/aprovacoes`**
+   - ✅ Adicionado `TutorialButton` no header
+   - ✅ Adicionado `data-tour="estatisticas"` nas estatísticas
+   - ✅ Adicionado `data-tour="pendentes"` na lista de pendências
+   - ✅ Adicionado `data-tour="historico"` no histórico
+
+5. **`/cliente/tarefas`**
+   - ✅ Adicionado `TutorialButton` no header
+   - ✅ Adicionado `data-tour="estatisticas"` nas estatísticas
+   - ✅ Adicionado `data-tour="busca"` no campo de busca
+
+### 🗑️ Limpeza
+
+- ✅ Removida config órfã `'folha-ponto'` (página não existe)
+
+### 📊 Status Final
+
+**Cobertura**: 100% (46/46 páginas) ✅
+**Tutoriais funcionais**: 46/46 ✅
+
+---
+
 ## 2025-01-15 (Tarde) - Correção de Incompatibilidades Críticas
 
 ### 🐛 Bugs Críticos Corrigidos

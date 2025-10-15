@@ -296,13 +296,15 @@ export default function EquipamentosPage() {
             Gerencie o inventário de equipamentos audiovisuais
           </p>
         </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button className="gap-2">
-              <Plus className="h-4 w-4" />
-              Novo Equipamento
-            </Button>
-          </DialogTrigger>
+        <div className="flex gap-2">
+          <TutorialButton onStart={startTutorial} hasSeenTutorial={hasSeenTutorial} />
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button className="gap-2" data-tour="novo-equipamento">
+                <Plus className="h-4 w-4" />
+                Novo Equipamento
+              </Button>
+            </DialogTrigger>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
               <DialogTitle>
@@ -410,11 +412,12 @@ export default function EquipamentosPage() {
               </div>
             </form>
           </DialogContent>
-        </Dialog>
+          </Dialog>
+        </div>
       </div>
 
       {/* Quick Stats */}
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-4" data-tour="estatisticas">
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
@@ -493,8 +496,8 @@ export default function EquipamentosPage() {
                 </p>
               </CardContent>
             </Card>
-          ) : (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+           ) : (
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3" data-tour="lista-equipamentos">
               {filteredEquipamentos.map((equipamento) => (
                 <Card key={equipamento.id} className="hover:shadow-md transition-shadow">
                   <CardHeader className="pb-3">

@@ -157,10 +157,15 @@ intro: '<h3>Filtros</h3><p>Aqui estão os filtros.</p>'
 
 | Página | Tutorial Config | TutorialButton | data-tour | Status |
 |--------|----------------|----------------|-----------|--------|
-| `/admin/contratos` | ✅ | ✅ | ✅ | Completo |
-| `/admin/produtos` | ✅ | ✅ | ✅ | Completo |
-| `/financeiro/categorias` | ✅ | ✅ | ✅ | Completo |
-| `/cliente/projetos` | ✅ | ✅ | ⚠️ | Parcial |
+| `/admin/contratos` | ✅ | ✅ | ✅ | ✅ Completo |
+| `/admin/produtos` | ✅ | ✅ | ✅ | ✅ Completo |
+| `/financeiro/categorias` | ✅ | ✅ | ✅ | ✅ Completo |
+| `/audiovisual/captacoes` | ✅ | ✅ | ✅ | ✅ Completo |
+| `/audiovisual/equipamentos` | ✅ | ✅ | ✅ | ✅ Completo |
+| `/audiovisual/minhas-tarefas` | ✅ | ✅ | ✅ | ✅ Completo |
+| `/cliente/aprovacoes` | ✅ | ✅ | ✅ | ✅ Completo |
+| `/cliente/tarefas` | ✅ | ✅ | ✅ | ✅ Completo |
+| `/cliente/projetos` | ✅ | ✅ | ⚠️ | ⚠️ Parcial (falta data-tour) |
 | `/grs/*` (diversos) | ✅ | ✅ | ✅ | Completo |
 | `/audiovisual/*` | ✅ | ✅ | ✅ | Completo |
 | `/rh/*` | ✅ | ✅ | ✅ | Completo |

@@ -116,15 +116,18 @@ export default function ClienteAprovacoes() {
 
   return (
     <div className="container mx-auto p-6 space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold mb-2">Central de Aprovações</h1>
-        <p className="text-muted-foreground">
-          Aprove ou reprove materiais enviados pela agência
-        </p>
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-3xl font-bold mb-2">Central de Aprovações</h1>
+          <p className="text-muted-foreground">
+            Aprove ou reprove materiais enviados pela agência
+          </p>
+        </div>
+        <TutorialButton onStart={startTutorial} hasSeenTutorial={hasSeenTutorial} />
       </div>
 
       {/* Estatísticas */}
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-4" data-tour="estatisticas">
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground">Pendentes</CardTitle>
@@ -165,7 +168,7 @@ export default function ClienteAprovacoes() {
 
       {/* Pendentes */}
       {pendingApprovals.length > 0 && (
-        <div>
+        <div data-tour="pendentes">
           <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
             <Clock className="h-5 w-5" />
             Aguardando Aprovação
@@ -238,7 +241,7 @@ export default function ClienteAprovacoes() {
 
       {/* Concluídos */}
       {completedApprovals.length > 0 && (
-        <div>
+        <div data-tour="historico">
           <h2 className="text-xl font-semibold mb-4">Histórico</h2>
           <div className="grid gap-4">
             {completedApprovals.map((approval) => (
