@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useMemo } from "react";
 import { motion } from "framer-motion";
 import { 
   Clock, 
@@ -76,8 +76,6 @@ export const ModernKanbanCard = React.memo(({
   onQuickMove,
   currentStatus
 }: ModernKanbanCardProps) => {
-  const [isCurrentlyDragging, setIsCurrentlyDragging] = useState(false);
-
   const {
     attributes,
     listeners,
@@ -91,17 +89,6 @@ export const ModernKanbanCard = React.memo(({
     transform: CSS.Transform.toString(transform),
     transition,
   };
-
-  // Detectar início e fim de drag
-  useEffect(() => {
-    if (isSortableDragging) {
-      setIsCurrentlyDragging(true);
-    } else {
-      // Delay para evitar clique imediato após soltar
-      const timer = setTimeout(() => setIsCurrentlyDragging(false), 100);
-      return () => clearTimeout(timer);
-    }
-  }, [isSortableDragging]);
 
   // Timer em tempo real
   const { formattedTime, status: deadlineStatus, isUrgent } = useTaskTimer(task.prazo_executor);
@@ -168,31 +155,28 @@ export const ModernKanbanCard = React.memo(({
   }, [riskLevel.level]);
 
   const handleClick = () => {
-    if (!isCurrentlyDragging) {
-      onTaskClick(task);
-    }
+    onTaskClick(task);
   };
 
   return (
     <motion.div
       ref={setNodeRef}
       style={style}
-      {...attributes} 
-      {...listeners}
-      onPointerDown={(e) => {
-        if (!isCurrentlyDragging && e.button === 0 && e.isPrimary) {
-          handleClick();
-        }
-      }}
+      {...attributes}
+      onClick={handleClick}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.9 }}
       transition={{ duration: 0.3 }}
-      className={`bg-card border-2 ${borderColor} rounded-xl shadow-lg overflow-hidden cursor-grab active:cursor-grabbing hover:shadow-bex-glow hover:-translate-y-1 transition-all duration-200 ${isSortableDragging ? 'opacity-50 glass-bex' : ''}`}
+      className={`bg-card border-2 ${borderColor} rounded-xl shadow-lg overflow-hidden cursor-pointer hover:shadow-bex-glow hover:-translate-y-1 transition-all duration-200 ${isSortableDragging ? 'opacity-50 glass-bex' : ''}`}
     >
-      {/* Grip Icon - Visual Only */}
-      <div className="absolute top-2 left-2 z-10 opacity-50 pointer-events-none">
-        <GripVertical className="w-4 h-4 text-muted-foreground" />
+      {/* Grip Icon - Drag Handle */}
+      <div 
+        {...listeners}
+        className="absolute top-2 left-2 z-10 cursor-grab active:cursor-grabbing hover:bg-black/10 dark:hover:bg-white/10 rounded p-1 transition-colors"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <GripVertical className="w-5 h-5 text-muted-foreground" />
       </div>
 
       {/* Quick Move Menu */}
