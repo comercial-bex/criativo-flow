@@ -361,7 +361,7 @@ function App() {
                   </ProtectedRoute>} />
                 
                 <Route path="/grs/painel" element={<ProtectedRoute requiredRole="grs">
-                    <Layout><GRSPainel /></Layout>
+                    <Layout className="px-[71px]"><GRSPainel /></Layout>
                   </ProtectedRoute>} />
                 
                 <Route path="/grs/planejamentos" element={<ProtectedRoute requiredRole="grs">
