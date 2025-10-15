@@ -96,13 +96,77 @@ export default function GRSDashboard() {
       console.log('📊 Clientes vinculados ao GRS:', clientes?.length || 0);
 
       // 🎯 FASE 2: Buscar projetos onde GRS está vinculado
-      const { data: projetos, error: projetosError } = await supabase
+      // 1️⃣ Buscar projetos onde GRS é responsável direto
+      const { data: projetosResponsavel, error: projetosError1 } = await supabase
         .from('projetos')
         .select('id, cliente_id, status, responsavel_grs_id')
-        .or(`responsavel_grs_id.eq.${user.id},id.in.(select projeto_id from projeto_especialistas where especialista_id='${user.id}' and especialidade='grs')`);
+        .eq('responsavel_grs_id', user.id);
 
-      if (projetosError) throw projetosError;
-      console.log('📁 Projetos vinculados ao GRS:', projetos?.length || 0);
+      if (projetosError1) {
+        console.error('❌ Erro ao buscar projetos como responsável:', projetosError1);
+        throw projetosError1;
+      }
+
+      console.log('📊 Projetos como responsável:', projetosResponsavel?.length || 0);
+
+      // 2️⃣ Buscar projetos onde GRS está como especialista
+      const { data: especialistaLinks, error: projetosError2 } = await supabase
+        .from('projeto_especialistas')
+        .select('projeto_id')
+        .eq('especialista_id', user.id)
+        .eq('especialidade', 'grs');
+
+      if (projetosError2) {
+        console.error('❌ Erro ao buscar projetos como especialista:', projetosError2);
+        throw projetosError2;
+      }
+
+      console.log('📊 Links como especialista:', especialistaLinks?.length || 0);
+
+      // 3️⃣ Se houver projetos como especialista, buscar seus dados completos
+      let projetosEspecialista: any[] = [];
+      if (especialistaLinks && especialistaLinks.length > 0) {
+        const projetoIds = especialistaLinks.map(link => link.projeto_id);
+        
+        const { data, error: projetosError3 } = await supabase
+          .from('projetos')
+          .select('id, cliente_id, status, responsavel_grs_id')
+          .in('id', projetoIds);
+          
+        if (projetosError3) {
+          console.error('❌ Erro ao buscar dados dos projetos especialistas:', projetosError3);
+          throw projetosError3;
+        }
+        
+        projetosEspecialista = data || [];
+        console.log('📊 Projetos como especialista:', projetosEspecialista.length);
+      }
+
+      // 4️⃣ Unir e remover duplicatas
+      const projetosMap = new Map();
+
+      // Adicionar projetos como responsável
+      (projetosResponsavel || []).forEach(projeto => {
+        projetosMap.set(projeto.id, projeto);
+      });
+
+      // Adicionar projetos como especialista (não sobrescreve duplicatas)
+      projetosEspecialista.forEach(projeto => {
+        if (!projetosMap.has(projeto.id)) {
+          projetosMap.set(projeto.id, projeto);
+        }
+      });
+
+      // Converter Map para array
+      const projetos = Array.from(projetosMap.values());
+
+      console.log('📁 Total de projetos vinculados ao GRS:', projetos.length);
+
+      // ✅ Validar estrutura dos dados
+      const projetosInvalidos = projetos.filter(p => !p.id || !p.cliente_id);
+      if (projetosInvalidos.length > 0) {
+        console.warn('⚠️ Projetos com dados incompletos:', projetosInvalidos);
+      }
 
       // 🎯 FASE 3: Filtrar planejamentos vinculados
       const { data: planejamentos, error: planejamentosError } = await supabase
@@ -133,7 +197,7 @@ export default function GRSDashboard() {
           ...cliente,
           totalProjetos: todosProjetos.length,
           projetosAtivos: todosProjetos.filter(p => 
-            ['em_andamento', 'em_producao', 'iniciado'].includes(p.status)
+            ['em_andamento', 'em_producao', 'iniciado', 'ativo'].includes(p.status)
           ).length,
           projetosConcluidos: todosProjetos.filter(p => 
             ['concluido', 'finalizado', 'entregue'].includes(p.status)
@@ -164,11 +228,19 @@ export default function GRSDashboard() {
         projetosConcluidos: totalConcluidos
       });
 
-    } catch (error) {
-      console.error('Erro ao carregar dados:', error);
+    } catch (error: any) {
+      console.error('❌ Erro ao carregar dados do dashboard:', error);
+      console.error('❌ Detalhes completos:', {
+        message: error?.message,
+        code: error?.code,
+        details: error?.details,
+        hint: error?.hint,
+        stack: error?.stack
+      });
+      
       toast({
-        title: "Erro ao carregar dados",
-        description: "Não foi possível carregar os dados do dashboard",
+        title: "❌ Erro ao carregar dashboard",
+        description: error?.message || "Não foi possível carregar os dados. Tente novamente.",
         variant: "destructive",
       });
     } finally {
@@ -364,7 +436,22 @@ export default function GRSDashboard() {
           open={dialogOpen}
           onOpenChange={setDialogOpen}
           tipo={tipoModal}
-          onSuccess={() => fetchClientesEProjetos()}
+          onSuccess={async () => {
+            setDialogOpen(false);
+            
+            toast({
+              title: "✅ Projeto criado com sucesso!",
+              description: "Atualizando dashboard...",
+            });
+            
+            setLoading(true);
+            await fetchClientesEProjetos();
+            
+            toast({
+              title: "✅ Dashboard atualizado!",
+              description: "O novo projeto já aparece na lista.",
+            });
+          }}
         />
 
       {/* Metrics Cards */}
