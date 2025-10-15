@@ -23,7 +23,7 @@ import {
   Download,
   X
 } from "lucide-react";
-import { DndContext, DragEndEvent, closestCorners, useDroppable } from "@dnd-kit/core";
+import { DndContext, DragEndEvent, closestCorners, useDroppable, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -135,6 +135,17 @@ export function TarefasKanban({ planejamento, clienteId, projetoId, filters }: T
   const [uploadingFile, setUploadingFile] = useState(false);
   const { toast } = useToast();
 
+  // Configurar sensors com delay para drag & drop
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+        delay: 200,
+        tolerance: 5,
+      },
+    })
+  );
+
   useEffect(() => {
     fetchData();
   }, [projetoId, filters]);
@@ -178,19 +189,34 @@ export function TarefasKanban({ planejamento, clienteId, projetoId, filters }: T
     }
   };
 
+  // Helper para encontrar coluna de uma tarefa
+  const findColumnByTaskId = (taskId: string): string | undefined => {
+    const tarefa = tarefas.find(t => t.id === taskId);
+    return tarefa?.status;
+  };
+
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
 
     if (!over) return;
 
     const tarefaId = active.id as string;
-    const novoStatus = over.id as string;
+    const overId = over.id as string;
 
-    // Verificar se é uma coluna válida
-    const colunaValida = colunas.find(col => col.id === novoStatus);
-    if (!colunaValida) return;
+    // Verificar se é coluna válida
+    let colunaValida = colunas.find(col => col.id === overId);
+    
+    if (!colunaValida) {
+      // Buscar coluna da tarefa de destino
+      const targetStatus = findColumnByTaskId(overId);
+      if (targetStatus) {
+        colunaValida = colunas.find(col => col.id === targetStatus);
+      }
+    }
 
-    await updateTarefaStatus(tarefaId, novoStatus);
+    if (colunaValida) {
+      await updateTarefaStatus(tarefaId, colunaValida.id);
+    }
   };
 
   const updateTarefaStatus = async (tarefaId: string, novoStatus: string) => {
@@ -644,7 +670,7 @@ export function TarefasKanban({ planejamento, clienteId, projetoId, filters }: T
         </Dialog>
 
       {/* Kanban Board */}
-      <DndContext collisionDetection={closestCorners} onDragEnd={handleDragEnd}>
+      <DndContext sensors={sensors} collisionDetection={closestCorners} onDragEnd={handleDragEnd}>
         <div className="grid grid-cols-5 gap-6">
           {colunas.map((coluna) => {
             const tarefasColuna = getTarefasPorStatus(coluna.id);

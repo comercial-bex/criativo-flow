@@ -387,11 +387,13 @@ export function UniversalKanbanBoard({
   const [selectedResponsavel, setSelectedResponsavel] = useState('all');
   const [selectedPrioridade, setSelectedPrioridade] = useState('all');
 
-  // Sensors para drag & drop
+  // Sensors para drag & drop com delay
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
         distance: 8,
+        delay: 200,
+        tolerance: 5,
       },
     })
   );
@@ -428,6 +430,15 @@ export function UniversalKanbanBoard({
     }>);
     return unique;
   }, [tasks]);
+
+  // Helper para encontrar coluna de uma tarefa
+  const findColumnByTaskId = (taskId: string): string | undefined => {
+    const column = columns.find(col => 
+      col.tasks.some(task => task.id === taskId)
+    );
+    return column?.id;
+  };
+
   const handleDragStart = (event: DragStartEvent) => {
     const task = tasks.find(t => t.id === event.active.id);
     setActiveTask(task || null);
@@ -443,18 +454,19 @@ export function UniversalKanbanBoard({
     const taskId = active.id as string;
     const overId = over.id as string;
     
-    // Verificar se dropped em uma coluna
-    const targetColumn = columns.find(col => col.id === overId);
+    // Tentar encontrar coluna diretamente
+    let targetColumn = columns.find(col => col.id === overId);
+    
+    if (!targetColumn) {
+      // Se não for coluna, buscar pela tarefa
+      const targetColumnId = findColumnByTaskId(overId);
+      if (targetColumnId) {
+        targetColumn = columns.find(col => col.id === targetColumnId);
+      }
+    }
     
     if (targetColumn) {
-      // Dropped na coluna
       onTaskMove(taskId, targetColumn.id);
-    } else {
-      // Dropped em outro card - pegar a coluna do card de destino
-      const targetTask = tasks.find(t => t.id === overId);
-      if (targetTask) {
-        onTaskMove(taskId, targetTask.status);
-      }
     }
   };
   return <div className="space-y-6">
