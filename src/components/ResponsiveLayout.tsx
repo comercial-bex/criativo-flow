@@ -54,9 +54,9 @@ export function ResponsiveLayout({
         
         <div className="flex flex-col min-h-screen flex-1 overflow-hidden">
           <header className={`${isTablet ? 'h-14' : 'h-16'} flex items-center border-b border-bex/20 bg-black/95 px-4 sticky top-0 z-40 shadow-lg shadow-bex/10 safe-area-inset-top ios-optimized-fixed`}>
-            <div className="flex items-center gap-3 flex-1">
+            <div className="flex items-center gap-3 flex-1 px-[79px]">
               <SidebarTrigger className="hover:bg-bex/10 hover:text-bex p-2 rounded-md transition-all border border-transparent hover:border-bex/30" />
-              <GlobalHeader />
+              <GlobalHeader className="px-[135px]" />
             </div>
           </header>
           

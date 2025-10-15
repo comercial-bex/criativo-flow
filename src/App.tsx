@@ -13,7 +13,6 @@ import { DeprecatedRouteRedirect } from "@/components/DeprecatedRouteRedirect";
 import { BexThemeProvider } from "@/contexts/BexThemeContext";
 import { Suspense, lazy, useEffect } from "react";
 import { FullScreenLoader } from "@/components/FullScreenLoader";
-
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { logWebVitals } from "@/lib/web-vitals";
 import { analytics } from "@/lib/analytics";
@@ -30,10 +29,8 @@ const Dashboard = lazy(() => import("./pages/Dashboard"));
 const CRM = lazy(() => import("./pages/CRM"));
 const Clientes = lazy(() => import("./pages/Clientes"));
 const Financeiro = lazy(() => import("./pages/Financeiro"));
-
 const InicioFavoritos = lazy(() => import("./pages/Inicio/Favoritos"));
 const InicioRecentes = lazy(() => import("./pages/Inicio/Recentes"));
-
 const Inteligencia = lazy(() => import("./pages/Inteligencia"));
 const InteligenciaAnalises = lazy(() => import("./pages/Inteligencia/Analises"));
 const InteligenciaInsights = lazy(() => import("./pages/Inteligencia/Insights"));
@@ -49,7 +46,6 @@ const Perfil = lazy(() => import("./pages/Perfil"));
 const Relatorios = lazy(() => import("./pages/Relatorios"));
 const Planos = lazy(() => import("./pages/Planos"));
 const Especialistas = lazy(() => import("./pages/Especialistas"));
-
 const GRSDashboard = lazy(() => import("./pages/GRS/Dashboard"));
 const GRSPainel = lazy(() => import("./pages/GRS/Painel"));
 const GRSPlanejamentos = lazy(() => import("./pages/GRS/Planejamentos"));
@@ -81,7 +77,6 @@ const NovoRoteiroPage = lazy(() => import("./pages/GRS/RoteiroIA/NovoRoteiro"));
 const EditarRoteiroPage = lazy(() => import("./pages/GRS/RoteiroIA/EditarRoteiro"));
 const EspecialistaDashboard = lazy(() => import("./pages/Especialista/Dashboard"));
 const DesignSystemShowcase = lazy(() => import("./pages/DesignSystemShowcase"));
-
 const ClientePainel = lazy(() => import("./pages/Cliente/Painel"));
 const ClienteProjetos = lazy(() => import("./pages/Cliente/Projetos"));
 const ClienteDetalheProjetos = lazy(() => import("./pages/Cliente/DetalheProjetos"));
@@ -93,7 +88,6 @@ const ClienteAprovacoes = lazy(() => import("./pages/Cliente/Aprovacoes"));
 const ClientePlanos = lazy(() => import("./pages/Cliente/Planos"));
 const ClienteExportacoes = lazy(() => import("./pages/Cliente/Exportacoes"));
 const Preditiva = lazy(() => import("./pages/Inteligencia/Preditiva"));
-
 const AdminDashboard = lazy(() => import("./pages/Administrativo/Dashboard"));
 const Orcamentos = lazy(() => import("./pages/Administrativo/Orcamentos"));
 const Propostas = lazy(() => import("./pages/Administrativo/Propostas"));
@@ -110,14 +104,12 @@ const Produtos = lazy(() => import("./pages/Admin/Produtos"));
 const ProdutoForm = lazy(() => import("./components/Admin/ProdutoForm"));
 const ProdutoDetails = lazy(() => import("./pages/Admin/ProdutoDetails"));
 const HomologacaoMVP = lazy(() => import("./pages/Admin/HomologacaoMVP"));
-
 const AudiovisualDashboard = lazy(() => import("./pages/Audiovisual/Dashboard"));
 const AudiovisualCaptacoes = lazy(() => import("./pages/Audiovisual/Captacoes"));
 const AudiovisualProjetos = lazy(() => import("./pages/Audiovisual/Projetos"));
 const AudiovisualEquipamentos = lazy(() => import("./pages/Audiovisual/Equipamentos"));
 const TarefasUnificadasAudiovisual = lazy(() => import("./pages/Audiovisual/TarefasUnificadas"));
 const AudiovisualMinhasTarefas = lazy(() => import("./pages/Audiovisual/MinhasTarefas"));
-
 const DesignDashboard = lazy(() => import("./pages/Design/Dashboard"));
 const DesignCalendario = lazy(() => import("./pages/Design/Calendario"));
 const DesignMetas = lazy(() => import("./pages/Design/Metas"));
@@ -128,8 +120,6 @@ const DesignMinhasTarefas = lazy(() => import("./pages/Design/MinhasTarefas"));
 const Gamificacao = lazy(() => import("./pages/Gamificacao"));
 const GamificacaoAdmin = lazy(() => import("./pages/GamificacaoAdmin"));
 const StyleGuide = lazy(() => import("./pages/StyleGuide"));
-
-
 const Colaboradores = lazy(() => import("./pages/RH/Colaboradores"));
 const ColaboradorDetalhes = lazy(() => import("./pages/RH/ColaboradorDetalhes"));
 const FolhaPonto = lazy(() => import("./pages/RH/FolhaPonto"));
@@ -139,12 +129,12 @@ const Ponto = lazy(() => import("./pages/RH/Ponto"));
 const BalanceteContabil = lazy(() => import("./pages/Financeiro/BalanceteContabil"));
 const Calendario = lazy(() => import("./pages/Calendario"));
 const Inventario = lazy(() => import("./pages/Inventario"));
-
 const AccessRejectedPage = lazy(() => import("./pages/AccessRejectedPage"));
 const AccessSuspendedPage = lazy(() => import("./pages/AccessSuspendedPage"));
 const VerifyEmailPage = lazy(() => import("./pages/VerifyEmailPage"));
-const PendingApprovalPage = lazy(() => import("./components/PendingApprovalPage").then(m => ({ default: m.PendingApprovalPage })));
-
+const PendingApprovalPage = lazy(() => import("./components/PendingApprovalPage").then(m => ({
+  default: m.PendingApprovalPage
+})));
 const AprovacaoJob = lazy(() => import("./pages/AprovacaoJob"));
 const AdminPainel = lazy(() => import("./pages/Admin/Painel"));
 const AdminTarefas = lazy(() => import("./pages/Admin/Tarefas"));
@@ -157,7 +147,6 @@ const Aprovacoes = lazy(() => import("./pages/Aprovacoes"));
 const Usuarios = lazy(() => import("./pages/Usuarios"));
 const SystemHealth = lazy(() => import("./pages/Admin/SystemHealth"));
 const BalancoPatrimonial = lazy(() => import("./pages/Financeiro/BalancoPatrimonial"));
-
 const ClientDetails = lazy(() => import("./pages/ClientDetails"));
 const TimelinePage = lazy(() => import("./pages/ClientDetails/TimelinePage"));
 const DetailsPage = lazy(() => import("./pages/ClientDetails/DetailsPage"));
@@ -168,24 +157,28 @@ const RequestsPage = lazy(() => import("./pages/ClientDetails/RequestsPage"));
 const ContractsPage = lazy(() => import("./pages/ClientDetails/ContractsPage"));
 const FinancePage = lazy(() => import("./pages/ClientDetails/FinancePage"));
 const NotesPage = lazy(() => import("./pages/ClientDetails/NotesPage"));
-
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 10 * 60 * 1000, // 10 minutos (otimizado para PWA)
-      gcTime: 30 * 60 * 1000, // 30 minutos
+      staleTime: 10 * 60 * 1000,
+      // 10 minutos (otimizado para PWA)
+      gcTime: 30 * 60 * 1000,
+      // 30 minutos
       refetchOnWindowFocus: false,
-      refetchOnReconnect: true, // ✅ Ativar para PWA
+      refetchOnReconnect: true,
+      // ✅ Ativar para PWA
       refetchOnMount: false,
-      retry: 2, // 2 tentativas
-      networkMode: 'offlineFirst' as const, // ✅ Suporte offline
+      retry: 2,
+      // 2 tentativas
+      networkMode: 'offlineFirst' as const // ✅ Suporte offline
     },
     mutations: {
       retry: 2,
-      networkMode: 'offlineFirst' as const, // ✅ Suporte offline
-      onSuccess: () => {},
-    },
-  },
+      networkMode: 'offlineFirst' as const,
+      // ✅ Suporte offline
+      onSuccess: () => {}
+    }
+  }
 });
 
 // Defer Web Vitals & Analytics to after mount (non-blocking boot)
@@ -210,7 +203,6 @@ const initAnalytics = () => {
     }
   }
 };
-
 function App() {
   // Signal React has mounted
   useEffect(() => {
@@ -220,30 +212,26 @@ function App() {
   }, []);
 
   // Move PublicRoute inside App component so it has access to AuthProvider context
-  const PublicRoute = ({ children }: { children: React.ReactNode }) => {
-    const { user, loading } = useAuth();
-    
+  const PublicRoute = ({
+    children
+  }: {
+    children: React.ReactNode;
+  }) => {
+    const {
+      user,
+      loading
+    } = useAuth();
     if (loading) {
       return <FullScreenLoader />;
     }
-    
     if (user) {
       return <Navigate to="/" replace />;
     }
-    
     return <>{children}</>;
   };
-  
-  return (
-    <ErrorBoundary>
+  return <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="dark"
-          enableSystem={false}
-          forcedTheme="dark"
-          disableTransitionOnChange
-        >
+        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false} forcedTheme="dark" disableTransitionOnChange>
           <BexThemeProvider>
             <TooltipProvider>
               <Toaster />
@@ -271,32 +259,24 @@ function App() {
                 <Route path="/unauthorized" element={<Unauthorized />} />
 
                 {/* Protected routes with permissions */}
-                <Route path="/dashboard" element={
-                  <ProtectedRoute module="dashboard">
+                <Route path="/dashboard" element={<ProtectedRoute module="dashboard">
                     <Layout><Dashboard /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
-                <Route path="/crm" element={
-                  <ProtectedRoute module="crm">
+                <Route path="/crm" element={<ProtectedRoute module="crm">
                     <Layout><CRM /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
-                <Route path="/clientes" element={
-                  <ProtectedRoute module="financeiro">
+                <Route path="/clientes" element={<ProtectedRoute module="financeiro">
                     <Layout><Clientes /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
                 {/* Client Details Routes (nested) */}
-                <Route path="/clients/:clientId" element={
-                  <ProtectedRoute module="financeiro">
+                <Route path="/clients/:clientId" element={<ProtectedRoute module="financeiro">
                     <Layout>
                       <ClientDetails />
                     </Layout>
-                  </ProtectedRoute>
-                }>
+                  </ProtectedRoute>}>
                   <Route path="details" element={<DetailsPage />} />
                   <Route path="projects" element={<ProjectsPage />} />
                   <Route path="contracts" element={<ContractsPage />} />
@@ -308,415 +288,283 @@ function App() {
                   <Route path="requests" element={<RequestsPage />} />
                 </Route>
                 
-                <Route path="/categorias-financeiras" element={
-                  <ProtectedRoute module="financeiro">
+                <Route path="/categorias-financeiras" element={<ProtectedRoute module="financeiro">
                     <Layout><CategoriasFinanceiras /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
-                <Route path="/financeiro/produtos" element={
-                  <ProtectedRoute module="financeiro">
+                <Route path="/financeiro/produtos" element={<ProtectedRoute module="financeiro">
                     <Layout><ProdutosFinanceiro /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
-                <Route path="/financeiro/produtos/:id/historico" element={
-                  <ProtectedRoute module="financeiro">
+                <Route path="/financeiro/produtos/:id/historico" element={<ProtectedRoute module="financeiro">
                     <Layout><ProdutoHistorico /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
-                <Route path="/planos" element={
-                  <ProtectedRoute module="planos">
+                <Route path="/planos" element={<ProtectedRoute module="planos">
                     <Layout><Planos /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
-                <Route path="/configuracoes" element={
-                  <ProtectedRoute module="configuracoes">
+                <Route path="/configuracoes" element={<ProtectedRoute module="configuracoes">
                     <Layout><Configuracoes /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
-                <Route path="/configuracoes/funcoes" element={
-                  <ProtectedRoute module="configuracoes" action="canEdit" requiredRole="admin">
+                <Route path="/configuracoes/funcoes" element={<ProtectedRoute module="configuracoes" action="canEdit" requiredRole="admin">
                     <Layout><Funcoes /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
-                <Route path="/configuracoes/monitor" element={
-                  <ProtectedRoute module="configuracoes" requiredRole="admin">
+                <Route path="/configuracoes/monitor" element={<ProtectedRoute module="configuracoes" requiredRole="admin">
                     <Layout><Monitor /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
-                <Route path="/perfil" element={
-                  <ProtectedRoute>
+                <Route path="/perfil" element={<ProtectedRoute>
                     <Layout><Perfil /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
-                <Route path="/relatorios" element={
-                  <ProtectedRoute module="relatorios">
+                <Route path="/relatorios" element={<ProtectedRoute module="relatorios">
                     <Layout><Relatorios /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
-                <Route path="/especialistas" element={
-                  <ProtectedRoute module="especialistas">
+                <Route path="/especialistas" element={<ProtectedRoute module="especialistas">
                     <Layout><Especialistas /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
-                <Route path="/gamificacao" element={
-                  <ProtectedRoute>
+                <Route path="/gamificacao" element={<ProtectedRoute>
                     <Layout><Gamificacao /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
-                <Route path="/gamificacao/admin" element={
-                  <ProtectedRoute requiredRole="admin">
+                <Route path="/gamificacao/admin" element={<ProtectedRoute requiredRole="admin">
                     <Layout><GamificacaoAdmin /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
-                <Route path="/style-guide" element={
-                  <ProtectedRoute>
+                <Route path="/style-guide" element={<ProtectedRoute>
                     <Layout><StyleGuide /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
-                <Route path="/inventario" element={
-                  <ProtectedRoute module="inventario">
+                <Route path="/inventario" element={<ProtectedRoute module="inventario">
                     <Layout><Inventario /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
-                <Route path="/inteligencia" element={
-                  <ProtectedRoute module="inteligencia">
+                <Route path="/inteligencia" element={<ProtectedRoute module="inteligencia">
                     <Layout><Inteligencia /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
                 {/* Agenda Unificada */}
-                <Route path="/agenda" element={
-                  <ProtectedRoute>
+                <Route path="/agenda" element={<ProtectedRoute>
                     <Layout><GRSAgenda /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
                 {/* GRS routes */}
                 <Route path="/grs" element={<Navigate to="/grs/painel" replace />} />
                 
-                <Route path="/grs/dashboard" element={
-                  <ProtectedRoute requiredRole="grs">
+                <Route path="/grs/dashboard" element={<ProtectedRoute requiredRole="grs">
                     <Layout><GRSDashboard /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
-                <Route path="/grs/painel" element={
-                  <ProtectedRoute requiredRole="grs">
+                <Route path="/grs/painel" element={<ProtectedRoute requiredRole="grs">
                     <Layout><GRSPainel /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
-                <Route path="/grs/planejamentos" element={
-                  <ProtectedRoute requiredRole="grs">
+                <Route path="/grs/planejamentos" element={<ProtectedRoute requiredRole="grs">
                     <Layout><GRSPlanejamentos /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
-                <Route path="/grs/planejamento/:id" element={
-                  <ProtectedRoute requiredRole="grs">
+                <Route path="/grs/planejamento/:id" element={<ProtectedRoute requiredRole="grs">
                     <Layout><GRSPlanejamentoDetalhes /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
-                <Route path="/grs/cliente" element={
-                  <ProtectedRoute requiredRole="grs">
+                <Route path="/grs/cliente" element={<ProtectedRoute requiredRole="grs">
                     <Layout><GRSClientes /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
-                <Route path="/grs/cliente/:clienteId/planejamentos" element={
-                  <ProtectedRoute requiredRole="grs">
+                <Route path="/grs/cliente/:clienteId/planejamentos" element={<ProtectedRoute requiredRole="grs">
                     <Layout><GRSPlanejamentos /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
-                <Route path="/grs/cliente/:clienteId/projetos" element={
-                  <ProtectedRoute requiredRole="grs">
+                <Route path="/grs/cliente/:clienteId/projetos" element={<ProtectedRoute requiredRole="grs">
                     <Layout><GRSClienteProjetos /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
-                <Route path="/grs/cliente/:clienteId/projeto/:projetoId/tarefas" element={
-                  <ProtectedRoute requiredRole="grs">
-                    <Layout><GRSProjetoTarefas /></Layout>
-                  </ProtectedRoute>
-                } />
+                <Route path="/grs/cliente/:clienteId/projeto/:projetoId/tarefas" element={<ProtectedRoute requiredRole="grs">
+                    <Layout className="px-[71px]"><GRSProjetoTarefas /></Layout>
+                  </ProtectedRoute>} />
                 
-                <Route path="/grs/cliente/:clienteId/nova-ordem" element={
-                  <ProtectedRoute requiredRole="grs">
+                <Route path="/grs/cliente/:clienteId/nova-ordem" element={<ProtectedRoute requiredRole="grs">
                     <Layout><GRSNovaOrdem /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
-                <Route path="/cliente/:clienteId/projetos" element={
-                  <ProtectedRoute>
+                <Route path="/cliente/:clienteId/projetos" element={<ProtectedRoute>
                     <Layout><ClienteProjetos /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
-                <Route path="/cliente/:clienteId/planejamento-visual/:projetoId" element={
-                  <ProtectedRoute requiredRole="cliente">
+                <Route path="/cliente/:clienteId/planejamento-visual/:projetoId" element={<ProtectedRoute requiredRole="cliente">
                     <Layout><ClientePlanejamentoVisual /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
-                <Route path="/grs/planejamento-estrategico" element={
-                  <ProtectedRoute requiredRole="grs">
+                <Route path="/grs/planejamento-estrategico" element={<ProtectedRoute requiredRole="grs">
                     <Layout><GRSPlanejamentoEstrategico /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
-                <Route path="/grs/calendario-editorial" element={
-                  <ProtectedRoute requiredRole="grs">
+                <Route path="/grs/calendario-editorial" element={<ProtectedRoute requiredRole="grs">
                     <Layout><GRSCalendarioEditorial /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
-                <Route path="/grs/aprovacoes" element={
-                  <ProtectedRoute requiredRole="grs">
+                <Route path="/grs/aprovacoes" element={<ProtectedRoute requiredRole="grs">
                     <Layout><GRSAprovacoes /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
 
-                <Route path="/grs/relatorios" element={
-                  <ProtectedRoute requiredRole="grs">
+                <Route path="/grs/relatorios" element={<ProtectedRoute requiredRole="grs">
                     <Layout><GRSRelatorios /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
 
-                <Route path="/minhas-tarefas" element={
-                  <ProtectedRoute>
+                <Route path="/minhas-tarefas" element={<ProtectedRoute>
                     <Layout><MinhasTarefas /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
 
                 {/* Inicio Routes */}
-                <Route path="/inicio/favoritos" element={
-                  <ProtectedRoute>
+                <Route path="/inicio/favoritos" element={<ProtectedRoute>
                     <Layout><InicioFavoritos /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
-                <Route path="/inicio/recentes" element={
-                  <ProtectedRoute>
+                <Route path="/inicio/recentes" element={<ProtectedRoute>
                     <Layout><InicioRecentes /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
 
                 {/* Inteligencia Routes */}
-                <Route path="/inteligencia" element={
-                  <ProtectedRoute>
+                <Route path="/inteligencia" element={<ProtectedRoute>
                     <Layout><Inteligencia /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
-                <Route path="/inteligencia/preditiva" element={
-                  <ProtectedRoute allowedRoles={['admin', 'gestor', 'grs']}>
+                <Route path="/inteligencia/preditiva" element={<ProtectedRoute allowedRoles={['admin', 'gestor', 'grs']}>
                     <Layout><Preditiva /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
-                <Route path="/inteligencia/analises" element={
-                  <ProtectedRoute>
+                <Route path="/inteligencia/analises" element={<ProtectedRoute>
                     <Layout><InteligenciaAnalises /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
-                <Route path="/inteligencia/insights" element={
-                  <ProtectedRoute>
+                <Route path="/inteligencia/insights" element={<ProtectedRoute>
                     <Layout><InteligenciaInsights /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
-                <Route path="/inteligencia/previsoes" element={
-                  <ProtectedRoute>
+                <Route path="/inteligencia/previsoes" element={<ProtectedRoute>
                     <Layout><InteligenciaPrevisoes /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
-                <Route path="/inteligencia/metricas" element={
-                  <ProtectedRoute>
+                <Route path="/inteligencia/metricas" element={<ProtectedRoute>
                     <Layout><InteligenciaMetricas /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
 
-                <Route path="/grs/agendamento-social" element={
-                  <ProtectedRoute requiredRole="grs">
+                <Route path="/grs/agendamento-social" element={<ProtectedRoute requiredRole="grs">
                     <Layout><GRSAgendamentoSocial /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
 
-                <Route path="/grs/projeto/:projetoId/tarefas" element={
-                  <ProtectedRoute requiredRole="grs">
+                <Route path="/grs/projeto/:projetoId/tarefas" element={<ProtectedRoute requiredRole="grs">
                     <Layout><GRSProjetoTarefas /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
-                <Route path="/grs/projetos" element={
-                  <ProtectedRoute requiredRole="grs" module="grs" action="canView">
+                <Route path="/grs/projetos" element={<ProtectedRoute requiredRole="grs" module="grs" action="canView">
                     <Layout><GRSDashboard /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
                 <Route path="/grs/meus-projetos" element={<Navigate to="/grs/painel" replace />} />
                 
                 {/* CRM routes */}
-                <Route path="/crm/contatos" element={
-                  <ProtectedRoute module="crm">
+                <Route path="/crm/contatos" element={<ProtectedRoute module="crm">
                     <Layout><CRMContatos /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
-                <Route path="/crm/historico" element={
-                  <ProtectedRoute module="crm">
+                <Route path="/crm/historico" element={<ProtectedRoute module="crm">
                     <Layout><CRMHistorico /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
                 {/* Especialista routes */}
-                <Route path="/especialista/dashboard" element={
-                  <ProtectedRoute>
+                <Route path="/especialista/dashboard" element={<ProtectedRoute>
                     <Layout><EspecialistaDashboard /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
                 {/* Gestão & Finanças routes */}
-                <Route path="/gestao/dashboard" element={
-                  <ProtectedRoute module="financeiro">
+                <Route path="/gestao/dashboard" element={<ProtectedRoute module="financeiro">
                     <Layout><GestaoDashboard /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
                 {/* Administrative routes */}
-                <Route path="/administrativo/dashboard" element={
-                  <ProtectedRoute module="administrativo">
+                <Route path="/administrativo/dashboard" element={<ProtectedRoute module="administrativo">
                     <Layout><AdminDashboard /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
-                <Route path="/administrativo/orcamentos" element={
-                  <ProtectedRoute module="administrativo">
+                <Route path="/administrativo/orcamentos" element={<ProtectedRoute module="administrativo">
                     <Layout><Orcamentos /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
-                <Route path="/administrativo/propostas" element={
-                  <ProtectedRoute module="administrativo">
+                <Route path="/administrativo/propostas" element={<ProtectedRoute module="administrativo">
                     <Layout><Propostas /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
-                <Route path="/admin/contratos" element={
-                  <ProtectedRoute module="administrativo">
+                <Route path="/admin/contratos" element={<ProtectedRoute module="administrativo">
                     <Layout><Contratos /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
                 {/* Templates DEVEM vir ANTES de /admin/contratos/:id */}
-                <Route path="/admin/contratos/templates" element={
-                  <ProtectedRoute module="administrativo">
+                <Route path="/admin/contratos/templates" element={<ProtectedRoute module="administrativo">
                     <Layout><ContractTemplates /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
-                <Route path="/admin/contratos/templates/new" element={
-                  <ProtectedRoute module="administrativo">
+                <Route path="/admin/contratos/templates/new" element={<ProtectedRoute module="administrativo">
                     <Layout><ContractTemplateForm /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
-                <Route path="/admin/contratos/templates/:templateId" element={
-                  <ProtectedRoute module="administrativo">
+                <Route path="/admin/contratos/templates/:templateId" element={<ProtectedRoute module="administrativo">
                     <Layout><ContractTemplateForm /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
-                <Route path="/admin/contratos/new" element={
-                  <ProtectedRoute module="administrativo">
+                <Route path="/admin/contratos/new" element={<ProtectedRoute module="administrativo">
                     <Layout><ContratoForm /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
-                <Route path="/admin/contratos/:id" element={
-                  <ProtectedRoute module="administrativo">
+                <Route path="/admin/contratos/:id" element={<ProtectedRoute module="administrativo">
                     <Layout><ContratoDetails /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
-                <Route path="/admin/contratos/:id/edit" element={
-                  <ProtectedRoute module="administrativo">
+                <Route path="/admin/contratos/:id/edit" element={<ProtectedRoute module="administrativo">
                     <Layout><ContratoForm /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
-                <Route path="/admin/orcamentos/:id" element={
-                  <ProtectedRoute module="administrativo">
+                <Route path="/admin/orcamentos/:id" element={<ProtectedRoute module="administrativo">
                     <Layout><OrcamentoDetails /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
-                <Route path="/admin/propostas/:id" element={
-                  <ProtectedRoute module="administrativo">
+                <Route path="/admin/propostas/:id" element={<ProtectedRoute module="administrativo">
                     <Layout><PropostaDetails /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
-                <Route path="/admin/produtos" element={
-                  <ProtectedRoute module="administrativo">
+                <Route path="/admin/produtos" element={<ProtectedRoute module="administrativo">
                     <Layout><Produtos /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
-                <Route path="/admin/produtos/new" element={
-                  <ProtectedRoute module="administrativo">
+                <Route path="/admin/produtos/new" element={<ProtectedRoute module="administrativo">
                     <Layout><ProdutoForm /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
-                <Route path="/admin/produtos/:id" element={
-                  <ProtectedRoute module="administrativo">
+                <Route path="/admin/produtos/:id" element={<ProtectedRoute module="administrativo">
                     <Layout><ProdutoDetails /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
-                <Route path="/admin/produtos/:id/edit" element={
-                  <ProtectedRoute module="administrativo">
+                <Route path="/admin/produtos/:id/edit" element={<ProtectedRoute module="administrativo">
                     <Layout><ProdutoForm /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
-                <Route path="/admin/homologacao-mvp" element={
-                  <ProtectedRoute requiredRole="admin">
+                <Route path="/admin/homologacao-mvp" element={<ProtectedRoute requiredRole="admin">
                     <Layout><HomologacaoMVP /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
-                <Route path="/admin/logs" element={
-                  <ProtectedRoute requiredRole="admin">
+                <Route path="/admin/logs" element={<ProtectedRoute requiredRole="admin">
                     <Layout><AdminLogs /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
                 {/* Design System Showcase */}
-                <Route path="/design-system" element={
-                  <ProtectedRoute>
+                <Route path="/design-system" element={<ProtectedRoute>
                     <Layout><DesignSystemShowcase /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
                 {/* Aliases */}
                 <Route path="/inicio" element={<Navigate to="/dashboard" replace />} />
@@ -731,365 +579,257 @@ function App() {
                 <Route path="/auth/verify-email" element={<VerifyEmailPage />} />
 
                 {/* Audiovisual routes (protected by SpecialistGuard) */}
-                <Route path="/audiovisual/dashboard" element={
-                  <SpecialistGuard>
+                <Route path="/audiovisual/dashboard" element={<SpecialistGuard>
                     <ProtectedRoute module="audiovisual">
                       <Layout><AudiovisualDashboard /></Layout>
                     </ProtectedRoute>
-                  </SpecialistGuard>
-                } />
+                  </SpecialistGuard>} />
                 
                 {/* Redirecionar /audiovisual/tarefas para /audiovisual/minhas-tarefas */}
-                <Route path="/audiovisual/tarefas" element={
-                  <Navigate to="/audiovisual/minhas-tarefas" replace />
-                } />
+                <Route path="/audiovisual/tarefas" element={<Navigate to="/audiovisual/minhas-tarefas" replace />} />
                 
-                <Route path="/audiovisual/minhas-tarefas" element={
-                  <SpecialistGuard>
+                <Route path="/audiovisual/minhas-tarefas" element={<SpecialistGuard>
                     <ProtectedRoute module="audiovisual">
                       <Layout><AudiovisualMinhasTarefas /></Layout>
                     </ProtectedRoute>
-                  </SpecialistGuard>
-                } />
+                  </SpecialistGuard>} />
                 
-                <Route path="/audiovisual/projetos" element={
-                  <SpecialistGuard>
+                <Route path="/audiovisual/projetos" element={<SpecialistGuard>
                     <ProtectedRoute module="audiovisual">
                       <Layout><AudiovisualProjetos /></Layout>
                     </ProtectedRoute>
-                  </SpecialistGuard>
-                } />
+                  </SpecialistGuard>} />
                 
-                <Route path="/audiovisual/captacoes" element={
-                  <SpecialistGuard>
+                <Route path="/audiovisual/captacoes" element={<SpecialistGuard>
                     <ProtectedRoute module="audiovisual">
                       <Layout><AudiovisualCaptacoes /></Layout>
                     </ProtectedRoute>
-                  </SpecialistGuard>
-                } />
+                  </SpecialistGuard>} />
                 
                 {/* Redirecionar equipamentos antigos para inventário */}
-                <Route path="/audiovisual/equipamentos" element={
-                  <Navigate to="/inventario" replace />
-                } />
+                <Route path="/audiovisual/equipamentos" element={<Navigate to="/inventario" replace />} />
                 
                 {/* Design routes (protected by SpecialistGuard) */}
-                <Route path="/design/dashboard" element={
-                  <SpecialistGuard>
+                <Route path="/design/dashboard" element={<SpecialistGuard>
                     <ProtectedRoute module="design">
                       <Layout><DesignDashboard /></Layout>
                     </ProtectedRoute>
-                  </SpecialistGuard>
-                } />
+                  </SpecialistGuard>} />
                 
                 {/* Redirecionar /design/tarefas para /design/minhas-tarefas */}
-                <Route path="/design/tarefas" element={
-                  <Navigate to="/design/minhas-tarefas" replace />
-                } />
+                <Route path="/design/tarefas" element={<Navigate to="/design/minhas-tarefas" replace />} />
                 
-                <Route path="/design/minhas-tarefas" element={
-                  <SpecialistGuard>
+                <Route path="/design/minhas-tarefas" element={<SpecialistGuard>
                     <ProtectedRoute module="design">
                       <Layout><DesignMinhasTarefas /></Layout>
                     </ProtectedRoute>
-                  </SpecialistGuard>
-                } />
+                  </SpecialistGuard>} />
                 
-                <Route path="/design/biblioteca" element={
-                  <SpecialistGuard>
+                <Route path="/design/biblioteca" element={<SpecialistGuard>
                     <ProtectedRoute module="design">
                       <Layout><DesignBiblioteca /></Layout>
                     </ProtectedRoute>
-                  </SpecialistGuard>
-                } />
+                  </SpecialistGuard>} />
                 
-                <Route path="/design/calendario" element={
-                  <SpecialistGuard>
+                <Route path="/design/calendario" element={<SpecialistGuard>
                     <ProtectedRoute module="design">
                       <Layout><DesignCalendario /></Layout>
                     </ProtectedRoute>
-                  </SpecialistGuard>
-                } />
+                  </SpecialistGuard>} />
                 
-                <Route path="/design/metas" element={
-                  <SpecialistGuard>
+                <Route path="/design/metas" element={<SpecialistGuard>
                     <ProtectedRoute module="design">
                       <Layout><DesignMetas /></Layout>
                     </ProtectedRoute>
-                  </SpecialistGuard>
-                } />
+                  </SpecialistGuard>} />
                 
-                <Route path="/design/aprovacoes" element={
-                  <SpecialistGuard>
+                <Route path="/design/aprovacoes" element={<SpecialistGuard>
                     <ProtectedRoute module="design">
                       <Layout><DesignAprovacoes /></Layout>
                     </ProtectedRoute>
-                  </SpecialistGuard>
-                } />
+                  </SpecialistGuard>} />
                 
                 {/* Calendário Multidisciplinar */}
-                <Route path="/calendario" element={
-                  <ProtectedRoute 
-                    allowedRoles={['admin', 'gestor', 'grs', 'filmmaker', 'designer']}
-                  >
+                <Route path="/calendario" element={<ProtectedRoute allowedRoles={['admin', 'gestor', 'grs', 'filmmaker', 'designer']}>
                     <Layout><Calendario /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
 
                 {/* Inventário */}
-                <Route path="/inventario" element={
-                  <ProtectedRoute module="inventario">
+                <Route path="/inventario" element={<ProtectedRoute module="inventario">
                     <Layout><Inventario /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
 
 
                 {/* Client routes */}
-                <Route path="/cliente/painel" element={
-                  <ProtectedRoute requiredRole="cliente">
+                <Route path="/cliente/painel" element={<ProtectedRoute requiredRole="cliente">
                     <Layout><ClientePainel /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
-                <Route path="/cliente/perfil" element={
-                  <ProtectedRoute requiredRole="cliente">
+                <Route path="/cliente/perfil" element={<ProtectedRoute requiredRole="cliente">
                     <Layout><ClientePerfil /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
-                <Route path="/clientes/:clienteId/editar" element={
-                  <ProtectedRoute module="clientes">
+                <Route path="/clientes/:clienteId/editar" element={<ProtectedRoute module="clientes">
                     <Layout><ClienteEditar /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
-                <Route path="/cliente/projetos" element={
-                  <ProtectedRoute requiredRole="cliente">
+                <Route path="/cliente/projetos" element={<ProtectedRoute requiredRole="cliente">
                     <Layout><ClienteProjetos /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
-                <Route path="/cliente/projeto-detalhes/:id" element={
-                  <ProtectedRoute requiredRole="cliente">
+                <Route path="/cliente/projeto-detalhes/:id" element={<ProtectedRoute requiredRole="cliente">
                     <Layout><ClienteProjetoDetalhes /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
-                <Route path="/cliente/detalhe-projetos" element={
-                  <ProtectedRoute requiredRole="cliente">
+                <Route path="/cliente/detalhe-projetos" element={<ProtectedRoute requiredRole="cliente">
                     <Layout><ClienteDetalheProjetos /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
-                <Route path="/cliente/planejamento-visual" element={
-                  <ProtectedRoute requiredRole="cliente">
+                <Route path="/cliente/planejamento-visual" element={<ProtectedRoute requiredRole="cliente">
                     <Layout><ClientePlanejamentoVisual /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
-                <Route path="/cliente/tarefas" element={
-                  <ProtectedRoute requiredRole="cliente">
+                <Route path="/cliente/tarefas" element={<ProtectedRoute requiredRole="cliente">
                     <Layout><ClienteTarefas /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
-                <Route path="/cliente/aprovacoes" element={
-                  <ProtectedRoute requiredRole="cliente">
+                <Route path="/cliente/aprovacoes" element={<ProtectedRoute requiredRole="cliente">
                     <Layout><ClienteAprovacoes /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
-                <Route path="/cliente/planos" element={
-                  <ProtectedRoute requiredRole="cliente">
+                <Route path="/cliente/planos" element={<ProtectedRoute requiredRole="cliente">
                     <Layout><ClientePlanos /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
-                <Route path="/cliente/exportacoes" element={
-                  <ProtectedRoute requiredRole="cliente">
+                <Route path="/cliente/exportacoes" element={<ProtectedRoute requiredRole="cliente">
                     <Layout><ClienteExportacoes /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
-                <Route path="/cliente/timeline" element={
-                  <ProtectedRoute requiredRole="cliente">
+                <Route path="/cliente/timeline" element={<ProtectedRoute requiredRole="cliente">
                     <Layout><ClienteTimeline /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
                 {/* GRS integrated routes (formerly Atendimento) */}
-                <Route path="/grs/inbox" element={
-                  <ProtectedRoute requiredRole="grs">
+                <Route path="/grs/inbox" element={<ProtectedRoute requiredRole="grs">
                     <Layout><AtendimentoInbox /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
-                <Route path="/grs/tarefas" element={
-                  <ProtectedRoute requiredRole="grs">
+                <Route path="/grs/tarefas" element={<ProtectedRoute requiredRole="grs">
                     <Layout><TarefasUnificadasGRS /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
 
-                <Route path="/grs/roteiro-ia" element={
-                  <ProtectedRoute requiredRole="grs">
+                <Route path="/grs/roteiro-ia" element={<ProtectedRoute requiredRole="grs">
                     <Layout><RoteiroIAListPage /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
-                <Route path="/grs/roteiro-ia/novo" element={
-                  <ProtectedRoute requiredRole="grs">
+                <Route path="/grs/roteiro-ia/novo" element={<ProtectedRoute requiredRole="grs">
                     <Layout><NovoRoteiroPage /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
-                <Route path="/grs/roteiro-ia/:id" element={
-                  <ProtectedRoute requiredRole="grs">
+                <Route path="/grs/roteiro-ia/:id" element={<ProtectedRoute requiredRole="grs">
                     <Layout><EditarRoteiroPage /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
 
-                <Route path="/grs/agenda" element={
-                  <ProtectedRoute requiredRole="grs">
+                <Route path="/grs/agenda" element={<ProtectedRoute requiredRole="grs">
                     <Layout><GRSAgenda /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
-                <Route path="/grs/mensagens" element={
-                  <ProtectedRoute requiredRole="grs">
+                <Route path="/grs/mensagens" element={<ProtectedRoute requiredRole="grs">
                     <Layout><GRSMensagens /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
-                <Route path="/aprovacoes" element={
-                  <ProtectedRoute allowedRoles={['admin', 'gestor', 'grs']}>
+                <Route path="/aprovacoes" element={<ProtectedRoute allowedRoles={['admin', 'gestor', 'grs']}>
                     <Layout><Aprovacoes /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
 
                 {/* Legacy redirects */}
                 <Route path="/atendimento/inbox" element={<Navigate to="/grs/inbox" replace />} />
                 <Route path="/atendimento/dashboard" element={<Navigate to="/grs/dashboard" replace />} />
 
                 {/* Trafego routes */}
-                <Route path="/trafego/dashboard" element={
-                  <ProtectedRoute requiredRole="trafego">
+                <Route path="/trafego/dashboard" element={<ProtectedRoute requiredRole="trafego">
                     <Layout><TrafegoDashboard /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
 
                 {/* Financeiro routes */}
-                <Route path="/financeiro/dashboard" element={
-                  <ProtectedRoute requiredRole="financeiro">
+                <Route path="/financeiro/dashboard" element={<ProtectedRoute requiredRole="financeiro">
                     <Layout><FinanceiroDashboard /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
                 {/* RH routes */}
-                <Route path="/rh/pessoas" element={
-                  <ProtectedRoute module="rh" action="canView">
+                <Route path="/rh/pessoas" element={<ProtectedRoute module="rh" action="canView">
                     <Layout><Pessoas /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
-                <Route path="/rh/ocorrencias" element={
-                  <ProtectedRoute module="rh" action="canView">
+                <Route path="/rh/ocorrencias" element={<ProtectedRoute module="rh" action="canView">
                     <Layout><Ponto /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
                 {/* DEPRECATED: Rotas legadas com redirecionamento automático */}
-                <Route path="/rh/colaboradores" element={
-                  <>
+                <Route path="/rh/colaboradores" element={<>
                     <DeprecatedRouteRedirect />
                     <ProtectedRoute module="rh" action="canView">
                       <Layout><Colaboradores /></Layout>
                     </ProtectedRoute>
-                  </>
-                } />
+                  </>} />
                 
-                <Route path="/rh/colaboradores/:id" element={
-                  <>
+                <Route path="/rh/colaboradores/:id" element={<>
                     <DeprecatedRouteRedirect />
                     <ProtectedRoute module="rh" action="canView">
                       <Layout><ColaboradorDetalhes /></Layout>
                     </ProtectedRoute>
-                  </>
-                } />
+                  </>} />
                 
-                <Route path="/rh/ponto" element={
-                  <ProtectedRoute module="rh" action="canView">
+                <Route path="/rh/ponto" element={<ProtectedRoute module="rh" action="canView">
                     <Layout><FolhaPonto /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
-                <Route path="/financeiro/folha" element={
-                  <ProtectedRoute module="rh" action="canView">
+                <Route path="/financeiro/folha" element={<ProtectedRoute module="rh" action="canView">
                     <Layout><FolhaPagamento /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
-                <Route path="/rh/balancete" element={
-                  <ProtectedRoute module="rh" action="canView">
+                <Route path="/rh/balancete" element={<ProtectedRoute module="rh" action="canView">
                     <Layout><BalanceteContabil /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
 
                 {/* Fornecedor routes */}
-                <Route path="/fornecedor/dashboard" element={
-                  <ProtectedRoute requiredRole="fornecedor">
+                <Route path="/fornecedor/dashboard" element={<ProtectedRoute requiredRole="fornecedor">
                     <Layout><FornecedorDashboard /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
 
                 {/* Gestor routes */}
-                <Route path="/gestor/dashboard" element={
-                  <ProtectedRoute requiredRole="gestor">
+                <Route path="/gestor/dashboard" element={<ProtectedRoute requiredRole="gestor">
                     <Layout><GestorDashboard /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
-                <Route path="/aprovacao-job" element={
-                  <ProtectedRoute>
+                <Route path="/aprovacao-job" element={<ProtectedRoute>
                     <Layout><AprovacaoJob /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
 
                 {/* Admin routes */}
-                <Route path="/admin/painel" element={
-                  <ProtectedRoute requiredRole="admin">
+                <Route path="/admin/painel" element={<ProtectedRoute requiredRole="admin">
                     <Layout><AdminPainel /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
-                <Route path="/admin/tarefas" element={
-                  <ProtectedRoute requiredRole="admin">
+                <Route path="/admin/tarefas" element={<ProtectedRoute requiredRole="admin">
                     <Layout><AdminTarefas /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
-                <Route path="/admin/central-notificacoes" element={
-                  <ProtectedRoute requiredRole="admin">
+                <Route path="/admin/central-notificacoes" element={<ProtectedRoute requiredRole="admin">
                     <Layout><CentralNotificacoes /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
-                <Route path="/admin/system-health" element={
-                  <ProtectedRoute requiredRole="admin">
+                <Route path="/admin/system-health" element={<ProtectedRoute requiredRole="admin">
                     <Layout><SystemHealth /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
-                <Route path="/usuarios" element={
-                  <ProtectedRoute module="configuracoes" action="canEdit" requiredRole="admin">
+                <Route path="/usuarios" element={<ProtectedRoute module="configuracoes" action="canEdit" requiredRole="admin">
                     <Layout><Usuarios /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
                 
-                <Route path="/financeiro/balanco-patrimonial" element={
-                  <ProtectedRoute module="financeiro">
+                <Route path="/financeiro/balanco-patrimonial" element={<ProtectedRoute module="financeiro">
                     <Layout><BalancoPatrimonial /></Layout>
-                  </ProtectedRoute>
-                } />
+                  </ProtectedRoute>} />
 
                 {/* 404 route */}
                 <Route path="*" element={<NotFound />} />
@@ -1101,8 +841,6 @@ function App() {
         </BexThemeProvider>
       </ThemeProvider>
     </QueryClientProvider>
-    </ErrorBoundary>
-  );
+    </ErrorBoundary>;
 }
-
 export default App;
