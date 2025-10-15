@@ -36,15 +36,13 @@ const TUTORIALS_CONFIG: Record<string, TutorialConfig> = {
       { intro: '<h3>💡 Dica!</h3><p>Ao editar o salário de um colaborador, o sistema cria automaticamente um registro no histórico salarial.</p>' },
     ],
   },
-  'folha-ponto': {
-    page: 'folha-ponto',
+  'minhas-tarefas': {
+    page: 'minhas-tarefas',
     steps: [
-      { intro: '<h3>⏰ Folha de Ponto</h3><p>Aprove e gerencie registros de ponto dos colaboradores.</p>' },
-      { element: '[data-tour="competencia-ponto"]', intro: '<strong>Selecione a Competência</strong><br/>Escolha o mês para visualizar os registros de ponto.', position: 'bottom' },
-      { element: '[data-tour="aprovar-todos"]', intro: '<strong>Aprovar em Lote</strong><br/>Aprove todos os registros pendentes de uma só vez.', position: 'bottom' },
-      { element: '[data-tour="resumo"]', intro: '<strong>Resumo</strong><br/>Veja quantos registros estão pendentes de aprovação e quantos já foram aprovados.', position: 'left' },
-      { element: '[data-tour="cards-ponto"]', intro: '<strong>Cards de Ponto</strong><br/>Cada card mostra as horas do colaborador. Você pode editar variáveis (HE, adicional noturno, faltas) e aprovar individualmente.', position: 'top' },
-      { intro: '<h3>⚠️ Importante!</h3><p>O sistema valida automaticamente o limite de horas extras permitido pela CLT (2 horas/dia).</p>' },
+      { intro: '<h3>✅ Minhas Tarefas</h3><p>Gerencie suas tarefas atribuídas.</p>' },
+      { element: '[data-tour="estatisticas"]', intro: '<strong>Estatísticas</strong><br/>Veja suas tarefas totais, em andamento e atrasadas.', position: 'bottom' },
+      { element: '[data-tour="kanban"]', intro: '<strong>Kanban Board</strong><br/>Arraste tarefas entre colunas para atualizar status.', position: 'top' },
+      { intro: '<h3>💡 Dica!</h3><p>Mantenha suas tarefas atualizadas para melhor acompanhamento.</p>' },
     ],
   },
   
@@ -201,14 +199,32 @@ const TUTORIALS_CONFIG: Record<string, TutorialConfig> = {
       { intro: '<h3>💡 Dica!</h3><p>Organize arquivos por pastas para facilitar a edição.</p>' },
     ],
   },
+  'audiovisual-captacoes': {
+    page: 'audiovisual-captacoes',
+    steps: [
+      { intro: '<h3>📹 Agenda de Captações</h3><p>Gerencie suas gravações e captações de conteúdo.</p>' },
+      { element: '[data-tour="nova-captacao"]', intro: '<strong>Nova Captação</strong><br/>Agende uma nova gravação ou sessão fotográfica.', position: 'bottom' },
+      { element: '[data-tour="lista-captacoes"]', intro: '<strong>Lista de Captações</strong><br/>Visualize todas as captações agendadas com detalhes.', position: 'top' },
+      { intro: '<h3>✅ Pronto!</h3><p>Mantenha sua agenda de captações sempre atualizada.</p>' },
+    ],
+  },
   'audiovisual-equipamentos': {
     page: 'audiovisual-equipamentos',
     steps: [
       { intro: '<h3>📷 Gestão de Equipamentos</h3><p>Controle inventário de câmeras, lentes e acessórios.</p>' },
       { element: '[data-tour="novo-equipamento"]', intro: '<strong>Novo Equipamento</strong><br/>Cadastre equipamentos com número de série.', position: 'bottom' },
-      { element: '[data-tour="disponibilidade"]', intro: '<strong>Disponibilidade</strong><br/>Veja quais equipamentos estão livres ou em uso.', position: 'bottom' },
-      { element: '[data-tour="manutencao"]', intro: '<strong>Manutenção</strong><br/>Registre manutenções e calibrações.', position: 'left' },
+      { element: '[data-tour="estatisticas"]', intro: '<strong>Estatísticas</strong><br/>Veja equipamentos disponíveis, reservados e em manutenção.', position: 'bottom' },
+      { element: '[data-tour="lista-equipamentos"]', intro: '<strong>Lista de Equipamentos</strong><br/>Gerencie seu inventário completo.', position: 'top' },
       { intro: '<h3>⚠️ Importante!</h3><p>Mantenha registros de manutenção atualizados.</p>' },
+    ],
+  },
+  'audiovisual-minhas-tarefas': {
+    page: 'audiovisual-minhas-tarefas',
+    steps: [
+      { intro: '<h3>✅ Minhas Tarefas Audiovisual</h3><p>Gerencie suas tarefas atribuídas de produção.</p>' },
+      { element: '[data-tour="estatisticas"]', intro: '<strong>Estatísticas</strong><br/>Acompanhe total de tarefas, em produção e atrasadas.', position: 'bottom' },
+      { element: '[data-tour="kanban"]', intro: '<strong>Kanban Board</strong><br/>Arraste tarefas entre colunas para atualizar status.', position: 'top' },
+      { intro: '<h3>💡 Dica!</h3><p>Mantenha suas tarefas atualizadas para melhor colaboração.</p>' },
     ],
   },
   
