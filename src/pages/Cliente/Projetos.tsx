@@ -409,6 +409,7 @@ export default function ClienteProjetos() {
   const [projetoEdit, setProjetoEdit] = useState<any>(null);
   const [projetoDeleteId, setProjetoDeleteId] = useState<string | null>(null);
   const { toast } = useToast();
+  const { startTutorial, hasSeenTutorial } = useTutorial('cliente-projetos');
 
   
   // Utility function to check if string is a valid UUID
@@ -582,15 +583,18 @@ export default function ClienteProjetos() {
 
   return (
     <div className={`${isMobile ? 'p-4 space-y-6' : 'p-6 space-y-6'}`}>
-      <SectionHeader
-        title={isMobile ? "Projetos" : "Projetos por Cliente"}
-        description={isMobile ? "Visualize e gerencie projetos" : "Visualize e gerencie todos os projetos organizados por cliente"}
-        action={{
-          label: isMobile ? "Novo" : "Novo Projeto",
-          onClick: () => setDialogOpen(true),
-          icon: Plus
-        }}
-      />
+      <div className="flex items-center justify-between mb-6">
+        <SectionHeader
+          title={isMobile ? "Projetos" : "Projetos por Cliente"}
+          description={isMobile ? "Visualize e gerencie projetos" : "Visualize e gerencie todos os projetos organizados por cliente"}
+          action={{
+            label: isMobile ? "Novo" : "Novo Projeto",
+            onClick: () => setDialogOpen(true),
+            icon: Plus
+          }}
+        />
+        <TutorialButton onStart={startTutorial} hasSeenTutorial={hasSeenTutorial} />
+      </div>
 
       {/* Filtros - Mobile Optimized */}
       <div className={`flex gap-4 ${isMobile ? 'flex-col space-y-3' : 'flex-col sm:flex-row'}`}>

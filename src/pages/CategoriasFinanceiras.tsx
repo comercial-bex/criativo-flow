@@ -184,13 +184,15 @@ export default function CategoriasFinanceiras() {
             Gerencie as categorias para organizar receitas e despesas
           </p>
         </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button onClick={openCreateDialog}>
-              <Plus className="mr-2 h-4 w-4" />
-              Nova Categoria
-            </Button>
-          </DialogTrigger>
+        <div className="flex items-center gap-2">
+          <TutorialButton onStart={startTutorial} hasSeenTutorial={hasSeenTutorial} />
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button onClick={openCreateDialog} data-tour="nova-categoria">
+                <Plus className="mr-2 h-4 w-4" />
+                Nova Categoria
+              </Button>
+            </DialogTrigger>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>
@@ -264,9 +266,10 @@ export default function CategoriasFinanceiras() {
             </form>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-2" data-tour="tipo">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Categorias de Receita</CardTitle>
@@ -298,7 +301,7 @@ export default function CategoriasFinanceiras() {
         </Card>
       </div>
 
-      <Card>
+      <Card data-tour="lista">
         <CardHeader>
           <CardTitle>Lista de Categorias</CardTitle>
           <CardDescription>

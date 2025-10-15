@@ -47,14 +47,17 @@ export default function Produtos() {
             Gerencie o catálogo de produtos e serviços
           </p>
         </div>
-        <Button onClick={() => navigate("/admin/produtos/new")}>
-          <Plus className="w-4 h-4 mr-2" />
-          Novo Produto
-        </Button>
+        <div className="flex items-center gap-2">
+          <TutorialButton onStart={startTutorial} hasSeenTutorial={hasSeenTutorial} />
+          <Button onClick={() => navigate("/admin/produtos/new")} data-tour="novo-produto">
+            <Plus className="w-4 h-4 mr-2" />
+            Novo Produto
+          </Button>
+        </div>
       </div>
 
       {/* Stats */}
-      <div className="grid md:grid-cols-3 gap-4">
+      <div className="grid md:grid-cols-3 gap-4" data-tour="kpis">
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
@@ -112,12 +115,12 @@ export default function Produtos() {
       </Card>
 
       {/* Lista */}
-      <Card>
+      <Card data-tour="tabela">
         <CardHeader>
           <CardTitle>Catálogo</CardTitle>
         </CardHeader>
         <CardContent>
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <Tabs value={activeTab} onValueChange={setActiveTab} data-tour="categorias">
             <TabsList className="mb-4">
               <TabsTrigger value="todos">Todos ({stats.total})</TabsTrigger>
               <TabsTrigger value="ativos">Ativos ({stats.ativos})</TabsTrigger>

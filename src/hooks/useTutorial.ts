@@ -327,10 +327,10 @@ export function useTutorial(pageName: string) {
     const seen = localStorage.getItem(`tutorial-seen-${pageName}`);
     if (!seen) {
       setHasSeenTutorial(false);
-      // Auto-iniciar após 1 segundo
+      // Auto-iniciar após 2 segundos para dar tempo do usuário se orientar
       setTimeout(() => {
         startTutorial();
-      }, 1000);
+      }, 2000);
     }
   }, [pageName]);
 

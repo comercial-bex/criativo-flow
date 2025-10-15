@@ -59,6 +59,7 @@ export default function Contratos() {
   const queryClient = useQueryClient();
   const { role } = usePermissions();
   const { contracts, loading } = useContracts();
+  const { startTutorial, hasSeenTutorial } = useTutorial('admin-contratos');
   
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearch = useDebounce(searchTerm, 300);
@@ -144,16 +145,19 @@ export default function Contratos() {
           <h1 className="text-3xl font-bold">Contratos</h1>
           <p className="text-muted-foreground">Gerencie contratos e termos de serviço</p>
         </div>
-        {canCreate && (
-          <Button onClick={() => navigate("/admin/contratos/new")}>
-            <Plus className="mr-2 h-4 w-4" />
-            Novo Contrato
-          </Button>
-        )}
+        <div className="flex items-center gap-2">
+          <TutorialButton onStart={startTutorial} hasSeenTutorial={hasSeenTutorial} />
+          {canCreate && (
+            <Button onClick={() => navigate("/admin/contratos/new")} data-tour="novo-contrato">
+              <Plus className="mr-2 h-4 w-4" />
+              Novo Contrato
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Estatísticas */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4" data-tour="kpis">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total de Contratos</CardTitle>
@@ -197,7 +201,7 @@ export default function Contratos() {
       </div>
 
       {/* Filtros e Ações em Lote */}
-      <div className="flex gap-4 items-center">
+      <div className="flex gap-4 items-center" data-tour="filtros">
         <Input
           placeholder="Buscar contratos..."
           value={searchTerm}
@@ -240,7 +244,7 @@ export default function Contratos() {
       )}
 
       {/* Lista de Contratos */}
-      <div className="grid grid-cols-1 gap-4">
+      <div className="grid grid-cols-1 gap-4" data-tour="tabela">
         {filteredContracts.length === 0 ? (
           <Card className="flex flex-col items-center justify-center h-64 text-center p-6">
             <FileSignature className="h-16 w-16 text-muted-foreground mb-4" />
