@@ -357,7 +357,7 @@ function App() {
                 <Route path="/grs" element={<Navigate to="/grs/painel" replace />} />
                 
                 <Route path="/grs/dashboard" element={<ProtectedRoute requiredRole="grs">
-                    <Layout><GRSDashboard /></Layout>
+                    <Layout className="px-[71px]"><GRSDashboard /></Layout>
                   </ProtectedRoute>} />
                 
                 <Route path="/grs/painel" element={<ProtectedRoute requiredRole="grs">
