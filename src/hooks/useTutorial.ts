@@ -81,23 +81,25 @@ const TUTORIALS_CONFIG: Record<string, TutorialConfig> = {
       { intro: '<h3>✅ Pronto!</h3><p>Gerencie suas propostas comerciais com eficiência.</p>' },
     ],
   },
-  'contratos': {
-    page: 'contratos',
+  'admin-contratos': {
+    page: 'admin-contratos',
     steps: [
       { intro: '<h3>📋 Gestão de Contratos</h3><p>Controle contratos ativos e vencimentos.</p>' },
       { element: '[data-tour="novo-contrato"]', intro: '<strong>Novo Contrato</strong><br/>Cadastre contratos baseados em templates.', position: 'bottom' },
-      { element: '[data-tour="filtros"]', intro: '<strong>Filtros</strong><br/>Filtre por status (ativo, vencido, cancelado).', position: 'bottom' },
-      { element: '[data-tour="alertas"]', intro: '<strong>Alertas de Vencimento</strong><br/>Veja contratos próximos ao vencimento.', position: 'right' },
+      { element: '[data-tour="kpis"]', intro: '<strong>KPIs de Contratos</strong><br/>Acompanhe total, vigentes, rascunhos e valor total mensal.', position: 'bottom' },
+      { element: '[data-tour="filtros"]', intro: '<strong>Filtros</strong><br/>Filtre por status (ativo, vencido, cancelado) e busque contratos.', position: 'bottom' },
+      { element: '[data-tour="tabela"]', intro: '<strong>Lista de Contratos</strong><br/>Visualize, edite ou exclua contratos. Selecione múltiplos para ações em lote.', position: 'top' },
       { intro: '<h3>⚠️ Importante!</h3><p>Configure alertas para não perder renovações de contratos.</p>' },
     ],
   },
-  'produtos': {
-    page: 'produtos',
+  'admin-produtos': {
+    page: 'admin-produtos',
     steps: [
       { intro: '<h3>🛍️ Catálogo de Produtos</h3><p>Gerencie produtos e serviços para orçamentos.</p>' },
-      { element: '[data-tour="novo-produto"]', intro: '<strong>Novo Produto/Serviço</strong><br/>Cadastre itens para usar em orçamentos.', position: 'bottom' },
-      { element: '[data-tour="categorias"]', intro: '<strong>Categorias</strong><br/>Organize produtos por categoria.', position: 'bottom' },
-      { element: '[data-tour="precos"]', intro: '<strong>Gestão de Preços</strong><br/>Atualize preços e margens de lucro.', position: 'left' },
+      { element: '[data-tour="novo-produto"]', intro: '<strong>Novo Produto/Serviço</strong><br/>Cadastre itens para usar em orçamentos e propostas.', position: 'bottom' },
+      { element: '[data-tour="kpis"]', intro: '<strong>Estatísticas do Catálogo</strong><br/>Veja total de produtos, ativos e inativos.', position: 'bottom' },
+      { element: '[data-tour="categorias"]', intro: '<strong>Filtrar por Categoria</strong><br/>Organize e filtre produtos por status (todos, ativos, inativos).', position: 'bottom' },
+      { element: '[data-tour="tabela"]', intro: '<strong>Catálogo de Produtos</strong><br/>Visualize todos os produtos com nome, SKU, preço e status. Clique para editar.', position: 'top' },
       { intro: '<h3>💡 Dica!</h3><p>Mantenha seu catálogo atualizado para agilizar criação de orçamentos.</p>' },
     ],
   },
@@ -125,13 +127,14 @@ const TUTORIALS_CONFIG: Record<string, TutorialConfig> = {
       { intro: '<h3>✅ Pronto!</h3><p>Use esses dados para tomar decisões estratégicas.</p>' },
     ],
   },
-  'categorias-financeiras': {
-    page: 'categorias-financeiras',
+  'financeiro-categorias': {
+    page: 'financeiro-categorias',
     steps: [
       { intro: '<h3>🏷️ Categorias Financeiras</h3><p>Organize suas receitas e despesas.</p>' },
-      { element: '[data-tour="nova-categoria"]', intro: '<strong>Nova Categoria</strong><br/>Crie categorias personalizadas.', position: 'bottom' },
-      { element: '[data-tour="tipo"]', intro: '<strong>Tipo</strong><br/>Defina se é receita ou despesa.', position: 'bottom' },
-      { intro: '<h3>💡 Dica!</h3><p>Categorias bem organizadas facilitam relatórios e análises.</p>' },
+      { element: '[data-tour="nova-categoria"]', intro: '<strong>Nova Categoria</strong><br/>Crie categorias personalizadas para receitas e despesas.', position: 'bottom' },
+      { element: '[data-tour="tipo"]', intro: '<strong>Categorias por Tipo</strong><br/>Veja quantas categorias de receita e despesa você possui.', position: 'bottom' },
+      { element: '[data-tour="lista"]', intro: '<strong>Lista de Categorias</strong><br/>Visualize todas as categorias com nome, tipo, cor e descrição. Edite ou exclua conforme necessário.', position: 'top' },
+      { intro: '<h3>💡 Dica!</h3><p>Categorias bem organizadas facilitam relatórios e análises financeiras.</p>' },
     ],
   },
   

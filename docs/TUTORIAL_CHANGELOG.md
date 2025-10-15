@@ -1,5 +1,40 @@
 # 📝 Tutorial System - Changelog
 
+## 2025-01-15 (Tarde) - Correção de Incompatibilidades Críticas
+
+### 🐛 Bugs Críticos Corrigidos
+
+1. ✅ **Incompatibilidade de nomes em `admin-contratos`**
+   - Problema: Hook usava `'admin-contratos'` mas config era `'contratos'`
+   - Impacto: Tutorial NÃO funcionava
+   - Solução: Renomeado config para `'admin-contratos'` e atualizado steps
+
+2. ✅ **Incompatibilidade de nomes em `admin-produtos`**
+   - Problema: Hook usava `'admin-produtos'` mas config era `'produtos'`
+   - Impacto: Tutorial NÃO funcionava
+   - Solução: Renomeado config para `'admin-produtos'` e atualizado steps
+
+3. ✅ **Incompatibilidade de nomes em `financeiro-categorias`**
+   - Problema: Hook usava `'financeiro-categorias'` mas config era `'categorias-financeiras'`
+   - Impacto: Tutorial NÃO funcionava
+   - Solução: Renomeado config para `'financeiro-categorias'` e adicionado step faltante
+
+### ✅ Melhorias Implementadas
+
+- ✅ Adicionado step `data-tour="kpis"` em `admin-contratos`
+- ✅ Adicionado step `data-tour="tabela"` em `admin-contratos`
+- ✅ Adicionado step `data-tour="kpis"` em `admin-produtos`
+- ✅ Adicionado step `data-tour="tabela"` em `admin-produtos`
+- ✅ Adicionado step `data-tour="lista"` em `financeiro-categorias`
+- ✅ Removido step inexistente `data-tour="alertas"` de `admin-contratos`
+- ✅ Removido step inexistente `data-tour="precos"` de `admin-produtos`
+
+### 📊 Status Atualizado
+
+**Cobertura**: 100% das páginas com hook+button agora têm tutorial funcional ✅
+
+---
+
 ## 2025-01-15 - Sistema de Tutoriais - Correções e Padronização
 
 ### ✅ Alterações Realizadas
