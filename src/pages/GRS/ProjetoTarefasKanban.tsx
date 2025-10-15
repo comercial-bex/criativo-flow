@@ -7,6 +7,7 @@ import { TaskKanbanBoard } from '@/components/TaskKanbanBoard';
 import { ProjectStatusIndicator } from '@/components/ProjectStatusIndicator';
 import { CreateTaskModal } from '@/components/CreateTaskModal';
 import { TaskDetailsModal } from '@/components/TaskDetailsModal';
+import { EditProjetoModal } from '@/components/EditProjetoModal';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { 
@@ -65,6 +66,7 @@ export default function ProjetoTarefasKanban() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Tarefa | null>(null);
   const [showTaskDetails, setShowTaskDetails] = useState(false);
+  const [showEditProject, setShowEditProject] = useState(false);
 
   useEffect(() => {
     if (clienteId && projetoId) {
@@ -209,6 +211,34 @@ export default function ProjetoTarefasKanban() {
     setShowTaskDetails(true);
   };
 
+  const handleProjectUpdate = async (projetoId: string, updates: any) => {
+    try {
+      const { error } = await supabase
+        .from('projetos')
+        .update(updates)
+        .eq('id', projetoId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Projeto atualizado",
+        description: "As alterações foram salvas com sucesso",
+      });
+
+      // Recarregar dados do projeto
+      fetchData();
+      return true;
+    } catch (error) {
+      console.error('Erro ao atualizar projeto:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível atualizar o projeto",
+        variant: "destructive",
+      });
+      return false;
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -279,7 +309,11 @@ export default function ProjetoTarefasKanban() {
                 <Plus className="h-4 w-4 mr-2" />
                 Nova Tarefa
               </Button>
-              <Button variant="outline" size="icon">
+              <Button 
+                variant="outline" 
+                size="icon"
+                onClick={() => setShowEditProject(true)}
+              >
                 <Settings className="h-4 w-4" />
               </Button>
             </div>
@@ -353,6 +387,23 @@ export default function ProjetoTarefasKanban() {
         onOpenChange={setShowTaskDetails}
         task={selectedTask}
         onTaskUpdate={handleTaskUpdate}
+      />
+
+      {/* Edit Project Modal */}
+      <EditProjetoModal
+        open={showEditProject}
+        onOpenChange={setShowEditProject}
+        projeto={projeto ? {
+          id: projeto.id,
+          titulo: projeto.titulo,
+          descricao: projeto.descricao || null,
+          status: projeto.status || null,
+          data_inicio: projeto.data_inicio || null,
+          data_fim: projeto.data_fim || null,
+          orcamento: projeto.orcamento || null,
+          responsavel_id: projeto.responsavel_id || null,
+        } : null}
+        onSave={handleProjectUpdate}
       />
         </CardContent>
       </Card>
