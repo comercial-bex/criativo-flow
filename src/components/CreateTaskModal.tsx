@@ -18,7 +18,6 @@ import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { BriefingForm } from './BriefingForm';
 import { AIBriefingGenerator } from './AIBriefingGenerator';
-import { EquipamentosSelector } from './Inventario/EquipamentosSelector';
 import { TaskReferencesTab } from './TaskReferencesTab';
 import { useOperationalPermissions } from '@/hooks/useOperationalPermissions';
 import { supabase } from '@/integrations/supabase/client';
@@ -53,7 +52,6 @@ export function CreateTaskModal({
   const [selectedPlanejamento, setSelectedPlanejamento] = useState('');
   const [clientes, setClientes] = useState<any[]>([]);
   const [selectedCliente, setSelectedCliente] = useState(clienteId || '');
-  const [selectedEquipamentos, setSelectedEquipamentos] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState('basico');
   const [loadingAI, setLoadingAI] = useState(false);
   const [selectedExecutor, setSelectedExecutor] = useState("");
@@ -362,7 +360,6 @@ export function CreateTaskModal({
     setSelectedCliente(clienteId || '');
     setVinculadaPlanejamento(false);
     setSelectedPlanejamento('');
-    setSelectedEquipamentos([]);
     setSelectedExecutor('');
     setActiveTab('basico');
   };
@@ -521,55 +518,10 @@ export function CreateTaskModal({
 
       const createdTask = await onTaskCreate(sanitizeTaskPayload(taskData));
       
-      // Se houver equipamentos selecionados, criar reservas
-      if (selectedEquipamentos.length > 0 && createdTask?.id) {
-        let reservasOk = 0;
-        let reservasFalha = 0;
-        
-        for (const equipamento of selectedEquipamentos) {
-          // Calcular período da reserva
-          const dataInicio = formData.data_prazo || new Date();
-          const dataFim = formData.data_prazo 
-            ? new Date(formData.data_prazo.getTime() + (4 * 60 * 60 * 1000))
-            : new Date(new Date().getTime() + (4 * 60 * 60 * 1000));
-          
-          try {
-            await supabase.rpc('fn_criar_reserva_equipamento', {
-              p_item_id: equipamento.id,
-              p_unidade_id: null,
-              p_tipo_reserva: 'captacao',
-              p_inicio: dataInicio.toISOString(),
-              p_fim: dataFim.toISOString(),
-              p_tarefa_id: createdTask.id,
-              p_projeto_id: selectedProjeto,
-              p_quantidade: 1
-            });
-            reservasOk++;
-          } catch (reservaError) {
-            reservasFalha++;
-            console.error('Erro ao criar reserva:', reservaError);
-          }
-        }
-        
-        // Toast com resultado detalhado
-        if (reservasFalha === 0) {
-          toast({
-            title: "✅ Equipamentos reservados!",
-            description: `${reservasOk} item(ns) reservado(s) com sucesso`,
-          });
-        } else {
-          toast({
-            title: "⚠️ Reserva parcial",
-            description: `${reservasOk} OK, ${reservasFalha} falharam. Reserve manualmente.`,
-            variant: "destructive"
-          });
-        }
-      } else {
-        toast({
-          title: "✅ Tarefa criada com sucesso!",
-          description: `A tarefa "${formData.titulo}" foi adicionada ao projeto.`,
-        });
-      }
+      toast({
+        title: "✅ Tarefa criada com sucesso!",
+        description: `A tarefa "${formData.titulo}" foi adicionada ao projeto.`,
+      });
       
       onOpenChange(false);
       setTimeout(() => resetForm(), 300);
@@ -661,11 +613,10 @@ export function CreateTaskModal({
           </div>
 
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid grid-cols-4 w-full">
+            <TabsList className="grid grid-cols-3 w-full">
               <TabsTrigger value="basico">📋 Básico</TabsTrigger>
               <TabsTrigger value="briefing" disabled={taskType !== 'avulsa'}>📝 Briefing</TabsTrigger>
               <TabsTrigger value="referencias" disabled={taskType !== 'avulsa'}>🎨 Referências</TabsTrigger>
-              <TabsTrigger value="equipamentos">📦 Equipamentos</TabsTrigger>
             </TabsList>
             
             <TabsContent value="basico" className="space-y-6 mt-4">
@@ -1040,48 +991,13 @@ export function CreateTaskModal({
               />
             </TabsContent>
 
-            <TabsContent value="equipamentos" className="space-y-6 mt-4">
-              <EquipamentosSelector
-                clienteId={selectedCliente}
-                projetoId={selectedProjeto}
-                dataInicio={formData.data_prazo}
-                dataFim={formData.data_prazo}
-                onSelect={(equipamentos) => setSelectedEquipamentos(equipamentos)}
-              />
-              
-              {selectedEquipamentos.length > 0 && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle>📦 Equipamentos Selecionados ({selectedEquipamentos.length})</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-2">
-                    {selectedEquipamentos.map((eq) => (
-                      <div key={eq.id} className="flex justify-between items-center p-3 border rounded-lg bg-muted/50">
-                        <div>
-                          <p className="font-medium">{eq.modelo?.marca} {eq.modelo?.modelo}</p>
-                          <p className="text-sm text-muted-foreground">{eq.identificacao_interna}</p>
-                        </div>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setSelectedEquipamentos(prev => prev.filter(e => e.id !== eq.id))}
-                        >
-                          ✕
-                        </Button>
-                      </div>
-                    ))}
-                  </CardContent>
-                </Card>
-              )}
-            </TabsContent>
           </Tabs>
 
-          {taskType === 'planejamento' && (
+          {vinculadaPlanejamento && (
             <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-              <h3 className="font-medium text-blue-900 mb-2">Planejamento Mensal</h3>
+              <h3 className="font-medium text-blue-900 mb-2">📋 Tarefa Vinculada ao Planejamento</h3>
               <p className="text-sm text-blue-700">
-                Esta tarefa seguirá a estrutura pré-definida do planejamento mensal com posts, cards e vídeos automáticos baseados na assinatura do cliente.
+                Esta tarefa está vinculada a um planejamento mensal e seguirá as diretrizes aprovadas pelo cliente.
               </p>
             </div>
           )}
