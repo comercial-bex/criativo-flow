@@ -12,11 +12,24 @@ interface BriefingFormProps {
 }
 
 export function BriefingForm({ formData, setFormData, tipoTarefa }: BriefingFormProps) {
-  // Detectar tipo de conteúdo para campos adaptativos
-  const isVideo = ['criativo_vt', 'roteiro_reels', 'reels_instagram'].includes(tipoTarefa || '');
-  const isCarrossel = tipoTarefa === 'criativo_carrossel';
-  const isStories = tipoTarefa === 'stories_interativo';
-  const isCartela = tipoTarefa === 'criativo_cartela';
+  // 🎯 Categorização detalhada por tipo de tarefa
+  const isCriativoCard = tipoTarefa === 'criativo_card';
+  const isCriativoCarrossel = tipoTarefa === 'criativo_carrossel';
+  const isCriativoCartela = tipoTarefa === 'criativo_cartela';
+  const isCriativoVT = tipoTarefa === 'criativo_vt';
+  const isReelsInstagram = tipoTarefa === 'reels_instagram';
+  const isStoriesInterativo = tipoTarefa === 'stories_interativo';
+  const isFeedPost = tipoTarefa === 'feed_post';
+  const isRoteiroReels = tipoTarefa === 'roteiro_reels';
+  const isPlanejamentoEstrategico = tipoTarefa === 'planejamento_estrategico';
+  const isDatasComemoratvas = tipoTarefa === 'datas_comemorativas';
+  const isTrafegoPago = tipoTarefa === 'trafego_pago';
+  
+  // Grupos de tipos para facilitar condicionais
+  const isVideo = [isCriativoVT, isReelsInstagram, isRoteiroReels].some(Boolean);
+  const isCarrossel = isCriativoCarrossel;
+  const isStories = isStoriesInterativo;
+  const isCartela = isCriativoCartela;
   return (
     <Card className="border-primary/20">
       <CardHeader>
