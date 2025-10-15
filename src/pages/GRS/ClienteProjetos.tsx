@@ -22,13 +22,19 @@ import {
   PlayCircle,
   ChevronDown,
   Zap,
-  Megaphone
+  Megaphone,
+  MoreVertical,
+  Edit,
+  Trash2
 } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { CriarProjetoAvulsoModal } from '@/components/CriarProjetoAvulsoModal';
 import { CreatePlanejamentoModal } from '@/components/CreatePlanejamentoModal';
+import { EditProjetoModal } from '@/components/EditProjetoModal';
+import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useProjetos } from '@/hooks/useProjetos';
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useTutorial } from '@/hooks/useTutorial';
@@ -63,10 +69,14 @@ export default function ClienteProjetos() {
   const { toast } = useToast();
   const { startTutorial, hasSeenTutorial } = useTutorial('grs-cliente-projetos');
   
+  const { updateProjeto, deleteProjeto } = useProjetos();
+  
   const [cliente, setCliente] = useState<Cliente | null>(null);
   const [projetos, setProjetos] = useState<Projeto[]>([]);
   const [loading, setLoading] = useState(true);
   const [tipoModal, setTipoModal] = useState<'avulso' | 'campanha' | 'plano_editorial' | null>(null);
+  const [projetoEdit, setProjetoEdit] = useState<Projeto | null>(null);
+  const [projetoDeleteId, setProjetoDeleteId] = useState<string | null>(null);
 
   useEffect(() => {
     if (clienteId) {
@@ -141,6 +151,16 @@ export default function ClienteProjetos() {
 
   const handleAbrirProjeto = (projetoId: string) => {
     navigate(`/grs/cliente/${clienteId}/projeto/${projetoId}/tarefas`);
+  };
+
+  const handleDeleteProjeto = async () => {
+    if (!projetoDeleteId) return;
+    
+    const success = await deleteProjeto(projetoDeleteId);
+    if (success) {
+      setProjetoDeleteId(null);
+      fetchProjetos();
+    }
   };
 
   return (
@@ -263,11 +283,33 @@ export default function ClienteProjetos() {
             <Card key={projeto.id} className="hover:shadow-md transition-shadow">
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between gap-2">
-                  <CardTitle className="text-lg font-semibold line-clamp-2">
-                    {projeto.titulo}
-                  </CardTitle>
-                  <div className="flex gap-1">
+                  <div className="flex-1">
+                    <CardTitle className="text-lg font-semibold line-clamp-2">
+                      {projeto.titulo}
+                    </CardTitle>
+                  </div>
+                  <div className="flex items-center gap-2">
                     {getStatusBadge(projeto.status)}
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => setProjetoEdit(projeto)}>
+                          <Edit className="h-4 w-4 mr-2" />
+                          Editar Projeto
+                        </DropdownMenuItem>
+                        <DropdownMenuItem 
+                          onClick={() => setProjetoDeleteId(projeto.id)}
+                          className="text-destructive focus:text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Excluir Projeto
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
                 </div>
                 {projeto.descricao && (
@@ -332,6 +374,33 @@ export default function ClienteProjetos() {
           ))}
         </div>
       )}
+
+      {/* Modal de Edição */}
+      <EditProjetoModal
+        open={!!projetoEdit}
+        onOpenChange={(open) => !open && setProjetoEdit(null)}
+        projeto={projetoEdit}
+        onSave={async (id, updates) => {
+          const success = await updateProjeto(id, updates);
+          if (success) {
+            fetchProjetos();
+          }
+          return success;
+        }}
+      />
+
+      {/* Confirmação de Exclusão */}
+      <ConfirmationDialog
+        open={!!projetoDeleteId}
+        onOpenChange={(open) => !open && setProjetoDeleteId(null)}
+        title="Excluir Projeto"
+        description="Tem certeza que deseja excluir este projeto? Esta ação não pode ser desfeita e todas as tarefas vinculadas serão perdidas."
+        confirmText="Excluir"
+        cancelText="Cancelar"
+        onConfirm={handleDeleteProjeto}
+        variant="destructive"
+        gaming={false}
+      />
     </div>
   );
 }

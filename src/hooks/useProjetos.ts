@@ -176,6 +176,25 @@ export function useProjetos() {
     }
   };
 
+  const deleteProjeto = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('projetos')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+
+      toast.success('Projeto excluído com sucesso!');
+      fetchProjetos();
+      return true;
+    } catch (error) {
+      console.error('Erro ao excluir projeto:', error);
+      toast.error('Erro ao excluir projeto');
+      return false;
+    }
+  };
+
   const createTarefa = async (tarefa: Partial<TarefaProjeto>) => {
     if (!user) return null;
 
@@ -232,6 +251,7 @@ export function useProjetos() {
     fetchTarefasPorSetor,
     createProjeto,
     updateProjeto,
+    deleteProjeto,
     createTarefa,
     updateTarefa,
   };
