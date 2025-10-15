@@ -503,8 +503,8 @@ export function UniversalKanbanBoard({
           {columns.map(column => <UniversalKanbanColumn key={column.id} column={column} onTaskCreate={onTaskCreate} onTaskClick={onTaskClick} moduleColumns={moduleColumns} onTaskMove={onTaskMove} />)}
         </div>
 
-        <DragOverlay dropAnimation={null} style={{ zIndex: 9999 }}>
-          {activeTask ? (
+        {activeTask && (
+          <DragOverlay dropAnimation={null} style={{ zIndex: 9999 }}>
             <div className="cursor-grabbing rotate-3 scale-105">
               <ModernKanbanCard 
                 task={convertToKanbanTask(activeTask)} 
@@ -512,8 +512,8 @@ export function UniversalKanbanBoard({
                 isDragging={true}
               />
             </div>
-          ) : null}
-        </DragOverlay>
+          </DragOverlay>
+        )}
       </DndContext>
     </div>;
 }
