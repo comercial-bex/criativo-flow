@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, useDroppable } from '@dnd-kit/core';
+import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, useDroppable, PointerSensor, useSensor, useSensors, closestCorners } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { AnimatePresence } from 'framer-motion';
 import { Plus } from 'lucide-react';
@@ -140,6 +140,15 @@ function KanbanColumnComponent({
 export function TaskKanbanBoard({ tasks, onTaskMove, onTaskCreate, onTaskClick, projetoId }: TaskKanbanBoardProps) {
   const [activeTask, setActiveTask] = useState<KanbanTask | null>(null);
 
+  // Configure sensors for better drag experience
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 5, // Requires 5px movement before drag starts
+      },
+    })
+  );
+
   // Organize tasks into columns
   const columns: KanbanColumn[] = [
     {
@@ -167,31 +176,42 @@ export function TaskKanbanBoard({ tasks, onTaskMove, onTaskCreate, onTaskClick, 
     setActiveTask(task || null);
   };
 
+  // Helper function to find which column contains a task
+  const findColumnByTaskId = (taskId: string): string | undefined => {
+    const column = columns.find(col => col.tasks.some(task => task.id === taskId));
+    return column?.id;
+  };
+
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     
-    console.log('🔍 Debug Drag End:', {
-      activeId: active.id,
-      overId: over?.id,
-      columns: columns.map(c => ({ id: c.id, taskCount: c.tasks.length }))
-    });
+    setActiveTask(null);
     
     if (!over) {
       console.log('❌ Nenhum drop zone detectado');
-      setActiveTask(null);
       return;
     }
     
-    const taskId = active.id as string;
-    const newColumnId = over.id as string;
+    const taskId = String(active.id);
+    const overId = String(over.id);
     
-    console.log('🎯 Drag end:', { taskId, newColumnId });
-    
-    // Verificar se é uma coluna válida
     const validColumns = ['a_fazer', 'em_andamento', 'concluido'];
-    if (!validColumns.includes(newColumnId)) {
-      console.log('⚠️ Drop em tarefa, não em coluna. Ignorando.');
-      setActiveTask(null);
+    
+    // Check if dropped on a column directly, or on a task (then find its column)
+    let targetColumnId: string | undefined;
+    
+    if (validColumns.includes(overId)) {
+      // Dropped directly on a column
+      targetColumnId = overId;
+      console.log('✅ Drop direto na coluna:', targetColumnId);
+    } else {
+      // Dropped on a task - find which column that task belongs to
+      targetColumnId = findColumnByTaskId(overId);
+      console.log('✅ Drop em card, coluna detectada:', targetColumnId);
+    }
+    
+    if (!targetColumnId) {
+      console.log('⚠️ Coluna alvo não encontrada');
       return;
     }
     
@@ -200,17 +220,21 @@ export function TaskKanbanBoard({ tasks, onTaskMove, onTaskCreate, onTaskClick, 
       'a_fazer': 'backlog',
       'em_andamento': 'em_andamento',
       'concluido': 'concluido'
-    };
+    } as const;
 
-    const newStatus = statusMapping[newColumnId as keyof typeof statusMapping];
-    console.log('✅ Movendo para status:', newStatus);
+    const newStatus = statusMapping[targetColumnId as keyof typeof statusMapping];
+    console.log('✅ Movendo tarefa', taskId, 'para status:', newStatus);
     
     onTaskMove(taskId, newStatus);
-    setActiveTask(null);
   };
 
   return (
-    <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+    <DndContext 
+      sensors={sensors}
+      collisionDetection={closestCorners}
+      onDragStart={handleDragStart} 
+      onDragEnd={handleDragEnd}
+    >
       <div className="flex gap-6 overflow-x-auto pb-4">
         {columns.map((column) => (
           <KanbanColumnComponent
