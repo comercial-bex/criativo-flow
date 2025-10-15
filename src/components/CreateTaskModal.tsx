@@ -473,6 +473,19 @@ export function CreateTaskModal({
         return setor ? (mapeamento[setor] || null) : null;
       };
 
+      // Buscar user_id do usuário logado
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      
+      if (userError || !user) {
+        toast({
+          title: "❌ Erro de autenticação",
+          description: "Não foi possível identificar o usuário logado.",
+          variant: "destructive"
+        });
+        setLoading(false);
+        return;
+      }
+
       // Buscar nome do cliente para roteiro background
       const { data: clienteData } = await supabase
         .from('clientes')
@@ -487,6 +500,8 @@ export function CreateTaskModal({
         descricao: formData.descricao,
         executor_id: selectedExecutor || null,
         executor_area: mapearExecutorArea(formData.setor_responsavel),
+        created_by: user.id,
+        responsavel_id: user.id,
         prioridade: formData.prioridade,
         status: defaultStatus,
         prazo_executor: formData.data_prazo?.toISOString(),
@@ -515,6 +530,11 @@ export function CreateTaskModal({
           }
         }
       };
+
+      console.log('📋 Payload antes do sanitize:', taskData);
+      console.log('👤 User ID:', user.id);
+      console.log('🔐 Setor:', formData.setor_responsavel);
+      console.log('🎯 Executor Area:', taskData.executor_area);
 
       const createdTask = await onTaskCreate(sanitizeTaskPayload(taskData));
       
