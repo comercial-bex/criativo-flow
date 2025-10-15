@@ -10642,6 +10642,11 @@ export type Database = {
         | "trafego_pago"
         | "contrato"
         | "outro"
+        | "feed_post"
+        | "criativo_vt"
+        | "reels_instagram"
+        | "stories_interativo"
+        | "criativo_cartela"
       tipo_vinculo_enum: "clt" | "pj" | "estagio" | "freelancer"
       user_role:
         | "admin"
@@ -10982,6 +10987,11 @@ export const Constants = {
         "trafego_pago",
         "contrato",
         "outro",
+        "feed_post",
+        "criativo_vt",
+        "reels_instagram",
+        "stories_interativo",
+        "criativo_cartela",
       ],
       tipo_vinculo_enum: ["clt", "pj", "estagio", "freelancer"],
       user_role: [
