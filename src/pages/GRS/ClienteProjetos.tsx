@@ -28,6 +28,7 @@ import {
   Trash2
 } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { CriarProjetoAvulsoModal } from '@/components/CriarProjetoAvulsoModal';
 import { CreatePlanejamentoModal } from '@/components/CreatePlanejamentoModal';
 import { EditProjetoModal } from '@/components/EditProjetoModal';
@@ -290,26 +291,42 @@ export default function ClienteProjetos() {
                   </div>
                   <div className="flex items-center gap-2">
                     {getStatusBadge(projeto.status)}
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <MoreVertical className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => setProjetoEdit(projeto)}>
-                          <Edit className="h-4 w-4 mr-2" />
-                          Editar Projeto
-                        </DropdownMenuItem>
-                        <DropdownMenuItem 
-                          onClick={() => setProjetoDeleteId(projeto.id)}
-                          className="text-destructive focus:text-destructive"
-                        >
-                          <Trash2 className="h-4 w-4 mr-2" />
-                          Excluir Projeto
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <DropdownMenu>
+                          <TooltipTrigger asChild>
+                            <DropdownMenuTrigger asChild>
+                              <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                className="h-8 w-8 hover:bg-accent hover:text-accent-foreground"
+                              >
+                                <MoreVertical className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                          </TooltipTrigger>
+                          <DropdownMenuContent 
+                            align="end"
+                            className="bg-background dark:bg-gray-800 border-2 border-border shadow-xl z-[100]"
+                          >
+                            <DropdownMenuItem onClick={() => setProjetoEdit(projeto)}>
+                              <Edit className="h-4 w-4 mr-2" />
+                              Editar Projeto
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              onClick={() => setProjetoDeleteId(projeto.id)}
+                              className="text-destructive focus:text-destructive"
+                            >
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Excluir Projeto
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                        <TooltipContent>
+                          <p>Mais opções</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   </div>
                 </div>
                 {projeto.descricao && (
