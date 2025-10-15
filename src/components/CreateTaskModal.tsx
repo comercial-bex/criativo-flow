@@ -441,6 +441,16 @@ export function CreateTaskModal({
       return;
     }
 
+    // Validação de tipo de tarefa
+    if (!tipoTarefaSelecionado) {
+      toast({
+        title: "Tipo de tarefa obrigatório",
+        description: "Selecione o tipo da tarefa antes de continuar.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
 
     // 🛡️ VALIDAÇÃO FINAL
@@ -486,7 +496,7 @@ export function CreateTaskModal({
         horas_estimadas: formData.horas_estimadas ? parseInt(formData.horas_estimadas) : null,
         origem: taskType,
         grs_action_id: vinculadaPlanejamento ? selectedPlanejamento : null,
-        tipo: tipoTarefaSelecionado || null,
+        tipo: tipoTarefaSelecionado || 'outro',
         kpis: {
           briefing: {
             id_cartao: idCartao,
@@ -787,7 +797,10 @@ export function CreateTaskModal({
                   }
                 }}
               >
-                <SelectTrigger>
+                <SelectTrigger className={cn(
+                  "w-full",
+                  !tipoTarefaSelecionado && "border-destructive"
+                )}>
                   <SelectValue placeholder="Selecione o tipo" />
                 </SelectTrigger>
                 <SelectContent>
@@ -1077,7 +1090,7 @@ export function CreateTaskModal({
           <div className="flex gap-3 pt-4 border-t">
             <Button 
               type="submit" 
-              disabled={loading || !formData.titulo || !formData.setor_responsavel || !selectedCliente || !selectedProjeto}
+              disabled={loading || !formData.titulo || !selectedCliente || !selectedProjeto || !tipoTarefaSelecionado}
               className="flex-1"
             >
               {loading ? "Criando..." : "Criar Tarefa"}

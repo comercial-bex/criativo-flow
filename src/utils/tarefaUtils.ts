@@ -275,6 +275,11 @@ export function sanitizeTaskPayload<T extends Record<string, any>>(p: T): any {
     }
   }
   
+  // Garantir que tipo nunca seja null/undefined
+  if (!cleanPayload.tipo || cleanPayload.tipo === '') {
+    cleanPayload.tipo = 'outro';
+  }
+  
   // Remover explicitamente setor_responsavel se existir (proteção extra)
   delete cleanPayload.setor_responsavel;
   
