@@ -217,8 +217,8 @@ export const ModernKanbanCard = React.memo(({
         height="h-20 sm:h-24"
       >
         {/* Countdown Timer */}
-        {task.prazo_executor && !quickMoveColumns && (
-          <div className="absolute top-2 right-2">
+        {task.prazo_executor && (
+          <div className="absolute top-2 right-10">
             <div className={`bg-black/60 backdrop-blur-md rounded-lg px-2 sm:px-3 py-1 sm:py-1.5 flex items-center gap-1 sm:gap-2 ${countdownColor}`}>
               <Clock className="w-3 h-3 sm:w-4 sm:h-4" />
               <span className="text-xs sm:text-sm font-semibold">{formattedTime}</span>
@@ -253,11 +253,12 @@ export const ModernKanbanCard = React.memo(({
               </p>
             )}
           </div>
-          <div className="hidden sm:block">
+          <div>
             <ModernAvatar 
               src={task.responsavel_avatar} 
-              alt={task.responsavel_nome || "?"} 
-              size={36}
+              alt={task.responsavel_nome || task.executor_nome || "?"} 
+              size={44}
+              className="ring-2 ring-green-500 shadow-lg"
             />
           </div>
         </div>

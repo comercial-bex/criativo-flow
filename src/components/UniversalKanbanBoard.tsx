@@ -503,9 +503,9 @@ export function UniversalKanbanBoard({
           {columns.map(column => <UniversalKanbanColumn key={column.id} column={column} onTaskCreate={onTaskCreate} onTaskClick={onTaskClick} moduleColumns={moduleColumns} onTaskMove={onTaskMove} />)}
         </div>
 
-        <DragOverlay>
+        <DragOverlay dropAnimation={null} style={{ zIndex: 9999 }}>
           {activeTask ? (
-            <div className="cursor-grabbing">
+            <div className="cursor-grabbing rotate-3 scale-105">
               <ModernKanbanCard 
                 task={convertToKanbanTask(activeTask)} 
                 onTaskClick={() => {}}
