@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { 
   Clock, 
@@ -76,6 +76,8 @@ export const ModernKanbanCard = React.memo(({
   onQuickMove,
   currentStatus
 }: ModernKanbanCardProps) => {
+  const [isCurrentlyDragging, setIsCurrentlyDragging] = useState(false);
+
   const {
     attributes,
     listeners,
@@ -89,6 +91,17 @@ export const ModernKanbanCard = React.memo(({
     transform: CSS.Transform.toString(transform),
     transition,
   };
+
+  // Detectar início e fim de drag
+  useEffect(() => {
+    if (isSortableDragging) {
+      setIsCurrentlyDragging(true);
+    } else {
+      // Delay para evitar clique imediato após soltar
+      const timer = setTimeout(() => setIsCurrentlyDragging(false), 100);
+      return () => clearTimeout(timer);
+    }
+  }, [isSortableDragging]);
 
   // Timer em tempo real
   const { formattedTime, status: deadlineStatus, isUrgent } = useTaskTimer(task.prazo_executor);
@@ -155,7 +168,7 @@ export const ModernKanbanCard = React.memo(({
   }, [riskLevel.level]);
 
   const handleClick = () => {
-    if (!isSortableDragging) {
+    if (!isCurrentlyDragging) {
       onTaskClick(task);
     }
   };
@@ -166,7 +179,11 @@ export const ModernKanbanCard = React.memo(({
       style={style}
       {...attributes} 
       {...listeners}
-      onClick={handleClick}
+      onPointerDown={(e) => {
+        if (!isCurrentlyDragging && e.button === 0 && e.isPrimary) {
+          handleClick();
+        }
+      }}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.9 }}
