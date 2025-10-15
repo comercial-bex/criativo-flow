@@ -651,7 +651,7 @@ function App() {
                 
                 {/* Calendário Multidisciplinar */}
                 <Route path="/calendario" element={<ProtectedRoute allowedRoles={['admin', 'gestor', 'grs', 'filmmaker', 'designer']}>
-                    <Layout><Calendario /></Layout>
+                    <Layout className="px-[71px]"><Calendario /></Layout>
                   </ProtectedRoute>} />
 
                 {/* Inventário */}
