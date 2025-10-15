@@ -84,16 +84,16 @@ export default function GRSDashboard() {
 
       console.log('🔍 Buscando dados para GRS:', user.id);
 
-      // 🎯 FASE 1: Filtrar clientes por GRS responsável
+      // Buscar todos os clientes ativos (filtraremos por projetos depois)
       const { data: clientes, error: clientesError } = await supabase
         .from('clientes')
         .select('id, nome, email, status')
         .eq('status', 'ativo')
-        .eq('responsavel_id', user.id)  // ✅ Filtrar por GRS responsável
         .order('nome');
+      
+      console.log('📊 Total de clientes ativos:', clientes?.length || 0);
 
       if (clientesError) throw clientesError;
-      console.log('📊 Clientes vinculados ao GRS:', clientes?.length || 0);
 
       // 🎯 FASE 2: Buscar projetos onde GRS está vinculado
       // 1️⃣ Buscar projetos onde GRS é responsável direto
@@ -160,7 +160,14 @@ export default function GRSDashboard() {
       // Converter Map para array
       const projetos = Array.from(projetosMap.values());
 
-      console.log('📁 Total de projetos vinculados ao GRS:', projetos.length);
+console.log('📁 Total de projetos vinculados ao GRS:', projetos.length);
+
+    // Log de debug para clientes com projetos
+    if (projetos.length > 0) {
+      const clientesUnicos = [...new Set(projetos.map(p => p.cliente_id))];
+      console.log('🏢 Clientes com projetos:', clientesUnicos.length);
+      console.log('🏢 IDs dos clientes:', clientesUnicos);
+    }
 
       // ✅ Validar estrutura dos dados
       const projetosInvalidos = projetos.filter(p => !p.id || !p.cliente_id);
@@ -211,7 +218,9 @@ export default function GRSDashboard() {
           aprovacoesPendentes,
           mensagensNaoLidas,
         };
-      }) || [];
+      }).filter(cliente => cliente.totalProjetos > 0) || [];
+      
+      console.log('👥 Clientes com projetos vinculados ao GRS:', clientesComStats.length);
 
       setClientesComProjetos(clientesComStats);
 
@@ -487,7 +496,12 @@ export default function GRSDashboard() {
             <div className="text-center py-8">Carregando...</div>
           ) : clientesComProjetos.length === 0 ? (
             <div className="text-center py-8">
-              <p className="text-muted-foreground">Nenhum cliente vinculado a você encontrado</p>
+              <p className="text-muted-foreground">
+                Nenhum cliente com projetos vinculados a você encontrado
+              </p>
+              <p className="text-xs text-muted-foreground mt-2">
+                Crie um novo projeto para começar
+              </p>
             </div>
           ) : (() => {
             // 🎯 Aplicar filtro de status
