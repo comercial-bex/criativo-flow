@@ -178,7 +178,7 @@ export const ModernKanbanCard = React.memo(({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.9 }}
       transition={{ duration: 0.3 }}
-      className={`bg-card border-2 ${borderColor} rounded-xl shadow-lg overflow-hidden select-none cursor-grab active:cursor-grabbing hover:shadow-bex-glow hover:-translate-y-1 transition-all duration-200 ${isSortableDragging ? 'opacity-50 glass-bex' : ''}`}
+      className={`bg-card border-2 ${borderColor} rounded-xl shadow-lg overflow-hidden select-none cursor-grab active:cursor-grabbing hover:shadow-bex-glow hover:-translate-y-1 transition-all duration-200 ${isSortableDragging ? 'opacity-0' : ''}`}
     >
 
       {/* Quick Move Menu */}

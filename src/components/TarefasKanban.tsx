@@ -23,7 +23,7 @@ import {
   Download,
   X
 } from "lucide-react";
-import { DndContext, DragEndEvent, closestCorners, useDroppable, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
+import { DndContext, DragEndEvent, DragOverlay, closestCorners, useDroppable, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -132,6 +132,7 @@ export function TarefasKanban({ planejamento, clienteId, projetoId, filters }: T
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingTarefa, setEditingTarefa] = useState<Tarefa | null>(null);
+  const [activeTarefa, setActiveTarefa] = useState<Tarefa | null>(null);
   const [uploadingFile, setUploadingFile] = useState(false);
   const { toast } = useToast();
 
@@ -195,6 +196,7 @@ export function TarefasKanban({ planejamento, clienteId, projetoId, filters }: T
   };
 
   const handleDragEnd = async (event: DragEndEvent) => {
+    setActiveTarefa(null);
     const { active, over } = event;
 
     // Set flag to prevent immediate click
@@ -674,7 +676,15 @@ export function TarefasKanban({ planejamento, clienteId, projetoId, filters }: T
         </Dialog>
 
       {/* Kanban Board */}
-      <DndContext sensors={sensors} collisionDetection={closestCorners} onDragEnd={handleDragEnd}>
+      <DndContext 
+        sensors={sensors} 
+        collisionDetection={closestCorners} 
+        onDragStart={(event) => {
+          const tarefa = tarefas.find(t => t.id === event.active.id);
+          if (tarefa) setActiveTarefa(tarefa);
+        }}
+        onDragEnd={handleDragEnd}
+      >
         <div className="grid grid-cols-5 gap-6">
           {colunas.map((coluna) => {
             const tarefasColuna = getTarefasPorStatus(coluna.id);
@@ -726,6 +736,18 @@ export function TarefasKanban({ planejamento, clienteId, projetoId, filters }: T
             );
           })}
         </div>
+
+        <DragOverlay dropAnimation={null}>
+          {activeTarefa ? (
+            <div className="cursor-grabbing rotate-2 scale-105 shadow-2xl">
+              <ModernKanbanCard 
+                task={convertToKanbanTask(activeTarefa, profiles)} 
+                onTaskClick={() => {}}
+                isDragging={true}
+              />
+            </div>
+          ) : null}
+        </DragOverlay>
       </DndContext>
     </div>
   );

@@ -255,11 +255,13 @@ export function TaskKanbanBoard({ tasks, onTaskMove, onTaskCreate, onTaskClick, 
 
       <DragOverlay>
         {activeTask ? (
-          <ModernKanbanCard 
-            task={activeTask} 
-            onTaskClick={onTaskClick}
-            isDragging
-          />
+          <div className="cursor-grabbing rotate-2 scale-105 shadow-2xl">
+            <ModernKanbanCard 
+              task={activeTask} 
+              onTaskClick={onTaskClick}
+              isDragging
+            />
+          </div>
         ) : null}
       </DragOverlay>
     </DndContext>
