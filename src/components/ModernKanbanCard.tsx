@@ -66,6 +66,7 @@ interface ModernKanbanCardProps {
   quickMoveColumns?: Array<{ id: string; titulo: string }>;
   onQuickMove?: (taskId: string, statusId: string) => void;
   currentStatus?: string;
+  asOverlay?: boolean;
 }
 
 export const ModernKanbanCard = React.memo(({ 
@@ -74,22 +75,25 @@ export const ModernKanbanCard = React.memo(({
   isDragging = false,
   quickMoveColumns,
   onQuickMove,
-  currentStatus
+  currentStatus,
+  asOverlay = false
 }: ModernKanbanCardProps) => {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging: isSortableDragging,
-  } = useSortable({ id: task.id });
+  const sortable = !asOverlay ? useSortable({ id: task.id }) : null;
+  
+  const attributes = sortable?.attributes ?? {};
+  const listeners = sortable?.listeners ?? {};
+  const setNodeRef = sortable?.setNodeRef;
+  const transform = sortable?.transform;
+  const transition = sortable?.transition;
+  const isSortableDragging = sortable?.isDragging ?? false;
 
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    touchAction: 'manipulation' as const,
-  };
+  const style = asOverlay
+    ? { touchAction: 'manipulation' as const }
+    : {
+        transform: CSS.Transform.toString(transform),
+        transition,
+        touchAction: 'manipulation' as const,
+      };
 
   // Timer em tempo real
   const { formattedTime, status: deadlineStatus, isUrgent } = useTaskTimer(task.prazo_executor);
@@ -169,13 +173,13 @@ export const ModernKanbanCard = React.memo(({
 
   return (
     <motion.div
-      ref={setNodeRef}
+      ref={asOverlay ? undefined : setNodeRef}
       style={style}
-      {...attributes}
-      {...listeners}
+      {...(asOverlay ? {} : attributes)}
+      {...(asOverlay ? {} : listeners)}
       onClick={handleClick}
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
+      initial={asOverlay ? false : { opacity: 0, y: 20 }}
+      animate={asOverlay ? undefined : { opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.9 }}
       transition={{ duration: 0.3 }}
       className={`bg-card border-2 ${borderColor} rounded-xl shadow-lg overflow-hidden select-none cursor-grab active:cursor-grabbing hover:shadow-bex-glow hover:-translate-y-1 transition-all duration-200 ${isSortableDragging ? 'opacity-0' : ''}`}

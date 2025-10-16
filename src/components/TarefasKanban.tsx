@@ -739,11 +739,12 @@ export function TarefasKanban({ planejamento, clienteId, projetoId, filters }: T
 
         <DragOverlay dropAnimation={null}>
           {activeTarefa ? (
-            <div className="cursor-grabbing rotate-2 scale-105 shadow-2xl">
+            <div className="pointer-events-none cursor-grabbing rotate-2 scale-105 shadow-2xl">
               <ModernKanbanCard 
                 task={convertToKanbanTask(activeTarefa, profiles)} 
                 onTaskClick={() => {}}
                 isDragging={true}
+                asOverlay
               />
             </div>
           ) : null}

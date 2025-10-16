@@ -253,13 +253,14 @@ export function TaskKanbanBoard({ tasks, onTaskMove, onTaskCreate, onTaskClick, 
         ))}
       </div>
 
-      <DragOverlay>
+      <DragOverlay dropAnimation={null}>
         {activeTask ? (
-          <div className="cursor-grabbing rotate-2 scale-105 shadow-2xl">
+          <div className="pointer-events-none cursor-grabbing rotate-2 scale-105 shadow-2xl">
             <ModernKanbanCard 
               task={activeTask} 
-              onTaskClick={onTaskClick}
+              onTaskClick={() => {}}
               isDragging
+              asOverlay
             />
           </div>
         ) : null}

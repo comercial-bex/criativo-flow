@@ -521,11 +521,12 @@ export function UniversalKanbanBoard({
 
         {activeTask && (
           <DragOverlay dropAnimation={null} style={{ zIndex: 9999 }}>
-            <div className="cursor-grabbing rotate-3 scale-105">
+            <div className="pointer-events-none cursor-grabbing rotate-3 scale-105">
               <ModernKanbanCard 
                 task={convertToKanbanTask(activeTask)} 
                 onTaskClick={() => {}}
                 isDragging={true}
+                asOverlay
               />
             </div>
           </DragOverlay>
