@@ -32,7 +32,11 @@ export const getStatusColor = (status: string) => {
 };
 
 export const getTarefaData = (tarefa: TarefaCalendario): string | null => {
-  return tarefa.prazo_executor || null;
+  // Prioridade: data_entrega_prevista > prazo_executor > data_inicio_prevista
+  return tarefa.data_entrega_prevista || 
+         tarefa.prazo_executor || 
+         tarefa.data_inicio_prevista || 
+         null;
 };
 
 export const sortTarefasByUrgency = (tarefas: TarefaCalendario[]) => {

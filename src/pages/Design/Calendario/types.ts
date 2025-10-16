@@ -9,6 +9,8 @@ export interface TarefaCalendario {
   executor_area?: string;
   cliente_id?: string;
   prazo_executor?: string;
+  data_inicio_prevista?: string;
+  data_entrega_prevista?: string;
   anexos_count?: number;
 }
 

@@ -180,6 +180,18 @@ export default function DesignCalendario() {
         </div>
       </div>
 
+      {/* Indicador de dados carregados */}
+      {!loading && (
+        <div className="text-xs text-muted-foreground px-4 py-2 bg-muted/30 rounded-lg border border-border/50 flex items-center gap-2">
+          <span className="font-medium">📊 Dados carregados:</span>
+          <span className="text-primary font-semibold">{tarefas.length}</span>
+          <span>tarefa(s)</span>
+          <span className="text-muted-foreground">•</span>
+          <span className="text-primary font-semibold">{eventos.length}</span>
+          <span>evento(s)</span>
+        </div>
+      )}
+
       {/* Atalhos de teclado */}
       <div className="text-xs text-muted-foreground bg-muted/50 p-2 rounded flex flex-wrap gap-4 justify-center">
         <span><kbd className="px-1 py-0.5 bg-background border rounded">M</kbd> Mês</span>

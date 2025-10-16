@@ -42,3 +42,10 @@ export const isUrgent = (deadline?: string) => {
   const hours = diff / (1000 * 60 * 60);
   return hours > 0 && hours <= 24;
 };
+
+export const normalizeDateToLocal = (dateString: string): Date => {
+  // Remove timezone e trata como horário local para evitar problemas de fuso
+  const date = new Date(dateString);
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate(), 
+                  date.getHours(), date.getMinutes(), date.getSeconds());
+};
