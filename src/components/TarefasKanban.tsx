@@ -139,9 +139,8 @@ export function TarefasKanban({ planejamento, clienteId, projetoId, filters }: T
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 8,
-        delay: 200,
-        tolerance: 5,
+        delay: 220,
+        tolerance: 6,
       },
     })
   );
@@ -197,6 +196,11 @@ export function TarefasKanban({ planejamento, clienteId, projetoId, filters }: T
 
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
+
+    // Set flag to prevent immediate click
+    if (typeof window !== 'undefined') {
+      (window as any).__dndJustDraggedAt = Date.now();
+    }
 
     if (!over) return;
 

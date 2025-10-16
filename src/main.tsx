@@ -94,16 +94,26 @@ if (import.meta.env.PROD) {
   localStorage.setItem('app-version', APP_VERSION);
   console.log(`🎮 BEX Flow v${APP_VERSION} - Performance Fix`);
   
-  // ✅ Service Worker REATIVADO
-  registerServiceWorker().then((registration) => {
-    if (registration) {
-      console.log('✅ Service Worker ativo');
-      syncManager.startMonitoring();
-    }
-  }).catch(error => {
-    console.error('❌ Erro ao registrar SW:', error);
+  // 🔍 Detectar ambiente Lovable preview
+  const isLovablePreview = window.location.hostname.includes('lovable.dev') || 
+                           window.location.hostname.includes('lovable.app') ||
+                           window.location.hostname.includes('lovableproject.com');
+  
+  if (isLovablePreview) {
+    console.log('🔧 Lovable preview detectado - SW desativado para evitar CORS');
     syncManager.startMonitoring();
-  });
+  } else {
+    // ✅ Service Worker ATIVADO apenas em produção real
+    registerServiceWorker().then((registration) => {
+      if (registration) {
+        console.log('✅ Service Worker ativo');
+        syncManager.startMonitoring();
+      }
+    }).catch(error => {
+      console.error('❌ Erro ao registrar SW:', error);
+      syncManager.startMonitoring();
+    });
+  }
 
   // 📊 Diagnóstico de performance no boot
   window.addEventListener('load', () => {

@@ -144,9 +144,8 @@ export function TaskKanbanBoard({ tasks, onTaskMove, onTaskCreate, onTaskClick, 
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 8, // Requires 8px movement before drag starts
-        delay: 200, // Requires 200ms hold before drag starts
-        tolerance: 5, // Allows 5px of movement during delay
+        delay: 220, // Requires 220ms hold before drag starts
+        tolerance: 6, // Allows 6px of movement during delay
       },
     })
   );
@@ -186,6 +185,11 @@ export function TaskKanbanBoard({ tasks, onTaskMove, onTaskCreate, onTaskClick, 
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
+    
+    // Set flag to prevent immediate click
+    if (typeof window !== 'undefined') {
+      (window as any).__dndJustDraggedAt = Date.now();
+    }
     
     setActiveTask(null);
     

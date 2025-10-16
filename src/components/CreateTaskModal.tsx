@@ -43,6 +43,7 @@ export function CreateTaskModal({
   clienteId
 }: CreateTaskModalProps) {
   const { toast } = useToast();
+  const dialogDescriptionId = "create-task-description";
   const [loading, setLoading] = useState(false);
   const [taskType, setTaskType] = useState<'avulsa' | 'planejamento'>('avulsa');
   const [projetos, setProjetos] = useState<any[]>([]);

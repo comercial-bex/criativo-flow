@@ -454,7 +454,12 @@ export function TaskDetailsModal({ open, onOpenChange, task, onTaskUpdate }: Tas
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <BexDialogContent variant="gaming" size="2xl" height="xl" padding="none" overflow="hidden">
+      <BexDialogContent variant="gaming" size="2xl" height="xl" padding="none" overflow="hidden" aria-describedby="task-details-description">
+        {/* Hidden description for accessibility */}
+        <p id="task-details-description" className="sr-only">
+          Visualize e edite os detalhes completos da tarefa, incluindo briefing, checklist, anexos e atividades.
+        </p>
+        
         {/* Header */}
         <BexDialogHeader className="modal-header-gaming">
           <div className="space-y-3">

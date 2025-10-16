@@ -88,6 +88,7 @@ export const ModernKanbanCard = React.memo(({
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
+    touchAction: 'manipulation' as const,
   };
 
   // Timer em tempo real
@@ -155,6 +156,14 @@ export const ModernKanbanCard = React.memo(({
   }, [riskLevel.level]);
 
   const handleClick = () => {
+    // Prevent click if currently dragging
+    if (isSortableDragging) return;
+    
+    // Prevent click if just finished dragging (150ms window)
+    if (typeof window !== 'undefined' && (window as any).__dndJustDraggedAt) {
+      if (Date.now() - (window as any).__dndJustDraggedAt < 150) return;
+    }
+    
     onTaskClick(task);
   };
 
@@ -169,7 +178,7 @@ export const ModernKanbanCard = React.memo(({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.9 }}
       transition={{ duration: 0.3 }}
-      className={`bg-card border-2 ${borderColor} rounded-xl shadow-lg overflow-hidden cursor-grab active:cursor-grabbing hover:shadow-bex-glow hover:-translate-y-1 transition-all duration-200 ${isSortableDragging ? 'opacity-50 glass-bex' : ''}`}
+      className={`bg-card border-2 ${borderColor} rounded-xl shadow-lg overflow-hidden select-none cursor-grab active:cursor-grabbing hover:shadow-bex-glow hover:-translate-y-1 transition-all duration-200 ${isSortableDragging ? 'opacity-50 glass-bex' : ''}`}
     >
 
       {/* Quick Move Menu */}
