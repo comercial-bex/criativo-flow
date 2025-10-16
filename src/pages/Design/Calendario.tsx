@@ -31,7 +31,10 @@ interface TarefaCalendario {
   titulo: string;
   descricao?: string;
   data_entrega_prevista: string | null;
+  data_inicio_prevista?: string | null;
+  prazo_executor?: string | null;
   executor_id?: string | null;
+  executor_area?: string | null;
   prioridade?: string;
   status: string;
   tempo_estimado?: number;
@@ -81,18 +84,23 @@ export default function DesignCalendario() {
       const startDate = startOfMonth(currentDate);
       const endDate = endOfMonth(currentDate);
 
-      // Buscar tarefas de design com deadline no mês
+      // Buscar tarefas de design com deadline no mês (usando OR para múltiplos campos de data)
+      const start = format(startDate, 'yyyy-MM-dd');
+      const end = format(endDate, 'yyyy-MM-dd');
+
       const { data: tarefasData, error: tarefasError } = await supabase
         .from('tarefa')
-        .select('id, titulo, descricao, status, prioridade, data_entrega_prevista, executor_id')
-        .not('data_entrega_prevista', 'is', null)
-        .gte('data_entrega_prevista', format(startDate, 'yyyy-MM-dd'))
-        .lte('data_entrega_prevista', format(endDate, 'yyyy-MM-dd'))
-        .order('data_entrega_prevista', { ascending: true });
+        .select('id, titulo, descricao, status, prioridade, executor_id, executor_area, data_entrega_prevista, data_inicio_prevista, prazo_executor')
+        .eq('executor_area', 'Criativo')
+        .or(
+          `and(data_entrega_prevista.gte.${start},data_entrega_prevista.lte.${end}),` +
+          `and(prazo_executor.gte.${start},prazo_executor.lte.${end}),` +
+          `and(data_inicio_prevista.gte.${start},data_inicio_prevista.lte.${end})`
+        );
 
       if (tarefasError) throw tarefasError;
       setTarefas(tarefasData || []);
-      console.log('[Design/Calendário] Tarefas carregadas:', tarefasData?.length);
+      console.log('[Design/Calendário] Tarefas carregadas:', tarefasData?.length, tarefasData?.slice(0, 3));
 
       // Buscar eventos do calendário unificado
       let eventosQuery = supabase
@@ -105,7 +113,7 @@ export default function DesignCalendario() {
 
       if (eventosError) throw eventosError;
       setEventos(eventosData || []);
-      console.log('[Design/Calendário] Eventos carregados:', eventosData?.length);
+      console.log('[Design/Calendário] Eventos carregados:', eventosData?.length, eventosData?.slice(0, 3));
 
       // Buscar designers
       const { data: profilesData, error: profilesError } = await supabase
@@ -154,7 +162,7 @@ export default function DesignCalendario() {
         .from('eventos_calendario')
         .insert({
           titulo: novoEvento.titulo,
-          tipo: 'evento_externo' as any,
+          tipo: 'reuniao' as any,
           data_inicio: novoEvento.data_inicio,
           data_fim: novoEvento.data_fim || novoEvento.data_inicio,
           responsavel_id: novoEvento.responsavel_id
@@ -189,17 +197,22 @@ export default function DesignCalendario() {
     }
   };
 
+  // Helper para obter a data da tarefa (fallback entre os campos)
+  const getTarefaData = (t: TarefaCalendario) =>
+    t.data_entrega_prevista || t.prazo_executor || t.data_inicio_prevista;
+
   const getTarefasDoMes = () => {
     const startDate = startOfMonth(currentDate);
     const endDate = endOfMonth(currentDate);
     const dias = eachDayOfInterval({ start: startDate, end: endDate });
 
     return dias.map(dia => {
-      const tarefasDoDia = tarefas.filter(tarefa => 
-        tarefa.data_entrega_prevista && 
-        isSameDay(new Date(tarefa.data_entrega_prevista), dia) &&
-        (filtroDesigner === 'all' || tarefa.executor_id === filtroDesigner)
-      );
+      const tarefasDoDia = tarefas.filter(tarefa => {
+        const d = getTarefaData(tarefa);
+        return d && 
+          isSameDay(new Date(d), dia) &&
+          (filtroDesigner === 'all' || tarefa.executor_id === filtroDesigner);
+      });
       
       const eventosDoDia = eventos.filter(evento => 
         isSameDay(new Date(evento.data_inicio), dia) &&
@@ -217,11 +230,12 @@ export default function DesignCalendario() {
   const getTarefasSelecionadas = () => {
     if (!selectedDate) return [];
     
-    return tarefas.filter(tarefa => 
-      tarefa.data_entrega_prevista &&
-      isSameDay(new Date(tarefa.data_entrega_prevista), selectedDate) &&
-      (filtroDesigner === 'all' || tarefa.executor_id === filtroDesigner)
-    );
+    return tarefas.filter(tarefa => {
+      const d = getTarefaData(tarefa);
+      return d &&
+        isSameDay(new Date(d), selectedDate) &&
+        (filtroDesigner === 'all' || tarefa.executor_id === filtroDesigner);
+    });
   };
 
   const getEventosSelecionados = () => {
@@ -488,7 +502,8 @@ export default function DesignCalendario() {
                   <div className="space-y-2">
                     {getTarefasSelecionadas().map((tarefa) => {
                       const responsavel = profiles.find(p => p.id === tarefa.executor_id);
-                      const isAtrasada = tarefa.data_entrega_prevista && new Date(tarefa.data_entrega_prevista) < new Date() && tarefa.status !== 'entregue';
+                      const d = getTarefaData(tarefa);
+                      const isAtrasada = d && new Date(d) < new Date() && tarefa.status !== 'entregue';
                       
                       return (
                         <div key={tarefa.id} className="p-3 bg-muted/50 rounded-lg">
