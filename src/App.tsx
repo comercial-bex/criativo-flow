@@ -612,7 +612,7 @@ function App() {
                 {/* Design routes (protected by SpecialistGuard) */}
                 <Route path="/design/dashboard" element={<SpecialistGuard>
                     <ProtectedRoute module="design">
-                      <Layout><DesignDashboard /></Layout>
+                      <Layout className="px-[71px]"><DesignDashboard /></Layout>
                     </ProtectedRoute>
                   </SpecialistGuard>} />
                 
