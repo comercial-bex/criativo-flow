@@ -245,7 +245,7 @@ export const ModernKanbanCard = React.memo(({
       </TaskCoverImage>
 
       {/* Content */}
-      <div className="p-3 sm:p-4 space-y-3">
+      <div className="p-2.5 sm:p-3 space-y-2.5">
         {/* Header com Avatar */}
         <div className="flex items-start justify-between gap-2 sm:gap-3">
           <div className="flex-1 min-w-0">
