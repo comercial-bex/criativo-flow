@@ -12,7 +12,11 @@ import { CalendarModal } from "@/components/CalendarModal";
 import { HelpModal } from "@/components/HelpModal";
 import { useDeviceType } from "@/hooks/useDeviceType";
 
-export function GlobalHeader() {
+interface GlobalHeaderProps {
+  className?: string;
+}
+
+export function GlobalHeader({ className }: GlobalHeaderProps = {}) {
   const [searchQuery, setSearchQuery] = useState("");
   const [showResults, setShowResults] = useState(false);
   const [searchExpanded, setSearchExpanded] = useState(false);

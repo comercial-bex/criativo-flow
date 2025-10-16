@@ -87,19 +87,7 @@ export function usePessoas(papel?: 'colaborador' | 'especialista' | 'cliente') {
         }
       }
 
-      // Validar email duplicado
-      if (dados.email) {
-        const { data: existe } = await supabase
-          .from('pessoas')
-          .select('id')
-          .eq('email', dados.email)
-          .maybeSingle();
-        
-        // Bloquear se email já existe (criação sempre é nova pessoa)
-        if (existe) {
-          throw new Error('Email já cadastrado para outra pessoa');
-        }
-      }
+      // Email pode ser duplicado - não validamos
 
       // Salvar com CPF normalizado
       const dadosNormalizados = {
@@ -133,19 +121,7 @@ export function usePessoas(papel?: 'colaborador' | 'especialista' | 'cliente') {
         cpf: updates.cpf ? cleanCPF(updates.cpf) : updates.cpf
       };
 
-      // Validar email duplicado ao atualizar
-      if (updatesNormalizados.email) {
-        const { data: existe } = await supabase
-          .from('pessoas')
-          .select('id')
-          .eq('email', updatesNormalizados.email)
-          .maybeSingle();
-        
-        // Permitir apenas se for a própria pessoa (mesmo ID)
-        if (existe && existe.id !== id) {
-          throw new Error('Email já cadastrado para outra pessoa');
-        }
-      }
+      // Email pode ser duplicado - não validamos
 
       const { data, error } = await supabase
         .from('pessoas')

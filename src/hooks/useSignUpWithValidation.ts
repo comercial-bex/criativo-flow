@@ -55,7 +55,8 @@ export function useSignUpWithValidation() {
       if (data.cpf) {
         pessoaQuery = pessoaQuery.eq('cpf', data.cpf);
       } else if (data.email) {
-        pessoaQuery = pessoaQuery.eq('email', data.email);
+        // Email pode não ser único - usa CPF como preferência, mas busca primeiro por email
+        pessoaQuery = pessoaQuery.eq('email', data.email).limit(1);
       }
 
       const { data: pessoaData, error: pessoaError } = await pessoaQuery.maybeSingle();

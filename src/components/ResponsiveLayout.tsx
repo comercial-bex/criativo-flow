@@ -9,9 +9,11 @@ import { toast } from "sonner";
 import { useState } from "react";
 interface ResponsiveLayoutProps {
   children: React.ReactNode;
+  className?: string;
 }
 export function ResponsiveLayout({
-  children
+  children,
+  className
 }: ResponsiveLayoutProps) {
   const deviceType = useDeviceType();
   const isMobile = deviceType === 'mobile';
@@ -30,7 +32,7 @@ export function ResponsiveLayout({
     }
   };
   if (isMobile) {
-    return <div className="min-h-screen flex flex-col w-full bg-background">
+    return <div className={`min-h-screen flex flex-col w-full bg-background ${className || ''}`}>
         {/* Mobile Header - Compacto */}
         <header className="h-14 flex items-center border-b border-bex/20 bg-black/95 px-4 sticky top-0 z-50 shadow-lg shadow-bex/10 safe-area-inset-top ios-optimized-fixed">
           <GlobalHeader />
@@ -49,7 +51,7 @@ export function ResponsiveLayout({
       </div>;
   }
   return <SidebarProvider defaultOpen={true}>
-      <div className="min-h-screen w-full bg-background flex">
+      <div className={`min-h-screen w-full bg-background flex ${className || ''}`}>
         <AppSidebar />
         
         <div className="flex flex-col min-h-screen flex-1 overflow-hidden">
