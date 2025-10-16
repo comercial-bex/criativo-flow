@@ -63,7 +63,7 @@ const TarefasUnificadasAudiovisual: React.FC = () => {
       setProjects(projectsData || []);
       setProfiles(profilesData || []);
 
-      // Agora buscar tarefas do setor audiovisual  
+      // FASE 2: Buscar apenas tarefas do setor audiovisual
       const { data: audiovisualTasksData, error: audiovisualTasksError } = await (supabase
         .from('tarefa')
         .select(`
@@ -71,6 +71,7 @@ const TarefasUnificadasAudiovisual: React.FC = () => {
           capa_anexo_id,
           profiles!responsavel_id (id, nome)
         `)
+        .eq('executor_area', 'Audiovisual')
         .order('created_at', { ascending: false }) as any);
 
       if (audiovisualTasksError) {

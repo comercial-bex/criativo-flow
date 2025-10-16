@@ -402,7 +402,7 @@ export function AudiovisualScheduleModal({
                         tipoEvento: 'captacao_externa'
                       });
                       
-                      // Type guard para verificar se a sugestão tem a estrutura esperada
+                      // FASE 3: Type guard simplificado com verificação de tipo
                       if (
                         sugestao && 
                         typeof sugestao === 'object' && 
@@ -410,8 +410,8 @@ export function AudiovisualScheduleModal({
                         'data_inicio' in sugestao && 
                         'data_fim' in sugestao
                       ) {
-                        const dataInicioStr = String(sugestao.data_inicio);
-                        const dataFimStr = String(sugestao.data_fim);
+                        const dataInicioStr = String((sugestao as any).data_inicio);
+                        const dataFimStr = String((sugestao as any).data_fim);
                         
                         const novaData = new Date(dataInicioStr);
                         const novaDataFim = new Date(dataFimStr);
@@ -438,10 +438,10 @@ export function AudiovisualScheduleModal({
                         });
                       }
                     } catch (error) {
-                      console.error('Erro ao sugerir horário:', error);
+                      console.error('❌ Erro ao sugerir horário:', error);
                       toast({
                         title: "Erro ao sugerir horário",
-                        description: error instanceof Error ? error.message : "Erro desconhecido",
+                        description: error instanceof Error ? error.message : "Tente outro dia ou horário",
                         variant: "destructive"
                       });
                     }
