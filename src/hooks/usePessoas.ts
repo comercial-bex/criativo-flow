@@ -123,9 +123,12 @@ export function usePessoas(papel?: 'colaborador' | 'especialista' | 'cliente') {
 
       // Email pode ser duplicado - não validamos
 
+      // ✅ REMOVER campos computados que não existem na tabela
+      const { tem_acesso_sistema, role, ...dadosParaUpdate } = updatesNormalizados;
+
       const { data, error } = await supabase
         .from('pessoas')
-        .update(updatesNormalizados as any)
+        .update(dadosParaUpdate as any)
         .eq('id', id)
         .select()
         .single();
