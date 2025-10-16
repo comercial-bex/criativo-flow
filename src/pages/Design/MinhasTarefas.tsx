@@ -282,11 +282,10 @@ export default function MinhasTarefasDesign() {
         </Card>
       </div>
 
-      {/* Kanban Board - SEM botão de criação (executores não criam) */}
+      {/* Kanban Board - Usa configuração padrão de design */}
       <UniversalKanbanBoard
         tasks={tasks}
         moduleType="design"
-        moduleColumns={[]}
         onTaskMove={handleTaskMove}
         onTaskClick={handleTaskClick}
         onTaskCreate={handleTaskCreate}

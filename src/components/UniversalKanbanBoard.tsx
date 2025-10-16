@@ -55,7 +55,7 @@ interface UniversalColumn {
 }
 interface UniversalKanbanProps {
   tasks: UniversalTask[];
-  moduleColumns: UniversalColumn[];
+  moduleColumns?: UniversalColumn[];
   moduleType: 'grs' | 'design' | 'audiovisual' | 'crm' | 'lead' | 'geral';
   onTaskMove: (taskId: string, newStatus: string, observations?: string) => void;
   onTaskCreate: (status?: string) => void;
@@ -409,7 +409,12 @@ export function UniversalKanbanBoard({
   }, [tasks, searchTerm, selectedResponsavel, selectedPrioridade]);
 
   // Organizar tarefas em colunas
-  const columns: UniversalColumn[] = moduleColumns.map(col => ({
+  // Usar configuração padrão se moduleColumns estiver vazio ou não fornecido
+  const activeColumns = (moduleColumns && moduleColumns.length > 0)
+    ? moduleColumns 
+    : moduleConfigurations[moduleType] || [];
+
+  const columns: UniversalColumn[] = activeColumns.map(col => ({
     ...col,
     tasks: filteredTasks.filter(task => task.status === col.id)
   })).sort((a, b) => a.ordem - b.ordem);
