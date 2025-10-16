@@ -21,7 +21,7 @@ import {
 import { Calendar } from "@/components/ui/calendar";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, addMonths, subMonths } from "date-fns";
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, addMonths, subMonths, getDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useTutorial } from '@/hooks/useTutorial';
 import { TutorialButton } from '@/components/TutorialButton';
@@ -205,8 +205,12 @@ export default function DesignCalendario() {
     const startDate = startOfMonth(currentDate);
     const endDate = endOfMonth(currentDate);
     const dias = eachDayOfInterval({ start: startDate, end: endDate });
-
-    return dias.map(dia => {
+    
+    // Calcular quantos dias vazios precisamos no início
+    const primeiroDiaDaSemana = getDay(startDate); // 0 = Dom, 1 = Seg, etc.
+    const diasVazios = Array(primeiroDiaDaSemana).fill(null);
+    
+    const diasComTarefas = dias.map(dia => {
       const tarefasDoDia = tarefas.filter(tarefa => {
         const d = getTarefaData(tarefa);
         return d && 
@@ -225,6 +229,9 @@ export default function DesignCalendario() {
         eventos: eventosDoDia
       };
     });
+    
+    // Retornar células vazias + dias reais
+    return [...diasVazios, ...diasComTarefas];
   };
 
   const getTarefasSelecionadas = () => {
@@ -430,7 +437,18 @@ export default function DesignCalendario() {
               </div>
               
               <div className="grid grid-cols-7 gap-2">
-                {getTarefasDoMes().map(({ data, tarefas: tarefasDoDia, eventos: eventosDoDia }) => {
+                {getTarefasDoMes().map((item, index) => {
+                  // Célula vazia (dias do mês anterior)
+                  if (!item || !item.data) {
+                    return (
+                      <div
+                        key={`empty-${index}`}
+                        className="min-h-[100px] p-2 border rounded-lg bg-muted/20 border-dashed opacity-40"
+                      />
+                    );
+                  }
+                  
+                  const { data, tarefas: tarefasDoDia, eventos: eventosDoDia } = item;
                   const isSelected = selectedDate && isSameDay(data, selectedDate);
                   const isToday = isSameDay(data, new Date());
                   const hasItems = tarefasDoDia.length > 0 || eventosDoDia.length > 0;
