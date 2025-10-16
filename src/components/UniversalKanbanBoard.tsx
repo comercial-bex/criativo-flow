@@ -280,6 +280,58 @@ export const moduleConfigurations = {
   }]
 };
 
+// Normalização de status - mapeia status genéricos para específicos do módulo
+const normalizeStatus = (
+  status: string, 
+  moduleType: 'grs' | 'design' | 'audiovisual' | 'crm' | 'lead' | 'geral'
+): string | null => {
+  // Mapeamentos por módulo
+  const mappings: Record<string, Record<string, string>> = {
+    design: {
+      'backlog': 'briefing',
+      'a_fazer': 'briefing',
+      'em_cadastro': 'briefing',
+      'em_andamento': 'em_criacao',
+      'em_revisao': 'revisao_interna',
+      'em_analise': 'aprovacao_cliente',
+      'concluido': 'entregue',
+      'entregue': 'entregue',
+      // Status já corretos passam direto
+      'briefing': 'briefing',
+      'em_criacao': 'em_criacao',
+      'revisao_interna': 'revisao_interna',
+      'aprovacao_cliente': 'aprovacao_cliente'
+    },
+    audiovisual: {
+      'backlog': 'roteiro',
+      'a_fazer': 'roteiro',
+      'em_cadastro': 'roteiro',
+      'em_andamento': 'pos_producao',
+      'concluido': 'entregue',
+      'entregue': 'entregue',
+      // Status já corretos passam direto
+      'roteiro': 'roteiro',
+      'pre_producao': 'pre_producao',
+      'gravacao': 'gravacao',
+      'pos_producao': 'pos_producao'
+    },
+    grs: {
+      // GRS mantém status genéricos
+      'backlog': 'em_cadastro',
+      'concluido': 'em_analise',
+      'entregue': 'em_analise'
+    }
+  };
+
+  const moduleMapping = mappings[moduleType];
+  if (!moduleMapping) {
+    // Para módulos sem mapeamento, retorna o status original se existir nas colunas
+    return status;
+  }
+
+  return moduleMapping[status] || null;
+};
+
 // Helper para converter UniversalTask em KanbanTask
 const convertToKanbanTask = (task: UniversalTask): KanbanTask => ({
   id: task.id,
@@ -414,10 +466,39 @@ export function UniversalKanbanBoard({
     ? moduleColumns 
     : moduleConfigurations[moduleType] || [];
 
+  // Mapear tarefas para colunas usando normalização de status
   const columns: UniversalColumn[] = activeColumns.map(col => ({
     ...col,
-    tasks: filteredTasks.filter(task => task.status === col.id)
+    tasks: filteredTasks.filter(task => {
+      const normalized = normalizeStatus(task.status, moduleType);
+      return normalized === col.id || task.status === col.id;
+    })
   })).sort((a, b) => a.ordem - b.ordem);
+
+  // Identificar tarefas sem mapeamento (para coluna "Outros")
+  const unmappedTasks = filteredTasks.filter(task => {
+    const normalized = normalizeStatus(task.status, moduleType);
+    const hasColumn = activeColumns.some(col => col.id === task.status || normalized === col.id);
+    return !hasColumn && normalized === null;
+  });
+
+  // Adicionar coluna "Outros" se houver tarefas não mapeadas
+  if (unmappedTasks.length > 0) {
+    columns.push({
+      id: 'outros',
+      titulo: 'OUTROS',
+      cor: 'bg-gray-500',
+      icon: '📦',
+      ordem: 999,
+      descricao: 'Status fora do fluxo',
+      tasks: unmappedTasks
+    });
+  }
+
+  // Debug: log de distribuição de tarefas
+  console.log(`[Kanban ${moduleType}] Total tarefas:`, filteredTasks.length, '| Distribuição:', 
+    columns.map(c => `${c.titulo}: ${c.tasks.length}`).join(', ')
+  );
 
   // Obter responsáveis únicos
   const responsaveis = useMemo(() => {
