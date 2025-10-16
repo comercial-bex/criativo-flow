@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { DndContext, DragEndEvent, DragOverlay, closestCorners, useDroppable, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { snapCenterToCursor } from "@dnd-kit/modifiers";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
@@ -737,7 +738,7 @@ export function TarefasKanban({ planejamento, clienteId, projetoId, filters }: T
           })}
         </div>
 
-        <DragOverlay dropAnimation={null}>
+        <DragOverlay dropAnimation={null} modifiers={[snapCenterToCursor]}>
           {activeTarefa ? (
             <div className="pointer-events-none cursor-grabbing rotate-2 scale-105 shadow-2xl">
               <ModernKanbanCard 

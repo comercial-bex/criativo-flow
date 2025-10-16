@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, closestCorners, PointerSensor, useSensor, useSensors, DragOverEvent } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { snapCenterToCursor } from '@dnd-kit/modifiers';
 import { useDroppable } from '@dnd-kit/core';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -520,7 +521,7 @@ export function UniversalKanbanBoard({
         </div>
 
         {activeTask && (
-          <DragOverlay dropAnimation={null} style={{ zIndex: 9999 }}>
+          <DragOverlay dropAnimation={null} style={{ zIndex: 9999 }} modifiers={[snapCenterToCursor]}>
             <div className="pointer-events-none cursor-grabbing rotate-3 scale-105">
               <ModernKanbanCard 
                 task={convertToKanbanTask(activeTask)} 
