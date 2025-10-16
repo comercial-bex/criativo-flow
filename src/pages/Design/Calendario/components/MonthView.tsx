@@ -3,6 +3,7 @@ import { TarefaCalendario, EventoCalendario, DayData } from '../types';
 import { TarefaCard } from './TarefaCard';
 import { EventoCard } from '@/components/Calendario/EventoCard';
 import { getDaysInMonth, getEmptyDaysForMonth } from '../utils/dateHelpers';
+import { getTarefaData } from '../utils/taskHelpers';
 
 interface MonthViewProps {
   currentDate: Date;
@@ -30,7 +31,7 @@ export const MonthView = ({
 
   const getDayData = (dia: Date): DayData => {
     const tarefasDoDia = tarefas.filter(tarefa => {
-      const data = tarefa.prazo_executor;
+      const data = getTarefaData(tarefa);
       return data && 
         isSameDay(new Date(data), dia) &&
         (filtroDesigner === 'all' || tarefa.executor_id === filtroDesigner);

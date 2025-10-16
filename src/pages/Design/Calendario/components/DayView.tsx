@@ -4,6 +4,7 @@ import { TarefaCalendario, EventoCalendario } from '../types';
 import { TarefaCard } from './TarefaCard';
 import { EventoCard } from '@/components/Calendario/EventoCard';
 import { getTimeSlots, formatDate } from '../utils/dateHelpers';
+import { getTarefaData } from '../utils/taskHelpers';
 
 interface DayViewProps {
   currentDate: Date;
@@ -25,7 +26,7 @@ export const DayView = ({
   const timeSlots = getTimeSlots();
 
   const tarefasDoDia = tarefas.filter(tarefa => {
-    const data = tarefa.prazo_executor;
+    const data = getTarefaData(tarefa);
     return data && 
       isSameDay(new Date(data), currentDate) &&
       (filtroDesigner === 'all' || tarefa.executor_id === filtroDesigner);
@@ -37,8 +38,9 @@ export const DayView = ({
   );
 
   const tarefasSemHorario = tarefasDoDia.filter(t => {
-    if (!t.prazo_executor) return true;
-    const hour = parseInt(format(new Date(t.prazo_executor), 'HH'));
+    const data = getTarefaData(t);
+    if (!data) return true;
+    const hour = parseInt(format(new Date(data), 'HH'));
     return hour < 8 || hour > 18;
   });
 
@@ -50,8 +52,9 @@ export const DayView = ({
     });
 
     const tarefasNoHorario = tarefasDoDia.filter(tarefa => {
-      if (!tarefa.prazo_executor) return false;
-      const hour = format(new Date(tarefa.prazo_executor), 'HH:00');
+      const data = getTarefaData(tarefa);
+      if (!data) return false;
+      const hour = format(new Date(data), 'HH:00');
       return hour === time;
     });
 

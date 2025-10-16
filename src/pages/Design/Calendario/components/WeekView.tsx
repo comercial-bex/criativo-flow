@@ -3,6 +3,7 @@ import { TarefaCalendario, EventoCalendario } from '../types';
 import { TarefaCard } from './TarefaCard';
 import { EventoCard } from '@/components/Calendario/EventoCard';
 import { getDaysInWeek, getTimeSlots } from '../utils/dateHelpers';
+import { getTarefaData } from '../utils/taskHelpers';
 
 interface WeekViewProps {
   currentDate: Date;
@@ -26,7 +27,7 @@ export const WeekView = ({
 
   const getItemsForDayAndTime = (dia: Date, time: string) => {
     const tarefasDoDia = tarefas.filter(tarefa => {
-      const data = tarefa.prazo_executor;
+      const data = getTarefaData(tarefa);
       return data && 
         isSameDay(new Date(data), dia) &&
         (filtroDesigner === 'all' || tarefa.executor_id === filtroDesigner);

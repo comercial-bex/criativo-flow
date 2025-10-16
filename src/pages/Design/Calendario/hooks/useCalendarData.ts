@@ -14,6 +14,8 @@ export const useCalendarData = () => {
     try {
       setLoading(true);
 
+      console.log('[Design/Calendário] Iniciando busca de dados...');
+
       const [tarefasResult, eventosResult, profilesResult] = await Promise.all([
         supabase
           .from('tarefa')
@@ -34,6 +36,11 @@ export const useCalendarData = () => {
           .from('profiles')
           .select('id, nome, avatar_url')
       ]);
+
+      console.log('[Design/Calendário] Tarefas:', tarefasResult.data?.length, 'itens');
+      console.log('[Design/Calendário] Eventos:', eventosResult.data?.length, 'itens');
+      console.log('[Design/Calendário] Eventos completos:', eventosResult.data);
+      console.log('[Design/Calendário] Erro eventos:', eventosResult.error);
 
       if (tarefasResult.error) throw tarefasResult.error;
       if (eventosResult.error) throw eventosResult.error;
