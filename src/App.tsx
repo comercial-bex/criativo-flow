@@ -639,7 +639,7 @@ function App() {
                 
                 <Route path="/design/metas" element={<SpecialistGuard>
                     <ProtectedRoute module="design">
-                      <Layout><DesignMetas /></Layout>
+                      <Layout className="px-[71px]"><DesignMetas /></Layout>
                     </ProtectedRoute>
                   </SpecialistGuard>} />
                 
