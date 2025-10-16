@@ -633,7 +633,7 @@ function App() {
                 
                 <Route path="/design/calendario" element={<SpecialistGuard>
                     <ProtectedRoute module="design">
-                      <Layout><DesignCalendario /></Layout>
+                      <Layout className="px-[71px]"><DesignCalendario /></Layout>
                     </ProtectedRoute>
                   </SpecialistGuard>} />
                 
