@@ -645,7 +645,7 @@ function App() {
                 
                 <Route path="/design/aprovacoes" element={<SpecialistGuard>
                     <ProtectedRoute module="design">
-                      <Layout><DesignAprovacoes /></Layout>
+                      <Layout className="px-[71px]"><DesignAprovacoes /></Layout>
                     </ProtectedRoute>
                   </SpecialistGuard>} />
                 
