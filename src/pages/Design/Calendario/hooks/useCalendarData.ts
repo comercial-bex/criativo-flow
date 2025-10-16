@@ -31,7 +31,8 @@ export const useCalendarData = () => {
           .select(`
             id, titulo, descricao, status, prioridade,
             executor_id, executor_area, cliente_id,
-            prazo_executor, data_inicio_prevista, data_entrega_prevista
+            prazo_executor, data_inicio_prevista, data_entrega_prevista,
+            kpis
           `)
           .in('executor_area', ['Criativo', 'Audiovisual'])
           .eq('executor_id', user.id)

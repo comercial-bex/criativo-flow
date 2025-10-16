@@ -109,6 +109,7 @@ export default function ProjetoTarefasKanban() {
         .from('tarefa')
         .select(`
           *,
+          kpis,
           responsavel:profiles!tarefa_responsavel_id_fkey(nome)
         `)
         .eq('projeto_id', projetoId)

@@ -69,6 +69,21 @@ interface KanbanTask extends TaskWithDeadline {
   capa_anexo_id?: string | null;
   numero_protocolo?: string | null;
   labels?: Array<{color: string; text: string}>;
+  kpis?: {
+    briefing?: {
+      id_cartao?: string;
+      publico_alvo?: string;
+      objetivo_postagem?: string;
+      call_to_action?: string;
+      formato_postagem?: string;
+      contexto_estrategico?: string;
+      hashtags?: string[];
+      observacoes_gerais?: string;
+      roteiro_audiovisual?: string;
+    };
+    metadados?: any;
+    referencias?: any;
+  };
 }
 
 interface TaskDetailsModalProps {
@@ -113,29 +128,58 @@ export function TaskDetailsModal({ open, onOpenChange, task, onTaskUpdate }: Tas
         observacoes_trabalho: ''
       });
       
-      // Carregar briefing da tabela briefings
+      // Carregar briefing (prioridade: tabela briefings > kpis.briefing)
       const loadBriefing = async () => {
-        const { data } = await supabase
-          .from('briefings')
-          .select('*')
-          .eq('tarefa_id', task.id)
-          .maybeSingle();
-        
-        
-        if (data) {
-          setBriefingEditData({
-            objetivo_postagem: data.objetivo_postagem || '',
-            publico_alvo: data.publico_alvo || '',
-            formato_postagem: data.formato_postagem || '',
-            call_to_action: data.call_to_action || '',
-            hashtags: data.hashtags || '',
-            descricao: data.descricao || '',
-            observacoes: data.observacoes || '',
-            contexto_estrategico: data.contexto_estrategico || '',
-            data_fim: data.data_entrega || '',
-            ambiente: data.ambiente || '',
-            locucao: data.locucao || '',
-          });
+        try {
+          // Tentar buscar da tabela briefings primeiro
+          const { data: briefingTable } = await supabase
+            .from('briefings')
+            .select('*')
+            .eq('tarefa_id', task.id)
+            .maybeSingle();
+          
+          // Se encontrou na tabela, usar esses dados
+          if (briefingTable) {
+            console.log('[TaskDetailsModal] 📋 Briefing carregado da tabela "briefings"', briefingTable);
+            setBriefingEditData({
+              objetivo_postagem: briefingTable.objetivo_postagem || '',
+              publico_alvo: briefingTable.publico_alvo || '',
+              formato_postagem: briefingTable.formato_postagem || '',
+              call_to_action: briefingTable.call_to_action || '',
+              hashtags: briefingTable.hashtags || '',
+              descricao: briefingTable.descricao || '',
+              observacoes: briefingTable.observacoes || '',
+              contexto_estrategico: briefingTable.contexto_estrategico || '',
+              data_fim: briefingTable.data_entrega || '',
+              ambiente: briefingTable.ambiente || '',
+              locucao: briefingTable.locucao || '',
+            });
+            return;
+          }
+          
+          // Se não encontrou na tabela, buscar em kpis.briefing
+          if (task.kpis?.briefing) {
+            console.log('[TaskDetailsModal] 📋 Briefing carregado de "kpis.briefing"', task.kpis.briefing);
+            const kpisBriefing = task.kpis.briefing;
+            setBriefingEditData({
+              objetivo_postagem: kpisBriefing.objetivo_postagem || '',
+              publico_alvo: kpisBriefing.publico_alvo || '',
+              formato_postagem: kpisBriefing.formato_postagem || '',
+              call_to_action: kpisBriefing.call_to_action || '',
+              hashtags: Array.isArray(kpisBriefing.hashtags) ? kpisBriefing.hashtags.join(', ') : '',
+              descricao: '',
+              observacoes: kpisBriefing.observacoes_gerais || '',
+              contexto_estrategico: kpisBriefing.contexto_estrategico || '',
+              data_fim: '',
+              ambiente: '',
+              locucao: kpisBriefing.roteiro_audiovisual || '',
+            });
+            return;
+          }
+          
+          console.log('[TaskDetailsModal] ⚠️ Nenhum briefing encontrado');
+        } catch (error) {
+          console.error('[TaskDetailsModal] ❌ Erro ao carregar briefing:', error);
         }
       };
       
@@ -164,16 +208,7 @@ export function TaskDetailsModal({ open, onOpenChange, task, onTaskUpdate }: Tas
 
   if (!task) return null;
 
-  // Parse briefing data from observacoes if it exists
-  let briefingData = null;
-  try {
-    if (task.observacoes) {
-      briefingData = JSON.parse(task.observacoes);
-    }
-  } catch (e) {
-    // If parsing fails, treat as regular observacoes
-    briefingData = null;
-  }
+  // Briefing data is now loaded in briefingEditData from useEffect
 
   // Calculate checklist progress
   const totalCount = checklistItems.length;
@@ -661,12 +696,12 @@ export function TaskDetailsModal({ open, onOpenChange, task, onTaskUpdate }: Tas
                     </span>
                   </div>
                   
-                  {briefingData?.observacoes_trabalho ? (
-                    <div className="p-3 bg-muted/50 rounded-lg">
-                      <h4 className="font-medium mb-2 text-sm text-bex">Última atualização:</h4>
-                      <p className="text-sm text-muted-foreground leading-relaxed">{briefingData.observacoes_trabalho}</p>
-                    </div>
-                  ) : (
+                        {briefingEditData?.observacoes ? (
+                          <div className="p-3 bg-muted/50 rounded-lg">
+                            <h4 className="font-medium mb-2 text-sm text-bex">Última atualização:</h4>
+                            <p className="text-sm text-muted-foreground leading-relaxed">{briefingEditData.observacoes}</p>
+                          </div>
+                        ) : (
                     <div className="text-center py-8 text-muted-foreground">
                       <MessageSquare className="h-12 w-12 mx-auto mb-3 opacity-30" />
                       <p className="text-sm">Nenhuma atualização de progresso registrada.</p>
@@ -741,72 +776,79 @@ export function TaskDetailsModal({ open, onOpenChange, task, onTaskUpdate }: Tas
                     briefingData={briefingEditData}
                     onChange={handleBriefingFieldChange}
                   />
-                ) : briefingData ? (
+                ) : (briefingEditData.objetivo_postagem || briefingEditData.publico_alvo || briefingEditData.contexto_estrategico) ? (
                   <div className="space-y-4">
-                    {briefingData.objetivo_postagem && (
+                    {briefingEditData.objetivo_postagem && (
                       <div>
                         <h4 className="font-medium flex items-center gap-2 mb-2 text-bex">
                           <Target className="h-4 w-4" />
                           Objetivo
                         </h4>
-                        <p className="text-sm text-muted-foreground">{briefingData.objetivo_postagem}</p>
+                        <p className="text-sm text-muted-foreground">{briefingEditData.objetivo_postagem}</p>
                       </div>
                     )}
 
-                    {briefingData.publico_alvo && (
+                    {briefingEditData.publico_alvo && (
                       <div>
                         <h4 className="font-medium flex items-center gap-2 mb-2 text-bex">
                           <Users className="h-4 w-4" />
                           Público-Alvo
                         </h4>
-                        <p className="text-sm text-muted-foreground">{briefingData.publico_alvo}</p>
+                        <p className="text-sm text-muted-foreground">{briefingEditData.publico_alvo}</p>
                       </div>
                     )}
 
-                    {briefingData.formato_postagem && (
+                    {briefingEditData.formato_postagem && (
                       <div>
                         <h4 className="font-medium mb-2 text-bex">Formato</h4>
-                        <BexBadge variant="bexOutline">{briefingData.formato_postagem}</BexBadge>
+                        <BexBadge variant="bexOutline">{briefingEditData.formato_postagem}</BexBadge>
                       </div>
                     )}
 
-                    {briefingData.contexto_estrategico && (
+                    {briefingEditData.contexto_estrategico && (
                       <div>
                         <h4 className="font-medium mb-2 text-bex">Contexto Estratégico</h4>
-                        <p className="text-sm text-muted-foreground">{briefingData.contexto_estrategico}</p>
+                        <p className="text-sm text-muted-foreground">{briefingEditData.contexto_estrategico}</p>
                       </div>
                     )}
 
-                    {briefingData.call_to_action && (
+                    {briefingEditData.call_to_action && (
                       <div>
                         <h4 className="font-medium flex items-center gap-2 mb-2 text-bex">
                           <Zap className="h-4 w-4" />
                           Call to Action
                         </h4>
-                        <p className="text-sm text-muted-foreground">{briefingData.call_to_action}</p>
+                        <p className="text-sm text-muted-foreground">{briefingEditData.call_to_action}</p>
                       </div>
                     )}
 
-                    {briefingData.hashtags && briefingData.hashtags.length > 0 && (
+                    {briefingEditData.hashtags && (
                       <div>
                         <h4 className="font-medium flex items-center gap-2 mb-2 text-bex">
                           <Tag className="h-4 w-4" />
                           Hashtags
                         </h4>
                         <div className="flex flex-wrap gap-1">
-                          {briefingData.hashtags.map((tag: string, index: number) => (
+                          {briefingEditData.hashtags.split(',').map((tag: string, index: number) => (
                             <BexBadge key={index} variant="secondary">
-                              #{tag}
+                              #{tag.trim()}
                             </BexBadge>
                           ))}
                         </div>
                       </div>
                     )}
 
-                    {briefingData.observacoes && (
+                    {briefingEditData.observacoes && (
                       <div>
                         <h4 className="font-medium mb-2 text-bex">Observações do Briefing</h4>
-                        <p className="text-sm text-muted-foreground">{briefingData.observacoes}</p>
+                        <p className="text-sm text-muted-foreground">{briefingEditData.observacoes}</p>
+                      </div>
+                    )}
+                    
+                    {briefingEditData.locucao && (
+                      <div>
+                        <h4 className="font-medium mb-2 text-bex">Roteiro / Locução</h4>
+                        <p className="text-sm text-muted-foreground">{briefingEditData.locucao}</p>
                       </div>
                     )}
                   </div>
