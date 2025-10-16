@@ -30,8 +30,8 @@ interface TarefaCalendario {
   id: string;
   titulo: string;
   descricao?: string;
-  data_prazo: string;
-  responsavel_id?: string;
+  data_entrega_prevista: string | null;
+  executor_id?: string | null;
   prioridade?: string;
   status: string;
   tempo_estimado?: number;
@@ -83,25 +83,29 @@ export default function DesignCalendario() {
 
       // Buscar tarefas de design com deadline no mês
       const { data: tarefasData, error: tarefasError } = await supabase
-        .from('tarefas')
-        .select('*')
-        .eq('tipo', 'design')
-        .gte('data_prazo', format(startDate, 'yyyy-MM-dd'))
-        .lte('data_prazo', format(endDate, 'yyyy-MM-dd'))
-        .not('data_prazo', 'is', null);
+        .from('tarefa')
+        .select('id, titulo, descricao, status, prioridade, data_entrega_prevista, executor_id')
+        .not('data_entrega_prevista', 'is', null)
+        .gte('data_entrega_prevista', format(startDate, 'yyyy-MM-dd'))
+        .lte('data_entrega_prevista', format(endDate, 'yyyy-MM-dd'))
+        .order('data_entrega_prevista', { ascending: true });
 
       if (tarefasError) throw tarefasError;
       setTarefas(tarefasData || []);
+      console.log('[Design/Calendário] Tarefas carregadas:', tarefasData?.length);
 
       // Buscar eventos do calendário unificado
-      const { data: eventosData, error: eventosError } = await supabase
+      let eventosQuery = supabase
         .from('eventos_calendario')
         .select('*')
         .gte('data_inicio', format(startDate, 'yyyy-MM-dd'))
         .lte('data_inicio', format(endDate, 'yyyy-MM-dd'));
 
+      const { data: eventosData, error: eventosError } = await eventosQuery;
+
       if (eventosError) throw eventosError;
       setEventos(eventosData || []);
+      console.log('[Design/Calendário] Eventos carregados:', eventosData?.length);
 
       // Buscar designers
       const { data: profilesData, error: profilesError } = await supabase
@@ -134,17 +138,27 @@ export default function DesignCalendario() {
       return;
     }
 
+    if (!novoEvento.responsavel_id) {
+      toast({
+        title: "Erro",
+        description: "Selecione o designer responsável.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       setIsCreatingEvento(true);
 
       const { data, error } = await supabase
         .from('eventos_calendario')
         .insert({
+          titulo: novoEvento.titulo,
+          tipo: 'evento_externo' as any,
           data_inicio: novoEvento.data_inicio,
           data_fim: novoEvento.data_fim || novoEvento.data_inicio,
-          tipo: 'evento_externo',
-          responsavel_id: novoEvento.responsavel_id || null
-        } as any) // TODO: Atualizar types após migration
+          responsavel_id: novoEvento.responsavel_id
+        })
         .select()
         .single();
 
@@ -182,8 +196,9 @@ export default function DesignCalendario() {
 
     return dias.map(dia => {
       const tarefasDoDia = tarefas.filter(tarefa => 
-        isSameDay(new Date(tarefa.data_prazo), dia) &&
-        (filtroDesigner === 'all' || tarefa.responsavel_id === filtroDesigner)
+        tarefa.data_entrega_prevista && 
+        isSameDay(new Date(tarefa.data_entrega_prevista), dia) &&
+        (filtroDesigner === 'all' || tarefa.executor_id === filtroDesigner)
       );
       
       const eventosDoDia = eventos.filter(evento => 
@@ -203,8 +218,9 @@ export default function DesignCalendario() {
     if (!selectedDate) return [];
     
     return tarefas.filter(tarefa => 
-      isSameDay(new Date(tarefa.data_prazo), selectedDate) &&
-      (filtroDesigner === 'all' || tarefa.responsavel_id === filtroDesigner)
+      tarefa.data_entrega_prevista &&
+      isSameDay(new Date(tarefa.data_entrega_prevista), selectedDate) &&
+      (filtroDesigner === 'all' || tarefa.executor_id === filtroDesigner)
     );
   };
 
@@ -471,8 +487,8 @@ export default function DesignCalendario() {
                   </h4>
                   <div className="space-y-2">
                     {getTarefasSelecionadas().map((tarefa) => {
-                      const responsavel = profiles.find(p => p.id === tarefa.responsavel_id);
-                      const isAtrasada = new Date(tarefa.data_prazo) < new Date() && tarefa.status !== 'entregue';
+                      const responsavel = profiles.find(p => p.id === tarefa.executor_id);
+                      const isAtrasada = tarefa.data_entrega_prevista && new Date(tarefa.data_entrega_prevista) < new Date() && tarefa.status !== 'entregue';
                       
                       return (
                         <div key={tarefa.id} className="p-3 bg-muted/50 rounded-lg">
