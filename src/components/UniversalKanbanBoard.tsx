@@ -367,7 +367,7 @@ function UniversalKanbanColumn({
   column: UniversalColumn;
   onTaskCreate: (columnId: string) => void;
   onTaskClick: (task: UniversalTask) => void;
-  moduleColumns: UniversalColumn[];
+  moduleColumns?: UniversalColumn[];
   onTaskMove: (taskId: string, newStatus: string) => void;
 }) {
   const { setNodeRef, isOver } = useDroppable({
@@ -412,7 +412,7 @@ function UniversalKanbanColumn({
                   task={convertToKanbanTask(task)} 
                   onTaskClick={() => onTaskClick(task)}
                   isDragging={false}
-                  quickMoveColumns={moduleColumns.map(c => ({ id: c.id, titulo: c.titulo }))}
+                  quickMoveColumns={(moduleColumns ?? []).map(c => ({ id: c.id, titulo: c.titulo }))}
                   onQuickMove={(taskId, statusId) => onTaskMove(taskId, statusId)}
                   currentStatus={task.status}
                 />
@@ -603,7 +603,7 @@ export function UniversalKanbanBoard({
         collisionDetection={closestCorners}
       >
         <div className="flex gap-6 overflow-x-auto pb-4 min-h-[600px]">
-          {columns.map(column => <UniversalKanbanColumn key={column.id} column={column} onTaskCreate={onTaskCreate} onTaskClick={onTaskClick} moduleColumns={moduleColumns} onTaskMove={onTaskMove} />)}
+          {columns.map(column => <UniversalKanbanColumn key={column.id} column={column} onTaskCreate={onTaskCreate} onTaskClick={onTaskClick} moduleColumns={columns} onTaskMove={onTaskMove} />)}
         </div>
 
         {activeTask && (
