@@ -59,7 +59,7 @@ function Dashboard() {
 
         const fetchTarefasCount = async () => {
           try {
-            const { count } = await supabase.from('tarefas').select('*', { count: 'exact' }).neq('status', 'concluido');
+            const { count } = await supabase.from('tarefa').select('*', { count: 'exact' }).neq('status', 'concluido');
             return count || 0;
           } catch { return 0; }
         };

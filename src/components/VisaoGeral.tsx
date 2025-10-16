@@ -52,8 +52,8 @@ export function VisaoGeral({ planejamento, clienteId, projetoId }: VisaoGeralPro
     try {
       // Buscar tarefas relacionadas ao planejamento
       const { data: tarefasData } = await supabase
-        .from('tarefas')
-        .select('*')
+        .from('tarefa')
+        .select('*, kpis')
         .eq('projeto_id', projetoId)
         .order('created_at', { ascending: false });
 

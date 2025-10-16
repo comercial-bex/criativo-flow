@@ -558,7 +558,7 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
   // Criar tarefa automática
   const criarTarefaAutomatica = async (post: any, especialistaId: string, projetoId: string) => {
     try {
-      const tipoTarefa = post.tipo_criativo === 'video' || post.tipo_criativo === 'stories' ? 'conteudo' : 'design';
+      const tipoTarefa = post.tipo_criativo === 'video' || post.tipo_criativo === 'stories' ? 'criativo_vt' : 'feed_post';
       const tituloTarefa = `Criar conteúdo: ${post.titulo}`;
       
       const descricaoTarefa = `
@@ -570,8 +570,8 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
       `.trim();
 
       const { data, error } = await supabase
-        .from('tarefas')
-        .insert({
+        .from('tarefa')
+        .insert([{
           projeto_id: projetoId,
           titulo: tituloTarefa,
           descricao: descricaoTarefa,
@@ -579,7 +579,7 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
           prioridade: 'media',
           status: 'backlog',
           responsavel_id: especialistaId
-        })
+        }])
         .select()
         .single();
 

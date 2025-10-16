@@ -92,20 +92,20 @@ export default function DesignMetas() {
         (profilesData || []).map(async (designer) => {
           // Tarefas concluídas no mês
           const { data: tarefasConcluidas } = await supabase
-            .from('tarefas')
-            .select('*')
-            .eq('responsavel_id', designer.id)
-            .eq('tipo', 'design')
+            .from('tarefa')
+            .select('*, kpis')
+            .eq('executor_id', designer.id)
+            .eq('executor_area', 'Criativo')
             .eq('status', 'entregue')
             .gte('updated_at', format(startOfMonth(mesAtual), 'yyyy-MM-dd'))
             .lte('updated_at', format(endOfMonth(mesAtual), 'yyyy-MM-dd'));
 
           // Tarefas em andamento
           const { data: tarefasEmAndamento } = await supabase
-            .from('tarefas')
-            .select('*')
-            .eq('responsavel_id', designer.id)
-            .eq('tipo', 'design')
+            .from('tarefa')
+            .select('*, kpis')
+            .eq('executor_id', designer.id)
+            .eq('executor_area', 'Criativo')
             .in('status', ['briefing', 'em_criacao', 'revisao_interna', 'aprovacao_cliente']);
 
           // Calcular tempo médio (placeholder - implementar baseado em dados reais)
