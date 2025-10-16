@@ -21,6 +21,7 @@ import {
   Palette
 } from "lucide-react";
 import { GamificationWidget } from "@/components/GamificationWidget";
+import { MetricasReaisDesign } from "@/components/MetricasReaisDesign";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { format, startOfMonth, endOfMonth } from "date-fns";
@@ -328,27 +329,11 @@ export default function DesignMetas() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Tempo Médio</CardTitle>
+            <CardTitle className="text-sm font-medium">Métricas Reais</CardTitle>
             <BarChart3 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">2.3h</div>
-            <p className="text-xs text-muted-foreground">
-              -0.2h vs. meta
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Taxa Aprovação</CardTitle>
-            <Award className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">87%</div>
-            <p className="text-xs text-muted-foreground">
-              +5% vs. mês anterior
-            </p>
+            <MetricasReaisDesign />
           </CardContent>
         </Card>
       </div>
