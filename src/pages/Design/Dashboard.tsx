@@ -22,6 +22,7 @@ import { ptBR } from "date-fns/locale";
 import { useTutorial } from '@/hooks/useTutorial';
 import { TutorialButton } from '@/components/TutorialButton';
 import { SecaoProdutividade } from "@/components/Produtividade/SecaoProdutividade";
+import { useAuth } from '@/hooks/useAuth';
 
 interface DashboardStats {
   tarefasAbertas: number;
@@ -44,44 +45,65 @@ export default function DesignDashboard() {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   const { startTutorial, hasSeenTutorial } = useTutorial('design-dashboard');
+  const { user } = useAuth();
 
   useEffect(() => {
     fetchDashboardData();
   }, []);
 
   const fetchDashboardData = async () => {
+    if (!user) {
+      console.log('[Design/Dashboard] ⚠️ Usuário não autenticado');
+      setLoading(false);
+      return;
+    }
+
     try {
+      console.log('[Design/Dashboard] 🔍 Iniciando busca de dados...');
+      console.log('[Design/Dashboard] 👤 User ID:', user.id);
+
       // Buscar tarefas de design
       const { data: tarefas, error: tarefasError } = await supabase
-        .from('tarefas')
+        .from('tarefa')
         .select('*')
-        .eq('tipo', 'design');
+        .eq('executor_id', user.id)
+        .in('executor_area', ['Criativo', 'Audiovisual']);
+
+      console.log('[Design/Dashboard] ✅ Tarefas:', tarefas?.length, 'itens');
+      console.log('[Design/Dashboard] 📋 Tarefas completas:', tarefas);
+      console.log('[Design/Dashboard] ❌ Erro:', tarefasError);
 
       if (tarefasError) throw tarefasError;
 
       // Calcular estatísticas
-      const tarefasAbertas = tarefas?.filter(t => ['backlog', 'to_do'].includes(t.status)).length || 0;
-      const tarefasEmAndamento = tarefas?.filter(t => ['em_andamento', 'em_revisao'].includes(t.status)).length || 0;
-      const tarefasConcluidas = tarefas?.filter(t => t.status === 'concluida').length || 0;
+      const tarefasAbertas = tarefas?.filter(t => 
+        ['backlog', 'a_fazer', 'briefing'].includes(t.status)
+      ).length || 0;
+
+      const tarefasEmAndamento = tarefas?.filter(t => 
+        ['em_andamento', 'em_revisao', 'em_criacao', 'em_producao', 'revisao_interna'].includes(t.status)
+      ).length || 0;
+
+      const tarefasConcluidas = tarefas?.filter(t => 
+        ['concluido', 'entregue', 'publicado'].includes(t.status)
+      ).length || 0;
 
       // Próximos deadlines (próximos 7 dias)
       const proximosDeadlines = tarefas?.filter(t => {
-        if (!t.data_prazo || t.status === 'concluida') return false;
-        const prazo = new Date(t.data_prazo);
+        const dataTarefa = t.data_entrega_prevista || t.prazo_executor;
+        if (!dataTarefa || ['concluido', 'entregue', 'publicado'].includes(t.status)) return false;
+        const prazo = new Date(dataTarefa);
         const hoje = new Date();
         const diasDiff = Math.ceil((prazo.getTime() - hoje.getTime()) / (1000 * 3600 * 24));
         return diasDiff <= 7 && diasDiff >= 0;
-      }).sort((a, b) => new Date(a.data_prazo).getTime() - new Date(b.data_prazo).getTime()) || [];
+      }).sort((a, b) => {
+        const dateA = new Date(a.data_entrega_prevista || a.prazo_executor || 0);
+        const dateB = new Date(b.data_entrega_prevista || b.prazo_executor || 0);
+        return dateA.getTime() - dateB.getTime();
+      }) || [];
 
-      // Buscar projetos ativos com tarefas de design
-      const { data: projetos, error: projetosError } = await supabase
-        .from('projetos')
-        .select('id')
-        .eq('status', 'ativo');
-
-      if (projetosError) throw projetosError;
-
-      const projetosAtivos = projetos?.length || 0;
+      // Remover query de projetos (não relevante para o designer individual)
+      const projetosAtivos = 0;
 
       setStats({
         tarefasAbertas,
@@ -178,6 +200,15 @@ export default function DesignDashboard() {
       {/* Seção de Produtividade Pessoal */}
       <SecaoProdutividade setor="design" defaultExpanded={false} />
 
+      {/* Indicador de dados carregados */}
+      {!loading && (
+        <div className="text-xs text-muted-foreground px-4 py-2 bg-muted/30 rounded-lg border border-border/50 flex items-center gap-2">
+          <span className="font-medium">📊 Dados carregados:</span>
+          <span className="text-primary font-semibold">{stats.tarefasAbertas + stats.tarefasEmAndamento + stats.tarefasConcluidas}</span>
+          <span>tarefa(s) total</span>
+        </div>
+      )}
+
       {/* Stats Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4" data-tour="kpis">
         <StatCard
@@ -221,7 +252,7 @@ export default function DesignDashboard() {
             <div className="space-y-3">
               {stats.proximosDeadlines.length > 0 ? (
                 stats.proximosDeadlines.slice(0, 5).map((tarefa) => {
-                  const prazo = new Date(tarefa.data_prazo);
+                  const prazo = new Date(tarefa.data_entrega_prevista || tarefa.prazo_executor);
                   const diasRestantes = Math.ceil((prazo.getTime() - new Date().getTime()) / (1000 * 3600 * 24));
                   
                   return (
