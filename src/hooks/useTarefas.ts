@@ -26,8 +26,9 @@ export function useTarefas(options: UseTarefasOptions = {}) {
 
       let query = supabase
         .from('tarefa')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .select('*', { count: 'exact' })
+        .order('created_at', { ascending: false })
+        .range(0, 49); // Paginação: primeiros 50 registros
 
       if (options.projetoId) {
         query = query.eq('projeto_id', options.projetoId);
@@ -56,7 +57,6 @@ export function useTarefas(options: UseTarefasOptions = {}) {
         checklist: item.checklist ? JSON.parse(JSON.stringify(item.checklist)) : []
       })) as Tarefa[]);
     } catch (error) {
-      console.error('Erro ao buscar tarefas:', error);
       toast({
         title: 'Erro',
         description: 'Erro ao carregar tarefas',
@@ -73,14 +73,7 @@ export function useTarefas(options: UseTarefasOptions = {}) {
 
   const createTarefa = async (novaTarefa: Partial<Tarefa>) => {
     try {
-      console.log('🔍 [useTarefas] Criando tarefa:', {
-        user_id: (await supabase.auth.getUser()).data.user?.id,
-        payload: novaTarefa
-      });
-
       const payload = sanitizeTaskPayload(novaTarefa as any);
-      
-      console.log('📦 [useTarefas] Payload sanitizado:', payload);
       
       const { data, error } = await supabase
         .from('tarefa')
@@ -88,12 +81,7 @@ export function useTarefas(options: UseTarefasOptions = {}) {
         .select()
         .single();
 
-      if (error) {
-        console.error('❌ [useTarefas] Erro ao criar tarefa:', error);
-        throw error;
-      }
-
-      console.log('✅ [useTarefas] Tarefa criada com sucesso:', data);
+      if (error) throw error;
 
       setTarefas((prev) => [{
         ...data,
@@ -107,7 +95,6 @@ export function useTarefas(options: UseTarefasOptions = {}) {
 
       return { data, error: null };
     } catch (error) {
-      console.error('Erro ao criar tarefa:', error);
       toast({
         title: 'Erro',
         description: 'Erro ao criar tarefa',
@@ -143,7 +130,6 @@ export function useTarefas(options: UseTarefasOptions = {}) {
 
       return { data, error: null };
     } catch (error) {
-      console.error('Erro ao atualizar tarefa:', error);
       toast({
         title: 'Erro',
         description: 'Erro ao atualizar tarefa',
@@ -171,7 +157,6 @@ export function useTarefas(options: UseTarefasOptions = {}) {
 
       return { error: null };
     } catch (error) {
-      console.error('Erro ao deletar tarefa:', error);
       toast({
         title: 'Erro',
         description: 'Erro ao remover tarefa',

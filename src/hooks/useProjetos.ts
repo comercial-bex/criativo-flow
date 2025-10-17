@@ -75,11 +75,11 @@ export function useProjetos() {
           *,
           clientes (nome),
           profiles:created_by (nome)
-        `)
-        .order('created_at', { ascending: false });
+        `, { count: 'exact' })
+        .order('created_at', { ascending: false })
+        .range(0, 49); // Paginação: primeiros 50 registros
 
       if (error) {
-        console.error('Erro detalhado ao buscar projetos:', error);
         if (error.code === 'PGRST116') {
           toast.error('Tabela de projetos não encontrada no banco de dados');
         } else if (error.code === '42703') {
@@ -93,7 +93,6 @@ export function useProjetos() {
 
       setProjetos(data as unknown as Projeto[] || []);
     } catch (error: any) {
-      console.error('Erro ao buscar projetos:', error);
       toast.error('Erro inesperado ao carregar projetos');
       setProjetos([]);
     } finally {
@@ -108,50 +107,28 @@ export function useProjetos() {
       // Simplificar para evitar erro de TypeScript
       setTarefas([]);
     } catch (error) {
-      console.error('Erro ao buscar tarefas:', error);
       toast.error('Erro ao carregar tarefas');
     }
   };
 
   const createProjeto = async (projeto: Partial<Projeto>) => {
-    console.log('🚀 [useProjetos] createProjeto chamado');
-    console.log('👤 User:', user?.id);
-    console.log('📋 Dados do projeto:', projeto);
-    
     if (!user) {
-      console.error('❌ Usuário não autenticado');
       return null;
     }
 
     try {
-      console.log('📤 Enviando para Supabase...');
       const { data, error } = await supabase
         .from('projetos')
         .insert(projeto as any)
         .select()
         .single();
 
-      if (error) {
-        console.error('❌ Erro do Supabase:', {
-          message: error.message,
-          code: error.code,
-          details: error.details,
-          hint: error.hint
-        });
-        throw error;
-      }
+      if (error) throw error;
 
-      console.log('✅ Projeto criado com sucesso:', data);
       toast.success('Projeto criado com sucesso!');
       fetchProjetos();
       return data;
     } catch (error: any) {
-      console.error('💥 Erro ao criar projeto:', {
-        message: error.message,
-        code: error.code,
-        details: error.details,
-        hint: error.hint
-      });
       toast.error('Erro ao criar projeto: ' + (error.message || 'Erro desconhecido'));
       return null;
     }
@@ -170,7 +147,6 @@ export function useProjetos() {
       fetchProjetos();
       return true;
     } catch (error) {
-      console.error('Erro ao atualizar projeto:', error);
       toast.error('Erro ao atualizar projeto');
       return false;
     }
@@ -189,7 +165,6 @@ export function useProjetos() {
       fetchProjetos();
       return true;
     } catch (error) {
-      console.error('Erro ao excluir projeto:', error);
       toast.error('Erro ao excluir projeto');
       return false;
     }
@@ -211,7 +186,6 @@ export function useProjetos() {
       fetchTarefasPorSetor();
       return data;
     } catch (error) {
-      console.error('Erro ao criar tarefa:', error);
       toast.error('Erro ao criar tarefa');
       return null;
     }
@@ -230,7 +204,6 @@ export function useProjetos() {
       fetchTarefasPorSetor();
       return true;
     } catch (error) {
-      console.error('Erro ao atualizar tarefa:', error);
       toast.error('Erro ao atualizar tarefa');
       return false;
     }
