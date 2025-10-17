@@ -255,18 +255,17 @@ export default function ClienteProjetos() {
 
       {/* Modal de Plano Editorial */}
       {tipoModal === 'plano_editorial' && (
-        <CreatePlanejamentoUnificadoModal
+        <CriarProjetoAvulsoModal
           open={true}
           onOpenChange={(open) => !open && setTipoModal(null)}
           clienteId={clienteId}
-          tipoInicial="mensal"
+          tipo="plano_editorial"
           onSuccess={() => {
             fetchProjetos();
             setTipoModal(null);
           }}
-          onCreated={(planejamentoId, clientId) => {
-            // Navegar automaticamente para a estrutura BEX do planejamento
-            navigate(`/grs/cliente/${clientId}/planejamento/${planejamentoId}?tab=plano-editorial`);
+          onPlanejamentoCreated={(planejamentoId, clienteId) => {
+            navigate(`/grs/cliente/${clienteId}/planejamento/${planejamentoId}?tab=plano-editorial`);
             setTipoModal(null);
           }}
         />

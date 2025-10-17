@@ -26,6 +26,7 @@ interface CriarProjetoAvulsoModalProps {
   clienteId?: string;
   tipo?: 'avulso' | 'campanha' | 'plano_editorial';
   onSuccess?: (projeto: any) => void;
+  onPlanejamentoCreated?: (planejamentoId: string, clienteId: string) => void;
 }
 
 export function CriarProjetoAvulsoModal({ 
@@ -33,7 +34,8 @@ export function CriarProjetoAvulsoModal({
   onOpenChange, 
   clienteId,
   tipo = 'avulso',
-  onSuccess 
+  onSuccess,
+  onPlanejamentoCreated 
 }: CriarProjetoAvulsoModalProps) {
   const { toast } = useToast();
   const { user } = useAuth();
@@ -142,6 +144,66 @@ export function CriarProjetoAvulsoModal({
     setLoading(true);
 
     try {
+      // NOVO: Se for plano_editorial, criar planejamento em vez de projeto
+      if (formData.tipo_projeto === 'plano_editorial') {
+        // Preparar especialistas no formato JSON para o campo descricao
+        const especialistasMetadata = {
+          especialistas: {
+            grs_id: especialistasSelecionados.grs_id,
+            designer_id: especialistasSelecionados.designer_id,
+            filmmaker_id: especialistasSelecionados.filmmaker_id,
+            gerente_id: especialistasSelecionados.gerente_id
+          }
+        };
+
+        // 1. Criar planejamento
+        const { data: planejamento, error: planejamentoError } = await supabase
+          .from('planejamentos')
+          .insert({
+            cliente_id: formData.cliente_id,
+            titulo: formData.titulo,
+            mes_referencia: format(new Date(), 'yyyy-MM-dd'),
+            descricao: JSON.stringify({
+              descricao_original: formData.descricao || '',
+              especialistas: especialistasMetadata.especialistas
+            }),
+            status: 'rascunho',
+            responsavel_grs_id: formData.responsavel_grs_id || user?.id || null
+          })
+          .select()
+          .single();
+        
+        if (planejamentoError) throw planejamentoError;
+        
+        // 2. Criar conteúdo editorial base
+        const { error: conteudoError } = await supabase
+          .from('conteudo_editorial')
+          .insert({
+            planejamento_id: planejamento.id,
+            missao: '',
+            posicionamento: '',
+            persona: null,
+            frameworks_selecionados: [],
+            especialistas_selecionados: []
+          });
+        
+        if (conteudoError) {
+          console.error('Erro ao criar conteúdo editorial:', conteudoError);
+        }
+        
+        toast({
+          title: "✅ Plano Editorial criado!",
+          description: "Estrutura BEX pronta para uso"
+        });
+        
+        // 3. Chamar callback para navegação
+        onPlanejamentoCreated?.(planejamento.id, formData.cliente_id);
+        onOpenChange(false);
+        resetForm();
+        return; // IMPORTANTE: sair aqui para não criar projeto
+      }
+
+      // CÓDIGO EXISTENTE: criar projeto (para avulso e campanha)
       const projetoData = {
         titulo: formData.titulo,
         descricao: formData.descricao || null,
