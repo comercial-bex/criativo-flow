@@ -161,6 +161,7 @@ const RequestsPage = lazy(() => import("./pages/ClientDetails/RequestsPage"));
 const ContractsPage = lazy(() => import("./pages/ClientDetails/ContractsPage"));
 const FinancePage = lazy(() => import("./pages/ClientDetails/FinancePage"));
 const NotesPage = lazy(() => import("./pages/ClientDetails/NotesPage"));
+const SocialIntegrationsPage = lazy(() => import("./pages/ClientDetails/SocialIntegrationsPage"));
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -291,6 +292,7 @@ function App() {
                   <Route path="contacts" element={<ContactsPage />} />
                   <Route path="notes" element={<NotesPage />} />
                   <Route path="requests" element={<RequestsPage />} />
+                  <Route path="social-integrations" element={<SocialIntegrationsPage />} />
                 </Route>
                 
                 <Route path="/categorias-financeiras" element={<ProtectedRoute module="financeiro">

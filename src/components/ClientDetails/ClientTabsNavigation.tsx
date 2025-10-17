@@ -10,7 +10,8 @@ import {
   FileCheck, 
   FileSignature, 
   DollarSign,
-  StickyNote
+  StickyNote,
+  Share2
 } from "lucide-react";
 
 interface ClientTabsNavigationProps {
@@ -27,6 +28,7 @@ const RBAC_TABS = {
   contracts: ['admin', 'gestor'],
   finance: ['admin', 'gestor'],
   notes: ['admin', 'gestor', 'grs', 'atendimento'],
+  'social-integrations': ['admin', 'gestor', 'grs'],
 } as const;
 
 export function ClientTabsNavigation({ clienteId }: ClientTabsNavigationProps) {
@@ -50,6 +52,7 @@ export function ClientTabsNavigation({ clienteId }: ClientTabsNavigationProps) {
     { key: 'contracts', label: 'Contratos', icon: FileSignature },
     { key: 'finance', label: 'Financeiro', icon: DollarSign },
     { key: 'notes', label: 'Notas', icon: StickyNote },
+    { key: 'social-integrations', label: 'Redes Sociais', icon: Share2 },
   ] as const;
 
   return (

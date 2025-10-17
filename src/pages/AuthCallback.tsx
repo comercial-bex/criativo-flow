@@ -37,7 +37,7 @@ export default function AuthCallback() {
         localStorage.removeItem('oauth_provider');
 
         toast.success('Autenticação realizada! Selecionando contas...');
-        navigate(`/clientes/${clienteId}/integracao-redes-sociais`);
+        navigate(`/clients/${clienteId}/social-integrations`);
         
       } catch (error: any) {
         console.error('Erro no callback OAuth:', error);
