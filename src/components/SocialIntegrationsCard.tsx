@@ -8,7 +8,7 @@ import { useClientContext } from "@/hooks/useClientContext";
 import { OAuthStatusIndicator } from "@/components/OAuthStatusIndicator";
 import { IntegrationMetricsDialog } from "@/components/SocialIntegrations/IntegrationMetricsDialog";
 import { SocialConnectionWizard } from "@/components/SocialConnectionWizard";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 const providerIcons = {
@@ -50,6 +50,21 @@ export function SocialIntegrationsCard({ clienteId }: SocialIntegrationsCardProp
   } | null>(null);
   const [wizardOpen, setWizardOpen] = useState(false);
   const [wizardProvider, setWizardProvider] = useState<'facebook' | 'instagram' | 'google' | null>(null);
+
+  // Auto-reabrir wizard após OAuth callback
+  useEffect(() => {
+    const shouldReopen = localStorage.getItem('reopen_social_wizard');
+    const savedProvider = localStorage.getItem('wizard_provider');
+    
+    if (shouldReopen === 'true' && savedProvider) {
+      setWizardProvider(savedProvider as 'facebook' | 'instagram' | 'google');
+      setWizardOpen(true);
+      
+      // Limpar flags
+      localStorage.removeItem('reopen_social_wizard');
+      localStorage.removeItem('wizard_provider');
+    }
+  }, []);
 
   const availableProviders = ['facebook', 'google', 'instagram'] as const;
 

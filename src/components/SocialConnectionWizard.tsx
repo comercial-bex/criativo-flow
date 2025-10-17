@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -59,6 +59,36 @@ export function SocialConnectionWizard({
   const [error, setError] = useState<string | null>(null);
 
   const { loading, signInWithProvider, fetchAvailableAccounts, connectMultipleAccounts } = useSocialAuth();
+
+  // Detectar retorno do OAuth e avançar para listagem de contas
+  useEffect(() => {
+    const checkOAuthReturn = async () => {
+      const token = sessionStorage.getItem('social_access_token');
+      const provider = sessionStorage.getItem('social_provider');
+      
+      if (token && provider && open && currentStep === 'oauth' && selectedProvider === provider) {
+        console.log('✅ Token OAuth detectado, buscando contas...');
+        
+        setIsValidating(true);
+        try {
+          const { validAccounts } = await fetchAvailableAccounts(
+            selectedProvider,
+            token
+          );
+          
+          setAvailableAccounts(validAccounts);
+          setCurrentStep('accounts');
+        } catch (err: any) {
+          console.error('❌ Erro ao buscar contas:', err);
+          setError(err.message || 'Erro ao buscar contas');
+        } finally {
+          setIsValidating(false);
+        }
+      }
+    };
+    
+    checkOAuthReturn();
+  }, [open, currentStep, selectedProvider, fetchAvailableAccounts]);
 
   // Pré-requisitos por provider
   const getPrerequisites = (provider: SocialProvider): Prerequisite[] => {
@@ -127,23 +157,16 @@ export function SocialConnectionWizard({
     setIsValidating(true);
     try {
       setError(null);
-      const token = sessionStorage.getItem('social_access_token');
       
-      if (!token) {
-        await signInWithProvider(selectedProvider);
-        return;
-      }
-
-      const { accounts, validAccounts } = await fetchAvailableAccounts(
-        selectedProvider,
-        token
-      );
-
-      setAvailableAccounts(validAccounts);
-      setCurrentStep('accounts');
+      // Iniciar OAuth (redirecionará para Facebook/Google)
+      await signInWithProvider(selectedProvider);
+      
+      // Nota: após OAuth, usuário voltará via /auth callback
+      // e o useEffect acima detectará o token automaticamente
+      
     } catch (err: any) {
-      setError(err.message || 'Erro ao buscar contas');
-      toast.error('Erro ao buscar contas disponíveis');
+      setError(err.message || 'Erro ao iniciar autenticação');
+      toast.error('Erro ao conectar com ' + selectedProvider);
     } finally {
       setIsValidating(false);
     }

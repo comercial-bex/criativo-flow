@@ -29,11 +29,15 @@ export default function AuthCallback() {
         sessionStorage.setItem('social_access_token', providerToken || '');
         sessionStorage.setItem('social_provider', provider);
 
+        // Armazenar flag para reabrir wizard
+        localStorage.setItem('reopen_social_wizard', 'true');
+        localStorage.setItem('wizard_provider', provider);
+        
         localStorage.removeItem('oauth_client_id');
         localStorage.removeItem('oauth_provider');
 
         toast.success('Autenticação realizada! Selecionando contas...');
-        navigate(`/grs/cliente/${clienteId}/projetos?oauth_success=true&provider=${provider}`);
+        navigate(`/clientes/${clienteId}/integracao-redes-sociais`);
         
       } catch (error: any) {
         console.error('Erro no callback OAuth:', error);
