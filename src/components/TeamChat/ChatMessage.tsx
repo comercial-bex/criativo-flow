@@ -1,6 +1,6 @@
 import { BexAvatar, BexAvatarFallback, BexAvatarImage } from '@/components/ui/bex-avatar';
 import { Button } from '@/components/ui/button';
-import { Smile } from 'lucide-react';
+import { Smile, Clock, Check } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -103,12 +103,23 @@ export function ChatMessage({ message, isOwn, onReaction }: ChatMessageProps) {
           </div>
         )}
 
-        <span className="text-xs text-muted-foreground mt-1">
-          {formatDistanceToNow(new Date(message.created_at), {
-            addSuffix: true,
-            locale: ptBR
-          })}
-        </span>
+        <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
+          {isOwn && (
+            <span className="text-primary">
+              {message.id.startsWith('temp-') ? (
+                <Clock className="h-3 w-3 animate-pulse" />
+              ) : (
+                <Check className="h-3 w-3" />
+              )}
+            </span>
+          )}
+          <span>
+            {formatDistanceToNow(new Date(message.created_at), {
+              addSuffix: true,
+              locale: ptBR
+            })}
+          </span>
+        </div>
       </div>
 
       {isOwn && message.sender && (

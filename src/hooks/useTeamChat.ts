@@ -83,7 +83,46 @@ export const useTeamChat = (threadId?: string) => {
     enabled: !!threadId,
   });
 
-  // Real-time subscription
+  // Contagem de mensagens não lidas
+  const { data: unreadCount } = useQuery({
+    queryKey: ['team-chat-unread', user?.id],
+    queryFn: async () => {
+      if (!user) return 0;
+
+      const { data: threadsData } = await supabase
+        .from('team_chat_threads')
+        .select('id')
+        .contains('participants', [user.id]);
+
+      if (!threadsData?.length) return 0;
+
+      let totalUnread = 0;
+
+      for (const thread of threadsData) {
+        const { data: readStatus } = await supabase
+          .from('team_chat_read_status')
+          .select('last_read_at')
+          .eq('user_id', user.id)
+          .eq('thread_id', thread.id)
+          .maybeSingle();
+
+        const { count } = await supabase
+          .from('team_chat_messages')
+          .select('*', { count: 'exact', head: true })
+          .eq('thread_id', thread.id)
+          .neq('sender_id', user.id)
+          .gt('created_at', readStatus?.last_read_at || '1970-01-01');
+
+        totalUnread += count || 0;
+      }
+
+      return totalUnread;
+    },
+    enabled: !!user,
+    refetchInterval: 10000
+  });
+
+  // Real-time subscription com optimistic updates
   useEffect(() => {
     if (!threadId) return;
 
@@ -94,18 +133,42 @@ export const useTeamChat = (threadId?: string) => {
         schema: 'public',
         table: 'team_chat_messages',
         filter: `thread_id=eq.${threadId}`
-      }, (payload) => {
+      }, async (payload) => {
         console.log('📨 Nova mensagem recebida:', payload);
-        queryClient.invalidateQueries({ queryKey: ['team-chat-messages', threadId] });
+        
+        // Buscar dados do sender imediatamente
+        const { data: sender } = await supabase
+          .from('profiles')
+          .select('id, nome, avatar_url')
+          .eq('id', payload.new.sender_id)
+          .single();
+        
+        // Inserir diretamente no cache (mais rápido)
+        queryClient.setQueryData(
+          ['team-chat-messages', threadId],
+          (old: any) => [
+            ...(old || []),
+            { ...payload.new, sender }
+          ]
+        );
+
+        // Tocar som se não for mensagem própria
+        if (payload.new.sender_id !== user?.id) {
+          const { playNotificationSound } = await import('@/lib/notification-sound');
+          playNotificationSound();
+        }
+
+        // Invalidar contagem de não lidas
+        queryClient.invalidateQueries({ queryKey: ['team-chat-unread'] });
       })
       .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [threadId, queryClient]);
+  }, [threadId, queryClient, user]);
 
-  // Enviar mensagem
+  // Enviar mensagem com optimistic updates
   const sendMessage = useMutation({
     mutationFn: async ({ 
       content, 
@@ -130,12 +193,47 @@ export const useTeamChat = (threadId?: string) => {
       if (error) throw error;
       return data;
     },
+    onMutate: async (newMessage) => {
+      // Cancelar queries em andamento
+      await queryClient.cancelQueries({ queryKey: ['team-chat-messages', threadId] });
+      
+      // Snapshot do estado atual
+      const previousMessages = queryClient.getQueryData(['team-chat-messages', threadId]);
+      
+      // Inserir mensagem otimista
+      const optimisticMessage = {
+        id: `temp-${crypto.randomUUID()}`,
+        thread_id: threadId,
+        sender_id: user?.id,
+        content: newMessage.content,
+        attachments: newMessage.attachments || [],
+        mentioned_users: newMessage.mentionedUsers || [],
+        reactions: {},
+        created_at: new Date().toISOString(),
+        sender: {
+          id: user?.id,
+          nome: 'Você',
+        }
+      };
+      
+      queryClient.setQueryData(
+        ['team-chat-messages', threadId],
+        (old: any) => [...(old || []), optimisticMessage]
+      );
+      
+      return { previousMessages };
+    },
+    onError: (err, newMessage, context) => {
+      // Rollback em caso de erro
+      queryClient.setQueryData(
+        ['team-chat-messages', threadId],
+        context?.previousMessages
+      );
+      smartToast.error('Erro ao enviar mensagem', err.message);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['team-chat-messages', threadId] });
       queryClient.invalidateQueries({ queryKey: ['team-chat-threads'] });
-    },
-    onError: (error: any) => {
-      smartToast.error('Erro ao enviar mensagem', error.message);
     },
   });
 
@@ -202,13 +300,44 @@ export const useTeamChat = (threadId?: string) => {
     },
   });
 
+  // Marcar mensagens como lidas
+  const markAsRead = useMutation({
+    mutationFn: async (threadIdParam: string) => {
+      if (!user) return;
+
+      const { data: lastMessage } = await supabase
+        .from('team_chat_messages')
+        .select('id')
+        .eq('thread_id', threadIdParam)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (!lastMessage) return;
+
+      await supabase
+        .from('team_chat_read_status')
+        .upsert({
+          user_id: user.id,
+          thread_id: threadIdParam,
+          last_read_message_id: lastMessage.id,
+          last_read_at: new Date().toISOString()
+        });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['team-chat-unread'] });
+    }
+  });
+
   return {
     threads,
     messages: messages || [],
     loadingThreads,
+    unreadCount,
     sendMessage: sendMessage.mutate,
     isSending: sendMessage.isPending,
     createThread: createThread.mutate,
     addReaction: addReaction.mutate,
+    markAsRead: markAsRead.mutate,
   };
 };

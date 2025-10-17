@@ -9785,6 +9785,48 @@ export type Database = {
           },
         ]
       }
+      team_chat_read_status: {
+        Row: {
+          created_at: string
+          id: string
+          last_read_at: string
+          last_read_message_id: string | null
+          thread_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_read_at?: string
+          last_read_message_id?: string | null
+          thread_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_read_at?: string
+          last_read_message_id?: string | null
+          thread_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_chat_read_status_last_read_message_id_fkey"
+            columns: ["last_read_message_id"]
+            isOneToOne: false
+            referencedRelation: "team_chat_messages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "team_chat_read_status_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "team_chat_threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       team_chat_threads: {
         Row: {
           created_at: string | null

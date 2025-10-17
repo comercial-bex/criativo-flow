@@ -4,9 +4,11 @@ import { MessageSquare, X } from 'lucide-react';
 import { ChatSidebar } from './ChatSidebar';
 import { ChatWindow } from './ChatWindow';
 import { useAuth } from '@/hooks/useAuth';
+import { useTeamChat } from '@/hooks/useTeamChat';
 
 export function TeamChatWidget() {
   const { user } = useAuth();
+  const { unreadCount } = useTeamChat();
   const [isOpen, setIsOpen] = useState(false);
   const [selectedThreadId, setSelectedThreadId] = useState<string | undefined>();
 
@@ -17,13 +19,21 @@ export function TeamChatWidget() {
   if (!isOpen) {
     return (
       <div className="fixed bottom-6 right-6 z-[60] animate-in slide-in-from-bottom-5">
-        <Button
-          size="lg"
-          onClick={() => setIsOpen(true)}
-          className="rounded-full h-14 w-14 shadow-lg hover:scale-110 transition-transform"
-        >
-          <MessageSquare className="h-6 w-6" />
-        </Button>
+        <div className="relative">
+          <Button
+            size="lg"
+            onClick={() => setIsOpen(true)}
+            className="rounded-full h-14 w-14 shadow-lg hover:scale-110 transition-transform relative"
+          >
+            <MessageSquare className="h-6 w-6" />
+          </Button>
+          
+          {unreadCount > 0 && (
+            <div className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full h-6 w-6 flex items-center justify-center text-xs font-bold animate-pulse shadow-lg">
+              {unreadCount > 9 ? '9+' : unreadCount}
+            </div>
+          )}
+        </div>
       </div>
     );
   }
