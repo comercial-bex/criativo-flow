@@ -4,7 +4,7 @@ import { Dialog, BexDialogContent, BexDialogHeader, BexDialogTitle } from '@/com
 import { BexCard, BexCardContent, BexCardHeader, BexCardTitle } from '@/components/ui/bex-card';
 import { BexBadge } from '@/components/ui/bex-badge';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
@@ -470,15 +470,6 @@ export function TaskDetailsModal({ open, onOpenChange, task, onTaskUpdate }: Tas
 
   // Removed handleSaveDate - prazo field exists in header
 
-  const handleScrollToChecklist = () => {
-    const checklistTrigger = document.querySelector('[data-value="checklist"]') as HTMLElement;
-    if (checklistTrigger) {
-      checklistTrigger.click();
-      setTimeout(() => {
-        checklistTrigger.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-      }, 100);
-    }
-  };
 
   const priorityVariant = {
     'critica': 'destructive' as const,
@@ -549,43 +540,20 @@ export function TaskDetailsModal({ open, onOpenChange, task, onTaskUpdate }: Tas
 
         {/* Layout 2 colunas: Conteúdo + Sidebar */}
         <div className="modal-body-2col h-[calc(90vh-180px)]">
-          {/* Coluna Principal */}
+          {/* Coluna Principal - Scroll Vertical */}
           <div className="modal-body-2col-main modal-scroll-area">
-
-        <Tabs defaultValue="overview" className="w-full">
-          <TabsList className="modal-tabs-gaming grid w-full grid-cols-4">
-            <TabsTrigger value="overview" className="modal-tab-trigger-gaming">
-              <FileText className="h-3.5 w-3.5 mr-1.5" />
-              Visão Geral
-            </TabsTrigger>
-            <TabsTrigger value="briefing" className="modal-tab-trigger-gaming">
-              <Target className="h-3.5 w-3.5 mr-1.5" />
-              Briefing
-            </TabsTrigger>
-            <TabsTrigger value="checklist" className="modal-tab-trigger-gaming">
-              <CheckCircle2 className="h-3.5 w-3.5 mr-1.5" />
-              Checklist
-              {totalCount > 0 && (
-                <BexBadge variant="bexGlow" className="ml-1.5 text-[10px] px-1 py-0">
-                  {Math.round(progressPercentage)}%
-                </BexBadge>
-              )}
-            </TabsTrigger>
-            <TabsTrigger value="anexos" className="modal-tab-trigger-gaming">
-              <Paperclip className="h-3.5 w-3.5 mr-1.5" />
-              Anexos
-            </TabsTrigger>
-          </TabsList>
-
-          {/* Visão Geral - UNIFICADA */}
-          <TabsContent value="overview" className="mt-3 space-y-4">
-            {/* SEÇÃO 1: Informações da Tarefa */}
-            <div className="space-y-2">
-              <h3 className="modal-section-header">
-                <FileText className="h-4 w-4" />
-                Informações da Tarefa
-              </h3>
-              <div className="grid grid-cols-2 gap-3 text-sm">
+            <div className="space-y-6 p-6">
+              
+              {/* CARTÃO 1: Informações da Tarefa */}
+              <BexCard variant="gaming" withGlow={true}>
+                <BexCardHeader>
+                  <BexCardTitle className="flex items-center gap-2">
+                    <FileText className="w-5 h-5 text-bex" />
+                    Informações da Tarefa
+                  </BexCardTitle>
+                </BexCardHeader>
+                <BexCardContent>
+                  <div className="grid grid-cols-2 gap-3 text-sm">
                 {task.responsavel_nome && (
                   <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/30">
                     <User className="h-4 w-4 text-bex shrink-0" />
