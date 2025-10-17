@@ -10,11 +10,11 @@ export function TeamChatWidget() {
 
   if (!isOpen) {
     return (
-      <div className="fixed bottom-6 left-6 z-40">
+      <div className="fixed bottom-6 right-6 z-50 animate-in slide-in-from-bottom-5">
         <Button
           size="lg"
           onClick={() => setIsOpen(true)}
-          className="rounded-full h-14 w-14 shadow-lg"
+          className="rounded-full h-14 w-14 shadow-lg hover:scale-110 transition-transform"
         >
           <MessageSquare className="h-6 w-6" />
         </Button>
@@ -23,24 +23,36 @@ export function TeamChatWidget() {
   }
 
   return (
-    <div className="fixed bottom-6 left-6 z-40 flex gap-4">
-      {/* Sidebar */}
-      <div className="w-[320px] h-[600px]">
-        <ChatSidebar
-          onSelectThread={setSelectedThreadId}
-          selectedThreadId={selectedThreadId}
-        />
-      </div>
+    <>
+      {/* Backdrop blur */}
+      <div 
+        className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 animate-in fade-in" 
+        onClick={() => {
+          setIsOpen(false);
+          setSelectedThreadId(undefined);
+        }}
+      />
+      
+      {/* Chat Container */}
+      <div className="fixed bottom-6 right-6 inset-x-6 md:inset-x-auto z-50 flex flex-row-reverse gap-4 animate-in slide-in-from-bottom-5 slide-in-from-right-5">
+        {/* Chat Window */}
+        {selectedThreadId && (
+          <div className="w-full md:w-[380px] lg:w-[450px] animate-in slide-in-from-right-3">
+            <ChatWindow
+              threadId={selectedThreadId}
+              onClose={() => setSelectedThreadId(undefined)}
+            />
+          </div>
+        )}
 
-      {/* Chat Window */}
-      {selectedThreadId && (
-        <div className="w-[450px]">
-          <ChatWindow
-            threadId={selectedThreadId}
-            onClose={() => setSelectedThreadId(undefined)}
+        {/* Sidebar */}
+        <div className="w-full md:w-[280px] lg:w-[320px] h-[600px] max-h-[calc(100vh-8rem)] md:max-h-[600px]">
+          <ChatSidebar
+            onSelectThread={setSelectedThreadId}
+            selectedThreadId={selectedThreadId}
           />
         </div>
-      )}
-    </div>
+      </div>
+    </>
   );
 }
