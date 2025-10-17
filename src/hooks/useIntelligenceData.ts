@@ -122,10 +122,28 @@ export function useIntelligenceData() {
       
       if (error) throw error;
       
-      toast({
-        title: "Dados atualizados",
-        description: `Coletados dados de ${result?.processed_sources || 0} fontes`,
-      });
+      // Handle the new response format
+      if (result && !result.success) {
+        const failedSources = result.results?.filter((r: any) => !r.success) || [];
+        if (failedSources.length > 0) {
+          toast({
+            title: "Alguns conectores falharam",
+            description: `${failedSources.length} fonte(s) com erro. Veja detalhes em Configurar.`,
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Atualização parcial",
+            description: result.error || "Alguns dados não puderam ser coletados",
+          });
+        }
+      } else {
+        const summary = result?.summary || {};
+        toast({
+          title: "Dados atualizados",
+          description: `${summary.successful || 0} fonte(s) coletada(s) com sucesso`,
+        });
+      }
       
       // Refresh local data
       await Promise.all([
@@ -146,6 +164,38 @@ export function useIntelligenceData() {
       setRefreshing(false);
     }
   }, [fetchIntelligenceData, fetchConnectorStatus, toast]);
+
+  // Test a specific source
+  const testSource = useCallback(async (sourceId: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('intelligence-collector', {
+        body: { test_mode: true, source_id: sourceId }
+      });
+      
+      if (error) throw error;
+      
+      const result = data?.results?.[0];
+      if (!result) {
+        throw new Error('Nenhum resultado retornado');
+      }
+      
+      return {
+        success: result.success,
+        message: result.success 
+          ? `✅ Conectado - ${result.collected} item(s) encontrado(s)`
+          : `❌ Erro: ${result.error}`,
+        rawPreview: result.raw_preview,
+        sampleData: result.sample_data
+      };
+    } catch (error: any) {
+      return {
+        success: false,
+        message: `❌ Erro: ${error.message}`,
+        rawPreview: null,
+        sampleData: null
+      };
+    }
+  }, []);
 
   // Create a new alert
   const createAlert = useCallback(async (alert: Omit<IntelligenceAlert, 'id' | 'created_at' | 'updated_at'>) => {
@@ -326,6 +376,7 @@ export function useIntelligenceData() {
     
     // Actions
     refreshData,
+    testSource,
     fetchAlerts,
     createAlert,
     updateAlert,

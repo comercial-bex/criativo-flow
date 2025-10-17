@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { smartToast } from '@/lib/smart-toast';
 import { Loader2, CheckCircle, XCircle, AlertTriangle, RefreshCw, ExternalLink } from 'lucide-react';
 
 interface IntelligenceSource {
@@ -34,7 +34,6 @@ export function IntelligenceSettingsDialog({ open, onOpenChange }: IntelligenceS
   const [sources, setSources] = useState<IntelligenceSource[]>([]);
   const [loading, setLoading] = useState(true);
   const [testing, setTesting] = useState<string | null>(null);
-  const { toast } = useToast();
 
   useEffect(() => {
     if (open) {
@@ -68,11 +67,7 @@ export function IntelligenceSettingsDialog({ open, onOpenChange }: IntelligenceS
       setSources(sourcesWithStatus);
     } catch (error) {
       console.error('Error fetching sources:', error);
-      toast({
-        title: "Erro ao carregar fontes",
-        description: "Não foi possível carregar as fontes de inteligência",
-        variant: "destructive"
-      });
+      smartToast.error("Erro ao carregar fontes", "Não foi possível carregar as fontes de inteligência");
     } finally {
       setLoading(false);
     }
@@ -91,16 +86,10 @@ export function IntelligenceSettingsDialog({ open, onOpenChange }: IntelligenceS
         s.id === sourceId ? { ...s, is_active: !currentState } : s
       ));
 
-      toast({
-        title: "Fonte atualizada",
-        description: `Fonte ${!currentState ? 'ativada' : 'desativada'} com sucesso`
-      });
+      smartToast.success("Fonte atualizada", `Fonte ${!currentState ? 'ativada' : 'desativada'} com sucesso`);
     } catch (error) {
       console.error('Error toggling source:', error);
-      toast({
-        title: "Erro ao atualizar fonte",
-        variant: "destructive"
-      });
+      smartToast.error("Erro ao atualizar fonte");
     }
   };
 
@@ -115,20 +104,13 @@ export function IntelligenceSettingsDialog({ open, onOpenChange }: IntelligenceS
 
       const result = data.results?.[0];
       if (result?.success) {
-        toast({
-          title: "✅ Conexão bem-sucedida",
-          description: `${result.data_count || 0} itens encontrados`
-        });
+        smartToast.success("Conexão bem-sucedida", `${result.collected || 0} itens encontrados`);
       } else {
         throw new Error(result?.error || 'Teste falhou');
       }
     } catch (error) {
       console.error('Error testing connection:', error);
-      toast({
-        title: "❌ Teste falhou",
-        description: error instanceof Error ? error.message : 'Erro desconhecido',
-        variant: "destructive"
-      });
+      smartToast.error("Teste falhou", error instanceof Error ? error.message : 'Erro desconhecido');
     } finally {
       setTesting(null);
     }

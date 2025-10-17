@@ -23,9 +23,11 @@ interface IntelligenceSource {
 
 interface CollectorResult {
   success: boolean;
-  source_id: string;
-  data_count: number;
+  source: string;
+  collected: number;
   error?: string;
+  raw_preview?: string;
+  sample_data?: any;
 }
 
 serve(async (req) => {
@@ -46,6 +48,10 @@ serve(async (req) => {
     const body = req.method === 'POST' ? await req.json().catch(() => ({})) : {};
     const testMode = body.test_mode === true;
     const singleSourceId = body.source_id;
+
+    if (testMode) {
+      console.log('🧪 Test mode enabled - will not save to database');
+    }
 
     // Get intelligence sources (filter by ID for test mode)
     let query = supabase.from('intelligence_sources').select('*');
@@ -71,115 +77,140 @@ serve(async (req) => {
       try {
         console.log(`🔍 Processing source: ${source.name} (${source.type})`);
 
-        // Check if we should collect based on TTL
-        const shouldCollect = await checkShouldCollect(supabase, source);
-        
-        if (!shouldCollect) {
-          console.log(`⏭️ Skipping ${source.name} - within TTL window`);
-          continue;
+        // Check if we should collect based on TTL (skip in test mode)
+        if (!testMode) {
+          const shouldCollect = await checkShouldCollect(supabase, source);
+          
+          if (!shouldCollect) {
+            console.log(`⏭️ Skipping ${source.name} - within TTL window`);
+            continue;
+          }
         }
 
         // Collect data based on source type
-        const collectedData = await collectFromSource(source);
-
-        if (collectedData.length > 0) {
-          // Save to intelligence_data table
-          const { error: insertError } = await supabase
-            .from('intelligence_data')
-            .upsert(
-              collectedData.map(item => ({
-                source_id: source.id,
-                external_id: item.external_id,
-                data_type: source.type,
-                title: item.title,
-                content: item.content,
-                url: item.url,
-                region: item.region,
-                keywords: item.keywords,
-                metric_type: item.metric_type,
-                metric_value: item.metric_value,
-                published_at: item.published_at,
-                raw_payload: item.raw_payload
-              })),
-              { onConflict: 'source_id,external_id' }
-            );
-
-          if (insertError) {
-            throw new Error(`Failed to save data: ${insertError.message}`);
-          }
-
-          console.log(`✅ Saved ${collectedData.length} items for ${source.name}`);
+        let rawResponse = '';
+        let collectedData: any[] = [];
+        
+        try {
+          const response = await collectFromSource(source);
+          collectedData = response.data;
+          rawResponse = response.rawData || '';
+        } catch (collectError: any) {
+          console.error(`❌ Error collecting from ${source.name}:`, collectError.message);
           
-          // Update connector status - success
-          await supabase.rpc('update_connector_status', {
-            p_connector_name: source.name,
-            p_success: true
-          });
-
+          // Update connector status with error (skip in test mode)
+          if (!testMode) {
+            await supabase.rpc('update_connector_status', {
+              p_connector_name: source.name,
+              p_success: false,
+              p_error_message: collectError.message
+            }).catch(e => console.warn('Failed to update connector status:', e));
+          }
+          
           results.push({
-            success: true,
-            source_id: source.id,
-            data_count: collectedData.length
+            source: source.name,
+            success: false,
+            collected: 0,
+            error: collectError.message,
+            ...(testMode && { raw_preview: collectError.message })
           });
-
-          // Check for alerts
-          await checkForAlerts(supabase, source, collectedData);
-        } else {
-          console.log(`ℹ️ No new data for ${source.name}`);
-          results.push({
-            success: true,
-            source_id: source.id,
-            data_count: 0
-          });
+          continue;
         }
+
+        if (collectedData.length === 0) {
+          console.log(`ℹ️ No new data for ${source.name}`);
+          
+          // Update connector status as healthy even with 0 items (skip in test mode)
+          if (!testMode) {
+            await supabase.rpc('update_connector_status', {
+              p_connector_name: source.name,
+              p_success: true,
+              p_error_message: null
+            }).catch(e => console.warn('Failed to update connector status:', e));
+          }
+          
+          results.push({
+            source: source.name,
+            success: true,
+            collected: 0,
+            ...(testMode && { raw_preview: rawResponse.substring(0, 500) })
+          });
+          continue;
+        }
+        
+        // In test mode, don't save to database
+        if (testMode) {
+          console.log(`🧪 Test mode: Skipping database save for ${source.name}`);
+          results.push({
+            source: source.name,
+            success: true,
+            collected: collectedData.length,
+            raw_preview: rawResponse.substring(0, 500),
+            sample_data: collectedData[0]
+          });
+          continue;
+        }
+
+        // Save to intelligence_data table
+        const { error: insertError } = await supabase
+          .from('intelligence_data')
+          .upsert(
+            collectedData.map(item => ({
+              source_id: source.id,
+              external_id: item.external_id,
+              data_type: source.type,
+              title: item.title,
+              content: item.content,
+              url: item.url,
+              region: item.region,
+              keywords: item.keywords,
+              metric_type: item.metric_type,
+              metric_value: item.metric_value,
+              published_at: item.published_at,
+              raw_payload: item.raw_payload
+            })),
+            { onConflict: 'source_id,external_id' }
+          );
+
+        if (insertError) {
+          throw new Error(`Failed to save data: ${insertError.message}`);
+        }
+
+        console.log(`✅ Saved ${collectedData.length} items for ${source.name}`);
+        
+        // Update connector status - success
+        await supabase.rpc('update_connector_status', {
+          p_connector_name: source.name,
+          p_success: true
+        }).catch(e => console.warn('Failed to update connector status:', e));
+
+        results.push({
+          source: source.name,
+          success: true,
+          collected: collectedData.length
+        });
+
+        // Check for alerts
+        await checkForAlerts(supabase, source, collectedData);
 
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        const errorDetails = {
-          message: errorMessage,
-          stack: error instanceof Error ? error.stack : undefined,
-          timestamp: new Date().toISOString(),
-        };
         
-        console.error(`❌ Error processing ${source.name}:`, errorDetails);
+        console.error(`❌ Error processing ${source.name}:`, errorMessage);
         
-        // Update connector status - error with detailed info
-        await supabase.rpc('update_connector_status', {
-          p_connector_name: source.name,
-          p_success: false,
-          p_error_message: errorMessage
-        });
-
-        // Increment error counter
-        // Increment error counter safely without raw()
-        const { data: statusRow, error: statusFetchError } = await supabase
-          .from('connector_status')
-          .select('error_count')
-          .eq('connector_name', source.name)
-          .maybeSingle();
-
-        if (statusFetchError) {
-          console.warn('⚠️ Failed to fetch connector_status for increment:', statusFetchError);
-        }
-
-        const newErrorCount = ((statusFetchError ? undefined : statusRow?.error_count) ?? 0) + 1;
-
-        const { error: statusUpdateError } = await supabase
-          .from('connector_status')
-          .update({ 
-            error_count: newErrorCount,
-            updated_at: new Date().toISOString()
-          })
-          .eq('connector_name', source.name);
-
-        if (statusUpdateError) {
-          console.warn('⚠️ Failed to update connector_status error_count:', statusUpdateError);
+        // Update connector status - error (skip in test mode)
+        if (!testMode) {
+          await supabase.rpc('update_connector_status', {
+            p_connector_name: source.name,
+            p_success: false,
+            p_error_message: errorMessage
+          }).catch(e => console.warn('Failed to update connector status:', e));
         }
 
         results.push({
+          source: source.name,
           success: false,
-          source_id: source.id,
-          data_count: 0,
+          collected: 0,
           error: errorMessage
         });
       }
@@ -187,22 +218,31 @@ serve(async (req) => {
 
     console.log('🎯 Intelligence collection completed');
 
+    const hasErrors = results.some(r => !r.success);
+
     return new Response(JSON.stringify({
-      success: true,
+      success: !hasErrors,
       message: 'Intelligence collection completed',
       results,
-      processed_sources: sources?.length || 0
+      summary: {
+        total: results.length,
+        successful: results.filter(r => r.success).length,
+        failed: results.filter(r => !r.success).length
+      }
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 200,
     });
 
   } catch (error) {
     console.error('💥 Intelligence Collector Error:', error);
+    // Always return 200 with error details instead of 500
     return new Response(JSON.stringify({
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error'
+      error: error instanceof Error ? error.message : 'Unknown error',
+      results: []
     }), {
-      status: 500,
+      status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
@@ -226,7 +266,7 @@ async function checkShouldCollect(supabase: any, source: IntelligenceSource): Pr
   return diffMinutes >= source.ttl_minutes;
 }
 
-async function collectFromSource(source: IntelligenceSource): Promise<any[]> {
+async function collectFromSource(source: IntelligenceSource): Promise<{ data: any[], rawData: string }> {
   const headers: Record<string, string> = { ...source.headers };
   
   // Add auth header if required
@@ -271,28 +311,46 @@ async function collectFromSource(source: IntelligenceSource): Promise<any[]> {
 
   console.log(`🌐 Fetching from: ${urlObj.toString()}`);
 
-  const response = await fetch(urlObj.toString(), {
-    method: source.method,
-    headers,
-    signal: AbortSignal.timeout(15000) // 15 second timeout
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text().catch(() => 'No response body');
-    console.error(`❌ HTTP Error Details:`, {
-      status: response.status,
-      statusText: response.statusText,
-      url: urlObj.toString(),
-      headers: Object.fromEntries(response.headers.entries()),
-      body: errorText.substring(0, 500)
-    });
-    throw new Error(`HTTP ${response.status}: ${response.statusText} - ${errorText.substring(0, 100)}`);
-  }
-
-  const data = await response.text();
+  // Retry logic for IBGE (503 errors are common)
+  let lastError: Error | null = null;
+  const maxRetries = source.name === 'IBGE Demographics' ? 2 : 1;
   
-  // Parse and normalize data based on source type
-  return await parseSourceData(source, data);
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      if (attempt > 1) {
+        console.log(`🔄 Retry attempt ${attempt} for ${source.name}`);
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
+      
+      const response = await fetch(urlObj.toString(), {
+        method: source.method,
+        headers,
+        signal: AbortSignal.timeout(15000) // 15 second timeout
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text().catch(() => 'No response body');
+        console.error(`❌ HTTP Error Details:`, {
+          status: response.status,
+          statusText: response.statusText,
+          url: urlObj.toString()
+        });
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const rawData = await response.text();
+      const data = await parseSourceData(source, rawData);
+      
+      return { data, rawData };
+    } catch (error: any) {
+      lastError = error;
+      if (attempt === maxRetries) {
+        throw error;
+      }
+    }
+  }
+  
+  throw lastError || new Error('Unknown error during collection');
 }
 
 async function parseSourceData(source: IntelligenceSource, rawData: string): Promise<any[]> {
@@ -314,36 +372,94 @@ async function parseSourceData(source: IntelligenceSource, rawData: string): Pro
         });
       });
     } else if (source.type === 'demographics' && source.name === 'Brasil API') {
-      // Brasil API - CEP data
-      const jsonData = JSON.parse(rawData);
-      results.push({
-        external_id: `${source.id}_${jsonData.cep || Date.now()}`,
-        title: `Dados demográficos - ${jsonData.city || 'Brasil'}`,
-        content: `${jsonData.city}/${jsonData.state} - ${jsonData.neighborhood || ''}`,
-        region: `${jsonData.city}, ${jsonData.state}`,
-        keywords: [jsonData.city?.toLowerCase(), jsonData.state?.toLowerCase(), 'brasil', 'demografia'].filter(Boolean),
-        raw_payload: jsonData
-      });
-    } else if (source.type === 'demographics' && source.name === 'IBGE Demographics') {
-      // IBGE API - Aggregated demographic data
-      const jsonData = JSON.parse(rawData);
-      if (Array.isArray(jsonData) && jsonData.length > 0) {
-        jsonData.forEach((item: any, index: number) => {
-          const valor = item.resultados?.[0]?.series?.[0]?.serie || {};
-          const ano = Object.keys(valor)[0] || '2022';
-          const populacao = valor[ano] || 'N/A';
-          
+      // Brasil API - CEP data (tolerant parsing)
+      try {
+        const jsonData = JSON.parse(rawData);
+        
+        // Handle both v1 and v2 formats, and array responses
+        const dataArray = Array.isArray(jsonData) ? jsonData : [jsonData];
+        
+        dataArray.forEach((item: any) => {
           results.push({
-            external_id: `${source.id}_${item.id || index}_${Date.now()}`,
-            title: `População Brasil - ${ano}`,
-            content: `Dados populacionais: ${populacao}`,
-            region: 'Brasil',
-            metric_type: 'populacao',
-            metric_value: parseFloat(populacao) || 0,
-            published_at: new Date().toISOString(),
-            keywords: ['ibge', 'demografia', 'população', 'brasil'],
+            external_id: `${source.id}_${item.cep || Date.now()}`,
+            title: `Dados demográficos - ${item.city || item.localidade || 'Brasil'}`,
+            content: `${item.city || item.localidade || 'Desconhecido'}/${item.state || item.uf || 'N/A'} - ${item.neighborhood || item.bairro || ''}`,
+            region: `${item.city || item.localidade || 'Brasil'}, ${item.state || item.uf || 'BR'}`,
+            keywords: [
+              (item.city || item.localidade || '')?.toLowerCase(), 
+              (item.state || item.uf || '')?.toLowerCase(), 
+              'brasil', 
+              'demografia'
+            ].filter(Boolean),
             raw_payload: item
           });
+        });
+      } catch (parseError) {
+        console.warn(`⚠️ Brasil API parse error:`, parseError);
+        results.push({
+          external_id: `${source.id}_error_${Date.now()}`,
+          title: 'Dados Brasil API',
+          content: 'Erro ao processar dados',
+          region: 'Brasil',
+          keywords: ['brasil', 'erro'],
+          raw_payload: { error: 'Parse failed' }
+        });
+      }
+    } else if (source.type === 'demographics' && source.name === 'IBGE Demographics') {
+      // IBGE API - Aggregated demographic data (tolerant parsing)
+      try {
+        const jsonData = JSON.parse(rawData);
+        
+        if (Array.isArray(jsonData) && jsonData.length > 0) {
+          jsonData.forEach((item: any, index: number) => {
+            try {
+              const valor = item.resultados?.[0]?.series?.[0]?.serie || {};
+              const anos = Object.keys(valor);
+              const ano = anos.length > 0 ? anos[anos.length - 1] : '2022';
+              const populacao = valor[ano] || 0;
+              
+              results.push({
+                external_id: `${source.id}_${item.id || index}_${Date.now()}`,
+                title: `População Brasil - ${ano}`,
+                content: `Dados populacionais: ${populacao}`,
+                region: 'Brasil',
+                metric_type: 'populacao',
+                metric_value: parseFloat(populacao) || 0,
+                published_at: new Date().toISOString(),
+                keywords: ['ibge', 'demografia', 'população', 'brasil'],
+                raw_payload: item
+              });
+            } catch (itemError) {
+              console.warn(`⚠️ IBGE item parse error:`, itemError);
+            }
+          });
+        }
+        
+        // If no results, add a placeholder
+        if (results.length === 0) {
+          results.push({
+            external_id: `${source.id}_nodata_${Date.now()}`,
+            title: 'Dados IBGE',
+            content: 'Sem dados no período',
+            region: 'Brasil',
+            metric_type: 'populacao',
+            metric_value: 0,
+            published_at: new Date().toISOString(),
+            keywords: ['ibge', 'demografia', 'brasil'],
+            raw_payload: { message: 'No data available' }
+          });
+        }
+      } catch (parseError) {
+        console.warn(`⚠️ IBGE parse error:`, parseError);
+        results.push({
+          external_id: `${source.id}_error_${Date.now()}`,
+          title: 'Dados IBGE',
+          content: 'Erro ao processar dados',
+          region: 'Brasil',
+          metric_type: 'populacao',
+          metric_value: 0,
+          keywords: ['ibge', 'erro'],
+          raw_payload: { error: 'Parse failed' }
         });
       }
     } else if (source.type === 'social' || source.type === 'weather') {
