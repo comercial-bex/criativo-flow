@@ -44,13 +44,21 @@ export function useClientDashboard(overrideClienteId?: string) {
     try {
       // Se tiver override de cliente (Admin visualizando como cliente)
       if (overrideClienteId) {
-        const { data: cliente } = await supabase
+        console.log('🔍 Admin override: buscando cliente', overrideClienteId);
+        
+        const { data: cliente, error } = await supabase
           .from('clientes')
           .select('id, nome')
           .eq('id', overrideClienteId)
           .single();
 
+        if (error) {
+          console.error('❌ Erro ao buscar cliente:', error);
+          return;
+        }
+
         if (cliente) {
+          console.log('✅ Cliente encontrado:', cliente.nome);
           setClientProfile({
             id: user.id,
             nome: user.email || 'Admin',
@@ -58,6 +66,8 @@ export function useClientDashboard(overrideClienteId?: string) {
             cliente_id: cliente.id,
             cliente_nome: cliente.nome
           });
+        } else {
+          console.warn('⚠️ Cliente não encontrado:', overrideClienteId);
         }
         return;
       }
@@ -90,8 +100,10 @@ export function useClientDashboard(overrideClienteId?: string) {
   };
 
   const fetchDashboardCounts = async () => {
-    // FASE 4: Correção - aceitar NULL em cliente_id temporariamente
-    if (!user) return;
+    if (!clientProfile?.cliente_id) {
+      console.warn('⚠️ fetchDashboardCounts: cliente_id não disponível');
+      return;
+    }
 
     try {
       // Planejamentos pendentes de aprovação
@@ -137,8 +149,10 @@ export function useClientDashboard(overrideClienteId?: string) {
   };
 
   const fetchTimeline = async () => {
-    // FASE 4: Correção - aceitar NULL em cliente_id temporariamente
-    if (!user) return;
+    if (!clientProfile?.cliente_id) {
+      console.warn('⚠️ fetchTimeline: cliente_id não disponível');
+      return;
+    }
 
     try {
       const agora = new Date();

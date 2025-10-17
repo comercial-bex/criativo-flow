@@ -78,7 +78,11 @@ export function ClientSelector({ onClientSelect, selectedClientId, showContext =
         </label>
         <Select 
           value={selectedClientId || "todos"} 
-          onValueChange={(value) => onClientSelect(value === "todos" ? null : value)}
+          onValueChange={(value) => {
+            const clienteId = value === "todos" ? null : value;
+            console.log('🔄 ClientSelector: selecionado', clienteId);
+            onClientSelect(clienteId);
+          }}
           disabled={loading}
         >
           <SelectTrigger className="w-full">

@@ -26,8 +26,21 @@ export default function PainelClienteV2() {
     : undefined;
 
   const { counts, timeline, clientProfile, loading } = useClientDashboard(adminSelectedClienteId);
-  const { metas } = useClientMetas(clientProfile?.cliente_id);
-  const { tickets } = useClientTickets(clientProfile?.cliente_id);
+  
+  // ✅ Log de debug
+  console.log('🎯 PainelV2 - Estado:', {
+    role,
+    adminSelectedClienteId,
+    loading,
+    hasClientProfile: !!clientProfile,
+    clienteId: clientProfile?.cliente_id,
+    clienteNome: clientProfile?.cliente_nome
+  });
+
+  // ✅ Garantir que só chama hooks quando tiver ID válido
+  const clienteIdSeguro = clientProfile?.cliente_id || null;
+  const { metas } = useClientMetas(clienteIdSeguro);
+  const { tickets } = useClientTickets(clienteIdSeguro);
   
   useRealtimeNotifications();
 
@@ -39,11 +52,32 @@ export default function PainelClienteV2() {
   // Obter tab atual da URL ou usar 'overview' como padrão
   const currentTab = searchParams.get('tab') || 'overview';
 
-  if (loading || !clientProfile?.cliente_id) {
+  if (loading) {
     return (
       <div className="p-6 space-y-6">
+        <div className="text-center space-y-2">
+          <p className="text-muted-foreground">Carregando dados do cliente...</p>
+        </div>
         <Skeleton className="h-12 w-full" />
         <Skeleton className="h-64 w-full" />
+      </div>
+    );
+  }
+
+  if (!clientProfile?.cliente_id) {
+    return (
+      <div className="p-6 text-center space-y-4">
+        <p className="text-red-600 font-semibold text-lg">❌ Cliente não encontrado</p>
+        <p className="text-muted-foreground">
+          {role === 'admin' 
+            ? 'Selecione um cliente válido no módulo "Visão Cliente"' 
+            : 'Seu perfil não está vinculado a um cliente'}
+        </p>
+        {role === 'admin' && (
+          <Button onClick={() => navigate('/admin/painel')}>
+            Voltar ao Painel Admin
+          </Button>
+        )}
       </div>
     );
   }
