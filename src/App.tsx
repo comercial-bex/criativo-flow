@@ -594,6 +594,12 @@ function App() {
                     </ProtectedRoute>
                   </SpecialistGuard>} />
                 
+                <Route path="/audiovisual/tarefas-unificadas" element={<SpecialistGuard>
+                    <ProtectedRoute module="audiovisual">
+                      <Layout><TarefasUnificadasAudiovisual /></Layout>
+                    </ProtectedRoute>
+                  </SpecialistGuard>} />
+                
                 <Route path="/audiovisual/projetos" element={<SpecialistGuard>
                     <ProtectedRoute module="audiovisual">
                       <Layout><AudiovisualProjetos /></Layout>

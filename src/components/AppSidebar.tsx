@@ -137,6 +137,7 @@ export function AppSidebar() {
       items: [
         { title: "Dashboard", url: "/audiovisual/dashboard", icon: Icons.Video },
         { title: "Minhas Tarefas", url: "/audiovisual/tarefas", icon: Icons.CheckSquare },
+        { title: "Tarefas Unificadas", url: "/audiovisual/tarefas-unificadas", icon: Icons.KanbanSquare },
         { title: "Captações", url: "/audiovisual/captacoes", icon: Icons.Camera },
         { title: "Projetos", url: "/audiovisual/projetos", icon: Icons.Film },
         { title: "Agenda Multidisciplinar", url: "/calendario", icon: Icons.CalendarClock },
