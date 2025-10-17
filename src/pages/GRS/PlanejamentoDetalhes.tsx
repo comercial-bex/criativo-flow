@@ -13,6 +13,8 @@ import { DetalhesPlano } from "@/components/DetalhesPlano";
 import { TarefasKanban } from "@/components/TarefasKanban";
 import PlanoEditorial from "@/components/PlanoEditorial";
 import { InstagramPreview } from "@/components/InstagramPreview";
+import { PlanejamentoEditorialWizard } from "@/components/PlanejamentoEditorialWizard";
+import { toast } from "sonner";
 
 
 interface Cliente {
@@ -58,6 +60,7 @@ export default function GRSPlanejamentoDetalhes() {
   const [activeTab, setActiveTab] = useState(tabFromQuery || 'plano-editorial');
   
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+  const [wizardOpen, setWizardOpen] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -66,34 +69,6 @@ export default function GRSPlanejamentoDetalhes() {
     }
   }, [id]);
 
-  // Auto-redirecionar para wizard se não houver conteúdo editorial
-  useEffect(() => {
-    const checkConteudoEditorial = async () => {
-      if (!id || !planejamento || loading) return;
-
-      try {
-        const { data: conteudo, error } = await supabase
-          .from('conteudo_editorial')
-          .select('id')
-          .eq('planejamento_id', id)
-          .maybeSingle();
-
-        if (error && error.code !== 'PGRST116') {
-          console.error('Erro ao verificar conteúdo editorial:', error);
-          return;
-        }
-
-        // Se não houver conteúdo editorial e não houver posts, redirecionar para wizard
-        if (!conteudo && posts.length === 0) {
-          navigate(`/grs/planejamento/${id}/bex-wizard`, { replace: true });
-        }
-      } catch (error) {
-        console.error('Erro ao verificar conteúdo editorial:', error);
-      }
-    };
-
-    checkConteudoEditorial();
-  }, [id, planejamento, posts, loading, navigate]);
 
   const fetchPlanejamento = async () => {
     try {
@@ -315,11 +290,11 @@ export default function GRSPlanejamentoDetalhes() {
               <div className="flex items-center justify-between">
                 <CardTitle>Plano Editorial BEX</CardTitle>
                 <Button 
-                  onClick={() => navigate(`/grs/planejamento/${planejamento.id}/bex-wizard`)}
+                  onClick={() => setWizardOpen(true)}
                   variant="default"
                 >
                   <Sparkles className="h-4 w-4 mr-2" />
-                  Iniciar/Editar BEX Wizard
+                  {posts.length > 0 ? 'Editar Wizard BEX' : 'Iniciar Wizard BEX'}
                 </Button>
               </div>
             </CardHeader>
@@ -348,6 +323,20 @@ export default function GRSPlanejamentoDetalhes() {
           </DialogContent>
         </Dialog>
       )}
+
+      {/* BEX Wizard Modal */}
+      <PlanejamentoEditorialWizard
+        open={wizardOpen}
+        onOpenChange={setWizardOpen}
+        clienteId={planejamento.clientes.id}
+        planejamentoId={id!}
+        onComplete={() => {
+          toast.success('Planejamento BEX concluído com sucesso!');
+          setWizardOpen(false);
+          fetchPosts();
+          setActiveTab('plano-editorial');
+        }}
+      />
     </div>
   );
 }
