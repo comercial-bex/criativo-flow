@@ -23,6 +23,8 @@ export function MonitorGrid() {
     testAll,
     isTestingAll,
     toggleMonitoring,
+    saveConnectionConfig,
+    isSavingConfig,
   } = useSystemMonitor();
 
   const filteredConnections = connections?.filter(conn => {
@@ -178,7 +180,11 @@ export function MonitorGrid() {
                 connection={conn}
                 onTest={() => testConnection(conn.id)}
                 onToggleMonitoring={(enabled) => toggleMonitoring({ id: conn.id, enabled })}
+                onSaveConfig={async (id, config) => {
+                  saveConnectionConfig({ connectionId: id, config });
+                }}
                 isTesting={isTestingConnection}
+                isSavingConfig={isSavingConfig}
               />
             ))}
           </div>

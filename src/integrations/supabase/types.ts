@@ -8867,6 +8867,7 @@ export type Database = {
       }
       system_connections: {
         Row: {
+          config: Json | null
           created_at: string | null
           deps: Json | null
           error_code: string | null
@@ -8883,6 +8884,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          config?: Json | null
           created_at?: string | null
           deps?: Json | null
           error_code?: string | null
@@ -8899,6 +8901,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          config?: Json | null
           created_at?: string | null
           deps?: Json | null
           error_code?: string | null

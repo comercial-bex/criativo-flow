@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -11,22 +12,29 @@ import {
   PlayCircle, 
   BookOpen,
   Pause,
+  Settings,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { ConnectionConfigDialog } from './ConnectionConfigDialog';
 
 interface ConnectionCardProps {
   connection: any;
   onTest: () => void;
   onToggleMonitoring: (enabled: boolean) => void;
+  onSaveConfig?: (connectionId: string, config: Record<string, any>) => Promise<void>;
   isTesting: boolean;
+  isSavingConfig?: boolean;
 }
 
 export function ConnectionCard({ 
   connection, 
   onTest, 
   onToggleMonitoring,
+  onSaveConfig,
   isTesting,
+  isSavingConfig = false,
 }: ConnectionCardProps) {
+  const [configDialogOpen, setConfigDialogOpen] = useState(false);
   const getStatusIcon = () => {
     if (!connection.monitoring_enabled) {
       return <Pause className="h-4 w-4 text-muted-foreground" />;
@@ -127,6 +135,16 @@ export function ConnectionCard({
           </div>
         )}
 
+        {/* Aviso de endpoint não configurado */}
+        {connection.group === 'api' && !connection.config?.endpoint && (
+          <div className="bg-amber-500/10 border border-amber-500/20 rounded-md p-2">
+            <p className="text-xs text-amber-600 dark:text-amber-500 flex items-center gap-1">
+              <AlertTriangle className="h-3 w-3" />
+              Endpoint não configurado
+            </p>
+          </div>
+        )}
+
         {/* Erro */}
         {connection.error_message && (
           <div className="bg-destructive/10 border border-destructive/20 rounded-md p-2">
@@ -138,6 +156,18 @@ export function ConnectionCard({
 
         {/* Ações */}
         <div className="flex flex-wrap gap-2">
+          {connection.group === 'api' && onSaveConfig && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setConfigDialogOpen(true)}
+              className="gap-1"
+            >
+              <Settings className="h-3 w-3" />
+              Configurar
+            </Button>
+          )}
+
           <Button
             size="sm"
             variant="outline"
@@ -172,6 +202,16 @@ export function ConnectionCard({
           </Button>
         </div>
       </div>
+
+      {onSaveConfig && (
+        <ConnectionConfigDialog
+          connection={connection}
+          open={configDialogOpen}
+          onOpenChange={setConfigDialogOpen}
+          onSaveConfig={onSaveConfig}
+          isSaving={isSavingConfig}
+        />
+      )}
     </Card>
   );
 }

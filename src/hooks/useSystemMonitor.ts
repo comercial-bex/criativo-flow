@@ -202,6 +202,24 @@ export const useSystemMonitor = () => {
     },
   });
 
+  // Salvar configuração de conexão
+  const saveConnectionConfig = useMutation({
+    mutationFn: async ({ connectionId, config }: { connectionId: string; config: Record<string, any> }) => {
+      const { error } = await supabase
+        .from('system_connections')
+        .update({ config })
+        .eq('id', connectionId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['system-connections'] });
+      smartToast.success('Configuração salva');
+    },
+    onError: (error: any) => {
+      smartToast.error('Erro ao salvar', error.message);
+    },
+  });
+
   return {
     connections,
     isLoading,
@@ -214,5 +232,7 @@ export const useSystemMonitor = () => {
     isTestingAll: testAll.isPending,
     toggleMonitoring: toggleMonitoring.mutate,
     acknowledgeEvent: acknowledgeEvent.mutate,
+    saveConnectionConfig: saveConnectionConfig.mutate,
+    isSavingConfig: saveConnectionConfig.isPending,
   };
 };
