@@ -55,6 +55,7 @@ const GRSRelatorios = lazy(() => import("./pages/GRS/Relatorios"));
 const GRSAgendamentoSocial = lazy(() => import("./pages/GRS/AgendamentoSocial"));
 const GRSPlanejamentoDetalhes = lazy(() => import("./pages/GRS/PlanejamentoDetalhes"));
 const GRSPlanejamentoEstrategico = lazy(() => import("./pages/GRS/PlanejamentoEstrategico"));
+const GRSPlanejamentoEditorialWizardPage = lazy(() => import("./pages/GRS/PlanejamentoEditorialWizardPage"));
 const GRSCalendarioEditorial = lazy(() => import("./pages/GRS/CalendarioEditorial"));
 const GRSAprovacoes = lazy(() => import("./pages/GRS/Aprovacoes"));
 const GRSClienteProjetos = lazy(() => import("./pages/GRS/ClienteProjetosFluxo"));
@@ -379,6 +380,10 @@ function App() {
                 
                 <Route path="/grs/planejamento/:id" element={<ProtectedRoute requiredRole="grs">
                     <Layout><GRSPlanejamentoDetalhes /></Layout>
+                  </ProtectedRoute>} />
+                
+                <Route path="/grs/planejamento/:id/bex-wizard" element={<ProtectedRoute requiredRole="grs">
+                    <Layout><GRSPlanejamentoEditorialWizardPage /></Layout>
                   </ProtectedRoute>} />
                 
                 <Route path="/grs/cliente" element={<ProtectedRoute requiredRole="grs">

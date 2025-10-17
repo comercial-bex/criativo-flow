@@ -31,7 +31,6 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { CriarProjetoAvulsoModal } from '@/components/CriarProjetoAvulsoModal';
 import { CreatePlanejamentoUnificadoModal } from '@/components/CreatePlanejamentoUnificadoModal';
-import { PlanejamentoEditorialWizard } from '@/components/PlanejamentoEditorialWizard';
 import { EditProjetoModal } from '@/components/EditProjetoModal';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { supabase } from "@/integrations/supabase/client";
@@ -80,8 +79,6 @@ export default function ClienteProjetos() {
   const [tipoModal, setTipoModal] = useState<'avulso' | 'campanha' | 'plano_editorial' | null>(null);
   const [projetoEdit, setProjetoEdit] = useState<Projeto | null>(null);
   const [projetoDeleteId, setProjetoDeleteId] = useState<string | null>(null);
-  const [showWizardBEX, setShowWizardBEX] = useState(false);
-  const [planejamentoBEXId, setPlanejamentoBEXId] = useState<string | null>(null);
 
   useEffect(() => {
     if (clienteId) {
@@ -223,13 +220,19 @@ export default function ClienteProjetos() {
                   titulo: `Planejamento BEX - ${new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}`,
                   mes_referencia: new Date().toISOString().split('T')[0],
                   status: 'rascunho',
+                  cliente_id: clienteId,
                 })
                 .select()
                 .single();
               
               if (!error && data) {
-                setPlanejamentoBEXId(data.id);
-                setShowWizardBEX(true);
+                navigate(`/grs/planejamento/${data.id}/bex-wizard`);
+              } else {
+                toast({
+                  title: "Erro ao criar planejamento",
+                  description: error?.message || "Tente novamente",
+                  variant: "destructive"
+                });
               }
             }}>
               <Sparkles className="w-4 h-4 mr-2 text-yellow-500" />
@@ -444,20 +447,6 @@ export default function ClienteProjetos() {
         gaming={false}
       />
 
-      {/* Wizard BEX */}
-      {showWizardBEX && planejamentoBEXId && (
-        <PlanejamentoEditorialWizard
-          open={showWizardBEX}
-          onOpenChange={setShowWizardBEX}
-          clienteId={clienteId!}
-          planejamentoId={planejamentoBEXId}
-          onComplete={() => {
-            fetchProjetos();
-            setShowWizardBEX(false);
-            setPlanejamentoBEXId(null);
-          }}
-        />
-      )}
     </div>
   );
 }

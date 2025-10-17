@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ArrowLeft, Calendar, Users, Clock, CheckCircle, XCircle, FileText, Send, Edit } from "lucide-react";
+import { ArrowLeft, Calendar, Users, Clock, CheckCircle, XCircle, FileText, Send, Edit, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { VisaoGeral } from "@/components/VisaoGeral";
 import { DetalhesPlano } from "@/components/DetalhesPlano";
@@ -275,6 +275,21 @@ export default function GRSPlanejamentoDetalhes() {
         </TabsContent>
 
         <TabsContent value="plano-editorial" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle>Plano Editorial BEX</CardTitle>
+                <Button 
+                  onClick={() => navigate(`/grs/planejamento/${planejamento.id}/bex-wizard`)}
+                  variant="default"
+                >
+                  <Sparkles className="h-4 w-4 mr-2" />
+                  Iniciar/Editar BEX Wizard
+                </Button>
+              </div>
+            </CardHeader>
+          </Card>
+          
           <PlanoEditorial
             planejamento={{
               id: planejamento.id,
