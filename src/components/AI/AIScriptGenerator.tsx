@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2, Sparkles } from 'lucide-react';
 import { useAIScriptGenerator } from '@/hooks/useAIScriptGenerator';
+import { toast } from 'sonner';
 
 interface AIScriptGeneratorProps {
   clienteId: string;
@@ -40,6 +41,9 @@ export function AIScriptGenerator({ clienteId, projetoId, onScriptGenerated, tri
 
     if (result && onScriptGenerated) {
       onScriptGenerated(result.roteiro, result.metadata);
+      toast.success('🎬 Roteiro gerado e inserido na mensagem!', {
+        description: 'Você pode editá-lo antes de enviar.'
+      });
       setOpen(false);
       resetForm();
     }
@@ -69,6 +73,10 @@ export function AIScriptGenerator({ clienteId, projetoId, onScriptGenerated, tri
             <Sparkles className="w-5 h-5 text-primary" />
             Gerar Roteiro com IA
           </DialogTitle>
+          <DialogDescription>
+            Preencha os detalhes do vídeo para gerar um roteiro completo com IA. 
+            O roteiro será inserido automaticamente na mensagem do chat.
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-4">

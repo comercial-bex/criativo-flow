@@ -4,7 +4,7 @@ import { Sparkles, FileText, Film, MessageSquare } from 'lucide-react';
 import { AIBriefingDialog } from '@/components/AI/AIBriefingDialog';
 import { AIScriptGenerator } from '@/components/AI/AIScriptGenerator';
 import { AIContentGenerator } from '@/components/AI/AIContentGenerator';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { TaskQuickLink } from './TaskQuickLink';
 
 interface AIQuickActionsProps {
   onActionSelect: (content: string) => void;
@@ -30,16 +30,20 @@ export function AIQuickActions({ onActionSelect }: AIQuickActionsProps) {
   };
 
   return (
-    <div className="border-b p-2 bg-muted/30">
-      <div className="flex items-center gap-2">
-        <Sparkles className="w-4 h-4 text-primary" />
-        <span className="text-sm font-medium text-muted-foreground">Ações IA:</span>
+    <div className="border rounded-lg p-3 bg-gradient-to-r from-primary/5 to-primary/10 border-primary/20">
+      <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex items-center gap-1.5">
+          <Sparkles className="w-4 h-4 text-primary animate-pulse" />
+          <span className="text-sm font-semibold text-primary">Ações Rápidas:</span>
+        </div>
         
-        <div className="flex gap-1">
+        <div className="flex gap-1 flex-wrap">
+          <TaskQuickLink onTaskSelect={onActionSelect} />
+          
           <AIBriefingDialog 
             onBriefingGenerated={handleBriefingGenerated}
             trigger={
-              <Button variant="ghost" size="sm" className="h-7">
+              <Button variant="ghost" size="sm" className="h-7 text-xs">
                 <FileText className="w-3 h-3 mr-1" />
                 Briefing
               </Button>
@@ -52,7 +56,7 @@ export function AIQuickActions({ onActionSelect }: AIQuickActionsProps) {
               projetoId={projetoId}
               onScriptGenerated={handleScriptGenerated}
               trigger={
-                <Button variant="ghost" size="sm" className="h-7">
+                <Button variant="ghost" size="sm" className="h-7 text-xs">
                   <Film className="w-3 h-3 mr-1" />
                   Roteiro
                 </Button>
@@ -63,7 +67,7 @@ export function AIQuickActions({ onActionSelect }: AIQuickActionsProps) {
           <AIContentGenerator
             onContentGenerated={handleContentGenerated}
             trigger={
-              <Button variant="ghost" size="sm" className="h-7">
+              <Button variant="ghost" size="sm" className="h-7 text-xs">
                 <MessageSquare className="w-3 h-3 mr-1" />
                 Conteúdo
               </Button>

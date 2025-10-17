@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -29,6 +29,10 @@ export function AIContentGenerator({ onContentGenerated, trigger }: AIContentGen
     const result = await generateContent(prompt, contentType);
     if (result && onContentGenerated) {
       onContentGenerated(result, contentType);
+      toast.success('✨ Conteúdo gerado e inserido na mensagem!', {
+        description: 'Você pode editá-lo antes de enviar.'
+      });
+      setOpen(false);
     }
   };
 
@@ -65,6 +69,10 @@ export function AIContentGenerator({ onContentGenerated, trigger }: AIContentGen
             <Sparkles className="w-5 h-5 text-primary" />
             Gerar Conteúdo com IA
           </DialogTitle>
+          <DialogDescription>
+            Escolha o tipo de conteúdo e descreva o que você precisa. 
+            O conteúdo será gerado com IA e inserido na mensagem do chat.
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
@@ -127,16 +135,21 @@ export function AIContentGenerator({ onContentGenerated, trigger }: AIContentGen
           <Button variant="outline" onClick={() => setOpen(false)}>
             Fechar
           </Button>
-          <Button onClick={handleGenerate} disabled={loading || !prompt.trim()}>
+          <Button 
+            onClick={handleGenerate} 
+            disabled={loading || !prompt.trim()}
+            className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
+            size="lg"
+          >
             {loading ? (
               <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Gerando...
+                <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                Gerando com IA...
               </>
             ) : (
               <>
-                <Sparkles className="w-4 h-4 mr-2" />
-                Gerar
+                <Sparkles className="w-5 h-5 mr-2" />
+                Gerar Conteúdo
               </>
             )}
           </Button>

@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Loader2, Sparkles } from 'lucide-react';
 import { useAIBriefingGenerator } from '@/hooks/useAIBriefingGenerator';
+import { toast } from 'sonner';
 
 interface AIBriefingDialogProps {
   onBriefingGenerated?: (briefing: any) => void;
@@ -23,6 +24,9 @@ export function AIBriefingDialog({ onBriefingGenerated, context, trigger }: AIBr
     const result = await generateBriefing(prompt, context || {});
     if (result && onBriefingGenerated) {
       onBriefingGenerated(result);
+      toast.success('✨ Briefing gerado e inserido na mensagem!', {
+        description: 'Você pode editá-lo antes de enviar.'
+      });
       setOpen(false);
       setPrompt('');
     }
@@ -44,6 +48,10 @@ export function AIBriefingDialog({ onBriefingGenerated, context, trigger }: AIBr
             <Sparkles className="w-5 h-5 text-primary" />
             Gerar Briefing com IA
           </DialogTitle>
+          <DialogDescription>
+            Preencha os campos abaixo para gerar um briefing personalizado com inteligência artificial. 
+            O resultado será inserido automaticamente na mensagem do chat.
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
@@ -71,15 +79,20 @@ export function AIBriefingDialog({ onBriefingGenerated, context, trigger }: AIBr
           <Button variant="outline" onClick={() => setOpen(false)}>
             Cancelar
           </Button>
-          <Button onClick={handleGenerate} disabled={loading || !prompt.trim()}>
+          <Button 
+            onClick={handleGenerate} 
+            disabled={loading || !prompt.trim()}
+            className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
+            size="lg"
+          >
             {loading ? (
               <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Gerando...
+                <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                Gerando com IA...
               </>
             ) : (
               <>
-                <Sparkles className="w-4 h-4 mr-2" />
+                <Sparkles className="w-5 h-5 mr-2" />
                 Gerar Briefing
               </>
             )}
