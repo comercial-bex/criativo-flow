@@ -13,14 +13,17 @@ export default function AuthCallback() {
         const clienteId = localStorage.getItem('oauth_client_id');
         const provider = localStorage.getItem('oauth_provider');
 
-        if (!clienteId || !provider) {
-          throw new Error('Contexto OAuth não encontrado');
-        }
-
         const { data: { session }, error } = await supabase.auth.getSession();
 
         if (error || !session) {
           throw new Error('Sessão não encontrada');
+        }
+
+        // Se não houver contexto de cliente, tratar como login normal via OAuth
+        if (!clienteId || !provider) {
+          toast.success('Login realizado com sucesso!');
+          navigate('/');
+          return;
         }
 
         const providerToken = session.provider_token;

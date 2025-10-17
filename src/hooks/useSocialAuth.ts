@@ -13,7 +13,7 @@ export function useSocialAuth() {
     setLoading(true);
     
     try {
-      const redirectUrl = `${window.location.origin}/auth`;
+      const redirectUrl = `${window.location.origin}/auth/callback`;
       
       let scopes = '';
       

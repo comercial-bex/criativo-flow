@@ -161,7 +161,7 @@ export function SocialConnectionWizard({
       // Iniciar OAuth (redirecionará para Facebook/Google)
       await signInWithProvider(selectedProvider);
       
-      // Nota: após OAuth, usuário voltará via /auth callback
+      // Nota: após OAuth, usuário voltará via /auth/callback
       // e o useEffect acima detectará o token automaticamente
       
     } catch (err: any) {

@@ -247,7 +247,8 @@ function App() {
                   <Suspense fallback={<FullScreenLoader />}>
                     <Routes>
                 {/* Public routes */}
-                <Route path="/auth" element={<AuthCallback />} />
+                <Route path="/auth" element={<PublicRoute><Auth /></PublicRoute>} />
+                <Route path="/auth/callback" element={<AuthCallback />} />
                 <Route path="/login" element={<PublicRoute><Auth /></PublicRoute>} />
                 <Route path="/signup" element={<PublicRoute><SignUp /></PublicRoute>} />
                 <Route path="/apresentacao/:link_hash" element={<ApresentacaoRelatorio />} />
