@@ -3,14 +3,20 @@ import { Button } from '@/components/ui/button';
 import { MessageSquare, X } from 'lucide-react';
 import { ChatSidebar } from './ChatSidebar';
 import { ChatWindow } from './ChatWindow';
+import { useAuth } from '@/hooks/useAuth';
 
 export function TeamChatWidget() {
+  const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [selectedThreadId, setSelectedThreadId] = useState<string | undefined>();
 
+  if (!user) {
+    return null;
+  }
+
   if (!isOpen) {
     return (
-      <div className="fixed bottom-6 right-6 z-50 animate-in slide-in-from-bottom-5">
+      <div className="fixed bottom-6 right-6 z-[60] animate-in slide-in-from-bottom-5">
         <Button
           size="lg"
           onClick={() => setIsOpen(true)}
@@ -26,7 +32,7 @@ export function TeamChatWidget() {
     <>
       {/* Backdrop blur */}
       <div 
-        className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 animate-in fade-in" 
+        className="fixed inset-0 bg-black/20 backdrop-blur-sm z-[55] animate-in fade-in" 
         onClick={() => {
           setIsOpen(false);
           setSelectedThreadId(undefined);
@@ -34,7 +40,7 @@ export function TeamChatWidget() {
       />
       
       {/* Chat Container */}
-      <div className="fixed bottom-6 md:right-6 inset-x-6 md:inset-x-auto z-50 flex flex-row-reverse gap-4 animate-in slide-in-from-bottom-5 slide-in-from-right-5">
+      <div className="fixed bottom-6 md:right-6 inset-x-6 md:inset-x-auto z-[60] flex flex-row-reverse gap-4 animate-in slide-in-from-bottom-5 slide-in-from-right-5">
         {/* Chat Window */}
         {selectedThreadId && (
           <div className="w-full md:w-[380px] lg:w-[450px] animate-in slide-in-from-right-3">

@@ -57,13 +57,41 @@ export function ChatSidebar({ onSelectThread, selectedThreadId }: ChatSidebarPro
         <ScrollArea className="flex-1">
           <div className="p-2 space-y-1">
             {loadingThreads ? (
-              <div className="text-center text-muted-foreground py-8">
-                Carregando...
+              <div className="flex items-center justify-center h-full py-12">
+                <div className="flex flex-col items-center gap-3">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                  <p className="text-sm text-muted-foreground">Carregando conversas...</p>
+                </div>
               </div>
             ) : filteredThreads.length === 0 ? (
-              <div className="text-center text-muted-foreground py-8">
-                <MessageSquare className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                <p className="text-sm">Nenhuma conversa encontrada</p>
+              <div className="flex flex-col items-center justify-center h-full py-8 px-4 text-center">
+                <MessageSquare className="h-12 w-12 text-muted-foreground/50 mb-4" />
+                {searchQuery ? (
+                  <>
+                    <h3 className="text-sm font-medium text-foreground mb-2">
+                      Nenhuma conversa encontrada
+                    </h3>
+                    <p className="text-xs text-muted-foreground">
+                      Tente buscar com outros termos
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <h3 className="text-sm font-medium text-foreground mb-2">
+                      Nenhuma conversa ainda
+                    </h3>
+                    <p className="text-xs text-muted-foreground mb-4">
+                      Quando alguém iniciar uma conversa com você, ela aparecerá aqui.
+                    </p>
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      onClick={() => setShowNewThread(true)}
+                    >
+                      Iniciar nova conversa
+                    </Button>
+                  </>
+                )}
               </div>
             ) : (
               filteredThreads.map((thread) => (
