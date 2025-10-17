@@ -298,7 +298,7 @@ Em breve você receberá para aprovação. Estamos criando algo incrível para s
                     <Button 
                       variant="outline" 
                       size="sm"
-                      onClick={() => navigate(`/grs/planejamento/${planejamento.id}`)}
+                      onClick={() => navigate(`/grs/planejamento/${planejamento.id}?tab=plano-editorial`)}
                     >
                       <Eye className="h-4 w-4 mr-2" />
                       Visualizar

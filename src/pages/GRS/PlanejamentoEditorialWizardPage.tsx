@@ -39,7 +39,7 @@ export default function PlanejamentoEditorialWizardPage() {
 
   const handleComplete = () => {
     toast.success('Planejamento BEX concluído com sucesso!');
-    navigate(`/grs/planejamento/${id}`);
+    navigate(`/grs/planejamento/${id}?tab=plano-editorial`);
   };
 
   if (loading) {

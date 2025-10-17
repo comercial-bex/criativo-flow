@@ -378,6 +378,9 @@ function App() {
                     <Layout><GRSPlanejamentos /></Layout>
                   </ProtectedRoute>} />
                 
+                {/* Redirect /grs/planejamento (sem ID) para lista */}
+                <Route path="/grs/planejamento" element={<Navigate to="/grs/planejamentos" replace />} />
+                
                 <Route path="/grs/planejamento/:id" element={<ProtectedRoute requiredRole="grs">
                     <Layout><GRSPlanejamentoDetalhes /></Layout>
                   </ProtectedRoute>} />

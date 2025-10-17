@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -47,10 +47,16 @@ interface Post {
 export default function GRSPlanejamentoDetalhes() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const [planejamento, setPlanejamento] = useState<Planejamento | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState("visao-geral");
+  
+  // Suportar query param ?tab=... ou defaultar para plano-editorial
+  const queryParams = new URLSearchParams(location.search);
+  const tabFromQuery = queryParams.get('tab');
+  const [activeTab, setActiveTab] = useState(tabFromQuery || 'plano-editorial');
+  
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
 
   useEffect(() => {
@@ -59,6 +65,35 @@ export default function GRSPlanejamentoDetalhes() {
       fetchPosts();
     }
   }, [id]);
+
+  // Auto-redirecionar para wizard se não houver conteúdo editorial
+  useEffect(() => {
+    const checkConteudoEditorial = async () => {
+      if (!id || !planejamento || loading) return;
+
+      try {
+        const { data: conteudo, error } = await supabase
+          .from('conteudo_editorial')
+          .select('id')
+          .eq('planejamento_id', id)
+          .maybeSingle();
+
+        if (error && error.code !== 'PGRST116') {
+          console.error('Erro ao verificar conteúdo editorial:', error);
+          return;
+        }
+
+        // Se não houver conteúdo editorial e não houver posts, redirecionar para wizard
+        if (!conteudo && posts.length === 0) {
+          navigate(`/grs/planejamento/${id}/bex-wizard`, { replace: true });
+        }
+      } catch (error) {
+        console.error('Erro ao verificar conteúdo editorial:', error);
+      }
+    };
+
+    checkConteudoEditorial();
+  }, [id, planejamento, posts, loading, navigate]);
 
   const fetchPlanejamento = async () => {
     try {
