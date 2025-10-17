@@ -31,6 +31,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { CriarProjetoAvulsoModal } from '@/components/CriarProjetoAvulsoModal';
 import { CreatePlanejamentoUnificadoModal } from '@/components/CreatePlanejamentoUnificadoModal';
+import { PlanejamentoEditorialWizard } from '@/components/PlanejamentoEditorialWizard';
 import { EditProjetoModal } from '@/components/EditProjetoModal';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { supabase } from "@/integrations/supabase/client";
@@ -40,6 +41,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useTutorial } from '@/hooks/useTutorial';
 import { TutorialButton } from '@/components/TutorialButton';
+import { Sparkles } from 'lucide-react';
 
 interface Cliente {
   id: string;
@@ -78,6 +80,8 @@ export default function ClienteProjetos() {
   const [tipoModal, setTipoModal] = useState<'avulso' | 'campanha' | 'plano_editorial' | null>(null);
   const [projetoEdit, setProjetoEdit] = useState<Projeto | null>(null);
   const [projetoDeleteId, setProjetoDeleteId] = useState<string | null>(null);
+  const [showWizardBEX, setShowWizardBEX] = useState(false);
+  const [planejamentoBEXId, setPlanejamentoBEXId] = useState<string | null>(null);
 
   useEffect(() => {
     if (clienteId) {
@@ -209,7 +213,27 @@ export default function ClienteProjetos() {
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => setTipoModal('plano_editorial')}>
               <Calendar className="w-4 h-4 mr-2 text-blue-500" />
-              Plano Editorial
+              Plano Editorial (Simples)
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={async () => {
+              // Criar planejamento vazio primeiro
+              const { data, error } = await supabase
+                .from('planejamentos')
+                .insert({
+                  titulo: `Planejamento BEX - ${new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}`,
+                  mes_referencia: new Date().toISOString().split('T')[0],
+                  status: 'rascunho',
+                })
+                .select()
+                .single();
+              
+              if (!error && data) {
+                setPlanejamentoBEXId(data.id);
+                setShowWizardBEX(true);
+              }
+            }}>
+              <Sparkles className="w-4 h-4 mr-2 text-yellow-500" />
+              Plano Editorial BEX (IA Completa)
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -419,6 +443,21 @@ export default function ClienteProjetos() {
         variant="destructive"
         gaming={false}
       />
+
+      {/* Wizard BEX */}
+      {showWizardBEX && planejamentoBEXId && (
+        <PlanejamentoEditorialWizard
+          open={showWizardBEX}
+          onOpenChange={setShowWizardBEX}
+          clienteId={clienteId!}
+          planejamentoId={planejamentoBEXId}
+          onComplete={() => {
+            fetchProjetos();
+            setShowWizardBEX(false);
+            setPlanejamentoBEXId(null);
+          }}
+        />
+      )}
     </div>
   );
 }
