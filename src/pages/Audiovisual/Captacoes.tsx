@@ -384,6 +384,25 @@ export default function CaptacoesPage() {
                       <Badge variant="outline" className={`${getStatusColor(captacao.status)} text-white`}>
                         {captacao.status}
                       </Badge>
+                      {(() => {
+                        const horasRestantes = Math.ceil(
+                          (new Date(captacao.data_captacao).getTime() - new Date().getTime()) / (1000 * 60 * 60)
+                        );
+                        if (horasRestantes > 0 && horasRestantes <= 24 && captacao.status === 'agendado') {
+                          return (
+                            <Badge variant="destructive" className="animate-pulse">
+                              🚨 CAPTAÇÃO EM {horasRestantes}H
+                            </Badge>
+                          );
+                        } else if (horasRestantes > 24 && horasRestantes <= 72 && captacao.status === 'agendado') {
+                          return (
+                            <Badge className="bg-yellow-500 text-white">
+                              ⏰ {Math.ceil(horasRestantes / 24)} dias
+                            </Badge>
+                          );
+                        }
+                        return null;
+                      })()}
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-muted-foreground">
@@ -408,6 +427,12 @@ export default function CaptacoesPage() {
 
                     {captacao.equipamentos && captacao.equipamentos.length > 0 && (
                       <div className="flex flex-wrap gap-1">
+                        <span className="text-xs font-medium text-muted-foreground mb-1 w-full">
+                          Equipamentos: 
+                          <Badge className="ml-2 bg-green-600 text-white text-xs">
+                            ✓ {captacao.equipamentos.length} CONFIRMADOS
+                          </Badge>
+                        </span>
                         {captacao.equipamentos.map((equipamento, index) => (
                           <Badge key={index} variant="secondary" className="text-xs">
                             {equipamento}

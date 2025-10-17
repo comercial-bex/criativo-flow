@@ -415,6 +415,15 @@ export default function ProjetosAudiovisuais() {
                           <Badge variant="outline" className={`${getStatusColor(projeto.status_review)} text-white`} data-tour="status-badge">
                             {projeto.status_review}
                           </Badge>
+                          {(() => {
+                            const diasCriacao = Math.ceil(
+                              (new Date().getTime() - new Date(projeto.created_at).getTime()) / (1000 * 60 * 60 * 24)
+                            );
+                            if (diasCriacao <= 3) {
+                              return <Badge className="bg-blue-500 text-white animate-pulse">NOVO</Badge>;
+                            }
+                            return null;
+                          })()}
                         </div>
 
                         <div className="space-y-2">
@@ -454,7 +463,14 @@ export default function ProjetosAudiovisuais() {
 
                         {projeto.feedback_cliente && (
                           <div className="bg-muted p-3 rounded-md">
-                            <p className="text-sm font-medium mb-1">Feedback do Cliente:</p>
+                            <p className="text-sm font-medium mb-1 flex items-center gap-2">
+                              💬 Feedback do Cliente:
+                              {projeto.status_review === 'review' && (
+                                <Badge className="bg-orange-500 text-white text-xs">
+                                  AGUARDANDO REVISÃO
+                                </Badge>
+                              )}
+                            </p>
                             <p className="text-sm text-muted-foreground">{projeto.feedback_cliente}</p>
                           </div>
                         )}

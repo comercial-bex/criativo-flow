@@ -8,7 +8,7 @@ import { UniversalKanbanBoard } from '@/components/UniversalKanbanBoard';
 import { TaskDetailsModal } from '@/components/TaskDetailsModal';
 import { CreateTaskModal } from '@/components/CreateTaskModal';
 import { useToast } from '@/hooks/use-toast';
-import { sanitizeTaskPayload } from '@/utils/tarefaUtils';
+import { sanitizeTaskPayload, calcularStatusPrazo } from '@/utils/tarefaUtils';
 
 // Interface para tarefas do Audiovisual
 interface AudiovisualTask {
@@ -190,9 +190,16 @@ const TarefasUnificadasAudiovisual: React.FC = () => {
     total: tasks.length,
     emAndamento: tasks.filter(t => ['pre_producao', 'gravacao', 'pos_producao'].includes(t.status)).length,
     revisao: tasks.filter(t => t.status === 'pos_producao').length,
-    atrasadas: tasks.filter(t => 
-      t.data_prazo && new Date(t.data_prazo) < new Date() && t.status !== 'entregue'
-    ).length
+    atrasadas: tasks.filter(t => {
+      if (!t.data_prazo || t.status === 'entregue') return false;
+      const { status } = calcularStatusPrazo(t.data_prazo);
+      return status === 'vermelho';
+    }).length,
+    urgentes: tasks.filter(t => {
+      if (!t.data_prazo || t.status === 'entregue') return false;
+      const { status, timeRemaining } = calcularStatusPrazo(t.data_prazo);
+      return status === 'amarelo' && timeRemaining && timeRemaining.total_seconds <= 86400;
+    }).length
   };
 
   if (loading) {
@@ -227,7 +234,7 @@ const TarefasUnificadasAudiovisual: React.FC = () => {
       </div>
 
       {/* Cards de Estatísticas */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total de Tarefas</CardTitle>
@@ -265,6 +272,17 @@ const TarefasUnificadasAudiovisual: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-red-600">{stats.atrasadas}</div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Urgentes (≤24h)</CardTitle>
+            <AlertTriangle className="h-4 w-4 text-yellow-600 animate-pulse" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-yellow-600">{stats.urgentes}</div>
+            <p className="text-xs text-muted-foreground">deadline próximo</p>
           </CardContent>
         </Card>
       </div>

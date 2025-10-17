@@ -13,6 +13,7 @@ import { GamificationWidget } from "@/components/GamificationWidget";
 import { useTutorial } from "@/hooks/useTutorial";
 import { TutorialButton } from "@/components/TutorialButton";
 import { SecaoProdutividade } from "@/components/Produtividade/SecaoProdutividade";
+import { useToast } from "@/hooks/use-toast";
 
 interface AudiovisualMeta {
   id: string;
@@ -44,10 +45,12 @@ interface CaptacaoAgenda {
 export default function AudiovisualDashboard() {
   const { user } = useAuth();
   const { role } = useUserRole();
+  const { toast } = useToast();
   const [metas, setMetas] = useState<AudiovisualMeta | null>(null);
   const [projetos, setProjetos] = useState<ProjetoAudiovisual[]>([]);
   const [captacoes, setCaptacoes] = useState<CaptacaoAgenda[]>([]);
   const [loading, setLoading] = useState(true);
+  const [hasSeenWelcome, setHasSeenWelcome] = useState(false);
   const { startTutorial, hasSeenTutorial, isActive } = useTutorial('audiovisual-dashboard');
 
   useEffect(() => {
@@ -91,6 +94,17 @@ export default function AudiovisualDashboard() {
         .limit(3);
 
       setCaptacoes(captacoesData || []);
+
+      // Toast de boas-vindas com KPIs
+      if (metasData && !hasSeenWelcome) {
+        const progressoProjetos = metasData ? (metasData.projetos_concluidos / metasData.meta_projetos) * 100 : 0;
+        toast({
+          title: "🎬 Bem-vindo ao Dashboard Audiovisual!",
+          description: `Você está com ${progressoProjetos.toFixed(0)}% da meta de projetos concluída este mês.`,
+          duration: 5000,
+        });
+        setHasSeenWelcome(true);
+      }
 
     } catch (error) {
       console.error('Erro ao carregar dados do dashboard:', error);
