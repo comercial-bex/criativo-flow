@@ -22,6 +22,7 @@ import Auth from "./pages/Auth";
 import SignUp from "./pages/SignUp";
 import NotFound from "./pages/NotFound";
 import Unauthorized from "./pages/Unauthorized";
+import AuthCallback from "./pages/AuthCallback";
 
 // Lazy-loaded pages (code-splitting)
 const Index = lazy(() => import("./pages/Index"));
@@ -245,7 +246,8 @@ function App() {
                   <Suspense fallback={<FullScreenLoader />}>
                     <Routes>
                 {/* Public routes */}
-                <Route path="/auth" element={<PublicRoute><Auth /></PublicRoute>} />
+                <Route path="/auth" element={<AuthCallback />} />
+                <Route path="/login" element={<PublicRoute><Auth /></PublicRoute>} />
                 <Route path="/signup" element={<PublicRoute><SignUp /></PublicRoute>} />
                 <Route path="/apresentacao/:link_hash" element={<ApresentacaoRelatorio />} />
 

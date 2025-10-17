@@ -6,6 +6,24 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+async function fetchFacebookAccounts(accessToken: string) {
+  const response = await fetch(
+    `https://graph.facebook.com/v18.0/me/accounts?access_token=${accessToken}&fields=id,name,instagram_business_account{id,name,username},category,tasks`
+  );
+  
+  if (!response.ok) {
+    throw new Error('Erro ao buscar páginas do Facebook');
+  }
+
+  const data = await response.json();
+  return data.data || [];
+}
+
+async function fetchGoogleBusinessAccounts(accessToken: string) {
+  // TODO: Implementar chamada à API Google Business Profile
+  return [];
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -22,9 +40,65 @@ serve(async (req) => {
       throw new Error('Autorização necessária');
     }
 
-    const { provider, accountsData } = await req.json();
+    const { provider, accountsData, accessToken, action } = await req.json();
 
-    console.log('🔍 Validando contas sociais:', { provider, accounts: accountsData?.length });
+    console.log('🔍 Validando contas sociais:', { provider, accounts: accountsData?.length, action });
+
+    // Listar contas reais via API
+    if (action === 'list_accounts') {
+      let accounts = [];
+      
+      if (provider === 'facebook' || provider === 'instagram') {
+        accounts = await fetchFacebookAccounts(accessToken);
+      } else if (provider === 'google') {
+        accounts = await fetchGoogleBusinessAccounts(accessToken);
+      }
+
+      // Validar cada conta
+      const validatedAccounts = [];
+
+      for (const account of accounts) {
+        const isBusiness = account.account_type === 'BUSINESS' || 
+                          account.category !== undefined ||
+                          account.instagram_business_account !== undefined;
+
+        const hasFacebookPage = provider === 'instagram' 
+          ? account.connected_facebook_page !== undefined
+          : true;
+
+        const isInBusinessManager = account.business_account_id !== undefined;
+
+        const hasAdminAccess = account.tasks?.includes('MANAGE') || 
+                               account.tasks?.includes('ADVERTISE') ||
+                               account.role === 'admin' ||
+                               account.role === 'editor';
+
+        const validation = {
+          id: account.id,
+          name: account.name || account.username,
+          accountType: provider === 'instagram' && account.instagram_business_account ? 'business' : 'page',
+          isValid: isBusiness && hasFacebookPage && hasAdminAccess,
+          instagramAccount: account.instagram_business_account || null,
+          accessToken: accessToken,
+          missingRequirements: []
+        };
+
+        if (!isBusiness) validation.missingRequirements.push('Conta precisa ser Comercial');
+        if (!hasFacebookPage && provider === 'instagram') validation.missingRequirements.push('Instagram precisa estar vinculado a Página do Facebook');
+        if (!hasAdminAccess) validation.missingRequirements.push('Usuário precisa ser Admin ou Editor da conta');
+
+        validatedAccounts.push(validation);
+      }
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          accounts: validatedAccounts,
+          validAccounts: validatedAccounts.filter(a => a.isValid)
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     // Validações específicas por provider
     const validatedAccounts = [];

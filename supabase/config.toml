@@ -100,3 +100,6 @@ verify_jwt = true
 
 [functions.monitor-chat-assistant]
 verify_jwt = false
+
+[functions.validate-social-account]
+verify_jwt = false

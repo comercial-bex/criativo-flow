@@ -93,9 +93,133 @@ export function useSocialAuth() {
     }
   }, [signInWithProvider, clienteId]);
 
+  // Validar pré-requisitos antes do OAuth
+  const validateAccountRequirements = useCallback(async (provider: SocialProvider) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('validate-social-account', {
+        body: { 
+          provider,
+          action: 'check_requirements'
+        }
+      });
+
+      if (error) throw error;
+
+      return {
+        success: data.valid,
+        requirements: data.requirements || [],
+        message: data.message
+      };
+    } catch (error: any) {
+      console.error('Erro ao validar requisitos:', error);
+      return {
+        success: false,
+        requirements: [],
+        message: 'Erro ao validar requisitos'
+      };
+    }
+  }, []);
+
+  // Buscar contas disponíveis após OAuth
+  const fetchAvailableAccounts = useCallback(async (
+    provider: SocialProvider,
+    accessToken: string
+  ) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('validate-social-account', {
+        body: {
+          provider,
+          accessToken,
+          action: 'list_accounts'
+        }
+      });
+
+      if (error) throw error;
+
+      return {
+        success: true,
+        accounts: data.accounts || [],
+        validAccounts: data.validAccounts || []
+      };
+    } catch (error: any) {
+      console.error('Erro ao buscar contas:', error);
+      return {
+        success: false,
+        accounts: [],
+        validAccounts: []
+      };
+    }
+  }, []);
+
+  // Conectar múltiplas contas de uma vez
+  const connectMultipleAccounts = useCallback(async (
+    accounts: Array<{
+      provider: string;
+      accountId: string;
+      accountName: string;
+      accessToken: string;
+      accountType?: string;
+    }>
+  ) => {
+    if (!clienteId) {
+      toast.error('Cliente não selecionado');
+      return { success: false, connectedCount: 0 };
+    }
+
+    let connectedCount = 0;
+    const errors: string[] = [];
+
+    for (const account of accounts) {
+      try {
+        const { error: insertError } = await supabase
+          .from('social_integrations_cliente')
+          .insert({
+            cliente_id: clienteId,
+            provider: account.provider,
+            account_id: account.accountId,
+            account_name: account.accountName,
+            provider_user_id: account.accountId,
+            access_token: account.accessToken,
+            is_active: true
+          });
+
+        if (insertError) throw insertError;
+
+        await supabase.from('social_connection_logs').insert({
+          cliente_id: clienteId,
+          action: 'connected',
+          provider: account.provider,
+          metadata: {
+            account_id: account.accountId,
+            account_name: account.accountName,
+            account_type: account.accountType
+          }
+        });
+
+        connectedCount++;
+      } catch (error: any) {
+        console.error(`Erro ao conectar ${account.accountName}:`, error);
+        errors.push(`${account.accountName}: ${error.message}`);
+      }
+    }
+
+    if (connectedCount > 0) {
+      toast.success(`${connectedCount} conta(s) conectada(s) com sucesso!`);
+    }
+
+    if (errors.length > 0) {
+      toast.error(`Erros: ${errors.join(', ')}`);
+    }
+
+    return { success: connectedCount > 0, connectedCount };
+  }, [clienteId]);
+
   return {
     loading,
     signInWithProvider,
-    connectSocialAccount
+    connectSocialAccount,
+    validateAccountRequirements,
+    fetchAvailableAccounts,
+    connectMultipleAccounts
   };
 }

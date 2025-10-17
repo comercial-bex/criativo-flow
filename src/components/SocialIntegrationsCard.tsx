@@ -7,6 +7,7 @@ import { useSocialAuth } from "@/hooks/useSocialAuth";
 import { useClientContext } from "@/hooks/useClientContext";
 import { OAuthStatusIndicator } from "@/components/OAuthStatusIndicator";
 import { IntegrationMetricsDialog } from "@/components/SocialIntegrations/IntegrationMetricsDialog";
+import { SocialConnectionWizard } from "@/components/SocialConnectionWizard";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -47,6 +48,8 @@ export function SocialIntegrationsCard({ clienteId }: SocialIntegrationsCardProp
     accountName: string;
     provider: string;
   } | null>(null);
+  const [wizardOpen, setWizardOpen] = useState(false);
+  const [wizardProvider, setWizardProvider] = useState<'facebook' | 'instagram' | 'google' | null>(null);
 
   const availableProviders = ['facebook', 'google', 'instagram'] as const;
 
@@ -68,6 +71,11 @@ export function SocialIntegrationsCard({ clienteId }: SocialIntegrationsCardProp
   const handleConfigureProvider = (provider: string) => {
     const supabaseUrl = `https://supabase.com/dashboard/project/xvpqgwbktpfodbuhwqhh/auth/providers`;
     window.open(supabaseUrl, '_blank');
+  };
+
+  const handleConnect = (provider: 'facebook' | 'google' | 'instagram') => {
+    setWizardProvider(provider);
+    setWizardOpen(true);
   };
 
   if (!targetClienteId) {
@@ -228,7 +236,7 @@ export function SocialIntegrationsCard({ clienteId }: SocialIntegrationsCardProp
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => connectSocialAccount(provider)}
+                      onClick={() => handleConnect(provider)}
                       disabled={connectLoading}
                     >
                       {connectLoading ? 'Conectando...' : (connectedAccounts.length > 0 ? 'Adicionar Conta' : 'Conectar')}
@@ -261,6 +269,13 @@ export function SocialIntegrationsCard({ clienteId }: SocialIntegrationsCardProp
           onOpenChange={setMetricsDialogOpen}
         />
       )}
+
+      {/* Social Connection Wizard */}
+      <SocialConnectionWizard
+        open={wizardOpen}
+        onOpenChange={setWizardOpen}
+        clienteId={targetClienteId}
+      />
     </Card>
   );
 }

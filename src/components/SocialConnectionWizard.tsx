@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { useSocialAuth } from '@/hooks/useSocialAuth';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 
 type WizardStep = 'prerequisites' | 'provider' | 'oauth' | 'accounts' | 'success';
 type SocialProvider = 'facebook' | 'instagram' | 'google';
@@ -26,14 +27,16 @@ interface AvailableAccount {
   id: string;
   name: string;
   username?: string;
+  accountType?: string;
   isValid: boolean;
-  checks: {
+  checks?: {
     isBusiness?: boolean;
     hasFacebookPage?: boolean;
     isInBusinessManager?: boolean;
     hasAdminAccess?: boolean;
   };
   missingRequirements: string[];
+  accessToken?: string;
 }
 
 interface SocialConnectionWizardProps {
@@ -55,7 +58,7 @@ export function SocialConnectionWizard({
   const [isValidating, setIsValidating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const { loading, connectSocialAccount } = useSocialAuth();
+  const { loading, signInWithProvider, fetchAvailableAccounts, connectMultipleAccounts } = useSocialAuth();
 
   // Pré-requisitos por provider
   const getPrerequisites = (provider: SocialProvider): Prerequisite[] => {
@@ -121,64 +124,62 @@ export function SocialConnectionWizard({
   const handleOAuthStart = async () => {
     if (!selectedProvider) return;
     
-    try {
-      setError(null);
-      await connectSocialAccount(selectedProvider);
-      // OAuth redirecionará e retornará com accounts data
-      // Simular recebimento de dados (em prod viria do callback)
-      handleOAuthCallback([
-        {
-          id: '123456',
-          name: 'Minha Empresa',
-          username: '@minhaempresa',
-          account_type: 'BUSINESS',
-          business_account_id: 'bm_123',
-          tasks: ['MANAGE', 'ADVERTISE'],
-          role: 'admin',
-          connected_facebook_page: { id: 'page_123', name: 'Página Facebook' }
-        }
-      ]);
-    } catch (err: any) {
-      setError(err.message || 'Erro ao conectar');
-    }
-  };
-
-  const handleOAuthCallback = async (accountsData: any[]) => {
-    if (!selectedProvider) return;
-
     setIsValidating(true);
     try {
-      // Validar contas via edge function
-      const validated = accountsData.map(acc => ({
-        id: acc.id,
-        name: acc.name,
-        username: acc.username,
-        isValid: acc.account_type === 'BUSINESS' && 
-                 acc.connected_facebook_page !== undefined &&
-                 acc.business_account_id !== undefined &&
-                 (acc.tasks?.includes('MANAGE') || acc.role === 'admin'),
-        checks: {
-          isBusiness: acc.account_type === 'BUSINESS',
-          hasFacebookPage: acc.connected_facebook_page !== undefined,
-          isInBusinessManager: acc.business_account_id !== undefined,
-          hasAdminAccess: acc.tasks?.includes('MANAGE') || acc.role === 'admin'
-        },
-        missingRequirements: []
-      }));
+      setError(null);
+      const token = sessionStorage.getItem('social_access_token');
+      
+      if (!token) {
+        await signInWithProvider(selectedProvider);
+        return;
+      }
 
-      setAvailableAccounts(validated);
+      const { accounts, validAccounts } = await fetchAvailableAccounts(
+        selectedProvider,
+        token
+      );
+
+      setAvailableAccounts(validAccounts);
       setCurrentStep('accounts');
     } catch (err: any) {
-      setError(err.message);
+      setError(err.message || 'Erro ao buscar contas');
+      toast.error('Erro ao buscar contas disponíveis');
     } finally {
       setIsValidating(false);
     }
   };
 
   const handleConnectSelected = async () => {
-    // TODO: Salvar contas selecionadas em social_integrations_cliente
-    // TODO: Criar logs em social_connection_logs
-    setCurrentStep('success');
+    if (!selectedProvider) return;
+    
+    setIsValidating(true);
+    try {
+      const token = sessionStorage.getItem('social_access_token') || '';
+      const accountsToConnect = availableAccounts
+        .filter(acc => selectedAccountIds.includes(acc.id))
+        .map(acc => ({
+          provider: selectedProvider,
+          accountId: acc.id,
+          accountName: acc.name,
+          accessToken: token,
+          accountType: acc.accountType
+        }));
+
+      const result = await connectMultipleAccounts(accountsToConnect);
+      
+      if (result.success) {
+        sessionStorage.removeItem('social_access_token');
+        sessionStorage.removeItem('social_provider');
+        setCurrentStep('success');
+      } else {
+        toast.error('Erro ao conectar contas');
+      }
+    } catch (err: any) {
+      setError(err.message);
+      toast.error('Erro ao conectar contas');
+    } finally {
+      setIsValidating(false);
+    }
   };
 
   return (
