@@ -385,6 +385,11 @@ function App() {
                     <Layout><GRSPlanejamentoDetalhes /></Layout>
                   </ProtectedRoute>} />
                 
+                {/* Alias: /grs/cliente/:clienteId/planejamento/:id */}
+                <Route path="/grs/cliente/:clienteId/planejamento/:id" element={<ProtectedRoute requiredRole="grs">
+                    <Layout><GRSPlanejamentoDetalhes /></Layout>
+                  </ProtectedRoute>} />
+                
                 <Route path="/grs/planejamento/:id/bex-wizard" element={<ProtectedRoute requiredRole="grs">
                     <Layout><GRSPlanejamentoEditorialWizardPage /></Layout>
                   </ProtectedRoute>} />

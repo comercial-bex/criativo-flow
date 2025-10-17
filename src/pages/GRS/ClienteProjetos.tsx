@@ -264,6 +264,11 @@ export default function ClienteProjetos() {
             fetchProjetos();
             setTipoModal(null);
           }}
+          onCreated={(planejamentoId, clientId) => {
+            // Navegar automaticamente para a estrutura BEX do planejamento
+            navigate(`/grs/cliente/${clientId}/planejamento/${planejamentoId}?tab=plano-editorial`);
+            setTipoModal(null);
+          }}
         />
       )}
 

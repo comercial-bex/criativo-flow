@@ -20,6 +20,7 @@ interface CreatePlanejamentoUnificadoModalProps {
   tipoInicial?: 'estrategico' | 'mensal' | 'campanha';
   trigger?: React.ReactNode;
   onSuccess?: () => void;
+  onCreated?: (planejamentoId: string, clienteId: string) => void;
 }
 
 type TipoPlano = 'estrategico' | 'mensal' | 'campanha';
@@ -31,7 +32,8 @@ export function CreatePlanejamentoUnificadoModal({
   clienteId, 
   tipoInicial,
   trigger, 
-  onSuccess 
+  onSuccess,
+  onCreated 
 }: CreatePlanejamentoUnificadoModalProps) {
   const { createStrategicPlan, generateWithAI } = useStrategicPlans(clienteId);
   
@@ -170,6 +172,22 @@ export function CreatePlanejamentoUnificadoModal({
 
         if (error) throw error;
 
+        // Criar registro base em conteudo_editorial
+        const { error: conteudoError } = await supabase
+          .from('conteudo_editorial')
+          .insert({
+            planejamento_id: planejamento.id,
+            missao: '',
+            posicionamento: '',
+            persona: null,
+            frameworks_selecionados: [],
+            especialistas_selecionados: []
+          });
+
+        if (conteudoError) {
+          console.error('Erro ao criar conteúdo editorial base:', conteudoError);
+        }
+
         if (assinatura && gerarPostsAuto) {
           await gerarPostsAutomaticos(
             planejamento.id,
@@ -181,7 +199,12 @@ export function CreatePlanejamentoUnificadoModal({
           toast.success('📅 Planejamento mensal criado!', {
             description: `${assinatura.posts_mensais} posts gerados.`
           });
+        } else {
+          toast.success('📅 Planejamento mensal criado!');
         }
+
+        // Chamar callback onCreated para navegação automática
+        onCreated?.(planejamento.id, clienteSelecionado);
       } else if (tipoPlano === 'campanha') {
         // Salvar como projeto tipo campanha
         const { error } = await supabase
