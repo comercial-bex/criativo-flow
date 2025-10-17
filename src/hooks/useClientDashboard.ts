@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from './useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import type { Database } from '@/integrations/supabase/types';
@@ -51,8 +51,8 @@ export function useClientDashboard(overrideClienteId?: string) {
   const [projects, setProjects] = useState<ProjectWithTasks[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchClientProfile = async () => {
-    if (!user) return;
+  const fetchClientProfile = useCallback(async (): Promise<string | null> => {
+    if (!user) return null;
 
     try {
       // Se tiver override de cliente (Admin visualizando como cliente)
@@ -67,7 +67,7 @@ export function useClientDashboard(overrideClienteId?: string) {
 
         if (error) {
           console.error('❌ Erro ao buscar cliente:', error);
-          return;
+          return null;
         }
 
         if (cliente) {
@@ -79,10 +79,11 @@ export function useClientDashboard(overrideClienteId?: string) {
             cliente_id: cliente.id,
             cliente_nome: cliente.nome
           });
+          return cliente.id;
         } else {
           console.warn('⚠️ Cliente não encontrado:', overrideClienteId);
+          return null;
         }
-        return;
       }
 
       // Fluxo normal para usuários clientes
@@ -98,7 +99,7 @@ export function useClientDashboard(overrideClienteId?: string) {
         .eq('id', user.id)
         .single();
 
-      if (profile) {
+      if (profile?.cliente_id) {
         setClientProfile({
           id: profile.id,
           nome: profile.nome,
@@ -106,31 +107,30 @@ export function useClientDashboard(overrideClienteId?: string) {
           cliente_id: profile.cliente_id,
           cliente_nome: profile.clientes?.nome
         });
+        return profile.cliente_id;
       }
+      
+      return null;
     } catch (error) {
       console.error('Erro ao buscar perfil do cliente:', error);
+      return null;
     }
-  };
+  }, [user, overrideClienteId]);
 
-  const fetchDashboardCounts = async () => {
-    if (!clientProfile?.cliente_id) {
-      console.warn('⚠️ fetchDashboardCounts: cliente_id não disponível');
-      return;
-    }
-
+  const fetchDashboardCounts = async (clienteId: string) => {
     try {
       // Planejamentos pendentes de aprovação
       const { count: planejamentosCount } = await supabase
         .from('planejamentos')
         .select('*', { count: 'exact', head: true })
-        .eq('cliente_id', clientProfile.cliente_id)
+        .eq('cliente_id', clienteId)
         .eq('status', 'em_aprovacao_final');
 
       // Posts pendentes de aprovação - buscar planejamentos do cliente primeiro
       const { data: planejamentosCliente } = await supabase
         .from('planejamentos')
         .select('id')
-        .eq('cliente_id', clientProfile.cliente_id);
+        .eq('cliente_id', clienteId);
 
       const planejamentoIds = planejamentosCliente?.map(p => p.id) || [];
       
@@ -146,7 +146,7 @@ export function useClientDashboard(overrideClienteId?: string) {
       const { count: pagamentosCount } = await supabase
         .from('transacoes_financeiras')
         .select('*', { count: 'exact', head: true })
-        .eq('cliente_id', clientProfile.cliente_id)
+        .eq('cliente_id', clienteId)
         .eq('status', 'pendente')
         .lte('data_vencimento', dataLimite.toISOString().split('T')[0]);
 
@@ -161,18 +161,13 @@ export function useClientDashboard(overrideClienteId?: string) {
     }
   };
 
-  const fetchProjects = async () => {
-    if (!clientProfile?.cliente_id) {
-      console.warn('⚠️ fetchProjects: cliente_id não disponível');
-      return;
-    }
-
+  const fetchProjects = async (clienteId: string) => {
     try {
       // Buscar projetos do cliente
       const { data: projetos, error } = await supabase
         .from('projetos')
         .select('id, titulo, status, data_inicio, data_fim')
-        .eq('cliente_id', clientProfile.cliente_id)
+        .eq('cliente_id', clienteId)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -211,12 +206,7 @@ export function useClientDashboard(overrideClienteId?: string) {
     }
   };
 
-  const fetchTimeline = async () => {
-    if (!clientProfile?.cliente_id) {
-      console.warn('⚠️ fetchTimeline: cliente_id não disponível');
-      return;
-    }
-
+  const fetchTimeline = async (clienteId: string) => {
     try {
       const agora = new Date();
       const inicioMes = new Date(agora.getFullYear(), agora.getMonth(), 1);
@@ -232,7 +222,7 @@ export function useClientDashboard(overrideClienteId?: string) {
           created_at,
           planejamentos!inner(cliente_id)
         `)
-        .eq('planejamentos.cliente_id', clientProfile.cliente_id)
+        .eq('planejamentos.cliente_id', clienteId)
         .gte('data_postagem', inicioMes.toISOString().split('T')[0])
         .lte('data_postagem', fimMes.toISOString().split('T')[0])
         .order('data_postagem', { ascending: true });
@@ -241,7 +231,7 @@ export function useClientDashboard(overrideClienteId?: string) {
       const { data: eventos } = await supabase
         .from('eventos_agenda')
         .select('*')
-        .eq('cliente_id', clientProfile.cliente_id)
+        .eq('cliente_id', clienteId)
         .gte('data_inicio', inicioMes.toISOString())
         .lte('data_inicio', fimMes.toISOString())
         .order('data_inicio', { ascending: true });
@@ -290,29 +280,38 @@ export function useClientDashboard(overrideClienteId?: string) {
   };
 
   useEffect(() => {
-    if (user) {
-      fetchClientProfile();
-    }
-  }, [user, overrideClienteId]);
-
-  useEffect(() => {
-    if (clientProfile) {
-      Promise.all([
-        fetchDashboardCounts(),
-        fetchTimeline(),
-        fetchProjects()
-      ]).finally(() => {
+    const loadDashboard = async () => {
+      if (!user) {
         setLoading(false);
-      });
-    }
-  }, [clientProfile]);
+        return;
+      }
+
+      setLoading(true);
+      
+      const clienteId = await fetchClientProfile();
+      
+      if (clienteId) {
+        await Promise.all([
+          fetchDashboardCounts(clienteId),
+          fetchTimeline(clienteId),
+          fetchProjects(clienteId)
+        ]);
+      }
+      
+      setLoading(false);
+    };
+    
+    loadDashboard();
+  }, [user, overrideClienteId, fetchClientProfile]);
 
   const refresh = async () => {
+    if (!clientProfile?.cliente_id) return;
+    
     setLoading(true);
     await Promise.all([
-      fetchDashboardCounts(),
-      fetchTimeline(),
-      fetchProjects()
+      fetchDashboardCounts(clientProfile.cliente_id),
+      fetchTimeline(clientProfile.cliente_id),
+      fetchProjects(clientProfile.cliente_id)
     ]);
     setLoading(false);
   };
