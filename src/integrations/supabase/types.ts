@@ -8446,6 +8446,82 @@ export type Database = {
         }
         Relationships: []
       }
+      social_connection_logs: {
+        Row: {
+          action: string
+          cliente_id: string | null
+          created_at: string
+          id: string
+          integration_id: string | null
+          metadata: Json | null
+          provider: string
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          cliente_id?: string | null
+          created_at?: string
+          id?: string
+          integration_id?: string | null
+          metadata?: Json | null
+          provider: string
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          cliente_id?: string | null
+          created_at?: string
+          id?: string
+          integration_id?: string | null
+          metadata?: Json | null
+          provider?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "social_connection_logs_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "social_connection_logs_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "mv_grs_dashboard_metrics"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "social_connection_logs_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "vw_client_metrics"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "social_connection_logs_integration_id_fkey"
+            columns: ["integration_id"]
+            isOneToOne: false
+            referencedRelation: "social_integrations_cliente"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "social_connection_logs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "social_connection_logs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "vw_client_metrics"
+            referencedColumns: ["responsavel_id"]
+          },
+        ]
+      }
       social_integrations: {
         Row: {
           access_token: string
