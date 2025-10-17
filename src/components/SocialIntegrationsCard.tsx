@@ -1,11 +1,13 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Facebook, Mail, Instagram, AlertCircle } from "lucide-react";
+import { Facebook, Mail, Instagram, AlertCircle, BarChart3 } from "lucide-react";
 import { useSocialIntegrations } from "@/hooks/useSocialIntegrations";
 import { useSocialAuth } from "@/hooks/useSocialAuth";
 import { useClientContext } from "@/hooks/useClientContext";
 import { OAuthStatusIndicator } from "@/components/OAuthStatusIndicator";
+import { IntegrationMetricsDialog } from "@/components/SocialIntegrations/IntegrationMetricsDialog";
+import { useState } from "react";
 
 const providerIcons = {
   facebook: Facebook,
@@ -37,8 +39,23 @@ export function SocialIntegrationsCard({ clienteId }: SocialIntegrationsCardProp
   } = useSocialIntegrations(targetClienteId);
   
   const { connectSocialAccount, loading: connectLoading } = useSocialAuth();
+  const [metricsDialogOpen, setMetricsDialogOpen] = useState(false);
+  const [selectedIntegration, setSelectedIntegration] = useState<{
+    id: string;
+    accountName: string;
+    provider: string;
+  } | null>(null);
 
   const availableProviders = ['facebook', 'google', 'instagram'] as const;
+
+  const handleViewMetrics = (integration: any) => {
+    setSelectedIntegration({
+      id: integration.id,
+      accountName: integration.account_name || integration.provider_user_id,
+      provider: integration.provider,
+    });
+    setMetricsDialogOpen(true);
+  };
 
   const handleConfigureProvider = (provider: string) => {
     const supabaseUrl = `https://supabase.com/dashboard/project/xvpqgwbktpfodbuhwqhh/auth/providers`;
@@ -116,31 +133,45 @@ export function SocialIntegrationsCard({ clienteId }: SocialIntegrationsCardProp
                   return (
                     <div
                       key={integration.id}
-                      className="flex items-center justify-between p-3 border rounded-lg"
+                      className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors"
                     >
-                      <div className="flex items-center gap-3">
-                        {Icon && <Icon className="h-5 w-5" />}
-                        <div>
-                          <p className="font-medium">
-                            {providerLabels[integration.provider as keyof typeof providerLabels]}
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            {integration.account_name || integration.provider_user_id}
+                      <div className="flex items-center gap-3 flex-1">
+                        {Icon && <Icon className="h-5 w-5 flex-shrink-0" />}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <p className="font-semibold">
+                              {providerLabels[integration.provider as keyof typeof providerLabels]}
+                            </p>
+                            <Badge variant="secondary" className="bg-green-100 text-green-800">
+                              Ativo
+                            </Badge>
+                          </div>
+                          <p className="text-sm font-medium text-foreground">
+                            {integration.account_name || 'Sem nome'}
                           </p>
                           <p className="text-xs text-muted-foreground">
                             ID: {integration.account_id}
                           </p>
+                          <p className="text-xs text-muted-foreground">
+                            User ID: {integration.provider_user_id}
+                          </p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Badge variant="secondary" className="bg-green-100 text-green-800">
-                          Conectado
-                        </Badge>
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleViewMetrics(integration)}
+                          className="gap-2"
+                        >
+                          <BarChart3 className="h-4 w-4" />
+                          Ver Métricas
+                        </Button>
                         <Button
                           variant="outline"
                           size="sm"
                           onClick={() => disconnectIntegration(integration.id)}
-                          className="text-red-600 hover:text-red-700"
+                          className="text-destructive hover:text-destructive"
                         >
                           Desconectar
                         </Button>
@@ -201,6 +232,17 @@ export function SocialIntegrationsCard({ clienteId }: SocialIntegrationsCardProp
           </>
         )}
       </CardContent>
+
+      {/* Metrics Dialog */}
+      {selectedIntegration && (
+        <IntegrationMetricsDialog
+          integrationId={selectedIntegration.id}
+          accountName={selectedIntegration.accountName}
+          provider={selectedIntegration.provider}
+          open={metricsDialogOpen}
+          onOpenChange={setMetricsDialogOpen}
+        />
+      )}
     </Card>
   );
 }
