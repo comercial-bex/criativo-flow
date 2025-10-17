@@ -212,7 +212,6 @@ function App() {
   // Signal React has mounted
   useEffect(() => {
     (window as any).__reactMounted = true;
-    console.log('✅ React mounted successfully');
     initAnalytics();
   }, []);
 

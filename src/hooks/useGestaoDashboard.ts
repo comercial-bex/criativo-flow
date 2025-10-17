@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { useFinancialAnalytics } from "./useFinancialAnalytics";
 import { useComercialAnalytics } from "./useComercialAnalytics";
+import { logger } from "@/lib/logger";
 
 interface DashboardFilters {
   startDate: string;
@@ -40,12 +41,18 @@ export function useGestaoDashboard(filters: DashboardFilters) {
 
   // Estado de carregamento geral
   const loading = useMemo(() => {
-    return loadingKPIs || 
+    const isLoading = loadingKPIs || 
            loadingReceitasDespesas || 
            loadingComposicaoReceitas || 
            loadingComposicaoDespesas || 
            loadingReceitaCliente ||
            loadingComercial;
+    
+    if (isLoading) {
+      logger.debug('Dashboard carregando dados', 'useGestaoDashboard');
+    }
+    
+    return isLoading;
   }, [
     loadingKPIs, 
     loadingReceitasDespesas, 

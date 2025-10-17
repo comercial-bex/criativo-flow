@@ -1,10 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { startOfMonth, subMonths, format } from 'date-fns';
+import { MODULE_QUERY_CONFIG } from '@/lib/queryConfig';
 
 export function useFolhaAnalytics(mesesRetroativos: number = 6) {
   const { data: evolucaoMensal, isLoading: loadingEvolucao } = useQuery({
     queryKey: ['folha-evolucao', mesesRetroativos],
+    ...MODULE_QUERY_CONFIG.folhaPonto,
     queryFn: async () => {
       const hoje = new Date();
       const dataInicio = startOfMonth(subMonths(hoje, mesesRetroativos));
@@ -28,6 +30,7 @@ export function useFolhaAnalytics(mesesRetroativos: number = 6) {
 
   const { data: composicaoEncargos, isLoading: loadingComposicao } = useQuery({
     queryKey: ['folha-composicao-encargos'],
+    ...MODULE_QUERY_CONFIG.folhaPonto,
     queryFn: async () => {
       // Buscar última folha processada
       const { data: ultimaFolha } = await supabase
@@ -71,6 +74,7 @@ export function useFolhaAnalytics(mesesRetroativos: number = 6) {
 
   const { data: taxaAbsenteismo, isLoading: loadingAbsenteismo } = useQuery({
     queryKey: ['folha-absenteismo'],
+    ...MODULE_QUERY_CONFIG.folhaPonto,
     queryFn: async () => {
       const hoje = new Date();
       const mesAtual = format(hoje, 'yyyy-MM-01');

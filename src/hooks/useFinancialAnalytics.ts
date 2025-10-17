@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { startOfMonth, endOfMonth, subMonths, format } from "date-fns";
+import { MODULE_QUERY_CONFIG } from "@/lib/queryConfig";
 
 export interface FinancialFilters {
   startDate: Date;
@@ -55,6 +56,7 @@ export function useFinancialAnalytics(filters: FinancialFilters) {
   // KPIs principais
   const { data: kpis, isLoading: loadingKPIs } = useQuery({
     queryKey: ["financial-kpis", filters],
+    ...MODULE_QUERY_CONFIG.metrics,
     queryFn: async () => {
       const { data: transacoes, error } = await supabase
         .from("transacoes_financeiras")

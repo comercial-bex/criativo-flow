@@ -1,67 +1,41 @@
-import React, { Component, ReactNode } from 'react';
-import { AlertTriangle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import React, { Component, ErrorInfo, ReactNode } from 'react';
+import { AlertTriangle, RefreshCw } from 'lucide-react';
+import { Button } from './ui/button';
+import { logger } from '@/lib/logger';
 
 interface Props {
   children: ReactNode;
   fallback?: ReactNode;
-  onError?: (error: Error, errorInfo: React.ErrorInfo) => void;
 }
 
 interface State {
   hasError: boolean;
   error: Error | null;
-  errorInfo: React.ErrorInfo | null;
+  errorInfo: ErrorInfo | null;
 }
 
 export class ErrorBoundary extends Component<Props, State> {
-  constructor(props: Props) {
-    super(props);
-    this.state = {
-      hasError: false,
-      error: null,
-      errorInfo: null
-    };
+  public state: State = {
+    hasError: false,
+    error: null,
+    errorInfo: null
+  };
+
+  public static getDerivedStateFromError(error: Error): State {
+    return { hasError: true, error, errorInfo: null };
   }
 
-  static getDerivedStateFromError(error: Error): Partial<State> {
-    return { hasError: true, error };
-  }
+  public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    logger.error('ErrorBoundary capturou erro', 'ErrorBoundary', {
+      error: error.message,
+      stack: error.stack,
+      componentStack: errorInfo.componentStack
+    });
 
-  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error('ErrorBoundary caught:', error, errorInfo);
-    
-    this.setState({ errorInfo });
-    
-    // Enviar erro para serviço de logging
-    this.logError(error, errorInfo);
-    
-    // Callback customizado
-    this.props.onError?.(error, errorInfo);
-  }
-
-  private async logError(error: Error, errorInfo: React.ErrorInfo) {
-    try {
-      // Você pode enviar para Sentry, LogRocket, etc.
-      const errorData = {
-        message: error.message,
-        stack: error.stack,
-        componentStack: errorInfo.componentStack,
-        url: window.location.href,
-        userAgent: navigator.userAgent,
-        timestamp: new Date().toISOString()
-      };
-
-      console.log('Error logged:', errorData);
-      
-      // Exemplo: enviar para endpoint de logging
-      // await fetch('/api/log-error', {
-      //   method: 'POST',
-      //   body: JSON.stringify(errorData)
-      // });
-    } catch (logError) {
-      console.error('Failed to log error:', logError);
-    }
+    this.setState({
+      error,
+      errorInfo
+    });
   }
 
   private handleReset = () => {
@@ -70,9 +44,10 @@ export class ErrorBoundary extends Component<Props, State> {
       error: null,
       errorInfo: null
     });
+    window.location.reload();
   };
 
-  render() {
+  public render() {
     if (this.state.hasError) {
       if (this.props.fallback) {
         return this.props.fallback;
@@ -80,52 +55,32 @@ export class ErrorBoundary extends Component<Props, State> {
 
       return (
         <div className="min-h-screen flex items-center justify-center bg-background p-4">
-          <div className="max-w-md w-full space-y-4 text-center">
-            <div className="flex justify-center">
-              <AlertTriangle className="h-16 w-16 text-destructive" />
+          <div className="max-w-md w-full bg-card border border-border rounded-lg p-6 shadow-lg">
+            <div className="flex items-center gap-3 mb-4">
+              <AlertTriangle className="h-8 w-8 text-destructive" />
+              <h1 className="text-2xl font-bold text-foreground">Algo deu errado</h1>
             </div>
             
-            <h1 className="text-2xl font-bold text-foreground">
-              Algo deu errado
-            </h1>
-            
-            <p className="text-muted-foreground">
-              Desculpe, ocorreu um erro inesperado. Tente recarregar a página.
+            <p className="text-muted-foreground mb-6">
+              Ocorreu um erro inesperado. Nossa equipe foi notificada e está trabalhando na correção.
             </p>
 
-            {this.state.error && (
-              <details className="text-left bg-muted p-4 rounded-lg">
-                <summary className="cursor-pointer font-semibold mb-2">
-                  Detalhes do erro
+            {import.meta.env.DEV && this.state.error && (
+              <details className="mb-6 p-4 bg-muted rounded-md">
+                <summary className="cursor-pointer font-semibold text-sm mb-2">
+                  Detalhes técnicos (apenas em desenvolvimento)
                 </summary>
-                <pre className="text-xs overflow-auto">
+                <pre className="text-xs overflow-auto text-destructive">
                   {this.state.error.toString()}
                   {this.state.errorInfo?.componentStack}
                 </pre>
-                <button
-                  onClick={() => {
-                    const errorText = `${this.state.error}\n${this.state.errorInfo?.componentStack}`;
-                    navigator.clipboard.writeText(errorText);
-                    alert('Erro copiado para área de transferência');
-                  }}
-                  className="mt-2 px-3 py-1 bg-primary text-primary-foreground rounded text-sm"
-                >
-                  📋 Copiar logs
-                </button>
               </details>
             )}
 
-            <div className="flex gap-2 justify-center">
-              <Button onClick={this.handleReset} variant="default">
-                Tentar novamente
-              </Button>
-              <Button
-                onClick={() => window.location.href = '/'}
-                variant="outline"
-              >
-                Ir para início
-              </Button>
-            </div>
+            <Button onClick={this.handleReset} className="w-full">
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Recarregar Página
+            </Button>
           </div>
         </div>
       );
