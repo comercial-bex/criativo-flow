@@ -5,6 +5,8 @@ import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import EmojiPicker from 'emoji-picker-react';
+import ReactMarkdown from 'react-markdown';
+import { AIAssistantMessage } from './AIAssistantMessage';
 import type { ChatMessage } from '@/hooks/useTeamChat';
 
 interface ChatMessageProps {
@@ -22,6 +24,19 @@ export function ChatMessage({ message, isOwn, onReaction }: ChatMessageProps) {
       reactionCounts[emoji] = (reactionCounts[emoji] || 0) + 1;
     });
   });
+
+  // Detectar mensagens de IA
+  const isAIMessage = message.content.includes('**Briefing Gerado**') || 
+                      message.content.includes('**Roteiro Gerado**') || 
+                      message.content.includes('**Conteúdo Gerado**');
+
+  if (isAIMessage) {
+    const timeAgo = formatDistanceToNow(new Date(message.created_at), {
+      addSuffix: true,
+      locale: ptBR
+    });
+    return <AIAssistantMessage content={message.content} timestamp={timeAgo} />;
+  }
 
   return (
     <div className={`flex gap-3 group ${isOwn ? 'justify-end' : 'justify-start'}`}>
@@ -49,7 +64,9 @@ export function ChatMessage({ message, isOwn, onReaction }: ChatMessageProps) {
                 : 'bg-muted'
             }`}
           >
-            <p className="text-sm whitespace-pre-wrap break-words">{message.content}</p>
+            <div className="text-sm prose prose-sm max-w-none">
+              <ReactMarkdown>{message.content}</ReactMarkdown>
+            </div>
           </div>
 
           <Popover>

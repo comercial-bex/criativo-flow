@@ -1,10 +1,11 @@
 import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Send, Smile, Paperclip, Loader2 } from 'lucide-react';
+import { Send, Smile, Paperclip, Loader2, Sparkles } from 'lucide-react';
 import { MentionAutocomplete } from './MentionAutocomplete';
 import EmojiPicker from 'emoji-picker-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { AIQuickActions } from './AIQuickActions';
 
 interface MessageInputProps {
   onSend: (content: string, mentionedUsers: string[]) => void;
@@ -56,6 +57,12 @@ export function MessageInput({ onSend, isSending, disabled }: MessageInputProps)
 
   return (
     <div className="relative space-y-2">
+      <AIQuickActions 
+        onActionSelect={(content) => {
+          setMessage(prev => prev ? prev + '\n\n' + content : content);
+        }}
+      />
+      
       {showMentions && (
         <MentionAutocomplete 
           query={mentionQuery} 
