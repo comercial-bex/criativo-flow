@@ -4,7 +4,7 @@ import { Dialog, BexDialogContent, BexDialogHeader, BexDialogTitle } from '@/com
 import { BexCard, BexCardContent, BexCardHeader, BexCardTitle } from '@/components/ui/bex-card';
 import { BexBadge } from '@/components/ui/bex-badge';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
@@ -470,15 +470,6 @@ export function TaskDetailsModal({ open, onOpenChange, task, onTaskUpdate }: Tas
 
   // Removed handleSaveDate - prazo field exists in header
 
-  const handleScrollToChecklist = () => {
-    const checklistTrigger = document.querySelector('[data-value="checklist"]') as HTMLElement;
-    if (checklistTrigger) {
-      checklistTrigger.click();
-      setTimeout(() => {
-        checklistTrigger.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-      }, 100);
-    }
-  };
 
   const priorityVariant = {
     'critica': 'destructive' as const,
@@ -550,186 +541,78 @@ export function TaskDetailsModal({ open, onOpenChange, task, onTaskUpdate }: Tas
         {/* Layout 2 colunas: Conteúdo + Sidebar */}
         <div className="modal-body-2col h-[calc(90vh-180px)]">
           {/* Coluna Principal */}
-          <div className="modal-body-2col-main modal-scroll-area">
+          <div className="modal-body-2col-main modal-scroll-area space-y-4">
 
-        <Tabs defaultValue="overview" className="w-full">
-          <TabsList className="modal-tabs-gaming grid w-full grid-cols-4">
-            <TabsTrigger value="overview" className="modal-tab-trigger-gaming">
-              <FileText className="h-3.5 w-3.5 mr-1.5" />
-              Visão Geral
-            </TabsTrigger>
-            <TabsTrigger value="briefing" className="modal-tab-trigger-gaming">
-              <Target className="h-3.5 w-3.5 mr-1.5" />
-              Briefing
-            </TabsTrigger>
-            <TabsTrigger value="checklist" className="modal-tab-trigger-gaming">
-              <CheckCircle2 className="h-3.5 w-3.5 mr-1.5" />
-              Checklist
-              {totalCount > 0 && (
-                <BexBadge variant="bexGlow" className="ml-1.5 text-[10px] px-1 py-0">
-                  {Math.round(progressPercentage)}%
-                </BexBadge>
-              )}
-            </TabsTrigger>
-            <TabsTrigger value="anexos" className="modal-tab-trigger-gaming">
-              <Paperclip className="h-3.5 w-3.5 mr-1.5" />
-              Anexos
-            </TabsTrigger>
-          </TabsList>
-
-          {/* Visão Geral - UNIFICADA */}
-          <TabsContent value="overview" className="mt-3 space-y-4">
-            {/* SEÇÃO 1: Informações da Tarefa */}
-            <div className="space-y-2">
-              <h3 className="modal-section-header">
-                <FileText className="h-4 w-4" />
-                Informações da Tarefa
-              </h3>
-              <div className="grid grid-cols-2 gap-3 text-sm">
-                {task.responsavel_nome && (
-                  <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/30">
-                    <User className="h-4 w-4 text-bex shrink-0" />
-                    <div className="min-w-0">
-                      <p className="text-[10px] uppercase text-muted-foreground font-medium">Responsável</p>
-                      <p className="text-xs font-medium truncate">{task.responsavel_nome}</p>
+            {/* CARD 1: Informações da Tarefa */}
+            <BexCard variant="gaming" withGlow>
+              <BexCardHeader>
+                <BexCardTitle className="flex items-center gap-2 text-bex">
+                  <FileText className="h-5 w-5" />
+                  Informações da Tarefa
+                </BexCardTitle>
+              </BexCardHeader>
+              <BexCardContent className="space-y-4">
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  {task.responsavel_nome && (
+                    <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/30">
+                      <User className="h-4 w-4 text-bex shrink-0" />
+                      <div className="min-w-0">
+                        <p className="text-[10px] uppercase text-muted-foreground font-medium">Responsável</p>
+                        <p className="text-xs font-medium truncate">{task.responsavel_nome}</p>
+                      </div>
                     </div>
-                  </div>
-                )}
-                
-                {task.data_prazo && (
-                  <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/30">
-                    <Calendar className="h-4 w-4 text-bex shrink-0" />
-                    <div className="min-w-0">
-                      <p className="text-[10px] uppercase text-muted-foreground font-medium">Prazo</p>
-                      <p className="text-xs font-medium">
-                        {format(new Date(task.data_prazo), "dd/MM/yyyy", { locale: ptBR })}
-                      </p>
-                    </div>
-                  </div>
-                )}
-
-                <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/30">
-                  <Clock className="h-4 w-4 text-bex shrink-0" />
-                  <div className="min-w-0">
-                    <p className="text-[10px] uppercase text-muted-foreground font-medium">Horas</p>
-                    <p className="text-xs font-medium">{task.horas_trabalhadas || 0}h</p>
-                  </div>
-                </div>
-
-                {task.executor_area && (
-                  <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/30">
-                    <Tag className="h-4 w-4 text-bex shrink-0" />
-                    <div className="min-w-0">
-                      <p className="text-[10px] uppercase text-muted-foreground font-medium">Área</p>
-                      <p className="text-xs font-medium truncate">{task.executor_area}</p>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {task.descricao && (
-                <div className="p-3 rounded-lg bg-muted/30">
-                  <h4 className="text-xs font-semibold mb-2 text-bex uppercase">Descrição</h4>
-                  <p className="text-sm text-muted-foreground leading-relaxed">{task.descricao}</p>
-                </div>
-              )}
-
-              <div className="text-[10px] text-muted-foreground pt-2 border-t border-border/30">
-                Criado em {task.created_at ? format(new Date(task.created_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR }) : 'N/A'}
-              </div>
-            </div>
-
-            <Separator className="bg-border/30" />
-
-            {/* SEÇÃO 2: Progresso do Trabalho */}
-            <div className="space-y-2">
-              <h3 className="modal-section-header">
-                <TrendingUp className="h-4 w-4" />
-                Progresso do Trabalho
-              </h3>
-
-              {/* Botão Registrar Tempo Rápido */}
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => setQuickTimeDialogOpen(true)}
-                className="w-full border-bex/30 hover:bg-bex/10 hover:border-bex text-bex"
-              >
-                <Clock className="h-4 w-4 mr-2" />
-                ⏱️ Registrar Tempo Rápido
-              </Button>
-              {isEditing ? (
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="horas_trabalhadas">Horas Trabalhadas</Label>
-                    <Input
-                      id="horas_trabalhadas"
-                      type="number"
-                      value={editData.horas_trabalhadas}
-                      onChange={(e) => setEditData({ ...editData, horas_trabalhadas: parseInt(e.target.value) || 0 })}
-                      min="0"
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="observacoes_trabalho">Observações do Trabalho</Label>
-                    <Textarea
-                      id="observacoes_trabalho"
-                      value={editData.observacoes_trabalho}
-                      onChange={(e) => setEditData({ ...editData, observacoes_trabalho: e.target.value })}
-                      placeholder="Atualizações sobre o progresso, dificuldades encontradas, próximos passos..."
-                      rows={5}
-                    />
-                  </div>
-
-                  <Button onClick={handleSaveWork} className="w-full bg-bex hover:bg-bex/80">
-                    <Save className="h-4 w-4 mr-2" />
-                    Salvar Progresso
-                  </Button>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2 p-3 bg-bex/5 rounded-lg">
-                    <Clock className="h-5 w-5 text-bex" />
-                    <span className="text-sm text-muted-foreground">
-                      Horas trabalhadas: <span className="font-semibold text-foreground">{task.horas_trabalhadas || 0}h</span>
-                    </span>
-                  </div>
+                  )}
                   
-                        {briefingEditData?.observacoes ? (
-                          <div className="p-3 bg-muted/50 rounded-lg">
-                            <h4 className="font-medium mb-2 text-sm text-bex">Última atualização:</h4>
-                            <p className="text-sm text-muted-foreground leading-relaxed">{briefingEditData.observacoes}</p>
-                          </div>
-                        ) : (
-                    <div className="text-center py-8 text-muted-foreground">
-                      <MessageSquare className="h-12 w-12 mx-auto mb-3 opacity-30" />
-                      <p className="text-sm">Nenhuma atualização de progresso registrada.</p>
+                  {task.data_prazo && (
+                    <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/30">
+                      <Calendar className="h-4 w-4 text-bex shrink-0" />
+                      <div className="min-w-0">
+                        <p className="text-[10px] uppercase text-muted-foreground font-medium">Prazo</p>
+                        <p className="text-xs font-medium">
+                          {format(new Date(task.data_prazo), "dd/MM/yyyy", { locale: ptBR })}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/30">
+                    <Clock className="h-4 w-4 text-bex shrink-0" />
+                    <div className="min-w-0">
+                      <p className="text-[10px] uppercase text-muted-foreground font-medium">Horas</p>
+                      <p className="text-xs font-medium">{task.horas_trabalhadas || 0}h</p>
+                    </div>
+                  </div>
+
+                  {task.executor_area && (
+                    <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/30">
+                      <Tag className="h-4 w-4 text-bex shrink-0" />
+                      <div className="min-w-0">
+                        <p className="text-[10px] uppercase text-muted-foreground font-medium">Área</p>
+                        <p className="text-xs font-medium truncate">{task.executor_area}</p>
+                      </div>
                     </div>
                   )}
                 </div>
-              )}
-            </div>
 
-            <Separator className="bg-border/30" />
+                {task.descricao && (
+                  <div className="p-3 rounded-lg bg-muted/30">
+                    <h4 className="text-xs font-semibold mb-2 text-bex uppercase">Descrição</h4>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{task.descricao}</p>
+                  </div>
+                )}
 
-            {/* SEÇÃO 3: Atividades Recentes */}
-            <div className="space-y-2">
-              <h3 className="text-sm font-semibold text-bex flex items-center gap-2 pb-2 border-b border-border/30">
-                <Activity className="h-4 w-4" />
-                Atividades Recentes
-              </h3>
-              <TaskActivities tarefaId={task.id} />
-            </div>
-          </TabsContent>
+                <div className="text-[10px] text-muted-foreground pt-2 border-t border-border/30">
+                  Criado em {task.created_at ? format(new Date(task.created_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR }) : 'N/A'}
+                </div>
+              </BexCardContent>
+            </BexCard>
 
-          {/* Briefing */}
-          <TabsContent value="briefing" className="mt-4">
-            <BexCard variant="glass">
+            {/* CARD 2: Briefing */}
+            <BexCard variant="gaming" withGlow>
               <BexCardHeader>
                 <div className="flex items-center justify-between">
-                  <BexCardTitle className="flex items-center gap-2">
-                    <Target className="h-5 w-5 text-bex" />
+                  <BexCardTitle className="flex items-center gap-2 text-bex">
+                    <Target className="h-5 w-5" />
                     Briefing da Tarefa
                   </BexCardTitle>
                   <div className="flex gap-2">
@@ -861,15 +744,13 @@ export function TaskDetailsModal({ open, onOpenChange, task, onTaskUpdate }: Tas
                 )}
               </BexCardContent>
             </BexCard>
-          </TabsContent>
 
-          {/* Checklist */}
-          <TabsContent value="checklist" className="mt-4">
-            <BexCard variant="glow">
+            {/* CARD 3: Checklist */}
+            <BexCard variant="gaming" withGlow>
               <BexCardHeader>
                 <div className="flex items-center justify-between">
-                  <BexCardTitle className="flex items-center gap-2">
-                    <CheckCircle2 className="h-5 w-5 text-bex" />
+                  <BexCardTitle className="flex items-center gap-2 text-bex">
+                    <CheckCircle2 className="h-5 w-5" />
                     Checklist de Etapas
                   </BexCardTitle>
                   <Button
@@ -882,7 +763,6 @@ export function TaskDetailsModal({ open, onOpenChange, task, onTaskUpdate }: Tas
                 </div>
               </BexCardHeader>
               <BexCardContent className="space-y-4">
-                {/* Progress Bar */}
                 {totalCount > 0 && (
                   <div className="space-y-2">
                     <div className="flex items-center justify-between text-sm">
@@ -896,109 +776,147 @@ export function TaskDetailsModal({ open, onOpenChange, task, onTaskUpdate }: Tas
                         initial={{ width: 0 }}
                         animate={{ width: `${progressPercentage}%` }}
                         transition={{ duration: 0.5, ease: "easeOut" }}
-                        className="h-full bg-gradient-to-r from-bex to-emerald-500 rounded-full"
+                        className="absolute inset-y-0 left-0 bg-gradient-to-r from-bex to-bex-light"
                       />
                     </div>
-                    <div className="text-xs text-right text-muted-foreground">
-                      {Math.round(progressPercentage)}% Completo
-                    </div>
                   </div>
                 )}
 
-                <Separator className="bg-bex/20" />
+                <div className="space-y-2">
+                  {checklistItems.map((item) => (
+                    <motion.div
+                      key={item.id}
+                      initial={{ opacity: 0, y: 5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="flex items-center gap-3 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors group"
+                    >
+                      <Checkbox
+                        id={item.id}
+                        checked={item.completed}
+                        onCheckedChange={() => toggleChecklistItem(item.id)}
+                        className="border-bex data-[state=checked]:bg-bex"
+                      />
+                      <Label
+                        htmlFor={item.id}
+                        className={cn(
+                          "flex-1 cursor-pointer text-sm",
+                          item.completed && "line-through text-muted-foreground"
+                        )}
+                      >
+                        {item.text}
+                      </Label>
+                      {isEditingChecklist && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeChecklistItem(item.id)}
+                          className="opacity-0 group-hover:opacity-100 transition-opacity h-6 w-6 p-0"
+                        >
+                          <X className="h-4 w-4 text-destructive" />
+                        </Button>
+                      )}
+                    </motion.div>
+                  ))}
+                </div>
 
-                {/* Add Item Input */}
                 {isEditingChecklist && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    exit={{ opacity: 0, height: 0 }}
-                    className="flex gap-2"
-                  >
+                  <div className="flex gap-2">
                     <Input
-                      placeholder="Nova etapa do checklist..."
+                      placeholder="Nova etapa..."
                       value={newItemText}
                       onChange={(e) => setNewItemText(e.target.value)}
-                      onKeyPress={(e) => e.key === "Enter" && addChecklistItem()}
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter') {
+                          addChecklistItem();
+                        }
+                      }}
                       className="flex-1"
                     />
-                    <Button size="sm" onClick={addChecklistItem} disabled={!newItemText.trim()}>
+                    <Button
+                      onClick={addChecklistItem}
+                      size="sm"
+                      className="bg-bex hover:bg-bex/80"
+                    >
                       <Plus className="h-4 w-4" />
                     </Button>
-                  </motion.div>
+                  </div>
                 )}
 
-                {/* Checklist Items */}
-                {totalCount > 0 ? (
-                  <div className="space-y-2">
-                    <AnimatePresence>
-                      {checklistItems.map((item) => (
-                        <motion.div
-                          key={item.id}
-                          initial={{ opacity: 0, x: -10 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          exit={{ opacity: 0, x: 10 }}
-                          className="flex items-center gap-3 group p-2 rounded-lg hover:bg-bex/5 transition-colors"
-                        >
-                          <Checkbox
-                            checked={item.completed}
-                            onCheckedChange={() => toggleChecklistItem(item.id)}
-                            className="data-[state=checked]:bg-bex data-[state=checked]:border-bex"
-                          />
-                          <span
-                            className={cn(
-                              "text-sm flex-1 transition-all",
-                              item.completed && "line-through text-muted-foreground opacity-60"
-                            )}
-                          >
-                            {item.text}
-                          </span>
-                          {item.completed && (
-                            <motion.div
-                              initial={{ scale: 0 }}
-                              animate={{ scale: 1 }}
-                              transition={{ type: "spring", stiffness: 500, damping: 25 }}
-                            >
-                              <CheckCircle2 className="h-4 w-4 text-bex" />
-                            </motion.div>
-                          )}
-                          {isEditingChecklist && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => removeChecklistItem(item.id)}
-                              className="opacity-0 group-hover:opacity-100 transition-opacity"
-                            >
-                              <X className="h-4 w-4 text-red-500" />
-                            </Button>
-                          )}
-                        </motion.div>
-                      ))}
-                    </AnimatePresence>
-                  </div>
-                ) : (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <CheckCircle2 className="h-12 w-12 mx-auto mb-3 opacity-30" />
-                    <p className="text-sm">Nenhuma etapa no checklist ainda.</p>
-                    <p className="text-xs mt-1">Clique em "Gerenciar" para adicionar itens.</p>
+                {checklistItems.length === 0 && (
+                  <div className="py-12 text-center text-muted-foreground">
+                    <CheckCircle2 className="h-12 w-12 mx-auto mb-4 opacity-30" />
+                    <p className="text-sm">Nenhuma etapa adicionada ainda.</p>
+                    <p className="text-xs mt-1">Clique em "Gerenciar" para começar.</p>
                   </div>
                 )}
               </BexCardContent>
             </BexCard>
-          </TabsContent>
 
+            {/* CARD 4: Anexos */}
+            <BexCard variant="gaming" withGlow>
+              <BexCardHeader>
+                <BexCardTitle className="flex items-center gap-2 text-bex">
+                  <Paperclip className="h-5 w-5" />
+                  Anexos
+                </BexCardTitle>
+              </BexCardHeader>
+              <BexCardContent>
+                <AnexosGallery
+                  tarefaId={task.id}
+                  canEdit={true}
+                  capaAtualId={task.capa_anexo_id}
+                  onSetCapa={(anexoId) => updateCoverAnexo(anexoId)}
+                />
+              </BexCardContent>
+            </BexCard>
 
-          {/* Anexos */}
-          <TabsContent value="anexos" className="mt-3">
-            <AnexosGallery 
-              tarefaId={task.id} 
-              canEdit={true}
-              capaAtualId={task.capa_anexo_id}
-              onSetCapa={updateCoverAnexo}
-            />
-          </TabsContent>
-        </Tabs>
-      </div>
+            {/* CARD 5: Progresso do Trabalho */}
+            <BexCard variant="gaming" withGlow>
+              <BexCardHeader>
+                <BexCardTitle className="flex items-center gap-2 text-bex">
+                  <Clock className="h-5 w-5" />
+                  Progresso do Trabalho
+                </BexCardTitle>
+              </BexCardHeader>
+              <BexCardContent className="space-y-4">
+                <TaskTimer
+                  taskId={task.id}
+                  onSaveTime={handleTimerSave}
+                />
+
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setQuickTimeDialogOpen(true)}
+                  className="w-full border-bex/30 hover:bg-bex/10 hover:border-bex text-bex"
+                >
+                  <Clock className="h-4 w-4 mr-2" />
+                  ⏱️ Registrar Tempo Rápido
+                </Button>
+
+                {briefingEditData?.observacoes && (
+                  <div className="p-3 bg-muted/50 rounded-lg">
+                    <h4 className="font-medium mb-2 text-sm text-bex">Última atualização:</h4>
+                    <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">{briefingEditData.observacoes}</p>
+                  </div>
+                )}
+              </BexCardContent>
+            </BexCard>
+
+            {/* CARD 6: Atividades Recentes */}
+            <BexCard variant="gaming" withGlow>
+              <BexCardHeader>
+                <BexCardTitle className="flex items-center gap-2 text-bex">
+                  <Activity className="h-5 w-5" />
+                  Atividades Recentes
+                </BexCardTitle>
+              </BexCardHeader>
+              <BexCardContent>
+                <TaskActivities tarefaId={task.id} />
+              </BexCardContent>
+            </BexCard>
+
+          </div>
 
       {/* Sidebar de Ações - Estilo Trello */}
       <div className="modal-body-2col-sidebar modal-scroll-area">
