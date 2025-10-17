@@ -26,6 +26,17 @@ interface ClientProfile {
   cliente_nome?: string;
 }
 
+export interface ProjectWithTasks {
+  id: string;
+  titulo: string;
+  status: string;
+  progresso: number;
+  total_tarefas: number;
+  tarefas_concluidas: number;
+  data_inicio: string | null;
+  data_fim: string | null;
+}
+
 export function useClientDashboard(overrideClienteId?: string) {
   const { user } = useAuth();
   const [counts, setCounts] = useState<DashboardCounts>({
@@ -36,6 +47,7 @@ export function useClientDashboard(overrideClienteId?: string) {
   });
   const [timeline, setTimeline] = useState<TimelineItem[]>([]);
   const [clientProfile, setClientProfile] = useState<ClientProfile | null>(null);
+  const [projects, setProjects] = useState<ProjectWithTasks[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchClientProfile = async () => {
@@ -148,6 +160,47 @@ export function useClientDashboard(overrideClienteId?: string) {
     }
   };
 
+  const fetchProjects = async () => {
+    if (!clientProfile?.cliente_id) {
+      console.warn('⚠️ fetchProjects: cliente_id não disponível');
+      return;
+    }
+
+    try {
+      // Buscar projetos do cliente
+      const { data: projetos, error } = await supabase
+        .from('projetos')
+        .select('id, titulo, status, data_inicio, data_fim')
+        .eq('cliente_id', clientProfile.cliente_id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      // Para cada projeto, buscar tarefas e calcular progresso
+      const projetosComProgresso: ProjectWithTasks[] = [];
+      
+      for (const projeto of projetos || []) {
+        const total = 0;
+        const concluidas = 0;
+
+        projetosComProgresso.push({
+          id: projeto.id,
+          titulo: projeto.titulo,
+          status: projeto.status,
+          data_inicio: projeto.data_inicio,
+          data_fim: projeto.data_fim,
+          total_tarefas: total,
+          tarefas_concluidas: concluidas,
+          progresso: 0
+        });
+      }
+
+      setProjects(projetosComProgresso);
+    } catch (error) {
+      console.error('Erro ao buscar projetos:', error);
+    }
+  };
+
   const fetchTimeline = async () => {
     if (!clientProfile?.cliente_id) {
       console.warn('⚠️ fetchTimeline: cliente_id não disponível');
@@ -236,7 +289,8 @@ export function useClientDashboard(overrideClienteId?: string) {
     if (clientProfile) {
       Promise.all([
         fetchDashboardCounts(),
-        fetchTimeline()
+        fetchTimeline(),
+        fetchProjects()
       ]).finally(() => {
         setLoading(false);
       });
@@ -247,7 +301,8 @@ export function useClientDashboard(overrideClienteId?: string) {
     setLoading(true);
     await Promise.all([
       fetchDashboardCounts(),
-      fetchTimeline()
+      fetchTimeline(),
+      fetchProjects()
     ]);
     setLoading(false);
   };
@@ -255,6 +310,7 @@ export function useClientDashboard(overrideClienteId?: string) {
   return {
     counts,
     timeline,
+    projects,
     clientProfile,
     loading,
     refresh

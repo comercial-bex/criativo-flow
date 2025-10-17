@@ -88,6 +88,7 @@ const ClientePerfil = lazy(() => import("./pages/Cliente/Perfil"));
 const ClienteAprovacoes = lazy(() => import("./pages/Cliente/Aprovacoes"));
 const ClientePlanos = lazy(() => import("./pages/Cliente/Planos"));
 const ClienteExportacoes = lazy(() => import("./pages/Cliente/Exportacoes"));
+const ClienteProjetoTarefas = lazy(() => import("./pages/Cliente/ProjetoTarefas"));
 const Preditiva = lazy(() => import("./pages/Inteligencia/Preditiva"));
 const AdminDashboard = lazy(() => import("./pages/Administrativo/Dashboard"));
 const Orcamentos = lazy(() => import("./pages/Administrativo/Orcamentos"));
@@ -678,6 +679,10 @@ function App() {
                 
                 <Route path="/cliente/perfil" element={<ProtectedRoute requiredRole="cliente">
                     <Layout><ClientePerfil /></Layout>
+                  </ProtectedRoute>} />
+                
+                <Route path="/cliente/projeto/:projetoId/tarefas" element={<ProtectedRoute requiredRole="cliente">
+                    <Layout><ClienteProjetoTarefas /></Layout>
                   </ProtectedRoute>} />
                 
                 <Route path="/clientes/:clienteId/editar" element={<ProtectedRoute module="clientes">

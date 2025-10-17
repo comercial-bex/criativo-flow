@@ -13,7 +13,8 @@ import { ApproversSection } from "@/components/Cliente/Dashboard/ApproversSectio
 import { GoalsSection } from "@/components/Cliente/Dashboard/GoalsSection";
 import { FinanceSection } from "@/components/Cliente/Dashboard/FinanceSection";
 import { SupportSection } from "@/components/Cliente/Dashboard/SupportSection";
-import { LayoutDashboard, Target, DollarSign, MessageSquare, CheckSquare } from "lucide-react";
+import { LayoutDashboard, Target, DollarSign, MessageSquare, CheckSquare, FolderKanban } from "lucide-react";
+import { ProjectsSection } from "@/components/Cliente/Dashboard/ProjectsSection";
 
 export default function PainelClienteV2() {
   const navigate = useNavigate();
@@ -25,7 +26,7 @@ export default function PainelClienteV2() {
     ? localStorage.getItem('admin_selected_cliente_id') || undefined
     : undefined;
 
-  const { counts, timeline, clientProfile, loading } = useClientDashboard(adminSelectedClienteId);
+  const { counts, timeline, projects, clientProfile, loading } = useClientDashboard(adminSelectedClienteId);
   
   // ✅ Log de debug
   console.log('🎯 PainelV2 - Estado:', {
@@ -121,10 +122,14 @@ export default function PainelClienteV2() {
       </div>
 
       <Tabs value={currentTab} onValueChange={(value) => navigate(`/cliente/painel?tab=${value}`)} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="overview">
             <LayoutDashboard className="h-4 w-4 mr-2" />
             Visão Geral
+          </TabsTrigger>
+          <TabsTrigger value="projetos">
+            <FolderKanban className="h-4 w-4 mr-2" />
+            Projetos
           </TabsTrigger>
           <TabsTrigger value="approvals">
             <CheckSquare className="h-4 w-4 mr-2" />
@@ -149,6 +154,13 @@ export default function PainelClienteV2() {
             clienteId={clientProfile.cliente_id}
             counts={counts}
             timeline={timeline}
+          />
+        </TabsContent>
+
+        <TabsContent value="projetos">
+          <ProjectsSection 
+            projects={projects}
+            clienteId={clientProfile.cliente_id}
           />
         </TabsContent>
 

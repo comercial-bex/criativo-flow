@@ -341,15 +341,21 @@ export type Database = {
       aprovacoes_cliente: {
         Row: {
           anexo_url: string | null
+          call_to_action: string | null
           cliente_id: string
           created_at: string
           decided_at: string | null
           decidido_por: string | null
           descricao: string | null
+          formato_postagem: string | null
           hash_publico: string | null
+          hashtags: string[] | null
           id: string
+          legenda: string | null
           motivo_reprovacao: string | null
+          objetivo_postagem: string | null
           projeto_id: string | null
+          rede_social: string | null
           solicitado_por: string
           status: string
           tarefa_id: string | null
@@ -360,15 +366,21 @@ export type Database = {
         }
         Insert: {
           anexo_url?: string | null
+          call_to_action?: string | null
           cliente_id: string
           created_at?: string
           decided_at?: string | null
           decidido_por?: string | null
           descricao?: string | null
+          formato_postagem?: string | null
           hash_publico?: string | null
+          hashtags?: string[] | null
           id?: string
+          legenda?: string | null
           motivo_reprovacao?: string | null
+          objetivo_postagem?: string | null
           projeto_id?: string | null
+          rede_social?: string | null
           solicitado_por: string
           status?: string
           tarefa_id?: string | null
@@ -379,15 +391,21 @@ export type Database = {
         }
         Update: {
           anexo_url?: string | null
+          call_to_action?: string | null
           cliente_id?: string
           created_at?: string
           decided_at?: string | null
           decidido_por?: string | null
           descricao?: string | null
+          formato_postagem?: string | null
           hash_publico?: string | null
+          hashtags?: string[] | null
           id?: string
+          legenda?: string | null
           motivo_reprovacao?: string | null
+          objetivo_postagem?: string | null
           projeto_id?: string | null
+          rede_social?: string | null
           solicitado_por?: string
           status?: string
           tarefa_id?: string | null
