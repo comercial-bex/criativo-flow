@@ -3,7 +3,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   CheckCircle2, XCircle, AlertCircle, Loader2, 
   Facebook, Instagram, Mail, ExternalLink, ChevronRight 
@@ -399,7 +398,7 @@ export function SocialConnectionWizard({
         {currentStep === 'success' && (
           <div className="space-y-4 text-center py-8">
             <CheckCircle2 className="h-16 w-16 text-green-500 mx-auto" />
-            <h3 className="text-lg font-semibold">Conexão realizada com sucesso!</</h3>
+            <h3 className="text-lg font-semibold">Conexão realizada com sucesso!</h3>
             <p className="text-sm text-muted-foreground">
               {selectedAccountIds.length} conta(s) foram conectadas e já estão disponíveis.
             </p>
@@ -407,10 +406,7 @@ export function SocialConnectionWizard({
               <Button variant="outline" onClick={() => onOpenChange(false)}>
                 Fechar
               </Button>
-              <Button onClick={() => {
-                // TODO: Redirecionar para /grs/agendamento-social
-                onOpenChange(false);
-              }}>
+              <Button onClick={() => onOpenChange(false)}>
                 Ver Métricas
               </Button>
             </div>
