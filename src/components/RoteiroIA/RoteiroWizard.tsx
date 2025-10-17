@@ -103,6 +103,7 @@ export default function RoteiroWizard({ mode, roteiroId, initialData }: RoteiroW
 
   const [isSaving, setIsSaving] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
   const debouncedFormData = useDebounce(formData, 1500);
   const hasLoadedInitialData = useRef(false);
 
@@ -220,6 +221,7 @@ export default function RoteiroWizard({ mode, roteiroId, initialData }: RoteiroW
   };
 
   const handleGenerateAI = async () => {
+    setIsGenerating(true);
     const briefingData = {
       // IDS necessários para buscar dados do Supabase
       cliente_id: formData.cliente_id,
@@ -252,6 +254,8 @@ export default function RoteiroWizard({ mode, roteiroId, initialData }: RoteiroW
       
       // REFERÊNCIAS
       referencias: formData.referencias || "",
+      referencias_analisadas: formData.referencias_analisadas || [],
+      insights_visuais: formData.insights_visuais || "",
     };
 
     try {
@@ -268,6 +272,8 @@ export default function RoteiroWizard({ mode, roteiroId, initialData }: RoteiroW
     } catch (error: any) {
       smartToast.error("Erro ao gerar roteiro", error.message);
       console.error("Erro na geração:", error);
+    } finally {
+      setIsGenerating(false);
     }
   };
 
@@ -423,6 +429,7 @@ export default function RoteiroWizard({ mode, roteiroId, initialData }: RoteiroW
                   formData={formData}
                   setFormData={setFormData}
                   onGenerateAI={handleGenerateAI}
+                  isGenerating={isGenerating}
                 />
               )}
             </motion.div>

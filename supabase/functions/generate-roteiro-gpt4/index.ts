@@ -40,7 +40,9 @@ serve(async (req) => {
       agentes_ia_ids,
       frameworks_ids,
       cta,
-      referencias
+      referencias,
+      referencias_analisadas,
+      insights_visuais
     } = await req.json();
 
     console.log('📥 Gerando roteiro com GPT-4.1:', { cliente_id, projeto_id, titulo });
@@ -197,7 +199,24 @@ ${Array.isArray(pilares_mensagem) && pilares_mensagem.length > 0
   ? pilares_mensagem.map((p, i) => `${i + 1}. ${p}`).join('\n') 
   : '1. Valor\n2. Confiança\n3. Inovação'}
 
-${referencias ? `**📎 REFERÊNCIAS VISUAIS/CONCEITUAIS:**\n${referencias}\n` : ''}
+${referencias ? `**📎 REFERÊNCIAS VISUAIS/CONCEITUAIS:**
+${referencias}
+` : ''}
+
+${referencias_analisadas && referencias_analisadas.length > 0 ? `
+**📊 ANÁLISE DETALHADA DAS REFERÊNCIAS:**
+
+${referencias_analisadas.map((ref: any, idx: number) => `
+${idx + 1}. **[${ref.plataforma?.toUpperCase()}]** ${ref.titulo}
+   - Estilo visual: ${Array.isArray(ref.estilo_visual_detectado) ? ref.estilo_visual_detectado.join(', ') : 'moderno'}
+   - Tom narrativo: ${ref.tom_narrativo || 'inspirador'}
+   ${ref.descricao ? `- Descrição: ${ref.descricao.substring(0, 150)}...` : ''}
+`).join('\n')}
+
+**💡 INSIGHTS CONSOLIDADOS:**
+${insights_visuais || 'Use elementos visuais modernos e dinâmicos'}
+
+` : ''}
 
 ---
 
@@ -253,14 +272,51 @@ ${referencias ? `**📎 REFERÊNCIAS VISUAIS/CONCEITUAIS:**\n${referencias}\n` :
       total: systemMessage.length + userPrompt.length
     });
 
-    // 7️⃣ CHAMAR GPT-4.1
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${OPENAI_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
+    // 7️⃣ CHAMAR GPT-4.1 COM RETRY
+    async function callGPT4WithRetry(url: string, body: any, apiKey: string, maxRetries = 2) {
+      for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+          const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${apiKey}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(body),
+          });
+
+          if (response.ok) {
+            return await response.json();
+          }
+
+          // Se for erro 5xx, retry
+          if (response.status >= 500 && attempt < maxRetries) {
+            console.log(`⚠️ Tentativa ${attempt} falhou (${response.status}), tentando novamente...`);
+            await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+            continue;
+          }
+
+          // Erro definitivo
+          const errorText = await response.text();
+          throw new Error(`OpenAI API error: ${response.status} - ${errorText}`);
+        } catch (error) {
+          if (attempt === maxRetries) throw error;
+          console.log(`⚠️ Erro de rede na tentativa ${attempt}, retentando...`);
+          await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+        }
+      }
+    }
+
+    console.log('🔍 Debug - Insights recebidos:', {
+      tem_referencias_analisadas: !!referencias_analisadas,
+      qtd_referencias: referencias_analisadas?.length || 0,
+      tem_insights: !!insights_visuais,
+      insights_preview: insights_visuais?.substring(0, 100)
+    });
+
+    const result = await callGPT4WithRetry(
+      'https://api.openai.com/v1/chat/completions',
+      {
         model: 'gpt-4.1-2025-04-14',
         messages: [
           { role: 'system', content: systemMessage },
@@ -268,16 +324,9 @@ ${referencias ? `**📎 REFERÊNCIAS VISUAIS/CONCEITUAIS:**\n${referencias}\n` :
         ],
         max_completion_tokens: 4000,
         temperature: 0.8,
-      }),
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('❌ Erro OpenAI:', response.status, errorText);
-      throw new Error(`OpenAI API error: ${response.status} - ${errorText}`);
-    }
-
-    const result = await response.json();
+      },
+      OPENAI_API_KEY
+    );
     const roteiroGerado = result.choices[0].message.content;
 
     console.log('✅ Roteiro gerado com sucesso!', {

@@ -1,25 +1,45 @@
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Loader2 } from "lucide-react";
-import { useState } from "react";
-import { Card } from "@/components/ui/card";
+import { Sparkles, Loader2, InfoIcon } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import RoteiroPreview from "../RoteiroPreview";
 import LogoUploader from "../LogoUploader";
 import { marked } from "marked";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger, TooltipPortal } from "@/components/ui/tooltip";
+import { estimateTokens, estimateCost, buildPromptForEstimation } from "@/utils/tokenEstimator";
 
-export default function Step4Roteiro({ formData, setFormData, onGenerateAI }: any) {
-  const [isGenerating, setIsGenerating] = useState(false);
+interface Step4RoteiroProps {
+  formData: any;
+  setFormData: (data: any) => void;
+  onGenerateAI: () => void;
+  isGenerating?: boolean;
+}
 
-  const handleGenerate = async () => {
-    setIsGenerating(true);
-    try {
-      await onGenerateAI();
-    } finally {
-      setIsGenerating(false);
+export default function Step4Roteiro({ 
+  formData, 
+  setFormData, 
+  onGenerateAI,
+  isGenerating = false
+}: Step4RoteiroProps) {
+  const [costEstimate, setCostEstimate] = useState<any>(null);
+
+  useEffect(() => {
+    if (formData.cliente_id && formData.objetivo) {
+      const prompt = buildPromptForEstimation(formData);
+      const inputTokens = estimateTokens(prompt);
+      const estimatedOutputTokens = 2000;
+      
+      const cost = estimateCost(inputTokens, estimatedOutputTokens);
+      setCostEstimate({
+        inputTokens,
+        outputTokens: estimatedOutputTokens,
+        ...cost
+      });
     }
-  };
+  }, [formData.cliente_id, formData.objetivo, formData.tom, formData.estilo]);
 
   const handleLogoChange = (url: string) => {
     setFormData({ ...formData, logo_url: url });
@@ -36,16 +56,37 @@ export default function Step4Roteiro({ formData, setFormData, onGenerateAI }: an
         <p className="text-muted-foreground">Gere ou escreva seu roteiro</p>
       </div>
 
+      {/* Estimativa de Custo */}
+      {costEstimate && (
+        <Card className="bg-muted/50 border-primary/20 mb-4">
+          <CardContent className="p-4">
+            <div className="flex items-start gap-3">
+              <InfoIcon className="h-5 w-5 text-primary mt-0.5" />
+              <div className="space-y-1">
+                <p className="text-sm font-medium">💰 Estimativa de Custo da Geração</p>
+                <p className="text-xs text-muted-foreground">
+                  ~{costEstimate.inputTokens.toLocaleString()} tokens de entrada + 
+                  ~{costEstimate.outputTokens.toLocaleString()} tokens de saída
+                </p>
+                <p className="text-sm font-semibold text-primary">
+                  {costEstimate.formatted}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       <div className="flex justify-center mb-4">
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
               <div>
                 <Button
-                  onClick={handleGenerate}
+                  onClick={onGenerateAI}
                   disabled={isGenerating || !formData.objetivo}
                   size="lg"
-                  className="gap-2"
+                  className="gap-2 w-full max-w-md"
                 >
                   {isGenerating ? (
                     <>
@@ -66,7 +107,7 @@ export default function Step4Roteiro({ formData, setFormData, onGenerateAI }: an
                 <div className="space-y-2">
                   <h4 className="font-bold text-sm">🤖 Como funciona a geração?</h4>
                   <p className="text-xs text-muted-foreground">
-                    A IA GPT-4.1 combina dados do cliente (onboarding), agentes selecionados, frameworks e seu briefing para gerar um roteiro profissional formatado com cenas, locuções e CTAs.
+                    A IA GPT-4.1 combina dados do cliente (onboarding), agentes selecionados, frameworks, insights visuais e seu briefing para gerar um roteiro profissional formatado com cenas, locuções e CTAs.
                   </p>
                   <div className="mt-2 pt-2 border-t">
                     <p className="text-xs font-semibold">✅ Pré-requisitos preenchidos</p>
@@ -118,7 +159,19 @@ export default function Step4Roteiro({ formData, setFormData, onGenerateAI }: an
             </div>
           </div>
           <div className="h-[600px] overflow-auto border rounded-lg p-6 bg-white">
-            {formData.roteiro_markdown ? (
+            {isGenerating ? (
+              <div className="space-y-3">
+                <Skeleton className="h-8 w-3/4" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-5/6" />
+                <Skeleton className="h-32 w-full" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-4/5" />
+                <Skeleton className="h-24 w-full" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-3/4" />
+              </div>
+            ) : formData.roteiro_markdown ? (
               <div 
                 className="prose prose-sm max-w-none text-black"
                 dangerouslySetInnerHTML={{ 
@@ -133,7 +186,7 @@ export default function Step4Roteiro({ formData, setFormData, onGenerateAI }: an
               />
             ) : (
               <p className="text-muted-foreground italic text-center mt-8">
-                O preview formatado do roteiro aparecerá aqui...
+                Configure os parâmetros e clique em "Gerar Roteiro com IA"
               </p>
             )}
           </div>
