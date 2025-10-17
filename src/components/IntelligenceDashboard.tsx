@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { IntelligenceSettingsDialog } from '@/components/Intelligence/IntelligenceSettingsDialog';
 
 interface IntelligenceData {
   id: string;
@@ -52,6 +53,7 @@ export default function IntelligenceDashboard() {
   const [connectorStatus, setConnectorStatus] = useState<ConnectorStatus[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -182,12 +184,18 @@ export default function IntelligenceDashboard() {
             <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
             {refreshing ? 'Atualizando...' : 'Atualizar'}
           </Button>
-          <Button variant="outline">
+          <Button variant="outline" onClick={() => setSettingsOpen(true)}>
             <Settings className="h-4 w-4 mr-2" />
             Configurar
           </Button>
         </div>
       </div>
+
+      {/* Settings Dialog */}
+      <IntelligenceSettingsDialog 
+        open={settingsOpen} 
+        onOpenChange={setSettingsOpen}
+      />
 
       {/* Status Overview */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">

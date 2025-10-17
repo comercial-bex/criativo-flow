@@ -42,17 +42,27 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Get active intelligence sources
-    const { data: sources, error: sourcesError } = await supabase
-      .from('intelligence_sources')
-      .select('*')
-      .eq('is_active', true);
+    // Parse request body for test mode
+    const body = req.method === 'POST' ? await req.json().catch(() => ({})) : {};
+    const testMode = body.test_mode === true;
+    const singleSourceId = body.source_id;
+
+    // Get intelligence sources (filter by ID for test mode)
+    let query = supabase.from('intelligence_sources').select('*');
+    
+    if (singleSourceId) {
+      query = query.eq('id', singleSourceId);
+    } else {
+      query = query.eq('is_active', true);
+    }
+
+    const { data: sources, error: sourcesError } = await query;
 
     if (sourcesError) {
       throw new Error(`Failed to fetch sources: ${sourcesError.message}`);
     }
 
-    console.log(`📊 Found ${sources?.length || 0} active intelligence sources`);
+    console.log(`📊 Found ${sources?.length || 0} ${testMode ? 'test' : 'active'} intelligence sources`);
 
     const results: CollectorResult[] = [];
 
@@ -124,20 +134,36 @@ serve(async (req) => {
         }
 
       } catch (error) {
-        console.error(`❌ Error processing ${source.name}:`, error);
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        const errorDetails = {
+          message: errorMessage,
+          stack: error instanceof Error ? error.stack : undefined,
+          timestamp: new Date().toISOString(),
+        };
         
-        // Update connector status - error
+        console.error(`❌ Error processing ${source.name}:`, errorDetails);
+        
+        // Update connector status - error with detailed info
         await supabase.rpc('update_connector_status', {
           p_connector_name: source.name,
           p_success: false,
-          p_error_message: error instanceof Error ? error.message : 'Unknown error'
+          p_error_message: errorMessage
         });
+
+        // Increment error counter
+        await supabase
+          .from('connector_status')
+          .update({ 
+            error_count: supabase.raw('COALESCE(error_count, 0) + 1'),
+            updated_at: new Date().toISOString()
+          })
+          .eq('connector_name', source.name);
 
         results.push({
           success: false,
           source_id: source.id,
           data_count: 0,
-          error: error instanceof Error ? error.message : 'Unknown error'
+          error: errorMessage
         });
       }
     }
@@ -235,7 +261,15 @@ async function collectFromSource(source: IntelligenceSource): Promise<any[]> {
   });
 
   if (!response.ok) {
-    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    const errorText = await response.text().catch(() => 'No response body');
+    console.error(`❌ HTTP Error Details:`, {
+      status: response.status,
+      statusText: response.statusText,
+      url: urlObj.toString(),
+      headers: Object.fromEntries(response.headers.entries()),
+      body: errorText.substring(0, 500)
+    });
+    throw new Error(`HTTP ${response.status}: ${response.statusText} - ${errorText.substring(0, 100)}`);
   }
 
   const data = await response.text();
