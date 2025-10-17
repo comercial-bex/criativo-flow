@@ -51,6 +51,7 @@ export function CreatePlanejamentoUnificadoModal({
   );
   
   // Dados da IA
+  const [selectedModel, setSelectedModel] = useState<'gemini' | 'gpt4'>('gemini');
   const [dadosIA, setDadosIA] = useState<any>(null);
   const [missao, setMissao] = useState('');
   const [visao, setVisao] = useState('');
@@ -73,7 +74,7 @@ export function CreatePlanejamentoUnificadoModal({
   const handleGerarComIA = async () => {
     setLoading(true);
     try {
-      const { data, error } = await generateWithAI(clienteSelecionado);
+      const { data, error } = await generateWithAI(clienteSelecionado, selectedModel);
       
       if (error) throw error;
       
@@ -84,7 +85,7 @@ export function CreatePlanejamentoUnificadoModal({
       setSwot(data.analise_swot);
       
       toast.success('✨ Plano estratégico gerado com IA!', {
-        description: 'Revise os dados antes de continuar.'
+        description: `Gerado com ${selectedModel === 'gemini' ? 'Lovable AI (Gemini)' : 'OpenAI GPT-4.1'}`
       });
       
       setEtapaAtual('posts');
@@ -449,7 +450,7 @@ export function CreatePlanejamentoUnificadoModal({
               <div className="flex-1">
                 <h3 className="font-semibold text-lg mb-2">Geração Inteligente</h3>
                 <p className="text-sm text-muted-foreground mb-4">
-                  Nossa IA analisará os dados de onboarding do cliente para criar:
+                  Nossa IA analisará dados de onboarding, Hub de Inteligência e concorrentes para criar:
                 </p>
                 <ul className="space-y-2 text-sm">
                   <li className="flex items-center gap-2">
@@ -466,11 +467,46 @@ export function CreatePlanejamentoUnificadoModal({
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle2 className="h-4 w-4 text-green-500" />
-                    <span>Análise SWOT automatizada</span>
+                    <span>Análise SWOT com contexto de mercado</span>
                   </li>
                 </ul>
               </div>
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Modelo de IA</Label>
+            <div className="grid grid-cols-2 gap-2">
+              <Button
+                type="button"
+                variant={selectedModel === 'gemini' ? 'default' : 'outline'}
+                onClick={() => setSelectedModel('gemini')}
+                className="h-auto flex-col items-start p-4"
+              >
+                <div className="flex items-center gap-2 mb-1">
+                  <Sparkles className="h-4 w-4" />
+                  <span className="font-semibold">Lovable AI</span>
+                </div>
+                <span className="text-xs opacity-70 text-left">Gemini 2.5 - Rápido</span>
+              </Button>
+              <Button
+                type="button"
+                variant={selectedModel === 'gpt4' ? 'default' : 'outline'}
+                onClick={() => setSelectedModel('gpt4')}
+                className="h-auto flex-col items-start p-4"
+              >
+                <div className="flex items-center gap-2 mb-1">
+                  <Zap className="h-4 w-4" />
+                  <span className="font-semibold">GPT-4.1</span>
+                </div>
+                <span className="text-xs opacity-70 text-left">Mais criativo</span>
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {selectedModel === 'gemini' 
+                ? '⚡ Recomendado para planos padrão'
+                : '🎯 Recomendado para planos complexos'}
+            </p>
           </div>
 
           <Button
@@ -482,12 +518,12 @@ export function CreatePlanejamentoUnificadoModal({
             {loading ? (
               <>
                 <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                Gerando com IA...
+                Gerando com {selectedModel === 'gemini' ? 'Gemini' : 'GPT-4.1'}...
               </>
             ) : (
               <>
                 <Sparkles className="h-5 w-5 mr-2" />
-                Gerar Plano Estratégico com IA
+                Gerar com {selectedModel === 'gemini' ? 'Lovable AI' : 'OpenAI'}
               </>
             )}
           </Button>

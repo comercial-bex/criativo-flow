@@ -12,11 +12,30 @@ serve(async (req) => {
   }
 
   try {
-    const { clienteId, periodo } = await req.json();
+    const { clienteId, periodo, model = 'gemini' } = await req.json();
     
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) {
-      throw new Error("LOVABLE_API_KEY não configurada");
+    // Configurar API baseado no modelo
+    let apiUrl, apiKey, modelName;
+
+    if (model === 'gpt4') {
+      apiUrl = "https://api.openai.com/v1/chat/completions";
+      apiKey = Deno.env.get("OPENAI_API_KEY");
+      modelName = "gpt-4.1-2025-04-14";
+      
+      if (!apiKey) {
+        return new Response(
+          JSON.stringify({ error: "OPENAI_API_KEY não configurada. Configure em Settings → Functions → Secrets" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+    } else {
+      apiUrl = "https://ai.gateway.lovable.dev/v1/chat/completions";
+      apiKey = Deno.env.get("LOVABLE_API_KEY");
+      modelName = "google/gemini-2.5-flash";
+      
+      if (!apiKey) {
+        throw new Error("LOVABLE_API_KEY não configurada");
+      }
     }
 
     // Criar cliente Supabase
@@ -47,8 +66,30 @@ serve(async (req) => {
       .eq('id', clienteId)
       .single();
 
+    // Buscar dados do Hub de Inteligência
+    const { data: intelligenceNews } = await supabase
+      .from('intelligence_data')
+      .select('title, content, published_at')
+      .eq('data_type', 'news')
+      .order('retrieved_at', { ascending: false })
+      .limit(10);
+
+    const { data: intelligenceSocial } = await supabase
+      .from('intelligence_data')
+      .select('title, content, keywords')
+      .eq('data_type', 'social')
+      .order('retrieved_at', { ascending: false })
+      .limit(10);
+
+    // Buscar concorrentes
+    const { data: competitors } = await supabase
+      .from('concorrentes_analise')
+      .select('nome, instagram, site, observacoes, analise_ia')
+      .eq('cliente_id', clienteId)
+      .limit(5);
+
     const systemPrompt = `Você é um especialista em planejamento estratégico empresarial com 20 anos de experiência.
-Baseado nos dados de onboarding de um cliente, você deve criar um plano estratégico coeso e inspirador.
+Baseado nos dados de onboarding de um cliente, análise de mercado e concorrentes, você deve criar um plano estratégico coeso e inspirador.
 
 **Suas entregas OBRIGATÓRIAS:**
 1. **Missão** (2-3 frases): Declaração clara do propósito da empresa, por que ela existe
@@ -60,7 +101,9 @@ Baseado nos dados de onboarding de um cliente, você deve criar um plano estrat�
 - Seja específico ao segmento de atuação do cliente
 - Use linguagem profissional mas acessível
 - Valores devem ser palavras-chave (max 3 palavras cada)
-- SWOT deve ser prático e acionável
+- SWOT deve ser prático e acionável, considerando contexto de mercado atual
+- Considere tendências sociais e notícias relevantes na análise
+- Leve em conta a concorrência ao identificar oportunidades e ameaças
 - Retorne SEMPRE em formato JSON válido, SEM markdown
 
 **Formato de resposta (JSON puro):**
@@ -128,27 +171,53 @@ ${Array.isArray(onboarding.tom_voz) ? onboarding.tom_voz.join(', ') : onboarding
 
 ---
 
+**📰 CONTEXTO DE MERCADO (Notícias Recentes):**
+${intelligenceNews?.map((n: any) => `- ${n.title} (${new Date(n.published_at).toLocaleDateString('pt-BR')})`).join('\n') || 'Nenhuma notícia disponível no momento'}
+
+**📱 TENDÊNCIAS SOCIAIS (Redes Sociais):**
+${intelligenceSocial?.map((s: any) => `- ${s.title}${s.keywords ? ` [${s.keywords.join(', ')}]` : ''}`).join('\n') || 'Nenhuma tendência social disponível no momento'}
+
+**🎯 ANÁLISE COMPETITIVA:**
+${competitors && competitors.length > 0 ? competitors.map((c: any) => `
+- **${c.nome}**
+  ${c.instagram ? `Instagram: ${c.instagram}` : ''}
+  ${c.site ? `Site: ${c.site}` : ''}
+  ${c.observacoes ? `Observações: ${c.observacoes}` : ''}
+`).join('\n') : 'Nenhum concorrente cadastrado para análise comparativa'}
+
+---
+
 **INSTRUÇÕES:**
-Crie um plano estratégico completo e coeso baseado nesses dados. A missão deve refletir o propósito atual, a visão deve ser inspiradora e alinhada com "onde querem estar em 6 meses", os valores devem incorporar o que o cliente declarou mas refinados profissionalmente, e o SWOT deve ser prático e acionável.
+Crie um plano estratégico completo e coeso baseado nesses dados. A missão deve refletir o propósito atual, a visão deve ser inspiradora e alinhada com "onde querem estar em 6 meses", os valores devem incorporar o que o cliente declarou mas refinados profissionalmente, e o SWOT deve ser prático e acionável considerando:
+- As notícias recentes do mercado
+- As tendências sociais atuais
+- O posicionamento dos concorrentes
+- Os diferenciais declarados pelo cliente
 
 Retorne APENAS o JSON, sem markdown, sem comentários.`;
 
-    console.log("🎯 Gerando plano estratégico para cliente:", clienteId);
+    console.log(`🎯 Gerando plano estratégico para cliente ${clienteId} com modelo ${modelName}`);
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const requestBody: any = {
+      model: modelName,
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt }
+      ]
+    };
+
+    // GPT-4.1 não aceita temperature
+    if (model === 'gemini') {
+      requestBody.temperature = 0.8;
+    }
+
+    const response = await fetch(apiUrl, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        Authorization: `Bearer ${apiKey}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt }
-        ],
-        temperature: 0.8,
-      }),
+      body: JSON.stringify(requestBody),
     });
 
     if (!response.ok) {
@@ -160,13 +229,13 @@ Retorne APENAS o JSON, sem markdown, sem comentários.`;
       }
       if (response.status === 402) {
         return new Response(
-          JSON.stringify({ error: "Créditos Lovable AI insuficientes. Adicione créditos em Settings → Workspace → Usage." }),
+          JSON.stringify({ error: `Créditos ${model === 'gpt4' ? 'OpenAI' : 'Lovable AI'} insuficientes. ${model === 'gemini' ? 'Adicione créditos em Settings → Workspace → Usage.' : 'Verifique sua conta OpenAI.'}` }),
           { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
       const errorText = await response.text();
-      console.error("Erro da API Lovable:", response.status, errorText);
-      throw new Error(`Erro na API Lovable: ${response.status}`);
+      console.error(`Erro da API ${model === 'gpt4' ? 'OpenAI' : 'Lovable'}:`, response.status, errorText);
+      throw new Error(`Erro na API: ${response.status}`);
     }
 
     const data = await response.json();
@@ -207,7 +276,12 @@ Retorne APENAS o JSON, sem markdown, sem comentários.`;
         metadata: {
           cliente_nome: cliente?.nome,
           gerado_em: new Date().toISOString(),
-          modelo_ia: "google/gemini-2.5-flash"
+          modelo_ia: modelName,
+          contexto_utilizado: {
+            noticias: intelligenceNews?.length || 0,
+            tendencias_sociais: intelligenceSocial?.length || 0,
+            concorrentes: competitors?.length || 0
+          }
         }
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }

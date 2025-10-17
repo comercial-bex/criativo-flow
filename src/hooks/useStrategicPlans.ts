@@ -100,12 +100,13 @@ export function useStrategicPlans(clienteId?: string) {
     }
   };
 
-  const generateWithAI = async (clienteId: string) => {
+  const generateWithAI = async (clienteId: string, model: 'gemini' | 'gpt4' = 'gemini') => {
     try {
       // Chamar edge function
       const { data, error } = await supabase.functions.invoke('generate-strategic-plan', {
         body: { 
           clienteId,
+          model,
           periodo: {
             inicio: new Date().toISOString().slice(0, 10),
             fim: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)
