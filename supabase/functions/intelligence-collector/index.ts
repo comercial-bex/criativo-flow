@@ -313,6 +313,39 @@ async function parseSourceData(source: IntelligenceSource, rawData: string): Pro
           raw_payload: item
         });
       });
+    } else if (source.type === 'demographics' && source.name === 'Brasil API') {
+      // Brasil API - CEP data
+      const jsonData = JSON.parse(rawData);
+      results.push({
+        external_id: `${source.id}_${jsonData.cep || Date.now()}`,
+        title: `Dados demográficos - ${jsonData.city || 'Brasil'}`,
+        content: `${jsonData.city}/${jsonData.state} - ${jsonData.neighborhood || ''}`,
+        region: `${jsonData.city}, ${jsonData.state}`,
+        keywords: [jsonData.city?.toLowerCase(), jsonData.state?.toLowerCase(), 'brasil', 'demografia'].filter(Boolean),
+        raw_payload: jsonData
+      });
+    } else if (source.type === 'demographics' && source.name === 'IBGE Demographics') {
+      // IBGE API - Aggregated demographic data
+      const jsonData = JSON.parse(rawData);
+      if (Array.isArray(jsonData) && jsonData.length > 0) {
+        jsonData.forEach((item: any, index: number) => {
+          const valor = item.resultados?.[0]?.series?.[0]?.serie || {};
+          const ano = Object.keys(valor)[0] || '2022';
+          const populacao = valor[ano] || 'N/A';
+          
+          results.push({
+            external_id: `${source.id}_${item.id || index}_${Date.now()}`,
+            title: `População Brasil - ${ano}`,
+            content: `Dados populacionais: ${populacao}`,
+            region: 'Brasil',
+            metric_type: 'populacao',
+            metric_value: parseFloat(populacao) || 0,
+            published_at: new Date().toISOString(),
+            keywords: ['ibge', 'demografia', 'população', 'brasil'],
+            raw_payload: item
+          });
+        });
+      }
     } else if (source.type === 'social' || source.type === 'weather') {
       // Parse JSON response
       const jsonData = JSON.parse(rawData);
