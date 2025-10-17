@@ -4,24 +4,15 @@ import { useClientApprovals } from '@/hooks/useClientApprovals';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
-import { CheckCircle, XCircle, FileText, Image, Video, MessageSquare, Camera, Clock, RefreshCw } from 'lucide-react';
+import { CheckCircle, FileText, Clock, RefreshCw } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useTutorial } from '@/hooks/useTutorial';
 import { TutorialButton } from '@/components/TutorialButton';
-
-const tipoIcons = {
-  arte: <Image className="h-5 w-5" />,
-  roteiro: <FileText className="h-5 w-5" />,
-  video: <Video className="h-5 w-5" />,
-  post: <MessageSquare className="h-5 w-5" />,
-  captacao: <Camera className="h-5 w-5" />,
-  outro: <FileText className="h-5 w-5" />
-};
+import { SectionHeader } from '@/components/SectionHeader';
+import { AprovacaoTarefaCard } from '@/components/Aprovacoes/AprovacaoTarefaCard';
 
 const statusColors = {
   pendente: 'bg-yellow-500/10 text-yellow-600 border-yellow-500/20',
@@ -37,9 +28,6 @@ export default function ClienteAprovacoes() {
   const { startTutorial, hasSeenTutorial } = useTutorial('cliente-aprovacoes');
   
   const [selectedApproval, setSelectedApproval] = useState<string | null>(null);
-  const [showApproveDialog, setShowApproveDialog] = useState(false);
-  const [showRejectDialog, setShowRejectDialog] = useState(false);
-  const [rejectReason, setRejectReason] = useState('');
   const [processing, setProcessing] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -53,17 +41,17 @@ export default function ClienteAprovacoes() {
     });
   };
 
-  const handleApprove = async () => {
-    if (!selectedApproval) return;
+  const handleApprove = async (approvalId: string) => {
     
     setProcessing(true);
-    const result = await updateApprovalStatus(selectedApproval, 'aprovado');
+    const result = await updateApprovalStatus(approvalId, 'aprovado');
     
     if (result.success) {
       toast({
         title: 'Material Aprovado',
         description: 'O material foi aprovado com sucesso!'
       });
+      setSelectedApproval(null);
     } else {
       toast({
         title: 'Erro ao Aprovar',
@@ -72,29 +60,20 @@ export default function ClienteAprovacoes() {
       });
     }
     
-    setShowApproveDialog(false);
-    setSelectedApproval(null);
     setProcessing(false);
   };
 
-  const handleReject = async () => {
-    if (!selectedApproval || !rejectReason.trim()) {
-      toast({
-        title: 'Motivo Obrigatório',
-        description: 'Por favor, informe o motivo da reprovação.',
-        variant: 'destructive'
-      });
-      return;
-    }
+  const handleReject = async (approvalId: string, motivo: string) => {
     
     setProcessing(true);
-    const result = await updateApprovalStatus(selectedApproval, 'reprovado', rejectReason);
+    const result = await updateApprovalStatus(approvalId, 'reprovado', motivo);
     
     if (result.success) {
       toast({
         title: 'Material Reprovado',
         description: 'O material foi reprovado. O solicitante será notificado.'
       });
+      setSelectedApproval(null);
     } else {
       toast({
         title: 'Erro ao Reprovar',
@@ -103,9 +82,6 @@ export default function ClienteAprovacoes() {
       });
     }
     
-    setShowRejectDialog(false);
-    setSelectedApproval(null);
-    setRejectReason('');
     setProcessing(false);
   };
 
@@ -126,26 +102,24 @@ export default function ClienteAprovacoes() {
   const completedApprovals = approvals.filter(a => a.status !== 'pendente');
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-3xl font-bold mb-2">Central de Aprovações</h1>
-          <p className="text-muted-foreground">
-            Aprove ou reprove materiais enviados pela agência
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleRefresh}
-            disabled={refreshing}
-          >
-            <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
-            Recarregar
-          </Button>
-          <TutorialButton onStart={startTutorial} hasSeenTutorial={hasSeenTutorial} />
-        </div>
+    <div className="p-6 space-y-8">
+      <SectionHeader
+        title="Central de Aprovações"
+        description="Revise e aprove os materiais antes da publicação"
+        icon={CheckCircle}
+      />
+
+      <div className="flex items-center justify-between">
+        <TutorialButton onStart={startTutorial} hasSeenTutorial={hasSeenTutorial} />
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleRefresh}
+          disabled={refreshing}
+        >
+          <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+          Recarregar
+        </Button>
       </div>
 
       {/* Estatísticas */}
@@ -188,80 +162,27 @@ export default function ClienteAprovacoes() {
         </Card>
       </div>
 
-      {/* Pendentes */}
+      {/* Pendentes - Layout Moderno */}
       {pendingApprovals.length > 0 && (
         <div data-tour="pendentes">
-          <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+          <h2 className="text-xl font-semibold mb-6 flex items-center gap-2">
             <Clock className="h-5 w-5" />
             Aguardando Aprovação
           </h2>
-          <div className="grid gap-4">
-            {pendingApprovals.map((approval) => (
-              <Card key={approval.id} className="border-l-4 border-l-yellow-500">
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3">
-                      {tipoIcons[approval.tipo]}
-                      <div>
-                        <CardTitle>{approval.titulo}</CardTitle>
-                        <CardDescription>
-                          Enviado em {format(new Date(approval.created_at), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
-                        </CardDescription>
-                      </div>
-                    </div>
-                    <Badge className={statusColors[approval.status]}>
-                      {approval.status}
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {approval.descricao && (
-                    <p className="text-sm text-muted-foreground">{approval.descricao}</p>
-                  )}
-                  {approval.anexo_url && (
-                    <div>
-                      <a
-                        href={approval.anexo_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm text-primary hover:underline"
-                      >
-                        Ver Material
-                      </a>
-                    </div>
-                  )}
-                  <div className="flex gap-3">
-                    <Button
-                      size="sm"
-                      className="bg-green-600 hover:bg-green-700"
-                      onClick={() => {
-                        setSelectedApproval(approval.id);
-                        setShowApproveDialog(true);
-                      }}
-                    >
-                      <CheckCircle className="h-4 w-4 mr-2" />
-                      Aprovar
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="destructive"
-                      onClick={() => {
-                        setSelectedApproval(approval.id);
-                        setShowRejectDialog(true);
-                      }}
-                    >
-                      <XCircle className="h-4 w-4 mr-2" />
-                      Reprovar
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          {pendingApprovals.map((approval) => (
+            <div key={approval.id} className="mb-8">
+              <AprovacaoTarefaCard
+                approval={approval}
+                onApprove={handleApprove}
+                onReject={handleReject}
+                processing={processing}
+              />
+            </div>
+          ))}
         </div>
       )}
 
-      {/* Concluídos */}
+      {/* Concluídos - Resumido */}
       {completedApprovals.length > 0 && (
         <div data-tour="historico">
           <h2 className="text-xl font-semibold mb-4">Histórico</h2>
@@ -270,16 +191,13 @@ export default function ClienteAprovacoes() {
               <Card key={approval.id} className={`border-l-4 ${approval.status === 'aprovado' ? 'border-l-green-500' : 'border-l-red-500'}`}>
                 <CardHeader>
                   <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3">
-                      {tipoIcons[approval.tipo]}
-                      <div>
-                        <CardTitle>{approval.titulo}</CardTitle>
-                        <CardDescription>
-                          {approval.decided_at
-                            ? `Decidido em ${format(new Date(approval.decided_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}`
-                            : `Enviado em ${format(new Date(approval.created_at), "dd/MM/yyyy", { locale: ptBR })}`}
-                        </CardDescription>
-                      </div>
+                    <div>
+                      <CardTitle>{approval.titulo}</CardTitle>
+                      <CardDescription>
+                        {approval.decided_at
+                          ? `Decidido em ${format(new Date(approval.decided_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}`
+                          : `Enviado em ${format(new Date(approval.created_at), "dd/MM/yyyy", { locale: ptBR })}`}
+                      </CardDescription>
                     </div>
                     <Badge className={statusColors[approval.status]}>
                       {approval.status}
@@ -320,49 +238,6 @@ export default function ClienteAprovacoes() {
           </CardContent>
         </Card>
       )}
-
-      {/* Dialogs */}
-      <AlertDialog open={showApproveDialog} onOpenChange={setShowApproveDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Confirmar Aprovação</AlertDialogTitle>
-            <AlertDialogDescription>
-              Tem certeza que deseja aprovar este material? O solicitante será notificado.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={processing}>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleApprove} disabled={processing}>
-              {processing ? 'Processando...' : 'Confirmar Aprovação'}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      <AlertDialog open={showRejectDialog} onOpenChange={setShowRejectDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Reprovar Material</AlertDialogTitle>
-            <AlertDialogDescription>
-              Por favor, informe o motivo da reprovação para que a equipe possa fazer os ajustes necessários.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <div className="py-4">
-            <Textarea
-              placeholder="Descreva o motivo da reprovação..."
-              value={rejectReason}
-              onChange={(e) => setRejectReason(e.target.value)}
-              className="min-h-[100px]"
-            />
-          </div>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={processing}>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleReject} disabled={processing} className="bg-red-600 hover:bg-red-700">
-              {processing ? 'Processando...' : 'Confirmar Reprovação'}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 }
