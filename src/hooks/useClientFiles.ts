@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { smartToast } from "@/lib/smart-toast";
+import { MODULE_QUERY_CONFIG } from "@/lib/queryConfig";
 
 export interface ClientFile {
   name: string;
@@ -18,7 +19,7 @@ export function useClientFiles(clienteId: string, projetoId?: string) {
       const { data, error } = await supabase.storage
         .from("task-attachments")
         .list("", {
-          limit: 100,
+          limit: 50,
           sortBy: { column: "created_at", order: "desc" },
         });
 
@@ -33,9 +34,10 @@ export function useClientFiles(clienteId: string, projetoId?: string) {
         return metadata.cliente_id === clienteId;
       });
 
-      return filtered as any as ClientFile[];
+      return filtered.slice(0, 50) as any as ClientFile[];
     },
     enabled: !!clienteId,
+    ...MODULE_QUERY_CONFIG.tarefas
   });
 
   const uploadMutation = useMutation({

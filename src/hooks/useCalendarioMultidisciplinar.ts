@@ -2,6 +2,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { startOfMonth, endOfMonth } from 'date-fns';
+import { MODULE_QUERY_CONFIG } from '@/lib/queryConfig';
+import { logger } from '@/lib/logger';
 
 interface CriarEventoParams {
   projetoId: string;
@@ -35,19 +37,23 @@ export const useCalendarioMultidisciplinar = (options: {
           responsavel:profiles!responsavel_id(id, nome, especialidade),
           projeto:projetos(id, titulo),
           cliente:clientes(id, nome)
-        `)
+        `, { count: 'exact' })
         .gte('data_inicio', options.dataInicio.toISOString())
         .lte('data_fim', options.dataFim.toISOString())
-        .order('data_inicio');
+        .order('data_inicio')
+        .range(0, 49);
       
       if (options.responsavelId) {
         query = query.eq('responsavel_id', options.responsavelId);
       }
       
-      const { data, error } = await query;
+      const { data, error, count } = await query;
       if (error) throw error;
+      
+      logger.debug('Eventos carregados', 'useCalendarioMultidisciplinar', { count });
       return data;
-    }
+    },
+    ...MODULE_QUERY_CONFIG.tarefas
   });
   
   const criarEventoMutation = useMutation({
@@ -68,13 +74,13 @@ export const useCalendarioMultidisciplinar = (options: {
       });
       
       if (error) {
-        console.error('Erro RPC:', error);
+        logger.error('Erro RPC ao criar evento', 'useCalendarioMultidisciplinar', error);
         throw new Error(error.message || 'Erro ao criar evento');
       }
       
       const result = data as any;
       if (!result?.success) {
-        console.error('Erro do servidor:', result);
+        logger.error('Erro do servidor ao criar evento', 'useCalendarioMultidisciplinar', result);
         throw new Error(result?.error || 'Erro ao criar evento');
       }
       
@@ -85,7 +91,7 @@ export const useCalendarioMultidisciplinar = (options: {
       toast.success('Evento criado com sucesso!');
     },
     onError: (error: any) => {
-      console.error('Erro na mutation:', error);
+      logger.error('Erro na mutation criar evento', 'useCalendarioMultidisciplinar', error);
       toast.error(error.message || 'Erro ao criar evento');
     }
   });

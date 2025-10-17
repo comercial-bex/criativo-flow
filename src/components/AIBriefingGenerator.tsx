@@ -169,7 +169,6 @@ ${promptOriginal}`
       setPrompt(''); // Limpar prompt após sucesso
       
     } catch (error: any) {
-      console.error('Erro ao gerar briefing:', error);
       toast({
         title: "Erro na geração",
         description: error?.message || "Tente novamente ou preencha manualmente.",

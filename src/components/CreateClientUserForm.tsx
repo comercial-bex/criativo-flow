@@ -46,8 +46,6 @@ export function CreateClientUserForm({ clientes }: CreateClientUserFormProps) {
     setLoading(true);
     
     try {
-      console.log('📝 Form: Iniciando criação de usuário via Edge Function signup...');
-      
       // Chamar Edge Function universal signup
       const response = await fetch(
         `https://xvpqgwbktpfodbuhwqhh.supabase.co/functions/v1/signup`,
@@ -73,8 +71,6 @@ export function CreateClientUserForm({ clientes }: CreateClientUserFormProps) {
       const data = await response.json();
 
       if (!response.ok) {
-        console.error('📝 Form: Erro na Edge Function:', data);
-        
         // Mensagens específicas
         if (data.error === 'EMAIL_EXISTS') {
           smartToast.error('Este email já está cadastrado no sistema');
@@ -93,8 +89,6 @@ export function CreateClientUserForm({ clientes }: CreateClientUserFormProps) {
         return;
       }
 
-      console.log('✅ Form: Usuário criado com sucesso:', data);
-
       smartToast.success('Usuário criado com sucesso!');
       smartToast.info(`Email: ${formData.email} | Senha: ${formData.password}`);
       
@@ -107,7 +101,6 @@ export function CreateClientUserForm({ clientes }: CreateClientUserFormProps) {
       setFormData(initialFormData);
 
     } catch (error) {
-      console.error('📝 Form: Erro inesperado:', error);
       smartToast.error('Erro inesperado ao criar usuário. Tente novamente.');
     } finally {
       setLoading(false);
@@ -162,7 +155,6 @@ export function CreateClientUserForm({ clientes }: CreateClientUserFormProps) {
       queryClient.invalidateQueries({ queryKey: ['clientes'] });
       
     } catch (error) {
-      console.error('Erro ao criar usuário da Agência Bex:', error);
       smartToast.error('Erro ao criar usuário. Tente novamente.');
     } finally {
       setLoading(false);

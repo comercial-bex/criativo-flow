@@ -142,26 +142,21 @@ export function CalendarioEditorial({ isOpen, onClose, posts, postsGerados, onPo
   };
 
   const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault(); // SEMPRE primeiro para permitir drop
-    console.log('🎯 DragOver on target, draggedPost:', draggedPost?.titulo);
+    e.preventDefault();
     
     if (!draggedPost || !isDraggable(draggedPost)) {
       e.dataTransfer.dropEffect = 'none';
-      console.log('❌ Drop not allowed - no dragged post or not draggable');
       return;
     }
     
-    console.log('✅ Drop allowed - setting move effect');
     e.dataTransfer.dropEffect = 'move';
   };
 
   const handleDrop = async (e: React.DragEvent, targetDate: Date) => {
     e.preventDefault();
-    console.log('🎯 Drop executed on date:', format(targetDate, 'dd/MM/yyyy'), 'for post:', draggedPost?.titulo);
     setIsDragActive(false);
     
     if (!draggedPost || !isDraggable(draggedPost)) {
-      console.log('❌ Drop failed - no dragged post or not draggable');
       setDraggedPost(null);
       return;
     }
@@ -285,10 +280,7 @@ export function CalendarioEditorial({ isOpen, onClose, posts, postsGerados, onPo
                               <div
                                 key={post.id}
                                 draggable={canDrag}
-                                onDragStart={(e) => {
-                                  console.log('🔥 Drag started for post:', post.titulo, post.id);
-                                  handleDragStart(e, post);
-                                }}
+                                onDragStart={(e) => handleDragStart(e, post)}
                                 onDragEnd={handleDragEnd}
                          className={`
                           text-xs px-2 py-1 rounded text-center truncate transition-colors relative bg-white/80 border

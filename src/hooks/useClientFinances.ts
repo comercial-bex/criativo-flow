@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { smartToast } from "@/lib/smart-toast";
+import { MODULE_QUERY_CONFIG } from "@/lib/queryConfig";
 
 export interface Transaction {
   id: string;
@@ -24,18 +25,20 @@ export function useClientFinances(clienteId: string) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("transacoes_financeiras")
-        .select("*")
+        .select("*", { count: 'exact' })
         .eq("cliente_id", clienteId)
-        .order("data_vencimento", { ascending: false });
+        .order("data_vencimento", { ascending: false })
+        .range(0, 49);
 
       if (error) throw error;
-      return data as Transaction[];
+      return (data || []) as Transaction[];
     },
     enabled: !!clienteId,
+    ...MODULE_QUERY_CONFIG.lancamentos
   });
 
-  const receitas = transactions.filter((t) => t.tipo === "receita");
-  const despesas = transactions.filter((t) => t.tipo === "despesa");
+  const receitas = (transactions || []).filter((t) => t.tipo === "receita");
+  const despesas = (transactions || []).filter((t) => t.tipo === "despesa");
 
   const registerPaymentMutation = useMutation({
     mutationFn: async ({ id, data_pagamento }: { id: string; data_pagamento: string }) => {
@@ -79,7 +82,7 @@ export function useClientFinances(clienteId: string) {
   const totalReceitas = receitas.reduce((acc, t) => acc + Number(t.valor), 0);
   const totalDespesas = despesas.reduce((acc, t) => acc + Number(t.valor), 0);
   const saldo = totalReceitas - totalDespesas;
-  const pendente = transactions
+  const pendente = (transactions || [])
     .filter((t) => t.status === "pendente")
     .reduce((acc, t) => acc + Number(t.valor), 0);
 

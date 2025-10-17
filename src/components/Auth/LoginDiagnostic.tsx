@@ -54,8 +54,6 @@ export const LoginDiagnostic = () => {
         .eq('email', email)
         .maybeSingle();
 
-      console.log('🔍 Profile encontrado:', profile);
-
       // 2. Se encontrou perfil, verificar role
       let roleData = null;
       if (profile?.id) {
@@ -65,7 +63,6 @@ export const LoginDiagnostic = () => {
           .eq('user_id', profile.id)
           .maybeSingle();
         roleData = role;
-        console.log('🔍 Role encontrada:', roleData);
       }
 
       // 3. Verificar se usuário existe no auth através da função find_orphan_auth_users
@@ -73,10 +70,6 @@ export const LoginDiagnostic = () => {
       
       const isOrphanInAuth = orphanCheck?.some((u: any) => u.email === email);
       const authExists = profile?.id || isOrphanInAuth;
-      
-      console.log('🔍 Órfãos no auth:', orphanCheck);
-      console.log('🔍 Este usuário é órfão?', isOrphanInAuth);
-      console.log('🔍 Auth exists:', authExists);
 
       // Análise de problemas
       const profileExists = !!profile;
@@ -133,7 +126,6 @@ export const LoginDiagnostic = () => {
         smartToast.error('❌ Problemas detectados', `${errors.length} erro(s) encontrado(s)`);
       }
     } catch (error: any) {
-      console.error('Erro no diagnóstico:', error);
       smartToast.error('Erro ao verificar', error.message);
     } finally {
       setChecking(false);
