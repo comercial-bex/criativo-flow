@@ -126,6 +126,71 @@ const convertToKanbanTask = (tarefa: Tarefa, profiles: Profile[]): KanbanTask =>
   };
 };
 
+// Componente para coluna droppable (isola o hook useDroppable)
+interface DroppableColumnProps {
+  coluna: typeof colunas[0];
+  tarefas: Tarefa[];
+  profiles: Profile[];
+  onTaskClick: (tarefa: Tarefa) => void;
+  onQuickMove: (taskId: string, statusId: string) => void;
+  allColumns: typeof colunas;
+}
+
+function DroppableColumn({ 
+  coluna, 
+  tarefas: tarefasColuna, 
+  profiles, 
+  onTaskClick, 
+  onQuickMove,
+  allColumns 
+}: DroppableColumnProps) {
+  const { setNodeRef, isOver } = useDroppable({ id: coluna.id });
+  
+  return (
+    <div 
+      className={`min-w-[280px] transition-all ${isOver ? 'scale-[1.02]' : ''}`}
+    >
+      <Card className={`${coluna.cor} border-2 ${coluna.accentColor} rounded-xl shadow-sm hover:shadow-md transition-all duration-200`}>
+        <CardHeader className="pb-3 border-b border-gray-200/50 dark:border-gray-700/50">
+          <CardTitle className="text-sm font-semibold flex items-center justify-between text-gray-800 dark:text-gray-200">
+            <div className="flex items-center gap-2">
+              <span className="text-base">{coluna.icon}</span>
+              {coluna.titulo}
+            </div>
+            <Badge 
+              variant="secondary" 
+              className="bg-white/80 dark:bg-gray-800/80 text-gray-700 dark:text-gray-300 font-bold px-2 py-1 shadow-sm"
+            >
+              {tarefasColuna.length}
+            </Badge>
+          </CardTitle>
+        </CardHeader>
+        <CardContent 
+          ref={setNodeRef}
+          className="space-y-2.5 min-h-[500px] p-4"
+        >
+          <SortableContext 
+            id={coluna.id}
+            items={tarefasColuna.map(t => t.id)} 
+            strategy={verticalListSortingStrategy}
+          >
+            {tarefasColuna.map((tarefa) => (
+              <ModernKanbanCard
+                key={tarefa.id}
+                task={convertToKanbanTask(tarefa, profiles)}
+                onTaskClick={() => onTaskClick(tarefa)}
+                quickMoveColumns={allColumns.map(c => ({ id: c.id, titulo: c.titulo }))}
+                onQuickMove={onQuickMove}
+                currentStatus={tarefa.status}
+              />
+            ))}
+          </SortableContext>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
 
 export function TarefasKanban({ planejamento, clienteId, projetoId, filters }: TarefasKanbanProps) {
   const [tarefas, setTarefas] = useState<Tarefa[]>([]);
@@ -687,55 +752,17 @@ export function TarefasKanban({ planejamento, clienteId, projetoId, filters }: T
         onDragEnd={handleDragEnd}
       >
         <div className="grid grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
-          {colunas.map((coluna) => {
-            const tarefasColuna = getTarefasPorStatus(coluna.id);
-            const { setNodeRef, isOver } = useDroppable({ id: coluna.id });
-            
-            return (
-              <div 
-                key={coluna.id}
-                className={`min-w-[280px] transition-all ${isOver ? 'scale-[1.02]' : ''}`}
-              >
-                <Card className={`${coluna.cor} border-2 ${coluna.accentColor} rounded-xl shadow-sm hover:shadow-md transition-all duration-200`}>
-                  <CardHeader className="pb-3 border-b border-gray-200/50 dark:border-gray-700/50">
-                    <CardTitle className="text-sm font-semibold flex items-center justify-between text-gray-800 dark:text-gray-200">
-                      <div className="flex items-center gap-2">
-                        <span className="text-base">{coluna.icon}</span>
-                        {coluna.titulo}
-                      </div>
-                      <Badge 
-                        variant="secondary" 
-                        className="bg-white/80 dark:bg-gray-800/80 text-gray-700 dark:text-gray-300 font-bold px-2 py-1 shadow-sm"
-                      >
-                        {tarefasColuna.length}
-                      </Badge>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent 
-                    ref={setNodeRef}
-                    className="space-y-2.5 min-h-[500px] p-4"
-                  >
-                    <SortableContext 
-                      id={coluna.id}
-                      items={tarefasColuna.map(t => t.id)} 
-                      strategy={verticalListSortingStrategy}
-                    >
-                      {tarefasColuna.map((tarefa) => (
-                        <ModernKanbanCard
-                          key={tarefa.id}
-                          task={convertToKanbanTask(tarefa, profiles)}
-                          onTaskClick={() => setEditingTarefa(tarefa)}
-                          quickMoveColumns={colunas.map(c => ({ id: c.id, titulo: c.titulo }))}
-                          onQuickMove={(taskId, statusId) => updateTarefaStatus(taskId, statusId)}
-                          currentStatus={tarefa.status}
-                        />
-                      ))}
-                    </SortableContext>
-                  </CardContent>
-                </Card>
-              </div>
-            );
-          })}
+          {colunas.map((coluna) => (
+            <DroppableColumn
+              key={coluna.id}
+              coluna={coluna}
+              tarefas={getTarefasPorStatus(coluna.id)}
+              profiles={profiles}
+              onTaskClick={setEditingTarefa}
+              onQuickMove={updateTarefaStatus}
+              allColumns={colunas}
+            />
+          ))}
         </div>
 
         <DragOverlay dropAnimation={null} modifiers={[snapCenterToCursor]}>
