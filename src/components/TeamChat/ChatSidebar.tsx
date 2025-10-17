@@ -3,7 +3,8 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { MessageSquare, Plus, Search } from 'lucide-react';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { MessageSquare, Plus, Search, X, Users } from 'lucide-react';
 import { useTeamChat } from '@/hooks/useTeamChat';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -12,9 +13,10 @@ import { NewThreadDialog } from './NewThreadDialog';
 interface ChatSidebarProps {
   onSelectThread: (threadId: string) => void;
   selectedThreadId?: string;
+  onClose?: () => void;
 }
 
-export function ChatSidebar({ onSelectThread, selectedThreadId }: ChatSidebarProps) {
+export function ChatSidebar({ onSelectThread, selectedThreadId, onClose }: ChatSidebarProps) {
   const { threads, loadingThreads } = useTeamChat();
   const [searchQuery, setSearchQuery] = useState('');
   const [showNewThread, setShowNewThread] = useState(false);
@@ -25,21 +27,33 @@ export function ChatSidebar({ onSelectThread, selectedThreadId }: ChatSidebarPro
 
   return (
     <>
-      <Card className="h-full flex flex-col">
+      <Card className="h-full flex flex-col overflow-hidden">
         {/* Header */}
-        <div className="p-4 border-b">
+        <div className="p-4 border-b shrink-0">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <MessageSquare className="h-5 w-5" />
-              <h3 className="font-semibold">Chat da Equipe</h3>
+              <h3 className="font-semibold">Conversas</h3>
             </div>
-            <Button
-              size="icon"
-              variant="ghost"
-              onClick={() => setShowNewThread(true)}
-            >
-              <Plus className="h-4 w-4" />
-            </Button>
+            <div className="flex items-center gap-1">
+              <Button
+                size="icon"
+                variant="ghost"
+                onClick={() => setShowNewThread(true)}
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
+              {onClose && (
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  onClick={onClose}
+                  className="md:hidden"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
           </div>
 
           <div className="relative">
@@ -94,30 +108,70 @@ export function ChatSidebar({ onSelectThread, selectedThreadId }: ChatSidebarPro
                 )}
               </div>
             ) : (
-              filteredThreads.map((thread) => (
-                <button
-                  key={thread.id}
-                  onClick={() => onSelectThread(thread.id)}
-                  className={`w-full text-left p-3 rounded-lg hover:bg-muted transition-colors ${
-                    selectedThreadId === thread.id ? 'bg-muted' : ''
-                  }`}
-                >
-                  <div className="flex items-start justify-between mb-1">
-                    <p className="font-medium text-sm truncate flex-1">
-                      {thread.title}
-                    </p>
-                    <span className="text-xs text-muted-foreground ml-2">
-                      {formatDistanceToNow(new Date(thread.last_message_at), {
-                        addSuffix: true,
-                        locale: ptBR
-                      })}
-                    </span>
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    {thread.is_group ? '👥 Grupo' : '💬 Conversa'}
-                  </p>
-                </button>
-              ))
+              filteredThreads.map((thread) => {
+                const unreadCount = thread.unread_count || 0;
+                
+                return (
+                  <button
+                    key={thread.id}
+                    onClick={() => onSelectThread(thread.id)}
+                    className={`w-full text-left p-3 rounded-lg hover:bg-muted transition-all ${
+                      selectedThreadId === thread.id ? 'bg-muted' : ''
+                    }`}
+                  >
+                    <div className="flex gap-3">
+                      {/* Avatar */}
+                      <div className="relative shrink-0">
+                        {thread.is_group ? (
+                          <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+                            <Users className="h-6 w-6 text-primary" />
+                          </div>
+                        ) : (
+                          <Avatar className="h-12 w-12">
+                            <AvatarImage src={thread.participant_avatar} />
+                            <AvatarFallback className="bg-primary/10 text-primary">
+                              {thread.title[0]?.toUpperCase() || '?'}
+                            </AvatarFallback>
+                          </Avatar>
+                        )}
+                        
+                        {/* Badge de mensagens não lidas */}
+                        {unreadCount > 0 && (
+                          <div className="absolute -bottom-1 -right-1 bg-green-500 text-white text-[10px] font-bold rounded-full h-5 min-w-5 px-1 flex items-center justify-center shadow-lg">
+                            {unreadCount > 99 ? '99+' : unreadCount}
+                          </div>
+                        )}
+                      </div>
+                      
+                      {/* Conteúdo */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between mb-1 gap-2">
+                          <p className={`text-sm truncate flex-1 ${
+                            unreadCount > 0 ? 'font-bold' : 'font-medium'
+                          }`}>
+                            {thread.title}
+                          </p>
+                          <span className="text-xs text-muted-foreground shrink-0">
+                            {formatDistanceToNow(new Date(thread.last_message_at), {
+                              addSuffix: false,
+                              locale: ptBR
+                            }).replace('cerca de ', '')}
+                          </span>
+                        </div>
+                        
+                        {/* Preview da última mensagem */}
+                        <p className={`text-xs truncate ${
+                          unreadCount > 0 
+                            ? 'text-foreground font-medium' 
+                            : 'text-muted-foreground'
+                        }`}>
+                          {thread.last_message_preview || 'Nenhuma mensagem ainda'}
+                        </p>
+                      </div>
+                    </div>
+                  </button>
+                );
+              })
             )}
           </div>
         </ScrollArea>

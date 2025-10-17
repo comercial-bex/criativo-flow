@@ -5,12 +5,14 @@ import { ChatSidebar } from './ChatSidebar';
 import { ChatWindow } from './ChatWindow';
 import { useAuth } from '@/hooks/useAuth';
 import { useTeamChat } from '@/hooks/useTeamChat';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 export function TeamChatWidget() {
   const { user } = useAuth();
   const { unreadCount } = useTeamChat();
   const [isOpen, setIsOpen] = useState(false);
   const [selectedThreadId, setSelectedThreadId] = useState<string | undefined>();
+  const isMobile = useIsMobile();
 
   if (!user) {
     return null;
@@ -50,23 +52,51 @@ export function TeamChatWidget() {
       />
       
       {/* Chat Container */}
-      <div className="fixed bottom-6 md:right-6 inset-x-6 md:inset-x-auto z-[60] flex flex-row-reverse gap-4 animate-in slide-in-from-bottom-5 slide-in-from-right-5">
-        {/* Chat Window */}
-        {selectedThreadId && (
-          <div className="w-full md:w-[380px] lg:w-[450px] animate-in slide-in-from-right-3">
-            <ChatWindow
-              threadId={selectedThreadId}
-              onClose={() => setSelectedThreadId(undefined)}
-            />
-          </div>
-        )}
+      <div className="fixed bottom-6 md:right-6 inset-x-6 md:inset-x-auto z-[60] animate-in slide-in-from-bottom-5 slide-in-from-right-5">
+        <div className="flex flex-row-reverse gap-4">
+          {/* Mobile: Mostrar APENAS conversa OU sidebar */}
+          {isMobile ? (
+            selectedThreadId ? (
+              <div className="w-full animate-in slide-in-from-right-3 duration-200">
+                <ChatWindow
+                  threadId={selectedThreadId}
+                  onClose={() => {
+                    setIsOpen(false);
+                    setSelectedThreadId(undefined);
+                  }}
+                  onBack={() => setSelectedThreadId(undefined)}
+                />
+              </div>
+            ) : (
+              <div className="w-full h-[600px] max-h-[calc(100vh-8rem)]">
+                <ChatSidebar
+                  onSelectThread={setSelectedThreadId}
+                  selectedThreadId={selectedThreadId}
+                  onClose={() => setIsOpen(false)}
+                />
+              </div>
+            )
+          ) : (
+            // Desktop: Mostrar ambos lado a lado
+            <>
+              {selectedThreadId && (
+                <div className="w-[380px] lg:w-[450px] animate-in slide-in-from-right-3 duration-200">
+                  <ChatWindow
+                    threadId={selectedThreadId}
+                    onClose={() => setSelectedThreadId(undefined)}
+                  />
+                </div>
+              )}
 
-        {/* Sidebar */}
-        <div className="w-full md:w-[280px] lg:w-[320px] h-[600px] max-h-[calc(100vh-8rem)] md:max-h-[600px]">
-          <ChatSidebar
-            onSelectThread={setSelectedThreadId}
-            selectedThreadId={selectedThreadId}
-          />
+              <div className="w-[280px] lg:w-[320px] h-[600px]">
+                <ChatSidebar
+                  onSelectThread={setSelectedThreadId}
+                  selectedThreadId={selectedThreadId}
+                  onClose={() => setIsOpen(false)}
+                />
+              </div>
+            </>
+          )}
         </div>
       </div>
     </>

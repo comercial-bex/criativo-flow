@@ -12,6 +12,10 @@ export interface ChatThread {
   last_message_at: string;
   created_at: string;
   created_by: string;
+  last_message_preview?: string;
+  participant_avatar?: string;
+  participant_count?: number;
+  unread_count?: number;
 }
 
 export interface ChatMessage {
