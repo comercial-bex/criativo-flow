@@ -1,4 +1,4 @@
-import { useEspecialistas } from "@/hooks/useEspecialistas";
+import { useEspecialistasGRS } from "@/hooks/useEspecialistasGRS";
 import {
   Select,
   SelectContent,
@@ -16,7 +16,7 @@ interface EspecialistaSelectorProps {
 }
 
 export function EspecialistaSelector({ onSelect, selectedId }: EspecialistaSelectorProps) {
-  const { data: especialistas, isLoading } = useEspecialistas();
+  const { data: especialistas, isLoading } = useEspecialistasGRS();
 
   const getInitials = (nome: string) => {
     if (!nome) return '?';
