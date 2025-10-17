@@ -144,14 +144,31 @@ export function PlanejamentoEditorialWizard({
           call_to_action: c.call_to_action,
           hashtags: c.hashtags,
           contexto_estrategico: c.conceito_visual,
-          data_postagem: new Date(Date.now() + idx * 24 * 60 * 60 * 1000).toISOString(),
+          data_postagem: new Date(Date.now() + idx * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
         }));
+
+        // Validar que todos os posts têm campos obrigatórios
+        const postsValidos = posts.every(p => 
+          p.planejamento_id && 
+          p.titulo && 
+          p.objetivo_postagem && 
+          p.tipo_criativo && 
+          p.formato_postagem &&
+          p.data_postagem
+        );
+
+        if (!postsValidos) {
+          throw new Error('Dados incompletos nos posts gerados');
+        }
 
         const { error: postsError } = await supabase
           .from('posts_planejamento')
           .insert(posts);
 
-        if (postsError) throw postsError;
+        if (postsError) {
+          console.error('Erro ao inserir posts:', postsError);
+          throw new Error(`Falha ao criar posts: ${postsError.message}`);
+        }
       }
 
       toast.success('Planejamento BEX criado com sucesso!');
