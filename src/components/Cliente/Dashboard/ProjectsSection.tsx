@@ -4,15 +4,17 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { FolderKanban, Calendar } from "lucide-react";
 import { ProjectWithTasks } from "@/hooks/useClientDashboard";
-import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { ProjectTasksModal } from "./ProjectTasksModal";
 
 interface ProjectsSectionProps {
   projects: ProjectWithTasks[];
   clienteId: string;
 }
 
-export function ProjectsSection({ projects }: ProjectsSectionProps) {
-  const navigate = useNavigate();
+export function ProjectsSection({ projects, clienteId }: ProjectsSectionProps) {
+  const [selectedProject, setSelectedProject] = useState<ProjectWithTasks | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const getStatusBadge = (status: string) => {
     const variants: Record<string, string> = {
@@ -96,7 +98,10 @@ export function ProjectsSection({ projects }: ProjectsSectionProps) {
                     variant="outline"
                     size="sm"
                     className="w-full"
-                    onClick={() => navigate(`/cliente/projeto/${projeto.id}/tarefas`)}
+                    onClick={() => {
+                      setSelectedProject(projeto);
+                      setIsModalOpen(true);
+                    }}
                   >
                     <FolderKanban className="h-4 w-4 mr-2" />
                     Ver Tarefas do Projeto
@@ -107,6 +112,15 @@ export function ProjectsSection({ projects }: ProjectsSectionProps) {
           )}
         </CardContent>
       </Card>
+
+      {selectedProject && (
+        <ProjectTasksModal
+          open={isModalOpen}
+          onOpenChange={setIsModalOpen}
+          projeto={selectedProject}
+          clienteId={clienteId}
+        />
+      )}
     </div>
   );
 }
