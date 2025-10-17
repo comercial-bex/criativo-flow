@@ -1926,11 +1926,13 @@ export type Database = {
           calls_today: number | null
           connector_name: string
           created_at: string | null
+          error_count: number | null
           last_error_at: string | null
           last_error_message: string | null
           last_success_at: string | null
           next_run_at: string | null
           status: string | null
+          total_items_collected: number | null
           updated_at: string | null
         }
         Insert: {
@@ -1938,11 +1940,13 @@ export type Database = {
           calls_today?: number | null
           connector_name: string
           created_at?: string | null
+          error_count?: number | null
           last_error_at?: string | null
           last_error_message?: string | null
           last_success_at?: string | null
           next_run_at?: string | null
           status?: string | null
+          total_items_collected?: number | null
           updated_at?: string | null
         }
         Update: {
@@ -1950,11 +1954,13 @@ export type Database = {
           calls_today?: number | null
           connector_name?: string
           created_at?: string | null
+          error_count?: number | null
           last_error_at?: string | null
           last_error_message?: string | null
           last_success_at?: string | null
           next_run_at?: string | null
           status?: string | null
+          total_items_collected?: number | null
           updated_at?: string | null
         }
         Relationships: []
