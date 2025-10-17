@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
-import { CheckCircle, XCircle, FileText, Image, Video, MessageSquare, Camera, Clock } from 'lucide-react';
+import { CheckCircle, XCircle, FileText, Image, Video, MessageSquare, Camera, Clock, RefreshCw } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -32,7 +32,7 @@ const statusColors = {
 
 export default function ClienteAprovacoes() {
   const { clientProfile, loading: clienteLoading } = useClientDashboard();
-  const { approvals, loading, updateApprovalStatus } = useClientApprovals(clientProfile?.cliente_id);
+  const { approvals, loading, updateApprovalStatus, refetch } = useClientApprovals(clientProfile?.cliente_id);
   const { toast } = useToast();
   const { startTutorial, hasSeenTutorial } = useTutorial('cliente-aprovacoes');
   
@@ -41,6 +41,17 @@ export default function ClienteAprovacoes() {
   const [showRejectDialog, setShowRejectDialog] = useState(false);
   const [rejectReason, setRejectReason] = useState('');
   const [processing, setProcessing] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await refetch();
+    setRefreshing(false);
+    toast({
+      title: 'Dados Atualizados',
+      description: 'As aprovações foram recarregadas com sucesso.'
+    });
+  };
 
   const handleApprove = async () => {
     if (!selectedApproval) return;
@@ -123,7 +134,18 @@ export default function ClienteAprovacoes() {
             Aprove ou reprove materiais enviados pela agência
           </p>
         </div>
-        <TutorialButton onStart={startTutorial} hasSeenTutorial={hasSeenTutorial} />
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleRefresh}
+            disabled={refreshing}
+          >
+            <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+            Recarregar
+          </Button>
+          <TutorialButton onStart={startTutorial} hasSeenTutorial={hasSeenTutorial} />
+        </div>
       </div>
 
       {/* Estatísticas */}
