@@ -9730,6 +9730,80 @@ export type Database = {
           },
         ]
       }
+      team_chat_messages: {
+        Row: {
+          attachments: Json | null
+          content: string
+          created_at: string | null
+          id: string
+          mentioned_users: string[] | null
+          reactions: Json | null
+          sender_id: string
+          thread_id: string
+        }
+        Insert: {
+          attachments?: Json | null
+          content: string
+          created_at?: string | null
+          id?: string
+          mentioned_users?: string[] | null
+          reactions?: Json | null
+          sender_id: string
+          thread_id: string
+        }
+        Update: {
+          attachments?: Json | null
+          content?: string
+          created_at?: string | null
+          id?: string
+          mentioned_users?: string[] | null
+          reactions?: Json | null
+          sender_id?: string
+          thread_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_chat_messages_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "team_chat_threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      team_chat_threads: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          id: string
+          is_group: boolean
+          last_message_at: string | null
+          participants: string[]
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          is_group?: boolean
+          last_message_at?: string | null
+          participants?: string[]
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          is_group?: boolean
+          last_message_at?: string | null
+          participants?: string[]
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       ticket_mensagens: {
         Row: {
           anexo_url: string | null

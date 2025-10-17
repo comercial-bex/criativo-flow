@@ -33,6 +33,10 @@ export function ChatWindow({ threadId, onClose }: ChatWindowProps) {
     });
   };
 
+  const handleReaction = (messageId: string, emoji: string) => {
+    addReaction({ messageId, emoji });
+  };
+
   return (
     <Card className="shadow-xl h-[600px] flex flex-col">
       {/* Header */}
@@ -64,7 +68,7 @@ export function ChatWindow({ threadId, onClose }: ChatWindowProps) {
               key={message.id}
               message={message}
               isOwn={message.sender_id === user?.id}
-              onReaction={addReaction}
+              onReaction={handleReaction}
             />
           ))}
         </div>
