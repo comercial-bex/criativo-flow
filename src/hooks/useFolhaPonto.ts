@@ -39,7 +39,11 @@ export function useFolhaPonto(colaboradorId?: string, competencia?: string) {
   const { data: pontos = [], isLoading } = useQuery({
     queryKey: ['folha-ponto', colaboradorId, competencia],
     queryFn: async () => {
-      let query = supabase.from('rh_folha_ponto').select('*').order('competencia', { ascending: false });
+      let query = supabase
+        .from('rh_folha_ponto')
+        .select('*', { count: 'exact' })
+        .order('competencia', { ascending: false })
+        .range(0, 49); // Paginação: primeiros 50 registros
       
       if (colaboradorId) query = query.eq('colaborador_id', colaboradorId);
       if (competencia) query = query.eq('competencia', competencia);
@@ -49,6 +53,8 @@ export function useFolhaPonto(colaboradorId?: string, competencia?: string) {
       return data as FolhaPonto[];
     },
     enabled: !!colaboradorId || !!competencia,
+    staleTime: 30 * 1000, // 30 segundos (dados críticos)
+    gcTime: 2 * 60 * 1000, // 2 minutos
   });
 
   const salvarMutation = useMutation({

@@ -30,7 +30,11 @@ export function useFolhaMes(pessoaId?: string, competencia?: string) {
   const { data: folhas = [], isLoading } = useQuery({
     queryKey: ['folha-mes', pessoaId, competencia],
     queryFn: async () => {
-      let query = supabase.from('folha_mes').select('*').order('competencia', { ascending: false });
+      let query = supabase
+        .from('folha_mes')
+        .select('*', { count: 'exact' })
+        .order('competencia', { ascending: false })
+        .range(0, 49); // Paginação: primeiros 50 registros
       
       if (pessoaId) query = query.eq('pessoa_id', pessoaId);
       if (competencia) query = query.eq('competencia', competencia);
@@ -40,6 +44,8 @@ export function useFolhaMes(pessoaId?: string, competencia?: string) {
       return data as FolhaMes[];
     },
     enabled: !!pessoaId || !!competencia,
+    staleTime: 30 * 1000, // 30 segundos (dados críticos)
+    gcTime: 2 * 60 * 1000, // 2 minutos
   });
 
   const calcularFolhaMutation = useMutation({

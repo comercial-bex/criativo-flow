@@ -82,7 +82,7 @@ export default function GRSDashboard() {
         return;
       }
 
-      console.log('🔍 Buscando dados para GRS:', user.id);
+      // Buscando dados do GRS
 
       // Buscar todos os clientes ativos (filtraremos por projetos depois)
       const { data: clientes, error: clientesError } = await supabase
@@ -90,8 +90,6 @@ export default function GRSDashboard() {
         .select('id, nome, email, status')
         .eq('status', 'ativo')
         .order('nome');
-      
-      console.log('📊 Total de clientes ativos:', clientes?.length || 0);
 
       if (clientesError) throw clientesError;
 
@@ -102,12 +100,7 @@ export default function GRSDashboard() {
         .select('id, cliente_id, status, responsavel_grs_id')
         .eq('responsavel_grs_id', user.id);
 
-      if (projetosError1) {
-        console.error('❌ Erro ao buscar projetos como responsável:', projetosError1);
-        throw projetosError1;
-      }
-
-      console.log('📊 Projetos como responsável:', projetosResponsavel?.length || 0);
+      if (projetosError1) throw projetosError1;
 
       // 2️⃣ Buscar projetos onde GRS está como especialista
       const { data: especialistaLinks, error: projetosError2 } = await supabase
@@ -116,12 +109,7 @@ export default function GRSDashboard() {
         .eq('especialista_id', user.id)
         .eq('especialidade', 'grs');
 
-      if (projetosError2) {
-        console.error('❌ Erro ao buscar projetos como especialista:', projetosError2);
-        throw projetosError2;
-      }
-
-      console.log('📊 Links como especialista:', especialistaLinks?.length || 0);
+      if (projetosError2) throw projetosError2;
 
       // 3️⃣ Se houver projetos como especialista, buscar seus dados completos
       let projetosEspecialista: any[] = [];
@@ -133,13 +121,9 @@ export default function GRSDashboard() {
           .select('id, cliente_id, status, responsavel_grs_id')
           .in('id', projetoIds);
           
-        if (projetosError3) {
-          console.error('❌ Erro ao buscar dados dos projetos especialistas:', projetosError3);
-          throw projetosError3;
-        }
+        if (projetosError3) throw projetosError3;
         
         projetosEspecialista = data || [];
-        console.log('📊 Projetos como especialista:', projetosEspecialista.length);
       }
 
       // 4️⃣ Unir e remover duplicatas
@@ -160,21 +144,6 @@ export default function GRSDashboard() {
       // Converter Map para array
       const projetos = Array.from(projetosMap.values());
 
-console.log('📁 Total de projetos vinculados ao GRS:', projetos.length);
-
-    // Log de debug para clientes com projetos
-    if (projetos.length > 0) {
-      const clientesUnicos = [...new Set(projetos.map(p => p.cliente_id))];
-      console.log('🏢 Clientes com projetos:', clientesUnicos.length);
-      console.log('🏢 IDs dos clientes:', clientesUnicos);
-    }
-
-      // ✅ Validar estrutura dos dados
-      const projetosInvalidos = projetos.filter(p => !p.id || !p.cliente_id);
-      if (projetosInvalidos.length > 0) {
-        console.warn('⚠️ Projetos com dados incompletos:', projetosInvalidos);
-      }
-
       // 🎯 FASE 3: Filtrar planejamentos vinculados
       const { data: planejamentos, error: planejamentosError } = await supabase
         .from('planejamentos')
@@ -182,7 +151,6 @@ console.log('📁 Total de projetos vinculados ao GRS:', projetos.length);
         .eq('responsavel_grs_id', user.id);  // ✅ Filtrar por GRS responsável
 
       if (planejamentosError) throw planejamentosError;
-      console.log('📅 Planejamentos vinculados ao GRS:', planejamentos?.length || 0);
 
       // Simulação de dados de aprovações e mensagens para demonstração
       // Em produção, buscar das tabelas reais
@@ -219,8 +187,6 @@ console.log('📁 Total de projetos vinculados ao GRS:', projetos.length);
           mensagensNaoLidas,
         };
       }).filter(cliente => cliente.totalProjetos > 0) || [];
-      
-      console.log('👥 Clientes com projetos vinculados ao GRS:', clientesComStats.length);
 
       setClientesComProjetos(clientesComStats);
 
@@ -238,15 +204,6 @@ console.log('📁 Total de projetos vinculados ao GRS:', projetos.length);
       });
 
     } catch (error: any) {
-      console.error('❌ Erro ao carregar dados do dashboard:', error);
-      console.error('❌ Detalhes completos:', {
-        message: error?.message,
-        code: error?.code,
-        details: error?.details,
-        hint: error?.hint,
-        stack: error?.stack
-      });
-      
       toast({
         title: "❌ Erro ao carregar dashboard",
         description: error?.message || "Não foi possível carregar os dados. Tente novamente.",

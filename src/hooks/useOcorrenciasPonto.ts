@@ -26,7 +26,11 @@ export function useOcorrenciasPonto(pessoaId?: string, competencia?: string) {
   const { data: ocorrencias = [], isLoading } = useQuery({
     queryKey: ['ocorrencias-ponto', pessoaId, competencia],
     queryFn: async () => {
-      let query = supabase.from('ocorrencias_ponto').select('*').order('data', { ascending: false });
+      let query = supabase
+        .from('ocorrencias_ponto')
+        .select('*', { count: 'exact' })
+        .order('data', { ascending: false })
+        .range(0, 49); // Paginação: primeiros 50 registros
       
       if (pessoaId) query = query.eq('pessoa_id', pessoaId);
       if (competencia) {
@@ -41,6 +45,8 @@ export function useOcorrenciasPonto(pessoaId?: string, competencia?: string) {
       return data as OcorrenciaPonto[];
     },
     enabled: !!pessoaId || !!competencia,
+    staleTime: 1 * 60 * 1000, // 1 minuto (dados dinâmicos)
+    gcTime: 5 * 60 * 1000, // 5 minutos
   });
 
   const criarMutation = useMutation({

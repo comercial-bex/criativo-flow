@@ -35,11 +35,8 @@ export function AccessLogger({ action = 'page_view', metadata = {} }: AccessLogg
 
         // Log de acesso usando função SQL
         await supabase.rpc('log_user_access', logData);
-        
-        console.log('📊 Access logged:', { action, user: user.email });
       } catch (error) {
-        console.warn('📊 Failed to log access:', error);
-        // Não mostrar erro para o usuário pois é funcionalidade de background
+        // Erro silencioso - funcionalidade de background
       }
     };
 
@@ -72,9 +69,8 @@ export function useAccessLogger() {
       };
 
       await supabase.rpc('log_user_access', logData);
-      console.log('📊 Action logged:', { action, user: user.email });
     } catch (error) {
-      console.warn('📊 Failed to log action:', error);
+      // Erro silencioso - funcionalidade de background
     }
   };
 

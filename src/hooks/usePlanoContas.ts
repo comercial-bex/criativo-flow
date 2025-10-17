@@ -19,7 +19,11 @@ export function usePlanoContas(tipo?: string) {
   const { data: contas = [], isLoading } = useQuery({
     queryKey: ['plano-contas', tipo],
     queryFn: async () => {
-      let query = supabase.from('financeiro_plano_contas').select('*').eq('ativo', true).order('codigo');
+      let query = supabase
+        .from('financeiro_plano_contas')
+        .select('*')
+        .eq('ativo', true)
+        .order('codigo');
       
       if (tipo) query = query.eq('tipo', tipo);
       
@@ -27,6 +31,8 @@ export function usePlanoContas(tipo?: string) {
       if (error) throw error;
       return data as ContaContabil[];
     },
+    staleTime: 60 * 60 * 1000, // 1 hora (dados estáticos)
+    gcTime: 24 * 60 * 60 * 1000, // 24 horas
   });
 
   const contasAtivasParaLancamento = contas.filter(c => c.aceita_lancamento);

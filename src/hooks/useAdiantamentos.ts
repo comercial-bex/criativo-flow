@@ -36,14 +36,16 @@ export function useAdiantamentos(
   // Priorizar pessoa_id, fallback para colaborador_id
   const id = pessoaId || colaboradorId;
   
-  if (colaboradorId && !pessoaId) {
-    console.warn('⚠️ useAdiantamentos: colaboradorId está deprecated. Use pessoaId.');
-  }
+  // Removido console.warn de produção - migrar para logger quando necessário
 
   const { data: adiantamentos = [], isLoading } = useQuery({
     queryKey: ['adiantamentos', id, competencia],
     queryFn: async () => {
-      let query = supabase.from('financeiro_adiantamentos').select('*').order('data_adiantamento', { ascending: false });
+      let query = supabase
+        .from('financeiro_adiantamentos')
+        .select('*', { count: 'exact' })
+        .order('data_adiantamento', { ascending: false })
+        .range(0, 49); // Paginação: primeiros 50 registros
       
       if (id) {
         // Buscar por pessoa_id primeiro, depois colaborador_id (retrocompat)
@@ -56,6 +58,8 @@ export function useAdiantamentos(
       return data as Adiantamento[];
     },
     enabled: !!id || !!competencia,
+    staleTime: 1 * 60 * 1000, // 1 minuto (dados dinâmicos)
+    gcTime: 5 * 60 * 1000, // 5 minutos
   });
 
   const criarMutation = useMutation({

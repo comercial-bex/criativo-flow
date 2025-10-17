@@ -25,11 +25,15 @@ export function useLancamentosContabeis(filters?: {
   const { data: lancamentos = [], isLoading } = useQuery({
     queryKey: ['lancamentos-contabeis', filters],
     queryFn: async () => {
-      let query = supabase.from('financeiro_lancamentos').select(`
-        *,
-        conta_debito:conta_debito_id(codigo, nome),
-        conta_credito:conta_credito_id(codigo, nome)
-      `).order('data_lancamento', { ascending: false });
+      let query = supabase
+        .from('financeiro_lancamentos')
+        .select(`
+          *,
+          conta_debito:conta_debito_id(codigo, nome),
+          conta_credito:conta_credito_id(codigo, nome)
+        `, { count: 'exact' })
+        .order('data_lancamento', { ascending: false })
+        .range(0, 49); // Paginação: primeiros 50 registros
       
       if (filters?.dataInicio) query = query.gte('data_lancamento', filters.dataInicio);
       if (filters?.dataFim) query = query.lte('data_lancamento', filters.dataFim);
@@ -39,6 +43,8 @@ export function useLancamentosContabeis(filters?: {
       if (error) throw error;
       return data as any[];
     },
+    staleTime: 30 * 1000, // 30 segundos (dados críticos)
+    gcTime: 2 * 60 * 1000, // 2 minutos
   });
 
   return {
