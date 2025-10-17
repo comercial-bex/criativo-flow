@@ -1,4 +1,4 @@
-import { NavLink, useLocation } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import * as Icons from "lucide-react";
 import { LucideIcon } from "lucide-react";
 import React, { useState, useMemo } from "react";
@@ -7,6 +7,8 @@ import { useUserRole } from "@/hooks/useUserRole";
 import { useDynamicModules } from "@/hooks/useDynamicModules";
 import { UserProfileSection } from "./UserProfileSection";
 import { UserActionsModule } from "./UserActionsModule";
+import { ClientSelector } from "./ClientSelector";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   Sidebar,
   SidebarContent,
@@ -37,12 +39,18 @@ interface Module {
 }
 
 export function AppSidebar() {
+  const navigate = useNavigate();
   const { hasModuleAccess } = usePermissions();
   const { role } = useUserRole();
   const { modules: dbModules, loading } = useDynamicModules();
   const { state } = useSidebar();
   const location = useLocation();
   const [selectedModule, setSelectedModule] = useState<string>("inicio");
+  const [clientSelectorOpen, setClientSelectorOpen] = useState(false);
+  const [pendingUrl, setPendingUrl] = useState<string>("");
+  const [selectedClienteId, setSelectedClienteId] = useState<string | null>(
+    localStorage.getItem('admin_selected_cliente_id')
+  );
 
   // Módulos fallback (7 hubs principais)
   const fallbackModules: Module[] = [
@@ -163,6 +171,20 @@ export function AppSidebar() {
       permissions: [],
       roles: ["admin"]
     },
+    {
+      id: "cliente_view",
+      title: "Visão Cliente",
+      icon: Icons.UserCheck,
+      items: [
+        { title: "Painel Principal", url: "/cliente/painel", icon: Icons.LayoutDashboard },
+        { title: "Aprovações", url: "/cliente/painel?tab=approvals", icon: Icons.CheckSquare },
+        { title: "Metas", url: "/cliente/painel?tab=goals", icon: Icons.Target },
+        { title: "Financeiro", url: "/cliente/painel?tab=finance", icon: Icons.DollarSign },
+        { title: "Suporte", url: "/cliente/painel?tab=support", icon: Icons.MessageSquare },
+      ],
+      permissions: [],
+      roles: ["admin"]
+    },
   ];
 
   // Filtrar módulos por permissões e roles
@@ -210,6 +232,33 @@ export function AppSidebar() {
   );
 
   // Detectar módulo atual baseado na rota
+  const handleClientModuleClick = (url: string, e: React.MouseEvent) => {
+    if (selectedModule === 'cliente_view' && role === 'admin') {
+      e.preventDefault();
+      
+      const storedClienteId = localStorage.getItem('admin_selected_cliente_id');
+      
+      if (!storedClienteId) {
+        setClientSelectorOpen(true);
+        setPendingUrl(url);
+      } else {
+        navigate(url);
+      }
+    }
+  };
+
+  const handleClientSelect = (clienteId: string | null) => {
+    if (clienteId) {
+      localStorage.setItem('admin_selected_cliente_id', clienteId);
+      setSelectedClienteId(clienteId);
+      setClientSelectorOpen(false);
+      if (pendingUrl) {
+        navigate(pendingUrl);
+        setPendingUrl("");
+      }
+    }
+  };
+
   const detectCurrentModule = () => {
     const currentPath = location.pathname;
     
@@ -344,6 +393,7 @@ export function AppSidebar() {
                   <NavLink
                     key={item.url}
                     to={item.url}
+                    onClick={(e) => handleClientModuleClick(item.url, e)}
                     className={({ isActive }) => cn(
                       "flex items-center px-4 py-3 mb-1 text-sm rounded-lg transition-all duration-300",
                       "hover:translate-x-1",
@@ -361,6 +411,20 @@ export function AppSidebar() {
           </div>
         )}
       </div>
+      
+      {/* Modal de Seleção de Cliente */}
+      <Dialog open={clientSelectorOpen} onOpenChange={setClientSelectorOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Selecione um Cliente para Visualizar</DialogTitle>
+          </DialogHeader>
+          <ClientSelector
+            onClientSelect={handleClientSelect}
+            selectedClientId={selectedClienteId || undefined}
+            showContext={false}
+          />
+        </DialogContent>
+      </Dialog>
     </Sidebar>
   );
 }

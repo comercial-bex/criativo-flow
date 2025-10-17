@@ -26,7 +26,7 @@ interface ClientProfile {
   cliente_nome?: string;
 }
 
-export function useClientDashboard() {
+export function useClientDashboard(overrideClienteId?: string) {
   const { user } = useAuth();
   const [counts, setCounts] = useState<DashboardCounts>({
     planejamentosPendentes: 0,
@@ -42,6 +42,27 @@ export function useClientDashboard() {
     if (!user) return;
 
     try {
+      // Se tiver override de cliente (Admin visualizando como cliente)
+      if (overrideClienteId) {
+        const { data: cliente } = await supabase
+          .from('clientes')
+          .select('id, nome')
+          .eq('id', overrideClienteId)
+          .single();
+
+        if (cliente) {
+          setClientProfile({
+            id: user.id,
+            nome: user.email || 'Admin',
+            email: user.email,
+            cliente_id: cliente.id,
+            cliente_nome: cliente.nome
+          });
+        }
+        return;
+      }
+
+      // Fluxo normal para usuários clientes
       const { data: profile } = await supabase
         .from('profiles')
         .select(`
@@ -195,7 +216,7 @@ export function useClientDashboard() {
     if (user) {
       fetchClientProfile();
     }
-  }, [user]);
+  }, [user, overrideClienteId]);
 
   useEffect(() => {
     if (clientProfile) {
