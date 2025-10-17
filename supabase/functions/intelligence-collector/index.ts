@@ -151,13 +151,30 @@ serve(async (req) => {
         });
 
         // Increment error counter
-        await supabase
+        // Increment error counter safely without raw()
+        const { data: statusRow, error: statusFetchError } = await supabase
+          .from('connector_status')
+          .select('error_count')
+          .eq('connector_name', source.name)
+          .maybeSingle();
+
+        if (statusFetchError) {
+          console.warn('⚠️ Failed to fetch connector_status for increment:', statusFetchError);
+        }
+
+        const newErrorCount = ((statusFetchError ? undefined : statusRow?.error_count) ?? 0) + 1;
+
+        const { error: statusUpdateError } = await supabase
           .from('connector_status')
           .update({ 
-            error_count: supabase.raw('COALESCE(error_count, 0) + 1'),
+            error_count: newErrorCount,
             updated_at: new Date().toISOString()
           })
           .eq('connector_name', source.name);
+
+        if (statusUpdateError) {
+          console.warn('⚠️ Failed to update connector_status error_count:', statusUpdateError);
+        }
 
         results.push({
           success: false,
@@ -220,7 +237,7 @@ async function collectFromSource(source: IntelligenceSource): Promise<any[]> {
     }
     
     if (source.auth_key_env === 'YOUTUBE_API_KEY') {
-      headers['Authorization'] = `Bearer ${apiKey}`;
+      // YouTube Data API uses API key via the 'key' query parameter; do not set Authorization header
     } else if (source.auth_key_env === 'OPENWEATHER_API_KEY') {
       // OpenWeather uses query param, handled below
     }
