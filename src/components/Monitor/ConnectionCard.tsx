@@ -6,7 +6,10 @@ import { Switch } from '@/components/ui/switch';
 import { 
   Activity, 
   AlertTriangle, 
+  AlertCircle,
+  CheckCircle,
   CheckCircle2, 
+  CircleSlash,
   Clock, 
   ExternalLink, 
   PlayCircle, 
@@ -16,6 +19,7 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { ConnectionConfigDialog } from './ConnectionConfigDialog';
+import { SocialApiConfigDialog } from './SocialApiConfigDialog';
 
 interface ConnectionCardProps {
   connection: any;
@@ -35,20 +39,24 @@ export function ConnectionCard({
   isSavingConfig = false,
 }: ConnectionCardProps) {
   const [configDialogOpen, setConfigDialogOpen] = useState(false);
+  const [socialApiDialogOpen, setSocialApiDialogOpen] = useState(false);
+  // Detectar se é API social
+  const isSocialApi = ['Meta API', 'Facebook', 'Instagram', 'Google Analytics'].some(
+    keyword => connection.name.includes(keyword)
+  );
+
   const getStatusIcon = () => {
     if (!connection.monitoring_enabled) {
-      return <Pause className="h-4 w-4 text-muted-foreground" />;
+      return <CircleSlash className="w-5 h-5 text-muted-foreground" />;
     }
-    
+
     switch (connection.status) {
       case 'connected':
-        return <CheckCircle2 className="h-4 w-4 text-emerald-500" />;
+        return <CheckCircle className="w-5 h-5 text-success" />;
       case 'degraded':
-        return <AlertTriangle className="h-4 w-4 text-amber-500" />;
-      case 'disconnected':
-        return <AlertTriangle className="h-4 w-4 text-destructive" />;
+        return <AlertTriangle className="w-5 h-5 text-warning" />;
       default:
-        return <Clock className="h-4 w-4 text-muted-foreground" />;
+        return <AlertCircle className="w-5 h-5 text-destructive" />;
     }
   };
 
@@ -156,7 +164,17 @@ export function ConnectionCard({
 
         {/* Ações */}
         <div className="flex flex-wrap gap-2">
-          {connection.group === 'api' && onSaveConfig && (
+          {isSocialApi ? (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setSocialApiDialogOpen(true)}
+              className="gap-1"
+            >
+              <Settings className="h-3 w-3" />
+              Configurar OAuth
+            </Button>
+          ) : connection.group === 'api' && onSaveConfig ? (
             <Button
               size="sm"
               variant="outline"
@@ -166,7 +184,7 @@ export function ConnectionCard({
               <Settings className="h-3 w-3" />
               Configurar
             </Button>
-          )}
+          ) : null}
 
           <Button
             size="sm"
@@ -203,7 +221,15 @@ export function ConnectionCard({
         </div>
       </div>
 
-      {onSaveConfig && (
+      {isSocialApi ? (
+        <SocialApiConfigDialog
+          connection={connection}
+          open={socialApiDialogOpen}
+          onOpenChange={setSocialApiDialogOpen}
+          onSaveConfig={onSaveConfig}
+          isSaving={isSavingConfig}
+        />
+      ) : onSaveConfig ? (
         <ConnectionConfigDialog
           connection={connection}
           open={configDialogOpen}
@@ -211,7 +237,7 @@ export function ConnectionCard({
           onSaveConfig={onSaveConfig}
           isSaving={isSavingConfig}
         />
-      )}
+      ) : null}
     </Card>
   );
 }
