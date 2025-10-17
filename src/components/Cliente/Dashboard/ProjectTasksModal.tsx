@@ -23,20 +23,27 @@ export function ProjectTasksModal({
 }: ProjectTasksModalProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[95vw] h-[90vh] flex flex-col">
-        <DialogHeader>
+      <DialogContent 
+        size="screen"
+        height="full"
+        overflow="hidden"
+        className="flex flex-col"
+      >
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle>{projeto.titulo}</DialogTitle>
           <DialogDescription>
             Visualização das tarefas do projeto
           </DialogDescription>
         </DialogHeader>
         
-        <div className="flex-1 overflow-auto -mx-6 px-6">
-          <TarefasKanban
-            planejamento={{ id: projeto.id }}
-            clienteId={clienteId}
-            projetoId={projeto.id}
-          />
+        <div className="flex-1 overflow-auto min-h-0 p-4">
+          <div className="min-w-max">
+            <TarefasKanban
+              planejamento={{ id: projeto.id }}
+              clienteId={clienteId}
+              projetoId={projeto.id}
+            />
+          </div>
         </div>
       </DialogContent>
     </Dialog>
