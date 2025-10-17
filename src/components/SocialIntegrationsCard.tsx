@@ -1,13 +1,14 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Facebook, Mail, Instagram, AlertCircle, BarChart3 } from "lucide-react";
+import { Facebook, Mail, Instagram, AlertCircle, BarChart3, TrendingUp } from "lucide-react";
 import { useSocialIntegrations } from "@/hooks/useSocialIntegrations";
 import { useSocialAuth } from "@/hooks/useSocialAuth";
 import { useClientContext } from "@/hooks/useClientContext";
 import { OAuthStatusIndicator } from "@/components/OAuthStatusIndicator";
 import { IntegrationMetricsDialog } from "@/components/SocialIntegrations/IntegrationMetricsDialog";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const providerIcons = {
   facebook: Facebook,
@@ -29,6 +30,7 @@ interface SocialIntegrationsCardProps {
 export function SocialIntegrationsCard({ clienteId }: SocialIntegrationsCardProps) {
   const { clienteId: contextClienteId, clienteName } = useClientContext();
   const targetClienteId = clienteId || contextClienteId;
+  const navigate = useNavigate();
   
   const { 
     integrations, 
@@ -57,6 +59,12 @@ export function SocialIntegrationsCard({ clienteId }: SocialIntegrationsCardProp
     setMetricsDialogOpen(true);
   };
 
+  const handleViewFullAnalytics = () => {
+    if (targetClienteId) {
+      navigate(`/clientes/${targetClienteId}/social-analytics`);
+    }
+  };
+
   const handleConfigureProvider = (provider: string) => {
     const supabaseUrl = `https://supabase.com/dashboard/project/xvpqgwbktpfodbuhwqhh/auth/providers`;
     window.open(supabaseUrl, '_blank');
@@ -83,18 +91,28 @@ export function SocialIntegrationsCard({ clienteId }: SocialIntegrationsCardProp
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <AlertCircle className="h-5 w-5" />
-          Integrações de Redes Sociais
-          {clienteName && (
-            <span className="text-sm font-normal text-muted-foreground ml-2">
-              - {clienteName}
-            </span>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="flex items-center gap-2">
+              <AlertCircle className="h-5 w-5" />
+              Integrações de Redes Sociais
+              {clienteName && (
+                <span className="text-sm font-normal text-muted-foreground ml-2">
+                  - {clienteName}
+                </span>
+              )}
+            </CardTitle>
+            <CardDescription>
+              Conecte as contas sociais do cliente para automatizar coleta de dados e agendamento
+            </CardDescription>
+          </div>
+          {integrations.length > 0 && (
+            <Button onClick={handleViewFullAnalytics} variant="outline" className="gap-2">
+              <TrendingUp className="h-4 w-4" />
+              Análise Completa
+            </Button>
           )}
-        </CardTitle>
-        <CardDescription>
-          Conecte as contas sociais do cliente para automatizar coleta de dados e agendamento
-        </CardDescription>
+        </div>
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Status de Configuração OAuth */}
