@@ -66,10 +66,67 @@ export function useStrategicPlans(clienteId?: string) {
     fetchPlans();
   }, [clienteId]);
 
+  const createStrategicPlan = async (data: {
+    cliente_id: string;
+    titulo: string;
+    periodo_inicio: string;
+    periodo_fim: string;
+    missao: string;
+    visao: string;
+    valores: string[];
+    analise_swot?: any;
+    origem_ia: boolean;
+    dados_onboarding?: any;
+  }) => {
+    try {
+      const { data: user } = await supabase.auth.getUser();
+      
+      const { data: newPlan, error } = await supabase
+        .from('planos_estrategicos')
+        .insert({
+          ...data,
+          created_by: user?.user?.id
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      
+      await fetchPlans(); // Recarregar lista
+      return { data: newPlan, error: null };
+    } catch (error) {
+      console.error('Erro ao criar plano estratégico:', error);
+      return { data: null, error };
+    }
+  };
+
+  const generateWithAI = async (clienteId: string) => {
+    try {
+      // Chamar edge function
+      const { data, error } = await supabase.functions.invoke('generate-strategic-plan', {
+        body: { 
+          clienteId,
+          periodo: {
+            inicio: new Date().toISOString().slice(0, 10),
+            fim: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)
+          }
+        }
+      });
+
+      if (error) throw error;
+      return { data: data.plan, error: null };
+    } catch (error) {
+      console.error('Erro ao gerar plano com IA:', error);
+      return { data: null, error };
+    }
+  };
+
   return {
     plans,
     objectives,
     loading,
-    refetch: fetchPlans
+    refetch: fetchPlans,
+    createStrategicPlan,
+    generateWithAI
   };
 }

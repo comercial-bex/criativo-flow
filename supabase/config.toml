@@ -103,3 +103,6 @@ verify_jwt = false
 
 [functions.validate-social-account]
 verify_jwt = false
+
+[functions.generate-strategic-plan]
+verify_jwt = false

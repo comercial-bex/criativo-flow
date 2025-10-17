@@ -30,7 +30,7 @@ import {
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { CriarProjetoAvulsoModal } from '@/components/CriarProjetoAvulsoModal';
-import { CreatePlanejamentoModal } from '@/components/CreatePlanejamentoModal';
+import { CreatePlanejamentoUnificadoModal } from '@/components/CreatePlanejamentoUnificadoModal';
 import { EditProjetoModal } from '@/components/EditProjetoModal';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { supabase } from "@/integrations/supabase/client";
@@ -228,10 +228,11 @@ export default function ClienteProjetos() {
 
       {/* Modal de Plano Editorial */}
       {tipoModal === 'plano_editorial' && (
-        <CreatePlanejamentoModal
+        <CreatePlanejamentoUnificadoModal
           open={true}
           onOpenChange={(open) => !open && setTipoModal(null)}
           clienteId={clienteId}
+          tipoInicial="mensal"
           onSuccess={() => {
             fetchProjetos();
             setTipoModal(null);

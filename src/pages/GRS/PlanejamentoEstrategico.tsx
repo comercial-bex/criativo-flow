@@ -6,11 +6,13 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
-import { Search, Target, TrendingUp, Users, Calendar } from "lucide-react";
+import { Search, Target, TrendingUp, Users, Calendar, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { PlanejamentoProjeto } from "@/components/PlanejamentoProjeto";
 import { SwotAnalysisIA } from "@/components/SwotAnalysisIA";
 import { ObjetivosAssinatura } from "@/components/ObjetivosAssinatura";
+import { CreatePlanejamentoUnificadoModal } from "@/components/CreatePlanejamentoUnificadoModal";
+import { useStrategicPlans } from "@/hooks/useStrategicPlans";
 
 interface Cliente {
   id: string;
@@ -303,6 +305,34 @@ export default function PlanejamentoEstrategico() {
                 </TabsList>
                 
                 <TabsContent value="planejamento" className="space-y-4">
+                  {/* Plano Estratégico */}
+                  <div className="flex justify-between items-center mb-4">
+                    <div>
+                      <h3 className="text-lg font-semibold">Planejamento Estratégico</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Missão, visão, valores e objetivos de longo prazo
+                      </p>
+                    </div>
+                    <CreatePlanejamentoUnificadoModal
+                      open={false}
+                      onOpenChange={() => {}}
+                      clienteId={selectedClient.id}
+                      tipoInicial="estrategico"
+                      trigger={
+                        <Button>
+                          <Sparkles className="h-4 w-4 mr-2" />
+                          Criar Plano Estratégico
+                        </Button>
+                      }
+                      onSuccess={() => fetchClientes()}
+                    />
+                  </div>
+
+                  {/* Separador visual */}
+                  <div className="border-t pt-6 mt-6">
+                    <h3 className="text-lg font-semibold mb-4">Planejamento Mensal</h3>
+                  </div>
+
                   <PlanejamentoProjeto
                     projetoId={selectedClient.id}
                     clienteId={selectedClient.id}
