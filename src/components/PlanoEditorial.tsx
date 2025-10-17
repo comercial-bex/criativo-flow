@@ -276,6 +276,7 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
   const [gerandoPosicionamento, setGerandoPosicionamento] = useState(false);
   const [gerandoPersonas, setGerandoPersonas] = useState(false);
   const [salvandoConteudoCompleto, setSalvandoConteudoCompleto] = useState(false);
+  const [selectedContentModel, setSelectedContentModel] = useState<'gemini' | 'gpt4'>('gemini');
   const [currentDate, setCurrentDate] = useState(new Date());
   const [clienteAssinatura, setClienteAssinatura] = useState<any>(null);
   const [postsGerados, setPostsGerados] = useState<Array<{
@@ -787,12 +788,16 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
         Responda apenas com o texto da missão, sem títulos ou formatações extras.`;
 
       const response = await supabase.functions.invoke('generate-content-with-ai', {
-        body: { prompt }
+        body: { prompt, model: selectedContentModel }
       });
 
       if (response.error) {
         throw new Error(response.error.message);
       }
+      
+      // Show which model was used
+      const modelUsed = selectedContentModel === 'gemini' ? 'Lovable AI (Gemini)' : 'OpenAI GPT-4.1';
+      console.log(`✨ Content generated using: ${modelUsed}`);
 
       console.log('Resposta da API:', response);
       
@@ -2226,7 +2231,37 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
               <CardTitle>Missão da Empresa</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex gap-2 mb-2">
+              <div className="space-y-2">
+                <Label>Modelo de IA</Label>
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant={selectedContentModel === 'gemini' ? 'default' : 'outline'}
+                    onClick={() => setSelectedContentModel('gemini')}
+                    size="sm"
+                    className="flex-1"
+                  >
+                    <Sparkles className="h-4 w-4 mr-2" />
+                    Lovable AI
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={selectedContentModel === 'gpt4' ? 'default' : 'outline'}
+                    onClick={() => setSelectedContentModel('gpt4')}
+                    size="sm"
+                    className="flex-1"
+                  >
+                    <Sparkles className="h-4 w-4 mr-2" />
+                    GPT-4.1
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {selectedContentModel === 'gemini' 
+                    ? '⚡ Mais rápido e econômico (padrão)'
+                    : '🎯 Mais criativo (requer API key)'}
+                </p>
+              </div>
+              <div className="flex gap-2">
                 <Button 
                   onClick={gerarMissaoComIA}
                   disabled={gerandoMissao}
@@ -2239,7 +2274,7 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
                   ) : (
                     <Sparkles className="h-4 w-4" />
                   )}
-                  Gerar com IA
+                  Gerar Missão
                 </Button>
               </div>
               <Textarea

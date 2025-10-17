@@ -13,13 +13,7 @@ serve(async (req) => {
   }
 
   try {
-    const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
-    
-    if (!openAIApiKey) {
-      throw new Error('OPENAI_API_KEY not configured');
-    }
-
-    const { prompt, type = 'text' } = await req.json();
+    const { prompt, type = 'text', model = 'gemini' } = await req.json();
     
     if (!prompt) {
       throw new Error('Prompt is required');
@@ -47,7 +41,35 @@ serve(async (req) => {
         systemMessage += ' Realize análises SWOT profissionais e detalhadas em formato estruturado.';
         break;
       default:
-        systemMessage += ' Crie conteúdo profissional e relevante para marketing digital.';
+      systemMessage += ' Crie conteúdo profissional e relevante para marketing digital.';
+    }
+    
+    // Configure API based on model selection
+    let apiUrl: string;
+    let apiKey: string | undefined;
+    let modelName: string;
+
+    if (model === 'gpt4') {
+      apiUrl = "https://api.openai.com/v1/chat/completions";
+      apiKey = Deno.env.get('OPENAI_API_KEY');
+      modelName = "gpt-4.1-2025-04-14";
+      
+      if (!apiKey) {
+        console.warn('⚠️ OPENAI_API_KEY not configured, falling back to Lovable AI');
+        // Auto-fallback to Lovable AI
+        apiUrl = "https://ai.gateway.lovable.dev/v1/chat/completions";
+        apiKey = Deno.env.get('LOVABLE_API_KEY');
+        modelName = "google/gemini-2.5-flash";
+      }
+    } else {
+      // Default to Lovable AI (Gemini)
+      apiUrl = "https://ai.gateway.lovable.dev/v1/chat/completions";
+      apiKey = Deno.env.get('LOVABLE_API_KEY');
+      modelName = "google/gemini-2.5-flash";
+    }
+
+    if (!apiKey) {
+      throw new Error('No AI API key configured');
     }
     
     if (shouldReturnJSON) {
@@ -80,26 +102,42 @@ IMPORTANTE:
 - NÃO adicione comentários ou texto fora do JSON`;
     }
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    console.log(`🤖 Using AI model: ${modelName}`);
+
+    const requestBody: any = {
+      model: modelName,
+      messages: [
+        { role: 'system', content: systemMessage },
+        { role: 'user', content: prompt }
+      ],
+      max_completion_tokens: shouldReturnJSON ? 4000 : 2000
+    };
+
+    const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
+        'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        model: 'gpt-4.1-2025-04-14',
-        messages: [
-          { role: 'system', content: systemMessage },
-          { role: 'user', content: prompt }
-        ],
-        max_completion_tokens: shouldReturnJSON ? 4000 : 2000
-      }),
+      body: JSON.stringify(requestBody),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('OpenAI API error:', errorText);
-      throw new Error(`OpenAI API error: ${response.status} - ${errorText}`);
+      console.error(`AI API error (${modelName}):`, errorText);
+      
+      // Handle rate limits and payment errors
+      if (response.status === 429) {
+        throw new Error('Rate limit exceeded. Please try again in a few moments.');
+      }
+      if (response.status === 402) {
+        throw new Error('Insufficient credits. Please add credits to your Lovable AI workspace.');
+      }
+      if (response.status === 401) {
+        throw new Error('Invalid API key. Please check your configuration.');
+      }
+      
+      throw new Error(`AI API error: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();

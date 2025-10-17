@@ -8,11 +8,15 @@ export function useAIContentGenerator() {
   const [loading, setLoading] = useState(false);
   const [content, setContent] = useState<string | any>(null);
 
-  const generateContent = async (prompt: string, type: ContentType = 'post') => {
+  const generateContent = async (
+    prompt: string, 
+    type: ContentType = 'post',
+    model: 'gemini' | 'gpt4' = 'gemini'
+  ) => {
     setLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke('generate-content-with-ai', {
-        body: { prompt, type }
+        body: { prompt, type, model }
       });
 
       if (error) throw error;

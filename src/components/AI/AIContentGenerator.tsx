@@ -20,13 +20,14 @@ export function AIContentGenerator({ onContentGenerated, trigger }: AIContentGen
   const [prompt, setPrompt] = useState('');
   const [contentType, setContentType] = useState<ContentType>('post');
   const [copied, setCopied] = useState(false);
+  const [selectedModel, setSelectedModel] = useState<'gemini' | 'gpt4'>('gemini');
   
   const { generateContent, content, loading } = useAIContentGenerator();
 
   const handleGenerate = async () => {
     if (!prompt.trim()) return;
 
-    const result = await generateContent(prompt, contentType);
+    const result = await generateContent(prompt, contentType, selectedModel);
     if (result && onContentGenerated) {
       onContentGenerated(result, contentType);
       toast.success('✨ Conteúdo gerado e inserido na mensagem!', {
@@ -90,6 +91,37 @@ export function AIContentGenerator({ onContentGenerated, trigger }: AIContentGen
                 ))}
               </SelectContent>
             </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Modelo de IA</Label>
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant={selectedModel === 'gemini' ? 'default' : 'outline'}
+                onClick={() => setSelectedModel('gemini')}
+                size="sm"
+                className="flex-1"
+              >
+                <Sparkles className="h-4 w-4 mr-2" />
+                Lovable AI
+              </Button>
+              <Button
+                type="button"
+                variant={selectedModel === 'gpt4' ? 'default' : 'outline'}
+                onClick={() => setSelectedModel('gpt4')}
+                size="sm"
+                className="flex-1"
+              >
+                <Sparkles className="h-4 w-4 mr-2" />
+                GPT-4.1
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {selectedModel === 'gemini' 
+                ? '⚡ Mais rápido e econômico (padrão)'
+                : '🎯 Mais criativo (requer API key)'}
+            </p>
           </div>
 
           <div className="space-y-2">
