@@ -986,36 +986,48 @@ export type Database = {
           ativo: boolean | null
           cliente_id: string | null
           created_at: string | null
+          criativos_url: string[] | null
           data_fim: string | null
           data_inicio: string | null
           id: string
+          metricas: Json | null
           nome: string
           objetivo: string | null
           orcamento: number | null
+          status_aprovacao: string | null
+          tipo_campanha: string | null
           updated_at: string | null
         }
         Insert: {
           ativo?: boolean | null
           cliente_id?: string | null
           created_at?: string | null
+          criativos_url?: string[] | null
           data_fim?: string | null
           data_inicio?: string | null
           id?: string
+          metricas?: Json | null
           nome: string
           objetivo?: string | null
           orcamento?: number | null
+          status_aprovacao?: string | null
+          tipo_campanha?: string | null
           updated_at?: string | null
         }
         Update: {
           ativo?: boolean | null
           cliente_id?: string | null
           created_at?: string | null
+          criativos_url?: string[] | null
           data_fim?: string | null
           data_inicio?: string | null
           id?: string
+          metricas?: Json | null
           nome?: string
           objetivo?: string | null
           orcamento?: number | null
+          status_aprovacao?: string | null
+          tipo_campanha?: string | null
           updated_at?: string | null
         }
         Relationships: [
@@ -1149,6 +1161,156 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      cliente_documentos: {
+        Row: {
+          arquivo_path: string
+          arquivo_url: string
+          categoria: string
+          cliente_id: string
+          created_at: string | null
+          criado_por: string | null
+          descricao: string | null
+          id: string
+          mime_type: string | null
+          projeto_id: string | null
+          tamanho_kb: number | null
+          titulo: string
+          updated_at: string | null
+        }
+        Insert: {
+          arquivo_path: string
+          arquivo_url: string
+          categoria: string
+          cliente_id: string
+          created_at?: string | null
+          criado_por?: string | null
+          descricao?: string | null
+          id?: string
+          mime_type?: string | null
+          projeto_id?: string | null
+          tamanho_kb?: number | null
+          titulo: string
+          updated_at?: string | null
+        }
+        Update: {
+          arquivo_path?: string
+          arquivo_url?: string
+          categoria?: string
+          cliente_id?: string
+          created_at?: string | null
+          criado_por?: string | null
+          descricao?: string | null
+          id?: string
+          mime_type?: string | null
+          projeto_id?: string | null
+          tamanho_kb?: number | null
+          titulo?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cliente_documentos_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cliente_documentos_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "mv_grs_dashboard_metrics"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "cliente_documentos_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "vw_client_metrics"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "cliente_documentos_projeto_id_fkey"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "projetos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cliente_metas: {
+        Row: {
+          cliente_id: string
+          created_at: string | null
+          descricao: string | null
+          id: string
+          periodo_fim: string
+          periodo_inicio: string
+          progresso_percent: number | null
+          status: string | null
+          tipo_meta: string
+          titulo: string
+          unidade: string | null
+          updated_at: string | null
+          valor_alvo: number
+          valor_atual: number | null
+        }
+        Insert: {
+          cliente_id: string
+          created_at?: string | null
+          descricao?: string | null
+          id?: string
+          periodo_fim: string
+          periodo_inicio: string
+          progresso_percent?: number | null
+          status?: string | null
+          tipo_meta: string
+          titulo: string
+          unidade?: string | null
+          updated_at?: string | null
+          valor_alvo: number
+          valor_atual?: number | null
+        }
+        Update: {
+          cliente_id?: string
+          created_at?: string | null
+          descricao?: string | null
+          id?: string
+          periodo_fim?: string
+          periodo_inicio?: string
+          progresso_percent?: number | null
+          status?: string | null
+          tipo_meta?: string
+          titulo?: string
+          unidade?: string | null
+          updated_at?: string | null
+          valor_alvo?: number
+          valor_atual?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cliente_metas_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cliente_metas_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "mv_grs_dashboard_metrics"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "cliente_metas_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "vw_client_metrics"
+            referencedColumns: ["cliente_id"]
+          },
+        ]
       }
       cliente_objetivos: {
         Row: {
@@ -1348,6 +1510,73 @@ export type Database = {
           },
           {
             foreignKeyName: "fk_cliente"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "vw_client_metrics"
+            referencedColumns: ["cliente_id"]
+          },
+        ]
+      }
+      cliente_tickets: {
+        Row: {
+          assunto: string
+          atribuido_a: string | null
+          categoria: string | null
+          cliente_id: string
+          created_at: string | null
+          criado_por: string
+          descricao: string
+          id: string
+          prioridade: string | null
+          resolvido_em: string | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          assunto: string
+          atribuido_a?: string | null
+          categoria?: string | null
+          cliente_id: string
+          created_at?: string | null
+          criado_por: string
+          descricao: string
+          id?: string
+          prioridade?: string | null
+          resolvido_em?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          assunto?: string
+          atribuido_a?: string | null
+          categoria?: string | null
+          cliente_id?: string
+          created_at?: string | null
+          criado_por?: string
+          descricao?: string
+          id?: string
+          prioridade?: string | null
+          resolvido_em?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cliente_tickets_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cliente_tickets_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "mv_grs_dashboard_metrics"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "cliente_tickets_cliente_id_fkey"
             columns: ["cliente_id"]
             isOneToOne: false
             referencedRelation: "vw_client_metrics"
@@ -9395,6 +9624,41 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "vw_client_metrics"
             referencedColumns: ["responsavel_id"]
+          },
+        ]
+      }
+      ticket_mensagens: {
+        Row: {
+          anexo_url: string | null
+          created_at: string | null
+          id: string
+          mensagem: string
+          ticket_id: string
+          usuario_id: string
+        }
+        Insert: {
+          anexo_url?: string | null
+          created_at?: string | null
+          id?: string
+          mensagem: string
+          ticket_id: string
+          usuario_id: string
+        }
+        Update: {
+          anexo_url?: string | null
+          created_at?: string | null
+          id?: string
+          mensagem?: string
+          ticket_id?: string
+          usuario_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ticket_mensagens_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "cliente_tickets"
+            referencedColumns: ["id"]
           },
         ]
       }

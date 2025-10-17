@@ -78,6 +78,7 @@ const EditarRoteiroPage = lazy(() => import("./pages/GRS/RoteiroIA/EditarRoteiro
 const EspecialistaDashboard = lazy(() => import("./pages/Especialista/Dashboard"));
 const DesignSystemShowcase = lazy(() => import("./pages/DesignSystemShowcase"));
 const ClientePainel = lazy(() => import("./pages/Cliente/Painel"));
+const ClientePainelV2 = lazy(() => import("./pages/Cliente/PainelV2"));
 const ClienteProjetos = lazy(() => import("./pages/Cliente/Projetos"));
 const ClienteDetalheProjetos = lazy(() => import("./pages/Cliente/DetalheProjetos"));
 const ClienteProjetoDetalhes = lazy(() => import("./pages/Cliente/ProjetoDetalhes"));
@@ -668,6 +669,10 @@ function App() {
 
                 {/* Client routes */}
                 <Route path="/cliente/painel" element={<ProtectedRoute requiredRole="cliente">
+                    <Layout><ClientePainelV2 /></Layout>
+                  </ProtectedRoute>} />
+                
+                <Route path="/cliente/painel-legacy" element={<ProtectedRoute requiredRole="cliente">
                     <Layout><ClientePainel /></Layout>
                   </ProtectedRoute>} />
                 
