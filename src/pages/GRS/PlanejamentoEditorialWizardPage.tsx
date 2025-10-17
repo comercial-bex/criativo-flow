@@ -11,6 +11,7 @@ export default function PlanejamentoEditorialWizardPage() {
   const navigate = useNavigate();
   const [planejamento, setPlanejamento] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [wizardOpen, setWizardOpen] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -61,17 +62,20 @@ export default function PlanejamentoEditorialWizardPage() {
           <ArrowLeft className="h-4 w-4 mr-2" />
           Voltar
         </Button>
-        <div>
+        <div className="flex-1">
           <h1 className="text-3xl font-bold">Planejamento Editorial BEX</h1>
           <p className="text-muted-foreground">
             {planejamento.clientes?.nome} - {planejamento.titulo}
           </p>
         </div>
+        <Button onClick={() => setWizardOpen(true)} size="lg">
+          Iniciar Wizard BEX
+        </Button>
       </div>
 
       <PlanejamentoEditorialWizard
-        open={true}
-        onOpenChange={() => navigate(`/grs/planejamento/${id}`)}
+        open={wizardOpen}
+        onOpenChange={setWizardOpen}
         clienteId={planejamento.cliente_id}
         planejamentoId={id!}
         onComplete={handleComplete}
