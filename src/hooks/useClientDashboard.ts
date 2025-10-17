@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from './useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import type { Database } from '@/integrations/supabase/types';
 
 interface DashboardCounts {
   planejamentosPendentes: number;
@@ -180,8 +181,17 @@ export function useClientDashboard(overrideClienteId?: string) {
       const projetosComProgresso: ProjectWithTasks[] = [];
       
       for (const projeto of projetos || []) {
-        const total = 0;
-        const concluidas = 0;
+        // Buscar total de tarefas do projeto
+        const tarefasResult = await supabase
+          .from('tarefa')
+          .select('status')
+          .eq('projeto_id', projeto.id);
+
+        const total = tarefasResult.data?.length ?? 0;
+        const concluidas = tarefasResult.data?.filter(t => t.status === 'concluido').length ?? 0;
+        const progresso = total > 0 
+          ? Math.round((concluidas / total) * 100) 
+          : 0;
 
         projetosComProgresso.push({
           id: projeto.id,
@@ -191,7 +201,7 @@ export function useClientDashboard(overrideClienteId?: string) {
           data_fim: projeto.data_fim,
           total_tarefas: total,
           tarefas_concluidas: concluidas,
-          progresso: 0
+          progresso
         });
       }
 
