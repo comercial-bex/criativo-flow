@@ -58,17 +58,27 @@ export const useTeamChat = (threadId?: string) => {
     queryFn: async () => {
       if (!threadId) return [];
 
-      const { data, error } = await supabase
+      const { data: messagesData, error } = await supabase
         .from('team_chat_messages')
-        .select(`
-          *,
-          sender:profiles!sender_id(id, nome, avatar_url)
-        `)
+        .select('*')
         .eq('thread_id', threadId)
         .order('created_at', { ascending: true });
 
       if (error) throw error;
-      return data as ChatMessage[];
+
+      // Buscar informações dos senders
+      const senderIds = [...new Set(messagesData.map(m => m.sender_id))];
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, nome, avatar_url')
+        .in('id', senderIds);
+
+      const profilesMap = new Map(profiles?.map(p => [p.id, p]) || []);
+
+      return messagesData.map(msg => ({
+        ...msg,
+        sender: profilesMap.get(msg.sender_id)
+      })) as ChatMessage[];
     },
     enabled: !!threadId,
   });

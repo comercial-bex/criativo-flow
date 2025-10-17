@@ -9763,6 +9763,20 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "fk_sender_profile"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_sender_profile"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "vw_client_metrics"
+            referencedColumns: ["responsavel_id"]
+          },
+          {
             foreignKeyName: "team_chat_messages_thread_id_fkey"
             columns: ["thread_id"]
             isOneToOne: false
