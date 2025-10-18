@@ -1873,6 +1873,13 @@ export type Database = {
             foreignKeyName: "fk_clientes_responsavel_pessoas"
             columns: ["responsavel_id"]
             isOneToOne: false
+            referencedRelation: "vw_clientes_filtered"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_clientes_responsavel_pessoas"
+            columns: ["responsavel_id"]
+            isOneToOne: false
             referencedRelation: "vw_conflitos_migracao_clientes"
             referencedColumns: ["pessoa_id"]
           },
@@ -3056,6 +3063,13 @@ export type Database = {
             foreignKeyName: "fk_eventos_responsavel_pessoas"
             columns: ["responsavel_id"]
             isOneToOne: false
+            referencedRelation: "vw_clientes_filtered"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_eventos_responsavel_pessoas"
+            columns: ["responsavel_id"]
+            isOneToOne: false
             referencedRelation: "vw_conflitos_migracao_clientes"
             referencedColumns: ["pessoa_id"]
           },
@@ -3604,6 +3618,13 @@ export type Database = {
             columns: ["colaborador_id"]
             isOneToOne: false
             referencedRelation: "pessoas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_folha_itens_colaborador"
+            columns: ["colaborador_id"]
+            isOneToOne: false
+            referencedRelation: "vw_clientes_filtered"
             referencedColumns: ["id"]
           },
           {
@@ -5676,6 +5697,13 @@ export type Database = {
             foreignKeyName: "migracao_clientes_audit_pessoa_id_fkey"
             columns: ["pessoa_id"]
             isOneToOne: false
+            referencedRelation: "vw_clientes_filtered"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "migracao_clientes_audit_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: false
             referencedRelation: "vw_conflitos_migracao_clientes"
             referencedColumns: ["pessoa_id"]
           },
@@ -6407,6 +6435,13 @@ export type Database = {
             foreignKeyName: "fk_pessoa_papeis_pessoa"
             columns: ["pessoa_id"]
             isOneToOne: false
+            referencedRelation: "vw_clientes_filtered"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_pessoa_papeis_pessoa"
+            columns: ["pessoa_id"]
+            isOneToOne: false
             referencedRelation: "vw_conflitos_migracao_clientes"
             referencedColumns: ["pessoa_id"]
           },
@@ -6428,6 +6463,13 @@ export type Database = {
             foreignKeyName: "pessoa_papeis_pessoa_id_fkey"
             columns: ["pessoa_id"]
             isOneToOne: false
+            referencedRelation: "vw_clientes_filtered"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pessoa_papeis_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: false
             referencedRelation: "vw_conflitos_migracao_clientes"
             referencedColumns: ["pessoa_id"]
           },
@@ -6435,67 +6477,97 @@ export type Database = {
       }
       pessoas: {
         Row: {
+          assinatura_id: string | null
           cargo_atual: string | null
           cargo_id: string | null
           cliente_id: string | null
+          cnae_principal: string | null
+          cnpj_fonte: string | null
+          cnpj_ultima_consulta: string | null
           cpf: string | null
           created_at: string
           dados_bancarios: Json | null
           data_admissao: string | null
           data_desligamento: string | null
           email: string | null
+          endereco: string | null
           fee_mensal: number | null
           id: string
+          logo_url: string | null
           nome: string
+          nome_fantasia: string | null
           observacoes: string | null
           papeis: string[]
           profile_id: string | null
+          razao_social: string | null
           regime: string | null
+          responsavel_id: string | null
           salario_base: number | null
+          situacao_cadastral: string | null
           status: string | null
           telefones: string[] | null
           updated_at: string
         }
         Insert: {
+          assinatura_id?: string | null
           cargo_atual?: string | null
           cargo_id?: string | null
           cliente_id?: string | null
+          cnae_principal?: string | null
+          cnpj_fonte?: string | null
+          cnpj_ultima_consulta?: string | null
           cpf?: string | null
           created_at?: string
           dados_bancarios?: Json | null
           data_admissao?: string | null
           data_desligamento?: string | null
           email?: string | null
+          endereco?: string | null
           fee_mensal?: number | null
           id?: string
+          logo_url?: string | null
           nome: string
+          nome_fantasia?: string | null
           observacoes?: string | null
           papeis?: string[]
           profile_id?: string | null
+          razao_social?: string | null
           regime?: string | null
+          responsavel_id?: string | null
           salario_base?: number | null
+          situacao_cadastral?: string | null
           status?: string | null
           telefones?: string[] | null
           updated_at?: string
         }
         Update: {
+          assinatura_id?: string | null
           cargo_atual?: string | null
           cargo_id?: string | null
           cliente_id?: string | null
+          cnae_principal?: string | null
+          cnpj_fonte?: string | null
+          cnpj_ultima_consulta?: string | null
           cpf?: string | null
           created_at?: string
           dados_bancarios?: Json | null
           data_admissao?: string | null
           data_desligamento?: string | null
           email?: string | null
+          endereco?: string | null
           fee_mensal?: number | null
           id?: string
+          logo_url?: string | null
           nome?: string
+          nome_fantasia?: string | null
           observacoes?: string | null
           papeis?: string[]
           profile_id?: string | null
+          razao_social?: string | null
           regime?: string | null
+          responsavel_id?: string | null
           salario_base?: number | null
+          situacao_cadastral?: string | null
           status?: string | null
           telefones?: string[] | null
           updated_at?: string
@@ -6506,6 +6578,13 @@ export type Database = {
             columns: ["cargo_id"]
             isOneToOne: false
             referencedRelation: "rh_cargos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pessoas_assinatura_id_fkey"
+            columns: ["assinatura_id"]
+            isOneToOne: false
+            referencedRelation: "assinaturas"
             referencedColumns: ["id"]
           },
           {
@@ -6547,6 +6626,20 @@ export type Database = {
             foreignKeyName: "pessoas_profile_id_fkey"
             columns: ["profile_id"]
             isOneToOne: true
+            referencedRelation: "vw_client_metrics"
+            referencedColumns: ["responsavel_id"]
+          },
+          {
+            foreignKeyName: "pessoas_responsavel_id_fkey"
+            columns: ["responsavel_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pessoas_responsavel_id_fkey"
+            columns: ["responsavel_id"]
+            isOneToOne: false
             referencedRelation: "vw_client_metrics"
             referencedColumns: ["responsavel_id"]
           },
@@ -9630,6 +9723,13 @@ export type Database = {
             foreignKeyName: "fk_tarefa_executor_pessoas"
             columns: ["executor_id"]
             isOneToOne: false
+            referencedRelation: "vw_clientes_filtered"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_tarefa_executor_pessoas"
+            columns: ["executor_id"]
+            isOneToOne: false
             referencedRelation: "vw_conflitos_migracao_clientes"
             referencedColumns: ["pessoa_id"]
           },
@@ -9645,6 +9745,13 @@ export type Database = {
             columns: ["responsavel_id"]
             isOneToOne: false
             referencedRelation: "pessoas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_tarefa_responsavel_pessoas"
+            columns: ["responsavel_id"]
+            isOneToOne: false
+            referencedRelation: "vw_clientes_filtered"
             referencedColumns: ["id"]
           },
           {
@@ -10577,46 +10684,68 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
-          assinatura_id?: never
-          cnae_principal?: never
+          assinatura_id?: string | null
+          cnae_principal?: string | null
           cnpj_cpf?: string | null
-          cnpj_fonte?: never
-          cnpj_ultima_consulta?: never
+          cnpj_fonte?: string | null
+          cnpj_ultima_consulta?: string | null
           created_at?: string | null
           email?: string | null
-          endereco?: never
+          endereco?: string | null
           id?: string | null
-          logo_url?: never
+          logo_url?: string | null
           nome?: string | null
-          nome_fantasia?: never
-          razao_social?: never
-          responsavel_id?: never
-          situacao_cadastral?: never
+          nome_fantasia?: string | null
+          razao_social?: string | null
+          responsavel_id?: string | null
+          situacao_cadastral?: string | null
           status?: string | null
           telefone?: never
           updated_at?: string | null
         }
         Update: {
-          assinatura_id?: never
-          cnae_principal?: never
+          assinatura_id?: string | null
+          cnae_principal?: string | null
           cnpj_cpf?: string | null
-          cnpj_fonte?: never
-          cnpj_ultima_consulta?: never
+          cnpj_fonte?: string | null
+          cnpj_ultima_consulta?: string | null
           created_at?: string | null
           email?: string | null
-          endereco?: never
+          endereco?: string | null
           id?: string | null
-          logo_url?: never
+          logo_url?: string | null
           nome?: string | null
-          nome_fantasia?: never
-          razao_social?: never
-          responsavel_id?: never
-          situacao_cadastral?: never
+          nome_fantasia?: string | null
+          razao_social?: string | null
+          responsavel_id?: string | null
+          situacao_cadastral?: string | null
           status?: string | null
           telefone?: never
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "pessoas_assinatura_id_fkey"
+            columns: ["assinatura_id"]
+            isOneToOne: false
+            referencedRelation: "assinaturas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pessoas_responsavel_id_fkey"
+            columns: ["responsavel_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pessoas_responsavel_id_fkey"
+            columns: ["responsavel_id"]
+            isOneToOne: false
+            referencedRelation: "vw_client_metrics"
+            referencedColumns: ["responsavel_id"]
+          },
+        ]
       }
       mv_grs_dashboard_metrics: {
         Row: {
@@ -10658,6 +10787,13 @@ export type Database = {
             columns: ["responsavel_id"]
             isOneToOne: false
             referencedRelation: "pessoas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_clientes_responsavel_pessoas"
+            columns: ["responsavel_id"]
+            isOneToOne: false
+            referencedRelation: "vw_clientes_filtered"
             referencedColumns: ["id"]
           },
           {
@@ -10707,6 +10843,88 @@ export type Database = {
           telefone: string | null
         }
         Relationships: []
+      }
+      vw_clientes_filtered: {
+        Row: {
+          _has_sensitive_access: boolean | null
+          assinatura_id: string | null
+          cnae_principal: string | null
+          cpf: string | null
+          created_at: string | null
+          email: string | null
+          endereco: string | null
+          id: string | null
+          logo_url: string | null
+          nome: string | null
+          nome_fantasia: string | null
+          razao_social: string | null
+          responsavel_id: string | null
+          situacao_cadastral: string | null
+          status: string | null
+          telefones: string[] | null
+          updated_at: string | null
+        }
+        Insert: {
+          _has_sensitive_access?: never
+          assinatura_id?: string | null
+          cnae_principal?: string | null
+          cpf?: never
+          created_at?: string | null
+          email?: never
+          endereco?: never
+          id?: string | null
+          logo_url?: string | null
+          nome?: string | null
+          nome_fantasia?: string | null
+          razao_social?: string | null
+          responsavel_id?: string | null
+          situacao_cadastral?: string | null
+          status?: string | null
+          telefones?: never
+          updated_at?: string | null
+        }
+        Update: {
+          _has_sensitive_access?: never
+          assinatura_id?: string | null
+          cnae_principal?: string | null
+          cpf?: never
+          created_at?: string | null
+          email?: never
+          endereco?: never
+          id?: string | null
+          logo_url?: string | null
+          nome?: string | null
+          nome_fantasia?: string | null
+          razao_social?: string | null
+          responsavel_id?: string | null
+          situacao_cadastral?: string | null
+          status?: string | null
+          telefones?: never
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pessoas_assinatura_id_fkey"
+            columns: ["assinatura_id"]
+            isOneToOne: false
+            referencedRelation: "assinaturas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pessoas_responsavel_id_fkey"
+            columns: ["responsavel_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pessoas_responsavel_id_fkey"
+            columns: ["responsavel_id"]
+            isOneToOne: false
+            referencedRelation: "vw_client_metrics"
+            referencedColumns: ["responsavel_id"]
+          },
+        ]
       }
       vw_colaboradores_especialistas: {
         Row: {
@@ -11004,8 +11222,16 @@ export type Database = {
         Args: { p_competencia: string; p_pessoa_id: string }
         Returns: Json
       }
+      can_access_sensitive_cliente_data: {
+        Args: { p_pessoa_id: string }
+        Returns: boolean
+      }
       can_access_sensitive_customer_data: {
         Args: { customer_id: string }
+        Returns: boolean
+      }
+      can_manage_pessoas: {
+        Args: Record<PropertyKey, never>
         Returns: boolean
       }
       check_orphan_users: {
@@ -11365,6 +11591,10 @@ export type Database = {
       }
       is_admin: {
         Args: { user_uuid: string }
+        Returns: boolean
+      }
+      is_same_cliente: {
+        Args: { p_pessoa_id: string }
         Returns: boolean
       }
       log_rls_error: {
