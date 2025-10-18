@@ -891,16 +891,21 @@ Responda com um texto corrido, bem estruturado e com no máximo 700 palavras.
         throw error;
       }
 
-      const posicionamentoGerado = typeof response === 'string' ? response : response.toString();
-      
-      // Auto-save será ativado automaticamente pelo useEffect
-      
-      setConteudo(prev => ({
-        ...prev,
-        posicionamento: posicionamentoGerado
-      }));
+      console.log('📝 Resposta da API (Posicionamento):', response);
 
-      toast.success('Posicionamento gerado e salvo com sucesso!');
+      const posicionamentoGerado = response.generatedText || response.content || response;
+      
+      console.log('✅ Posicionamento extraído:', posicionamentoGerado);
+      
+      if (posicionamentoGerado && typeof posicionamentoGerado === 'string' && posicionamentoGerado.trim().length > 0) {
+        setConteudo(prev => ({
+          ...prev,
+          posicionamento: posicionamentoGerado.trim()
+        }));
+        toast.success('Posicionamento gerado e salvo com sucesso!');
+      } else {
+        throw new Error('Posicionamento gerado inválido');
+      }
     } catch (error) {
       console.error('Erro ao gerar posicionamento:', error);
       toast.error('Erro ao gerar posicionamento. Tente novamente.');
