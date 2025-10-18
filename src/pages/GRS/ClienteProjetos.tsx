@@ -226,7 +226,7 @@ export default function ClienteProjetos() {
                 .single();
               
               if (!error && data) {
-                navigate(`/grs/planejamento/${data.id}/bex-wizard`);
+                navigate(`/grs/planejamento/${data.id}?tab=plano-editorial`);
               } else {
                 toast({
                   title: "Erro ao criar planejamento",
