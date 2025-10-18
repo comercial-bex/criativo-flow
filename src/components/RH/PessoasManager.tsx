@@ -307,7 +307,7 @@ export function PessoasManager() {
                           <SelectContent>
                             {especialistas.map((esp) => (
                               <SelectItem key={esp.id} value={esp.id}>
-                                {esp.nome} - {esp.especialidade}
+                                {esp.nome} - {esp.papeis?.join(', ')}
                               </SelectItem>
                             ))}
                           </SelectContent>
