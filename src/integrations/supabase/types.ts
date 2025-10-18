@@ -2494,7 +2494,9 @@ export type Database = {
           plataforma: string
           projeto_id: string | null
           senha: string | null
+          senha_encrypted: string | null
           tokens_api: Json | null
+          tokens_api_encrypted: string | null
           updated_at: string
           updated_by: string | null
           usuario_login: string
@@ -2509,7 +2511,9 @@ export type Database = {
           plataforma: string
           projeto_id?: string | null
           senha?: string | null
+          senha_encrypted?: string | null
           tokens_api?: Json | null
+          tokens_api_encrypted?: string | null
           updated_at?: string
           updated_by?: string | null
           usuario_login: string
@@ -2524,7 +2528,9 @@ export type Database = {
           plataforma?: string
           projeto_id?: string | null
           senha?: string | null
+          senha_encrypted?: string | null
           tokens_api?: Json | null
+          tokens_api_encrypted?: string | null
           updated_at?: string
           updated_by?: string | null
           usuario_login?: string
@@ -11294,6 +11300,14 @@ export type Database = {
         }
         Returns: string
       }
+      decrypt_credential: {
+        Args: { p_encrypted: string; p_key_name?: string }
+        Returns: string
+      }
+      encrypt_credential: {
+        Args: { p_key_name?: string; p_plaintext: string }
+        Returns: string
+      }
       ensure_profile_exists: {
         Args: {
           p_cliente_id?: string
@@ -11536,6 +11550,22 @@ export type Database = {
         Args: { ano: number; tipo: string }
         Returns: string
       }
+      get_credential_secure: {
+        Args: { p_cred_id: string }
+        Returns: {
+          categoria: string
+          cliente_id: string
+          extra: Json
+          id: string
+          plataforma: string
+          projeto_id: string
+          senha_decrypted: string
+          tokens_api_decrypted: Json
+          updated_at: string
+          url: string
+          usuario_login: string
+        }[]
+      }
       get_filtered_customer_data: {
         Args: { customer_id: string }
         Returns: {
@@ -11645,6 +11675,20 @@ export type Database = {
       }
       sanitize_error_message: {
         Args: { error_msg: string }
+        Returns: string
+      }
+      save_credential_secure: {
+        Args: {
+          p_categoria: string
+          p_cliente_id: string
+          p_extra?: Json
+          p_plataforma: string
+          p_projeto_id: string
+          p_senha_plain: string
+          p_tokens_api_plain?: Json
+          p_url?: string
+          p_usuario_login: string
+        }
         Returns: string
       }
       update_connector_status: {
