@@ -333,7 +333,7 @@ export type Database = {
             foreignKeyName: "aprovacao_tarefa_aprovado_por_fkey"
             columns: ["aprovado_por"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "profiles_deprecated"
             referencedColumns: ["id"]
           },
           {
@@ -461,7 +461,7 @@ export type Database = {
             foreignKeyName: "aprovacoes_cliente_decidido_por_fkey"
             columns: ["decidido_por"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "profiles_deprecated"
             referencedColumns: ["id"]
           },
           {
@@ -482,7 +482,7 @@ export type Database = {
             foreignKeyName: "aprovacoes_cliente_solicitado_por_fkey"
             columns: ["solicitado_por"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "profiles_deprecated"
             referencedColumns: ["id"]
           },
           {
@@ -765,7 +765,7 @@ export type Database = {
             foreignKeyName: "brand_assets_created_by_fkey"
             columns: ["created_by"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "profiles_deprecated"
             referencedColumns: ["id"]
           },
           {
@@ -1187,7 +1187,7 @@ export type Database = {
             foreignKeyName: "fk_captacoes_especialista"
             columns: ["especialista_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "profiles_deprecated"
             referencedColumns: ["id"]
           },
           {
@@ -1746,7 +1746,7 @@ export type Database = {
             foreignKeyName: "cliente_usuarios_criado_por_fkey"
             columns: ["criado_por"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "profiles_deprecated"
             referencedColumns: ["id"]
           },
           {
@@ -1760,7 +1760,7 @@ export type Database = {
             foreignKeyName: "cliente_usuarios_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "profiles_deprecated"
             referencedColumns: ["id"]
           },
           {
@@ -1838,7 +1838,7 @@ export type Database = {
             foreignKeyName: "clientes_responsavel_id_fkey"
             columns: ["responsavel_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "profiles_deprecated"
             referencedColumns: ["id"]
           },
           {
@@ -2387,7 +2387,7 @@ export type Database = {
             foreignKeyName: "contratos_assinado_por_fkey"
             columns: ["assinado_por"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "profiles_deprecated"
             referencedColumns: ["id"]
           },
           {
@@ -2429,7 +2429,7 @@ export type Database = {
             foreignKeyName: "contratos_created_by_fkey"
             columns: ["created_by"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "profiles_deprecated"
             referencedColumns: ["id"]
           },
           {
@@ -2443,7 +2443,7 @@ export type Database = {
             foreignKeyName: "contratos_criado_por_fkey"
             columns: ["criado_por"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "profiles_deprecated"
             referencedColumns: ["id"]
           },
           {
@@ -2471,7 +2471,7 @@ export type Database = {
             foreignKeyName: "contratos_updated_by_fkey"
             columns: ["updated_by"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "profiles_deprecated"
             referencedColumns: ["id"]
           },
           {
@@ -2568,7 +2568,7 @@ export type Database = {
             foreignKeyName: "credenciais_cliente_created_by_fkey"
             columns: ["created_by"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "profiles_deprecated"
             referencedColumns: ["id"]
           },
           {
@@ -2589,7 +2589,7 @@ export type Database = {
             foreignKeyName: "credenciais_cliente_updated_by_fkey"
             columns: ["updated_by"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "profiles_deprecated"
             referencedColumns: ["id"]
           },
           {
@@ -2709,7 +2709,7 @@ export type Database = {
             foreignKeyName: "email_verification_tokens_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "profiles_deprecated"
             referencedColumns: ["id"]
           },
           {
@@ -2760,7 +2760,7 @@ export type Database = {
             foreignKeyName: "fk_equipamentos_responsavel"
             columns: ["responsavel_atual"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "profiles_deprecated"
             referencedColumns: ["id"]
           },
           {
@@ -2879,7 +2879,7 @@ export type Database = {
             foreignKeyName: "eventos_agenda_responsavel_id_fkey"
             columns: ["responsavel_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "profiles_deprecated"
             referencedColumns: ["id"]
           },
           {
@@ -3006,7 +3006,7 @@ export type Database = {
             foreignKeyName: "eventos_calendario_created_by_fkey"
             columns: ["created_by"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "profiles_deprecated"
             referencedColumns: ["id"]
           },
           {
@@ -3034,7 +3034,7 @@ export type Database = {
             foreignKeyName: "eventos_calendario_responsavel_id_fkey"
             columns: ["responsavel_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "profiles_deprecated"
             referencedColumns: ["id"]
           },
           {
@@ -3055,29 +3055,15 @@ export type Database = {
             foreignKeyName: "fk_eventos_responsavel_pessoas"
             columns: ["responsavel_id"]
             isOneToOne: false
-            referencedRelation: "clientes_compat"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_eventos_responsavel_pessoas"
-            columns: ["responsavel_id"]
-            isOneToOne: false
             referencedRelation: "pessoas"
-            referencedColumns: ["id"]
+            referencedColumns: ["profile_id"]
           },
           {
             foreignKeyName: "fk_eventos_responsavel_pessoas"
             columns: ["responsavel_id"]
             isOneToOne: false
-            referencedRelation: "vw_clientes_filtered"
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_eventos_responsavel_pessoas"
-            columns: ["responsavel_id"]
-            isOneToOne: false
-            referencedRelation: "vw_conflitos_migracao_clientes"
-            referencedColumns: ["pessoa_id"]
           },
         ]
       }
@@ -3145,7 +3131,7 @@ export type Database = {
             foreignKeyName: "exportacoes_gerado_por_fkey"
             columns: ["gerado_por"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "profiles_deprecated"
             referencedColumns: ["id"]
           },
           {
@@ -4199,7 +4185,7 @@ export type Database = {
             foreignKeyName: "funcionarios_perfil_acesso_fkey"
             columns: ["perfil_acesso"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "profiles_deprecated"
             referencedColumns: ["id"]
           },
           {
@@ -4421,7 +4407,7 @@ export type Database = {
             foreignKeyName: "fk_gamificacao_usuarios_profile"
             columns: ["user_id"]
             isOneToOne: true
-            referencedRelation: "profiles"
+            referencedRelation: "profiles_deprecated"
             referencedColumns: ["id"]
           },
           {
@@ -4490,7 +4476,7 @@ export type Database = {
             foreignKeyName: "homologacao_checklist_testado_por_fkey"
             columns: ["testado_por"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "profiles_deprecated"
             referencedColumns: ["id"]
           },
           {
@@ -4535,7 +4521,7 @@ export type Database = {
             foreignKeyName: "homologacao_logs_executado_por_fkey"
             columns: ["executado_por"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "profiles_deprecated"
             referencedColumns: ["id"]
           },
           {
@@ -4982,7 +4968,7 @@ export type Database = {
             foreignKeyName: "inventario_itens_atualizado_por_fkey"
             columns: ["atualizado_por"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "profiles_deprecated"
             referencedColumns: ["id"]
           },
           {
@@ -4996,7 +4982,7 @@ export type Database = {
             foreignKeyName: "inventario_itens_criado_por_fkey"
             columns: ["criado_por"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "profiles_deprecated"
             referencedColumns: ["id"]
           },
           {
@@ -5233,7 +5219,7 @@ export type Database = {
             foreignKeyName: "inventario_movimentacoes_responsavel_id_fkey"
             columns: ["responsavel_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "profiles_deprecated"
             referencedColumns: ["id"]
           },
           {
@@ -5335,7 +5321,7 @@ export type Database = {
             foreignKeyName: "inventario_reservas_criado_por_fkey"
             columns: ["criado_por"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "profiles_deprecated"
             referencedColumns: ["id"]
           },
           {
@@ -5547,7 +5533,7 @@ export type Database = {
             foreignKeyName: "leads_responsavel_id_fkey"
             columns: ["responsavel_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "profiles_deprecated"
             referencedColumns: ["id"]
           },
           {
@@ -5589,7 +5575,7 @@ export type Database = {
             foreignKeyName: "log_atividade_tarefa_actor_id_fkey"
             columns: ["actor_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "profiles_deprecated"
             referencedColumns: ["id"]
           },
           {
@@ -5678,7 +5664,7 @@ export type Database = {
             foreignKeyName: "logs_atividade_usuario_id_fkey"
             columns: ["usuario_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "profiles_deprecated"
             referencedColumns: ["id"]
           },
           {
@@ -5855,7 +5841,7 @@ export type Database = {
             foreignKeyName: "notas_cliente_created_by_fkey"
             columns: ["created_by"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "profiles_deprecated"
             referencedColumns: ["id"]
           },
           {
@@ -5876,7 +5862,7 @@ export type Database = {
             foreignKeyName: "notas_cliente_updated_by_fkey"
             columns: ["updated_by"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "profiles_deprecated"
             referencedColumns: ["id"]
           },
           {
@@ -6153,7 +6139,7 @@ export type Database = {
             foreignKeyName: "orcamentos_created_by_fkey"
             columns: ["created_by"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "profiles_deprecated"
             referencedColumns: ["id"]
           },
           {
@@ -6174,7 +6160,7 @@ export type Database = {
             foreignKeyName: "orcamentos_updated_by_fkey"
             columns: ["updated_by"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "profiles_deprecated"
             referencedColumns: ["id"]
           },
           {
@@ -6665,7 +6651,7 @@ export type Database = {
             foreignKeyName: "pessoas_profile_id_fkey"
             columns: ["profile_id"]
             isOneToOne: true
-            referencedRelation: "profiles"
+            referencedRelation: "profiles_deprecated"
             referencedColumns: ["id"]
           },
           {
@@ -6679,7 +6665,7 @@ export type Database = {
             foreignKeyName: "pessoas_responsavel_id_fkey"
             columns: ["responsavel_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "profiles_deprecated"
             referencedColumns: ["id"]
           },
           {
@@ -6777,7 +6763,7 @@ export type Database = {
             foreignKeyName: "planejamentos_responsavel_grs_id_fkey"
             columns: ["responsavel_grs_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "profiles_deprecated"
             referencedColumns: ["id"]
           },
           {
@@ -6871,7 +6857,7 @@ export type Database = {
             foreignKeyName: "planos_estrategicos_created_by_fkey"
             columns: ["created_by"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "profiles_deprecated"
             referencedColumns: ["id"]
           },
           {
@@ -6945,7 +6931,7 @@ export type Database = {
             foreignKeyName: "planos_objetivos_responsavel_id_fkey"
             columns: ["responsavel_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "profiles_deprecated"
             referencedColumns: ["id"]
           },
           {
@@ -7142,7 +7128,7 @@ export type Database = {
             foreignKeyName: "produtividade_checklist_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "profiles_deprecated"
             referencedColumns: ["id"]
           },
           {
@@ -7190,7 +7176,7 @@ export type Database = {
             foreignKeyName: "produtividade_insights_foco_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "profiles_deprecated"
             referencedColumns: ["id"]
           },
           {
@@ -7253,7 +7239,7 @@ export type Database = {
             foreignKeyName: "produtividade_metas_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "profiles_deprecated"
             referencedColumns: ["id"]
           },
           {
@@ -7304,7 +7290,7 @@ export type Database = {
             foreignKeyName: "produtividade_pomodoro_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "profiles_deprecated"
             referencedColumns: ["id"]
           },
           {
@@ -7355,7 +7341,7 @@ export type Database = {
             foreignKeyName: "produtividade_reflexao_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "profiles_deprecated"
             referencedColumns: ["id"]
           },
           {
@@ -7493,7 +7479,7 @@ export type Database = {
         }
         Relationships: []
       }
-      profiles: {
+      profiles_deprecated: {
         Row: {
           aprovado_por: string | null
           avatar_url: string | null
@@ -7615,7 +7601,7 @@ export type Database = {
             foreignKeyName: "projeto_especialistas_especialista_id_fkey"
             columns: ["especialista_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "profiles_deprecated"
             referencedColumns: ["id"]
           },
           {
@@ -7663,7 +7649,7 @@ export type Database = {
             foreignKeyName: "projeto_status_historico_alterado_por_fkey"
             columns: ["alterado_por"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "profiles_deprecated"
             referencedColumns: ["id"]
           },
           {
@@ -7755,6 +7741,20 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "fk_projetos_grs_pessoas"
+            columns: ["responsavel_grs_id"]
+            isOneToOne: false
+            referencedRelation: "pessoas"
+            referencedColumns: ["profile_id"]
+          },
+          {
+            foreignKeyName: "fk_projetos_grs_pessoas"
+            columns: ["responsavel_grs_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "projetos_cliente_id_fkey"
             columns: ["cliente_id"]
             isOneToOne: false
@@ -7786,7 +7786,7 @@ export type Database = {
             foreignKeyName: "projetos_created_by_fkey"
             columns: ["created_by"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "profiles_deprecated"
             referencedColumns: ["id"]
           },
           {
@@ -7800,7 +7800,7 @@ export type Database = {
             foreignKeyName: "projetos_responsavel_atendimento_id_fkey"
             columns: ["responsavel_atendimento_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "profiles_deprecated"
             referencedColumns: ["id"]
           },
           {
@@ -7814,7 +7814,7 @@ export type Database = {
             foreignKeyName: "projetos_responsavel_grs_id_fkey"
             columns: ["responsavel_grs_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "profiles_deprecated"
             referencedColumns: ["id"]
           },
           {
@@ -7828,7 +7828,7 @@ export type Database = {
             foreignKeyName: "projetos_responsavel_id_fkey"
             columns: ["responsavel_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "profiles_deprecated"
             referencedColumns: ["id"]
           },
           {
@@ -7885,7 +7885,7 @@ export type Database = {
             foreignKeyName: "fk_projetos_av_especialista"
             columns: ["especialista_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "profiles_deprecated"
             referencedColumns: ["id"]
           },
           {
@@ -8106,7 +8106,7 @@ export type Database = {
             foreignKeyName: "propostas_created_by_fkey"
             columns: ["created_by"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "profiles_deprecated"
             referencedColumns: ["id"]
           },
           {
@@ -8134,7 +8134,7 @@ export type Database = {
             foreignKeyName: "propostas_updated_by_fkey"
             columns: ["updated_by"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "profiles_deprecated"
             referencedColumns: ["id"]
           },
           {
@@ -9029,7 +9029,7 @@ export type Database = {
             foreignKeyName: "social_connection_logs_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "profiles_deprecated"
             referencedColumns: ["id"]
           },
           {
@@ -9755,35 +9755,14 @@ export type Database = {
             foreignKeyName: "fk_tarefa_executor_pessoas"
             columns: ["executor_id"]
             isOneToOne: false
-            referencedRelation: "clientes_compat"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_tarefa_executor_pessoas"
-            columns: ["executor_id"]
-            isOneToOne: false
             referencedRelation: "pessoas"
-            referencedColumns: ["id"]
+            referencedColumns: ["profile_id"]
           },
           {
             foreignKeyName: "fk_tarefa_executor_pessoas"
             columns: ["executor_id"]
             isOneToOne: false
-            referencedRelation: "vw_clientes_filtered"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_tarefa_executor_pessoas"
-            columns: ["executor_id"]
-            isOneToOne: false
-            referencedRelation: "vw_conflitos_migracao_clientes"
-            referencedColumns: ["pessoa_id"]
-          },
-          {
-            foreignKeyName: "fk_tarefa_responsavel_pessoas"
-            columns: ["responsavel_id"]
-            isOneToOne: false
-            referencedRelation: "clientes_compat"
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
           {
@@ -9791,21 +9770,14 @@ export type Database = {
             columns: ["responsavel_id"]
             isOneToOne: false
             referencedRelation: "pessoas"
-            referencedColumns: ["id"]
+            referencedColumns: ["profile_id"]
           },
           {
             foreignKeyName: "fk_tarefa_responsavel_pessoas"
             columns: ["responsavel_id"]
             isOneToOne: false
-            referencedRelation: "vw_clientes_filtered"
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_tarefa_responsavel_pessoas"
-            columns: ["responsavel_id"]
-            isOneToOne: false
-            referencedRelation: "vw_conflitos_migracao_clientes"
-            referencedColumns: ["pessoa_id"]
           },
           {
             foreignKeyName: "tarefa_campanha_id_fkey"
@@ -9853,7 +9825,7 @@ export type Database = {
             foreignKeyName: "tarefa_created_by_fkey"
             columns: ["created_by"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "profiles_deprecated"
             referencedColumns: ["id"]
           },
           {
@@ -9867,7 +9839,7 @@ export type Database = {
             foreignKeyName: "tarefa_executor_id_fkey"
             columns: ["executor_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "profiles_deprecated"
             referencedColumns: ["id"]
           },
           {
@@ -9895,7 +9867,7 @@ export type Database = {
             foreignKeyName: "tarefa_responsavel_id_fkey"
             columns: ["responsavel_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "profiles_deprecated"
             referencedColumns: ["id"]
           },
           {
@@ -9909,7 +9881,7 @@ export type Database = {
             foreignKeyName: "tarefa_updated_by_fkey"
             columns: ["updated_by"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "profiles_deprecated"
             referencedColumns: ["id"]
           },
           {
@@ -10090,7 +10062,7 @@ export type Database = {
             foreignKeyName: "tarefas_responsavel_id_fkey"
             columns: ["responsavel_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "profiles_deprecated"
             referencedColumns: ["id"]
           },
           {
@@ -10104,7 +10076,7 @@ export type Database = {
             foreignKeyName: "tarefas_solicitante_id_fkey"
             columns: ["solicitante_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "profiles_deprecated"
             referencedColumns: ["id"]
           },
           {
@@ -10280,7 +10252,7 @@ export type Database = {
             foreignKeyName: "tarefas_projeto_aprovado_por_fkey"
             columns: ["aprovado_por"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "profiles_deprecated"
             referencedColumns: ["id"]
           },
           {
@@ -10308,7 +10280,7 @@ export type Database = {
             foreignKeyName: "tarefas_projeto_responsavel_id_fkey"
             columns: ["responsavel_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "profiles_deprecated"
             referencedColumns: ["id"]
           },
           {
@@ -10356,7 +10328,7 @@ export type Database = {
             foreignKeyName: "fk_sender_profile"
             columns: ["sender_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "profiles_deprecated"
             referencedColumns: ["id"]
           },
           {
@@ -10631,7 +10603,7 @@ export type Database = {
             foreignKeyName: "user_access_logs_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "profiles_deprecated"
             referencedColumns: ["id"]
           },
           {
@@ -10694,7 +10666,7 @@ export type Database = {
             foreignKeyName: "user_roles_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "profiles_deprecated"
             referencedColumns: ["id"]
           },
           {
@@ -10781,7 +10753,7 @@ export type Database = {
             foreignKeyName: "pessoas_responsavel_id_fkey"
             columns: ["responsavel_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "profiles_deprecated"
             referencedColumns: ["id"]
           },
           {
@@ -10811,7 +10783,7 @@ export type Database = {
             foreignKeyName: "clientes_responsavel_id_fkey"
             columns: ["responsavel_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "profiles_deprecated"
             referencedColumns: ["id"]
           },
           {
@@ -10848,6 +10820,68 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "vw_conflitos_migracao_clientes"
             referencedColumns: ["pessoa_id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          aprovado_por: string | null
+          avatar_url: string | null
+          cliente_id: string | null
+          cpf: string | null
+          created_at: string | null
+          data_aprovacao: string | null
+          email: string | null
+          especialidade: string | null
+          id: string | null
+          nome: string | null
+          observacoes_aprovacao: string | null
+          status: string | null
+          telefone: string | null
+          updated_at: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cliente_usuarios_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cliente_usuarios_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "mv_grs_dashboard_metrics"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "cliente_usuarios_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "vw_client_metrics"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "cliente_usuarios_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "vw_conflitos_migracao_clientes"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "pessoas_profile_id_fkey"
+            columns: ["id"]
+            isOneToOne: true
+            referencedRelation: "profiles_deprecated"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pessoas_profile_id_fkey"
+            columns: ["id"]
+            isOneToOne: true
+            referencedRelation: "vw_client_metrics"
+            referencedColumns: ["responsavel_id"]
           },
         ]
       }
@@ -10960,7 +10994,7 @@ export type Database = {
             foreignKeyName: "pessoas_responsavel_id_fkey"
             columns: ["responsavel_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "profiles_deprecated"
             referencedColumns: ["id"]
           },
           {
@@ -11017,7 +11051,7 @@ export type Database = {
             foreignKeyName: "funcionarios_perfil_acesso_fkey"
             columns: ["profile_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "profiles_deprecated"
             referencedColumns: ["id"]
           },
           {
@@ -11217,7 +11251,7 @@ export type Database = {
             foreignKeyName: "tarefas_projeto_responsavel_id_fkey"
             columns: ["responsavel_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "profiles_deprecated"
             referencedColumns: ["id"]
           },
           {
