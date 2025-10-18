@@ -44,18 +44,18 @@ export const useTypingIndicator = (threadId?: string) => {
   const setTyping = async (isTyping: boolean) => {
     if (!threadId || !user) return;
 
-    // Buscar nome do profile do usuário
-    const { data: profile } = await supabase
-      .from('profiles')
+    // Buscar nome da pessoa do usuário
+    const { data: pessoa } = await supabase
+      .from('pessoas')
       .select('nome')
-      .eq('id', user.id)
+      .eq('profile_id', user.id)
       .single();
 
     const channel = supabase.channel(`typing:${threadId}`);
     
     await channel.track({
       user_id: user.id,
-      user_name: profile?.nome || 'Usuário',
+      user_name: pessoa?.nome || 'Usuário',
       typing: isTyping,
       timestamp: Date.now()
     });

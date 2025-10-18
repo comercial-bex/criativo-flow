@@ -17,9 +17,9 @@ export async function testConnectionFallback(connectionId: string) {
 
   try {
     if (conn.group === 'database') {
-      // Testar query simples
+      // Testar query simples em pessoas
       const start = Date.now();
-      const { error } = await supabase.from('profiles').select('count').limit(1);
+      const { error } = await supabase.from('pessoas').select('count').limit(1);
       latency = Date.now() - start;
       success = !error;
       if (error) errorMessage = error.message;

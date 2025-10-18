@@ -12,9 +12,9 @@ export function useRealtimeNotifications() {
       if (!user) return;
       
       const { data } = await supabase
-        .from('profiles')
+        .from('pessoas')
         .select('cliente_id')
-        .eq('id', user.id)
+        .eq('profile_id', user.id)
         .single();
         
       if (data?.cliente_id) {

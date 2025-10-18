@@ -21,11 +21,11 @@ export function useModalPreload() {
           queryClient.setQueryData(['clientes-simple'], clientes);
         }
 
-        // Pré-carregar especialistas
+        // Pré-carregar especialistas de pessoas com papeis específicos
         const { data: especialistas } = await supabase
-          .from('profiles')
-          .select('id, nome, especialidade, status')
-          .in('especialidade', ['grs', 'design', 'audiovisual'])
+          .from('pessoas')
+          .select('id, nome, papeis, status, profile_id')
+          .contains('papeis', ['grs', 'design', 'audiovisual'])
           .eq('status', 'aprovado')
           .limit(50);
 

@@ -10,21 +10,21 @@ export function useAIContext() {
     queryFn: async () => {
       if (!user) return null;
 
-      const { data: profile } = await supabase
-        .from('profiles')
+      const { data: pessoa } = await supabase
+        .from('pessoas')
         .select('cliente_id')
-        .eq('id', user.id)
+        .eq('profile_id', user.id)
         .single();
 
-      if (!profile?.cliente_id) return null;
+      if (!pessoa?.cliente_id) return null;
 
-      const { data } = await supabase
+      const { data: cliente } = await supabase
         .from('clientes')
         .select('*')
-        .eq('id', profile.cliente_id)
+        .eq('id', pessoa.cliente_id)
         .single();
 
-      return data;
+      return cliente;
     },
     enabled: !!user
   });
