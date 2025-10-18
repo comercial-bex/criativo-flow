@@ -8,16 +8,16 @@ export interface Pessoa {
   nome: string;
   email?: string | null;
   cpf?: string | null;
-  telefones?: any; // JSONB array
-  papeis: string[]; // pessoa_papel[]
+  telefones?: any;
+  papeis: string[];
   dados_bancarios?: any;
   cargo_id?: string | null;
   cargo_atual?: string | null;
-  regime?: string | null; // pessoa_regime
+  regime?: string | null;
   data_admissao?: string | null;
-  data_nascimento?: string | null; // Campo adicionado
+  data_nascimento?: string | null;
   data_desligamento?: string | null;
-  status?: string; // pessoa_status
+  status?: string;
   salario_base?: number | null;
   fee_mensal?: number | null;
   observacoes?: string | null;
@@ -26,8 +26,6 @@ export interface Pessoa {
   created_at?: string;
   updated_at?: string;
   created_by?: string | null;
-  // Campos computados
-  role?: string | null;
   tem_acesso_sistema?: boolean;
 }
 
@@ -48,18 +46,8 @@ export function usePessoas(papel?: 'colaborador' | 'especialista' | 'cliente') {
       
       const { data, error } = await query;
       
-      console.log('🔍 Query pessoas - Resultado:', {
-        total: data?.length || 0,
-        papel: papel || 'todos',
-        primeiros3: data?.slice(0, 3).map(p => ({ nome: p.nome, papeis: p.papeis }))
-      });
+      if (error) throw error;
       
-      if (error) {
-        console.error('❌ Erro ao buscar pessoas:', error);
-        throw error;
-      }
-      
-      // Processar dados retornados
       return (data || []).map((p: any) => ({
         ...p,
         tem_acesso_sistema: !!p.profile_id
@@ -69,12 +57,8 @@ export function usePessoas(papel?: 'colaborador' | 'especialista' | 'cliente') {
 
   const criarMutation = useMutation({
     mutationFn: async (dados: Omit<Pessoa, 'id' | 'created_at' | 'updated_at'>) => {
-      // FASE 2: Validação de papéis removida - agora são inferidos automaticamente
-      
-      // FASE 1: Normalizar CPF antes de validar e salvar
       const cpfNormalizado = dados.cpf ? cleanCPF(dados.cpf) : null;
       
-      // Validar CPF duplicado
       if (cpfNormalizado) {
         const { data: existe } = await supabase
           .from('pessoas')
@@ -87,9 +71,6 @@ export function usePessoas(papel?: 'colaborador' | 'especialista' | 'cliente') {
         }
       }
 
-      // Email pode ser duplicado - não validamos
-
-      // Salvar com CPF normalizado
       const dadosNormalizados = {
         ...dados,
         cpf: cpfNormalizado
@@ -115,16 +96,12 @@ export function usePessoas(papel?: 'colaborador' | 'especialista' | 'cliente') {
 
   const atualizarMutation = useMutation({
     mutationFn: async ({ id, ...updates }: Partial<Pessoa> & { id: string }) => {
-      // FASE 1: Normalizar CPF se estiver sendo atualizado
       const updatesNormalizados = {
         ...updates,
         cpf: updates.cpf ? cleanCPF(updates.cpf) : updates.cpf
       };
 
-      // Email pode ser duplicado - não validamos
-
-      // ✅ REMOVER campos computados que não existem na tabela
-      const { tem_acesso_sistema, role, ...dadosParaUpdate } = updatesNormalizados;
+      const { tem_acesso_sistema, ...dadosParaUpdate } = updatesNormalizados;
 
       const { data, error } = await supabase
         .from('pessoas')
