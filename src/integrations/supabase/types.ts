@@ -1859,6 +1859,13 @@ export type Database = {
             foreignKeyName: "fk_clientes_responsavel_pessoas"
             columns: ["responsavel_id"]
             isOneToOne: false
+            referencedRelation: "clientes_compat"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_clientes_responsavel_pessoas"
+            columns: ["responsavel_id"]
+            isOneToOne: false
             referencedRelation: "pessoas"
             referencedColumns: ["id"]
           },
@@ -3035,6 +3042,13 @@ export type Database = {
             foreignKeyName: "fk_eventos_responsavel_pessoas"
             columns: ["responsavel_id"]
             isOneToOne: false
+            referencedRelation: "clientes_compat"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_eventos_responsavel_pessoas"
+            columns: ["responsavel_id"]
+            isOneToOne: false
             referencedRelation: "pessoas"
             referencedColumns: ["id"]
           },
@@ -3576,6 +3590,13 @@ export type Database = {
             columns: ["folha_id"]
             isOneToOne: false
             referencedRelation: "financeiro_folha"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_folha_itens_colaborador"
+            columns: ["colaborador_id"]
+            isOneToOne: false
+            referencedRelation: "clientes_compat"
             referencedColumns: ["id"]
           },
           {
@@ -5641,6 +5662,13 @@ export type Database = {
             foreignKeyName: "migracao_clientes_audit_pessoa_id_fkey"
             columns: ["pessoa_id"]
             isOneToOne: false
+            referencedRelation: "clientes_compat"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "migracao_clientes_audit_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: false
             referencedRelation: "pessoas"
             referencedColumns: ["id"]
           },
@@ -6365,6 +6393,13 @@ export type Database = {
             foreignKeyName: "fk_pessoa_papeis_pessoa"
             columns: ["pessoa_id"]
             isOneToOne: false
+            referencedRelation: "clientes_compat"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_pessoa_papeis_pessoa"
+            columns: ["pessoa_id"]
+            isOneToOne: false
             referencedRelation: "pessoas"
             referencedColumns: ["id"]
           },
@@ -6374,6 +6409,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "vw_conflitos_migracao_clientes"
             referencedColumns: ["pessoa_id"]
+          },
+          {
+            foreignKeyName: "pessoa_papeis_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "clientes_compat"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "pessoa_papeis_pessoa_id_fkey"
@@ -9574,6 +9616,13 @@ export type Database = {
             foreignKeyName: "fk_tarefa_executor_pessoas"
             columns: ["executor_id"]
             isOneToOne: false
+            referencedRelation: "clientes_compat"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_tarefa_executor_pessoas"
+            columns: ["executor_id"]
+            isOneToOne: false
             referencedRelation: "pessoas"
             referencedColumns: ["id"]
           },
@@ -9583,6 +9632,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "vw_conflitos_migracao_clientes"
             referencedColumns: ["pessoa_id"]
+          },
+          {
+            foreignKeyName: "fk_tarefa_responsavel_pessoas"
+            columns: ["responsavel_id"]
+            isOneToOne: false
+            referencedRelation: "clientes_compat"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "fk_tarefa_responsavel_pessoas"
@@ -10499,6 +10555,69 @@ export type Database = {
       }
     }
     Views: {
+      clientes_compat: {
+        Row: {
+          assinatura_id: string | null
+          cnae_principal: string | null
+          cnpj_cpf: string | null
+          cnpj_fonte: string | null
+          cnpj_ultima_consulta: string | null
+          created_at: string | null
+          email: string | null
+          endereco: string | null
+          id: string | null
+          logo_url: string | null
+          nome: string | null
+          nome_fantasia: string | null
+          razao_social: string | null
+          responsavel_id: string | null
+          situacao_cadastral: string | null
+          status: string | null
+          telefone: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          assinatura_id?: never
+          cnae_principal?: never
+          cnpj_cpf?: string | null
+          cnpj_fonte?: never
+          cnpj_ultima_consulta?: never
+          created_at?: string | null
+          email?: string | null
+          endereco?: never
+          id?: string | null
+          logo_url?: never
+          nome?: string | null
+          nome_fantasia?: never
+          razao_social?: never
+          responsavel_id?: never
+          situacao_cadastral?: never
+          status?: string | null
+          telefone?: never
+          updated_at?: string | null
+        }
+        Update: {
+          assinatura_id?: never
+          cnae_principal?: never
+          cnpj_cpf?: string | null
+          cnpj_fonte?: never
+          cnpj_ultima_consulta?: never
+          created_at?: string | null
+          email?: string | null
+          endereco?: never
+          id?: string | null
+          logo_url?: never
+          nome?: string | null
+          nome_fantasia?: never
+          razao_social?: never
+          responsavel_id?: never
+          situacao_cadastral?: never
+          status?: string | null
+          telefone?: never
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       mv_grs_dashboard_metrics: {
         Row: {
           cliente_created_at: string | null
@@ -10526,6 +10645,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "vw_client_metrics"
             referencedColumns: ["responsavel_id"]
+          },
+          {
+            foreignKeyName: "fk_clientes_responsavel_pessoas"
+            columns: ["responsavel_id"]
+            isOneToOne: false
+            referencedRelation: "clientes_compat"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "fk_clientes_responsavel_pessoas"
