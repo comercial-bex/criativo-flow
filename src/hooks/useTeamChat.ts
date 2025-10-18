@@ -70,12 +70,18 @@ export const useTeamChat = (threadId?: string) => {
 
       if (error) throw error;
 
-      // Buscar informações dos senders
+      // Buscar informações dos senders da tabela pessoas
       const senderIds = [...new Set(messagesData.map(m => m.sender_id))];
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('id, nome, avatar_url')
-        .in('id', senderIds);
+      const { data: pessoas } = await supabase
+        .from('pessoas')
+        .select('profile_id, nome')
+        .in('profile_id', senderIds);
+
+      const profiles = pessoas?.map(p => ({ 
+        id: p.profile_id!, 
+        nome: p.nome, 
+        avatar_url: null 
+      }));
 
       const profilesMap = new Map(profiles?.map(p => [p.id, p]) || []);
 
@@ -140,12 +146,18 @@ export const useTeamChat = (threadId?: string) => {
       }, async (payload) => {
         console.log('📨 Nova mensagem recebida:', payload);
         
-        // Buscar dados do sender imediatamente
-        const { data: sender } = await supabase
-          .from('profiles')
-          .select('id, nome, avatar_url')
-          .eq('id', payload.new.sender_id)
+        // Buscar dados do sender imediatamente da tabela pessoas
+        const { data: pessoaSender } = await supabase
+          .from('pessoas')
+          .select('profile_id, nome')
+          .eq('profile_id', payload.new.sender_id)
           .single();
+        
+        const sender = pessoaSender ? {
+          id: pessoaSender.profile_id!,
+          nome: pessoaSender.nome,
+          avatar_url: null
+        } : null;
         
         // Inserir diretamente no cache (mais rápido)
         queryClient.setQueryData(

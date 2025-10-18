@@ -31,12 +31,12 @@ export function useSignUpWithValidation() {
   const waitForProfile = async (email: string, maxRetries = 5): Promise<{ id: string } | null> => {
     for (let i = 0; i < maxRetries; i++) {
       const { data } = await supabase
-        .from('profiles')
-        .select('id')
+        .from('pessoas')
+        .select('profile_id')
         .eq('email', email)
         .maybeSingle();
       
-      if (data) return data;
+      if (data?.profile_id) return { id: data.profile_id };
       
       // Backoff exponencial: 500ms, 1s, 1.5s, 2s, 2.5s
       await new Promise(resolve => setTimeout(resolve, 500 * (i + 1)));
@@ -65,11 +65,12 @@ export function useSignUpWithValidation() {
         throw pessoaError;
       }
 
-      // 2. Verificar se já tem login (profile)
+      // 2. Verificar se já tem login (pessoa com profile_id)
       const { data: profileData } = await supabase
-        .from('profiles')
-        .select('id, email')
+        .from('pessoas')
+        .select('id, email, profile_id')
         .eq('email', data.email)
+        .not('profile_id', 'is', null)
         .maybeSingle();
 
       const pessoaExiste = !!pessoaData;
@@ -171,27 +172,25 @@ export function useSignUpWithValidation() {
 
           if (pessoaError) throw pessoaError;
 
-          // Mapear departamento para especialidade válida
-          type EspecialidadeType = 'videomaker' | 'filmmaker' | 'design' | 'gerente_redes_sociais' | 'grs' | 'atendimento' | 'audiovisual' | 'financeiro' | 'gestor';
-          
-          const especialidadeMap: Record<string, EspecialidadeType> = {
-            'grs': 'grs',
-            'designer': 'design',
-            'filmmaker': 'filmmaker',
-            'atendimento': 'atendimento',
-            'financeiro': 'financeiro',
-            'rh': 'atendimento'
+          // Mapear departamento para papel
+          const papelMap: Record<string, string> = {
+            'grs': 'especialista',
+            'designer': 'especialista',
+            'filmmaker': 'especialista',
+            'atendimento': 'colaborador',
+            'financeiro': 'colaborador',
+            'rh': 'colaborador'
           };
 
-          const especialidade = especialidadeMap[data.departamento || ''] || 'atendimento';
+          const papel = papelMap[data.departamento || ''] || 'colaborador';
 
-          // Salvar especialidade para aprovação admin
-          await supabase.from('profiles').update({
-            especialidade: especialidade,
+          // Atualizar pessoa com papel correto
+          await supabase.from('pessoas').update({
+            papeis: [papel],
             status: 'pendente_aprovacao'
-          }).eq('id', newProfile.id);
+          }).eq('profile_id', newProfile.id);
 
-          // ✅ FASE 2: Criar role temporária para permitir visualização
+          // ✅ Criar role temporária para permitir visualização
           await supabase.from('user_roles').insert({
             user_id: newProfile.id,
             role: 'atendimento' // Role temporária - será substituída na aprovação
@@ -213,12 +212,11 @@ export function useSignUpWithValidation() {
 
           if (pessoaError) throw pessoaError;
 
-          // Salvar info da empresa e departamento para o admin
-          await supabase.from('profiles').update({
-            empresa: data.nomeEmpresa,
-            role_requested: data.departamento,
-            status: 'pendente_aprovacao'
-          }).eq('id', newProfile.id);
+          // Atualizar pessoa com status pendente
+          await supabase.from('pessoas').update({
+            status: 'pendente_aprovacao',
+            observacoes: `Empresa: ${data.nomeEmpresa}${data.departamento ? ` | Depto: ${data.departamento}` : ''}`
+          }).eq('profile_id', newProfile.id);
 
           // ✅ FASE 2: Criar role temporária para clientes pendentes
           await supabase.from('user_roles').insert({

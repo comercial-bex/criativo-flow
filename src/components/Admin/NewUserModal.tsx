@@ -56,18 +56,24 @@ export function NewUserModal({ open, onOpenChange, onSuccess }: NewUserModalProp
 
       if (error) throw error;
 
-      // Atualizar perfil para status aprovado e especialidade
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .update({
+      // Criar ou atualizar pessoa na tabela unificada
+      const { data: pessoa, error: pessoaError } = await supabase
+        .from('pessoas')
+        .upsert({
           nome: formData.nome,
-          telefone: formData.telefone,
-          especialidade: formData.especialidade,
-          status: 'aprovado',
+          email: formData.email,
+          telefones: formData.telefone ? [formData.telefone] : null,
+          papeis: ['colaborador', 'especialista'],
+          profile_id: data.user.id,
+          status: 'ativo',
+        }, { 
+          onConflict: 'profile_id',
+          ignoreDuplicates: false 
         })
-        .eq('email', formData.email);
+        .select()
+        .single();
 
-      if (profileError) throw profileError;
+      if (pessoaError) throw pessoaError;
 
       // Atribuir role automaticamente baseado na especialidade
       let role: string;

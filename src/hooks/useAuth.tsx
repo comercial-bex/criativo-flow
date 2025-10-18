@@ -93,43 +93,43 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         const userId = authData.session.user.id;
         console.log('🔐 Auth: Validando integridade do usuário:', userId);
         
-        // 1. Verificar se perfil existe
-        const { data: profile, error: profileError } = await supabase
-          .from('profiles')
-          .select('id, status')
-          .eq('id', userId)
-          .maybeSingle();
+      // 1. Verificar se pessoa existe na nova estrutura
+      const { data: pessoa, error: pessoaError } = await supabase
+        .from('pessoas')
+        .select('id, status, profile_id')
+        .eq('profile_id', userId)
+        .maybeSingle();
         
-        if (profileError) {
-          console.error('🔐 Auth: Erro ao buscar perfil:', profileError);
-          await supabase.auth.signOut();
-          return { error: { message: 'Erro ao validar perfil. Tente novamente.' } };
-        }
+      if (pessoaError) {
+        console.error('🔐 Auth: Erro ao buscar pessoa:', pessoaError);
+        await supabase.auth.signOut();
+        return { error: { message: 'Erro ao validar perfil. Tente novamente.' } };
+      }
+      
+      if (!pessoa) {
+        console.error('🔐 Auth: Pessoa não encontrada');
+        await supabase.auth.signOut();
+        return { error: { message: 'Cadastro não encontrado. Entre em contato com o suporte.' } };
+      }
+      
+      // 2. Verificar status
+      if (pessoa.status !== 'ativo') {
+        console.warn('🔐 Auth: Status da pessoa:', pessoa.status);
+        await supabase.auth.signOut();
         
-        if (!profile) {
-          console.error('🔐 Auth: Perfil não encontrado');
-          await supabase.auth.signOut();
-          return { error: { message: 'Perfil não encontrado. Entre em contato com o suporte.' } };
-        }
+        const statusMessages = {
+          'pendente_aprovacao': 'Seu cadastro está pendente de aprovação. Aguarde liberação do administrador.',
+          'suspenso': 'Sua conta foi suspensa. Entre em contato com o administrador.',
+          'desligado': 'Seu cadastro foi desativado. Entre em contato com o suporte.'
+        };
         
-        // 2. Verificar status do perfil
-        if (profile.status !== 'aprovado') {
-          console.warn('🔐 Auth: Status do perfil:', profile.status);
-          await supabase.auth.signOut();
-          
-          const statusMessages = {
-            'pendente_aprovacao': 'Seu cadastro está pendente de aprovação. Aguarde liberação do administrador.',
-            'suspenso': 'Sua conta foi suspensa. Entre em contato com o administrador.',
-            'rejeitado': 'Seu cadastro foi rejeitado. Entre em contato com o suporte.'
-          };
-          
-          return { 
-            error: { 
-              message: statusMessages[profile.status as keyof typeof statusMessages] || 
-                       `Seu cadastro está ${profile.status}. Entre em contato com o administrador.` 
-            } 
-          };
-        }
+        return { 
+          error: { 
+            message: statusMessages[pessoa.status as keyof typeof statusMessages] || 
+                     `Seu cadastro está ${pessoa.status}. Entre em contato com o administrador.` 
+          } 
+        };
+      }
         
         // 3. Verificar se role está atribuída
         const { data: role, error: roleError } = await supabase
