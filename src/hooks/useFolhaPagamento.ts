@@ -77,21 +77,25 @@ export function useFolhaPagamento(competencia?: string) {
       
       const { data, error } = await supabase
         .from('financeiro_folha_itens')
-        .select(`
-          *,
-          colaborador:pessoas!fk_folha_itens_colaborador(
-            nome,
-            cpf,
-            cargo_atual,
-            regime,
-            salario_base,
-            fee_mensal
-          )
-        `)
+        .select('*')
         .eq('folha_id', folhas[0].id);
       
       if (error) throw error;
-      return data as FolhaItem[];
+      
+      // Buscar dados dos colaboradores separadamente
+      const colaboradoresIds = data.map(item => item.colaborador_id).filter(Boolean);
+      const { data: colaboradores } = await supabase
+        .from('pessoas')
+        .select('id, nome, cpf, cargo_atual, regime, salario_base, fee_mensal')
+        .in('id', colaboradoresIds);
+      
+      // Mapear colaboradores aos itens
+      const itensComColaboradores = data.map(item => ({
+        ...item,
+        colaborador: colaboradores?.find(c => c.id === item.colaborador_id)
+      }));
+      
+      return itensComColaboradores as FolhaItem[];
     },
     enabled: !!folhas[0]?.id,
   });

@@ -3368,6 +3368,13 @@ export type Database = {
             referencedRelation: "financeiro_folha"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "fk_folha_itens_colaborador"
+            columns: ["colaborador_id"]
+            isOneToOne: false
+            referencedRelation: "pessoas"
+            referencedColumns: ["id"]
+          },
         ]
       }
       financeiro_folha_logs: {
