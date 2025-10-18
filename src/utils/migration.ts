@@ -2,6 +2,7 @@ import { Colaborador } from '@/hooks/useColaboradores';
 import { Pessoa } from '@/hooks/usePessoas';
 
 /**
+ * ✅ ATUALIZADO PARA NOVA ESTRUTURA UNIFICADA
  * Converte Colaborador (legado) para Pessoa (novo modelo)
  * @deprecated Use apenas durante período de transição
  */
@@ -36,6 +37,7 @@ export function migrateColaboradorToPessoa(colaborador: Colaborador): Partial<Pe
 }
 
 /**
+ * ✅ ATUALIZADO PARA NOVA ESTRUTURA UNIFICADA
  * Converte Pessoa para Colaborador (para componentes legados)
  * @deprecated Use apenas durante período de transição
  */
@@ -44,21 +46,21 @@ export function migratePessoaToColaborador(pessoa: Pessoa): Partial<Colaborador>
     id: pessoa.id,
     nome_completo: pessoa.nome,
     cpf_cnpj: pessoa.cpf || '',
-    email: pessoa.email,
+    email: pessoa.email || undefined,
     celular: pessoa.telefones?.[0] || null,
-    cargo_atual: pessoa.cargo_atual,
+    cargo_atual: pessoa.cargo_atual || undefined,
     regime: pessoa.regime as any,
     status: pessoa.status as any,
-    salario_base: pessoa.salario_base,
-    fee_mensal: pessoa.fee_mensal,
+    salario_base: pessoa.salario_base || undefined,
+    fee_mensal: pessoa.fee_mensal || undefined,
     data_admissao: pessoa.data_admissao || '',
-    data_desligamento: pessoa.data_desligamento,
-    banco_codigo: pessoa.dados_bancarios?.banco_codigo,
-    agencia: pessoa.dados_bancarios?.agencia,
-    conta: pessoa.dados_bancarios?.conta,
+    data_desligamento: pessoa.data_desligamento || undefined,
+    banco_codigo: pessoa.dados_bancarios?.banco_codigo || undefined,
+    agencia: pessoa.dados_bancarios?.agencia || undefined,
+    conta: pessoa.dados_bancarios?.conta || undefined,
     tipo_conta: (pessoa.dados_bancarios?.tipo_conta || null) as any,
     tipo_chave_pix: (pessoa.dados_bancarios?.pix_tipo || null) as any,
-    chave_pix: pessoa.dados_bancarios?.pix_chave,
+    chave_pix: pessoa.dados_bancarios?.pix_chave || undefined,
     created_at: pessoa.created_at,
     updated_at: pessoa.updated_at,
   };

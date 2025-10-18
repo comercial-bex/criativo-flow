@@ -4,6 +4,10 @@ import { useProfileData } from "@/hooks/useProfileData";
 import { useEffect, useState } from "react";
 import bexLogo from "@/assets/logo-bex-apk.svg";
 
+/**
+ * ✅ COMPATÍVEL COM NOVA ESTRUTURA UNIFICADA
+ * Utiliza profiles (que continuam existindo) mas preparado para migração
+ */
 export function UserProfileSection() {
   const { user } = useAuth();
   const { getProfileById } = useProfileData();
