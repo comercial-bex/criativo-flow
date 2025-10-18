@@ -1,23 +1,39 @@
 import { BexAvatar, BexAvatarFallback, BexAvatarImage } from "@/components/ui/bex-avatar";
 import { useAuth } from "@/hooks/useAuth";
-import { useProfileData } from "@/hooks/useProfileData";
 import { useEffect, useState } from "react";
 import bexLogo from "@/assets/logo-bex-apk.svg";
+import { supabase } from "@/integrations/supabase/client";
 
 /**
- * ✅ COMPATÍVEL COM NOVA ESTRUTURA UNIFICADA
- * Utiliza profiles (que continuam existindo) mas preparado para migração
+ * ✅ MIGRADO PARA NOVA ESTRUTURA UNIFICADA
+ * Utiliza tabela pessoas diretamente
  */
 export function UserProfileSection() {
   const { user } = useAuth();
-  const { getProfileById } = useProfileData();
   const [profile, setProfile] = useState<any>(null);
 
   useEffect(() => {
-    if (user?.id) {
-      getProfileById(user.id).then(setProfile);
-    }
-  }, [user?.id, getProfileById]);
+    const fetchProfile = async () => {
+      if (!user?.id) return;
+      
+      const { data: pessoa } = await supabase
+        .from('pessoas')
+        .select('nome, email')
+        .eq('profile_id', user.id)
+        .single();
+
+      // Buscar avatar_url de profiles (campo não existe em pessoas ainda)
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('avatar_url')
+        .eq('id', user.id)
+        .single();
+      
+      setProfile({ ...pessoa, avatar_url: profile?.avatar_url });
+    };
+    
+    fetchProfile();
+  }, [user?.id]);
 
 
   if (!user || !profile) return null;

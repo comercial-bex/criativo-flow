@@ -55,35 +55,35 @@ export function SecurityTestPanel() {
         });
       }
 
-      // Teste 2: Verificar acesso direto à tabela profiles
+      // Teste 2: Verificar acesso direto à tabela pessoas
       try {
         const { data: directAccess, error: directError } = await supabase
-          .from('profiles')
+          .from('pessoas')
           .select('*')
           .limit(5);
         
         if (directError) {
           results.push({
-            name: 'Acesso direto à tabela profiles',
+            name: 'Acesso direto à tabela pessoas',
             status: 'pass',
             message: 'RLS está bloqueando acesso não autorizado',
             details: directError.message
           });
         } else {
-          const hasRestrictedData = directAccess?.some(profile => 
-            role !== 'admin' && profile.id !== user?.id && (profile.email || profile.telefone)
+          const hasRestrictedData = directAccess?.some(pessoa => 
+            role !== 'admin' && pessoa.profile_id !== user?.id && (pessoa.email || pessoa.telefones)
           );
           
           if (hasRestrictedData) {
             results.push({
-              name: 'Acesso direto à tabela profiles',
+              name: 'Acesso direto à tabela pessoas',
               status: 'warning',
               message: 'Possível vazamento de dados sensíveis',
               details: 'Dados sensíveis podem estar visíveis para usuários não autorizados'
             });
           } else {
             results.push({
-              name: 'Acesso direto à tabela profiles',
+              name: 'Acesso direto à tabela pessoas',
               status: 'pass',
               message: 'RLS funcionando corretamente'
             });
@@ -91,7 +91,7 @@ export function SecurityTestPanel() {
         }
       } catch (err) {
         results.push({
-          name: 'Acesso direto à tabela profiles',
+          name: 'Acesso direto à tabela pessoas',
           status: 'fail',
           message: 'Erro ao testar acesso direto',
           details: err instanceof Error ? err.message : 'Erro desconhecido'
@@ -122,7 +122,7 @@ export function SecurityTestPanel() {
       })();
 
       const sensitiveDataVisible = profiles.some(profile => 
-        profile.id !== user?.id && (profile.email || profile.telefone)
+        profile.id !== user?.id && (profile.email || (profile as any).telefones)
       );
 
       if (role === 'admin' && !sensitiveDataVisible) {

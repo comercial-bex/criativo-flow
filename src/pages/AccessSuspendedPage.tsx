@@ -21,9 +21,9 @@ export default function AccessSuspendedPage() {
 
     const fetchProfile = async () => {
       const { data } = await supabase
-        .from('profiles')
-        .select('observacoes_aprovacao, nome, email')
-        .eq('id', user.id)
+        .from('pessoas')
+        .select('observacoes, nome, email')
+        .eq('profile_id', user.id)
         .single();
 
       setProfile(data);
@@ -61,11 +61,11 @@ export default function AccessSuspendedPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {profile?.observacoes_aprovacao && (
+          {profile?.observacoes && (
             <Alert variant="default" className="border-warning">
               <AlertCircle className="h-4 w-4 text-warning" />
               <AlertDescription>
-                <strong>Motivo:</strong> {profile.observacoes_aprovacao}
+                <strong>Motivo:</strong> {profile.observacoes}
               </AlertDescription>
             </Alert>
           )}

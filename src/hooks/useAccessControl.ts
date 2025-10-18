@@ -1,12 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from './useAuth';
-import { useProfileData } from './useProfileData';
 import { useUserRole } from './useUserRole';
 import { getDashboardForRole } from '@/utils/roleRoutes';
+import { supabase } from '@/integrations/supabase/client';
 
 export function useAccessControl() {
   const { user } = useAuth();
-  const { getProfileById } = useProfileData();
   const { role } = useUserRole();
   const [userProfile, setUserProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -19,8 +18,12 @@ export function useAccessControl() {
       }
 
       try {
-        const profile = await getProfileById(user.id);
-        setUserProfile(profile);
+        const { data } = await supabase
+          .from('pessoas')
+          .select('status, nome, email')
+          .eq('profile_id', user.id)
+          .single();
+        setUserProfile(data);
       } catch (error) {
         console.error('Erro ao verificar acesso:', error);
       } finally {
@@ -29,7 +32,7 @@ export function useAccessControl() {
     };
 
     checkUserAccess();
-  }, [user?.id, getProfileById]);
+  }, [user?.id]);
 
   const canAccess = () => {
     // Admins sempre têm acesso

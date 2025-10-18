@@ -47,20 +47,20 @@ export const LoginDiagnostic = () => {
     const warnings: string[] = [];
 
     try {
-      // 1. Primeiro verificar se existe perfil (que tem o mesmo ID do auth)
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('*')
+      // 1. Primeiro verificar se existe pessoa na tabela pessoas
+      const { data: pessoa, error: pessoaError } = await supabase
+        .from('pessoas')
+        .select('*, profile_id')
         .eq('email', email)
         .maybeSingle();
 
-      // 2. Se encontrou perfil, verificar role
+      // 2. Se encontrou pessoa, verificar role
       let roleData = null;
-      if (profile?.id) {
+      if (pessoa?.profile_id) {
         const { data: role } = await supabase
           .from('user_roles')
           .select('*')
-          .eq('user_id', profile.id)
+          .eq('user_id', pessoa.profile_id)
           .maybeSingle();
         roleData = role;
       }
@@ -69,48 +69,48 @@ export const LoginDiagnostic = () => {
       const { data: orphanCheck } = await supabase.rpc('find_orphan_auth_users');
       
       const isOrphanInAuth = orphanCheck?.some((u: any) => u.email === email);
-      const authExists = profile?.id || isOrphanInAuth;
+      const authExists = pessoa?.profile_id || isOrphanInAuth;
 
       // Análise de problemas
-      const profileExists = !!profile;
+      const pessoaExists = !!pessoa;
       const roleExists = !!roleData;
 
-      if (!authExists && !profileExists) {
+      if (!authExists && !pessoaExists) {
         errors.push('❌ Usuário não existe no Authentication nem no sistema');
       }
 
-      if (authExists && !profileExists) {
-        errors.push('❌ Usuário existe no Auth mas não tem perfil (usuário órfão)');
-        warnings.push('⚠️ Sincronização necessária para criar perfil');
+      if (authExists && !pessoaExists) {
+        errors.push('❌ Usuário existe no Auth mas não tem registro em pessoas (usuário órfão)');
+        warnings.push('⚠️ Sincronização necessária para criar registro em pessoas');
       }
 
-      if (profileExists && !roleExists) {
+      if (pessoaExists && !roleExists) {
         errors.push('❌ Nenhuma role atribuída ao usuário');
         warnings.push('⚠️ Usuário sem permissões - login será bloqueado');
       }
 
-      if (profile?.status === 'pendente_aprovacao') {
+      if (pessoa?.status === 'pendente_aprovacao') {
         warnings.push('⚠️ Usuário aguardando aprovação - login bloqueado');
         errors.push('❌ Status: pendente de aprovação');
       }
 
-      if (profile?.status === 'suspenso') {
+      if (pessoa?.status === 'suspenso') {
         errors.push('❌ Usuário está suspenso');
       }
 
-      if (profile?.status === 'rejeitado') {
+      if (pessoa?.status === 'rejeitado') {
         errors.push('❌ Usuário foi rejeitado');
       }
 
-      const canLogin = authExists && profileExists && roleExists && profile?.status === 'aprovado';
+      const canLogin = authExists && pessoaExists && roleExists && pessoa?.status === 'aprovado';
 
       const diagnostic: DiagnosticResult = {
         email,
         authExists: !!authExists,
-        authId: profile?.id,
+        authId: pessoa?.profile_id,
         authConfirmed: true,
-        profileExists,
-        profileData: profile,
+        profileExists: pessoaExists,
+        profileData: pessoa,
         roleExists,
         roleData,
         canLogin,

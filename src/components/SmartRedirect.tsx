@@ -86,13 +86,20 @@ export function SmartRedirect() {
           
           // Verificar primeiro acesso (apenas para colaboradores)
           if (role && !['cliente', 'admin'].includes(role)) {
+            const { data: pessoa } = await supabase
+              .from('pessoas')
+              .select('telefones')
+              .eq('profile_id', user.id)
+              .single();
+
+            // Buscar avatar_url ainda de profiles (campo não existe em pessoas)
             const { data: profile } = await supabase
               .from('profiles')
-              .select('avatar_url, telefone')
+              .select('avatar_url')
               .eq('id', user.id)
               .single();
 
-            if (!profile?.avatar_url && !profile?.telefone) {
+            if (!profile?.avatar_url && (!pessoa?.telefones || pessoa.telefones.length === 0)) {
               navigate('/perfil', { replace: true });
               return;
             }
