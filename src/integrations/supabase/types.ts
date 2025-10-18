@@ -11487,6 +11487,21 @@ export type Database = {
             }
         Returns: string
       }
+      fn_cred_save_deprecated: {
+        Args: {
+          p_categoria: string
+          p_cliente_id: string
+          p_cred_id?: string
+          p_extra_json?: Json
+          p_plataforma: string
+          p_projeto_id: string
+          p_senha: string
+          p_tokens_api?: Json
+          p_url?: string
+          p_usuario_login: string
+        }
+        Returns: string
+      }
       fn_criar_aprovacao_cliente: {
         Args: {
           p_cliente_id: string
