@@ -5,7 +5,7 @@ export interface PendingUser {
   id: string;
   nome: string;
   email: string;
-  especialidade: string | null;
+  papeis: string[] | null;
   created_at: string;
   cliente_id: string | null;
 }
@@ -110,8 +110,8 @@ export function useAdminPendencies() {
       
       // 1. Buscar usuários pendentes de aprovação
       const { data: users, error: usersError } = await supabase
-        .from("profiles")
-        .select("id, nome, email, especialidade, created_at, cliente_id")
+        .from("pessoas")
+        .select("id, nome, email, papeis, created_at, cliente_id")
         .eq("status", "pendente_aprovacao")
         .order("created_at", { ascending: false });
 
@@ -187,7 +187,7 @@ export function useAdminPendencies() {
           nome,
           status,
           updated_at,
-          profiles!clientes_responsavel_id_fkey(nome)
+          pessoas!clientes_responsavel_id_fkey(nome)
         `)
         .eq("status", "inativo")
         .order("updated_at", { ascending: false })
@@ -200,7 +200,7 @@ export function useAdminPendencies() {
         nome: client.nome,
         status: client.status,
         updated_at: client.updated_at,
-        responsavel_nome: client.profiles?.nome || "Sem responsável",
+        responsavel_nome: client.pessoas?.nome || "Sem responsável",
       }));
 
       // 5. Buscar contratos próximos do vencimento (30 dias)

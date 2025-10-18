@@ -300,8 +300,8 @@ export default function CentralNotificacoes() {
                       <p className="font-medium">{user.nome}</p>
                       <p className="text-sm text-muted-foreground">{user.email}</p>
                       <div className="flex items-center gap-2 mt-2">
-                        {user.especialidade && (
-                          <Badge variant="outline">{user.especialidade}</Badge>
+                        {user.papeis && user.papeis.length > 0 && (
+                          <Badge variant="outline">{user.papeis[0]}</Badge>
                         )}
                         {user.cliente_id && (
                           <Badge variant="secondary">Cliente</Badge>
@@ -721,8 +721,8 @@ export default function CentralNotificacoes() {
                   <p className="font-medium">{user.nome}</p>
                   <p className="text-sm text-muted-foreground">{user.email}</p>
                   <div className="flex items-center gap-2 mt-2">
-                    {user.especialidade && (
-                      <Badge variant="outline">{user.especialidade}</Badge>
+                    {user.papeis && user.papeis.length > 0 && (
+                      <Badge variant="outline">{user.papeis[0]}</Badge>
                     )}
                     {user.cliente_id && (
                       <Badge variant="secondary">Cliente</Badge>

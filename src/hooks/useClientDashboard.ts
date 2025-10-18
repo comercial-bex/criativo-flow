@@ -88,15 +88,15 @@ export function useClientDashboard(overrideClienteId?: string) {
 
       // Fluxo normal para usuários clientes
       const { data: profile } = await supabase
-        .from('profiles')
+        .from('pessoas')
         .select(`
           id,
           nome,
           email,
           cliente_id,
-          clientes!profiles_cliente_id_fkey(nome)
+          clientes!pessoas_cliente_id_fkey(nome)
         `)
-        .eq('id', user.id)
+        .eq('profile_id', user.id)
         .single();
 
       if (profile?.cliente_id) {

@@ -7,19 +7,18 @@ export function useEspecialistasGRS() {
   return useQuery({
     queryKey: ['especialistas-grs'],
     queryFn: async () => {
-      // Buscar apenas GRS aprovados
+      // Buscar apenas GRS aprovados usando tabela pessoas
       const { data, error } = await supabase
-        .from('profiles')
+        .from('pessoas')
         .select(`
           id, 
           nome,
           email,
-          telefone,
-          especialidade,
-          user_roles(role)
+          telefones,
+          papeis
         `)
-        .eq('status', 'aprovado')
-        .eq('especialidade', 'grs')
+        .eq('status', 'ativo')
+        .contains('papeis', ['grs'])
         .order('nome');
       
       if (error) {
@@ -27,21 +26,17 @@ export function useEspecialistasGRS() {
         throw error;
       }
       
-      // Filtrar apenas quem tem role GRS
-      const especialistasGRS = (data || []).filter(profile => {
-        const roles = (profile.user_roles as any) || [];
-        return roles.some((r: any) => r.role === 'grs');
-      });
-      
-      console.log('✅ Especialistas GRS:', especialistasGRS);
+      console.log('✅ Especialistas GRS:', data);
       
       // Mapear para formato esperado
-      return especialistasGRS.map(profile => ({
-        id: profile.id,
-        nome: profile.nome,
-        email: profile.email,
-        telefone: profile.telefone,
-        especialidade: profile.especialidade || 'grs',
+      return (data || []).map(pessoa => ({
+        id: pessoa.id,
+        nome: pessoa.nome,
+        email: pessoa.email,
+        telefone: Array.isArray(pessoa.telefones) && pessoa.telefones.length > 0 
+          ? pessoa.telefones[0] 
+          : null,
+        especialidade: 'grs',
         role: 'grs'
       }));
     }

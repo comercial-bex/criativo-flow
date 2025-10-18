@@ -149,7 +149,7 @@ export function useUniversalSearch(query: string) {
     
     try {
       const { data } = await supabase
-        .from('profiles')
+        .from('pessoas')
         .select('id, nome, email')
         .or(`nome.ilike.%${debouncedQuery}%,email.ilike.%${debouncedQuery}%`)
         .limit(5);
