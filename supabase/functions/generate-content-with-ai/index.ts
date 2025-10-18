@@ -231,7 +231,8 @@ IMPORTANTE:
 
     // Return for simple text
     return new Response(JSON.stringify({ 
-      content: generatedText,
+      generatedText: generatedText,  // Padronizado para frontend
+      content: generatedText,         // Mantido para retrocompatibilidade
       type,
       success: true
     }), {
