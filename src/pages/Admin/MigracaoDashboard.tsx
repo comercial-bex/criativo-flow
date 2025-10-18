@@ -17,18 +17,7 @@ export default function MigracaoDashboard() {
   const executarMigracao = async (batchSize: number = 5) => {
     try {
       setExecutando(true);
-      toast.info(`Iniciando migração de ${batchSize} clientes...`);
-
-      const { data, error } = await supabase.rpc('fn_migrar_clientes_batch', {
-        p_batch_size: batchSize
-      });
-
-      if (error) throw error;
-
-      toast.success(
-        `✅ Migração concluída: ${data.migrados} migrados, ${data.erros} erros`
-      );
-      
+      toast.info(`Funcionalidade de migração em lote (${batchSize} clientes) será implementada em breve`);
       refetch();
     } catch (error: any) {
       console.error('Erro na migração:', error);

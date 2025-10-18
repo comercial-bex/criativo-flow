@@ -2,12 +2,12 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
 interface ProgressoMigracao {
-  pendentes: number;
-  migrados: number;
-  com_erro: number;
-  conflitos: number;
-  total: number;
-  percentual_concluido: number;
+  pendentes?: number;
+  migrados?: number;
+  com_erro?: number;
+  conflitos?: number;
+  total?: number;
+  percentual_concluido?: number;
 }
 
 interface AuditoriaMigracao {
