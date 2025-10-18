@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { smartToast } from "@/lib/smart-toast";
 import { MODULE_QUERY_CONFIG } from "@/lib/queryConfig";
+import { useFinanceiroIntegrado } from "./useFinanceiroIntegrado";
 
 export interface Transaction {
   id: string;
@@ -19,6 +20,9 @@ export interface Transaction {
 
 export function useClientFinances(clienteId: string) {
   const queryClient = useQueryClient();
+
+  // Usar hook de financeiro integrado para ter dados conectados
+  const financeiroIntegrado = useFinanceiroIntegrado({ clienteId });
 
   const { data: transactions = [], isLoading } = useQuery({
     queryKey: ["client-finances", clienteId],

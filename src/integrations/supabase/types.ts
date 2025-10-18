@@ -3754,9 +3754,13 @@ export type Database = {
           created_by: string | null
           data_lancamento: string
           descricao: string
+          evento_id: string | null
           id: string
           numero_lancamento: number
           origem_id: string | null
+          projeto_id: string | null
+          reserva_id: string | null
+          tarefa_id: string | null
           tipo_origem: string
           unidade: string | null
           valor: number
@@ -3769,9 +3773,13 @@ export type Database = {
           created_by?: string | null
           data_lancamento: string
           descricao: string
+          evento_id?: string | null
           id?: string
           numero_lancamento?: number
           origem_id?: string | null
+          projeto_id?: string | null
+          reserva_id?: string | null
+          tarefa_id?: string | null
           tipo_origem: string
           unidade?: string | null
           valor: number
@@ -3784,9 +3792,13 @@ export type Database = {
           created_by?: string | null
           data_lancamento?: string
           descricao?: string
+          evento_id?: string | null
           id?: string
           numero_lancamento?: number
           origem_id?: string | null
+          projeto_id?: string | null
+          reserva_id?: string | null
+          tarefa_id?: string | null
           tipo_origem?: string
           unidade?: string | null
           valor?: number
@@ -3804,6 +3816,34 @@ export type Database = {
             columns: ["conta_debito_id"]
             isOneToOne: false
             referencedRelation: "financeiro_plano_contas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financeiro_lancamentos_evento_id_fkey"
+            columns: ["evento_id"]
+            isOneToOne: false
+            referencedRelation: "eventos_calendario"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financeiro_lancamentos_projeto_id_fkey"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "projetos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financeiro_lancamentos_reserva_id_fkey"
+            columns: ["reserva_id"]
+            isOneToOne: false
+            referencedRelation: "inventario_reservas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financeiro_lancamentos_tarefa_id_fkey"
+            columns: ["tarefa_id"]
+            isOneToOne: false
+            referencedRelation: "tarefa"
             referencedColumns: ["id"]
           },
         ]
@@ -11589,6 +11629,21 @@ export type Database = {
       get_filtered_profile: {
         Args: { profile_id: string }
         Returns: Json
+      }
+      get_financeiro_integrado: {
+        Args: { p_cliente_id?: string; p_projeto_id?: string }
+        Returns: {
+          data_lancamento: string
+          descricao: string
+          evento_tipo: string
+          evento_titulo: string
+          id: string
+          projeto_titulo: string
+          tarefa_status: string
+          tarefa_titulo: string
+          tipo: string
+          valor: number
+        }[]
       }
       get_grs_dashboard_metrics: {
         Args: Record<PropertyKey, never>
