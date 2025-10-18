@@ -1,15 +1,13 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import type { Database } from '@/integrations/supabase/types';
 import { useUserRole } from './useUserRole';
 
 export interface Profile {
   id: string;
   nome: string;
-  email?: string | null; // Sensitive data - may be filtered
-  telefone?: string | null; // Sensitive data - may be filtered
+  email?: string | null;
+  telefone?: string | null;
   avatar_url?: string | null;
-  especialidade?: Database['public']['Enums']['especialidade_type'] | null;
   created_at?: string | null;
   updated_at?: string | null;
 }
@@ -18,10 +16,6 @@ interface ProfileWithAccessFlag extends Profile {
   _hasFullAccess?: boolean;
 }
 
-/**
- * Hook to manage profile data access with security filtering
- * Automatically filters sensitive personal data based on user role and relationship
- */
 export function useProfileData() {
   const { role } = useUserRole();
   const [profiles, setProfiles] = useState<ProfileWithAccessFlag[]>([]);
@@ -33,58 +27,30 @@ export function useProfileData() {
     setError(null);
 
     try {
-      // For team roles (gestor, atendimento, grs), use the filtered function
-      // For admins and users viewing their own profile, use direct table access
-      if (role === 'gestor' || role === 'atendimento' || role === 'grs') {
-        // Get all profile IDs first, then fetch filtered data for each
-        const { data: profileIds, error: idsError } = await supabase
-          .from('profiles')
-          .select('id')
-          .order('created_at', { ascending: false });
+      const { data, error: fetchError } = await supabase
+        .from('pessoas')
+        .select('id, nome, email, telefones, profile_id, created_at, updated_at')
+        .not('profile_id', 'is', null)
+        .order('created_at', { ascending: false });
 
-        if (idsError) {
-          console.error('Erro ao buscar IDs dos perfis:', idsError);
-          setError('Erro ao carregar dados dos perfis');
-          return;
-        }
-
-        // Fetch filtered profile data using the security definer function
-        const filteredProfiles = [];
-        if (profileIds) {
-          for (const profileId of profileIds) {
-            const { data: filteredProfile } = await supabase
-              .rpc('get_filtered_profile', { profile_id: profileId.id });
-            
-            if (filteredProfile && typeof filteredProfile === 'object') {
-              filteredProfiles.push({
-                ...(filteredProfile as unknown as Profile),
-                _hasFullAccess: false
-              });
-            }
-          }
-        }
-        
-        setProfiles(filteredProfiles);
-      } else {
-        // For admins and users viewing their own profile, use direct access
-        const { data, error: fetchError } = await supabase
-          .from('profiles')
-          .select('*')
-          .order('created_at', { ascending: false });
-
-        if (fetchError) {
-          console.error('Erro ao buscar perfis:', fetchError);
-          setError('Erro ao carregar dados dos perfis');
-          return;
-        }
-
-        const profilesWithAccess = (data || []).map((profile: any) => ({
-          ...profile,
-          _hasFullAccess: true
-        }));
-
-        setProfiles(profilesWithAccess);
+      if (fetchError) {
+        console.error('Erro ao buscar perfis:', fetchError);
+        setError('Erro ao carregar dados dos perfis');
+        return;
       }
+
+      const profilesWithAccess = (data || []).map((pessoa: any) => ({
+        id: pessoa.profile_id,
+        nome: pessoa.nome,
+        email: pessoa.email,
+        telefone: Array.isArray(pessoa.telefones) ? pessoa.telefones[0] : null,
+        avatar_url: null,
+        created_at: pessoa.created_at,
+        updated_at: pessoa.updated_at,
+        _hasFullAccess: true
+      }));
+
+      setProfiles(profilesWithAccess);
     } catch (err) {
       console.error('Erro inesperado:', err);
       setError('Erro inesperado ao carregar dados');
@@ -95,30 +61,28 @@ export function useProfileData() {
 
   const getProfileById = async (id: string): Promise<ProfileWithAccessFlag | null> => {
     try {
-      // Use the security definer function for secure profile access
-      const { data: filteredProfile, error: fetchError } = await supabase
-        .rpc('get_filtered_profile', { profile_id: id });
+      const { data, error: fetchError } = await supabase
+        .from('pessoas')
+        .select('*')
+        .eq('profile_id', id)
+        .maybeSingle();
 
       if (fetchError) {
         console.error('Erro ao buscar perfil:', fetchError);
         return null;
       }
 
-      if (!filteredProfile) {
-        return null;
-      }
-
-      // Check if user has full access (admin or own profile)
-      const currentUser = await supabase.auth.getUser();
-      const currentUserId = currentUser.data.user?.id;
-      const profileData = filteredProfile as unknown as Profile;
-      const isOwnProfile = profileData.id === currentUserId;
-      const isAdmin = role === 'admin';
-      const hasFullAccess = isOwnProfile || isAdmin;
+      if (!data) return null;
 
       return {
-        ...profileData,
-        _hasFullAccess: hasFullAccess
+        id: data.profile_id!,
+        nome: data.nome,
+        email: data.email,
+        telefone: Array.isArray(data.telefones) ? data.telefones[0] : null,
+        avatar_url: null,
+        created_at: data.created_at,
+        updated_at: data.updated_at,
+        _hasFullAccess: true
       };
     } catch (err) {
       console.error('Erro inesperado ao buscar perfil:', err);
@@ -129,9 +93,13 @@ export function useProfileData() {
   const updateProfile = async (id: string, profileData: Partial<Omit<Profile, 'id' | 'created_at' | 'updated_at'>>) => {
     try {
       const { data, error: updateError } = await supabase
-        .from('profiles')
-        .update(profileData)
-        .eq('id', id)
+        .from('pessoas')
+        .update({
+          nome: profileData.nome,
+          email: profileData.email,
+          telefones: profileData.telefone ? [profileData.telefone] : []
+        })
+        .eq('profile_id', id)
         .select()
         .single();
 
@@ -139,7 +107,6 @@ export function useProfileData() {
         throw new Error(updateError.message);
       }
 
-      // Refresh the list
       await fetchProfiles();
       
       return { data, error: null };
@@ -151,7 +118,7 @@ export function useProfileData() {
 
   useEffect(() => {
     fetchProfiles();
-  }, [role]); // Refetch when role changes
+  }, [role]);
 
   return {
     profiles,

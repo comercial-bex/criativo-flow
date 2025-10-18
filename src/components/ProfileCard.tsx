@@ -20,16 +20,6 @@ export function ProfileCard({ profile, showSensitiveData = false }: ProfileCardP
       .slice(0, 2);
   };
 
-  const getEspecialidadeLabel = (especialidade: string | null) => {
-    switch (especialidade) {
-      case 'videomaker': return 'Videomaker';
-      case 'filmmaker': return 'Filmmaker';
-      case 'design': return 'Designer';
-      case 'gerente_redes_sociais': return 'Gerente de Redes Sociais';
-      default: return 'Não especificado';
-    }
-  };
-
   const hasFullAccess = profile._hasFullAccess ?? false;
   const shouldShowSensitive = showSensitiveData && hasFullAccess;
 
@@ -45,11 +35,6 @@ export function ProfileCard({ profile, showSensitiveData = false }: ProfileCardP
           </Avatar>
           <div className="flex-1">
             <CardTitle className="text-xl">{profile.nome}</CardTitle>
-            {profile.especialidade && (
-              <Badge variant="secondary" className="mt-1">
-                {getEspecialidadeLabel(profile.especialidade)}
-              </Badge>
-            )}
           </div>
           {!hasFullAccess && (
             <div className="flex items-center text-sm text-muted-foreground">
