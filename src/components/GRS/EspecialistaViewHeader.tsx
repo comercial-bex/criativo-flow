@@ -47,8 +47,8 @@ export function EspecialistaViewHeader({ especialistaId, onClose }: Especialista
             <span className="text-foreground">{especialista.nome}</span>
           </div>
           <div className="flex items-center gap-2 mt-1">
-            <Badge variant="outline" className={getEspecialidadeColor(especialista.especialidade)}>
-              {especialista.especialidade}
+            <Badge variant="outline" className={getEspecialidadeColor(especialista.papeis?.[0] || 'cliente')}>
+              {especialista.papeis?.[0] || 'cliente'}
             </Badge>
             <span className="text-sm text-muted-foreground">
               Modo somente leitura

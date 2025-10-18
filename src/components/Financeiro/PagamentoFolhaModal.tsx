@@ -120,12 +120,12 @@ export function PagamentoFolhaModal({
               <div className="space-y-3">
                 <div>
                   <p className="text-sm text-muted-foreground">Colaborador</p>
-                  <p className="font-semibold text-lg">{item.colaborador?.nome_completo}</p>
+                  <p className="font-semibold text-lg">{item.colaborador?.nome}</p>
                 </div>
                 <div className="grid grid-cols-3 gap-4">
                   <div>
                     <p className="text-sm text-muted-foreground">CPF/CNPJ</p>
-                    <p className="font-medium">{item.colaborador?.cpf_cnpj}</p>
+                    <p className="font-medium">{item.colaborador?.cpf}</p>
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Cargo</p>

@@ -16,8 +16,8 @@ export function useEspecialistaData(especialistaId: string | null) {
       }
 
       const { data, error } = await supabase
-        .from('profiles')
-        .select('id, nome, email, especialidade, telefone')
+        .from('pessoas')
+        .select('id, nome, email, papeis, telefones')
         .eq('id', especialistaId)
         .single();
 

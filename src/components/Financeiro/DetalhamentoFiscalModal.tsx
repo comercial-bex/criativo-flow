@@ -80,7 +80,7 @@ export function DetalhamentoFiscalModal({
 
   const regime = item.colaborador?.regime || 'clt';
   const salarioBruto = item.colaborador?.salario_base || item.colaborador?.fee_mensal || item.base_calculo || 0;
-  const colaboradorNome = item.colaborador?.nome_completo || 'Colaborador';
+  const colaboradorNome = item.colaborador?.nome || 'Colaborador';
   const competencia = new Date().toISOString().slice(0, 10);
 
   const fgts = salarioBruto * 0.08; // 8%

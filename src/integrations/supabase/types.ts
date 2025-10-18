@@ -1771,6 +1771,13 @@ export type Database = {
             referencedRelation: "assinaturas"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "fk_clientes_responsavel_pessoas"
+            columns: ["responsavel_id"]
+            isOneToOne: false
+            referencedRelation: "pessoas"
+            referencedColumns: ["id"]
+          },
         ]
       }
       cnpj_consultas: {
@@ -2833,6 +2840,13 @@ export type Database = {
             columns: ["tarefa_id"]
             isOneToOne: false
             referencedRelation: "tarefas_projeto"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_eventos_responsavel_pessoas"
+            columns: ["responsavel_id"]
+            isOneToOne: false
+            referencedRelation: "pessoas"
             referencedColumns: ["id"]
           },
         ]
@@ -6024,6 +6038,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "fk_pessoa_papeis_pessoa"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "pessoas"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "pessoa_papeis_pessoa_id_fkey"
             columns: ["pessoa_id"]
             isOneToOne: false
@@ -6100,6 +6121,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_pessoas_cargo"
+            columns: ["cargo_id"]
+            isOneToOne: false
+            referencedRelation: "rh_cargos"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "pessoas_cliente_id_fkey"
             columns: ["cliente_id"]
@@ -9128,6 +9156,20 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "fk_tarefa_executor_pessoas"
+            columns: ["executor_id"]
+            isOneToOne: false
+            referencedRelation: "pessoas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_tarefa_responsavel_pessoas"
+            columns: ["responsavel_id"]
+            isOneToOne: false
+            referencedRelation: "pessoas"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "tarefa_campanha_id_fkey"
             columns: ["campanha_id"]
             isOneToOne: false
@@ -10042,6 +10084,13 @@ export type Database = {
             referencedRelation: "vw_client_metrics"
             referencedColumns: ["responsavel_id"]
           },
+          {
+            foreignKeyName: "fk_clientes_responsavel_pessoas"
+            columns: ["responsavel_id"]
+            isOneToOne: false
+            referencedRelation: "pessoas"
+            referencedColumns: ["id"]
+          },
         ]
       }
       rls_errors_stats: {
@@ -10184,6 +10233,14 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      vw_health_check_pessoas: {
+        Row: {
+          metrica: string | null
+          severidade: string | null
+          valor: string | null
+        }
+        Relationships: []
       }
       vw_planos_publicos: {
         Row: {

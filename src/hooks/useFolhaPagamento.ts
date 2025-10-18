@@ -40,8 +40,8 @@ export interface FolhaItem {
   data_pagamento?: string;
   comprovante_url?: string;
   colaborador?: {
-    nome_completo: string;
-    cpf_cnpj: string;
+    nome: string;
+    cpf: string;
     cargo_atual?: string;
     regime: string;
     salario_base?: number;
@@ -79,17 +79,16 @@ export function useFolhaPagamento(competencia?: string) {
         .from('financeiro_folha_itens')
         .select(`
           *,
-          colaborador:rh_colaboradores(
-            nome_completo,
-            cpf_cnpj,
+          colaborador:pessoas!fk_folha_itens_colaborador(
+            nome,
+            cpf,
             cargo_atual,
             regime,
             salario_base,
             fee_mensal
           )
         `)
-        .eq('folha_id', folhas[0].id)
-        .order('colaborador.nome_completo');
+        .eq('folha_id', folhas[0].id);
       
       if (error) throw error;
       return data as FolhaItem[];
@@ -132,9 +131,10 @@ export function useFolhaPagamento(competencia?: string) {
       
       // 2. Buscar colaboradores ativos
       const { data: colaboradores, error: colabError } = await supabase
-        .from('rh_colaboradores')
+        .from('pessoas')
         .select('*')
-        .eq('status', 'ativo');
+        .eq('status', 'ativo')
+        .contains('papeis', ['colaborador']);
       
       if (colabError) throw colabError;
       
