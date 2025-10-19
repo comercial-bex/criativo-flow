@@ -48,6 +48,24 @@ Deno.serve(async (req) => {
       .lte('data_postagem', new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString());
     
     const totalPostsAgendados = postsAgendados?.[0]?.count || 0;
+
+    // Buscar próxima captação
+    const { data: proximaCaptacao } = await supabase
+      .from('eventos_calendario')
+      .select('data_inicio')
+      .eq('cliente_id', clienteId)
+      .in('tipo', ['captacao_interna', 'captacao_externa'])
+      .gte('data_inicio', new Date().toISOString())
+      .order('data_inicio', { ascending: true })
+      .limit(1)
+      .single();
+
+    // Buscar brand assets
+    const { data: brandAssets } = await supabase
+      .from('brand_assets')
+      .select('*')
+      .eq('cliente_id', clienteId)
+      .limit(5);
     
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
@@ -279,7 +297,60 @@ ${JSON.stringify(tarefasAtivas || [], null, 2)}
 
 **Posts Agendados (próximos 30 dias):** ${totalPostsAgendados}
 
-Gere o relatório estratégico COMPLETO seguindo a estrutura especificada, usando TODOS os dados fornecidos.`;
+**Próxima Captação:** ${proximaCaptacao?.data_inicio ? new Date(proximaCaptacao.data_inicio).toLocaleDateString('pt-BR') : 'Não agendada'}
+
+**Brand Assets Disponíveis:** ${brandAssets?.length || 0} arquivos
+
+Gere o relatório estratégico COMPLETO seguindo a estrutura especificada, usando TODOS os dados fornecidos.
+
+ADICIONE TAMBÉM DADOS ESTRUTURADOS PARA GRÁFICOS:
+
+Após o markdown, adicione uma seção especial:
+
+---
+## 📊 DADOS_GRAFICOS_JSON
+
+\`\`\`json
+{
+  "highlights": [
+    {"label": "Seguidores Atuais", "valor": [número], "unidade": "", "tendencia": "up|down|neutral", "icone": "users", "cor": "from-blue-500/20 to-blue-600/20"},
+    {"label": "Taxa de Engajamento", "valor": [número], "unidade": "%", "tendencia": "up", "icone": "trending", "cor": "from-green-500/20 to-green-600/20"},
+    {"label": "Posts/Semana", "valor": [número], "unidade": "", "tendencia": "neutral", "icone": "calendar", "cor": "from-purple-500/20 to-purple-600/20"}
+  ],
+  "funil_conversao": [
+    {"etapa": "Alcance", "cliente": [%], "concorrentes": [%], "gap": [diferença]},
+    {"etapa": "Engajamento", "cliente": [%], "concorrentes": [%], "gap": [diferença]},
+    {"etapa": "Conversão", "cliente": [%], "concorrentes": [%], "gap": [diferença]}
+  ],
+  "formatos_conteudo": [
+    {"formato": "Reels", "cliente": [%], "concorrentes": [%], "performance": [%]},
+    {"formato": "Carrosséis", "cliente": [%], "concorrentes": [%], "performance": [%]},
+    {"formato": "Posts Simples", "cliente": [%], "concorrentes": [%], "performance": [%]}
+  ],
+  "maturidade_digital": [
+    {"dimensao": "Consistência", "cliente": [0-100], "concorrentes": [0-100], "mercado": [0-100]},
+    {"dimensao": "Qualidade Visual", "cliente": [0-100], "concorrentes": [0-100], "mercado": [0-100]},
+    {"dimensao": "Engajamento", "cliente": [0-100], "concorrentes": [0-100], "mercado": [0-100]},
+    {"dimensao": "Diversidade", "cliente": [0-100], "concorrentes": [0-100], "mercado": [0-100]}
+  ],
+  "hashtags_competitivas": [
+    {"hashtag": "#exemplo", "alcance_medio": [número], "uso_cliente": [número], "uso_concorrentes": [número], "oportunidade": "alta|media|baixa"}
+  ],
+  "evolucao_temporal": [
+    {"mes": "Jan/25", "seguidores_cliente": [número], "seguidores_concorrentes": [número], "engajamento_cliente": [%], "engajamento_concorrentes": [%], "projecao_cliente": [número estimado]}
+  ],
+  "roi_potencial": [
+    {"cenario": "Orgânico", "investimento": [R$], "retorno_estimado": [R$], "roi_percent": [%], "prazo_meses": [número]},
+    {"cenario": "Híbrido", "investimento": [R$], "retorno_estimado": [R$], "roi_percent": [%], "prazo_meses": [número]}
+  ],
+  "mapa_calor": {
+    "cliente": [[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0]],
+    "concorrente": [[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0]]
+  }
+}
+\`\`\`
+
+PREENCHA COM DADOS REALISTAS BASEADOS NA ANÁLISE!`;
 
     console.log('📤 Gerando relatório para:', clienteNome);
     

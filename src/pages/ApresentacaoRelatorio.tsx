@@ -11,6 +11,15 @@ import { SWOTRadarChart } from '@/components/relatorios/SWOTRadarChart';
 import { ComparativoMetricas } from '@/components/relatorios/ComparativoMetricas';
 import { TimelineAcoes } from '@/components/relatorios/TimelineAcoes';
 import { HighlightsNumericos } from '@/components/relatorios/HighlightsNumericos';
+import { FunilConversao } from '@/components/relatorios/FunilConversao';
+import { MapaCalorPostagens } from '@/components/relatorios/MapaCalorPostagens';
+import { EvolucaoTemporal } from '@/components/relatorios/EvolucaoTemporal';
+import { FormatosConteudo } from '@/components/relatorios/FormatosConteudo';
+import { MaturidadeDigital } from '@/components/relatorios/MaturidadeDigital';
+import { HashtagsCompetitivas } from '@/components/relatorios/HashtagsCompetitivas';
+import { CalendarioMetas } from '@/components/relatorios/CalendarioMetas';
+import { ComparativoBio } from '@/components/relatorios/ComparativoBio';
+import { ROIPotencial } from '@/components/relatorios/ROIPotencial';
 
 interface RelatorioData {
   titulo: string;
