@@ -112,15 +112,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         return { error: { message: 'Cadastro não encontrado. Entre em contato com o suporte.' } };
       }
       
-      // 2. Verificar status
-      if (pessoa.status !== 'ativo') {
-        console.warn('🔐 Auth: Status da pessoa:', pessoa.status);
+      // 2. Verificar status - permitir tanto 'aprovado' quanto 'ativo'
+      const allowedStatuses = ['aprovado', 'ativo'];
+      if (!allowedStatuses.includes(pessoa.status)) {
+        console.warn('🔐 Auth: Status da pessoa (bloqueado):', pessoa.status);
         await supabase.auth.signOut();
         
         const statusMessages = {
           'pendente_aprovacao': 'Seu cadastro está pendente de aprovação. Aguarde liberação do administrador.',
           'suspenso': 'Sua conta foi suspensa. Entre em contato com o administrador.',
-          'desligado': 'Seu cadastro foi desativado. Entre em contato com o suporte.'
+          'rejeitado': 'Seu cadastro foi rejeitado. Entre em contato com o administrador.'
         };
         
         return { 
