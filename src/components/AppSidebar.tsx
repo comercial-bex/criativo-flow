@@ -118,6 +118,8 @@ export function AppSidebar() {
         { title: "Contratos", url: "/admin/contratos", icon: Icons.FileSignature },
         { title: "Orçamentos", url: "/administrativo/orcamentos", icon: Icons.Calculator },
         { title: "Propostas", url: "/administrativo/propostas", icon: Icons.FileText },
+        { title: "Contas a Pagar", url: "/financeiro/contas-pagar", icon: Icons.FileDown },
+        { title: "Contas a Receber", url: "/financeiro/contas-receber", icon: Icons.FileUp },
         { title: "Pessoas", url: "/rh/pessoas", icon: Icons.Users },
         { title: "Folha", url: "/financeiro/folha", icon: Icons.Wallet },
         { title: "Relatórios", url: "/relatorios", icon: Icons.FileText },
