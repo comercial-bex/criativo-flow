@@ -36,6 +36,14 @@ export interface PessoaColaborador {
   unidade_filial?: string;
   gestor_imediato_id?: string;
   
+  // Veículo
+  veiculo_id?: string;
+  veiculo?: {
+    id: string;
+    nome: string;
+    placa?: string;
+  };
+  
   // Bancários (via JSONB dados_bancarios)
   dados_bancarios?: {
     banco_codigo?: string;
@@ -74,29 +82,58 @@ export function usePessoasColaboradores() {
       
       if (error) throw error;
       
-      // Mapear para interface compatível
-      return (data || []).map(pessoa => ({
-        id: pessoa.id,
-        nome: pessoa.nome,
-        cpf: pessoa.cpf || '',
-        email: pessoa.email,
-        telefones: pessoa.telefones,
-        endereco: {}, // Não existe na tabela pessoas ainda
-        cargo_atual: pessoa.cargo_atual,
-        regime: undefined, // Não existe campo tipo_vinculo
-        data_admissao: pessoa.data_admissao,
-        data_desligamento: pessoa.data_desligamento,
-        status: pessoa.status as any,
-        salario_base: pessoa.salario_base,
-        fee_mensal: pessoa.fee_mensal,
-        centro_custo: undefined, // Não existe na tabela pessoas
-        unidade_filial: undefined, // Não existe na tabela pessoas
-        gestor_imediato_id: undefined, // Não existe na tabela pessoas
-        dados_bancarios: pessoa.dados_bancarios as any,
-        observacoes: pessoa.observacoes,
-        created_at: pessoa.created_at,
-        updated_at: pessoa.updated_at,
-      })) as PessoaColaborador[];
+      // Buscar veículos separadamente se necessário
+      const colaboradoresComVeiculo = await Promise.all(
+        (data || []).map(async (pessoa) => {
+          let veiculoInfo = null;
+          if (pessoa.veiculo_id) {
+            const { data: veiculo } = await supabase
+              .from('inventario_itens')
+              .select(`
+                id,
+                identificacao_interna,
+                modelo:inventario_modelos!modelo_id(nome)
+              `)
+              .eq('id', pessoa.veiculo_id)
+              .single();
+            
+            if (veiculo) {
+              veiculoInfo = {
+                id: veiculo.id,
+                nome: (veiculo.modelo as any)?.nome || veiculo.identificacao_interna || 'Sem nome',
+                placa: veiculo.identificacao_interna
+              };
+            }
+          }
+          
+          return {
+            id: pessoa.id,
+            nome: pessoa.nome,
+            cpf: pessoa.cpf || '',
+            email: pessoa.email,
+            telefones: pessoa.telefones,
+            endereco: {}, // Não existe na tabela pessoas ainda
+            cargo_atual: pessoa.cargo_atual,
+            regime: undefined, // Não existe campo tipo_vinculo
+            data_admissao: pessoa.data_admissao,
+            data_desligamento: pessoa.data_desligamento,
+            status: pessoa.status as any,
+            salario_base: pessoa.salario_base,
+            fee_mensal: pessoa.fee_mensal,
+            centro_custo: undefined, // Não existe na tabela pessoas
+            unidade_filial: undefined, // Não existe na tabela pessoas
+            gestor_imediato_id: undefined, // Não existe na tabela pessoas
+            veiculo_id: pessoa.veiculo_id,
+            veiculo: veiculoInfo,
+            dados_bancarios: pessoa.dados_bancarios as any,
+            observacoes: pessoa.observacoes,
+            created_at: pessoa.created_at,
+            updated_at: pessoa.updated_at,
+          } as PessoaColaborador;
+        })
+      );
+      
+      return colaboradoresComVeiculo;
     },
   });
 

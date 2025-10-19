@@ -1,12 +1,15 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { useFolhaMes } from '@/hooks/useFolhaMes';
-import { usePessoas } from '@/hooks/usePessoas';
+import { usePessoasColaboradores } from '@/hooks/usePessoasColaboradores';
 import { useFolhaAnalytics } from '@/hooks/useFolhaAnalytics';
+import { SelecionarColaboradoresFolha } from '@/components/Financeiro/SelecionarColaboradoresFolha';
+import { supabase } from '@/integrations/supabase/client';
 import { formatCurrency } from '@/lib/utils';
 import { Download, FileText, Calendar, TrendingUp, DollarSign, Users, Calculator, FileDown, BarChart3 } from 'lucide-react';
 import { downloadHolerite } from '@/utils/holeritePdfGenerator';
@@ -36,16 +39,39 @@ export default function FolhaPagamento() {
   const [relatoriosFiscaisAberto, setRelatoriosFiscaisAberto] = useState(false);
   const [simuladorAberto, setSimuladorAberto] = useState(false);
   const [stepperAberto, setStepperAberto] = useState(false);
+  const [selecionadorAberto, setSelecionadorAberto] = useState(false);
   
   // Filtros
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('todos');
   const [sortBy, setSortBy] = useState('nome-asc');
   const [showCharts, setShowCharts] = useState(false);
+
+  // Carregar veículos via useQuery  
+  const { data: veiculosData = [] } = useQuery({
+    queryKey: ['veiculos-inventario'],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('inventario_itens')
+        .select(`
+          id,
+          identificacao_interna,
+          modelo:inventario_modelos!modelo_id(nome, categoria)
+        `)
+        .eq('ativo', true);
+      return (data || []).map((item: any) => ({
+        id: item.id,
+        nome: item.modelo?.nome || item.identificacao_interna || 'Sem nome',
+        placa: item.identificacao_interna
+      }));
+    }
+  });
+  
+  const veiculos = veiculosData;
   
   // Hooks integrados para nova arquitetura
   const { folhas, isLoading: isLoadingFolhas, calcularFolha, fecharFolha, marcarComoPaga } = useFolhaMes(undefined, competencia);
-  const { pessoas: colaboradores, isLoading: isLoadingPessoas } = usePessoas('colaborador');
+  const { colaboradores, isLoading: isLoadingPessoas } = usePessoasColaboradores();
   
   const { evolucaoMensal, composicaoEncargos, taxaAbsenteismo, isLoading: loadingAnalytics } = useFolhaAnalytics();
   const { startTutorial, hasSeenTutorial } = useTutorial('folha-pagamento');
@@ -92,13 +118,25 @@ export default function FolhaPagamento() {
   }, [folhas]);
 
   const handleProcessarFolha = () => {
-    setStepperAberto(true);
+    setSelecionadorAberto(true);
   };
 
-  const handleCompletarProcessamento = () => {
-    colaboradores.forEach(pessoa => {
-      calcularFolha({ pessoaId: pessoa.id, competencia });
-    });
+  const handleConfirmarSelecao = async (selecionados: { colaboradorId: string; veiculoId?: string }[]) => {
+    // Atualizar veículos dos colaboradores se necessário
+    for (const { colaboradorId, veiculoId } of selecionados) {
+      if (veiculoId) {
+        await supabase
+          .from('pessoas')
+          .update({ veiculo_id: veiculoId })
+          .eq('id', colaboradorId);
+      }
+      
+      // Calcular folha
+      calcularFolha({ pessoaId: colaboradorId, competencia });
+    }
+    
+    setSelecionadorAberto(false);
+    toast.success(`✅ Folha processada para ${selecionados.length} colaboradores!`);
   };
 
   const handleAbrirModalPagamento = (item: any) => {
@@ -551,13 +589,6 @@ export default function FolhaPagamento() {
         item={itemSelecionado}
       />
 
-      <FolhaPagamentoStepper
-        open={stepperAberto}
-        onOpenChange={setStepperAberto}
-        competencia={competencia}
-        onComplete={handleCompletarProcessamento}
-      />
-
       <SimuladorFolha
         open={simuladorAberto}
         onOpenChange={setSimuladorAberto}
@@ -567,6 +598,27 @@ export default function FolhaPagamento() {
         open={relatoriosFiscaisAberto}
         onOpenChange={setRelatoriosFiscaisAberto}
       />
+
+      {/* Selecionador de Colaboradores */}
+      {selecionadorAberto && (
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <SelecionarColaboradoresFolha
+            colaboradores={colaboradores.map(c => ({
+              id: c.id,
+              nome: c.nome,
+              cargo_atual: c.observacoes,
+              regime: 'clt',
+              salario_base: c.salario_base || 0,
+              fee_mensal: c.fee_mensal || 0,
+              veiculo_id: c.veiculo_id,
+              status: c.status
+            }))}
+            veiculos={veiculos}
+            onConfirmar={handleConfirmarSelecao}
+            onCancelar={() => setSelecionadorAberto(false)}
+          />
+        </div>
+      )}
     </div>
   );
 }

@@ -23,6 +23,8 @@ import { useTutorial } from '@/hooks/useTutorial';
 import { TutorialButton } from '@/components/TutorialButton';
 import { useNavigate } from 'react-router-dom';
 import { DataSyncIndicator } from '@/components/Admin/DataSyncIndicator';
+import { CardsAcessoRapido } from '@/components/Financeiro/CardsAcessoRapido';
+import { FABLancamento } from '@/components/Financeiro/FABLancamento';
 
 interface CategoriaFinanceira {
   id: string;
@@ -251,6 +253,18 @@ export default function Financeiro() {
     setEditingTransaction(null);
   };
 
+  const handleLancarReceita = () => {
+    resetForm();
+    setNovaTransacao(prev => ({ ...prev, tipo: "receber" }));
+    setIsDialogOpen(true);
+  };
+
+  const handleLancarDespesa = () => {
+    resetForm();
+    setNovaTransacao(prev => ({ ...prev, tipo: "pagar" }));
+    setIsDialogOpen(true);
+  };
+
   const handleEdit = (transacao: TransacaoFinanceira) => {
     setEditingTransaction(transacao);
     setNovaTransacao({
@@ -330,10 +344,10 @@ export default function Financeiro() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-            Lançamentos Financeiros
+            💰 Movimentações Financeiras
           </h1>
           <p className="text-muted-foreground mt-2">
-            Gerencie suas contas a pagar e receber de forma completa
+            Gerencie entradas e saídas de forma simples e rápida
           </p>
         </div>
         <div className="flex gap-2">
@@ -341,6 +355,12 @@ export default function Financeiro() {
           <TutorialButton onStart={startTutorial} hasSeenTutorial={hasSeenTutorial} />
         </div>
       </div>
+
+      {/* Cards de Acesso Rápido */}
+      <CardsAcessoRapido 
+        onLancarReceita={handleLancarReceita}
+        onLancarDespesa={handleLancarDespesa}
+      />
 
       {/* Cards de Resumo */}
       <div className="grid gap-6 md:grid-cols-4" data-tour="kpis">
@@ -418,25 +438,25 @@ export default function Financeiro() {
 
       {/* Transações */}
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">Transações do Mês</h2>
+        <h2 className="text-2xl font-bold">Lançamentos do Mês</h2>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button onClick={() => { resetForm(); setIsDialogOpen(true); }} className="shadow-md" data-tour="nova-transacao">
-              <Plus className="mr-2 h-4 w-4" />
-              Nova Transação
-            </Button>
-          </DialogTrigger>
           <DialogContent className="max-w-2xl">
-            <DialogHeader>
-              <DialogTitle>
-                {editingTransaction ? "Editar Transação" : "Nova Transação"}
-              </DialogTitle>
-              <DialogDescription>
-                {editingTransaction
-                  ? "Edite as informações da transação."
-                  : "Crie uma nova transação financeira."}
-              </DialogDescription>
-            </DialogHeader>
+          <DialogHeader>
+            <DialogTitle>
+              {editingTransaction 
+                ? "Editar Lançamento" 
+                : novaTransacao.tipo === "receber" 
+                  ? "➕ Lançar Receita (Entrada)" 
+                  : "➖ Lançar Despesa (Saída)"}
+            </DialogTitle>
+            <DialogDescription>
+              {editingTransaction
+                ? "Edite as informações do lançamento."
+                : novaTransacao.tipo === "receber"
+                  ? "Registre uma entrada de dinheiro (venda, recebimento, etc.)"
+                  : "Registre uma saída de dinheiro (compra, pagamento, etc.)"}
+            </DialogDescription>
+          </DialogHeader>
             
             <div className="grid gap-4 py-4">
               <div className="grid grid-cols-4 items-center gap-4">
@@ -858,6 +878,12 @@ export default function Financeiro() {
           </div>
         </CardHeader>
       </Card>
+
+      {/* Botão Flutuante de Ação Rápida */}
+      <FABLancamento 
+        onLancarReceita={handleLancarReceita}
+        onLancarDespesa={handleLancarDespesa}
+      />
     </div>
   );
 }

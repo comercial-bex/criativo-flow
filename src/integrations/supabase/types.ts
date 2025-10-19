@@ -7194,6 +7194,7 @@ export type Database = {
           status: string | null
           telefones: string[] | null
           updated_at: string
+          veiculo_id: string | null
         }
         Insert: {
           assinatura_id?: string | null
@@ -7226,6 +7227,7 @@ export type Database = {
           status?: string | null
           telefones?: string[] | null
           updated_at?: string
+          veiculo_id?: string | null
         }
         Update: {
           assinatura_id?: string | null
@@ -7258,6 +7260,7 @@ export type Database = {
           status?: string | null
           telefones?: string[] | null
           updated_at?: string
+          veiculo_id?: string | null
         }
         Relationships: [
           {
@@ -7329,6 +7332,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "vw_client_metrics"
             referencedColumns: ["responsavel_id"]
+          },
+          {
+            foreignKeyName: "pessoas_veiculo_id_fkey"
+            columns: ["veiculo_id"]
+            isOneToOne: false
+            referencedRelation: "inventario_itens"
+            referencedColumns: ["id"]
           },
         ]
       }
