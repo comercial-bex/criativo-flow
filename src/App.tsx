@@ -69,6 +69,8 @@ const AtendimentoInbox = lazy(() => import("./pages/Atendimento/Inbox"));
 const AtendimentoDashboard = lazy(() => import("./pages/Atendimento/Dashboard"));
 const TrafegoDashboard = lazy(() => import("./pages/Trafego/Dashboard"));
 const FinanceiroDashboard = lazy(() => import("./pages/Financeiro/Dashboard"));
+const ContasPagar = lazy(() => import("./pages/Financeiro/ContasPagar"));
+const ContasReceber = lazy(() => import("./pages/Financeiro/ContasReceber"));
 const FornecedorDashboard = lazy(() => import("./pages/Fornecedor/Dashboard"));
 const GestorDashboard = lazy(() => import("./pages/Gestor/Dashboard"));
 const MinhasTarefas = lazy(() => import("./pages/MinhasTarefas"));
@@ -789,6 +791,14 @@ function App() {
                 {/* Financeiro routes */}
                 <Route path="/financeiro/dashboard" element={<ProtectedRoute requiredRole="financeiro">
                     <Layout><FinanceiroDashboard /></Layout>
+                  </ProtectedRoute>} />
+                
+                <Route path="/financeiro/contas-pagar" element={<ProtectedRoute requiredRole="financeiro">
+                    <Layout><ContasPagar /></Layout>
+                  </ProtectedRoute>} />
+                
+                <Route path="/financeiro/contas-receber" element={<ProtectedRoute requiredRole="financeiro">
+                    <Layout><ContasReceber /></Layout>
                   </ProtectedRoute>} />
                 
                 {/* RH routes */}

@@ -11585,6 +11585,20 @@ export type Database = {
           },
         ]
       }
+      vw_dashboard_vencimentos: {
+        Row: {
+          tipo: Database["public"]["Enums"]["tipo_titulo"] | null
+          total_pagos: number | null
+          total_vencendo_30d: number | null
+          total_vencendo_7d: number | null
+          total_vencidos: number | null
+          valor_total_pago: number | null
+          valor_total_pendente: number | null
+          valor_vencendo_7d: number | null
+          valor_vencidos: number | null
+        }
+        Relationships: []
+      }
       vw_financeiro_origem: {
         Row: {
           cliente_id: string | null
