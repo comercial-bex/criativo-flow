@@ -689,6 +689,60 @@ export type Database = {
         }
         Relationships: []
       }
+      audit_trail: {
+        Row: {
+          acao: string
+          acao_detalhe: string | null
+          created_at: string
+          dados_antes: Json | null
+          dados_depois: Json | null
+          entidade_id: string
+          entidade_tipo: string
+          entidades_afetadas: Json | null
+          id: string
+          impacto_tipo: string | null
+          metadata: Json | null
+          trace_id: string
+          user_id: string | null
+          user_nome: string | null
+          user_role: string | null
+        }
+        Insert: {
+          acao: string
+          acao_detalhe?: string | null
+          created_at?: string
+          dados_antes?: Json | null
+          dados_depois?: Json | null
+          entidade_id: string
+          entidade_tipo: string
+          entidades_afetadas?: Json | null
+          id?: string
+          impacto_tipo?: string | null
+          metadata?: Json | null
+          trace_id?: string
+          user_id?: string | null
+          user_nome?: string | null
+          user_role?: string | null
+        }
+        Update: {
+          acao?: string
+          acao_detalhe?: string | null
+          created_at?: string
+          dados_antes?: Json | null
+          dados_depois?: Json | null
+          entidade_id?: string
+          entidade_tipo?: string
+          entidades_afetadas?: Json | null
+          id?: string
+          impacto_tipo?: string | null
+          metadata?: Json | null
+          trace_id?: string
+          user_id?: string | null
+          user_nome?: string | null
+          user_role?: string | null
+        }
+        Relationships: []
+      }
       brand_assets: {
         Row: {
           cliente_id: string
@@ -10916,6 +10970,57 @@ export type Database = {
         }
         Relationships: []
       }
+      vw_audit_timeline: {
+        Row: {
+          acao: string | null
+          acao_detalhe: string | null
+          contexto_entidade: Json | null
+          created_at: string | null
+          dados_antes: Json | null
+          dados_depois: Json | null
+          entidade_id: string | null
+          entidade_tipo: string | null
+          id: string | null
+          impacto_tipo: string | null
+          trace_id: string | null
+          user_id: string | null
+          user_nome: string | null
+          user_role: string | null
+        }
+        Insert: {
+          acao?: string | null
+          acao_detalhe?: string | null
+          contexto_entidade?: never
+          created_at?: string | null
+          dados_antes?: Json | null
+          dados_depois?: Json | null
+          entidade_id?: string | null
+          entidade_tipo?: string | null
+          id?: string | null
+          impacto_tipo?: string | null
+          trace_id?: string | null
+          user_id?: string | null
+          user_nome?: string | null
+          user_role?: string | null
+        }
+        Update: {
+          acao?: string | null
+          acao_detalhe?: string | null
+          contexto_entidade?: never
+          created_at?: string | null
+          dados_antes?: Json | null
+          dados_depois?: Json | null
+          entidade_id?: string | null
+          entidade_tipo?: string | null
+          id?: string | null
+          impacto_tipo?: string | null
+          trace_id?: string | null
+          user_id?: string | null
+          user_nome?: string | null
+          user_role?: string | null
+        }
+        Relationships: []
+      }
       vw_client_metrics: {
         Row: {
           assinatura_nome: string | null
@@ -11647,12 +11752,38 @@ export type Database = {
         }
         Returns: string
       }
+      fn_get_timeline_by_trace: {
+        Args: { p_trace_id: string }
+        Returns: {
+          acao: string
+          acao_detalhe: string
+          contexto: Json
+          created_at: string
+          entidade_tipo: string
+          id: string
+          impacto_tipo: string
+          user_nome: string
+          user_role: string
+        }[]
+      }
       fn_log_tarefa: {
         Args: {
           p_acao: string
           p_actor_id: string
           p_detalhe?: Json
           p_tarefa_id: string
+        }
+        Returns: string
+      }
+      fn_registrar_auditoria: {
+        Args: {
+          p_acao: string
+          p_acao_detalhe?: string
+          p_dados_antes?: Json
+          p_dados_depois?: Json
+          p_entidade_id: string
+          p_entidade_tipo: string
+          p_trace_id?: string
         }
         Returns: string
       }
