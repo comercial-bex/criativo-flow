@@ -2192,6 +2192,54 @@ export type Database = {
         }
         Relationships: []
       }
+      contas_bancarias: {
+        Row: {
+          agencia: string | null
+          ativo: boolean
+          banco: string | null
+          conta: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          nome: string
+          observacoes: string | null
+          saldo_atual: number
+          saldo_inicial: number
+          tipo: string
+          updated_at: string
+        }
+        Insert: {
+          agencia?: string | null
+          ativo?: boolean
+          banco?: string | null
+          conta?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          nome: string
+          observacoes?: string | null
+          saldo_atual?: number
+          saldo_inicial?: number
+          tipo: string
+          updated_at?: string
+        }
+        Update: {
+          agencia?: string | null
+          ativo?: boolean
+          banco?: string | null
+          conta?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          nome?: string
+          observacoes?: string | null
+          saldo_atual?: number
+          saldo_inicial?: number
+          tipo?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       conteudo_editorial: {
         Row: {
           conteudo_gerado: string | null
@@ -4131,12 +4179,14 @@ export type Database = {
       fornecedores: {
         Row: {
           agencia: string | null
+          ativo: boolean
           avaliacao_qualidade: number | null
           bairro: string | null
           banco_codigo: string | null
           banco_nome: string | null
           bloqueado_em: string | null
           bloqueado_por: string | null
+          categoria: string | null
           categoria_fornecedor: string[] | null
           celular: string | null
           cep: string | null
@@ -4144,12 +4194,15 @@ export type Database = {
           cidade: string | null
           cnpj: string
           complemento: string | null
+          condicao_pagamento: string | null
           conta: string | null
+          cpf_cnpj: string | null
           created_at: string
           created_by: string | null
           desconto_padrao: number | null
           documentos_anexos: Json | null
           email: string | null
+          endereco: string | null
           estado: string | null
           forma_pagamento_preferencial: string | null
           id: string
@@ -4179,12 +4232,14 @@ export type Database = {
         }
         Insert: {
           agencia?: string | null
+          ativo?: boolean
           avaliacao_qualidade?: number | null
           bairro?: string | null
           banco_codigo?: string | null
           banco_nome?: string | null
           bloqueado_em?: string | null
           bloqueado_por?: string | null
+          categoria?: string | null
           categoria_fornecedor?: string[] | null
           celular?: string | null
           cep?: string | null
@@ -4192,12 +4247,15 @@ export type Database = {
           cidade?: string | null
           cnpj: string
           complemento?: string | null
+          condicao_pagamento?: string | null
           conta?: string | null
+          cpf_cnpj?: string | null
           created_at?: string
           created_by?: string | null
           desconto_padrao?: number | null
           documentos_anexos?: Json | null
           email?: string | null
+          endereco?: string | null
           estado?: string | null
           forma_pagamento_preferencial?: string | null
           id?: string
@@ -4227,12 +4285,14 @@ export type Database = {
         }
         Update: {
           agencia?: string | null
+          ativo?: boolean
           avaliacao_qualidade?: number | null
           bairro?: string | null
           banco_codigo?: string | null
           banco_nome?: string | null
           bloqueado_em?: string | null
           bloqueado_por?: string | null
+          categoria?: string | null
           categoria_fornecedor?: string[] | null
           celular?: string | null
           cep?: string | null
@@ -4240,12 +4300,15 @@ export type Database = {
           cidade?: string | null
           cnpj?: string
           complemento?: string | null
+          condicao_pagamento?: string | null
           conta?: string | null
+          cpf_cnpj?: string | null
           created_at?: string
           created_by?: string | null
           desconto_padrao?: number | null
           documentos_anexos?: Json | null
           email?: string | null
+          endereco?: string | null
           estado?: string | null
           forma_pagamento_preferencial?: string | null
           id?: string

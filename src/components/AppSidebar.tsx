@@ -120,6 +120,8 @@ export function AppSidebar() {
         { title: "Propostas", url: "/administrativo/propostas", icon: Icons.FileText },
         { title: "Contas a Pagar", url: "/financeiro/contas-pagar", icon: Icons.FileDown },
         { title: "Contas a Receber", url: "/financeiro/contas-receber", icon: Icons.FileUp },
+        { title: "Caixa & Bancos", url: "/financeiro/caixa-bancos", icon: Icons.Landmark },
+        { title: "Fornecedores", url: "/fornecedores", icon: Icons.Users },
         { title: "Pessoas", url: "/rh/pessoas", icon: Icons.Users },
         { title: "Folha", url: "/financeiro/folha", icon: Icons.Wallet },
         { title: "Relatórios", url: "/relatorios", icon: Icons.FileText },
