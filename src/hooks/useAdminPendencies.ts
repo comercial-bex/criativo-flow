@@ -182,13 +182,7 @@ export function useAdminPendencies() {
       // 4. Buscar clientes inativos
       const { data: inactiveClients, error: inactiveError } = await supabase
         .from("clientes")
-        .select(`
-          id,
-          nome,
-          status,
-          updated_at,
-          pessoas!clientes_responsavel_id_fkey(nome)
-        `)
+        .select("id, nome, status, updated_at, responsavel_id")
         .eq("status", "inativo")
         .order("updated_at", { ascending: false })
         .limit(20);

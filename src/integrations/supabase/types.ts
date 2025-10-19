@@ -10765,6 +10765,18 @@ export type Database = {
           },
         ]
       }
+      mv_dashboard_financeiro: {
+        Row: {
+          margem_lucro_percent: number | null
+          mes: string | null
+          qtd_despesas: number | null
+          qtd_receitas: number | null
+          saldo: number | null
+          total_despesas: number | null
+          total_receitas: number | null
+        }
+        Relationships: []
+      }
       mv_grs_dashboard_metrics: {
         Row: {
           cliente_created_at: string | null
@@ -11123,6 +11135,71 @@ export type Database = {
           },
           {
             foreignKeyName: "credenciais_cliente_projeto_id_fkey"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "projetos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vw_financeiro_origem: {
+        Row: {
+          cliente_id: string | null
+          cliente_nome: string | null
+          conta_credito_nome: string | null
+          conta_debito_nome: string | null
+          created_at: string | null
+          data_lancamento: string | null
+          descricao: string | null
+          evento_data: string | null
+          evento_tipo: Database["public"]["Enums"]["tipo_evento"] | null
+          evento_titulo: string | null
+          folha_competencia: string | null
+          folha_total_colaboradores: number | null
+          id: string | null
+          origem_id: string | null
+          percentual_projeto: number | null
+          projeto_id: string | null
+          projeto_titulo: string | null
+          tarefa_status:
+            | Database["public"]["Enums"]["status_tarefa_enum"]
+            | null
+          tarefa_titulo: string | null
+          tipo_origem: string | null
+          tipo_transacao: string | null
+          valor: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "projetos_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "projetos_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "mv_grs_dashboard_metrics"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "projetos_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "vw_client_metrics"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "projetos_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "vw_conflitos_migracao_clientes"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "tarefa_projeto_id_fkey"
             columns: ["projeto_id"]
             isOneToOne: false
             referencedRelation: "projetos"
@@ -11762,6 +11839,10 @@ export type Database = {
         Returns: undefined
       }
       process_social_post_queue: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      refresh_dashboard_financeiro: {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
