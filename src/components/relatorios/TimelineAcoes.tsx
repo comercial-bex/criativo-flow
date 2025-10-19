@@ -36,8 +36,9 @@ export function TimelineAcoes({ fases }: Props) {
   };
 
   return (
-    <div className="w-full bg-gradient-to-br from-purple-500/10 to-pink-500/10 rounded-lg p-8 border border-purple-500/20">
-      <h3 className="text-2xl font-bold text-white mb-8 text-center">Plano de Ação - 90 Dias</h3>
+    <div className="w-full bg-gradient-to-br from-purple-500/10 to-pink-500/10 rounded-lg p-8 border-2 border-purple-500/30">
+      <h3 className="text-3xl font-bold text-white mb-2 text-center">🚀 Plano de Ação BEX - 90 Dias</h3>
+      <p className="text-sm text-gray-400 mb-8 text-center">Roadmap estratégico para transformação digital</p>
       
       <div className="space-y-12 relative">
         {/* Linha vertical conectando as fases */}

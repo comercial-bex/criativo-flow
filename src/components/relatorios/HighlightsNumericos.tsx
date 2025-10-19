@@ -36,39 +36,43 @@ export function HighlightsNumericos({ highlights }: Props) {
   };
 
   return (
-    <div className="w-full bg-gradient-to-br from-gray-800/50 to-gray-900/50 rounded-lg p-8 border border-gray-700">
-      <h3 className="text-2xl font-bold text-white mb-8 text-center">Números-Chave</h3>
+    <div className="w-full bg-gradient-to-br from-gray-800/50 to-gray-900/50 rounded-lg p-8 border-2 border-gray-700">
+      <h3 className="text-3xl font-bold text-white mb-2 text-center">📊 Resumo Executivo</h3>
+      <p className="text-sm text-gray-400 mb-8 text-center">Principais métricas do seu desempenho digital</p>
       
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
         {highlights.map((highlight, idx) => (
           <motion.div
             key={idx}
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: idx * 0.1 }}
-            className={`relative p-6 rounded-xl bg-gradient-to-br ${highlight.cor} border-2 border-white/10 hover:border-white/30 transition-all hover:scale-105`}
+            initial={{ opacity: 0, scale: 0.8, y: 30 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ delay: idx * 0.15, type: "spring", stiffness: 200 }}
+            className={`relative p-6 rounded-xl bg-gradient-to-br ${highlight.cor} border-2 border-white/10 hover:border-white/40 transition-all hover:scale-110 hover:shadow-2xl hover:shadow-white/20 cursor-pointer group`}
           >
+            {/* Brilho animado no hover */}
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 rounded-xl" />
+            
             {/* Ícone */}
-            <div className="mb-4 opacity-80">
+            <div className="mb-4 opacity-90 group-hover:opacity-100 group-hover:scale-110 transition-all">
               {getIcon(highlight.icone)}
             </div>
             
             {/* Valor com animação */}
-            <div className="flex items-baseline gap-2 mb-2">
-              <span className="text-4xl font-bold text-white">
+            <div className="flex items-baseline gap-2 mb-2 relative z-10">
+              <span className="text-5xl font-black text-white drop-shadow-lg">
                 <CountUp
                   end={highlight.valor}
-                  duration={2}
+                  duration={2.5}
                   separator="."
                   decimals={highlight.unidade === '%' ? 1 : 0}
                 />
               </span>
-              <span className="text-xl text-white/80">{highlight.unidade}</span>
+              <span className="text-2xl text-white/90 font-bold">{highlight.unidade}</span>
               {getTrendIcon(highlight.tendencia)}
             </div>
             
             {/* Label */}
-            <p className="text-sm text-white/70 font-medium">
+            <p className="text-sm text-white/80 font-semibold leading-tight">
               {highlight.label}
             </p>
           </motion.div>

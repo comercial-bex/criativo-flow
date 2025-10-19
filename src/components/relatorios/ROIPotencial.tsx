@@ -21,11 +21,12 @@ export function ROIPotencial({ cenarios, valorPorSeguidor, custoAquisicaoOrganic
   const COLORS = ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b'];
 
   return (
-    <div className="w-full bg-gradient-to-br from-emerald-500/10 to-teal-500/10 rounded-lg p-6 border border-emerald-500/20">
-      <h3 className="text-lg font-bold text-white mb-6 text-center flex items-center justify-center gap-2">
-        <DollarSign className="w-5 h-5" />
-        Projeção de ROI Potencial
+    <div className="w-full bg-gradient-to-br from-emerald-500/10 to-teal-500/10 rounded-lg p-6 border-2 border-emerald-500/30">
+      <h3 className="text-2xl font-bold text-white mb-2 text-center flex items-center justify-center gap-2">
+        <DollarSign className="w-6 h-6" />
+        💎 Projeção de ROI - Investimento Estratégico BEX
       </h3>
+      <p className="text-sm text-gray-400 mb-6 text-center">Análise comparativa de cenários de investimento e retorno</p>
 
       {/* Métricas Base */}
       <div className="grid grid-cols-3 gap-4 mb-6">
