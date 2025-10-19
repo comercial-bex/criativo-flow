@@ -7,6 +7,17 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
+// Tipos customizados para logs (tabelas podem não estar nos tipos gerados)
+interface SensitiveAccessLog {
+  id: string;
+  table_name: string;
+  action: string;
+  user_agent?: string;
+  ip_address?: string;
+  success: boolean;
+  timestamp: string;
+}
+
 export default function AdminLogs() {
   const { data: rlsErrors, isLoading: loadingRLS } = useQuery({
     queryKey: ['admin-rls-errors'],
@@ -22,17 +33,17 @@ export default function AdminLogs() {
     }
   });
 
-  const { data: sensitiveAccess, isLoading: loadingSensitive } = useQuery({
+  const { data: sensitiveAccess, isLoading: loadingSensitive } = useQuery<SensitiveAccessLog[]>({
     queryKey: ['admin-sensitive-access'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('audit_sensitive_access')
+        .from('audit_sensitive_access' as any)
         .select('*')
         .order('timestamp', { ascending: false })
         .limit(50);
       
       if (error) throw error;
-      return data;
+      return (data || []) as any as SensitiveAccessLog[];
     }
   });
 
