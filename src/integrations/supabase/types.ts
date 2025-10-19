@@ -3786,6 +3786,7 @@ export type Database = {
           data_lancamento: string
           descricao: string
           evento_id: string | null
+          fornecedor_id: string | null
           id: string
           numero_lancamento: number
           origem_id: string | null
@@ -3793,6 +3794,7 @@ export type Database = {
           reserva_id: string | null
           tarefa_id: string | null
           tipo_origem: string
+          titulo_id: string | null
           unidade: string | null
           valor: number
         }
@@ -3805,6 +3807,7 @@ export type Database = {
           data_lancamento: string
           descricao: string
           evento_id?: string | null
+          fornecedor_id?: string | null
           id?: string
           numero_lancamento?: number
           origem_id?: string | null
@@ -3812,6 +3815,7 @@ export type Database = {
           reserva_id?: string | null
           tarefa_id?: string | null
           tipo_origem: string
+          titulo_id?: string | null
           unidade?: string | null
           valor: number
         }
@@ -3824,6 +3828,7 @@ export type Database = {
           data_lancamento?: string
           descricao?: string
           evento_id?: string | null
+          fornecedor_id?: string | null
           id?: string
           numero_lancamento?: number
           origem_id?: string | null
@@ -3831,6 +3836,7 @@ export type Database = {
           reserva_id?: string | null
           tarefa_id?: string | null
           tipo_origem?: string
+          titulo_id?: string | null
           unidade?: string | null
           valor?: number
         }
@@ -3857,6 +3863,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "financeiro_lancamentos_fornecedor_id_fkey"
+            columns: ["fornecedor_id"]
+            isOneToOne: false
+            referencedRelation: "fornecedores"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "financeiro_lancamentos_projeto_id_fkey"
             columns: ["projeto_id"]
             isOneToOne: false
@@ -3875,6 +3888,13 @@ export type Database = {
             columns: ["tarefa_id"]
             isOneToOne: false
             referencedRelation: "tarefa"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financeiro_lancamentos_titulo_id_fkey"
+            columns: ["titulo_id"]
+            isOneToOne: false
+            referencedRelation: "titulos_financeiros"
             referencedColumns: ["id"]
           },
         ]
@@ -4105,6 +4125,153 @@ export type Database = {
           total_descontos?: number
           total_extras?: number
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      fornecedores: {
+        Row: {
+          agencia: string | null
+          avaliacao_qualidade: number | null
+          bairro: string | null
+          banco_codigo: string | null
+          banco_nome: string | null
+          bloqueado_em: string | null
+          bloqueado_por: string | null
+          categoria_fornecedor: string[] | null
+          celular: string | null
+          cep: string | null
+          certificados_url: string[] | null
+          cidade: string | null
+          cnpj: string
+          complemento: string | null
+          conta: string | null
+          created_at: string
+          created_by: string | null
+          desconto_padrao: number | null
+          documentos_anexos: Json | null
+          email: string | null
+          estado: string | null
+          forma_pagamento_preferencial: string | null
+          id: string
+          inscricao_estadual: string | null
+          inscricao_municipal: string | null
+          limite_credito: number | null
+          logradouro: string | null
+          motivo_bloqueio: string | null
+          nome_fantasia: string | null
+          numero: string | null
+          observacoes: string | null
+          pais: string | null
+          pix_chave: string | null
+          pix_tipo: string | null
+          prazo_pagamento_padrao: number | null
+          razao_social: string
+          site: string | null
+          status: string | null
+          telefone: string | null
+          termo_fornecedor_url: string | null
+          tipo_conta: string | null
+          tipo_fornecimento: string | null
+          total_compras: number | null
+          ultima_compra_em: string | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          agencia?: string | null
+          avaliacao_qualidade?: number | null
+          bairro?: string | null
+          banco_codigo?: string | null
+          banco_nome?: string | null
+          bloqueado_em?: string | null
+          bloqueado_por?: string | null
+          categoria_fornecedor?: string[] | null
+          celular?: string | null
+          cep?: string | null
+          certificados_url?: string[] | null
+          cidade?: string | null
+          cnpj: string
+          complemento?: string | null
+          conta?: string | null
+          created_at?: string
+          created_by?: string | null
+          desconto_padrao?: number | null
+          documentos_anexos?: Json | null
+          email?: string | null
+          estado?: string | null
+          forma_pagamento_preferencial?: string | null
+          id?: string
+          inscricao_estadual?: string | null
+          inscricao_municipal?: string | null
+          limite_credito?: number | null
+          logradouro?: string | null
+          motivo_bloqueio?: string | null
+          nome_fantasia?: string | null
+          numero?: string | null
+          observacoes?: string | null
+          pais?: string | null
+          pix_chave?: string | null
+          pix_tipo?: string | null
+          prazo_pagamento_padrao?: number | null
+          razao_social: string
+          site?: string | null
+          status?: string | null
+          telefone?: string | null
+          termo_fornecedor_url?: string | null
+          tipo_conta?: string | null
+          tipo_fornecimento?: string | null
+          total_compras?: number | null
+          ultima_compra_em?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          agencia?: string | null
+          avaliacao_qualidade?: number | null
+          bairro?: string | null
+          banco_codigo?: string | null
+          banco_nome?: string | null
+          bloqueado_em?: string | null
+          bloqueado_por?: string | null
+          categoria_fornecedor?: string[] | null
+          celular?: string | null
+          cep?: string | null
+          certificados_url?: string[] | null
+          cidade?: string | null
+          cnpj?: string
+          complemento?: string | null
+          conta?: string | null
+          created_at?: string
+          created_by?: string | null
+          desconto_padrao?: number | null
+          documentos_anexos?: Json | null
+          email?: string | null
+          estado?: string | null
+          forma_pagamento_preferencial?: string | null
+          id?: string
+          inscricao_estadual?: string | null
+          inscricao_municipal?: string | null
+          limite_credito?: number | null
+          logradouro?: string | null
+          motivo_bloqueio?: string | null
+          nome_fantasia?: string | null
+          numero?: string | null
+          observacoes?: string | null
+          pais?: string | null
+          pix_chave?: string | null
+          pix_tipo?: string | null
+          prazo_pagamento_padrao?: number | null
+          razao_social?: string
+          site?: string | null
+          status?: string | null
+          telefone?: string | null
+          termo_fornecedor_url?: string | null
+          tipo_conta?: string | null
+          tipo_fornecimento?: string | null
+          total_compras?: number | null
+          ultima_compra_em?: string | null
+          updated_at?: string
+          updated_by?: string | null
         }
         Relationships: []
       }
@@ -10502,6 +10669,186 @@ export type Database = {
           },
         ]
       }
+      titulos_financeiros: {
+        Row: {
+          anexos_url: string[] | null
+          aprovado_em: string | null
+          aprovado_por: string | null
+          categoria_id: string | null
+          centro_custo_id: string | null
+          cliente_id: string | null
+          comprovante_url: string | null
+          conta_bancaria_id: string | null
+          contrato_id: string | null
+          created_at: string
+          created_by: string | null
+          data_competencia: string
+          data_emissao: string
+          data_pagamento: string | null
+          data_vencimento: string
+          descricao: string
+          dias_atraso: number | null
+          forma_pagamento: string | null
+          fornecedor_id: string | null
+          id: string
+          is_recorrente: boolean | null
+          numero_documento: string | null
+          observacoes: string | null
+          projeto_id: string | null
+          proximo_vencimento: string | null
+          recorrencia_tipo: string | null
+          requer_aprovacao: boolean | null
+          status: Database["public"]["Enums"]["status_titulo"]
+          tipo: Database["public"]["Enums"]["tipo_titulo"]
+          tipo_documento: Database["public"]["Enums"]["tipo_documento"] | null
+          updated_at: string
+          updated_by: string | null
+          valor_desconto: number | null
+          valor_juros: number | null
+          valor_liquido: number | null
+          valor_multa: number | null
+          valor_original: number
+          valor_pago: number | null
+        }
+        Insert: {
+          anexos_url?: string[] | null
+          aprovado_em?: string | null
+          aprovado_por?: string | null
+          categoria_id?: string | null
+          centro_custo_id?: string | null
+          cliente_id?: string | null
+          comprovante_url?: string | null
+          conta_bancaria_id?: string | null
+          contrato_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          data_competencia?: string
+          data_emissao?: string
+          data_pagamento?: string | null
+          data_vencimento: string
+          descricao: string
+          dias_atraso?: number | null
+          forma_pagamento?: string | null
+          fornecedor_id?: string | null
+          id?: string
+          is_recorrente?: boolean | null
+          numero_documento?: string | null
+          observacoes?: string | null
+          projeto_id?: string | null
+          proximo_vencimento?: string | null
+          recorrencia_tipo?: string | null
+          requer_aprovacao?: boolean | null
+          status?: Database["public"]["Enums"]["status_titulo"]
+          tipo: Database["public"]["Enums"]["tipo_titulo"]
+          tipo_documento?: Database["public"]["Enums"]["tipo_documento"] | null
+          updated_at?: string
+          updated_by?: string | null
+          valor_desconto?: number | null
+          valor_juros?: number | null
+          valor_liquido?: number | null
+          valor_multa?: number | null
+          valor_original: number
+          valor_pago?: number | null
+        }
+        Update: {
+          anexos_url?: string[] | null
+          aprovado_em?: string | null
+          aprovado_por?: string | null
+          categoria_id?: string | null
+          centro_custo_id?: string | null
+          cliente_id?: string | null
+          comprovante_url?: string | null
+          conta_bancaria_id?: string | null
+          contrato_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          data_competencia?: string
+          data_emissao?: string
+          data_pagamento?: string | null
+          data_vencimento?: string
+          descricao?: string
+          dias_atraso?: number | null
+          forma_pagamento?: string | null
+          fornecedor_id?: string | null
+          id?: string
+          is_recorrente?: boolean | null
+          numero_documento?: string | null
+          observacoes?: string | null
+          projeto_id?: string | null
+          proximo_vencimento?: string | null
+          recorrencia_tipo?: string | null
+          requer_aprovacao?: boolean | null
+          status?: Database["public"]["Enums"]["status_titulo"]
+          tipo?: Database["public"]["Enums"]["tipo_titulo"]
+          tipo_documento?: Database["public"]["Enums"]["tipo_documento"] | null
+          updated_at?: string
+          updated_by?: string | null
+          valor_desconto?: number | null
+          valor_juros?: number | null
+          valor_liquido?: number | null
+          valor_multa?: number | null
+          valor_original?: number
+          valor_pago?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "titulos_financeiros_categoria_id_fkey"
+            columns: ["categoria_id"]
+            isOneToOne: false
+            referencedRelation: "categorias_financeiras"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "titulos_financeiros_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "titulos_financeiros_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "mv_grs_dashboard_metrics"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "titulos_financeiros_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "vw_client_metrics"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "titulos_financeiros_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "vw_conflitos_migracao_clientes"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "titulos_financeiros_contrato_id_fkey"
+            columns: ["contrato_id"]
+            isOneToOne: false
+            referencedRelation: "contratos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "titulos_financeiros_fornecedor_id_fkey"
+            columns: ["fornecedor_id"]
+            isOneToOne: false
+            referencedRelation: "fornecedores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "titulos_financeiros_projeto_id_fkey"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "projetos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       transacoes_financeiras: {
         Row: {
           categoria_id: string | null
@@ -11766,6 +12113,10 @@ export type Database = {
         }
         Returns: string
       }
+      fn_notificar_vencimentos: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       fn_registrar_audit: {
         Args: {
           p_acao: string
@@ -12177,6 +12528,12 @@ export type Database = {
         | "contato"
         | "oportunidade"
         | "convertido"
+      status_titulo:
+        | "pendente"
+        | "vencido"
+        | "pago"
+        | "cancelado"
+        | "renegociado"
       status_type: "ativo" | "inativo" | "pendente" | "arquivado"
       tipo_anexo_enum:
         | "referencia"
@@ -12191,6 +12548,13 @@ export type Database = {
         | "outro"
       tipo_chave_pix: "cpf" | "cnpj" | "email" | "telefone" | "aleatoria"
       tipo_conta_bancaria: "corrente" | "poupanca" | "pme" | "salario"
+      tipo_documento:
+        | "boleto"
+        | "nf"
+        | "recibo"
+        | "fatura"
+        | "duplicata"
+        | "outros"
       tipo_evento:
         | "criacao_avulso"
         | "criacao_lote"
@@ -12234,6 +12598,7 @@ export type Database = {
         | "reels_instagram"
         | "stories_interativo"
         | "criativo_cartela"
+      tipo_titulo: "pagar" | "receber"
       tipo_vinculo_enum: "clt" | "pj" | "estagio" | "freelancer"
       user_role:
         | "admin"
@@ -12519,6 +12884,13 @@ export const Constants = {
         "oportunidade",
         "convertido",
       ],
+      status_titulo: [
+        "pendente",
+        "vencido",
+        "pago",
+        "cancelado",
+        "renegociado",
+      ],
       status_type: ["ativo", "inativo", "pendente", "arquivado"],
       tipo_anexo_enum: [
         "referencia",
@@ -12534,6 +12906,14 @@ export const Constants = {
       ],
       tipo_chave_pix: ["cpf", "cnpj", "email", "telefone", "aleatoria"],
       tipo_conta_bancaria: ["corrente", "poupanca", "pme", "salario"],
+      tipo_documento: [
+        "boleto",
+        "nf",
+        "recibo",
+        "fatura",
+        "duplicata",
+        "outros",
+      ],
       tipo_evento: [
         "criacao_avulso",
         "criacao_lote",
@@ -12580,6 +12960,7 @@ export const Constants = {
         "stories_interativo",
         "criativo_cartela",
       ],
+      tipo_titulo: ["pagar", "receber"],
       tipo_vinculo_enum: ["clt", "pj", "estagio", "freelancer"],
       user_role: [
         "admin",
