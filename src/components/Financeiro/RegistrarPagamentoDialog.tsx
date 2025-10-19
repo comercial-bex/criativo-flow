@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { format } from "date-fns";
-import { Calendar as CalendarIcon, Upload } from "lucide-react";
+import { Calendar as CalendarIcon } from "lucide-react";
+import { z } from "zod";
 import {
   Dialog,
   DialogContent,
@@ -29,6 +30,19 @@ import {
 import { useRegistrarPagamento } from "@/hooks/useTitulosFinanceiros";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
+
+// Schema de validação
+const pagamentoSchema = z.object({
+  valorPago: z.number()
+    .positive({ message: "Valor deve ser maior que zero" })
+    .max(999999999.99, { message: "Valor muito alto" }),
+  formaPagamento: z.string()
+    .min(1, { message: "Forma de pagamento é obrigatória" }),
+  observacoes: z.string()
+    .max(500, { message: "Observações devem ter no máximo 500 caracteres" })
+    .optional(),
+});
 
 interface RegistrarPagamentoDialogProps {
   tituloId: string;
@@ -43,25 +57,64 @@ export function RegistrarPagamentoDialog({
   open,
   onOpenChange,
 }: RegistrarPagamentoDialogProps) {
+  const { toast } = useToast();
   const [dataPagamento, setDataPagamento] = useState<Date>(new Date());
   const [valorPago, setValorPago] = useState("");
   const [formaPagamento, setFormaPagamento] = useState("");
   const [observacoes, setObservacoes] = useState("");
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const registrarPagamento = useRegistrarPagamento();
 
   const handleSubmit = async () => {
-    if (!valorPago || !formaPagamento) return;
+    // Limpar erros anteriores
+    setErrors({});
 
-    await registrarPagamento.mutateAsync({
-      titulo_id: tituloId,
-      data_pagamento: format(dataPagamento, 'yyyy-MM-dd'),
-      valor_pago: parseFloat(valorPago),
-      forma_pagamento: formaPagamento,
-      observacoes: observacoes || undefined,
+    // Validar inputs
+    const validation = pagamentoSchema.safeParse({
+      valorPago: parseFloat(valorPago),
+      formaPagamento,
+      observacoes: observacoes.trim() || undefined,
     });
 
-    onOpenChange(false);
+    if (!validation.success) {
+      const newErrors: Record<string, string> = {};
+      validation.error.errors.forEach((err) => {
+        if (err.path[0]) {
+          newErrors[err.path[0].toString()] = err.message;
+        }
+      });
+      setErrors(newErrors);
+      
+      toast({
+        variant: "destructive",
+        title: "Erro de validação",
+        description: "Verifique os campos e tente novamente",
+      });
+      return;
+    }
+
+    try {
+      await registrarPagamento.mutateAsync({
+        titulo_id: tituloId,
+        data_pagamento: format(dataPagamento, 'yyyy-MM-dd'),
+        valor_pago: validation.data.valorPago,
+        forma_pagamento: validation.data.formaPagamento,
+        observacoes: validation.data.observacoes,
+      });
+
+      // Limpar formulário
+      setValorPago("");
+      setFormaPagamento("");
+      setObservacoes("");
+      onOpenChange(false);
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Erro ao registrar",
+        description: "Não foi possível salvar o pagamento",
+      });
+    }
   };
 
   const actionLabel = tipo === 'pagar' ? 'Pagamento' : 'Recebimento';
@@ -108,16 +161,22 @@ export function RegistrarPagamentoDialog({
             <Input
               type="number"
               step="0.01"
+              min="0.01"
+              max="999999999.99"
               placeholder="0,00"
               value={valorPago}
               onChange={(e) => setValorPago(e.target.value)}
+              className={errors.valorPago ? "border-destructive" : ""}
             />
+            {errors.valorPago && (
+              <p className="text-sm text-destructive">{errors.valorPago}</p>
+            )}
           </div>
 
           <div className="space-y-2">
             <Label>Forma de {actionLabel}</Label>
             <Select value={formaPagamento} onValueChange={setFormaPagamento}>
-              <SelectTrigger>
+              <SelectTrigger className={errors.formaPagamento ? "border-destructive" : ""}>
                 <SelectValue placeholder="Selecione" />
               </SelectTrigger>
               <SelectContent>
@@ -130,6 +189,9 @@ export function RegistrarPagamentoDialog({
                 <SelectItem value="cheque">Cheque</SelectItem>
               </SelectContent>
             </Select>
+            {errors.formaPagamento && (
+              <p className="text-sm text-destructive">{errors.formaPagamento}</p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -138,8 +200,16 @@ export function RegistrarPagamentoDialog({
               placeholder="Informações adicionais..."
               value={observacoes}
               onChange={(e) => setObservacoes(e.target.value)}
+              maxLength={500}
               rows={3}
+              className={errors.observacoes ? "border-destructive" : ""}
             />
+            {errors.observacoes && (
+              <p className="text-sm text-destructive">{errors.observacoes}</p>
+            )}
+            <p className="text-xs text-muted-foreground">
+              {observacoes.length}/500 caracteres
+            </p>
           </div>
         </div>
 
