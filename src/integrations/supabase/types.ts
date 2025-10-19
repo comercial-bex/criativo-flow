@@ -620,76 +620,67 @@ export type Database = {
         }
         Relationships: []
       }
-      audit_logs: {
+      audit_trail: {
         Row: {
-          action: string
-          after: Json
-          before: Json
+          acao: string
+          acao_detalhe: string | null
           created_at: string
+          dados_antes: Json | null
+          dados_depois: Json | null
+          entidade_id: string
+          entidade_tipo: string
+          entidades_afetadas: Json | null
           id: string
-          post_id: string
-          user_id: string
-        }
-        Insert: {
-          action?: string
-          after: Json
-          before: Json
-          created_at?: string
-          id?: string
-          post_id: string
-          user_id: string
-        }
-        Update: {
-          action?: string
-          after?: Json
-          before?: Json
-          created_at?: string
-          id?: string
-          post_id?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      audit_sensitive_access: {
-        Row: {
-          action: string
-          id: string
+          impacto_tipo: string | null
           ip_address: unknown | null
           metadata: Json | null
-          record_id: string | null
-          success: boolean
-          table_name: string
-          timestamp: string
+          trace_id: string
           user_agent: string | null
-          user_id: string
+          user_id: string | null
+          user_nome: string | null
+          user_role: string | null
         }
         Insert: {
-          action: string
+          acao: string
+          acao_detalhe?: string | null
+          created_at?: string
+          dados_antes?: Json | null
+          dados_depois?: Json | null
+          entidade_id: string
+          entidade_tipo: string
+          entidades_afetadas?: Json | null
           id?: string
+          impacto_tipo?: string | null
           ip_address?: unknown | null
           metadata?: Json | null
-          record_id?: string | null
-          success?: boolean
-          table_name: string
-          timestamp?: string
+          trace_id?: string
           user_agent?: string | null
-          user_id: string
+          user_id?: string | null
+          user_nome?: string | null
+          user_role?: string | null
         }
         Update: {
-          action?: string
+          acao?: string
+          acao_detalhe?: string | null
+          created_at?: string
+          dados_antes?: Json | null
+          dados_depois?: Json | null
+          entidade_id?: string
+          entidade_tipo?: string
+          entidades_afetadas?: Json | null
           id?: string
+          impacto_tipo?: string | null
           ip_address?: unknown | null
           metadata?: Json | null
-          record_id?: string | null
-          success?: boolean
-          table_name?: string
-          timestamp?: string
+          trace_id?: string
           user_agent?: string | null
-          user_id?: string
+          user_id?: string | null
+          user_nome?: string | null
+          user_role?: string | null
         }
         Relationships: []
       }
-      audit_trail: {
+      audit_trail_backup_legacy: {
         Row: {
           acao: string
           acao_detalhe: string | null
@@ -11772,6 +11763,20 @@ export type Database = {
           p_actor_id: string
           p_detalhe?: Json
           p_tarefa_id: string
+        }
+        Returns: string
+      }
+      fn_registrar_audit: {
+        Args: {
+          p_acao: string
+          p_acao_detalhe?: string
+          p_dados_antes?: Json
+          p_dados_depois?: Json
+          p_entidade_id: string
+          p_entidade_tipo: string
+          p_entidades_afetadas?: Json
+          p_impacto_tipo?: string
+          p_metadata?: Json
         }
         Returns: string
       }
