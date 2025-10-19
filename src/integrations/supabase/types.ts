@@ -479,6 +479,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "aprovacoes_cliente_projeto_id_fkey"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "vw_custos_projeto"
+            referencedColumns: ["projeto_id"]
+          },
+          {
             foreignKeyName: "aprovacoes_cliente_solicitado_por_fkey"
             columns: ["solicitado_por"]
             isOneToOne: false
@@ -975,6 +982,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "briefings_projeto_gerado_id_fkey"
+            columns: ["projeto_gerado_id"]
+            isOneToOne: false
+            referencedRelation: "vw_custos_projeto"
+            referencedColumns: ["projeto_id"]
+          },
+          {
             foreignKeyName: "briefings_tarefa_id_fkey"
             columns: ["tarefa_id"]
             isOneToOne: false
@@ -1274,6 +1288,45 @@ export type Database = {
         }
         Relationships: []
       }
+      centros_custo: {
+        Row: {
+          ativo: boolean | null
+          codigo: string
+          created_at: string | null
+          descricao: string | null
+          id: string
+          nome: string
+          orcamento_mensal: number | null
+          responsavel_id: string | null
+          tipo: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          ativo?: boolean | null
+          codigo: string
+          created_at?: string | null
+          descricao?: string | null
+          id?: string
+          nome: string
+          orcamento_mensal?: number | null
+          responsavel_id?: string | null
+          tipo?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          ativo?: boolean | null
+          codigo?: string
+          created_at?: string | null
+          descricao?: string | null
+          id?: string
+          nome?: string
+          orcamento_mensal?: number | null
+          responsavel_id?: string | null
+          tipo?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       cliente_documentos: {
         Row: {
           arquivo_path: string
@@ -1355,6 +1408,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "projetos"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cliente_documentos_projeto_id_fkey"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "vw_custos_projeto"
+            referencedColumns: ["projeto_id"]
           },
         ]
       }
@@ -2554,6 +2614,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "contratos_projeto_id_fkey"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "vw_custos_projeto"
+            referencedColumns: ["projeto_id"]
+          },
+          {
             foreignKeyName: "contratos_proposta_id_fkey"
             columns: ["proposta_id"]
             isOneToOne: false
@@ -2677,6 +2744,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "projetos"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "credenciais_cliente_projeto_id_fkey"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "vw_custos_projeto"
+            referencedColumns: ["projeto_id"]
           },
           {
             foreignKeyName: "credenciais_cliente_updated_by_fkey"
@@ -2969,6 +3043,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "eventos_agenda_projeto_id_fkey"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "vw_custos_projeto"
+            referencedColumns: ["projeto_id"]
+          },
+          {
             foreignKeyName: "eventos_agenda_responsavel_id_fkey"
             columns: ["responsavel_id"]
             isOneToOne: false
@@ -3122,6 +3203,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "projetos"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "eventos_calendario_projeto_id_fkey"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "vw_custos_projeto"
+            referencedColumns: ["projeto_id"]
           },
           {
             foreignKeyName: "eventos_calendario_responsavel_id_fkey"
@@ -3380,6 +3468,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "projetos"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "faturas_projeto_id_fkey"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "vw_custos_projeto"
+            referencedColumns: ["projeto_id"]
           },
           {
             foreignKeyName: "faturas_proposta_id_fkey"
@@ -3925,6 +4020,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "financeiro_lancamentos_projeto_id_fkey"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "vw_custos_projeto"
+            referencedColumns: ["projeto_id"]
+          },
+          {
             foreignKeyName: "financeiro_lancamentos_reserva_id_fkey"
             columns: ["reserva_id"]
             isOneToOne: false
@@ -3944,6 +4046,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "titulos_financeiros"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financeiro_lancamentos_titulo_id_fkey"
+            columns: ["titulo_id"]
+            isOneToOne: false
+            referencedRelation: "vw_inadimplencia"
+            referencedColumns: ["titulo_id"]
           },
         ]
       }
@@ -5491,6 +5600,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "inventario_movimentacoes_projeto_id_fkey"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "vw_custos_projeto"
+            referencedColumns: ["projeto_id"]
+          },
+          {
             foreignKeyName: "inventario_movimentacoes_responsavel_id_fkey"
             columns: ["responsavel_id"]
             isOneToOne: false
@@ -5619,6 +5735,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "projetos"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventario_reservas_projeto_id_fkey"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "vw_custos_projeto"
+            referencedColumns: ["projeto_id"]
           },
           {
             foreignKeyName: "inventario_reservas_tarefa_id_fkey"
@@ -6134,6 +6257,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "notas_cliente_projeto_id_fkey"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "vw_custos_projeto"
+            referencedColumns: ["projeto_id"]
+          },
+          {
             foreignKeyName: "notas_cliente_updated_by_fkey"
             columns: ["updated_by"]
             isOneToOne: false
@@ -6430,6 +6560,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "projetos"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orcamentos_projeto_id_fkey"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "vw_custos_projeto"
+            referencedColumns: ["projeto_id"]
           },
           {
             foreignKeyName: "orcamentos_updated_by_fkey"
@@ -7033,6 +7170,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "projetos"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "planejamentos_projeto_id_fkey"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "vw_custos_projeto"
+            referencedColumns: ["projeto_id"]
           },
           {
             foreignKeyName: "planejamentos_responsavel_grs_id_fkey"
@@ -7942,6 +8086,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "projeto_status_historico_projeto_id_fkey"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "vw_custos_projeto"
+            referencedColumns: ["projeto_id"]
+          },
+          {
             foreignKeyName: "projeto_status_historico_tarefa_id_fkey"
             columns: ["tarefa_id"]
             isOneToOne: false
@@ -8404,6 +8555,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "projetos"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "propostas_projeto_id_fkey"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "vw_custos_projeto"
+            referencedColumns: ["projeto_id"]
           },
           {
             foreignKeyName: "propostas_updated_by_fkey"
@@ -9187,6 +9345,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "projetos"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "roteiros_projeto_id_fkey"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "vw_custos_projeto"
+            referencedColumns: ["projeto_id"]
           },
           {
             foreignKeyName: "roteiros_tarefa_id_fkey"
@@ -10139,6 +10304,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "tarefa_projeto_id_fkey"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "vw_custos_projeto"
+            referencedColumns: ["projeto_id"]
+          },
+          {
             foreignKeyName: "tarefa_responsavel_id_fkey"
             columns: ["responsavel_id"]
             isOneToOne: false
@@ -10332,6 +10504,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "projetos"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tarefas_projeto_id_fkey"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "vw_custos_projeto"
+            referencedColumns: ["projeto_id"]
           },
           {
             foreignKeyName: "tarefas_responsavel_id_fkey"
@@ -10550,6 +10729,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "projetos"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tarefas_projeto_projeto_id_fkey"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "vw_custos_projeto"
+            referencedColumns: ["projeto_id"]
           },
           {
             foreignKeyName: "tarefas_projeto_responsavel_id_fkey"
@@ -10910,6 +11096,13 @@ export type Database = {
             referencedRelation: "projetos"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "titulos_financeiros_projeto_id_fkey"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "vw_custos_projeto"
+            referencedColumns: ["projeto_id"]
+          },
         ]
       }
       transacoes_financeiras: {
@@ -11016,6 +11209,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "projetos"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transacoes_financeiras_projeto_id_fkey"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "vw_custos_projeto"
+            referencedColumns: ["projeto_id"]
           },
         ]
       }
@@ -11646,6 +11846,55 @@ export type Database = {
             referencedRelation: "projetos"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "credenciais_cliente_projeto_id_fkey"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "vw_custos_projeto"
+            referencedColumns: ["projeto_id"]
+          },
+        ]
+      }
+      vw_custos_projeto: {
+        Row: {
+          cliente_id: string | null
+          cliente_nome: string | null
+          custo_total: number | null
+          lucro_liquido: number | null
+          margem_lucro_percent: number | null
+          projeto_id: string | null
+          projeto_nome: string | null
+          receita_total: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "projetos_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "projetos_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "mv_grs_dashboard_metrics"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "projetos_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "vw_client_metrics"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "projetos_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "vw_conflitos_migracao_clientes"
+            referencedColumns: ["cliente_id"]
+          },
         ]
       }
       vw_dashboard_vencimentos: {
@@ -11659,6 +11908,16 @@ export type Database = {
           valor_total_pendente: number | null
           valor_vencendo_7d: number | null
           valor_vencidos: number | null
+        }
+        Relationships: []
+      }
+      vw_dre: {
+        Row: {
+          conta_codigo: string | null
+          conta_nome: string | null
+          mes: string | null
+          tipo: string | null
+          valor_total: number | null
         }
         Relationships: []
       }
@@ -11725,6 +11984,13 @@ export type Database = {
             referencedRelation: "projetos"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "tarefa_projeto_id_fkey"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "vw_custos_projeto"
+            referencedColumns: ["projeto_id"]
+          },
         ]
       }
       vw_health_check_pessoas: {
@@ -11734,6 +12000,62 @@ export type Database = {
           valor: string | null
         }
         Relationships: []
+      }
+      vw_inadimplencia: {
+        Row: {
+          centro_custo: string | null
+          cliente_id: string | null
+          data_vencimento: string | null
+          descricao: string | null
+          devedor_credor: string | null
+          dias_atraso: number | null
+          fornecedor_id: string | null
+          numero_documento: string | null
+          status: Database["public"]["Enums"]["status_titulo"] | null
+          tipo: Database["public"]["Enums"]["tipo_titulo"] | null
+          titulo_id: string | null
+          updated_at: string | null
+          valor_em_aberto: number | null
+          valor_liquido: number | null
+          valor_pago: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "titulos_financeiros_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "titulos_financeiros_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "mv_grs_dashboard_metrics"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "titulos_financeiros_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "vw_client_metrics"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "titulos_financeiros_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "vw_conflitos_migracao_clientes"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "titulos_financeiros_fornecedor_id_fkey"
+            columns: ["fornecedor_id"]
+            isOneToOne: false
+            referencedRelation: "fornecedores"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       vw_planos_publicos: {
         Row: {
@@ -12411,6 +12733,10 @@ export type Database = {
         Returns: undefined
       }
       refresh_grs_dashboard_metrics: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      refresh_relatorios_financeiros: {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }

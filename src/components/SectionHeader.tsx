@@ -1,13 +1,14 @@
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { LucideIcon } from 'lucide-react';
+import { ReactNode } from 'react';
 
 interface SectionHeaderProps {
   title: string;
   description?: string;
   badge?: string;
   icon?: LucideIcon;
-  action?: {
+  action?: ReactNode | {
     label: string;
     onClick: () => void;
     icon?: LucideIcon;
@@ -47,14 +48,16 @@ export function SectionHeader({
         </div>
       </div>
       {action && (
-        <Button 
-          onClick={action.onClick}
-          variant={action.variant || 'default'}
-          className="flex items-center space-x-2"
-        >
-          {action.icon && <action.icon className="h-4 w-4" />}
-          <span>{action.label}</span>
-        </Button>
+        typeof action === 'object' && 'onClick' in action ? (
+          <Button 
+            onClick={action.onClick}
+            variant={action.variant || 'default'}
+            className="flex items-center space-x-2"
+          >
+            {action.icon && <action.icon className="h-4 w-4" />}
+            <span>{action.label}</span>
+          </Button>
+        ) : action
       )}
     </div>
   );
