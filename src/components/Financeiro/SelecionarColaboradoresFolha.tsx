@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, Users, DollarSign, Car } from "lucide-react";
+import { Search, Users, DollarSign, Car, CheckSquare, Square, Briefcase, UserCheck } from "lucide-react";
 import { motion } from "framer-motion";
 import { formatCurrency } from "@/lib/utils";
 
@@ -66,6 +66,26 @@ export function SelecionarColaboradoresFolha({
       }, 0);
   }, [selecionados, colaboradores]);
 
+  const handleSelecionarTodos = () => {
+    const novoMap = new Map<string, string | undefined>();
+    colaboradoresFiltrados.forEach(colab => {
+      novoMap.set(colab.id, undefined);
+    });
+    setSelecionados(novoMap);
+  };
+
+  const handleLimparSelecao = () => {
+    setSelecionados(new Map());
+  };
+
+  const handleSelecionarPorRegime = (regime: string) => {
+    const novoMap = new Map<string, string | undefined>();
+    colaboradoresFiltrados
+      .filter(c => c.regime?.toLowerCase() === regime.toLowerCase())
+      .forEach(colab => novoMap.set(colab.id, undefined));
+    setSelecionados(novoMap);
+  };
+
   const handleToggleColaborador = (id: string) => {
     setSelecionados(prev => {
       const newMap = new Map(prev);
@@ -95,7 +115,7 @@ export function SelecionarColaboradoresFolha({
   };
 
   return (
-    <Card className="w-full max-w-5xl mx-auto shadow-xl">
+    <Card className="w-full max-w-5xl mx-auto shadow-xl" data-tour="etapa-2">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-2xl">
           <Users className="h-6 w-6" />
@@ -142,74 +162,124 @@ export function SelecionarColaboradoresFolha({
           </div>
         </div>
 
-        {/* Lista de Colaboradores */}
-        <div className="border rounded-lg divide-y max-h-[400px] overflow-y-auto">
+        {/* Botões de Seleção Rápida */}
+        <div className="flex flex-wrap gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleSelecionarTodos}
+            className="flex items-center gap-2"
+          >
+            <CheckSquare className="h-4 w-4" />
+            Selecionar Todos ({colaboradoresFiltrados.length})
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleLimparSelecao}
+            className="flex items-center gap-2"
+          >
+            <Square className="h-4 w-4" />
+            Limpar Seleção
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handleSelecionarPorRegime('CLT')}
+            className="flex items-center gap-2"
+          >
+            <Briefcase className="h-4 w-4" />
+            Apenas CLT
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handleSelecionarPorRegime('PJ')}
+            className="flex items-center gap-2"
+          >
+            <UserCheck className="h-4 w-4" />
+            Apenas PJ
+          </Button>
+        </div>
+
+        {/* Grid de Cards de Colaboradores */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[400px] overflow-y-auto pr-2" data-tour="veiculo">
           {colaboradoresFiltrados.length === 0 ? (
-            <div className="py-12 text-center text-muted-foreground">
+            <div className="col-span-full py-12 text-center text-muted-foreground">
               Nenhum colaborador encontrado
             </div>
           ) : (
             colaboradoresFiltrados.map((colab, index) => (
               <motion.div
                 key={colab.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.2, delay: index * 0.05 }}
-                className="p-4 hover:bg-muted/50 transition-colors"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.2, delay: index * 0.03 }}
+                onClick={() => handleToggleColaborador(colab.id)}
+                className={`border rounded-lg p-4 cursor-pointer transition-all hover:shadow-md ${
+                  selecionados.has(colab.id) 
+                    ? 'border-primary bg-primary/5 shadow-sm' 
+                    : 'hover:border-primary/50'
+                }`}
               >
-                <div className="flex items-start gap-4">
+                <div className="flex items-start gap-3">
                   <Checkbox
                     checked={selecionados.has(colab.id)}
                     onCheckedChange={() => handleToggleColaborador(colab.id)}
+                    onClick={(e) => e.stopPropagation()}
                     className="mt-1"
                   />
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h4 className="font-semibold text-sm truncate">{colab.nome}</h4>
-                      <Badge variant="outline" className="text-xs">
+                    <div className="flex items-center gap-2 mb-2">
+                      <h4 className="font-semibold truncate">{colab.nome}</h4>
+                      <Badge variant="outline" className="text-xs shrink-0">
                         {colab.regime?.toUpperCase() || 'N/A'}
                       </Badge>
                     </div>
-                    <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                      <span>{colab.cargo_atual || 'Sem cargo'}</span>
-                      <span className="font-semibold text-foreground">
-                        {formatCurrency(colab.salario_base || colab.fee_mensal || 0)}
-                      </span>
-                    </div>
-                  </div>
-                  
-                  {selecionados.has(colab.id) && (
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      className="w-48"
-                    >
-                      <Select
-                        value={selecionados.get(colab.id) || "nenhum"}
-                        onValueChange={(value) => handleSetVeiculo(colab.id, value)}
+                    <p className="text-sm text-muted-foreground mb-2">
+                      {colab.cargo_atual || 'Sem cargo'}
+                    </p>
+                    <p className="text-lg font-bold text-primary">
+                      {formatCurrency(colab.salario_base || colab.fee_mensal || 0)}
+                    </p>
+                    
+                    {selecionados.has(colab.id) && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        className="mt-3 pt-3 border-t"
+                        onClick={(e) => e.stopPropagation()}
                       >
-                        <SelectTrigger className="text-xs">
-                          <SelectValue placeholder="Veículo..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="nenhum">
-                            <span className="flex items-center gap-2">
-                              <Car className="h-3 w-3" />
-                              Sem veículo
-                            </span>
-                          </SelectItem>
-                          {veiculos.map(veiculo => (
-                            <SelectItem key={veiculo.id} value={veiculo.id}>
+                        <label className="text-xs text-muted-foreground mb-1 block">
+                          Veículo (opcional):
+                        </label>
+                        <Select
+                          value={selecionados.get(colab.id) || "nenhum"}
+                          onValueChange={(value) => handleSetVeiculo(colab.id, value)}
+                        >
+                          <SelectTrigger className="text-sm h-9">
+                            <SelectValue placeholder="Sem veículo" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="nenhum">
                               <span className="flex items-center gap-2">
                                 <Car className="h-3 w-3" />
-                                {veiculo.nome} {veiculo.placa ? `(${veiculo.placa})` : ''}
+                                Sem veículo
                               </span>
                             </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </motion.div>
-                  )}
+                            {veiculos.map(veiculo => (
+                              <SelectItem key={veiculo.id} value={veiculo.id}>
+                                <span className="flex items-center gap-2">
+                                  <Car className="h-3 w-3" />
+                                  {veiculo.nome} {veiculo.placa ? `(${veiculo.placa})` : ''}
+                                </span>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </motion.div>
+                    )}
+                  </div>
                 </div>
               </motion.div>
             ))
@@ -240,16 +310,17 @@ export function SelecionarColaboradoresFolha({
         </Card>
 
         {/* Ações */}
-        <div className="flex justify-end gap-3">
+        <div className="flex justify-end gap-3" data-tour="processar">
           <Button variant="outline" onClick={onCancelar}>
             Cancelar
           </Button>
           <Button
             onClick={handleConfirmar}
             disabled={selecionados.size === 0}
-            className="min-w-32"
+            size="lg"
+            className="min-w-40"
           >
-            Continuar →
+            Processar Folha →
           </Button>
         </div>
       </CardContent>

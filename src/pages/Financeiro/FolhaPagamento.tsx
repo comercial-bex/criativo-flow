@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,9 +9,13 @@ import { useFolhaMes } from '@/hooks/useFolhaMes';
 import { usePessoasColaboradores } from '@/hooks/usePessoasColaboradores';
 import { useFolhaAnalytics } from '@/hooks/useFolhaAnalytics';
 import { SelecionarColaboradoresFolha } from '@/components/Financeiro/SelecionarColaboradoresFolha';
+import { FolhaStepper } from '@/components/Financeiro/FolhaStepper';
+import { FolhaEtapa1Competencia } from '@/components/Financeiro/FolhaEtapa1Competencia';
+import { FolhaEtapa3Confirmacao } from '@/components/Financeiro/FolhaEtapa3Confirmacao';
+import { FABProcessarFolha } from '@/components/Financeiro/FABProcessarFolha';
 import { supabase } from '@/integrations/supabase/client';
 import { formatCurrency } from '@/lib/utils';
-import { Download, FileText, Calendar, TrendingUp, DollarSign, Users, Calculator, FileDown, BarChart3 } from 'lucide-react';
+import { Download, FileText, Calendar, TrendingUp, DollarSign, Users, Calculator, FileDown, BarChart3, Loader2 } from 'lucide-react';
 import { downloadHolerite } from '@/utils/holeritePdfGenerator';
 import { toast } from 'sonner';
 import { PagamentoFolhaModal } from '@/components/Financeiro/PagamentoFolhaModal';
@@ -19,7 +23,6 @@ import { DetalhamentoFiscalModal } from '@/components/Financeiro/DetalhamentoFis
 import { RelatoriosFiscaisModal } from '@/components/Financeiro/RelatoriosFiscaisModal';
 import { SimuladorFolha } from '@/components/Financeiro/SimuladorFolha';
 import { ComparativoMensal } from '@/components/Financeiro/ComparativoMensal';
-import { FolhaPagamentoStepper } from '@/components/Financeiro/FolhaPagamentoStepper';
 import { FolhaTableFilters } from '@/components/Financeiro/FolhaTableFilters';
 import { FolhaEvolutionChart } from '@/components/Financeiro/Charts/FolhaEvolutionChart';
 import { EncargosCompositionChart } from '@/components/Financeiro/Charts/EncargosCompositionChart';
@@ -38,8 +41,8 @@ export default function FolhaPagamento() {
   const [modalDetalhamentoAberto, setModalDetalhamentoAberto] = useState(false);
   const [relatoriosFiscaisAberto, setRelatoriosFiscaisAberto] = useState(false);
   const [simuladorAberto, setSimuladorAberto] = useState(false);
-  const [stepperAberto, setStepperAberto] = useState(false);
-  const [selecionadorAberto, setSelecionadorAberto] = useState(false);
+  const [etapaAtual, setEtapaAtual] = useState(1);
+  const [mostrarWizard, setMostrarWizard] = useState(false);
   
   // Filtros
   const [searchTerm, setSearchTerm] = useState('');
@@ -88,7 +91,7 @@ export default function FolhaPagamento() {
           id: pessoa.id,
           nome_completo: pessoa.nome,
           cpf_cnpj: pessoa.cpf || '',
-          cargo_atual: pessoa.observacoes || '', // Usar observacoes até campo cargo ser adicionado
+          cargo_atual: pessoa.observacoes || '',
           regime: pessoa.regime || 'clt',
         } : null,
         base_calculo: folha.salario_base,
@@ -96,14 +99,13 @@ export default function FolhaPagamento() {
         total_descontos: folha.total_descontos,
         liquido: folha.total_a_pagar,
         status: folha.status === 'aberta' ? 'pendente' : folha.status === 'fechada' ? 'processado' : 'pago',
-        data_pagamento: folha.updated_at, // Usar updated_at como proxy para data_pagamento
+        data_pagamento: folha.updated_at,
         proventos: [],
         descontos: [],
         encargos: []
       };
     });
   }, [folhas, colaboradores]);
-  
 
   // Agregar totais da folha
   const folhaAtual = useMemo(() => {
@@ -117,8 +119,19 @@ export default function FolhaPagamento() {
     };
   }, [folhas]);
 
-  const handleProcessarFolha = () => {
-    setSelecionadorAberto(true);
+  const handleIniciarProcessamento = () => {
+    setEtapaAtual(1);
+    setMostrarWizard(true);
+  };
+
+  const handleContinuarEtapa1 = (comp: string) => {
+    setCompetencia(comp);
+    setEtapaAtual(2);
+  };
+
+  const handleCancelarWizard = () => {
+    setEtapaAtual(1);
+    setMostrarWizard(false);
   };
 
   const handleConfirmarSelecao = async (selecionados: { colaboradorId: string; veiculoId?: string }[]) => {
@@ -135,8 +148,19 @@ export default function FolhaPagamento() {
       calcularFolha({ pessoaId: colaboradorId, competencia });
     }
     
-    setSelecionadorAberto(false);
-    toast.success(`✅ Folha processada para ${selecionados.length} colaboradores!`);
+    setEtapaAtual(3);
+    toast.success('✅ Folha processada!', {
+      description: `${selecionados.length} colaboradores • Total calculado com sucesso`,
+    });
+  };
+
+  const handleVoltarAoInicio = () => {
+    setEtapaAtual(1);
+    setMostrarWizard(false);
+  };
+
+  const handleVerDetalhes = () => {
+    setMostrarWizard(false);
   };
 
   const handleAbrirModalPagamento = (item: any) => {
@@ -157,6 +181,17 @@ export default function FolhaPagamento() {
     setItemSelecionado(null);
   };
 
+  // Keyboard shortcut Ctrl+N
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (e.ctrlKey && e.key === 'n') {
+        e.preventDefault();
+        handleIniciarProcessamento();
+      }
+    };
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, []);
 
   // Filtrar e ordenar itens
   const itensFiltrados = useMemo(() => {
@@ -250,6 +285,78 @@ export default function FolhaPagamento() {
     return colors[status] || 'bg-muted';
   };
 
+  // Wizard Mode (Stepper de 3 etapas)
+  if (mostrarWizard) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-6 bg-gradient-to-br from-background to-muted/20">
+        <Card className="w-full max-w-4xl shadow-2xl">
+          <CardHeader className="text-center pb-2">
+            <CardTitle className="text-3xl">
+              💰 Processar Folha de Pagamento
+            </CardTitle>
+            <CardDescription>
+              Siga os passos para calcular e processar a folha
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <FolhaStepper currentStep={etapaAtual} />
+
+            <div className="mt-8">
+              {etapaAtual === 1 && (
+                <FolhaEtapa1Competencia onContinuar={handleContinuarEtapa1} />
+              )}
+
+              {etapaAtual === 2 && (
+                <SelecionarColaboradoresFolha
+                  colaboradores={colaboradores.map(c => ({
+                    id: c.id,
+                    nome: c.nome,
+                    cargo_atual: c.cargo_atual,
+                    regime: c.regime as any,
+                    salario_base: c.salario_base,
+                    fee_mensal: c.fee_mensal,
+                    veiculo_id: c.veiculo_id,
+                    status: c.status
+                  }))}
+                  veiculos={veiculos}
+                  onConfirmar={handleConfirmarSelecao}
+                  onCancelar={handleCancelarWizard}
+                />
+              )}
+
+              {etapaAtual === 3 && folhaAtual && (
+                <FolhaEtapa3Confirmacao
+                  competencia={competencia}
+                  totalColaboradores={folhaAtual.total_colaboradores}
+                  totalLiquido={folhaAtual.total_liquido}
+                  totalProventos={folhaAtual.total_proventos}
+                  totalDescontos={folhaAtual.total_descontos}
+                  onVoltar={handleVoltarAoInicio}
+                  onVerDetalhes={handleVerDetalhes}
+                />
+              )}
+            </div>
+
+            {/* Loading State */}
+            {isLoading && etapaAtual === 2 && (
+              <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+                <Card className="p-8">
+                  <div className="flex flex-col items-center gap-4">
+                    <Loader2 className="h-12 w-12 animate-spin text-primary" />
+                    <p className="text-lg font-semibold">Processando folha...</p>
+                    <p className="text-sm text-muted-foreground">
+                      Calculando valores fiscais dos colaboradores
+                    </p>
+                  </div>
+                </Card>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto p-6 space-y-6 animate-fade-in">
       {/* Header */}
@@ -262,7 +369,7 @@ export default function FolhaPagamento() {
             Gestão mensal da folha e pagamentos
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <TutorialButton onStart={startTutorial} hasSeenTutorial={hasSeenTutorial} />
           <Button
             variant="outline"
@@ -298,6 +405,8 @@ export default function FolhaPagamento() {
         </div>
       </div>
 
+      <FABProcessarFolha onClick={handleIniciarProcessamento} />
+
       {/* Filtros */}
       <Card className="shadow-md" data-tour="competencia">
         <CardHeader>
@@ -305,26 +414,15 @@ export default function FolhaPagamento() {
           <CardDescription>Selecione a competência (mês/ano)</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="competencia">Competência</Label>
-              <Input
-                id="competencia"
-                type="month"
-                value={competencia.substring(0, 7)}
-                onChange={(e) => setCompetencia(`${e.target.value}-01`)}
-              />
-            </div>
-            <div className="flex items-end">
-              <Button
-                onClick={handleProcessarFolha}
-                disabled={isLoading}
-                className="w-full bg-primary hover:bg-primary/90"
-              >
-                <FileText className="h-4 w-4 mr-2" />
-                {isLoading ? 'Processando...' : 'Processar Folha'}
-              </Button>
-            </div>
+          <div className="space-y-2">
+            <Label htmlFor="competencia">Mês/Ano</Label>
+            <Input
+              id="competencia"
+              type="month"
+              value={competencia.substring(0, 7)}
+              onChange={(e) => setCompetencia(`${e.target.value}-01`)}
+              className="max-w-xs"
+            />
           </div>
         </CardContent>
       </Card>
@@ -457,168 +555,105 @@ export default function FolhaPagamento() {
                 <tr>
                   <th className="px-6 py-4 text-left text-sm font-semibold">Colaborador</th>
                   <th className="px-6 py-4 text-left text-sm font-semibold">Cargo</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold">Regime</th>
-                  <th className="px-6 py-4 text-right text-sm font-semibold">Base (R$)</th>
-                  <th className="px-6 py-4 text-right text-sm font-semibold">Proventos (R$)</th>
-                  <th className="px-6 py-4 text-right text-sm font-semibold">Descontos (R$)</th>
-                  <th className="px-6 py-4 text-right text-sm font-semibold">Líquido (R$)</th>
-                  <th className="px-6 py-4 text-center text-sm font-semibold">Situação</th>
-                  <th className="px-6 py-4 text-center text-sm font-semibold">Ações</th>
+                  <th className="px-6 py-4 text-right text-sm font-semibold">Base</th>
+                  <th className="px-6 py-4 text-right text-sm font-semibold">Proventos</th>
+                  <th className="px-6 py-4 text-right text-sm font-semibold">Descontos</th>
+                  <th className="px-6 py-4 text-right text-sm font-semibold">Líquido</th>
+                  <th className="px-6 py-4 text-center text-sm font-semibold">Status</th>
+                  <th className="px-6 py-4 text-right text-sm font-semibold">Ações</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y">
                 {isLoading ? (
                   <tr>
-                    <td colSpan={9} className="px-6 py-12 text-center text-muted-foreground">
-                      Carregando...
+                    <td colSpan={8} className="py-12 text-center">
+                      <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
+                      <p className="text-muted-foreground mt-2">Carregando...</p>
                     </td>
                   </tr>
                 ) : itensFiltrados.length === 0 ? (
                   <tr>
-                    <td colSpan={9} className="px-6 py-12 text-center text-muted-foreground">
-                      {itens.length === 0 
-                        ? 'Nenhum item encontrado. Clique em "Processar Folha" para gerar.'
-                        : 'Nenhum resultado encontrado com os filtros aplicados.'
-                      }
+                    <td colSpan={8} className="py-12 text-center text-muted-foreground">
+                      Nenhum colaborador encontrado
                     </td>
                   </tr>
                 ) : (
-                  itensFiltrados.map((item) => (
-                    <tr key={item.id} className="border-b hover:bg-muted/30 transition-colors">
+                  itensFiltrados.map((item, index) => (
+                    <motion.tr
+                      key={item.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.2, delay: index * 0.03 }}
+                      className="hover:bg-muted/30 transition-colors"
+                    >
                       <td className="px-6 py-4">
-                        <div className="font-medium">{item.colaborador?.nome_completo}</div>
-                        <div className="text-sm text-muted-foreground">{item.colaborador?.cpf_cnpj}</div>
+                        <div>
+                          <p className="font-semibold">{item.colaborador?.nome_completo}</p>
+                          <p className="text-sm text-muted-foreground">{item.colaborador?.cpf_cnpj}</p>
+                        </div>
                       </td>
                       <td className="px-6 py-4 text-sm">{item.colaborador?.cargo_atual || '-'}</td>
-                      <td className="px-6 py-4">
-                        <Badge variant="outline" className="font-mono">
-                          {item.colaborador?.regime?.toUpperCase()}
-                        </Badge>
-                      </td>
-                      <td className="px-6 py-4 text-right font-medium">
-                        {formatCurrency(item.base_calculo)}
-                      </td>
-                      <td className="px-6 py-4 text-right font-medium text-success">
-                        {formatCurrency(item.total_proventos)}
-                      </td>
-                      <td className="px-6 py-4 text-right font-medium text-destructive">
-                        {formatCurrency(item.total_descontos)}
-                      </td>
-                      <td className="px-6 py-4 text-right font-bold">
-                        {formatCurrency(item.liquido)}
-                      </td>
+                      <td className="px-6 py-4 text-right font-semibold">{formatCurrency(item.base_calculo)}</td>
+                      <td className="px-6 py-4 text-right text-success">{formatCurrency(item.total_proventos)}</td>
+                      <td className="px-6 py-4 text-right text-destructive">{formatCurrency(item.total_descontos)}</td>
+                      <td className="px-6 py-4 text-right font-bold text-primary">{formatCurrency(item.liquido)}</td>
                       <td className="px-6 py-4 text-center">
                         <Badge className={getStatusColor(item.status)}>
                           {item.status}
                         </Badge>
                       </td>
-                      <td className="px-6 py-4 text-center">
-                        <div className="flex items-center gap-2 justify-center flex-wrap">
+                      <td className="px-6 py-4">
+                        <div className="flex gap-2 justify-end">
                           <Button
                             size="sm"
-                            variant="outline"
-                            onClick={() => handleAbrirDetalhamento(item)}
-                            className="gap-2"
-                          >
-                            <Calculator className="h-4 w-4" />
-                            Ver Cálculos
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
+                            variant="ghost"
                             onClick={() => handleDownloadHolerite(item)}
-                            className="gap-2"
                           >
-                            <FileDown className="h-4 w-4" />
-                            Holerite
+                            <Download className="h-4 w-4" />
                           </Button>
-                          {item.status === 'pendente' && (
-                            <Button
-                              size="sm"
-                              onClick={() => handleAbrirModalPagamento(item)}
-                              className="gap-2"
-                            >
-                              <DollarSign className="h-4 w-4" />
-                              Pagar
-                            </Button>
-                          )}
-                          {item.status === 'pago' && item.data_pagamento && (
-                            <span className="text-sm text-muted-foreground">
-                              Pago em {new Date(item.data_pagamento).toLocaleDateString('pt-BR')}
-                            </span>
-                          )}
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => handleAbrirDetalhamento(item)}
+                          >
+                            <FileText className="h-4 w-4" />
+                          </Button>
                         </div>
                       </td>
-                    </tr>
+                    </motion.tr>
                   ))
                 )}
               </tbody>
-              {itens.length > 0 && (
-                <tfoot className="bg-muted/50 border-t-2">
-                  <tr className="font-bold">
-                    <td colSpan={4} className="px-6 py-4 text-right">TOTAL:</td>
-                    <td className="px-6 py-4 text-right text-success">
-                      {formatCurrency(itens.reduce((sum, i) => sum + i.total_proventos, 0))}
-                    </td>
-                    <td className="px-6 py-4 text-right text-destructive">
-                      {formatCurrency(itens.reduce((sum, i) => sum + i.total_descontos, 0))}
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      {formatCurrency(itens.reduce((sum, i) => sum + i.liquido, 0))}
-                    </td>
-                    <td colSpan={2}></td>
-                  </tr>
-                </tfoot>
-              )}
             </table>
           </div>
         </CardContent>
       </Card>
 
-      <PagamentoFolhaModal
-        open={modalPagamentoAberto}
-        onOpenChange={setModalPagamentoAberto}
-        item={itemSelecionado}
-        onConfirm={handleConfirmarPagamento}
-        isLoading={isLoading}
+      {/* Modals */}
+      {itemSelecionado && (
+        <>
+          <PagamentoFolhaModal
+            open={modalPagamentoAberto}
+            onOpenChange={setModalPagamentoAberto}
+            item={itemSelecionado}
+            onConfirmar={handleConfirmarPagamento}
+          />
+          <DetalhamentoFiscalModal
+            open={modalDetalhamentoAberto}
+            onOpenChange={setModalDetalhamentoAberto}
+            item={itemSelecionado}
+          />
+        </>
+      )}
+      <RelatoriosFiscaisModal
+        open={relatoriosFiscaisAberto}
+        onOpenChange={setRelatoriosFiscaisAberto}
+        competencia={competencia}
       />
-
-      <DetalhamentoFiscalModal
-        open={modalDetalhamentoAberto}
-        onOpenChange={setModalDetalhamentoAberto}
-        item={itemSelecionado}
-      />
-
       <SimuladorFolha
         open={simuladorAberto}
         onOpenChange={setSimuladorAberto}
       />
-
-      <RelatoriosFiscaisModal
-        open={relatoriosFiscaisAberto}
-        onOpenChange={setRelatoriosFiscaisAberto}
-      />
-
-      {/* Selecionador de Colaboradores */}
-      {selecionadorAberto && (
-        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <SelecionarColaboradoresFolha
-            colaboradores={colaboradores.map(c => ({
-              id: c.id,
-              nome: c.nome,
-              cargo_atual: c.observacoes,
-              regime: 'clt',
-              salario_base: c.salario_base || 0,
-              fee_mensal: c.fee_mensal || 0,
-              veiculo_id: c.veiculo_id,
-              status: c.status
-            }))}
-            veiculos={veiculos}
-            onConfirmar={handleConfirmarSelecao}
-            onCancelar={() => setSelecionadorAberto(false)}
-          />
-        </div>
-      )}
     </div>
   );
 }
