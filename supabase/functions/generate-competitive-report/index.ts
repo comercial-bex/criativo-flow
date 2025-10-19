@@ -19,83 +19,245 @@ Deno.serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
     
+    // Buscar dados completos do onboarding
+    const { data: onboarding } = await supabase
+      .from('cliente_onboarding')
+      .select('*')
+      .eq('cliente_id', clienteId)
+      .single();
+    
+    // Buscar metas e agenda do cliente
+    const { data: metas } = await supabase
+      .from('cliente_metas')
+      .select('*')
+      .eq('cliente_id', clienteId)
+      .eq('status', 'em_andamento');
+    
+    const { data: tarefasAtivas } = await supabase
+      .from('tarefa')
+      .select('titulo, status')
+      .eq('cliente_id', clienteId)
+      .in('status', ['aguardando', 'em_progresso'])
+      .limit(5);
+    
+    const { data: postsAgendados } = await supabase
+      .from('posts_planejamento')
+      .select('count')
+      .eq('cliente_id', clienteId)
+      .gte('data_postagem', new Date().toISOString())
+      .lte('data_postagem', new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString());
+    
+    const totalPostsAgendados = postsAgendados?.[0]?.count || 0;
+    
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
       throw new Error('LOVABLE_API_KEY não configurada');
     }
 
-    const systemPrompt = `Você é um consultor sênior de marketing digital especializado em análise competitiva e benchmarking.
+    const systemPrompt = `Você é um consultor sênior de marketing digital especializado em análise competitiva, branding e estratégia.
 
 MISSÃO:
-Gere um relatório de benchmark digital COMPLETO, VISUAL e ACIONÁVEL em Markdown.
+Gere um relatório de benchmark digital ESTRATÉGICO, VISUAL e PERSONALIZADO em Markdown, baseado no onboarding completo do cliente.
+
+DADOS DISPONÍVEIS:
+- Onboarding completo (história, valores, SWOT, objetivos, público-alvo, tom de voz)
+- Análise de concorrentes
+- Metas e tarefas ativas do cliente
+- Posts agendados
 
 ESTRUTURA OBRIGATÓRIA:
-# 📊 Relatório de Benchmark Digital - {Nome Cliente}
 
-## 🎯 Resumo Executivo
-[3-4 linhas sobre posição competitiva geral]
-
-## 📈 Posição Competitiva Atual
-
-### Audiência
-- **Classificação:** Forte | Neutra | Vulnerável
-- **Análise:** [Comparação de seguidores totais]
-
-### Engajamento
-- **Classificação:** Forte | Neutra | Vulnerável
-- **Análise:** [Comparação de taxa de engajamento %]
-
-### Frequência de Publicação
-- **Classificação:** Forte | Neutra | Vulnerável
-- **Análise:** [Comparação posts/semana]
-
-### Qualidade Visual
-- **Classificação:** Forte | Neutra | Vulnerável
-- **Análise:** [Percepção de marca]
-
-## 💡 Oportunidades de Melhoria
-
-### 1. [Área de Oportunidade]
-**Gap:** [Descrição]
-**Recomendação:** [Ação específica]
-
-[4-6 oportunidades principais]
-
-## 🚀 Ações Recomendadas (Top 10)
-
-1. **[Ação]:** [Descrição e impacto]
-2. **[Ação]:** [Descrição e impacto]
-...
-10. **[Ação]:** [Descrição e impacto]
-
-## 🎨 Formatos Vencedores no Nicho
-
-- **[Formato]:** [Análise baseada em top posts]
-- **[Formato]:** [Análise baseada em top posts]
-
-## 🔑 Diferenciais Estratégicos Sugeridos
-
-[3-4 formas de se destacar]
-
-## 📝 Próximos Passos
-
-1. [Passo imediato - 24-48h]
-2. [Passo curto prazo - 1-2 semanas]
-3. [Passo médio prazo - 1 mês]
+# 📊 Relatório Estratégico de Benchmark Digital
+## {Nome Cliente}
 
 ---
-*Relatório gerado automaticamente em ${new Date().toLocaleDateString('pt-BR')} pela BEX Intelligence*
 
-DIRETRIZES:
-- Use dados CONCRETOS dos JSONs fornecidos
-- Seja ESPECÍFICO e ACIONÁVEL
-- Use emojis para visual
-- Tom consultivo profissional
-- Cite números sempre que possível`;
+## 🎯 Resumo Executivo Estratégico
+[Conecte: posição competitiva + SWOT + objetivos do cliente em 4-5 linhas impactantes]
+[Mencione: "${totalPostsAgendados} posts agendados para os próximos 30 dias"]
+
+---
+
+## 🏢 Contexto da Marca
+
+### História e Essência
+[Use dados de "historia_marca" e "valores_principais" do onboarding]
+
+### Posicionamento Desejado
+**Como quer ser lembrada:** [campo "como_lembrada"]
+**Diferenciais únicos:** [liste "diferenciais" do onboarding]
+
+---
+
+## 📊 Diagnóstico Atual (SWOT + Benchmark)
+
+### 💪 Forças Identificadas
+[Combine "forcas" do SWOT + pontos fortes vs. concorrentes]
+- [Força 1 com números]
+- [Força 2 com números]
+- [Força 3]
+
+### ⚠️ Fraquezas e Gaps Competitivos
+[Combine "fraquezas" do SWOT + onde concorrentes são melhores]
+**Gap Crítico 1:** [descreva o gap]
+**Gap Crítico 2:** [descreva o gap]
+
+### 🌟 Oportunidades Estratégicas
+[Combine "oportunidades" do SWOT + lacunas dos concorrentes]
+1. **[Oportunidade]:** [Como explorar]
+2. **[Oportunidade]:** [Como explorar]
+
+### 🚨 Ameaças e Riscos
+[Combine "ameacas" do SWOT + movimentos competitivos perigosos]
+
+---
+
+## 📈 Análise Comparativa Digital
+
+### Audiência
+- **Cliente:** [seguidores] | **Média Concorrentes:** [X] | **Gap:** [+/-Y%]
+- **Status:** Forte | Neutra | Vulnerável
+- **Recomendação:** [Ação específica baseada nos objetivos do cliente]
+
+### Engajamento
+- **Cliente:** [taxa%] | **Média Concorrentes:** [X%] | **Gap:** [+/-Y%]
+- **Status:** Forte | Neutra | Vulnerável
+- **Recomendação:** [Conecte com "objetivos_digitais" do onboarding]
+
+### Frequência de Publicação
+- **Cliente:** [posts/semana] | **Média Concorrentes:** [X]
+- **Frequência contratada:** [usar "frequencia_postagens" do onboarding]
+- **Posts agendados (30 dias):** ${totalPostsAgendados}
+- **Recomendação:** [Ajuste necessário]
+
+### Qualidade e Tom de Voz
+- **Tom desejado (onboarding):** [usar "tom_voz" array]
+- **Tom percebido nos concorrentes:** [análise]
+- **Alinhamento:** ✅ Alinhado | ⚠️ Ajustes necessários
+- **Recomendação:** [Como aplicar o tom nos próximos posts]
+
+### Formatos Vencedores no Nicho
+[Conecte com "tipos_conteudo" do onboarding]
+- **[Formato]:** [Performance + exemplo de concorrente]
+- **[Formato]:** [Performance + exemplo de concorrente]
+
+---
+
+## 🎯 Estratégia de Conteúdo Personalizada
+
+### Personas e Público-Alvo
+[Use "publico_alvo" e "dores_problemas" do onboarding]
+**Público principal:** [detalhe]
+**Dores identificadas:** [liste as dores]
+**Como nosso conteúdo resolve:** [conecte produto/serviço com dores]
+
+### Pilares de Conteúdo Sugeridos
+[Baseado em "valores_principais" + "diferenciais" + "objetivos_digitais"]
+1. **Pilar 1:** [Nome] - [Propósito]
+2. **Pilar 2:** [Nome] - [Propósito]
+3. **Pilar 3:** [Nome] - [Propósito]
+
+### Aplicação do Tom de Voz
+**Tom definido:** [tom_voz array]
+**Exemplos práticos de copywriting:**
+- [Exemplo 1 aplicando o tom]
+- [Exemplo 2 aplicando o tom]
+
+---
+
+## 💡 Plano de Ação Estratégico (90 dias)
+
+### 🔥 Semana 1-4: Fundação e Imediatos
+**Objetivo:** [conecte com "objetivos_digitais"]
+- [ ] **Ação 1:** [Específica e mensurável]
+- [ ] **Ação 2:** [Específica e mensurável]
+- [ ] **Ação 3:** [Específica e mensurável]
+
+### 🚀 Semana 5-8: Aceleração
+**Objetivo:** [conecte com "objetivos_digitais"]
+- [ ] **Ação 1:** [Específica]
+- [ ] **Ação 2:** [Específica]
+- [ ] **Ação 3:** [Específica]
+
+### 🎯 Semana 9-12: Consolidação
+**Objetivo:** [conecte com "onde_6_meses"]
+- [ ] **Ação 1:** [Específica]
+- [ ] **Ação 2:** [Específica]
+- [ ] **Ação 3:** [Específica]
+
+---
+
+## 📊 Metas e KPIs Estratégicos
+
+### Metas Ativas (Sistema BEX)
+${metas?.map(m => `- **${m.titulo}:** ${m.valor_atual}/${m.valor_alvo} ${m.unidade} (${m.progresso_percent || 0}%)`).join('\n') || '- Nenhuma meta cadastrada'}
+
+### Metas Sugeridas (próximos 3 meses)
+[Baseado em "objetivos_digitais" + "objetivos_offline" + análise competitiva]
+1. **[Meta 1]:** [Valor inicial] → [Valor alvo] em [prazo]
+2. **[Meta 2]:** [Valor inicial] → [Valor alvo] em [prazo]
+3. **[Meta 3]:** [Valor inicial] → [Valor alvo] em [prazo]
+
+---
+
+## 🔑 Diferenciais Competitivos a Explorar
+
+[Liste e priorize os "diferenciais" do onboarding]
+1. **[Diferencial 1]:** Como comunicar isso nos posts
+2. **[Diferencial 2]:** Como comunicar isso nos posts
+3. **[Diferencial 3]:** Como comunicar isso nos posts
+
+**Concorrentes NÃO estão comunicando:**
+- [Gap 1 identificado]
+- [Gap 2 identificado]
+
+---
+
+## 📋 Tarefas em Andamento (Sistema BEX)
+${tarefasAtivas?.map(t => `- ${t.titulo} (${t.status})`).join('\n') || '- Nenhuma tarefa em andamento'}
+
+---
+
+## 📝 Próximos Passos Imediatos
+
+### 24-48 horas
+- [ ] [Ação urgente conectada aos objetivos]
+- [ ] [Ação urgente conectada aos objetivos]
+
+### 1 semana
+- [ ] [Ação curto prazo]
+- [ ] [Ação curto prazo]
+
+### 1 mês
+- [ ] [Ação médio prazo conectada com "onde_6_meses"]
+
+---
+
+**📅 Próxima revisão sugerida:** ${new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString('pt-BR')}
+
+*Relatório estratégico gerado pela BEX Intelligence em ${new Date().toLocaleDateString('pt-BR')}*  
+*Baseado em: Onboarding completo + Análise de ${concorrentesAnalises?.length || 0} concorrentes + SWOT + Metas ativas + Agenda BEX*
+
+---
+
+DIRETRIZES CRÍTICAS:
+- Use TODOS os dados do onboarding fornecidos
+- Conecte SEMPRE com objetivos_digitais e objetivos_offline
+- Cite números CONCRETOS (seguidores, engajamento, posts)
+- Tom consultivo, estratégico e personalizado
+- Seja ESPECÍFICO e ACIONÁVEL em cada recomendação
+- Use emojis para organização visual
+- Mencione metas ativas do sistema BEX
+- Conecte análise competitiva com SWOT do cliente`;
 
     const userPrompt = `Cliente: ${clienteNome}
 
-**Análise do Cliente:**
+**Dados do Onboarding Completo:**
+\`\`\`json
+${JSON.stringify(onboarding || {}, null, 2)}
+\`\`\`
+
+**Análise do Cliente (Redes Sociais):**
 \`\`\`json
 ${JSON.stringify(clienteAnalise, null, 2)}
 \`\`\`
@@ -105,7 +267,19 @@ ${JSON.stringify(clienteAnalise, null, 2)}
 ${JSON.stringify(concorrentesAnalises, null, 2)}
 \`\`\`
 
-Gere o relatório completo seguindo a estrutura especificada.`;
+**Metas Ativas (Sistema BEX):**
+\`\`\`json
+${JSON.stringify(metas || [], null, 2)}
+\`\`\`
+
+**Tarefas em Andamento:**
+\`\`\`json
+${JSON.stringify(tarefasAtivas || [], null, 2)}
+\`\`\`
+
+**Posts Agendados (próximos 30 dias):** ${totalPostsAgendados}
+
+Gere o relatório estratégico COMPLETO seguindo a estrutura especificada, usando TODOS os dados fornecidos.`;
 
     console.log('📤 Gerando relatório para:', clienteNome);
     
