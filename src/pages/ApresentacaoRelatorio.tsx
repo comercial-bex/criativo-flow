@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { Download, Maximize, ChevronLeft, ChevronRight, Minimize, TrendingUp, Target, Zap } from 'lucide-react';
+import { Maximize, ChevronLeft, ChevronRight, Minimize, TrendingUp, Target, Zap, Play } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
@@ -20,6 +20,9 @@ import { HashtagsCompetitivas } from '@/components/relatorios/HashtagsCompetitiv
 import { CalendarioMetas } from '@/components/relatorios/CalendarioMetas';
 import { ComparativoBio } from '@/components/relatorios/ComparativoBio';
 import { ROIPotencial } from '@/components/relatorios/ROIPotencial';
+import { MinimapNavegacao } from '@/components/relatorios/MinimapNavegacao';
+import { ModoApresentacao } from '@/components/relatorios/ModoApresentacao';
+import { ExportacaoAvancada } from '@/components/relatorios/ExportacaoAvancada';
 
 interface RelatorioData {
   titulo: string;
@@ -36,6 +39,8 @@ export default function ApresentacaoRelatorio() {
   const [loading, setLoading] = useState(true);
   const [currentSection, setCurrentSection] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [modoApresentacao, setModoApresentacao] = useState(false);
+  const [dadosGraficos, setDadosGraficos] = useState<any>(null);
 
   // Buscar relatório por link_hash
   useEffect(() => {
@@ -64,6 +69,19 @@ export default function ApresentacaoRelatorio() {
         setRelatorio({ ...relData, cliente_onboarding: onboardingData });
       } else {
         setRelatorio(relData);
+      }
+
+      // Tentar extrair dados estruturados do markdown
+      if (relData?.relatorio_markdown) {
+        const jsonMatch = relData.relatorio_markdown.match(/```json\s*DADOS_GRAFICOS_JSON\s*([\s\S]*?)```/);
+        if (jsonMatch) {
+          try {
+            const parsed = JSON.parse(jsonMatch[1]);
+            setDadosGraficos(parsed);
+          } catch (e) {
+            console.error('Erro ao parsear dados dos gráficos:', e);
+          }
+        }
       }
       
       setLoading(false);
@@ -258,11 +276,18 @@ export default function ApresentacaoRelatorio() {
       if (e.key === 'ArrowRight') nextSection();
       if (e.key === 'ArrowLeft') prevSection();
       if (e.key === 'f' || e.key === 'F') toggleFullscreen();
+      if (e.key === 'p' || e.key === 'P') setModoApresentacao(!modoApresentacao);
+      
+      // Atalhos numéricos (1-9)
+      const num = parseInt(e.key);
+      if (!isNaN(num) && num >= 1 && num <= 9 && num <= secoes.length) {
+        setCurrentSection(num - 1);
+      }
     };
 
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [currentSection, secoes.length]);
+  }, [currentSection, secoes.length, modoApresentacao]);
 
   if (loading) {
     return (
@@ -288,6 +313,23 @@ export default function ApresentacaoRelatorio() {
 
   return (
     <div className="h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white overflow-hidden relative">
+      {/* Minimap de navegação */}
+      <MinimapNavegacao
+        currentSection={currentSection}
+        totalSections={secoes.length}
+        onNavigate={setCurrentSection}
+      />
+
+      {/* Modo Apresentação */}
+      <ModoApresentacao
+        isActive={modoApresentacao}
+        onClose={() => setModoApresentacao(false)}
+        currentSection={currentSection}
+        totalSections={secoes.length}
+        onNext={nextSection}
+        autoAdvanceSeconds={45}
+      />
+
       {/* Header com controles */}
       <div className="absolute top-0 left-0 right-0 z-50 p-6 flex items-center justify-between bg-gradient-to-b from-black/80 via-black/40 to-transparent backdrop-blur-sm">
         <div className="flex items-center gap-4">
@@ -302,9 +344,19 @@ export default function ApresentacaoRelatorio() {
           </div>
         </div>
         <div className="flex gap-2">
-          <Button onClick={handleDownloadPDF} variant="ghost" size="icon" className="text-white hover:bg-white/10">
-            <Download className="h-5 w-5" />
+          <Button 
+            onClick={() => setModoApresentacao(!modoApresentacao)} 
+            variant="ghost" 
+            size="icon" 
+            className={`hover:bg-white/10 ${modoApresentacao ? 'text-green-400' : 'text-white'}`}
+          >
+            <Play className="h-5 w-5" />
           </Button>
+          <ExportacaoAvancada
+            relatorioTitulo={relatorio.titulo}
+            linkHash={link_hash || ''}
+            onExportPDF={handleDownloadPDF}
+          />
           <Button onClick={toggleFullscreen} variant="ghost" size="icon" className="text-white hover:bg-white/10">
             {isFullscreen ? <Minimize className="h-5 w-5" /> : <Maximize className="h-5 w-5" />}
           </Button>
