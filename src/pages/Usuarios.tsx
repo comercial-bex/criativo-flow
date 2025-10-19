@@ -104,52 +104,108 @@ const Usuarios = () => {
 
   const fetchData = async () => {
     try {
-      // Buscar profiles
+      // 1) Buscar perfis básicos (sem joins implícitos)
       const { data: profilesData, error: profilesError } = await supabase
         .from('profiles')
-        .select(`
-          *,
-          user_roles(role),
-          clientes:cliente_id(nome, nome_fantasia, razao_social),
-          pessoas:pessoas!profile_id(cpf, papeis, cliente_id)
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
       if (profilesError) throw profilesError;
 
-      // Buscar logs de acesso
-      const { data: logsData, error: logsError } = await supabase
-        .from('user_access_logs')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(50);
+      const profileIds = (profilesData ?? []).map((p: any) => p.id).filter(Boolean);
 
+      // 2) Consultas paralelas independentes: roles, pessoas, logs de acesso
+      const [
+        { data: rolesData, error: rolesError },
+        { data: pessoasData, error: pessoasError },
+        { data: logsData, error: logsError },
+      ] = await Promise.all([
+        profileIds.length
+          ? supabase
+              .from('user_roles')
+              .select('user_id, role')
+              .in('user_id', profileIds)
+          : Promise.resolve({ data: [], error: null } as any),
+        profileIds.length
+          ? supabase
+              .from('pessoas')
+              .select('profile_id, cpf, papeis, cliente_id')
+              .in('profile_id', profileIds)
+          : Promise.resolve({ data: [], error: null } as any),
+        supabase
+          .from('user_access_logs')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(50),
+      ]);
+
+      if (rolesError) throw rolesError;
+      if (pessoasError) throw pessoasError;
       if (logsError) throw logsError;
 
-      // Mapear role para cada profile
-      const profilesWithRole = (profilesData || []).map((profile: any) => ({
-        ...profile,
-        role: profile.user_roles?.[0]?.role || null,
-        empresa: profile.clientes?.nome_fantasia || profile.clientes?.razao_social || profile.clientes?.nome || null,
-        cpf: profile.pessoas?.cpf || null,
-        papeis: profile.pessoas?.papeis || [],
-        pessoa_cliente_id: profile.pessoas?.cliente_id || null
-      }));
+      // 3) Carregar clientes referenciados em profiles ou em pessoas
+      const clienteIds = Array.from(
+        new Set(
+          [
+            ...(profilesData ?? []).map((p: any) => p.cliente_id).filter(Boolean),
+            ...(pessoasData ?? []).map((p: any) => p.cliente_id).filter(Boolean),
+          ] as string[]
+        )
+      );
+
+      const { data: clientesData, error: clientesError } = clienteIds.length
+        ? await supabase
+            .from('clientes')
+            .select('id, nome, nome_fantasia, razao_social')
+            .in('id', clienteIds)
+        : ({ data: [], error: null } as any);
+
+      if (clientesError) {
+        console.warn('Aviso: erro ao carregar clientes:', clientesError);
+      }
+
+      // 4) Índices para merge eficiente
+      const rolesByUserId = new Map<string, string>(
+        (rolesData ?? []).map((r: any) => [r.user_id, r.role])
+      );
+      const pessoasByProfileId = new Map<string, any>(
+        (pessoasData ?? []).map((p: any) => [p.profile_id, p])
+      );
+      const clientesById = new Map<string, any>(
+        (clientesData ?? []).map((c: any) => [c.id, c])
+      );
+
+      // 5) Montar estrutura final de profiles
+      const profilesWithRole = (profilesData ?? []).map((profile: any) => {
+        const pessoa = pessoasByProfileId.get(profile.id);
+        const role = rolesByUserId.get(profile.id) || null;
+        const pessoaClienteId = pessoa?.cliente_id || null;
+        const efetivoClienteId = pessoaClienteId || profile.cliente_id || null;
+        const cliente = efetivoClienteId ? clientesById.get(efetivoClienteId) : null;
+
+        return {
+          ...profile,
+          role,
+          cpf: pessoa?.cpf || null,
+          papeis: pessoa?.papeis || [],
+          pessoa_cliente_id: pessoaClienteId,
+          empresa: cliente?.nome_fantasia || cliente?.razao_social || cliente?.nome || null,
+        } as Profile;
+      });
 
       setProfiles(profilesWithRole);
       setAccessLogs(logsData || []);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao carregar dados:', error);
       toast({
         title: "Erro ao carregar dados",
-        description: "Não foi possível carregar os dados de usuários",
-        variant: "destructive",
+        description: error?.message || 'Não foi possível carregar os dados de usuários',
+        variant: 'destructive',
       });
     } finally {
       setLoading(false);
     }
   };
-
   const handleApproval = async (profileId: string, action: 'aprovar' | 'rejeitar', observacao?: string) => {
     try {
       const { error } = await supabase.rpc(
