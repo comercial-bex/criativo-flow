@@ -636,7 +636,7 @@ export default function FolhaPagamento() {
             open={modalPagamentoAberto}
             onOpenChange={setModalPagamentoAberto}
             item={itemSelecionado}
-            onConfirmar={handleConfirmarPagamento}
+            onConfirm={handleConfirmarPagamento}
           />
           <DetalhamentoFiscalModal
             open={modalDetalhamentoAberto}
@@ -648,7 +648,6 @@ export default function FolhaPagamento() {
       <RelatoriosFiscaisModal
         open={relatoriosFiscaisAberto}
         onOpenChange={setRelatoriosFiscaisAberto}
-        competencia={competencia}
       />
       <SimuladorFolha
         open={simuladorAberto}
