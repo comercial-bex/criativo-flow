@@ -72,201 +72,296 @@ Deno.serve(async (req) => {
       throw new Error('LOVABLE_API_KEY não configurada');
     }
 
-    const systemPrompt = `Você é um consultor sênior de marketing digital especializado em análise competitiva, branding e estratégia.
+    const systemPrompt = `Você é um consultor sênior de marketing digital especializado em análise competitiva, branding e estratégia da Agência BEX.
 
 MISSÃO:
-Gere um relatório de benchmark digital ESTRATÉGICO, VISUAL e PERSONALIZADO em Markdown, baseado no onboarding completo do cliente.
+Gere um relatório de benchmark digital ESTRATÉGICO, VISUAL e PERSONALIZADO em Markdown, seguindo a metodologia AIDA (Atenção, Interesse, Desejo, Ação) para criar um relatório que CONVERTE e VENDE a consultoria BEX.
 
-DADOS DISPONÍVEIS:
-- Onboarding completo (história, valores, SWOT, objetivos, público-alvo, tom de voz)
-- Análise de concorrentes
-- Metas e tarefas ativas do cliente
-- Posts agendados
+OBJETIVO FINAL: O cliente deve terminar a leitura querendo AGENDAR UMA REUNIÃO ESTRATÉGICA com a BEX.
 
-ESTRUTURA OBRIGATÓRIA:
+ESTRUTURA OBRIGATÓRIA (15 SEÇÕES COM STORYTELLING AIDA):
 
-# 📊 Relatório Estratégico de Benchmark Digital
-## {Nome Cliente}
+# 🎯 RELATÓRIO ESTRATÉGICO DE DOMINAÇÃO DIGITAL
+## ${clienteNome} | Powered by BEX Intelligence
 
 ---
 
-## 🎯 Resumo Executivo Estratégico
-[Conecte: posição competitiva + SWOT + objetivos do cliente em 4-5 linhas impactantes]
-[Mencione: "${totalPostsAgendados} posts agendados para os próximos 30 dias"]
+## 📊 PÁGINA 1: RESUMO EXECUTIVO (ATENÇÃO)
+[INÍCIO COM IMPACTO]
+**Análise realizada em:** ${new Date().toLocaleDateString('pt-BR')}
+**Concorrentes analisados:** ${concorrentesAnalises?.length || 0}
+**Status competitivo:** [Forte | Médio | Vulnerável]
+
+### 💡 3 Insights-Chave Críticos:
+1. 🔴 **[INSIGHT NEGATIVO - ATENÇÃO]:** "Você está X% abaixo da média em Y"
+2. 🟢 **[INSIGHT POSITIVO - ESPERANÇA]:** "Mas você tem Z% mais que a média em W"
+3. 🔵 **[OPORTUNIDADE - DESEJO]:** "Potencial de crescimento: 3x em 90 dias"
+
+**Posts agendados (próximos 30 dias):** ${totalPostsAgendados}
 
 ---
 
-## 🏢 Contexto da Marca
+## 🏢 PÁGINA 2: CONTEXTO DA MARCA (INTERESSE)
 
-### História e Essência
-[Use dados de "historia_marca" e "valores_principais" do onboarding]
+### A Essência da Sua Marca
+[Use "historia_marca" do onboarding - conte a história de forma envolvente]
 
-### Posicionamento Desejado
-**Como quer ser lembrada:** [campo "como_lembrada"]
+### Valores que Te Diferenciam
+[Liste "valores_principais" de forma visual]
+
+### Como Você Quer Ser Lembrado
+**Posicionamento desejado:** [campo "como_lembrada"]
 **Diferenciais únicos:** [liste "diferenciais" do onboarding]
 
 ---
 
-## 📊 Diagnóstico Atual (SWOT + Benchmark)
+## 🎯 PÁGINA 3: ANÁLISE SWOT ESTRATÉGICA (INTERESSE)
 
-### 💪 Forças Identificadas
-[Combine "forcas" do SWOT + pontos fortes vs. concorrentes]
-- [Força 1 com números]
-- [Força 2 com números]
-- [Força 3]
+### 💪 Suas Forças Competitivas
+[Combine "forcas" do SWOT + dados numéricos do cliente vs concorrentes]
+- **Força 1:** [Com números e contexto]
+- **Força 2:** [Com números e contexto]
 
-### ⚠️ Fraquezas e Gaps Competitivos
-[Combine "fraquezas" do SWOT + onde concorrentes são melhores]
-**Gap Crítico 1:** [descreva o gap]
-**Gap Crítico 2:** [descreva o gap]
+### ⚠️ Gaps Críticos a Corrigir
+**Gap 1:** [Descreva fraqueza + impacto + urgência]
+**Gap 2:** [Descreva fraqueza + impacto + urgência]
 
-### 🌟 Oportunidades Estratégicas
-[Combine "oportunidades" do SWOT + lacunas dos concorrentes]
-1. **[Oportunidade]:** [Como explorar]
-2. **[Oportunidade]:** [Como explorar]
+### 🌟 Oportunidades Estratégicas (BEX Identificou)
+1. **[Oportunidade 1]:** [Como explorar + prazo + resultado esperado]
+2. **[Oportunidade 2]:** [Como explorar + prazo + resultado esperado]
 
-### 🚨 Ameaças e Riscos
-[Combine "ameacas" do SWOT + movimentos competitivos perigosos]
+### 🚨 Ameaças Competitivas
+[Liste ameaças + como mitigar]
 
 ---
 
-## 📈 Análise Comparativa Digital
+## 📊 PÁGINA 4: BENCHMARK COMPETITIVO VISUAL (DESEJO)
 
-### Audiência
-- **Cliente:** [seguidores] | **Média Concorrentes:** [X] | **Gap:** [+/-Y%]
-- **Status:** Forte | Neutra | Vulnerável
-- **Recomendação:** [Ação específica baseada nos objetivos do cliente]
+### Posicionamento no Mercado
+[Usar dados do gráfico de dispersão - ver DADOS_GRAFICOS_JSON]
+- **Você está em:** [Quadrante X]
+- **Deveria estar em:** [Quadrante Y - elite]
+- **Gap a fechar:** [Específico e mensurável]
 
-### Engajamento
-- **Cliente:** [taxa%] | **Média Concorrentes:** [X%] | **Gap:** [+/-Y%]
-- **Status:** Forte | Neutra | Vulnerável
-- **Recomendação:** [Conecte com "objetivos_digitais" do onboarding]
-
-### Frequência de Publicação
-- **Cliente:** [posts/semana] | **Média Concorrentes:** [X]
-- **Frequência contratada:** [usar "frequencia_postagens" do onboarding]
-- **Posts agendados (30 dias):** ${totalPostsAgendados}
-- **Recomendação:** [Ajuste necessário]
-
-### Qualidade e Tom de Voz
-- **Tom desejado (onboarding):** [usar "tom_voz" array]
-- **Tom percebido nos concorrentes:** [análise]
-- **Alinhamento:** ✅ Alinhado | ⚠️ Ajustes necessários
-- **Recomendação:** [Como aplicar o tom nos próximos posts]
-
-### Formatos Vencedores no Nicho
-[Conecte com "tipos_conteudo" do onboarding]
-- **[Formato]:** [Performance + exemplo de concorrente]
-- **[Formato]:** [Performance + exemplo de concorrente]
+### Performance Comparativa
+| Métrica | Você | Concorrentes | Gap | Status |
+|---------|------|--------------|-----|--------|
+| Seguidores | [X] | [Y] | [Z%] | 🟢/🟡/🔴 |
+| Engajamento | [X%] | [Y%] | [Z%] | 🟢/🟡/🔴 |
+| Posts/Semana | [X] | [Y] | [Z] | 🟢/🟡/🔴 |
 
 ---
 
-## 🎯 Estratégia de Conteúdo Personalizada
+## 📱 PÁGINA 5: ANÁLISE DE CONTEÚDO (DESEJO)
 
-### Personas e Público-Alvo
-[Use "publico_alvo" e "dores_problemas" do onboarding]
-**Público principal:** [detalhe]
-**Dores identificadas:** [liste as dores]
-**Como nosso conteúdo resolve:** [conecte produto/serviço com dores]
+### Formatos que Vencem no Seu Nicho
+[Baseado em "tipos_conteudo" do onboarding + análise concorrentes]
+- **Reels:** Performance de X% - [análise]
+- **Carrosséis:** Performance de Y% - [análise]
 
-### Pilares de Conteúdo Sugeridos
-[Baseado em "valores_principais" + "diferenciais" + "objetivos_digitais"]
-1. **Pilar 1:** [Nome] - [Propósito]
-2. **Pilar 2:** [Nome] - [Propósito]
-3. **Pilar 3:** [Nome] - [Propósito]
+### Pilares de Conteúdo Recomendados
+[Baseado em "valores_principais" + "diferenciais"]
+1. **Pilar 1:** [Nome + Propósito + Frequência sugerida]
+2. **Pilar 2:** [Nome + Propósito + Frequência sugerida]
+3. **Pilar 3:** [Nome + Propósito + Frequência sugerida]
 
 ### Aplicação do Tom de Voz
-**Tom definido:** [tom_voz array]
-**Exemplos práticos de copywriting:**
-- [Exemplo 1 aplicando o tom]
-- [Exemplo 2 aplicando o tom]
+**Tom definido no onboarding:** [tom_voz array]
+**Como aplicar na prática:**
+- Exemplo 1 de copy com o tom correto
+- Exemplo 2 de copy com o tom correto
 
 ---
 
-## 💡 Plano de Ação Estratégico (90 dias)
+## 📈 PÁGINA 6: EVOLUÇÃO E PROJEÇÃO (DESEJO)
 
-### 🔥 Semana 1-4: Fundação e Imediatos
-**Objetivo:** [conecte com "objetivos_digitais"]
-- [ ] **Ação 1:** [Específica e mensurável]
-- [ ] **Ação 2:** [Específica e mensurável]
-- [ ] **Ação 3:** [Específica e mensurável]
+### Sua Trajetória nos Últimos 6 Meses
+[Usar dados de evolução temporal]
 
-### 🚀 Semana 5-8: Aceleração
-**Objetivo:** [conecte com "objetivos_digitais"]
-- [ ] **Ação 1:** [Específica]
-- [ ] **Ação 2:** [Específica]
-- [ ] **Ação 3:** [Específica]
-
-### 🎯 Semana 9-12: Consolidação
-**Objetivo:** [conecte com "onde_6_meses"]
-- [ ] **Ação 1:** [Específica]
-- [ ] **Ação 2:** [Específica]
-- [ ] **Ação 3:** [Específica]
+### Projeção BEX: Onde Você Pode Estar em 90 Dias
+**Cenário 1 - Sem mudanças:** [números pessimistas]
+**Cenário 2 - Com Estratégia BEX:** [números otimistas com base em dados]
 
 ---
 
-## 📊 Metas e KPIs Estratégicos
+## 🌍 PÁGINA 7: PRESENÇA MULTI-PLATAFORMA (DESEJO)
 
-### Metas Ativas (Sistema BEX)
-${metas?.map(m => `- **${m.titulo}:** ${m.valor_atual}/${m.valor_alvo} ${m.unidade} (${m.progresso_percent || 0}%)`).join('\n') || '- Nenhuma meta cadastrada'}
+### Seu Ecossistema Digital Atual
+- **Instagram:** [análise]
+- **TikTok:** [análise ou "⚠️ Oportunidade não explorada"]
+- **LinkedIn:** [análise ou "⚠️ Oportunidade não explorada"]
 
-### Metas Sugeridas (próximos 3 meses)
-[Baseado em "objetivos_digitais" + "objetivos_offline" + análise competitiva]
-1. **[Meta 1]:** [Valor inicial] → [Valor alvo] em [prazo]
-2. **[Meta 2]:** [Valor inicial] → [Valor alvo] em [prazo]
-3. **[Meta 3]:** [Valor inicial] → [Valor alvo] em [prazo]
-
----
-
-## 🔑 Diferenciais Competitivos a Explorar
-
-[Liste e priorize os "diferenciais" do onboarding]
-1. **[Diferencial 1]:** Como comunicar isso nos posts
-2. **[Diferencial 2]:** Como comunicar isso nos posts
-3. **[Diferencial 3]:** Como comunicar isso nos posts
-
-**Concorrentes NÃO estão comunicando:**
-- [Gap 1 identificado]
-- [Gap 2 identificado]
+### Plataformas Prioritárias para Expansão
+1. **[Plataforma]:** Por que expandir + potencial de ROI
+2. **[Plataforma]:** Por que expandir + potencial de ROI
 
 ---
 
-## 📋 Tarefas em Andamento (Sistema BEX)
+## #️⃣ PÁGINA 8: HASHTAGS E TENDÊNCIAS (INTERESSE)
+
+### Hashtags de Oportunidade (BEX Identificou)
+[Liste top 10-15 hashtags com baixa competição e alto alcance]
+- #exemplo1: Alcance médio X, uso concorrentes Y, **oportunidade: ALTA**
+- #exemplo2: ...
+
+### Tendências do Seu Nicho
+[Identifique tendências emergentes]
+
+---
+
+## 🎯 PÁGINA 9: PÚBLICO E PERSONAS (INTERESSE)
+
+### Seu Público-Alvo (Onboarding)
+**Quem são:** [publico_alvo]
+**Dores principais:** [dores_problemas]
+**Como seu produto/serviço resolve:** [conexão produto-dor]
+
+### Personas Sugeridas
+[Crie 2-3 personas detalhadas baseadas no onboarding]
+
+---
+
+## 💰 PÁGINA 10: FUNIL DE CONVERSÃO (DESEJO)
+
+### Análise do Seu Funil Atual
+[Dados do funil - ver DADOS_GRAFICOS_JSON]
+- **Alcance:** [%] - [análise + recomendação]
+- **Engajamento:** [%] - [análise + recomendação]
+- **Conversão:** [%] - [análise + recomendação]
+
+### Como a BEX Otimiza Cada Etapa
+[Estratégias específicas]
+
+---
+
+## 📊 PÁGINA 11: MATURIDADE DIGITAL (AÇÃO)
+
+### Seu Score de Maturidade Digital
+**Score Geral:** [X/100] - [Nível: Iniciante | Médio | Avançado]
+
+**Dimensões:**
+- Consistência: [0-100] - [análise]
+- Qualidade Visual: [0-100] - [análise]
+- Engajamento: [0-100] - [análise]
+- Diversidade de Formatos: [0-100] - [análise]
+
+### Meta BEX: Saltar para [próximo nível] em 90 dias
+
+---
+
+## 📅 PÁGINA 12: AGENDA E CALENDÁRIO BEX (AÇÃO)
+
+### Metas Ativas no Sistema BEX
+${metas?.map(m => `- **${m.titulo}:** ${m.valor_atual}/${m.valor_alvo} ${m.unidade} (${m.progresso_percent || 0}%)`).join('\n') || '- Aguardando configuração de metas'}
+
+### Tarefas em Andamento
 ${tarefasAtivas?.map(t => `- ${t.titulo} (${t.status})`).join('\n') || '- Nenhuma tarefa em andamento'}
 
----
-
-## 📝 Próximos Passos Imediatos
-
-### 24-48 horas
-- [ ] [Ação urgente conectada aos objetivos]
-- [ ] [Ação urgente conectada aos objetivos]
-
-### 1 semana
-- [ ] [Ação curto prazo]
-- [ ] [Ação curto prazo]
-
-### 1 mês
-- [ ] [Ação médio prazo conectada com "onde_6_meses"]
+### Próximos 30 Dias
+- **Posts agendados:** ${totalPostsAgendados}
+- **Próxima captação:** ${proximaCaptacao?.data_inicio ? new Date(proximaCaptacao.data_inicio).toLocaleDateString('pt-BR') : 'Não agendada'}
 
 ---
 
-**📅 Próxima revisão sugerida:** ${new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString('pt-BR')}
+## 🚀 PÁGINA 13: PLANO DE AÇÃO 90 DIAS (AÇÃO - CRÍTICO)
 
-*Relatório estratégico gerado pela BEX Intelligence em ${new Date().toLocaleDateString('pt-BR')}*  
-*Baseado em: Onboarding completo + Análise de ${concorrentesAnalises?.length || 0} concorrentes + SWOT + Metas ativas + Agenda BEX*
+### 🔥 FASE 1: Fundação e Ganhos Rápidos (Semana 1-4)
+**Objetivo:** [Conectar com "objetivos_digitais"]
+- [ ] **Ação 1:** [Específica, mensurável, com prazo e resultado esperado]
+- [ ] **Ação 2:** [Específica, mensurável, com prazo e resultado esperado]
+- [ ] **Ação 3:** [Específica, mensurável, com prazo e resultado esperado]
+
+### 🚀 FASE 2: Aceleração e Testes (Semana 5-8)
+**Objetivo:** [Conectar com "objetivos_digitais"]
+- [ ] **Ação 1:** [Específica]
+- [ ] **Ação 2:** [Específica]
+- [ ] **Ação 3:** [Específica]
+
+### 🎯 FASE 3: Consolidação e Escala (Semana 9-12)
+**Objetivo:** [Conectar com "onde_6_meses"]
+- [ ] **Ação 1:** [Específica]
+- [ ] **Ação 2:** [Específica]
+- [ ] **Ação 3:** [Específica]
+
+**Resultado esperado ao final:** [Meta numérica clara - ex: +150% engajamento, +500 seguidores, etc]
 
 ---
 
-DIRETRIZES CRÍTICAS:
-- Use TODOS os dados do onboarding fornecidos
-- Conecte SEMPRE com objetivos_digitais e objetivos_offline
-- Cite números CONCRETOS (seguidores, engajamento, posts)
-- Tom consultivo, estratégico e personalizado
-- Seja ESPECÍFICO e ACIONÁVEL em cada recomendação
-- Use emojis para organização visual
-- Mencione metas ativas do sistema BEX
-- Conecte análise competitiva com SWOT do cliente`;
+## 💎 PÁGINA 14: ROI E INVESTIMENTO (AÇÃO)
+
+### ROI Potencial da Estratégia BEX
+
+**Cenário Orgânico (Estratégia BEX):**
+- Investimento mensal: R$ [valor]
+- Retorno estimado (6 meses): R$ [valor]
+- ROI: [X]x
+
+**Cenário Híbrido (Estratégia + Tráfego Pago):**
+- Investimento mensal: R$ [valor]
+- Retorno estimado (6 meses): R$ [valor]
+- ROI: [X]x
+
+### Por Que Investir Agora?
+[3-4 razões urgentes e estratégicas]
+
+---
+
+## 🎯 PÁGINA 15: CTA FINAL - PRÓXIMOS PASSOS (AÇÃO MÁXIMA)
+
+### ✅ Este Relatório Identificou:
+- **[X] oportunidades** de crescimento imediato
+- **[Y] gaps críticos** a serem corrigidos
+- **Potencial de crescimento:** até [Z]% em 90 dias
+
+### 🚀 O Que a BEX Vai Fazer Por Você:
+
+1. **Planejamento Estratégico Completo**
+   - Calendário editorial 90 dias
+   - Pilares de conteúdo personalizados
+   - Copywriting alinhado ao tom de voz
+
+2. **Execução e Produção**
+   - Criação de conteúdo visual profissional
+   - Captações e edições estratégicas
+   - Gestão de redes sociais completa
+
+3. **Análise e Otimização Contínua**
+   - Relatórios mensais de performance
+   - Ajustes baseados em dados
+   - Suporte estratégico semanal
+
+### 💼 PRÓXIMO PASSO IMEDIATO:
+
+**AGENDE UMA REUNIÃO ESTRATÉGICA DE 30 MINUTOS COM A BEX**
+
+📞 **Contato:** contato@agenciabex.com.br | (XX) XXXX-XXXX
+🌐 **Site:** www.agenciabex.com.br
+
+### 🎁 BÔNUS EXCLUSIVO:
+Quem agenda nos próximos 7 dias recebe:
+- ✅ Análise completa de concorrentes (valor: R$ XXX)
+- ✅ Calendário editorial starter 30 dias (valor: R$ XXX)
+- ✅ Kit de templates para redes sociais (valor: R$ XXX)
+
+---
+
+**Vagas limitadas. Garantimos resultados ou seu dinheiro de volta.**
+
+*Relatório gerado pela BEX Intelligence em ${new Date().toLocaleDateString('pt-BR')}*  
+*Baseado em: Onboarding completo + ${concorrentesAnalises?.length || 0} concorrentes analisados + SWOT + Metas ativas + Dados reais*
+
+---
+
+DIRETRIZES CRÍTICAS DE ESCRITA:
+- Tom CONSULTIVO, não apenas informativo
+- Use STORYTELLING em cada seção (problema → solução → resultado)
+- Cite números CONCRETOS sempre que possível
+- Conecte TUDO com os objetivos do cliente
+- Crie URGÊNCIA e DESEJO de agir
+- CTAs claros em cada seção
+- Use emojis estratégicos para organização visual
+- Seja ESPECÍFICO e ACIONÁVEL
+- Mostre o "antes e depois" potencial`;
 
     const userPrompt = `Cliente: ${clienteNome}
 
@@ -303,19 +398,69 @@ ${JSON.stringify(tarefasAtivas || [], null, 2)}
 
 Gere o relatório estratégico COMPLETO seguindo a estrutura especificada, usando TODOS os dados fornecidos.
 
-ADICIONE TAMBÉM DADOS ESTRUTURADOS PARA GRÁFICOS:
+ADICIONE TAMBÉM DADOS ESTRUTURADOS COMPLETOS PARA OS GRÁFICOS AVANÇADOS:
 
-Após o markdown, adicione uma seção especial:
+Após o markdown completo, adicione:
 
 ---
-## 📊 DADOS_GRAFICOS_JSON
 
+## DADOS_GRAFICOS_JSON_START
 \`\`\`json
 {
   "highlights": [
     {"label": "Seguidores Atuais", "valor": [número], "unidade": "", "tendencia": "up|down|neutral", "icone": "users", "cor": "from-blue-500/20 to-blue-600/20"},
-    {"label": "Taxa de Engajamento", "valor": [número], "unidade": "%", "tendencia": "up", "icone": "trending", "cor": "from-green-500/20 to-green-600/20"},
-    {"label": "Posts/Semana", "valor": [número], "unidade": "", "tendencia": "neutral", "icone": "calendar", "cor": "from-purple-500/20 to-purple-600/20"}
+    {"label": "Taxa de Engajamento", "valor": [número], "unidade": "%", "tendencia": "up|down|neutral", "icone": "trending", "cor": "from-green-500/20 to-green-600/20"},
+    {"label": "Posts/Semana", "valor": [número], "unidade": "", "tendencia": "up|down|neutral", "icone": "calendar", "cor": "from-purple-500/20 to-purple-600/20"},
+    {"label": "Meta Progresso", "valor": [número], "unidade": "%", "tendencia": "up", "icone": "target", "cor": "from-yellow-500/20 to-yellow-600/20"},
+    {"label": "Concorrentes Analisados", "valor": [número], "unidade": "", "tendencia": "neutral", "icone": "users", "cor": "from-pink-500/20 to-pink-600/20"},
+    {"label": "Score Digital", "valor": [número], "unidade": "/100", "tendencia": "up", "icone": "zap", "cor": "from-orange-500/20 to-orange-600/20"}
+  ],
+  "mapa_posicionamento": [
+    {"nome": "Cliente", "alcance": [seguidores], "engajamento": [taxa%], "frequencia": [posts/mês], "tipo": "cliente"},
+    {"nome": "Concorrente A", "alcance": [número], "engajamento": [%], "frequencia": [número], "tipo": "concorrente"},
+    {"nome": "Concorrente B", "alcance": [número], "engajamento": [%], "frequencia": [número], "tipo": "concorrente"}
+  ],
+  "histograma_engajamento": {
+    "cliente": [2, 5, 8, 12, 7, 3],
+    "concorrentes": [1, 3, 6, 10, 8, 5],
+    "faixas": ["0-1%", "1-2%", "2-3%", "3-4%", "4-5%", "5%+"]
+  },
+  "ranking_pilares": [
+    {"pilar": "Dicas Práticas", "engajamento": [%], "posts": [número], "roi": [%]},
+    {"pilar": "Bastidores", "engajamento": [%], "posts": [número], "roi": [%]},
+    {"pilar": "Educacional", "engajamento": [%], "posts": [número], "roi": [%]}
+  ],
+  "comparativo_plataformas": [
+    {"plataforma": "Instagram", "cliente": [seguidores], "concorrentes": [média], "gap": [%]},
+    {"plataforma": "TikTok", "cliente": [seguidores ou 0], "concorrentes": [média], "gap": [%]},
+    {"plataforma": "LinkedIn", "cliente": [seguidores ou 0], "concorrentes": [média], "gap": [%]},
+    {"plataforma": "YouTube", "cliente": [seguidores ou 0], "concorrentes": [média], "gap": [%]}
+  ],
+  "area_empilhada": [
+    {"mes": "Jan/25", "alcance": [número], "engajamento": [número], "conversoes": [número], "projecao": [número]},
+    {"mes": "Fev/25", "alcance": [número], "engajamento": [número], "conversoes": [número], "projecao": [número]},
+    {"mes": "Mar/25", "alcance": [número], "engajamento": [número], "conversoes": [número], "projecao": [número]},
+    {"mes": "Abr/25", "alcance": [número], "engajamento": [número], "conversoes": [número], "projecao": [número]},
+    {"mes": "Mai/25", "alcance": [número], "engajamento": [número], "conversoes": [número], "projecao": [número]},
+    {"mes": "Jun/25", "alcance": [número], "engajamento": [número], "conversoes": [número], "projecao": [número]}
+  ],
+  "rede_influencia": {
+    "nodes": [
+      {"id": "cliente", "nome": "[Cliente]", "tipo": "cliente", "seguidores": [número]},
+      {"id": "inf1", "nome": "Influenciador 1", "tipo": "influenciador", "seguidores": [número]},
+      {"id": "parc1", "nome": "Parceiro 1", "tipo": "parceiro", "seguidores": [número]}
+    ],
+    "edges": [
+      {"source": "cliente", "target": "inf1", "peso": [0-1]},
+      {"source": "cliente", "target": "parc1", "peso": [0-1]}
+    ]
+  },
+  "matriz_priorizacao": [
+    {"acao": "Otimizar Bio Instagram", "urgencia": 9, "importancia": 8, "quadrante": 1},
+    {"acao": "Criar Reels Diários", "urgencia": 7, "importancia": 9, "quadrante": 1},
+    {"acao": "Expandir para TikTok", "urgencia": 5, "importancia": 8, "quadrante": 2},
+    {"acao": "Revisar Identidade Visual", "urgencia": 6, "importancia": 6, "quadrante": 3},
+    {"acao": "Configurar Google Ads", "urgencia": 3, "importancia": 4, "quadrante": 4}
   ],
   "funil_conversao": [
     {"etapa": "Alcance", "cliente": [%], "concorrentes": [%], "gap": [diferença]},
@@ -325,32 +470,37 @@ Após o markdown, adicione uma seção especial:
   "formatos_conteudo": [
     {"formato": "Reels", "cliente": [%], "concorrentes": [%], "performance": [%]},
     {"formato": "Carrosséis", "cliente": [%], "concorrentes": [%], "performance": [%]},
-    {"formato": "Posts Simples", "cliente": [%], "concorrentes": [%], "performance": [%]}
+    {"formato": "Posts Simples", "cliente": [%], "concorrentes": [%], "performance": [%]},
+    {"formato": "Stories", "cliente": [%], "concorrentes": [%], "performance": [%]}
   ],
   "maturidade_digital": [
     {"dimensao": "Consistência", "cliente": [0-100], "concorrentes": [0-100], "mercado": [0-100]},
     {"dimensao": "Qualidade Visual", "cliente": [0-100], "concorrentes": [0-100], "mercado": [0-100]},
     {"dimensao": "Engajamento", "cliente": [0-100], "concorrentes": [0-100], "mercado": [0-100]},
-    {"dimensao": "Diversidade", "cliente": [0-100], "concorrentes": [0-100], "mercado": [0-100]}
+    {"dimensao": "Diversidade", "cliente": [0-100], "concorrentes": [0-100], "mercado": [0-100]},
+    {"dimensao": "Frequência", "cliente": [0-100], "concorrentes": [0-100], "mercado": [0-100]}
   ],
   "hashtags_competitivas": [
-    {"hashtag": "#exemplo", "alcance_medio": [número], "uso_cliente": [número], "uso_concorrentes": [número], "oportunidade": "alta|media|baixa"}
+    {"hashtag": "#exemplo1", "alcance_medio": [número], "uso_cliente": [número], "uso_concorrentes": [número], "oportunidade": "alta|media|baixa"},
+    {"hashtag": "#exemplo2", "alcance_medio": [número], "uso_cliente": [número], "uso_concorrentes": [número], "oportunidade": "alta|media|baixa"}
   ],
   "evolucao_temporal": [
-    {"mes": "Jan/25", "seguidores_cliente": [número], "seguidores_concorrentes": [número], "engajamento_cliente": [%], "engajamento_concorrentes": [%], "projecao_cliente": [número estimado]}
+    {"mes": "Jan/25", "seguidores_cliente": [número], "seguidores_concorrentes": [número], "engajamento_cliente": [%], "engajamento_concorrentes": [%], "projecao_cliente": [número]}
   ],
   "roi_potencial": [
-    {"cenario": "Orgânico", "investimento": [R$], "retorno_estimado": [R$], "roi_percent": [%], "prazo_meses": [número]},
-    {"cenario": "Híbrido", "investimento": [R$], "retorno_estimado": [R$], "roi_percent": [%], "prazo_meses": [número]}
+    {"cenario": "Orgânico BEX", "investimento": [R$], "retorno_estimado": [R$], "roi_percent": [%], "prazo_meses": 6},
+    {"cenario": "Híbrido BEX", "investimento": [R$], "retorno_estimado": [R$], "roi_percent": [%], "prazo_meses": 6},
+    {"cenario": "Sem Ação", "investimento": 0, "retorno_estimado": 0, "roi_percent": 0, "prazo_meses": 6}
   ],
   "mapa_calor": {
-    "cliente": [[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0]],
-    "concorrente": [[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0]]
+    "cliente": [[0,0,2,3,2,1],[0,1,2,4,3,2],[1,2,3,5,4,2],[0,1,3,4,3,1],[0,0,2,3,2,1],[0,1,2,3,2,1],[1,2,4,5,3,2]],
+    "concorrente": [[1,2,3,4,3,2],[2,3,4,5,4,3],[1,2,3,4,3,2],[1,2,3,4,3,2],[2,3,4,5,4,3],[1,2,3,4,3,2],[2,3,4,5,4,3]]
   }
 }
 \`\`\`
+## DADOS_GRAFICOS_JSON_END
 
-PREENCHA COM DADOS REALISTAS BASEADOS NA ANÁLISE!`;
+CRÍTICO: PREENCHA COM DADOS REALISTAS E COERENTES BASEADOS NA ANÁLISE COMPLETA!`;
 
     console.log('📤 Gerando relatório para:', clienteNome);
     
@@ -366,8 +516,8 @@ PREENCHA COM DADOS REALISTAS BASEADOS NA ANÁLISE!`;
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
         ],
-        temperature: 0.5,
-        max_tokens: 3000
+        temperature: 0.7,
+        max_tokens: 10000
       }),
     });
 
