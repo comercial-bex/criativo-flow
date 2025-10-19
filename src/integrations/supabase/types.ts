@@ -2127,6 +2127,143 @@ export type Database = {
           },
         ]
       }
+      conciliacoes_bancarias: {
+        Row: {
+          conciliado_em: string | null
+          conciliado_por: string | null
+          conta_bancaria_id: string
+          created_at: string
+          diferenca: number | null
+          id: string
+          mes_referencia: string
+          observacoes: string | null
+          saldo_final_extrato: number
+          saldo_final_sistema: number
+          saldo_inicial: number
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          conciliado_em?: string | null
+          conciliado_por?: string | null
+          conta_bancaria_id: string
+          created_at?: string
+          diferenca?: number | null
+          id?: string
+          mes_referencia: string
+          observacoes?: string | null
+          saldo_final_extrato?: number
+          saldo_final_sistema?: number
+          saldo_inicial?: number
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          conciliado_em?: string | null
+          conciliado_por?: string | null
+          conta_bancaria_id?: string
+          created_at?: string
+          diferenca?: number | null
+          id?: string
+          mes_referencia?: string
+          observacoes?: string | null
+          saldo_final_extrato?: number
+          saldo_final_sistema?: number
+          saldo_inicial?: number
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conciliacoes_bancarias_conta_bancaria_id_fkey"
+            columns: ["conta_bancaria_id"]
+            isOneToOne: false
+            referencedRelation: "contas_bancarias"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      conciliacoes_itens: {
+        Row: {
+          conciliacao_id: string
+          conciliado: boolean
+          created_at: string
+          data_movimento: string
+          descricao: string
+          id: string
+          lancamento_id: string | null
+          observacoes: string | null
+          origem: string
+          tipo: string
+          titulo_id: string | null
+          valor: number
+        }
+        Insert: {
+          conciliacao_id: string
+          conciliado?: boolean
+          created_at?: string
+          data_movimento: string
+          descricao: string
+          id?: string
+          lancamento_id?: string | null
+          observacoes?: string | null
+          origem: string
+          tipo: string
+          titulo_id?: string | null
+          valor: number
+        }
+        Update: {
+          conciliacao_id?: string
+          conciliado?: boolean
+          created_at?: string
+          data_movimento?: string
+          descricao?: string
+          id?: string
+          lancamento_id?: string | null
+          observacoes?: string | null
+          origem?: string
+          tipo?: string
+          titulo_id?: string | null
+          valor?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conciliacoes_itens_conciliacao_id_fkey"
+            columns: ["conciliacao_id"]
+            isOneToOne: false
+            referencedRelation: "conciliacoes_bancarias"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conciliacoes_itens_lancamento_id_fkey"
+            columns: ["lancamento_id"]
+            isOneToOne: false
+            referencedRelation: "financeiro_lancamentos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conciliacoes_itens_lancamento_id_fkey"
+            columns: ["lancamento_id"]
+            isOneToOne: false
+            referencedRelation: "vw_financeiro_origem"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conciliacoes_itens_titulo_id_fkey"
+            columns: ["titulo_id"]
+            isOneToOne: false
+            referencedRelation: "titulos_financeiros"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conciliacoes_itens_titulo_id_fkey"
+            columns: ["titulo_id"]
+            isOneToOne: false
+            referencedRelation: "vw_inadimplencia"
+            referencedColumns: ["titulo_id"]
+          },
+        ]
+      }
       concorrentes_analise: {
         Row: {
           analisado_em: string | null
@@ -2765,6 +2902,112 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "vw_client_metrics"
             referencedColumns: ["responsavel_id"]
+          },
+        ]
+      }
+      dividas: {
+        Row: {
+          centro_custo_id: string | null
+          cliente_id: string | null
+          created_at: string
+          created_by: string | null
+          credor_devedor: string
+          data_emissao: string
+          descricao: string
+          fornecedor_id: string | null
+          id: string
+          numero_parcelas: number
+          observacoes: string | null
+          parcelas: Json
+          status: string
+          tipo: string
+          updated_at: string
+          valor_pago: number
+          valor_restante: number | null
+          valor_total: number
+        }
+        Insert: {
+          centro_custo_id?: string | null
+          cliente_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          credor_devedor: string
+          data_emissao?: string
+          descricao: string
+          fornecedor_id?: string | null
+          id?: string
+          numero_parcelas?: number
+          observacoes?: string | null
+          parcelas?: Json
+          status?: string
+          tipo: string
+          updated_at?: string
+          valor_pago?: number
+          valor_restante?: number | null
+          valor_total: number
+        }
+        Update: {
+          centro_custo_id?: string | null
+          cliente_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          credor_devedor?: string
+          data_emissao?: string
+          descricao?: string
+          fornecedor_id?: string | null
+          id?: string
+          numero_parcelas?: number
+          observacoes?: string | null
+          parcelas?: Json
+          status?: string
+          tipo?: string
+          updated_at?: string
+          valor_pago?: number
+          valor_restante?: number | null
+          valor_total?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dividas_centro_custo_id_fkey"
+            columns: ["centro_custo_id"]
+            isOneToOne: false
+            referencedRelation: "centros_custo"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dividas_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dividas_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "mv_grs_dashboard_metrics"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "dividas_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "vw_client_metrics"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "dividas_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "vw_conflitos_migracao_clientes"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "dividas_fornecedor_id_fkey"
+            columns: ["fornecedor_id"]
+            isOneToOne: false
+            referencedRelation: "fornecedores"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -12050,6 +12293,73 @@ export type Database = {
           },
           {
             foreignKeyName: "titulos_financeiros_fornecedor_id_fkey"
+            columns: ["fornecedor_id"]
+            isOneToOne: false
+            referencedRelation: "fornecedores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vw_mapa_dividas: {
+        Row: {
+          centro_custo_id: string | null
+          centro_custo_nome: string | null
+          cliente_id: string | null
+          cliente_nome: string | null
+          credor_devedor: string | null
+          data_emissao: string | null
+          descricao: string | null
+          divida_id: string | null
+          fornecedor_id: string | null
+          fornecedor_nome: string | null
+          numero_parcelas: number | null
+          parcelas_vencidas: number | null
+          proximo_vencimento: string | null
+          status: string | null
+          tipo: string | null
+          updated_at: string | null
+          valor_pago: number | null
+          valor_restante: number | null
+          valor_total: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dividas_centro_custo_id_fkey"
+            columns: ["centro_custo_id"]
+            isOneToOne: false
+            referencedRelation: "centros_custo"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dividas_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dividas_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "mv_grs_dashboard_metrics"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "dividas_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "vw_client_metrics"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "dividas_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "vw_conflitos_migracao_clientes"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "dividas_fornecedor_id_fkey"
             columns: ["fornecedor_id"]
             isOneToOne: false
             referencedRelation: "fornecedores"
