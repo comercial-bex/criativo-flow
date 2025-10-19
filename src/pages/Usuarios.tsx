@@ -63,6 +63,8 @@ interface Profile {
   empresa?: string;
   role_requested?: string;
   cpf?: string;
+  papeis?: string[];
+  pessoa_cliente_id?: string;
 }
 
 interface AccessLog {
@@ -105,7 +107,12 @@ const Usuarios = () => {
       // Buscar profiles
       const { data: profilesData, error: profilesError } = await supabase
         .from('profiles')
-        .select('*, user_roles!left(role), clientes!cliente_id(nome, nome_fantasia, razao_social)')
+        .select(`
+          *,
+          user_roles(role),
+          clientes:cliente_id(nome, nome_fantasia, razao_social),
+          pessoas:pessoas!profile_id(cpf, papeis, cliente_id)
+        `)
         .order('created_at', { ascending: false });
 
       if (profilesError) throw profilesError;
@@ -122,9 +129,11 @@ const Usuarios = () => {
       // Mapear role para cada profile
       const profilesWithRole = (profilesData || []).map((profile: any) => ({
         ...profile,
-        role: profile.user_roles?.[0]?.role,
+        role: profile.user_roles?.[0]?.role || null,
         empresa: profile.clientes?.nome_fantasia || profile.clientes?.razao_social || profile.clientes?.nome || null,
         cpf: profile.pessoas?.cpf || null,
+        papeis: profile.pessoas?.papeis || [],
+        pessoa_cliente_id: profile.pessoas?.cliente_id || null
       }));
 
       setProfiles(profilesWithRole);
@@ -354,11 +363,20 @@ const Usuarios = () => {
   });
 
   // Separar por categorias
-  const specialists = filteredProfiles.filter(p => 
-    (p.especialidade && !p.cliente_id) || 
-    (p.role === 'admin' && !p.cliente_id)
-  );
-  const clients = filteredProfiles.filter(p => p.cliente_id);
+  const specialists = filteredProfiles.filter(p => {
+    // Especialista = tem role E não é cliente (nem em profiles nem em pessoas)
+    return p.role && 
+           p.role !== 'cliente' && 
+           !p.cliente_id && 
+           !p.pessoa_cliente_id;
+  });
+  
+  const clients = filteredProfiles.filter(p => {
+    // Cliente = tem cliente_id EM profiles OU em pessoas, OU tem role 'cliente'
+    return p.cliente_id || 
+           p.pessoa_cliente_id || 
+           p.role === 'cliente';
+  });
   const pending = filteredProfiles.filter(p => p.status === 'pendente_aprovacao');
 
   const statsData = [
