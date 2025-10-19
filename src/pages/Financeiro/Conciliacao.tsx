@@ -12,11 +12,14 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { useConciliacoes } from "@/hooks/useConciliacoes";
+import { useConciliacoes, Conciliacao as ConciliacaoType } from "@/hooks/useConciliacoes";
+import { ConciliacaoDialog } from "@/components/Monitor/ConciliacaoDialog";
 import { RefreshCw, Plus } from "lucide-react";
 
 export default function Conciliacao() {
   const [selectedMes, setSelectedMes] = useState<string>("");
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedConciliacao, setSelectedConciliacao] = useState<ConciliacaoType | undefined>();
   const { data: conciliacoes = [], isLoading, refetch } = useConciliacoes(undefined, selectedMes);
 
   const formatCurrency = (value: number) => {
@@ -46,7 +49,13 @@ export default function Conciliacao() {
               <RefreshCw className="mr-2 h-4 w-4" />
               Atualizar
             </Button>
-            <Button size="sm">
+            <Button 
+              size="sm"
+              onClick={() => {
+                setSelectedConciliacao(undefined);
+                setDialogOpen(true);
+              }}
+            >
               <Plus className="mr-2 h-4 w-4" />
               Nova Conciliação
             </Button>
@@ -103,7 +112,14 @@ export default function Conciliacao() {
                   </TableCell>
                   <TableCell>{getStatusBadge(conciliacao.status)}</TableCell>
                   <TableCell className="text-right">
-                    <Button variant="ghost" size="sm">
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={() => {
+                        setSelectedConciliacao(conciliacao);
+                        setDialogOpen(true);
+                      }}
+                    >
                       Ver Detalhes
                     </Button>
                   </TableCell>
@@ -113,6 +129,13 @@ export default function Conciliacao() {
           </Table>
         </Card>
       )}
+
+      <ConciliacaoDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        conciliacao={selectedConciliacao}
+        onSave={() => refetch()}
+      />
     </div>
   );
 }

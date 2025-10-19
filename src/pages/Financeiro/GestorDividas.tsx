@@ -13,12 +13,15 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useDividas } from "@/hooks/useDividas";
+import { useDividas, Divida as DividaType } from "@/hooks/useDividas";
+import { DividaDialog } from "@/components/Monitor/DividaDialog";
 import { Plus, TrendingDown, TrendingUp } from "lucide-react";
 
 export default function GestorDividas() {
   const [tipoFiltro, setTipoFiltro] = useState<'pagar' | 'receber' | undefined>(undefined);
-  const { data: dividas = [], isLoading } = useDividas({ tipo: tipoFiltro });
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedDivida, setSelectedDivida] = useState<DividaType | undefined>();
+  const { data: dividas = [], isLoading, refetch } = useDividas({ tipo: tipoFiltro });
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -46,7 +49,13 @@ export default function GestorDividas() {
       <SectionHeader
         title="Gestor de Dívidas"
         action={
-          <Button size="sm">
+          <Button 
+            size="sm"
+            onClick={() => {
+              setSelectedDivida(undefined);
+              setDialogOpen(true);
+            }}
+          >
             <Plus className="mr-2 h-4 w-4" />
             Nova Dívida
           </Button>
@@ -140,7 +149,14 @@ export default function GestorDividas() {
                       </TableCell>
                       <TableCell>{getStatusBadge(divida.status)}</TableCell>
                       <TableCell className="text-right">
-                        <Button variant="ghost" size="sm">
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => {
+                            setSelectedDivida(divida);
+                            setDialogOpen(true);
+                          }}
+                        >
                           Gerenciar
                         </Button>
                       </TableCell>
@@ -158,6 +174,13 @@ export default function GestorDividas() {
           {/* Mesmo conteúdo, filtrado */}
         </TabsContent>
       </Tabs>
+
+      <DividaDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        divida={selectedDivida}
+        onSave={() => refetch()}
+      />
     </div>
   );
 }
