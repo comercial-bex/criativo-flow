@@ -76,6 +76,10 @@ const CentrosCusto = lazy(() => import("./pages/Financeiro/CentrosCusto"));
 const DRE = lazy(() => import("./pages/Relatorios/DRE"));
 const Inadimplencia = lazy(() => import("./pages/Relatorios/Inadimplencia"));
 const CustosProjeto = lazy(() => import("./pages/Relatorios/CustosProjeto"));
+const MapaDividas = lazy(() => import("./pages/Relatorios/MapaDividas"));
+const FluxoCaixa = lazy(() => import("./pages/Relatorios/FluxoCaixa"));
+const Conciliacao = lazy(() => import("./pages/Financeiro/Conciliacao"));
+const GestorDividas = lazy(() => import("./pages/Financeiro/GestorDividas"));
 const Fornecedores = lazy(() => import("./pages/Fornecedores"));
 const FornecedorDashboard = lazy(() => import("./pages/Fornecedor/Dashboard"));
 const GestorDashboard = lazy(() => import("./pages/Gestor/Dashboard"));
@@ -825,6 +829,22 @@ function App() {
                 
                 <Route path="/relatorios/custos-projeto" element={<ProtectedRoute requiredRole="financeiro">
                     <Layout><CustosProjeto /></Layout>
+                  </ProtectedRoute>} />
+                
+                <Route path="/relatorios/mapa-dividas" element={<ProtectedRoute requiredRole="financeiro">
+                    <Layout><MapaDividas /></Layout>
+                  </ProtectedRoute>} />
+                
+                <Route path="/relatorios/fluxo-caixa" element={<ProtectedRoute requiredRole="financeiro">
+                    <Layout><FluxoCaixa /></Layout>
+                  </ProtectedRoute>} />
+                
+                <Route path="/financeiro/conciliacao" element={<ProtectedRoute requiredRole="financeiro">
+                    <Layout><Conciliacao /></Layout>
+                  </ProtectedRoute>} />
+                
+                <Route path="/financeiro/gestor-dividas" element={<ProtectedRoute requiredRole="financeiro">
+                    <Layout><GestorDividas /></Layout>
                   </ProtectedRoute>} />
                 
                 <Route path="/fornecedores" element={<ProtectedRoute requiredRole="financeiro">
