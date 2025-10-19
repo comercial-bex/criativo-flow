@@ -108,14 +108,14 @@ export default function CentralNotificacoes() {
 
   const handleApproveUser = async (userId: string) => {
     try {
+      const currentUser = (await supabase.auth.getUser()).data.user?.id;
       const { error } = await supabase
-        .from("profiles")
+        .from("pessoas")
         .update({ 
           status: "aprovado",
-          aprovado_por: (await supabase.auth.getUser()).data.user?.id,
-          data_aprovacao: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
         })
-        .eq("id", userId);
+        .eq("profile_id", userId);
 
       if (error) throw error;
 
@@ -130,13 +130,12 @@ export default function CentralNotificacoes() {
   const handleRejectUser = async (userId: string) => {
     try {
       const { error } = await supabase
-        .from("profiles")
+        .from("pessoas")
         .update({ 
           status: "rejeitado",
-          aprovado_por: (await supabase.auth.getUser()).data.user?.id,
-          data_aprovacao: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
         })
-        .eq("id", userId);
+        .eq("profile_id", userId);
 
       if (error) throw error;
 

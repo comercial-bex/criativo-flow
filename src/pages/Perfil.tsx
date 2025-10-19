@@ -41,10 +41,10 @@ function Perfil() {
     setLoading(true);
     try {
       const { data, error } = await supabase
-        .from('profiles')
+        .from('pessoas')
         .select('*')
-        .eq('id', user.id)
-        .single();
+        .eq('profile_id', user.id)
+        .maybeSingle();
 
       if (error && error.code !== 'PGRST116') {
         throw error;
@@ -54,8 +54,8 @@ function Perfil() {
         setProfile({
           nome: data.nome || '',
           email: data.email || user.email || '',
-          telefone: data.telefone || '',
-          avatar_url: data.avatar_url || ''
+          telefone: data.telefones?.[0] || '',
+          avatar_url: null // Avatar será buscado do storage
         });
       } else {
         // Criar perfil se não existir
@@ -106,13 +106,10 @@ function Perfil() {
 
       const newAvatarUrl = `${publicUrl}?t=${Date.now()}`;
 
-      // Atualizar perfil no estado e no banco
+      // Atualizar perfil no estado
       setProfile(prev => ({ ...prev, avatar_url: newAvatarUrl }));
 
-      await supabase
-        .from('profiles')
-        .update({ avatar_url: newAvatarUrl })
-        .eq('id', user.id);
+      // Avatar é gerenciado pelo storage, não precisa atualizar em pessoas
 
       toast({
         title: "Sucesso",
@@ -155,14 +152,14 @@ function Perfil() {
     setSaving(true);
     try {
       const { error } = await supabase
-        .from('profiles')
-        .upsert({
-          id: user.id,
+        .from('pessoas')
+        .update({
           nome: profile.nome.trim(),
           email: profile.email.trim(),
-          telefone: profile.telefone?.trim() || null,
-          avatar_url: profile.avatar_url,
-        });
+          telefones: profile.telefone?.trim() ? [profile.telefone.trim()] : [],
+          updated_at: new Date().toISOString()
+        })
+        .eq('profile_id', user.id);
 
       if (error) throw error;
 

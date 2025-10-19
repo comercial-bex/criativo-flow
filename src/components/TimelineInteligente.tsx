@@ -51,13 +51,7 @@ export function TimelineInteligente({ clienteId, limitarItens: initialLimit = 20
     try {
       let query = supabase
         .from('logs_atividade')
-        .select(`
-          *,
-          profiles (
-            nome,
-            avatar_url
-          )
-        `)
+        .select('*')
         .eq('cliente_id', clienteId)
         .order('data_hora', { ascending: false })
         .limit(limitarItens);
@@ -70,10 +64,27 @@ export function TimelineInteligente({ clienteId, limitarItens: initialLimit = 20
         query = query.eq('entidade_tipo', filtroTipo);
       }
 
-      const { data, error } = await query;
-
+      const { data: logsData, error } = await query;
       if (error) throw error;
-      setLogs(data || []);
+
+      // Buscar informações do usuário de pessoas
+      const logsComUsuario = await Promise.all((logsData || []).map(async (log) => {
+        const { data: pessoa } = await supabase
+          .from('pessoas')
+          .select('nome')
+          .eq('profile_id', log.usuario_id)
+          .maybeSingle();
+        
+        return {
+          ...log,
+          profiles: {
+            nome: pessoa?.nome || 'Usuário',
+            avatar_url: undefined
+          }
+        };
+      }));
+
+      setLogs(logsComUsuario);
     } catch (error) {
       console.error('Erro ao buscar timeline:', error);
     } finally {

@@ -285,9 +285,9 @@ const Usuarios = () => {
       }
 
       const { error } = await supabase
-        .from('profiles')
+        .from('pessoas')
         .update(updates)
-        .eq('id', selectedProfile.id);
+        .eq('profile_id', selectedProfile.id);
 
       if (error) throw error;
 

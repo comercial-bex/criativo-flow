@@ -10,18 +10,29 @@ export default function CRMHistorico() {
   const { data: logs, isLoading } = useQuery({
     queryKey: ['crm-historico'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data: logsData, error } = await supabase
         .from('logs_atividade')
-        .select(`
-          *,
-          clientes(nome),
-          profiles(nome)
-        `)
+        .select('*, clientes(nome)')
         .order('created_at', { ascending: false })
         .limit(50);
       
       if (error) throw error;
-      return data;
+
+      // Buscar nomes de usuários de pessoas
+      const logsComNomes = await Promise.all((logsData || []).map(async (log) => {
+        const { data: pessoa } = await supabase
+          .from('pessoas')
+          .select('nome')
+          .eq('profile_id', log.usuario_id)
+          .maybeSingle();
+        
+        return {
+          ...log,
+          profiles: { nome: pessoa?.nome || 'Sistema' }
+        };
+      }));
+      
+      return logsComNomes;
     }
   });
 

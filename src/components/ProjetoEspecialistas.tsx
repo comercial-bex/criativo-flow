@@ -9,7 +9,18 @@ import { toast } from 'sonner';
 import { Users, Plus, X, Crown } from 'lucide-react';
 import type { Database } from '@/integrations/supabase/types';
 
-type Profile = Database['public']['Tables']['profiles']['Row'];
+type Profile = {
+  id: string;
+  nome: string;
+  email: string | null;
+  telefone: string | null;
+  avatar_url: string | null;
+  especialidade: string | null;
+  cliente_id: string | null;
+  status: string;
+  created_at: string;
+  updated_at: string;
+};
 type ProjetoEspecialista = Database['public']['Tables']['projeto_especialistas']['Row'];
 
 interface ProjetoEspecialistasProps {
@@ -39,13 +50,29 @@ export function ProjetoEspecialistas({ projetoId }: ProjetoEspecialistasProps) {
 
   const fetchEspecialistas = async () => {
     try {
-      const { data, error } = await supabase
-        .from('profiles')
+      const { data: pessoas, error } = await supabase
+        .from('pessoas')
         .select('*')
-        .not('especialidade', 'is', null);
+        .not('profile_id', 'is', null)
+        .contains('papeis', ['colaborador']);
 
       if (error) throw error;
-      setEspecialistas(data || []);
+      
+      // Mapear pessoas para formato Profile
+      const especialistas: Profile[] = (pessoas || []).map(p => ({
+        id: p.profile_id!,
+        nome: p.nome,
+        email: p.email,
+        telefone: Array.isArray(p.telefones) ? p.telefones[0] : null,
+        avatar_url: null,
+        especialidade: p.papeis?.find(papel => papel !== 'colaborador') || null,
+        cliente_id: p.cliente_id,
+        status: p.status,
+        created_at: p.created_at!,
+        updated_at: p.updated_at!
+      }));
+      
+      setEspecialistas(especialistas);
     } catch (error) {
       console.error('Erro ao buscar especialistas:', error);
     }
@@ -55,20 +82,37 @@ export function ProjetoEspecialistas({ projetoId }: ProjetoEspecialistasProps) {
     try {
       const { data, error } = await supabase
         .from('projeto_especialistas')
-        .select(`
-          *,
-          profiles(*)
-        `)
+        .select('*')
         .eq('projeto_id', projetoId);
 
       if (error) throw error;
       
-      const formattedData = data?.map(item => ({
-        ...item,
-        profile: item.profiles
-      })) || [];
+      // Buscar informações dos especialistas de pessoas
+      const formattedData = await Promise.all((data || []).map(async (item) => {
+        const { data: pessoa } = await supabase
+          .from('pessoas')
+          .select('*')
+          .eq('profile_id', item.especialista_id)
+          .maybeSingle();
+        
+        return {
+          ...item,
+          profile: pessoa ? {
+            id: pessoa.profile_id!,
+            nome: pessoa.nome,
+            email: pessoa.email,
+            telefone: Array.isArray(pessoa.telefones) ? pessoa.telefones[0] : null,
+            avatar_url: null,
+            especialidade: pessoa.papeis?.find(p => p !== 'colaborador') || null,
+            cliente_id: pessoa.cliente_id,
+            status: pessoa.status,
+            created_at: pessoa.created_at!,
+            updated_at: pessoa.updated_at!
+          } : null
+        };
+      }));
       
-      setProjetoEspecialistas(formattedData);
+      setProjetoEspecialistas(formattedData.filter(item => item.profile));
     } catch (error) {
       console.error('Erro ao buscar especialistas do projeto:', error);
     }

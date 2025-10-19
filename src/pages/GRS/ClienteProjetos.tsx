@@ -109,17 +109,33 @@ export default function ClienteProjetos() {
 
   const fetchProjetos = async () => {
     try {
-      const { data, error } = await supabase
+      const { data: projetosData, error } = await supabase
         .from('projetos')
-        .select(`
-          *,
-          profiles!projetos_responsavel_id_fkey(nome)
-        `)
+        .select('*')
         .eq('cliente_id', clienteId)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setProjetos(data || []);
+
+      // Buscar nomes dos responsáveis
+      const projetosComResponsavel = await Promise.all((projetosData || []).map(async (projeto) => {
+        if (!projeto.responsavel_id) {
+          return { ...projeto, profiles: undefined };
+        }
+        
+        const { data: pessoa } = await supabase
+          .from('pessoas')
+          .select('nome')
+          .eq('profile_id', projeto.responsavel_id)
+          .maybeSingle();
+        
+        return {
+          ...projeto,
+          profiles: pessoa ? { nome: pessoa.nome } : undefined
+        };
+      }));
+
+      setProjetos(projetosComResponsavel || []);
     } catch (error) {
       console.error('Erro ao buscar projetos:', error);
       toast({

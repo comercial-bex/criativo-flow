@@ -79,21 +79,26 @@ export function SimplifiedAdminControls({ clienteId, clienteData }: SimplifiedAd
 
   const fetchAuthData = async () => {
     try {
-      const { data: profileData, error } = await supabase
-        .from('profiles')
+      const { data: pessoaData, error } = await supabase
+        .from('pessoas')
         .select('*')
         .eq('cliente_id', clienteId)
+        .not('profile_id', 'is', null)
         .maybeSingle();
 
       if (error) {
-        console.error('Error fetching profile:', error);
+        console.error('Error fetching pessoa:', error);
         return;
       }
 
-      setAuthData(profileData);
-      if (profileData) {
+      if (pessoaData) {
+        setAuthData({
+          id: pessoaData.profile_id!,
+          email: pessoaData.email || undefined,
+          status: pessoaData.status
+        });
         setStep('complete');
-        setAccountStatus(profileData.status || 'aprovado');
+        setAccountStatus(pessoaData.status || 'aprovado');
       } else {
         setStep('initial');
       }
@@ -290,9 +295,9 @@ export function SimplifiedAdminControls({ clienteId, clienteData }: SimplifiedAd
     setLoading(true);
     try {
       const { error } = await supabase
-        .from('profiles')
+        .from('pessoas')
         .update({ status })
-        .eq('id', authData.id);
+        .eq('profile_id', authData.id);
 
       if (error) throw error;
       

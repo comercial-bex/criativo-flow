@@ -91,17 +91,26 @@ export default function ProjetoTarefasKanban() {
       // Fetch project data with responsible person
       const { data: projetoData, error: projetoError } = await supabase
         .from('projetos')
-        .select(`
-          *,
-          responsavel:profiles!projetos_responsavel_id_fkey(nome)
-        `)
+        .select('*')
         .eq('id', projetoId)
         .single();
 
       if (projetoError) throw projetoError;
+
+      // Buscar nome do responsável
+      let responsavel_nome = undefined;
+      if (projetoData.responsavel_id) {
+        const { data: pessoa } = await supabase
+          .from('pessoas')
+          .select('nome')
+          .eq('profile_id', projetoData.responsavel_id)
+          .maybeSingle();
+        responsavel_nome = pessoa?.nome;
+      }
+
       setProjeto({
         ...projetoData,
-        responsavel_nome: projetoData.responsavel?.nome
+        responsavel_nome
       });
 
       // Fetch tasks with responsible person

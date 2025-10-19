@@ -21,8 +21,17 @@ import { ViewClienteModal } from '@/components/ViewClienteModal';
 import { ConfirmDeleteModal } from '@/components/ConfirmDeleteModal';
 import { PasswordInput } from '@/components/ui/password-input';
 
-type Profile = Database['public']['Tables']['profiles']['Row'] & {
-  status?: 'pendente_aprovacao' | 'aprovado' | 'rejeitado' | 'suspenso';
+type Profile = {
+  id: string;
+  nome: string;
+  email: string | null;
+  telefone: string | null;
+  avatar_url: string | null;
+  status: 'pendente_aprovacao' | 'aprovado' | 'rejeitado' | 'suspenso';
+  especialidade: string | null;
+  cliente_id: string | null;
+  created_at: string;
+  updated_at: string;
   observacoes_aprovacao?: string;
   data_aprovacao?: string;
   aprovado_por?: string;
@@ -88,25 +97,57 @@ export default function Especialistas() {
   const fetchEspecialistas = useCallback(async () => {
     setLoading(true);
     try {
-      // ✅ FASE 1: LEFT JOIN para incluir usuários sem role (pendentes)
-      const { data: profiles, error: profilesError } = await supabase
-        .from('profiles')
+      // Buscar de pessoas com profile_id (usuários com acesso)
+      const { data: pessoas, error: pessoasError } = await supabase
+        .from('pessoas')
         .select(`
-          *,
-          user_roles(role)
+          profile_id,
+          nome,
+          email,
+          telefones,
+          status,
+          papeis,
+          created_at,
+          updated_at,
+          cliente_id
         `)
-        .or('user_roles.role.neq.cliente,user_roles.is.null'); // Excluir apenas clientes confirmados
+        .not('profile_id', 'is', null);
 
-      if (profilesError) {
-        console.error('❌ Erro ao buscar profiles:', profilesError);
-        throw profilesError;
+      if (pessoasError) {
+        console.error('❌ Erro ao buscar pessoas:', pessoasError);
+        throw pessoasError;
       }
 
+      // Buscar roles dos usuários
+      const profileIds = pessoas?.map(p => p.profile_id!).filter(Boolean) || [];
+      const { data: roles } = await supabase
+        .from('user_roles')
+        .select('user_id, role')
+        .in('user_id', profileIds);
+
       // Mapear para formato esperado
-      const especialistasComRoles = profiles?.map(profile => ({
-        ...profile,
-        role: (profile.user_roles as any)?.[0]?.role
-      })) || [];
+      const especialistasComRoles = (pessoas || [])
+        .filter(p => !p.cliente_id || p.papeis?.includes('colaborador'))
+        .map(pessoa => {
+          const userRole = roles?.find(r => r.user_id === pessoa.profile_id);
+          const especialidade = pessoa.papeis?.includes('colaborador') 
+            ? (pessoa.papeis.find(p => p !== 'colaborador') || null)
+            : null;
+          
+          return {
+            id: pessoa.profile_id!,
+            nome: pessoa.nome,
+            email: pessoa.email,
+            telefone: Array.isArray(pessoa.telefones) ? pessoa.telefones[0] : null,
+            avatar_url: null,
+            status: pessoa.status as any,
+            especialidade: especialidade,
+            cliente_id: pessoa.cliente_id,
+            created_at: pessoa.created_at!,
+            updated_at: pessoa.updated_at!,
+            role: userRole?.role
+          };
+        });
 
       console.log('✅ Especialistas carregados:', especialistasComRoles.length);
       setEspecialistas(especialistasComRoles as any);
@@ -132,14 +173,12 @@ export default function Especialistas() {
       if (approvalAction.action === 'suspend') {
         // Para suspensão, atualizamos diretamente
         const { error } = await supabase
-          .from('profiles')
+          .from('pessoas')
           .update({ 
             status: 'suspenso',
-            observacoes_aprovacao: observacao,
-            data_aprovacao: new Date().toISOString(),
             updated_at: new Date().toISOString()
           })
-          .eq('id', approvalAction.especialistaId);
+          .eq('profile_id', approvalAction.especialistaId);
 
         if (error) throw error;
       } else {

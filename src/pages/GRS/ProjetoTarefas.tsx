@@ -74,15 +74,24 @@ export default function ProjetoTarefas() {
 
       const { data: projetoData, error: projetoError } = await supabase
         .from('projetos')
-        .select(`
-          *,
-          profiles!projetos_responsavel_id_fkey(nome)
-        `)
+        .select('*')
         .eq('id', projetoId)
         .single();
 
       if (projetoError) throw projetoError;
-      setProjeto(projetoData);
+
+      // Buscar nome do responsável
+      let profiles = undefined;
+      if (projetoData.responsavel_id) {
+        const { data: pessoa } = await supabase
+          .from('pessoas')
+          .select('nome')
+          .eq('profile_id', projetoData.responsavel_id)
+          .maybeSingle();
+        profiles = pessoa ? { nome: pessoa.nome } : undefined;
+      }
+
+      setProjeto({ ...projetoData, profiles });
 
     } catch (error) {
       console.error('Erro ao buscar dados:', error);
