@@ -22,7 +22,7 @@ export function useAccessControl() {
           .from('pessoas')
           .select('status, nome, email')
           .eq('profile_id', user.id)
-          .single();
+          .maybeSingle();
         setUserProfile(data);
       } catch (error) {
         console.error('Erro ao verificar acesso:', error);

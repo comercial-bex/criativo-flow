@@ -101,7 +101,7 @@ export function useProfileData() {
         })
         .eq('profile_id', id)
         .select()
-        .single();
+        .maybeSingle();
 
       if (updateError) {
         throw new Error(updateError.message);

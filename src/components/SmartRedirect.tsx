@@ -90,14 +90,14 @@ export function SmartRedirect() {
               .from('pessoas')
               .select('telefones')
               .eq('profile_id', user.id)
-              .single();
+              .maybeSingle();
 
             // Buscar avatar_url ainda de profiles (campo não existe em pessoas)
             const { data: profile } = await supabase
               .from('profiles')
               .select('avatar_url')
               .eq('id', user.id)
-              .single();
+              .maybeSingle();
 
             if (!profile?.avatar_url && (!pessoa?.telefones || pessoa.telefones.length === 0)) {
               navigate('/perfil', { replace: true });

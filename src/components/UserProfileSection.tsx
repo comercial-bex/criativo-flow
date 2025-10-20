@@ -20,14 +20,14 @@ export function UserProfileSection() {
         .from('pessoas')
         .select('nome, email')
         .eq('profile_id', user.id)
-        .single();
+        .maybeSingle();
 
       // Buscar avatar_url de profiles (campo não existe em pessoas ainda)
       const { data: profile } = await supabase
         .from('profiles')
         .select('avatar_url')
         .eq('id', user.id)
-        .single();
+        .maybeSingle();
       
       setProfile({ ...pessoa, avatar_url: profile?.avatar_url });
     };
