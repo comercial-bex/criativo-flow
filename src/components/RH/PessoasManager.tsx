@@ -30,7 +30,7 @@ export function PessoasManager() {
   const [cpfError, setCpfError] = useState<string>('');
   const { pessoas, isLoading, criar, atualizar, desativar, isCriando, isAtualizando } = usePessoas(filtro);
   const { dadosPendentes } = useColaboradorTempData();
-  const { data: especialistas = [] } = useEspecialistas();
+  const { data: especialistas = [], isLoading: loadingEspecialistas } = useEspecialistas();
 
   const [formData, setFormData] = useState<Partial<Pessoa>>({
     nome: '',
@@ -354,16 +354,35 @@ export function PessoasManager() {
                               });
                             }
                           }}
+                          disabled={loadingEspecialistas}
                         >
                           <SelectTrigger className="flex-1">
-                            <SelectValue placeholder="Selecionar especialista da equipe interna" />
+                            <SelectValue 
+                              placeholder={
+                                loadingEspecialistas 
+                                  ? "🔄 Carregando especialistas..." 
+                                  : especialistas.length === 0 
+                                    ? "⚠️ Nenhum especialista encontrado"
+                                    : "Selecionar especialista da equipe interna"
+                              } 
+                            />
                           </SelectTrigger>
                           <SelectContent>
-                            {especialistas.map((esp) => (
-                              <SelectItem key={esp.id} value={esp.id}>
-                                {esp.nome} - {esp.papeis?.join(', ')}
+                            {loadingEspecialistas ? (
+                              <SelectItem value="loading" disabled>
+                                Carregando...
                               </SelectItem>
-                            ))}
+                            ) : especialistas.length === 0 ? (
+                              <SelectItem value="empty" disabled>
+                                Nenhum especialista cadastrado
+                              </SelectItem>
+                            ) : (
+                              especialistas.map((esp) => (
+                                <SelectItem key={esp.id} value={esp.id}>
+                                  {esp.nome} - {esp.papeis?.join(', ')}
+                                </SelectItem>
+                              ))
+                            )}
                           </SelectContent>
                         </Select>
                         
