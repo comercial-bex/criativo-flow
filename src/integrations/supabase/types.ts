@@ -278,6 +278,13 @@ export type Database = {
             referencedRelation: "tarefa"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "fk_anexo_tarefa"
+            columns: ["tarefa_id"]
+            isOneToOne: false
+            referencedRelation: "tarefa"
+            referencedColumns: ["id"]
+          },
         ]
       }
       aprovacao_tarefa: {
@@ -476,6 +483,41 @@ export type Database = {
             columns: ["tarefa_id"]
             isOneToOne: false
             referencedRelation: "tarefas_projeto"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_aprovacoes_cliente"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_aprovacoes_cliente"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "mv_grs_dashboard_metrics"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "fk_aprovacoes_cliente"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "vw_client_metrics"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "fk_aprovacoes_projeto"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "projetos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_aprovacoes_tarefa"
+            columns: ["tarefa_id"]
+            isOneToOne: false
+            referencedRelation: "tarefa"
             referencedColumns: ["id"]
           },
         ]
@@ -944,6 +986,34 @@ export type Database = {
             columns: ["tarefa_id"]
             isOneToOne: false
             referencedRelation: "tarefas_projeto"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_briefings_cliente"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_briefings_cliente"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "mv_grs_dashboard_metrics"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "fk_briefings_cliente"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "vw_client_metrics"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "fk_briefings_tarefa"
+            columns: ["tarefa_id"]
+            isOneToOne: false
+            referencedRelation: "tarefa"
             referencedColumns: ["id"]
           },
         ]
@@ -4072,6 +4142,20 @@ export type Database = {
             columns: ["titulo_id"]
             isOneToOne: false
             referencedRelation: "titulos_financeiros"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_financeiro_evento"
+            columns: ["evento_id"]
+            isOneToOne: false
+            referencedRelation: "eventos_calendario"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_financeiro_tarefa"
+            columns: ["tarefa_id"]
+            isOneToOne: false
+            referencedRelation: "tarefa"
             referencedColumns: ["id"]
           },
           {
