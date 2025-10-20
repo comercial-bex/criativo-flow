@@ -37,7 +37,6 @@ export function EspecialidadeSelect({
           />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="">Sem especialidade</SelectItem>
           {especialidades.map((especialidade) => (
             <SelectItem key={especialidade.id} value={especialidade.id}>
               <div className="flex items-center gap-2">

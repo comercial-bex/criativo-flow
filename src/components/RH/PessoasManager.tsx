@@ -592,11 +592,11 @@ export function PessoasManager() {
                       <div>
                         <Label htmlFor="regime">Regime</Label>
                         <Select
-                          value={formData.regime || ''}
+                          value={formData.regime || undefined}
                           onValueChange={(value: any) => setFormData({ ...formData, regime: value })}
                         >
                           <SelectTrigger>
-                            <SelectValue placeholder="Selecione" />
+                            <SelectValue placeholder="Selecione o regime" />
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="clt">CLT</SelectItem>
@@ -613,7 +613,7 @@ export function PessoasManager() {
                           onValueChange={(value: any) => setFormData({ ...formData, status: value })}
                         >
                           <SelectTrigger>
-                            <SelectValue />
+                            <SelectValue placeholder="Selecione o status" />
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="ativo">Ativo</SelectItem>
