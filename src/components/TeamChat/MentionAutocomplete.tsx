@@ -27,7 +27,7 @@ export function MentionAutocomplete({ query, onSelect }: MentionAutocompleteProp
 
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, nome, avatar_url, especialidade')
+        .select('id, nome, avatar_url')
         .ilike('nome', `%${query}%`)
         .limit(5);
 
@@ -60,11 +60,6 @@ export function MentionAutocomplete({ query, onSelect }: MentionAutocompleteProp
                 </BexAvatar>
                 <div className="flex-1">
                   <p className="text-sm font-medium">{user.nome}</p>
-                  {user.especialidade && (
-                    <p className="text-xs text-muted-foreground capitalize">
-                      {user.especialidade}
-                    </p>
-                  )}
                 </div>
               </CommandItem>
             ))}

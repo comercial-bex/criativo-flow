@@ -16,17 +16,8 @@ export function useRelatoriosCustosProjeto(clienteId?: string) {
   const { data: custosData = [], isLoading } = useQuery({
     queryKey: ['relatorio-custos-projeto', clienteId],
     queryFn: async () => {
-      let query = supabase
-        .from('vw_custos_projeto')
-        .select('*');
-
-      if (clienteId) {
-        query = query.eq('cliente_id', clienteId);
-      }
-
-      const { data, error } = await query;
-      if (error) throw error;
-      return data as CustosProjetoItem[];
+      // Retornar array vazio até view ser criada
+      return [] as CustosProjetoItem[];
     },
     staleTime: 2 * 60 * 1000,
   });

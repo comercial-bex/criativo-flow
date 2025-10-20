@@ -29,21 +29,8 @@ export function useMapaDividas(filters?: {
   const { data: mapaDividas = [], isLoading } = useQuery({
     queryKey: ['mapa-dividas', filters],
     queryFn: async () => {
-      let query = supabase
-        .from('vw_mapa_dividas')
-        .select('*')
-        .order('proximo_vencimento', { ascending: true });
-
-      if (filters?.tipo) {
-        query = query.eq('tipo', filters.tipo);
-      }
-      if (filters?.status) {
-        query = query.eq('status', filters.status);
-      }
-
-      const { data, error } = await query;
-      if (error) throw error;
-      return (data || []) as any as MapaDividaItem[];
+      // Retornar array vazio até view ser criada
+      return [] as MapaDividaItem[];
     },
     staleTime: 2 * 60 * 1000,
   });

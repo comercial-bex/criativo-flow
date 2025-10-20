@@ -41,34 +41,34 @@ export function FluxoPorCategoria() {
     );
   }
 
-  const receitas = fluxoData?.filter(f => f.titulo_tipo === 'receber') || [];
-  const despesas = fluxoData?.filter(f => f.titulo_tipo === 'pagar') || [];
+  const receitas = (fluxoData as any[] || []).filter((f: any) => f.titulo_tipo === 'receber');
+  const despesas = (fluxoData as any[] || []).filter((f: any) => f.titulo_tipo === 'pagar');
 
   // Agrupar por categoria
-  const receitasPorCategoria = receitas.reduce((acc: any[], item) => {
+  const receitasPorCategoria = receitas.reduce((acc: any[], item: any) => {
     const existe = acc.find(a => a.categoria_id === item.categoria_id);
     if (existe) {
-      existe.valor += item.valor_pago;
+      existe.valor += Number(item.valor_pago) || 0;
     } else {
       acc.push({
         categoria_id: item.categoria_id,
         nome: item.categoria_nome || 'Sem Categoria',
-        valor: item.valor_pago,
+        valor: Number(item.valor_pago) || 0,
         cor: item.categoria_cor || '#3b82f6',
       });
     }
     return acc;
   }, []);
 
-  const despesasPorCategoria = despesas.reduce((acc: any[], item) => {
+  const despesasPorCategoria = despesas.reduce((acc: any[], item: any) => {
     const existe = acc.find(a => a.categoria_id === item.categoria_id);
     if (existe) {
-      existe.valor += item.valor_pago;
+      existe.valor += Number(item.valor_pago) || 0;
     } else {
       acc.push({
         categoria_id: item.categoria_id,
         nome: item.categoria_nome || 'Sem Categoria',
-        valor: item.valor_pago,
+        valor: Number(item.valor_pago) || 0,
         cor: item.categoria_cor || '#ef4444',
       });
     }

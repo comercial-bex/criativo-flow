@@ -42,13 +42,8 @@ export function useFinanceiroDashboard() {
   const { data: lancamentosOrigem = [], isLoading: loadingLancamentos } = useQuery({
     queryKey: ["lancamentos-origem"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("vw_financeiro_origem")
-        .select("*")
-        .limit(100);
-
-      if (error) throw error;
-      return data as LancamentoOrigem[];
+      // Retornar array vazio por enquanto até view ser criada
+      return [] as LancamentoOrigem[];
     },
     staleTime: 1000 * 60 * 5, // 5 minutos
   });

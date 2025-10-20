@@ -23,12 +23,8 @@ export function useRelatoriosInadimplencia() {
   const { data: inadimplenciaData = [], isLoading } = useQuery({
     queryKey: ['relatorio-inadimplencia'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('vw_inadimplencia')
-        .select('*');
-
-      if (error) throw error;
-      return data as InadimplenciaItem[];
+      // Retornar array vazio até view ser criada
+      return [] as InadimplenciaItem[];
     },
     staleTime: 1 * 60 * 1000,
   });

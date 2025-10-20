@@ -39,13 +39,8 @@ export function useMigracaoStatus() {
   const { data: progresso, isLoading: loadingProgresso, refetch: refetchProgresso } = useQuery({
     queryKey: ['migracao-progresso'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('vw_progresso_migracao_clientes')
-        .select('*')
-        .single();
-
-      if (error) throw error;
-      return data as ProgressoMigracao;
+      // Retornar objeto vazio até view ser criada
+      return {} as ProgressoMigracao;
     }
   });
 
@@ -67,12 +62,8 @@ export function useMigracaoStatus() {
   const { data: conflitos, isLoading: loadingConflitos, refetch: refetchConflitos } = useQuery({
     queryKey: ['migracao-conflitos'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('vw_conflitos_migracao_clientes')
-        .select('*');
-
-      if (error) throw error;
-      return data as ConflitoDuplicata[];
+      // Retornar array vazio até view ser criada
+      return [] as ConflitoDuplicata[];
     }
   });
 

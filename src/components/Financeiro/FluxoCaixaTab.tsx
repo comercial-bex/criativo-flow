@@ -23,28 +23,28 @@ export function FluxoCaixaTab() {
     staleTime: 2 * 60 * 1000,
   });
 
-  const formatCurrency = (value: number) => {
+  const formatCurrency = (value: number | unknown) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: 'BRL',
-    }).format(value);
+    }).format(Number(value) || 0);
   };
 
   // Preparar dados para gráficos
   const chartData = (dashboardData || []).map((item: any) => ({
     mes: new Date(item.mes).toLocaleDateString('pt-BR', { month: 'short' }),
-    entradas: item.total_receitas || 0,
-    saidas: item.total_despesas || 0,
-    saldo: (item.total_receitas || 0) - (item.total_despesas || 0),
+    entradas: Number(item.total_receitas) || 0,
+    saidas: Number(item.total_despesas) || 0,
+    saldo: (Number(item.total_receitas) || 0) - (Number(item.total_despesas) || 0),
   }));
 
   // Calcular totais
-  const totalEntradas = (dashboardData || []).reduce((acc: number, item: any) => 
-    acc + (item.total_receitas || 0), 0
-  );
-  const totalSaidas = (dashboardData || []).reduce((acc: number, item: any) => 
-    acc + (item.total_despesas || 0), 0
-  );
+  const totalEntradas = Number((dashboardData || []).reduce((acc: number, item: any) => 
+    acc + (Number(item.total_receitas) || 0), 0
+  ));
+  const totalSaidas = Number((dashboardData || []).reduce((acc: number, item: any) => 
+    acc + (Number(item.total_despesas) || 0), 0
+  ));
   const saldoLiquido = totalEntradas - totalSaidas;
 
   return (

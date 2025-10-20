@@ -25,8 +25,7 @@ export function NewThreadDialog({ open, onOpenChange, onThreadCreated }: NewThre
     queryFn: async () => {
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, nome, especialidade, avatar_url')
-        .not('especialidade', 'is', null)
+        .select('id, nome, avatar_url')
         .order('nome');
 
       if (error) throw error;
@@ -96,11 +95,6 @@ export function NewThreadDialog({ open, onOpenChange, onThreadCreated }: NewThre
                     className="flex-1 cursor-pointer flex items-center gap-2"
                   >
                     <span>{user.nome}</span>
-                    {user.especialidade && (
-                      <span className="text-xs text-muted-foreground capitalize">
-                        ({user.especialidade})
-                      </span>
-                    )}
                   </Label>
                 </div>
               ))}
