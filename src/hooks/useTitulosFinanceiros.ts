@@ -133,18 +133,23 @@ export function useCriarTitulo() {
 
   return useMutation({
     mutationFn: async (titulo: Partial<TituloFinanceiro>) => {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('titulos_financeiros')
-        .insert([titulo as any]);
+        .insert([titulo as any])
+        .select()
+        .single();
       
       if (error) throw error;
+      return data;
     },
     onSuccess: () => {
       smartToast.success("Título criado com sucesso");
       queryClient.invalidateQueries({ queryKey: ['titulos-financeiros'] });
     },
-    onError: (error: Error) => {
-      smartToast.error("Erro ao criar título", error.message);
+    onError: (err: any) => {
+      const msg = err?.message || err?.details || err?.hint || 'Erro desconhecido ao criar título';
+      console.error('❌ Erro ao criar título:', err);
+      smartToast.error('Erro ao criar título', msg);
     },
   });
 }

@@ -15,7 +15,7 @@ export function useGestaoContasAnalytics(tipo: 'pagar' | 'receber') {
         .select(`
           *,
           clientes(nome),
-          fornecedores(nome)
+          fornecedores(razao_social)
         `)
         .eq('tipo', tipo)
         .gte('data_vencimento', ultimos30Dias)
@@ -76,9 +76,9 @@ export function useGestaoContasAnalytics(tipo: 'pagar' | 'receber') {
       const porEntidade: Record<string, number> = {};
       titulos.forEach(t => {
         if (t.status !== 'pago') {
-          const nome = tipo === 'receber' 
-            ? (t.clientes as any)?.nome || 'Não identificado'
-            : (t.fornecedores as any)?.nome || 'Não identificado';
+      const nome = tipo === 'receber' 
+        ? (t.clientes as any)?.nome || 'Não identificado'
+        : (t.fornecedores as any)?.razao_social || 'Não identificado';
           porEntidade[nome] = (porEntidade[nome] || 0) + (t.valor_liquido || 0);
         }
       });

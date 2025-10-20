@@ -21,7 +21,9 @@ import { cn } from "@/lib/utils";
 
 const tituloSchema = z.object({
   tipo: z.enum(['pagar', 'receber']),
-  tipo_documento: z.string().min(1, "Tipo obrigatório"),
+  tipo_documento: z.enum(['nf', 'boleto', 'recibo', 'fatura', 'duplicata', 'outros'], {
+    required_error: 'Tipo de documento é obrigatório'
+  }),
   numero_documento: z.string().optional(),
   descricao: z.string().min(3, "Descrição deve ter no mínimo 3 caracteres"),
   valor_original: z.string().min(1, "Valor obrigatório"),
@@ -69,7 +71,7 @@ export function LancarTituloUnificadoDialog({ trigger }: LancarTituloUnificadoDi
     resolver: zodResolver(tituloSchema),
     defaultValues: {
       tipo: 'pagar',
-      tipo_documento: '',
+      tipo_documento: 'nf' as const,
       numero_documento: '',
       descricao: '',
       valor_original: '',
@@ -217,12 +219,12 @@ export function LancarTituloUnificadoDialog({ trigger }: LancarTituloUnificadoDi
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="nota_fiscal">Nota Fiscal</SelectItem>
-                        <SelectItem value="boleto">Boleto</SelectItem>
-                        <SelectItem value="recibo">Recibo</SelectItem>
-                        <SelectItem value="fatura">Fatura</SelectItem>
-                        <SelectItem value="contrato">Contrato</SelectItem>
-                        <SelectItem value="outros">Outros</SelectItem>
+                  <SelectItem value="nf">Nota Fiscal</SelectItem>
+                  <SelectItem value="boleto">Boleto</SelectItem>
+                  <SelectItem value="recibo">Recibo</SelectItem>
+                  <SelectItem value="fatura">Fatura</SelectItem>
+                  <SelectItem value="duplicata">Duplicata</SelectItem>
+                  <SelectItem value="outros">Outros</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
