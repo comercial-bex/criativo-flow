@@ -17,6 +17,7 @@ import { useColaboradorTempData } from '@/hooks/useColaboradorTempData';
 import { useQueryClient } from '@tanstack/react-query';
 import { useEspecialistas } from '@/hooks/useEspecialistas';
 import { formatCPF, isValidCPF, cleanCPF } from '@/lib/cpf-utils';
+import { validarCPF, formatarCPF } from '@/lib/validations/pessoa';
 import { EspecialidadeSelect } from './EspecialidadeSelect';
 import { Plus, User, UserCheck, UserX, Pencil, AlertCircle, Database, FileText, Briefcase, CreditCard, MessageSquare } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -43,7 +44,10 @@ export function PessoasManager() {
     papeis: [],
     dados_bancarios: {},
     status: 'ativo',
+    especialidade_id: '',
   });
+
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
   const [tempDataSelecionado, setTempDataSelecionado] = useState<any>(null);
 
@@ -111,7 +115,40 @@ export function PessoasManager() {
   };
 
   const handleSubmit = () => {
-    if (!formData.nome) {
+    // Reset errors
+    setFormErrors({});
+    const errors: Record<string, string> = {};
+
+    // Validate required fields
+    if (!formData.nome || formData.nome.trim().length < 3) {
+      errors.nome = 'Nome deve ter pelo menos 3 caracteres';
+    }
+
+    if (!formData.especialidade_id) {
+      errors.especialidade_id = 'Especialidade é obrigatória';
+    }
+
+    // Validate CPF if provided
+    if (formData.cpf && formData.cpf.length > 0) {
+      const cpfLimpo = formData.cpf.replace(/\D/g, '');
+      if (cpfLimpo.length !== 11 || !validarCPF(formData.cpf)) {
+        errors.cpf = 'CPF inválido';
+        setCpfError('CPF inválido');
+      }
+    }
+
+    // Validate email if provided
+    if (formData.email && formData.email.length > 0) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(formData.email)) {
+        errors.email = 'Email inválido';
+      }
+    }
+
+    // If there are errors, show them and return
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
+      smartToast.error('Por favor, corrija os erros no formulário');
       return;
     }
 
@@ -146,9 +183,11 @@ export function PessoasManager() {
       telefones: [''], 
       papeis: [], 
       dados_bancarios: {}, 
-      status: 'ativo' 
+      status: 'ativo',
+      especialidade_id: ''
     });
     setCpfError('');
+    setFormErrors({});
   };
 
   const abrirModal = (pessoa?: Pessoa) => {
@@ -157,7 +196,7 @@ export function PessoasManager() {
       setFormData(pessoa);
     } else {
       setPessoaEditando(null);
-      setFormData({ nome: '', email: '', cpf: '', telefones: [''], papeis: [], dados_bancarios: {}, status: 'ativo' });
+      setFormData({ nome: '', email: '', cpf: '', telefones: [''], papeis: [], dados_bancarios: {}, status: 'ativo', especialidade_id: '' });
     }
     setModalAberto(true);
   };
@@ -487,10 +526,20 @@ export function PessoasManager() {
                       <Input
                         id="nome"
                         value={formData.nome || ''}
-                        onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
+                        onChange={(e) => {
+                          setFormData({ ...formData, nome: e.target.value });
+                          setFormErrors({ ...formErrors, nome: '' });
+                        }}
                         disabled={!!formData.profile_id}
+                        className={formErrors.nome ? 'border-destructive' : ''}
                       />
-                      {formData.profile_id && (
+                      {formErrors.nome && (
+                        <p className="text-sm text-destructive flex items-center gap-1 mt-1">
+                          <AlertCircle className="h-3 w-3" />
+                          {formErrors.nome}
+                        </p>
+                      )}
+                      {formData.profile_id && !formErrors.nome && (
                         <p className="text-xs text-muted-foreground mt-1">
                           ✅ Preenchido automaticamente do cadastro do especialista
                         </p>
@@ -569,9 +618,13 @@ export function PessoasManager() {
                     {/* Campo de Especialidade - Define role automaticamente */}
                     <EspecialidadeSelect
                       value={formData.especialidade_id}
-                      onChange={(value) => setFormData({ ...formData, especialidade_id: value })}
+                      onChange={(value) => {
+                        setFormData({ ...formData, especialidade_id: value });
+                        setFormErrors({ ...formErrors, especialidade_id: '' });
+                      }}
                       required={true}
                       showPermissionInfo={true}
+                      error={formErrors.especialidade_id}
                     />
 
                     {/* Campo Cargo Atual - Descritivo */}
