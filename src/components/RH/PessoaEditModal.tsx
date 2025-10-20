@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Pessoa, usePessoas } from '@/hooks/usePessoas';
 import { smartToast } from '@/lib/smart-toast';
 import { Loader2 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface PessoaEditModalProps {
   open: boolean;
@@ -101,6 +102,16 @@ export function PessoaEditModal({ open, onOpenChange, pessoa, onSaved }: PessoaE
       return;
     }
 
+    // Validar especialidade
+    const temEspecialidade = formData.papeis?.some(p => 
+      ['grs', 'design', 'audiovisual', 'atendimento', 'financeiro', 'gestor'].includes(p)
+    );
+    
+    if (!temEspecialidade) {
+      smartToast.error('Selecione uma especialidade/cargo para definir as permissões');
+      return;
+    }
+
     if (formData.cpf && !validarCPF(formData.cpf)) {
       smartToast.error('CPF inválido');
       return;
@@ -108,6 +119,31 @@ export function PessoaEditModal({ open, onOpenChange, pessoa, onSaved }: PessoaE
 
     try {
       await atualizar({ id: pessoa.id, ...formData });
+      
+      // Sincronizar role na tabela user_roles
+      if (pessoa.profile_id) {
+        const especialidade = formData.papeis?.find(p => 
+          ['grs', 'design', 'audiovisual', 'atendimento', 'financeiro', 'gestor'].includes(p)
+        );
+        
+        const roleMap: Record<string, string> = {
+          'grs': 'grs',
+          'design': 'designer',
+          'audiovisual': 'filmmaker',
+          'atendimento': 'atendimento',
+          'financeiro': 'financeiro',
+          'gestor': 'gestor'
+        };
+        
+        const role = roleMap[especialidade || ''];
+        
+        if (role) {
+          await supabase
+            .from('user_roles')
+            .upsert({ user_id: pessoa.profile_id, role: role as any }, { onConflict: 'user_id,role' });
+        }
+      }
+      
       smartToast.success('Dados atualizados com sucesso');
       onSaved?.();
       onOpenChange(false);
@@ -129,12 +165,16 @@ export function PessoaEditModal({ open, onOpenChange, pessoa, onSaved }: PessoaE
         <div className="space-y-4 py-4">
           {/* Nome */}
           <div className="space-y-2">
-            <Label htmlFor="nome">Nome Completo *</Label>
+            <Label htmlFor="nome" className="flex items-center gap-1">
+              Nome Completo
+              <span className="text-destructive text-lg">*</span>
+            </Label>
             <Input
               id="nome"
               value={formData.nome || ''}
               onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
               placeholder="Nome completo"
+              className={!formData.nome ? 'border-destructive' : ''}
             />
           </div>
 
@@ -191,15 +231,43 @@ export function PessoaEditModal({ open, onOpenChange, pessoa, onSaved }: PessoaE
             </Select>
           </div>
 
-          {/* Cargo */}
+          {/* Especialidade/Cargo */}
           <div className="space-y-2">
-            <Label htmlFor="cargo">Cargo Atual</Label>
-            <Input
-              id="cargo"
-              value={formData.cargo_atual || ''}
-              onChange={(e) => setFormData({ ...formData, cargo_atual: e.target.value })}
-              placeholder="Ex: Designer, Filmmaker"
-            />
+            <Label htmlFor="especialidade" className="flex items-center gap-1">
+              Especialidade/Cargo
+              <span className="text-destructive text-lg">*</span>
+            </Label>
+            <Select
+              value={formData.papeis?.find(p => ['grs', 'design', 'audiovisual', 'atendimento', 'financeiro', 'gestor'].includes(p)) || ''}
+              onValueChange={(value) => {
+                const novosPapeis = ['colaborador', 'especialista', value].filter((v, i, a) => a.indexOf(v) === i);
+                setFormData({ 
+                  ...formData, 
+                  papeis: novosPapeis,
+                  cargo_atual: value === 'grs' ? 'GRS' :
+                               value === 'design' ? 'Designer' :
+                               value === 'audiovisual' ? 'Filmmaker' :
+                               value === 'atendimento' ? 'Atendimento' :
+                               value === 'financeiro' ? 'Financeiro' :
+                               value === 'gestor' ? 'Gestor' : ''
+                });
+              }}
+            >
+              <SelectTrigger className={!formData.papeis?.some(p => ['grs', 'design', 'audiovisual', 'atendimento', 'financeiro', 'gestor'].includes(p)) ? 'border-destructive' : ''}>
+                <SelectValue placeholder="Selecione a especialidade *" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="grs">GRS (Gestão de Redes Sociais)</SelectItem>
+                <SelectItem value="design">Designer</SelectItem>
+                <SelectItem value="audiovisual">Filmmaker (Audiovisual)</SelectItem>
+                <SelectItem value="atendimento">Atendimento</SelectItem>
+                <SelectItem value="financeiro">Financeiro</SelectItem>
+                <SelectItem value="gestor">Gestor</SelectItem>
+              </SelectContent>
+            </Select>
+            {!formData.papeis?.some(p => ['grs', 'design', 'audiovisual', 'atendimento', 'financeiro', 'gestor'].includes(p)) && (
+              <p className="text-sm text-destructive">⚠️ Especialidade é obrigatória para definir permissões</p>
+            )}
           </div>
 
           {/* Data de Admissão */}

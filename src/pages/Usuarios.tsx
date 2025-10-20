@@ -154,7 +154,7 @@ const Usuarios = () => {
                 telefones,
                 status,
                 nome
-              `)
+              `, { count: 'exact' })
               .in('profile_id', profileIds)
           : Promise.resolve({ data: [], error: null } as any),
         supabase
