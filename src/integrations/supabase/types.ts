@@ -4074,6 +4074,13 @@ export type Database = {
             referencedRelation: "titulos_financeiros"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "fk_lancamentos_projeto"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "projetos"
+            referencedColumns: ["id"]
+          },
         ]
       }
       financeiro_parametros_fiscais: {
@@ -8049,6 +8056,27 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "fk_projetos_cliente"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_projetos_cliente"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "mv_grs_dashboard_metrics"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "fk_projetos_cliente"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "vw_client_metrics"
+            referencedColumns: ["cliente_id"]
+          },
+          {
             foreignKeyName: "fk_projetos_grs_pessoas"
             columns: ["responsavel_grs_id"]
             isOneToOne: false
@@ -11566,6 +11594,15 @@ export type Database = {
       decrypt_credential: {
         Args: { p_encrypted: string; p_key_name?: string }
         Returns: string
+      }
+      diagnostico_roles_v2: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          percentual_consistencia: number
+          pessoas_com_role: number
+          pessoas_sem_role: number
+          total_pessoas: number
+        }[]
       }
       encrypt_credential: {
         Args: { p_key_name?: string; p_plaintext: string }

@@ -36,7 +36,7 @@ export function useUserRole() {
       return;
     }
 
-    // FASE 1: Tentar cache primeiro
+    // Cache primeiro
     const cachedRole = authCache.get<UserRole>(`user_role_${user.id}`);
     if (cachedRole) {
       console.log('✅ UserRole: Using cached role:', cachedRole);
@@ -45,7 +45,6 @@ export function useUserRole() {
       return;
     }
 
-    // Timeout para evitar loading infinito
     const roleTimeout = setTimeout(() => {
       console.log('⚠️ UserRole: Timeout reached, keeping current role');
       setLoading(false);
@@ -53,6 +52,7 @@ export function useUserRole() {
 
     const fetchRole = async () => {
       try {
+        // ✅ FONTE ÚNICA: user_roles (após Refatoração Cirúrgica)
         const { data, error } = await supabase
           .from('user_roles')
           .select('role')
@@ -71,7 +71,6 @@ export function useUserRole() {
         const userRole = (data?.role as UserRole) || null;
         console.log('👤 UserRole: Fetched role:', userRole);
         
-        // FASE 1: Cachear role
         if (userRole) {
           authCache.set(`user_role_${user.id}`, userRole);
         }

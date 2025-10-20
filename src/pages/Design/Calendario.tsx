@@ -118,8 +118,8 @@ export default function DesignCalendario() {
       // Buscar designers
       const { data: profilesData, error: profilesError } = await supabase
         .from('profiles')
-        .select('*')
-        .eq('especialidade', 'design');
+        .select('id, nome, avatar_url')
+        .eq('status', 'aprovado') as { data: any; error: any };
 
       if (profilesError) throw profilesError;
       setProfiles(profilesData || []);

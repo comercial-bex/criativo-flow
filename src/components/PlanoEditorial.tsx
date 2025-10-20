@@ -541,8 +541,8 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
       const { data, error } = await supabase
         .from('profiles')
         .select('id')
-        .eq('especialidade', especialidade)
-        .maybeSingle();
+        .eq('status', 'aprovado')
+        .maybeSingle() as { data: any; error: any };
       
       if (error) {
         console.error('Erro ao buscar especialista:', error);
