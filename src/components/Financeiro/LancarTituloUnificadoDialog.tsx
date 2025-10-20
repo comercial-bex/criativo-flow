@@ -26,16 +26,50 @@ const tituloSchema = z.object({
   }),
   numero_documento: z.string().optional(),
   descricao: z.string().min(3, "Descrição deve ter no mínimo 3 caracteres"),
-  valor_original: z.string().min(1, "Valor obrigatório"),
+  valor_original: z.string()
+    .min(1, "Valor obrigatório")
+    .transform(s => Number(s.replace(/\D/g, '')) / 100)
+    .refine(n => n > 0, "Valor deve ser maior que zero"),
   data_vencimento: z.date({ required_error: "Data de vencimento obrigatória" }),
   data_competencia: z.date({ required_error: "Data de competência obrigatória" }),
   entidade_id: z.string().optional(),
   forma_pagamento: z.string().optional(),
   observacoes: z.string().optional(),
   comprovante: z.instanceof(File).optional(),
+}).superRefine((data, ctx) => {
+  // Validar que entidade é obrigatória conforme tipo
+  if (data.tipo === 'receber' && !data.entidade_id) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Cliente é obrigatório para lançamentos de receber",
+      path: ['entidade_id'],
+    });
+  }
+  
+  if (data.tipo === 'pagar' && !data.entidade_id) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Fornecedor é obrigatório para lançamentos de pagar",
+      path: ['entidade_id'],
+    });
+  }
+  
+  // Validar que data de vencimento não pode ser anterior a hoje
+  const hoje = new Date();
+  hoje.setHours(0, 0, 0, 0);
+  const vencimento = new Date(data.data_vencimento);
+  vencimento.setHours(0, 0, 0, 0);
+  
+  if (vencimento < hoje) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "A data de vencimento não pode ser anterior a hoje",
+      path: ['data_vencimento'],
+    });
+  }
 });
 
-type TituloFormData = z.infer<typeof tituloSchema>;
+type TituloFormData = z.input<typeof tituloSchema>;
 
 interface LancarTituloUnificadoDialogProps {
   trigger?: React.ReactNode;
@@ -74,7 +108,7 @@ export function LancarTituloUnificadoDialog({ trigger }: LancarTituloUnificadoDi
       tipo_documento: 'nf' as const,
       numero_documento: '',
       descricao: '',
-      valor_original: '',
+      valor_original: '0,00',
       data_vencimento: new Date(),
       data_competencia: new Date(),
       entidade_id: '',
@@ -105,7 +139,8 @@ export function LancarTituloUnificadoDialog({ trigger }: LancarTituloUnificadoDi
   
   const handleSubmit = async (data: TituloFormData) => {
     try {
-      const valorNumerico = parseFloat(data.valor_original.replace(/[^\d,]/g, '').replace(',', '.'));
+      // valor_original já vem transformado pelo schema (número)
+      const valorNumerico = data.valor_original as unknown as number;
       
       const tituloData: any = {
         tipo: data.tipo,
@@ -141,8 +176,38 @@ export function LancarTituloUnificadoDialog({ trigger }: LancarTituloUnificadoDi
       setOpen(false);
       form.reset();
       setComprovanteUrl(null);
-    } catch (error) {
-      smartToast.error('Erro ao criar lançamento', error instanceof Error ? error.message : 'Erro desconhecido');
+    } catch (error: any) {
+      console.error('❌ Erro ao criar título:', error);
+      
+      // Mapear erros do banco de dados para campos específicos
+      const details = error?.details || error?.message || '';
+      const hint = error?.hint || '';
+      
+      if (details.includes('titulo_tem_parte') || hint.includes('parte')) {
+        form.setError('entidade_id', {
+          message: `${data.tipo === 'receber' ? 'Cliente' : 'Fornecedor'} é obrigatório para este tipo de lançamento`,
+        });
+        smartToast.error('Erro ao criar lançamento', 'Verifique os campos destacados em vermelho');
+        return;
+      }
+      
+      if (details.includes('datas_validas')) {
+        form.setError('data_vencimento', {
+          message: 'Data de vencimento inválida',
+        });
+        smartToast.error('Erro ao criar lançamento', 'A data de vencimento deve ser posterior à data de emissão');
+        return;
+      }
+      
+      if (details.includes('valor_original_check')) {
+        form.setError('valor_original', {
+          message: 'Valor deve ser maior que zero',
+        });
+        smartToast.error('Erro ao criar lançamento', 'Verifique o valor informado');
+        return;
+      }
+      
+      smartToast.error('Erro ao criar lançamento', details || error?.message || 'Verifique os campos em vermelho');
     }
   };
   
@@ -277,7 +342,9 @@ export function LancarTituloUnificadoDialog({ trigger }: LancarTituloUnificadoDi
                       disabled={entidadesError !== null || !entidades || entidades.length === 0}
                     >
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger className={cn(
+                          form.formState.errors.entidade_id && "border-destructive focus:ring-destructive"
+                        )}>
                           <SelectValue 
                             placeholder={
                               entidadesError 
@@ -316,7 +383,10 @@ export function LancarTituloUnificadoDialog({ trigger }: LancarTituloUnificadoDi
                     <FormLabel>Valor</FormLabel>
                     <FormControl>
                       <Input 
-                        placeholder="R$ 0,00" 
+                        placeholder="R$ 0,00"
+                        className={cn(
+                          form.formState.errors.valor_original && "border-destructive focus-visible:ring-destructive"
+                        )}
                         {...field}
                         onChange={(e) => {
                           const value = e.target.value.replace(/\D/g, '');
@@ -349,7 +419,8 @@ export function LancarTituloUnificadoDialog({ trigger }: LancarTituloUnificadoDi
                             variant="outline"
                             className={cn(
                               "w-full pl-3 text-left font-normal",
-                              !field.value && "text-muted-foreground"
+                              !field.value && "text-muted-foreground",
+                              form.formState.errors.data_vencimento && "border-destructive focus:ring-destructive"
                             )}
                           >
                             {field.value ? (
