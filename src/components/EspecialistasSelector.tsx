@@ -46,7 +46,7 @@ export function EspecialistasSelector({ value, onChange }: EspecialistasSelector
         .from('pessoas')
         .select('id, nome, email, telefones, papeis, profile_id')
         .contains('papeis', ['especialista'])
-        .eq('status', 'ativo')
+        .eq('status', 'aprovado')
         .order('nome');
 
       if (error) throw error;

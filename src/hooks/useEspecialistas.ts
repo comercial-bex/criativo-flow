@@ -16,7 +16,7 @@ export function useEspecialistas() {
           papeis
         `)
         .contains('papeis', ['especialista'])
-        .eq('status', 'ativo')
+        .eq('status', 'aprovado')
         .order('nome');
       
       if (error) {
