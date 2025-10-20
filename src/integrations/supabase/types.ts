@@ -507,6 +507,41 @@ export type Database = {
             referencedColumns: ["cliente_id"]
           },
           {
+            foreignKeyName: "fk_aprovacoes_cliente_cliente"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_aprovacoes_cliente_cliente"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "mv_grs_dashboard_metrics"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "fk_aprovacoes_cliente_cliente"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "vw_client_metrics"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "fk_aprovacoes_cliente_projeto"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "projetos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_aprovacoes_cliente_tarefa"
+            columns: ["tarefa_id"]
+            isOneToOne: false
+            referencedRelation: "tarefa"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "fk_aprovacoes_projeto"
             columns: ["projeto_id"]
             isOneToOne: false
@@ -4159,10 +4194,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "fk_lancamentos_evento"
+            columns: ["evento_id"]
+            isOneToOne: false
+            referencedRelation: "eventos_calendario"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "fk_lancamentos_projeto"
             columns: ["projeto_id"]
             isOneToOne: false
             referencedRelation: "projetos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_lancamentos_tarefa"
+            columns: ["tarefa_id"]
+            isOneToOne: false
+            referencedRelation: "tarefa"
             referencedColumns: ["id"]
           },
         ]
