@@ -15,7 +15,7 @@ export function useEspecialistas() {
           profile_id,
           papeis
         `)
-        .contains('papeis', ['especialista'])
+        .not('profile_id', 'is', null)
         .eq('status', 'aprovado')
         .order('nome');
       
