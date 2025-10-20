@@ -33,15 +33,23 @@ export function useFolhaAnalytics(mesesRetroativos: number = 6) {
     ...MODULE_QUERY_CONFIG.folhaPonto,
     queryFn: async () => {
       // Buscar última folha processada
-      const { data: ultimaFolha } = await supabase
+      const { data: folhas, error } = await supabase
         .from('financeiro_folha')
         .select('id, total_encargos')
         .eq('status', 'processada')
         .order('competencia', { ascending: false })
-        .limit(1)
-        .single();
-      
-      if (!ultimaFolha) return [];
+        .limit(1);
+
+      if (error) {
+        console.error('❌ Erro ao buscar última folha:', error);
+        return [];
+      }
+
+      const ultimaFolha = folhas?.[0];  // ✅ Pegar primeiro item ou undefined
+      if (!ultimaFolha) {
+        console.warn('⚠️ Nenhuma folha processada encontrada');
+        return [];
+      }
       
       const { data: itens } = await supabase
         .from('financeiro_folha_itens')

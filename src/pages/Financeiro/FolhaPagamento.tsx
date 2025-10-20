@@ -33,9 +33,16 @@ import { TutorialButton } from '@/components/TutorialButton';
 
 export default function FolhaPagamento() {
   const currentDate = new Date();
-  const currentMonth = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-01`;
+  const currentMonth = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-01`; // ✅ Formato: YYYY-MM-DD
   
   const [competencia, setCompetencia] = useState(currentMonth);
+  
+  // Helper para garantir que competência sempre seja YYYY-MM-DD
+  const handleSetCompetencia = (value: string) => {
+    const normalized = value.match(/^\d{4}-\d{2}$/) ? `${value}-01` : value;
+    console.log('📅 Competência normalizada:', normalized);
+    setCompetencia(normalized);
+  };
   const [itemSelecionado, setItemSelecionado] = useState<any | null>(null);
   const [modalPagamentoAberto, setModalPagamentoAberto] = useState(false);
   const [modalDetalhamentoAberto, setModalDetalhamentoAberto] = useState(false);
@@ -59,12 +66,12 @@ export default function FolhaPagamento() {
         .select(`
           id,
           identificacao_interna,
-          modelo:inventario_modelos!modelo_id(nome, categoria)
+          modelo:inventario_modelos!modelo_id(modelo, categoria)
         `)
         .eq('ativo', true);
       return (data || []).map((item: any) => ({
         id: item.id,
-        nome: item.modelo?.nome || item.identificacao_interna || 'Sem nome',
+        nome: item.modelo?.modelo || item.identificacao_interna || 'Sem modelo',
         placa: item.identificacao_interna
       }));
     }
@@ -80,6 +87,19 @@ export default function FolhaPagamento() {
   const { startTutorial, hasSeenTutorial } = useTutorial('folha-pagamento');
   
   const isLoading = isLoadingFolhas || isLoadingPessoas;
+  
+  // ========== DEBUG LOGS ==========
+  useEffect(() => {
+    console.group('🔍 [DEBUG] Estado da Folha de Pagamento');
+    console.log('📅 Competência atual:', competencia);
+    console.log('📊 Folhas carregadas:', folhas?.length || 0);
+    console.log('👥 Colaboradores carregados:', colaboradores?.length || 0);
+    console.log('🚗 Veículos carregados:', veiculos?.length || 0);
+    console.log('⚙️ Etapa atual:', etapaAtual);
+    console.log('🔄 Loading states:', { isLoadingFolhas, isLoadingPessoas });
+    console.groupEnd();
+  }, [competencia, folhas, colaboradores, veiculos, etapaAtual, isLoadingFolhas, isLoadingPessoas]);
+  // ========== FIM DEBUG ==========
   
   // Mapear folhas para itens compatíveis com a UI
   const itens = useMemo(() => {
@@ -125,7 +145,7 @@ export default function FolhaPagamento() {
   };
 
   const handleContinuarEtapa1 = (comp: string) => {
-    setCompetencia(comp);
+    handleSetCompetencia(comp);
     setEtapaAtual(2);
   };
 
@@ -420,7 +440,7 @@ export default function FolhaPagamento() {
               id="competencia"
               type="month"
               value={competencia.substring(0, 7)}
-              onChange={(e) => setCompetencia(`${e.target.value}-01`)}
+              onChange={(e) => handleSetCompetencia(`${e.target.value}-01`)}
               className="max-w-xs"
             />
           </div>
