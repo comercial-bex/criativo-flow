@@ -1,4 +1,4 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -15,8 +15,8 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { smartToast } from "@/lib/smart-toast";
-import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useEntidades } from "@/hooks/useEntidades";
 import { cn } from "@/lib/utils";
 
 const tituloSchema = z.object({
@@ -83,25 +83,8 @@ export function LancarTituloUnificadoDialog({ trigger }: LancarTituloUnificadoDi
   
   const tipoSelecionado = form.watch('tipo');
   
-  // Buscar clientes ou fornecedores
-  const { data: entidades } = useQuery({
-    queryKey: [tipoSelecionado === 'receber' ? 'clientes' : 'fornecedores'],
-    queryFn: async () => {
-      if (tipoSelecionado === 'receber') {
-        const { data } = await supabase
-          .from('clientes')
-          .select('id, nome')
-          .order('nome');
-        return data || [];
-      } else {
-        const { data } = await supabase
-          .from('fornecedores')
-          .select('id, nome')
-          .order('nome');
-        return data || [];
-      }
-    },
-  });
+  // Buscar clientes ou fornecedores usando hook separado
+  const { data: entidades = [], error: entidadesError } = useEntidades(tipoSelecionado);
   
   const handleFileUpload = async (file: File | undefined) => {
     if (!file) return;
@@ -169,6 +152,9 @@ export function LancarTituloUnificadoDialog({ trigger }: LancarTituloUnificadoDi
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Novo Lançamento Financeiro</DialogTitle>
+          <DialogDescription>
+            Preencha os campos abaixo para registrar uma nova receita ou despesa
+          </DialogDescription>
         </DialogHeader>
         
         <Form {...form}>
@@ -283,10 +269,22 @@ export function LancarTituloUnificadoDialog({ trigger }: LancarTituloUnificadoDi
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>{tipoSelecionado === 'receber' ? 'Cliente' : 'Fornecedor'}</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
+                    <Select 
+                      onValueChange={field.onChange} 
+                      value={field.value}
+                      disabled={entidadesError !== null || !entidades || entidades.length === 0}
+                    >
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Selecione..." />
+                          <SelectValue 
+                            placeholder={
+                              entidadesError 
+                                ? "⚠️ Sem permissão" 
+                                : entidades?.length === 0 
+                                  ? "Nenhum cadastrado" 
+                                  : "Selecione..."
+                            } 
+                          />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -298,6 +296,11 @@ export function LancarTituloUnificadoDialog({ trigger }: LancarTituloUnificadoDi
                       </SelectContent>
                     </Select>
                     <FormMessage />
+                    {entidadesError && (
+                      <p className="text-xs text-destructive mt-1">
+                        ⚠️ Você não tem permissão para acessar {tipoSelecionado === 'receber' ? 'clientes' : 'fornecedores'}
+                      </p>
+                    )}
                   </FormItem>
                 )}
               />

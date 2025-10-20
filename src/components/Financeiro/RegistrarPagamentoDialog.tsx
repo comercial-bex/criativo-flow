@@ -125,7 +125,7 @@ export function RegistrarPagamentoDialog({
         <DialogHeader>
           <DialogTitle>Registrar {actionLabel}</DialogTitle>
           <DialogDescription>
-            Informe os dados do {actionLabel.toLowerCase()} realizado
+            Preencha os campos abaixo para registrar o {actionLabel.toLowerCase()} realizado
           </DialogDescription>
         </DialogHeader>
 

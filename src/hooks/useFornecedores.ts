@@ -7,6 +7,7 @@ export interface Fornecedor {
   cnpj: string;
   razao_social: string;
   nome_fantasia?: string;
+  nome?: string; // Campo computado
   cpf_cnpj?: string;
   email?: string;
   telefone?: string;
@@ -26,7 +27,7 @@ export interface Fornecedor {
 export function useFornecedores() {
   const queryClient = useQueryClient();
 
-  const { data: fornecedores = [], isLoading } = useQuery({
+  const { data: fornecedores = [], isLoading, error: fetchError } = useQuery({
     queryKey: ["fornecedores"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -34,8 +35,20 @@ export function useFornecedores() {
         .select("*")
         .order("razao_social");
 
-      if (error) throw error;
-      return data;
+      if (error) {
+        // Log detalhado para debug
+        console.error("❌ Erro ao buscar fornecedores:", error);
+        if (error.code === 'PGRST301' || error.message.includes('permission')) {
+          smartToast.error("Sem permissão", "Você não tem permissão para acessar fornecedores");
+        }
+        throw error;
+      }
+      
+      // Adicionar campo "nome" computado para compatibilidade
+      return (data || []).map(f => ({
+        ...f,
+        nome: f.nome_fantasia || f.razao_social,
+      })) as Fornecedor[];
     },
   });
 
