@@ -93,8 +93,18 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
   } catch (error: any) {
-    console.error('Error in admin-user-management function:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    console.error('Error in admin-user-management function:', {
+      message: error.message,
+      code: error.code,
+      details: error.details,
+      hint: error.hint
+    });
+    
+    return new Response(JSON.stringify({ 
+      success: false,
+      error: error.message || 'Erro desconhecido',
+      details: error.details || null
+    }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
@@ -102,14 +112,16 @@ const handler = async (req: Request): Promise<Response> => {
 };
 
 async function handleListUsers(supabase: any, filters?: any) {
+  // Construir query com JOIN usando !inner (FK está configurada)
   let query = supabase
     .from('profiles')
     .select(`
       *,
-      user_roles(role),
-      clientes(nome)
+      user_roles!inner(role),
+      clientes!profiles_cliente_id_fkey(nome)
     `);
 
+  // Aplicar filtros
   if (filters?.role) {
     query = query.eq('user_roles.role', filters.role);
   }
@@ -122,20 +134,20 @@ async function handleListUsers(supabase: any, filters?: any) {
     query = query.or(`nome.ilike.%${filters.search}%,email.ilike.%${filters.search}%`);
   }
 
-  const { data, error } = await supabase
-    .from('profiles')
-    .select(`
-      *,
-      user_roles(role),
-      clientes!profiles_cliente_id_fkey(nome)
-    `)
-    .order('created_at', { ascending: false });
+  // Executar query com ordenação
+  const { data, error } = await query.order('created_at', { ascending: false });
 
   if (error) {
+    console.error('❌ Erro ao buscar usuários:', error);
     throw error;
   }
 
-  return new Response(JSON.stringify({ users: data }), {
+  console.log(`✅ Buscados ${data?.length || 0} usuários com roles`);
+
+  return new Response(JSON.stringify({ 
+    success: true,
+    users: data 
+  }), {
     status: 200,
     headers: { ...corsHeaders, 'Content-Type': 'application/json' }
   });
