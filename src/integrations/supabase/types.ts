@@ -3182,6 +3182,42 @@ export type Database = {
           },
         ]
       }
+      especialidades: {
+        Row: {
+          ativo: boolean | null
+          categoria: string | null
+          cor: string
+          created_at: string | null
+          icone: string | null
+          id: string
+          nome: string
+          role_sistema: Database["public"]["Enums"]["user_role"]
+          updated_at: string | null
+        }
+        Insert: {
+          ativo?: boolean | null
+          categoria?: string | null
+          cor?: string
+          created_at?: string | null
+          icone?: string | null
+          id?: string
+          nome: string
+          role_sistema: Database["public"]["Enums"]["user_role"]
+          updated_at?: string | null
+        }
+        Update: {
+          ativo?: boolean | null
+          categoria?: string | null
+          cor?: string
+          created_at?: string | null
+          icone?: string | null
+          id?: string
+          nome?: string
+          role_sistema?: Database["public"]["Enums"]["user_role"]
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       event_logs: {
         Row: {
           created_at: string | null
@@ -7179,6 +7215,7 @@ export type Database = {
           data_desligamento: string | null
           email: string | null
           endereco: string | null
+          especialidade_id: string | null
           fee_mensal: number | null
           id: string
           logo_url: string | null
@@ -7213,6 +7250,7 @@ export type Database = {
           data_desligamento?: string | null
           email?: string | null
           endereco?: string | null
+          especialidade_id?: string | null
           fee_mensal?: number | null
           id?: string
           logo_url?: string | null
@@ -7247,6 +7285,7 @@ export type Database = {
           data_desligamento?: string | null
           email?: string | null
           endereco?: string | null
+          especialidade_id?: string | null
           fee_mensal?: number | null
           id?: string
           logo_url?: string | null
@@ -7307,6 +7346,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "vw_conflitos_migracao_clientes"
             referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "pessoas_especialidade_id_fkey"
+            columns: ["especialidade_id"]
+            isOneToOne: false
+            referencedRelation: "especialidades"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "pessoas_profile_id_fkey"

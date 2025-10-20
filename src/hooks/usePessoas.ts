@@ -13,6 +13,7 @@ export interface Pessoa {
   dados_bancarios?: any;
   cargo_id?: string | null;
   cargo_atual?: string | null;
+  especialidade_id?: string | null;
   regime?: string | null;
   data_admissao?: string | null;
   data_nascimento?: string | null;

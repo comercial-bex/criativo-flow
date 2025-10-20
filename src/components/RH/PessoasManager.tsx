@@ -17,6 +17,7 @@ import { useColaboradorTempData } from '@/hooks/useColaboradorTempData';
 import { useQueryClient } from '@tanstack/react-query';
 import { useEspecialistas } from '@/hooks/useEspecialistas';
 import { formatCPF, isValidCPF, cleanCPF } from '@/lib/cpf-utils';
+import { EspecialidadeSelect } from './EspecialidadeSelect';
 import { Plus, User, UserCheck, UserX, Pencil, AlertCircle, Database, FileText, Briefcase, CreditCard, MessageSquare } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { smartToast } from '@/lib/smart-toast';
@@ -63,6 +64,7 @@ export function PessoasManager() {
           papeis: pessoaParaEditar.papeis || [],
           regime: pessoaParaEditar.regime,
           cargo_atual: pessoaParaEditar.cargo_atual,
+          especialidade_id: pessoaParaEditar.especialidade_id,
           salario_base: pessoaParaEditar.salario_base,
           fee_mensal: pessoaParaEditar.fee_mensal,
           data_admissao: pessoaParaEditar.data_admissao,
@@ -564,6 +566,28 @@ export function PessoasManager() {
                   </TabsContent>
 
                   <TabsContent value="profissional" className="space-y-4">
+                    {/* Campo de Especialidade - Define role automaticamente */}
+                    <EspecialidadeSelect
+                      value={formData.especialidade_id}
+                      onChange={(value) => setFormData({ ...formData, especialidade_id: value })}
+                      required={true}
+                      showPermissionInfo={true}
+                    />
+
+                    {/* Campo Cargo Atual - Descritivo */}
+                    <div>
+                      <Label htmlFor="cargo_atual">Cargo/Função Atual</Label>
+                      <Input
+                        id="cargo_atual"
+                        value={formData.cargo_atual || ''}
+                        onChange={(e) => setFormData({ ...formData, cargo_atual: e.target.value })}
+                        placeholder="Ex: Analista de Redes Sociais Pleno, Designer UI/UX Senior"
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Descrição complementar do cargo (opcional)
+                      </p>
+                    </div>
+
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <Label htmlFor="regime">Regime</Label>
