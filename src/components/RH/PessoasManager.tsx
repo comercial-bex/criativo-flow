@@ -645,7 +645,7 @@ export function PessoasManager() {
                       <div>
                         <Label htmlFor="regime">Regime</Label>
                         <Select
-                          value={formData.regime || undefined}
+                          value={formData.regime ?? undefined}
                           onValueChange={(value: any) => setFormData({ ...formData, regime: value })}
                         >
                           <SelectTrigger>
@@ -662,7 +662,7 @@ export function PessoasManager() {
                       <div>
                         <Label htmlFor="status">Status</Label>
                         <Select
-                          value={formData.status || 'ativo'}
+                          value={formData.status ?? undefined}
                           onValueChange={(value: any) => setFormData({ ...formData, status: value })}
                         >
                           <SelectTrigger>

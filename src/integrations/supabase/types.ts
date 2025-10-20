@@ -11618,32 +11618,35 @@ export type Database = {
           created_at: string | null
           id: string
           role: Database["public"]["Enums"]["user_role"]
+          updated_at: string | null
           user_id: string | null
         }
         Insert: {
           created_at?: string | null
           id?: string
           role: Database["public"]["Enums"]["user_role"]
+          updated_at?: string | null
           user_id?: string | null
         }
         Update: {
           created_at?: string | null
           id?: string
           role?: Database["public"]["Enums"]["user_role"]
+          updated_at?: string | null
           user_id?: string | null
         }
         Relationships: [
           {
             foreignKeyName: "user_roles_user_id_fkey"
             columns: ["user_id"]
-            isOneToOne: false
+            isOneToOne: true
             referencedRelation: "profiles_deprecated"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "user_roles_user_id_fkey"
             columns: ["user_id"]
-            isOneToOne: false
+            isOneToOne: true
             referencedRelation: "vw_client_metrics"
             referencedColumns: ["responsavel_id"]
           },
