@@ -647,7 +647,7 @@ const Usuarios = () => {
                       pessoa={profile.pessoa}
                       validacao={profile.validacao}
                       onEditar={() => {
-                        window.location.href = '/rh?tab=pessoas&edit=' + profile.pessoa?.id;
+                        window.location.href = '/rh/pessoas?edit=' + profile.pessoa?.id;
                       }}
                     />
                   )}
@@ -759,7 +759,7 @@ const Usuarios = () => {
                     variant="outline" 
                     size="sm"
                     className="mt-3"
-                    onClick={() => window.location.href = '/rh?tab=pessoas'}
+                    onClick={() => window.location.href = '/rh/pessoas'}
                   >
                     <Edit className="mr-2 h-4 w-4" />
                     Ir para RH &gt; Pessoas

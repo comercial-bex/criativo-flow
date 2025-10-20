@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -24,6 +25,7 @@ import { AlertaDadosIncompletos } from './AlertaDadosIncompletos';
 
 export function PessoasManager() {
   const queryClient = useQueryClient();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [filtro, setFiltro] = useState<'colaborador' | 'especialista' | 'cliente' | undefined>('colaborador');
   const [modalAberto, setModalAberto] = useState(false);
   const [pessoaEditando, setPessoaEditando] = useState<Pessoa | null>(null);
@@ -43,6 +45,40 @@ export function PessoasManager() {
   });
 
   const [tempDataSelecionado, setTempDataSelecionado] = useState<any>(null);
+
+  // Detectar parâmetro edit na URL
+  useEffect(() => {
+    const editId = searchParams.get('edit');
+    
+    if (editId && pessoas.length > 0) {
+      const pessoaParaEditar = pessoas.find(p => p.id === editId);
+      
+      if (pessoaParaEditar) {
+        setPessoaEditando(pessoaParaEditar);
+        setFormData({
+          nome: pessoaParaEditar.nome,
+          email: pessoaParaEditar.email || '',
+          cpf: pessoaParaEditar.cpf || '',
+          telefones: pessoaParaEditar.telefones || [''],
+          papeis: pessoaParaEditar.papeis || [],
+          regime: pessoaParaEditar.regime,
+          cargo_atual: pessoaParaEditar.cargo_atual,
+          salario_base: pessoaParaEditar.salario_base,
+          fee_mensal: pessoaParaEditar.fee_mensal,
+          data_admissao: pessoaParaEditar.data_admissao,
+          dados_bancarios: pessoaParaEditar.dados_bancarios || {},
+          status: pessoaParaEditar.status || 'ativo',
+          profile_id: pessoaParaEditar.profile_id,
+          observacoes: pessoaParaEditar.observacoes,
+        });
+        setModalAberto(true);
+        
+        // Limpar parâmetro da URL após abrir modal
+        searchParams.delete('edit');
+        setSearchParams(searchParams, { replace: true });
+      }
+    }
+  }, [searchParams, pessoas, setSearchParams]);
 
   // Detectar dados pendentes ao abrir modal
   useEffect(() => {
@@ -94,9 +130,23 @@ export function PessoasManager() {
       }, 500);
     }
 
+    handleCloseModal();
+  };
+
+  const handleCloseModal = () => {
     setModalAberto(false);
     setPessoaEditando(null);
-    setFormData({ nome: '', email: '', cpf: '', telefones: [''], papeis: [], dados_bancarios: {}, status: 'ativo' });
+    setTempDataSelecionado(null);
+    setFormData({ 
+      nome: '', 
+      email: '', 
+      cpf: '', 
+      telefones: [''], 
+      papeis: [], 
+      dados_bancarios: {}, 
+      status: 'ativo' 
+    });
+    setCpfError('');
   };
 
   const abrirModal = (pessoa?: Pessoa) => {
