@@ -22,6 +22,9 @@ import {
 } from "@/components/ui/select";
 import { useTitulosFinanceiros } from "@/hooks/useTitulosFinanceiros";
 import { Skeleton } from "@/components/ui/skeleton";
+import { LancarTituloUnificadoDialog } from "./LancarTituloUnificadoDialog";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
 
 export function TodosLancamentos() {
   const [search, setSearch] = useState("");
@@ -155,11 +158,19 @@ export function TodosLancamentos() {
 
       {/* Timeline de Lançamentos */}
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="flex items-center gap-2">
             <ListFilter className="h-5 w-5" />
             Timeline de Lançamentos
           </CardTitle>
+          <LancarTituloUnificadoDialog 
+            trigger={
+              <Button>
+                <Plus className="mr-2 h-4 w-4" />
+                Novo Lançamento
+              </Button>
+            }
+          />
         </CardHeader>
         <CardContent>
           <div className="flex gap-4 mb-6">
