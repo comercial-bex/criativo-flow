@@ -880,10 +880,7 @@ export default function Financeiro() {
       </Card>
 
       {/* Botão Flutuante de Ação Rápida */}
-      <FABLancamento 
-        onLancarReceita={handleLancarReceita}
-        onLancarDespesa={handleLancarDespesa}
-      />
+      <FABLancamento />
     </div>
   );
 }

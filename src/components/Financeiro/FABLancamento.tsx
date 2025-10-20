@@ -1,22 +1,12 @@
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { motion } from "framer-motion";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { LancarTituloUnificadoDialog } from "./LancarTituloUnificadoDialog";
 
-interface FABLancamentoProps {
-  onLancarReceita: () => void;
-  onLancarDespesa: () => void;
-}
-
-export function FABLancamento({ onLancarReceita, onLancarDespesa }: FABLancamentoProps) {
+export function FABLancamento() {
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
+    <LancarTituloUnificadoDialog 
+      trigger={
         <motion.div
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
@@ -30,21 +20,7 @@ export function FABLancamento({ onLancarReceita, onLancarDespesa }: FABLancament
             <Plus className="h-8 w-8" />
           </Button>
         </motion.div>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56">
-        <DropdownMenuItem
-          onClick={onLancarReceita}
-          className="cursor-pointer py-3 hover:bg-success/10"
-        >
-          <span className="text-success font-semibold">➕ Lançar Receita</span>
-        </DropdownMenuItem>
-        <DropdownMenuItem
-          onClick={onLancarDespesa}
-          className="cursor-pointer py-3 hover:bg-destructive/10"
-        >
-          <span className="text-destructive font-semibold">➖ Lançar Despesa</span>
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+      }
+    />
   );
 }

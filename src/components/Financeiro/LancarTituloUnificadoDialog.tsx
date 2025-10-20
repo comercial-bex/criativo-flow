@@ -1,12 +1,11 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, CalendarIcon } from "lucide-react";
+import { CalendarIcon, TrendingUp, TrendingDown, Paperclip, MessageSquare, Upload } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useCriarTitulo } from "@/hooks/useTitulosFinanceiros";
@@ -21,6 +20,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 
 const tituloSchema = z.object({
+  tipo: z.enum(['pagar', 'receber']),
   tipo_documento: z.string().min(1, "Tipo obrigatório"),
   numero_documento: z.string().optional(),
   descricao: z.string().min(3, "Descrição deve ter no mínimo 3 caracteres"),
@@ -30,21 +30,45 @@ const tituloSchema = z.object({
   entidade_id: z.string().optional(),
   forma_pagamento: z.string().optional(),
   observacoes: z.string().optional(),
+  comprovante: z.instanceof(File).optional(),
 });
 
 type TituloFormData = z.infer<typeof tituloSchema>;
 
-interface LancarTituloDialogProps {
-  tipo: 'pagar' | 'receber';
+interface LancarTituloUnificadoDialogProps {
+  trigger?: React.ReactNode;
 }
 
-export function LancarTituloDialog({ tipo }: LancarTituloDialogProps) {
+async function uploadComprovante(file: File): Promise<string> {
+  const fileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+  const filePath = `comprovantes/${fileName}`;
+  
+  const { error } = await supabase.storage
+    .from('comprovantes-pagamento')
+    .upload(filePath, file, {
+      cacheControl: '3600',
+      upsert: false
+    });
+  
+  if (error) throw error;
+  
+  const { data: { publicUrl } } = supabase.storage
+    .from('comprovantes-pagamento')
+    .getPublicUrl(filePath);
+  
+  return publicUrl;
+}
+
+export function LancarTituloUnificadoDialog({ trigger }: LancarTituloUnificadoDialogProps) {
   const [open, setOpen] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [comprovanteUrl, setComprovanteUrl] = useState<string | null>(null);
   const criarTitulo = useCriarTitulo();
   
   const form = useForm<TituloFormData>({
     resolver: zodResolver(tituloSchema),
     defaultValues: {
+      tipo: 'pagar',
       tipo_documento: '',
       numero_documento: '',
       descricao: '',
@@ -57,11 +81,13 @@ export function LancarTituloDialog({ tipo }: LancarTituloDialogProps) {
     },
   });
   
+  const tipoSelecionado = form.watch('tipo');
+  
   // Buscar clientes ou fornecedores
   const { data: entidades } = useQuery({
-    queryKey: [tipo === 'receber' ? 'clientes' : 'fornecedores'],
+    queryKey: [tipoSelecionado === 'receber' ? 'clientes' : 'fornecedores'],
     queryFn: async () => {
-      if (tipo === 'receber') {
+      if (tipoSelecionado === 'receber') {
         const { data } = await supabase
           .from('clientes')
           .select('id, nome')
@@ -77,12 +103,27 @@ export function LancarTituloDialog({ tipo }: LancarTituloDialogProps) {
     },
   });
   
+  const handleFileUpload = async (file: File | undefined) => {
+    if (!file) return;
+    
+    try {
+      setUploading(true);
+      const url = await uploadComprovante(file);
+      setComprovanteUrl(url);
+      smartToast.success("Comprovante anexado com sucesso");
+    } catch (error) {
+      smartToast.error("Erro ao fazer upload do comprovante", error instanceof Error ? error.message : 'Erro desconhecido');
+    } finally {
+      setUploading(false);
+    }
+  };
+  
   const handleSubmit = async (data: TituloFormData) => {
     try {
       const valorNumerico = parseFloat(data.valor_original.replace(/[^\d,]/g, '').replace(',', '.'));
       
       const tituloData: any = {
-        tipo,
+        tipo: data.tipo,
         tipo_documento: data.tipo_documento,
         numero_documento: data.numero_documento || null,
         descricao: data.descricao,
@@ -97,12 +138,13 @@ export function LancarTituloDialog({ tipo }: LancarTituloDialogProps) {
         data_emissao: format(new Date(), 'yyyy-MM-dd'),
         forma_pagamento: data.forma_pagamento || null,
         observacoes: data.observacoes || null,
+        comprovante_url: comprovanteUrl,
         status: 'pendente',
         dias_atraso: 0,
       };
       
       if (data.entidade_id) {
-        if (tipo === 'receber') {
+        if (data.tipo === 'receber') {
           tituloData.cliente_id = data.entidade_id;
         } else {
           tituloData.fornecedor_id = data.entidade_id;
@@ -110,31 +152,70 @@ export function LancarTituloDialog({ tipo }: LancarTituloDialogProps) {
       }
       
       await criarTitulo.mutateAsync(tituloData);
-      smartToast.success(`Título ${tipo === 'receber' ? 'a receber' : 'a pagar'} criado com sucesso`);
+      smartToast.success(`${data.tipo === 'receber' ? 'Receita' : 'Despesa'} lançada com sucesso`);
       setOpen(false);
       form.reset();
+      setComprovanteUrl(null);
     } catch (error) {
-      smartToast.error('Erro ao criar título', error instanceof Error ? error.message : 'Erro desconhecido');
+      smartToast.error('Erro ao criar lançamento', error instanceof Error ? error.message : 'Erro desconhecido');
     }
   };
   
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>
-          <Plus className="mr-2 h-4 w-4" />
-          Lançar {tipo === 'pagar' ? 'Conta a Pagar' : 'Conta a Receber'}
-        </Button>
+        {trigger}
       </DialogTrigger>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>
-            Novo Lançamento - {tipo === 'pagar' ? 'Conta a Pagar' : 'Conta a Receber'}
-          </DialogTitle>
+          <DialogTitle>Novo Lançamento Financeiro</DialogTitle>
         </DialogHeader>
         
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+            {/* Seletor de Tipo - ENTRADA/SAÍDA */}
+            <FormField
+              control={form.control}
+              name="tipo"
+              render={({ field }) => (
+                <FormItem>
+                  <div className="grid grid-cols-2 gap-3">
+                    <Button
+                      type="button"
+                      variant={field.value === 'receber' ? 'default' : 'outline'}
+                      onClick={() => field.onChange('receber')}
+                      className={cn(
+                        "h-20 transition-all",
+                        field.value === 'receber' && "bg-success hover:bg-success/90 text-white"
+                      )}
+                    >
+                      <div className="flex flex-col items-center gap-2">
+                        <TrendingUp className="h-6 w-6" />
+                        <span className="font-semibold">💰 ENTRADA</span>
+                        <span className="text-xs opacity-80">Receita / A Receber</span>
+                      </div>
+                    </Button>
+                    
+                    <Button
+                      type="button"
+                      variant={field.value === 'pagar' ? 'default' : 'outline'}
+                      onClick={() => field.onChange('pagar')}
+                      className={cn(
+                        "h-20 transition-all",
+                        field.value === 'pagar' && "bg-destructive hover:bg-destructive/90 text-white"
+                      )}
+                    >
+                      <div className="flex flex-col items-center gap-2">
+                        <TrendingDown className="h-6 w-6" />
+                        <span className="font-semibold">💸 SAÍDA</span>
+                        <span className="text-xs opacity-80">Despesa / A Pagar</span>
+                      </div>
+                    </Button>
+                  </div>
+                </FormItem>
+              )}
+            />
+            
             <div className="grid grid-cols-2 gap-4">
               {/* Tipo de Documento */}
               <FormField
@@ -187,7 +268,7 @@ export function LancarTituloDialog({ tipo }: LancarTituloDialogProps) {
                 <FormItem>
                   <FormLabel>Descrição</FormLabel>
                   <FormControl>
-                    <Input placeholder="Descreva o título..." {...field} />
+                    <Input placeholder="Descreva o lançamento..." {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -201,7 +282,7 @@ export function LancarTituloDialog({ tipo }: LancarTituloDialogProps) {
                 name="entidade_id"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{tipo === 'receber' ? 'Cliente' : 'Fornecedor'}</FormLabel>
+                    <FormLabel>{tipoSelecionado === 'receber' ? 'Cliente' : 'Fornecedor'}</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
@@ -227,7 +308,7 @@ export function LancarTituloDialog({ tipo }: LancarTituloDialogProps) {
                 name="valor_original"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Valor Original</FormLabel>
+                    <FormLabel>Valor</FormLabel>
                     <FormControl>
                       <Input 
                         placeholder="R$ 0,00" 
@@ -359,17 +440,57 @@ export function LancarTituloDialog({ tipo }: LancarTituloDialogProps) {
               )}
             />
             
-            {/* Observações */}
+            {/* Upload de Comprovante */}
+            <FormField
+              control={form.control}
+              name="comprovante"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="flex items-center gap-2">
+                    <Paperclip className="h-4 w-4" />
+                    📎 Comprovante de Pagamento
+                  </FormLabel>
+                  <FormControl>
+                    <div className="flex items-center gap-2">
+                      <Input 
+                        type="file" 
+                        accept="image/*,application/pdf"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          field.onChange(file);
+                          handleFileUpload(file);
+                        }}
+                        disabled={uploading}
+                        className="cursor-pointer"
+                      />
+                      {uploading && <Upload className="h-4 w-4 animate-pulse text-primary" />}
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                  {comprovanteUrl && (
+                    <div className="flex items-center gap-2 mt-2 p-2 bg-success/10 rounded-md">
+                      <Paperclip className="h-4 w-4 text-success" />
+                      <span className="text-sm text-success font-medium">✓ Comprovante anexado</span>
+                    </div>
+                  )}
+                </FormItem>
+              )}
+            />
+            
+            {/* Observações / Anotações */}
             <FormField
               control={form.control}
               name="observacoes"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Observações</FormLabel>
+                  <FormLabel className="flex items-center gap-2 text-base">
+                    <MessageSquare className="h-5 w-5" />
+                    📝 Anotações / Observações
+                  </FormLabel>
                   <FormControl>
                     <Textarea 
-                      placeholder="Observações adicionais..." 
-                      className="resize-none"
+                      placeholder="Descreva os detalhes do pagamento, motivo, observações importantes..."
+                      className="resize-none min-h-[100px]"
                       {...field}
                     />
                   </FormControl>
@@ -378,11 +499,11 @@ export function LancarTituloDialog({ tipo }: LancarTituloDialogProps) {
               )}
             />
             
-            <div className="flex justify-end gap-2 mt-6">
+            <div className="flex justify-end gap-2 mt-6 pt-4 border-t">
               <Button type="button" variant="outline" onClick={() => setOpen(false)}>
                 Cancelar
               </Button>
-              <Button type="submit" disabled={criarTitulo.isPending}>
+              <Button type="submit" disabled={criarTitulo.isPending || uploading}>
                 {criarTitulo.isPending ? 'Criando...' : 'Lançar Título'}
               </Button>
             </div>

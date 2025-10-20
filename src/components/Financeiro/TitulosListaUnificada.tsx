@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { FileText, Search, Filter, DollarSign, ArrowUp, ArrowDown } from "lucide-react";
+import { FileText, Search, Filter, DollarSign, ArrowUp, ArrowDown, Plus } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -26,7 +26,7 @@ import { RegistrarPagamentoDialog } from "./RegistrarPagamentoDialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { GestaoContasKPIs } from "./GestaoContasKPIs";
 import { GraficoEvolucao } from "./GraficoEvolucao";
-import { LancarTituloDialog } from "./LancarTituloDialog";
+import { LancarTituloUnificadoDialog } from "./LancarTituloUnificadoDialog";
 
 interface TitulosListaUnificadaProps {
   tipo: 'pagar' | 'receber';
@@ -93,7 +93,14 @@ export function TitulosListaUnificada({ tipo }: TitulosListaUnificadaProps) {
             )}
             {tituloCard}
           </CardTitle>
-          <LancarTituloDialog tipo={tipo} />
+          <LancarTituloUnificadoDialog 
+            trigger={
+              <Button>
+                <Plus className="mr-2 h-4 w-4" />
+                Novo Lançamento
+              </Button>
+            }
+          />
         </CardHeader>
         <CardContent>
           <div className="flex gap-4 mb-6">

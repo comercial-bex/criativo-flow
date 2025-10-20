@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { FileText, Search, Filter, DollarSign } from "lucide-react";
+import { FileText, Search, Filter, DollarSign, Plus } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -26,7 +26,7 @@ import { RegistrarPagamentoDialog } from "./RegistrarPagamentoDialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { GestaoContasKPIs } from "./GestaoContasKPIs";
 import { GraficoEvolucao } from "./GraficoEvolucao";
-import { LancarTituloDialog } from "./LancarTituloDialog";
+import { LancarTituloUnificadoDialog } from "./LancarTituloUnificadoDialog";
 
 export function TitulosPagarList() {
   const [filters, setFilters] = useState<TituloFilters>({ tipo: 'pagar' });
@@ -71,7 +71,14 @@ export function TitulosPagarList() {
             <FileText className="h-5 w-5" />
             Contas a Pagar
           </CardTitle>
-          <LancarTituloDialog tipo="pagar" />
+          <LancarTituloUnificadoDialog 
+            trigger={
+              <Button>
+                <Plus className="mr-2 h-4 w-4" />
+                Novo Lançamento
+              </Button>
+            }
+          />
         </CardHeader>
         <CardContent>
           {/* Filtros */}

@@ -9,6 +9,7 @@ import { InadimplenciaTab } from "@/components/Financeiro/InadimplenciaTab";
 import { SectionHeader } from "@/components/SectionHeader";
 import { PrevisaoFluxoCard } from "@/components/Financeiro/PrevisaoFluxoCard";
 import { DashboardVencimentos } from "@/components/Financeiro/DashboardVencimentos";
+import { FABLancamento } from "@/components/Financeiro/FABLancamento";
 import { FileText, CreditCard, AlertCircle, DollarSign, ListFilter, PieChart } from "lucide-react";
 
 export default function GestaoContas() {
@@ -88,6 +89,9 @@ export default function GestaoContas() {
           <InadimplenciaTab />
         </TabsContent>
       </Tabs>
+
+      {/* FAB UNIFICADO */}
+      <FABLancamento />
     </div>
   );
 }
