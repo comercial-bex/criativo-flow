@@ -466,11 +466,16 @@ const Usuarios = () => {
 
   // Separar por categorias
   const specialists = filteredProfiles.filter(p => {
-    // Especialista = tem role E não é cliente (nem em profiles nem em pessoas)
-    return p.role && 
-           p.role !== 'cliente' && 
-           !p.cliente_id && 
-           !p.pessoa_cliente_id;
+    // Especialista = tem papeis na tabela pessoas (grs, design, audiovisual, etc) 
+    // OU tem role que não seja cliente, E não tem vínculo com cliente
+    const temPapelEspecialista = p.papeis && p.papeis.length > 0 && 
+      p.papeis.some(papel => ['grs', 'design', 'audiovisual', 'financeiro', 'atendimento', 'rh', 'trafego', 'especialista', 'colaborador'].includes(papel));
+    
+    const temRoleEspecialista = p.role && p.role !== 'cliente';
+    
+    const naoEhCliente = !p.cliente_id && !p.pessoa_cliente_id;
+    
+    return (temPapelEspecialista || temRoleEspecialista) && naoEhCliente;
   });
   
   const clients = filteredProfiles.filter(p => {
@@ -560,9 +565,24 @@ const Usuarios = () => {
                   {getStatusBadge(profile.status)}
                 </div>
                 <p className="text-sm text-muted-foreground truncate">{profile.email}</p>
-                {(profile.especialidade || profile.role === 'admin') && (
+                {(profile.papeis?.length > 0 || profile.especialidade || profile.role === 'admin') && (
                   <p className="text-xs text-muted-foreground mt-1 capitalize">
-                    {profile.especialidade || 'Administrador'}
+                    {profile.papeis && profile.papeis.length > 0 
+                      ? profile.papeis.map(p => {
+                          const labels: Record<string, string> = {
+                            'grs': 'GRS',
+                            'design': 'Designer',
+                            'audiovisual': 'Filmmaker',
+                            'financeiro': 'Financeiro',
+                            'atendimento': 'Atendimento',
+                            'rh': 'RH',
+                            'trafego': 'Tráfego',
+                            'especialista': 'Especialista',
+                            'colaborador': 'Colaborador'
+                          };
+                          return labels[p] || p;
+                        }).join(', ')
+                      : profile.especialidade || 'Administrador'}
                   </p>
                 )}
                 <div className="flex items-center text-xs text-muted-foreground mt-2 space-x-3">
