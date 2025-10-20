@@ -7174,6 +7174,7 @@ export type Database = {
           cpf: string | null
           created_at: string
           dados_bancarios: Json | null
+          dados_incompletos: boolean | null
           data_admissao: string | null
           data_desligamento: string | null
           email: string | null
@@ -7207,6 +7208,7 @@ export type Database = {
           cpf?: string | null
           created_at?: string
           dados_bancarios?: Json | null
+          dados_incompletos?: boolean | null
           data_admissao?: string | null
           data_desligamento?: string | null
           email?: string | null
@@ -7240,6 +7242,7 @@ export type Database = {
           cpf?: string | null
           created_at?: string
           dados_bancarios?: Json | null
+          dados_incompletos?: boolean | null
           data_admissao?: string | null
           data_desligamento?: string | null
           email?: string | null

@@ -19,6 +19,8 @@ import { formatCPF, isValidCPF, cleanCPF } from '@/lib/cpf-utils';
 import { Plus, User, UserCheck, UserX, Pencil, AlertCircle, Database, FileText, Briefcase, CreditCard, MessageSquare } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { smartToast } from '@/lib/smart-toast';
+import { validarColaborador } from '@/hooks/useColaboradorValidation';
+import { AlertaDadosIncompletos } from './AlertaDadosIncompletos';
 
 export function PessoasManager() {
   const queryClient = useQueryClient();
@@ -140,10 +142,18 @@ export function PessoasManager() {
     );
   };
 
+  const pessoasComValidacao = pessoas.map((pessoa) => ({
+    ...pessoa,
+    validacao: validarColaborador(pessoa),
+  }));
+
   const stats = {
     ativos: pessoas.filter((p) => p.status === 'ativo').length,
     afastados: pessoas.filter((p) => p.status === 'afastado').length,
     desligados: pessoas.filter((p) => p.status === 'desligado').length,
+    completos: pessoasComValidacao.filter((p) => p.validacao.nivel === 'completo').length,
+    parciais: pessoasComValidacao.filter((p) => p.validacao.nivel === 'incompleto_parcial').length,
+    criticos: pessoasComValidacao.filter((p) => p.validacao.nivel === 'incompleto_critico').length,
   };
 
   return (
@@ -200,6 +210,50 @@ export function PessoasManager() {
           </CardHeader>
         </Card>
       </div>
+
+      {/* Alerta de dados incompletos */}
+      {stats.criticos > 0 && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>🚨 Atenção: Dados Críticos Faltando</AlertTitle>
+          <AlertDescription>
+            Existem <strong>{stats.criticos} colaboradores</strong> com dados essenciais incompletos que bloqueiam a folha de pagamento.
+            Verifique os badges na tabela abaixo.
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {/* Card de estatísticas de validação */}
+      <Card className="border-l-4 border-l-blue-500">
+        <CardHeader>
+          <CardTitle className="text-lg">📊 Status dos Cadastros</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-3 gap-4">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <div className="h-3 w-3 rounded-full bg-green-500"></div>
+                <span className="text-sm text-muted-foreground">Completos</span>
+              </div>
+              <div className="text-2xl font-bold text-green-600 dark:text-green-400">{stats.completos}</div>
+            </div>
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <div className="h-3 w-3 rounded-full bg-yellow-500"></div>
+                <span className="text-sm text-muted-foreground">Parcialmente incompletos</span>
+              </div>
+              <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{stats.parciais}</div>
+            </div>
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <div className="h-3 w-3 rounded-full bg-red-500"></div>
+                <span className="text-sm text-muted-foreground">Criticamente incompletos</span>
+              </div>
+              <div className="text-2xl font-bold text-red-600 dark:text-red-400">{stats.criticos}</div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>
@@ -660,6 +714,7 @@ export function PessoasManager() {
                 <TableHead>Email</TableHead>
                 <TableHead>Regime</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead>Validação</TableHead>
                 <TableHead className="text-right">Ações</TableHead>
               </TableRow>
             </TableHeader>
@@ -673,9 +728,9 @@ export function PessoasManager() {
                     </div>
                   </TableCell>
                 </TableRow>
-              ) : pessoas.length === 0 ? (
+              ) : pessoasComValidacao.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center h-32">
+                  <TableCell colSpan={7} className="text-center h-32">
                     <div className="flex flex-col items-center justify-center gap-2">
                       <UserCheck className="h-12 w-12 text-muted-foreground/50" />
                       <p className="text-lg font-medium">Nenhum colaborador cadastrado</p>
@@ -686,7 +741,7 @@ export function PessoasManager() {
                   </TableCell>
                 </TableRow>
               ) : (
-                pessoas.map((pessoa) => (
+                pessoasComValidacao.map(({ validacao, ...pessoa }) => (
                   <TableRow 
                     key={pessoa.id} 
                     className="hover:bg-muted/50 transition-colors"
@@ -718,6 +773,13 @@ export function PessoasManager() {
                       )}
                     </TableCell>
                     <TableCell>{getStatusBadge(pessoa.status)}</TableCell>
+                    <TableCell>
+                      <AlertaDadosIncompletos
+                        pessoa={pessoa}
+                        validacao={validacao}
+                        onEditar={() => abrirModal(pessoa)}
+                      />
+                    </TableCell>
                     <TableCell className="text-right">
                       <div className="flex gap-2 justify-end">
                         <Button 
