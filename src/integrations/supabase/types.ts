@@ -11301,6 +11301,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "titulos_financeiros_categoria_id_fkey"
+            columns: ["categoria_id"]
+            isOneToOne: false
+            referencedRelation: "vw_fluxo_por_categoria"
+            referencedColumns: ["categoria_id"]
+          },
+          {
             foreignKeyName: "titulos_financeiros_cliente_id_fkey"
             columns: ["cliente_id"]
             isOneToOne: false
@@ -11420,6 +11427,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "categorias_financeiras"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transacoes_financeiras_categoria_id_fkey"
+            columns: ["categoria_id"]
+            isOneToOne: false
+            referencedRelation: "vw_fluxo_por_categoria"
+            referencedColumns: ["categoria_id"]
           },
           {
             foreignKeyName: "transacoes_financeiras_cliente_id_fkey"
@@ -12246,6 +12260,21 @@ export type Database = {
           },
         ]
       }
+      vw_fluxo_por_categoria: {
+        Row: {
+          categoria_cor: string | null
+          categoria_id: string | null
+          categoria_nome: string | null
+          categoria_tipo: string | null
+          mes_competencia: string | null
+          qtd_titulos: number | null
+          titulo_tipo: Database["public"]["Enums"]["tipo_titulo"] | null
+          valor_pago: number | null
+          valor_pendente: number | null
+          valor_total: number | null
+        }
+        Relationships: []
+      }
       vw_health_check_pessoas: {
         Row: {
           metrica: string | null
@@ -12859,6 +12888,15 @@ export type Database = {
           p_entidade_id: string
           p_entidade_tipo: string
           p_trace_id?: string
+        }
+        Returns: string
+      }
+      fn_sugerir_categoria: {
+        Args: {
+          p_cliente_id?: string
+          p_descricao: string
+          p_fornecedor_id?: string
+          p_tipo: string
         }
         Returns: string
       }

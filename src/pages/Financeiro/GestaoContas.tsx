@@ -1,14 +1,15 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { TitulosReceberList } from "@/components/Financeiro/TitulosReceberList";
-import { TitulosPagarList } from "@/components/Financeiro/TitulosPagarList";
+import { TitulosListaUnificada } from "@/components/Financeiro/TitulosListaUnificada";
+import { TodosLancamentos } from "@/components/Financeiro/TodosLancamentos";
+import { FluxoPorCategoria } from "@/components/Financeiro/FluxoPorCategoria";
 import { DividasParceladasTab } from "@/components/Financeiro/DividasParceladasTab";
 import { InadimplenciaTab } from "@/components/Financeiro/InadimplenciaTab";
 import { SectionHeader } from "@/components/SectionHeader";
 import { PrevisaoFluxoCard } from "@/components/Financeiro/PrevisaoFluxoCard";
 import { DashboardVencimentos } from "@/components/Financeiro/DashboardVencimentos";
-import { FileText, CreditCard, AlertCircle, DollarSign } from "lucide-react";
+import { FileText, CreditCard, AlertCircle, DollarSign, ListFilter, PieChart } from "lucide-react";
 
 export default function GestaoContas() {
   const [searchParams] = useSearchParams();
@@ -36,7 +37,11 @@ export default function GestaoContas() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-6">
+          <TabsTrigger value="todos" className="gap-2">
+            <ListFilter className="h-4 w-4" />
+            Todos
+          </TabsTrigger>
           <TabsTrigger value="receber" className="gap-2">
             <DollarSign className="h-4 w-4" />
             A Receber
@@ -44,6 +49,10 @@ export default function GestaoContas() {
           <TabsTrigger value="pagar" className="gap-2">
             <FileText className="h-4 w-4" />
             A Pagar
+          </TabsTrigger>
+          <TabsTrigger value="categorias" className="gap-2">
+            <PieChart className="h-4 w-4" />
+            Categorias
           </TabsTrigger>
           <TabsTrigger value="dividas" className="gap-2">
             <CreditCard className="h-4 w-4" />
@@ -55,12 +64,20 @@ export default function GestaoContas() {
           </TabsTrigger>
         </TabsList>
 
+        <TabsContent value="todos" className="mt-6">
+          <TodosLancamentos />
+        </TabsContent>
+
         <TabsContent value="receber" className="mt-6">
-          <TitulosReceberList />
+          <TitulosListaUnificada tipo="receber" />
         </TabsContent>
 
         <TabsContent value="pagar" className="mt-6">
-          <TitulosPagarList />
+          <TitulosListaUnificada tipo="pagar" />
+        </TabsContent>
+
+        <TabsContent value="categorias" className="mt-6">
+          <FluxoPorCategoria />
         </TabsContent>
 
         <TabsContent value="dividas" className="mt-6">

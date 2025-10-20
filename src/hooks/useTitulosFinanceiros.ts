@@ -85,6 +85,8 @@ export function useTitulosFinanceiros(filters?: TituloFilters) {
       return data as TituloFinanceiro[];
     },
     staleTime: 1000 * 60 * 5, // 5 minutos
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
   });
 }
 
