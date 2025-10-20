@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { SectionHeader } from "@/components/SectionHeader";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -8,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { RefreshCw, TrendingUp, TrendingDown, DollarSign } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from "recharts";
 
-export default function FluxoCaixa() {
+export function FluxoCaixaTab() {
   const [periodo, setPeriodo] = useState<'mensal' | 'trimestral' | 'anual'>('mensal');
 
   const { data: dashboardData, isLoading, refetch } = useQuery({
@@ -51,16 +50,13 @@ export default function FluxoCaixa() {
   const saldoLiquido = totalEntradas - totalSaidas;
 
   return (
-    <div className="space-y-6 p-6">
-      <SectionHeader
-        title="Fluxo de Caixa"
-        action={
-          <Button variant="outline" size="sm" onClick={() => refetch()}>
-            <RefreshCw className="mr-2 h-4 w-4" />
-            Atualizar
-          </Button>
-        }
-      />
+    <div className="space-y-6">
+      <div className="flex justify-end">
+        <Button variant="outline" size="sm" onClick={() => refetch()}>
+          <RefreshCw className="mr-2 h-4 w-4" />
+          Atualizar
+        </Button>
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="p-4">

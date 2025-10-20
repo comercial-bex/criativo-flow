@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { Card } from '@/components/ui/card';
-import { SectionHeader } from '@/components/SectionHeader';
 import { Button } from '@/components/ui/button';
-import { RefreshCw, Download } from 'lucide-react';
+import { RefreshCw } from 'lucide-react';
 import { useRelatoriosDRE } from '@/hooks/useRelatoriosDRE';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -16,7 +15,7 @@ import {
 } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
 
-export default function DRE() {
+export function DRETab() {
   const [mesInicio, setMesInicio] = useState<string>('');
   const [mesFim, setMesFim] = useState<string>('');
   const { dreData, isLoading, refreshDRE } = useRelatoriosDRE(mesInicio, mesFim);
@@ -43,17 +42,13 @@ export default function DRE() {
   };
 
   return (
-    <div className="space-y-6 p-6">
-      <SectionHeader
-        title="DRE - Demonstração do Resultado do Exercício"
-        description="Resultado financeiro consolidado por período"
-        action={
-          <Button onClick={refreshDRE} variant="outline">
-            <RefreshCw className="mr-2 h-4 w-4" />
-            Atualizar
-          </Button>
-        }
-      />
+    <div className="space-y-6">
+      <div className="flex justify-end">
+        <Button onClick={refreshDRE} variant="outline">
+          <RefreshCw className="mr-2 h-4 w-4" />
+          Atualizar
+        </Button>
+      </div>
 
       {isLoading ? (
         <Card className="p-6">

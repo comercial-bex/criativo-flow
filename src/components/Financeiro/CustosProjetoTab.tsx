@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { Card } from '@/components/ui/card';
-import { SectionHeader } from '@/components/SectionHeader';
 import { useRelatoriosCustosProjeto } from '@/hooks/useRelatoriosCustosProjeto';
 import {
   Table,
@@ -14,7 +13,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { TrendingUp, TrendingDown } from 'lucide-react';
 
-export default function CustosProjeto() {
+export function CustosProjetoTab() {
   const [clienteId, setClienteId] = useState<string | undefined>(undefined);
   const { custosData, isLoading } = useRelatoriosCustosProjeto(clienteId);
 
@@ -31,12 +30,7 @@ export default function CustosProjeto() {
   const margemTotal = totalReceitas > 0 ? ((lucroTotal / totalReceitas) * 100).toFixed(2) : '0.00';
 
   return (
-    <div className="space-y-6 p-6">
-      <SectionHeader
-        title="Custos por Projeto"
-        description="Análise detalhada de custos, receitas e lucratividade por projeto"
-      />
-
+    <div className="space-y-6">
       <div className="grid grid-cols-4 gap-4">
         <Card className="p-6">
           <div className="space-y-2">

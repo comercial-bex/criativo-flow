@@ -1,5 +1,4 @@
 import { Card } from '@/components/ui/card';
-import { SectionHeader } from '@/components/SectionHeader';
 import { useRelatoriosInadimplencia } from '@/hooks/useRelatoriosInadimplencia';
 import {
   Table,
@@ -15,7 +14,7 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { AlertCircle, TrendingUp, Calendar } from 'lucide-react';
 
-export default function Inadimplencia() {
+export function InadimplenciaTab() {
   const {
     inadimplenciaData,
     isLoading,
@@ -38,12 +37,7 @@ export default function Inadimplencia() {
   };
 
   return (
-    <div className="space-y-6 p-6">
-      <SectionHeader
-        title="Inadimplência"
-        description="Títulos vencidos e em aberto"
-      />
-
+    <div className="space-y-6">
       <div className="grid grid-cols-3 gap-4">
         <Card className="p-6">
           <div className="flex items-center gap-3">

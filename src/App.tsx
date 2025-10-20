@@ -69,17 +69,11 @@ const AtendimentoInbox = lazy(() => import("./pages/Atendimento/Inbox"));
 const AtendimentoDashboard = lazy(() => import("./pages/Atendimento/Dashboard"));
 const TrafegoDashboard = lazy(() => import("./pages/Trafego/Dashboard"));
 const FinanceiroDashboard = lazy(() => import("./pages/Financeiro/Dashboard"));
-const ContasPagar = lazy(() => import("./pages/Financeiro/ContasPagar"));
-const ContasReceber = lazy(() => import("./pages/Financeiro/ContasReceber"));
+const GestaoContas = lazy(() => import("./pages/Financeiro/GestaoContas"));
+const RelatoriosGerenciais = lazy(() => import("./pages/Financeiro/RelatoriosGerenciais"));
 const CaixaBancos = lazy(() => import("./pages/Financeiro/CaixaBancos"));
 const CentrosCusto = lazy(() => import("./pages/Financeiro/CentrosCusto"));
-const DRE = lazy(() => import("./pages/Relatorios/DRE"));
-const Inadimplencia = lazy(() => import("./pages/Relatorios/Inadimplencia"));
-const CustosProjeto = lazy(() => import("./pages/Relatorios/CustosProjeto"));
-const MapaDividas = lazy(() => import("./pages/Relatorios/MapaDividas"));
-const FluxoCaixa = lazy(() => import("./pages/Relatorios/FluxoCaixa"));
 const Conciliacao = lazy(() => import("./pages/Financeiro/Conciliacao"));
-const GestorDividas = lazy(() => import("./pages/Financeiro/GestorDividas"));
 const Fornecedores = lazy(() => import("./pages/Fornecedores"));
 const FornecedorDashboard = lazy(() => import("./pages/Fornecedor/Dashboard"));
 const GestorDashboard = lazy(() => import("./pages/Gestor/Dashboard"));
@@ -803,12 +797,14 @@ function App() {
                     <Layout><FinanceiroDashboard /></Layout>
                   </ProtectedRoute>} />
                 
-                <Route path="/financeiro/contas-pagar" element={<ProtectedRoute requiredRole="financeiro">
-                    <Layout><ContasPagar /></Layout>
+                {/* NEW: Gestão de Contas (unifica Contas a Pagar/Receber, Dívidas, Inadimplência) */}
+                <Route path="/financeiro/gestao-contas" element={<ProtectedRoute requiredRole="financeiro">
+                    <Layout><GestaoContas /></Layout>
                   </ProtectedRoute>} />
                 
-                <Route path="/financeiro/contas-receber" element={<ProtectedRoute requiredRole="financeiro">
-                    <Layout><ContasReceber /></Layout>
+                {/* NEW: Relatórios Gerenciais (unifica DRE, Custos por Projeto, Fluxo de Caixa) */}
+                <Route path="/financeiro/relatorios" element={<ProtectedRoute requiredRole="financeiro">
+                    <Layout><RelatoriosGerenciais /></Layout>
                   </ProtectedRoute>} />
                 
                 <Route path="/financeiro/caixa-bancos" element={<ProtectedRoute requiredRole="financeiro">
@@ -819,33 +815,19 @@ function App() {
                     <Layout><CentrosCusto /></Layout>
                   </ProtectedRoute>} />
                 
-                <Route path="/relatorios/dre" element={<ProtectedRoute requiredRole="financeiro">
-                    <Layout><DRE /></Layout>
-                  </ProtectedRoute>} />
-                
-                <Route path="/relatorios/inadimplencia" element={<ProtectedRoute requiredRole="financeiro">
-                    <Layout><Inadimplencia /></Layout>
-                  </ProtectedRoute>} />
-                
-                <Route path="/relatorios/custos-projeto" element={<ProtectedRoute requiredRole="financeiro">
-                    <Layout><CustosProjeto /></Layout>
-                  </ProtectedRoute>} />
-                
-                <Route path="/relatorios/mapa-dividas" element={<ProtectedRoute requiredRole="financeiro">
-                    <Layout><MapaDividas /></Layout>
-                  </ProtectedRoute>} />
-                
-                <Route path="/relatorios/fluxo-caixa" element={<ProtectedRoute requiredRole="financeiro">
-                    <Layout><FluxoCaixa /></Layout>
-                  </ProtectedRoute>} />
-                
                 <Route path="/financeiro/conciliacao" element={<ProtectedRoute requiredRole="financeiro">
                     <Layout><Conciliacao /></Layout>
                   </ProtectedRoute>} />
                 
-                <Route path="/financeiro/gestor-dividas" element={<ProtectedRoute requiredRole="financeiro">
-                    <Layout><GestorDividas /></Layout>
-                  </ProtectedRoute>} />
+                {/* Redirects para manter compatibilidade com URLs antigas */}
+                <Route path="/financeiro/contas-pagar" element={<Navigate to="/financeiro/gestao-contas?tab=pagar" replace />} />
+                <Route path="/financeiro/contas-receber" element={<Navigate to="/financeiro/gestao-contas?tab=receber" replace />} />
+                <Route path="/financeiro/gestor-dividas" element={<Navigate to="/financeiro/gestao-contas?tab=dividas" replace />} />
+                <Route path="/relatorios/inadimplencia" element={<Navigate to="/financeiro/gestao-contas?tab=inadimplencia" replace />} />
+                <Route path="/relatorios/dre" element={<Navigate to="/financeiro/relatorios?tab=dre" replace />} />
+                <Route path="/relatorios/custos-projeto" element={<Navigate to="/financeiro/relatorios?tab=custos" replace />} />
+                <Route path="/relatorios/fluxo-caixa" element={<Navigate to="/financeiro/relatorios?tab=fluxo" replace />} />
+                <Route path="/relatorios/mapa-dividas" element={<Navigate to="/financeiro/gestao-contas?tab=dividas" replace />} />
                 
                 <Route path="/fornecedores" element={<ProtectedRoute requiredRole="financeiro">
                     <Layout><Fornecedores /></Layout>
