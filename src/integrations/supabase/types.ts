@@ -11156,7 +11156,6 @@ export type Database = {
           cliente_id: string | null
           created_at: string | null
           email: string | null
-          especialidade_id: string | null
           id: string | null
           nome: string | null
           status: string | null
@@ -11168,7 +11167,6 @@ export type Database = {
           cliente_id?: string | null
           created_at?: string | null
           email?: string | null
-          especialidade_id?: string | null
           id?: string | null
           nome?: string | null
           status?: string | null
@@ -11180,7 +11178,6 @@ export type Database = {
           cliente_id?: string | null
           created_at?: string | null
           email?: string | null
-          especialidade_id?: string | null
           id?: string | null
           nome?: string | null
           status?: string | null
@@ -11208,13 +11205,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "vw_client_metrics"
             referencedColumns: ["cliente_id"]
-          },
-          {
-            foreignKeyName: "pessoas_especialidade_id_fkey"
-            columns: ["especialidade_id"]
-            isOneToOne: false
-            referencedRelation: "especialidades"
-            referencedColumns: ["id"]
           },
         ]
       }
