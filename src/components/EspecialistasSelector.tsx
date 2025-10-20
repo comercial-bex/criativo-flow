@@ -45,7 +45,7 @@ export function EspecialistasSelector({ value, onChange }: EspecialistasSelector
       const { data, error } = await supabase
         .from('pessoas')
         .select('id, nome, email, telefones, papeis, profile_id')
-        .contains('papeis', ['especialista'])
+        .not('profile_id', 'is', null)
         .eq('status', 'aprovado')
         .order('nome');
 
