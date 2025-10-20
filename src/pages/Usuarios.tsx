@@ -12,6 +12,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { PermissionGate } from '@/components/PermissionGate';
 import { 
   Users, 
@@ -44,6 +46,9 @@ import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { NewUserModal } from '@/components/Admin/NewUserModal';
 import { DataSyncIndicator } from '@/components/Admin/DataSyncIndicator';
 import { EditRoleDialog } from '@/components/Admin/EditRoleDialog';
+import { validarColaborador, StatusValidacao } from '@/hooks/useColaboradorValidation';
+import { AlertaDadosIncompletos } from '@/components/RH/AlertaDadosIncompletos';
+import { Pessoa } from '@/hooks/usePessoas';
 
 interface Profile {
   id: string;
@@ -65,6 +70,8 @@ interface Profile {
   cpf?: string;
   papeis?: string[];
   pessoa_cliente_id?: string;
+  pessoa?: Pessoa | null;
+  validacao?: StatusValidacao | null;
 }
 
 interface AccessLog {
@@ -129,7 +136,22 @@ const Usuarios = () => {
         profileIds.length
           ? supabase
               .from('pessoas')
-              .select('profile_id, cpf, papeis, cliente_id')
+              .select(`
+                profile_id,
+                cpf,
+                papeis,
+                cliente_id,
+                regime,
+                cargo_atual,
+                salario_base,
+                fee_mensal,
+                dados_bancarios,
+                data_admissao,
+                email,
+                telefones,
+                status,
+                nome
+              `)
               .in('profile_id', profileIds)
           : Promise.resolve({ data: [], error: null } as any),
         supabase
@@ -183,6 +205,25 @@ const Usuarios = () => {
         const efetivoClienteId = pessoaClienteId || profile.cliente_id || null;
         const cliente = efetivoClienteId ? clientesById.get(efetivoClienteId) : null;
 
+        // Criar objeto Pessoa completo para validação (apenas para especialistas)
+        const pessoaParaValidacao = pessoa && role && role !== 'cliente' ? {
+          id: pessoa.profile_id || profile.id,
+          nome: pessoa.nome || profile.nome,
+          email: pessoa.email || profile.email,
+          cpf: pessoa.cpf,
+          papeis: pessoa.papeis,
+          regime: pessoa.regime,
+          cargo_atual: pessoa.cargo_atual,
+          salario_base: pessoa.salario_base,
+          fee_mensal: pessoa.fee_mensal,
+          dados_bancarios: pessoa.dados_bancarios,
+          data_admissao: pessoa.data_admissao,
+          telefones: pessoa.telefones,
+          status: pessoa.status || profile.status
+        } as Pessoa : null;
+
+        const validacao = pessoaParaValidacao ? validarColaborador(pessoaParaValidacao) : null;
+
         return {
           ...profile,
           role,
@@ -190,6 +231,8 @@ const Usuarios = () => {
           papeis: pessoa?.papeis || [],
           pessoa_cliente_id: pessoaClienteId,
           empresa: cliente?.nome_fantasia || cliente?.razao_social || cliente?.nome || null,
+          pessoa: pessoaParaValidacao,
+          validacao
         } as Profile;
       });
 
@@ -474,6 +517,16 @@ const Usuarios = () => {
     const onlineStatus = getOnlineStatus(profile.last_sign_in_at);
     const StatusIcon = onlineStatus.icon;
 
+    const getOnlineTooltip = () => {
+      if (onlineStatus.status === 'nunca') return 'Usuário nunca fez login';
+      if (onlineStatus.status === 'online') return 'Online agora';
+      if (onlineStatus.status === 'recente') return 'Visto recentemente (< 1h)';
+      if (profile.last_sign_in_at) {
+        return `Último acesso: ${new Date(profile.last_sign_in_at).toLocaleString('pt-BR')}`;
+      }
+      return 'Status desconhecido';
+    };
+
     return (
       <Card className="hover:shadow-md transition-all duration-200 animate-fade-in">
         <CardContent className="p-6">
@@ -486,9 +539,16 @@ const Usuarios = () => {
                     {profile.nome.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
-                <div className={`absolute -bottom-1 -right-1 p-1 rounded-full bg-background shadow-sm ${onlineStatus.color}`}>
-                  <StatusIcon className="h-3 w-3" />
-                </div>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className={`absolute -bottom-1 -right-1 p-1 rounded-full bg-background shadow-sm ${onlineStatus.color} cursor-help`}>
+                      <StatusIcon className="h-3 w-3" />
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {getOnlineTooltip()}
+                  </TooltipContent>
+                </Tooltip>
               </div>
               
               <div className="flex-1 min-w-0">
@@ -580,6 +640,17 @@ const Usuarios = () => {
                       </Button>
                     </div>
                   )}
+
+                  {/* Badge de validação para especialistas internos */}
+                  {profile.pessoa && profile.validacao && profile.validacao.nivel !== 'completo' && (
+                    <AlertaDadosIncompletos
+                      pessoa={profile.pessoa}
+                      validacao={profile.validacao}
+                      onEditar={() => {
+                        window.location.href = '/rh?tab=pessoas&edit=' + profile.pessoa?.id;
+                      }}
+                    />
+                  )}
                 </>
               )}
             </div>
@@ -606,26 +677,27 @@ const Usuarios = () => {
 
   return (
     <PermissionGate module="especialistas" action="canView">
-      <div className="p-6 space-y-8 animate-fade-in">
-        <div className="flex items-center justify-between">
-          <SectionHeader
-            title="Gerenciar Usuários"
-            description="Controle de acesso, aprovações e monitoramento de usuários"
-            icon={Users}
-            badge="Admin"
-          />
-          <div className="flex gap-2">
-            <DataSyncIndicator />
-            <Button onClick={() => setNewUserModalOpen(true)}>
-              <Plus className="mr-2 h-4 w-4" />
-              Novo Usuário
-            </Button>
-            <Button variant="outline" onClick={fetchData}>
-              <RefreshCw className="mr-2 h-4 w-4" />
-              Atualizar
-            </Button>
+      <TooltipProvider>
+        <div className="p-6 space-y-8 animate-fade-in">
+          <div className="flex items-center justify-between">
+            <SectionHeader
+              title="Gerenciar Usuários"
+              description="Controle de acesso, aprovações e monitoramento de usuários"
+              icon={Users}
+              badge="Admin"
+            />
+            <div className="flex gap-2">
+              <DataSyncIndicator />
+              <Button onClick={() => setNewUserModalOpen(true)}>
+                <Plus className="mr-2 h-4 w-4" />
+                Novo Usuário
+              </Button>
+              <Button variant="outline" onClick={fetchData}>
+                <RefreshCw className="mr-2 h-4 w-4" />
+                Atualizar
+              </Button>
+            </div>
           </div>
-        </div>
 
         <StatsGrid stats={statsData} />
 
@@ -673,6 +745,29 @@ const Usuarios = () => {
           </div>
 
           <TabsContent value="especialistas" className="space-y-6">
+            {/* Alerta de dados incompletos */}
+            {specialists.some(s => s.validacao && s.validacao.nivel !== 'completo') && (
+              <Alert variant="default" className="border-warning bg-warning/5">
+                <AlertCircle className="h-4 w-4 text-warning" />
+                <AlertTitle className="text-warning">⚠️ Dados RH/Financeiros Incompletos Detectados</AlertTitle>
+                <AlertDescription className="text-muted-foreground">
+                  Alguns especialistas estão com dados de RH/financeiros incompletos. 
+                  Isso pode impedir a geração de folha de pagamento e relatórios.
+                  <br />
+                  <span className="font-medium">Verifique os badges nos cards abaixo e complete os dados necessários.</span>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    className="mt-3"
+                    onClick={() => window.location.href = '/rh?tab=pessoas'}
+                  >
+                    <Edit className="mr-2 h-4 w-4" />
+                    Ir para RH &gt; Pessoas
+                  </Button>
+                </AlertDescription>
+              </Alert>
+            )}
+
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center">
@@ -1139,7 +1234,8 @@ Tem certeza que deseja continuar?`
           profile={editRoleProfile}
           onRoleUpdate={handleUpdateRoleFromDialog}
         />
-      </div>
+        </div>
+      </TooltipProvider>
     </PermissionGate>
   );
 };
