@@ -113,12 +113,13 @@ const handler = async (req: Request): Promise<Response> => {
 
 async function handleListUsers(supabase: any, filters?: any) {
   // Construir query com JOIN usando !inner (FK está configurada)
+  // JOIN via profiles.id = user_roles.user_id
   let query = supabase
     .from('profiles')
     .select(`
       *,
-      user_roles!inner(role),
-      clientes!profiles_cliente_id_fkey(nome)
+      user_roles!user_roles_user_id_fkey(role),
+      clientes(nome)
     `);
 
   // Aplicar filtros
