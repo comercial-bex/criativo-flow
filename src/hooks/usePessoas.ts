@@ -108,7 +108,7 @@ export function usePessoas(papel?: 'colaborador' | 'especialista' | 'cliente') {
         .update(dadosParaUpdate as any)
         .eq('id', id)
         .select()
-        .single();
+        .maybeSingle();
       
       if (error) throw error;
       return data;
