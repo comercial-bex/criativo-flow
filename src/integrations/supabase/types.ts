@@ -11897,6 +11897,10 @@ export type Database = {
           usuario_login: string
         }[]
       }
+      get_dashboard_financeiro_data: {
+        Args: Record<PropertyKey, never>
+        Returns: unknown[]
+      }
       get_filtered_customer_data: {
         Args: { customer_id: string }
         Returns: {
@@ -11935,6 +11939,10 @@ export type Database = {
           tipo: string
           valor: number
         }[]
+      }
+      get_fluxo_por_categoria_data: {
+        Args: Record<PropertyKey, never>
+        Returns: unknown[]
       }
       get_grs_dashboard_metrics: {
         Args: Record<PropertyKey, never>
