@@ -108,9 +108,8 @@ export function CriarProjetoAvulsoModal({
       const { data, error } = await supabase
         .from('profiles')
         .select('id, nome')
-        .eq('especialidade', 'grs')
         .eq('status', 'aprovado')
-        .order('nome');
+        .order('nome') as { data: any; error: any };
 
       if (error) throw error;
       setEspecialistas(data || []);

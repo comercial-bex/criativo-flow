@@ -76,9 +76,8 @@ export function AudiovisualScheduleModal({
       const { data: filmmakersData } = await supabase
         .from('profiles')
         .select('id, nome')
-        .in('especialidade', ['filmmaker', 'audiovisual'])
         .eq('status', 'aprovado')
-        .order('nome');
+        .order('nome') as { data: any; error: any };
 
       setFilmmakers(filmmakersData || []);
 
