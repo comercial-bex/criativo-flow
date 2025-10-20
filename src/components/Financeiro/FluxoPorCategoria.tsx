@@ -10,9 +10,7 @@ export function FluxoPorCategoria() {
     queryKey: ['fluxo-por-categoria'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('vw_fluxo_por_categoria')
-        .select('*')
-        .order('valor_total', { ascending: false });
+        .rpc('get_fluxo_por_categoria_data', {});
       
       if (error) throw error;
       return data;

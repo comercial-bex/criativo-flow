@@ -10818,13 +10818,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "titulos_financeiros_categoria_id_fkey"
-            columns: ["categoria_id"]
-            isOneToOne: false
-            referencedRelation: "vw_fluxo_por_categoria"
-            referencedColumns: ["categoria_id"]
-          },
-          {
             foreignKeyName: "titulos_financeiros_cliente_id_fkey"
             columns: ["cliente_id"]
             isOneToOne: false
@@ -10930,13 +10923,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "categorias_financeiras"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "transacoes_financeiras_categoria_id_fkey"
-            columns: ["categoria_id"]
-            isOneToOne: false
-            referencedRelation: "vw_fluxo_por_categoria"
-            referencedColumns: ["categoria_id"]
           },
           {
             foreignKeyName: "transacoes_financeiras_cliente_id_fkey"
@@ -11094,18 +11080,6 @@ export type Database = {
       }
     }
     Views: {
-      mv_dashboard_financeiro: {
-        Row: {
-          margem_lucro_percent: number | null
-          mes: string | null
-          qtd_despesas: number | null
-          qtd_receitas: number | null
-          saldo: number | null
-          total_despesas: number | null
-          total_receitas: number | null
-        }
-        Relationships: []
-      }
       mv_grs_dashboard_metrics: {
         Row: {
           cliente_created_at: string | null
@@ -11360,21 +11334,6 @@ export type Database = {
           valor_total_pendente: number | null
           valor_vencendo_7d: number | null
           valor_vencidos: number | null
-        }
-        Relationships: []
-      }
-      vw_fluxo_por_categoria: {
-        Row: {
-          categoria_cor: string | null
-          categoria_id: string | null
-          categoria_nome: string | null
-          categoria_tipo: string | null
-          mes_competencia: string | null
-          qtd_titulos: number | null
-          titulo_tipo: Database["public"]["Enums"]["tipo_titulo"] | null
-          valor_pago: number | null
-          valor_pendente: number | null
-          valor_total: number | null
         }
         Relationships: []
       }

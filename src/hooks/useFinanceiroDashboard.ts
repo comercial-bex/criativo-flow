@@ -31,9 +31,7 @@ export function useFinanceiroDashboard() {
     queryKey: ["dashboard-financeiro"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("mv_dashboard_financeiro")
-        .select("*")
-        .order("mes", { ascending: false });
+        .rpc('get_dashboard_financeiro_data', {});
 
       if (error) throw error;
       return data as DashboardMes[];
