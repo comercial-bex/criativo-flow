@@ -24,6 +24,9 @@ import {
 import { useTitulosFinanceiros, type TituloFilters } from "@/hooks/useTitulosFinanceiros";
 import { RegistrarPagamentoDialog } from "./RegistrarPagamentoDialog";
 import { Skeleton } from "@/components/ui/skeleton";
+import { GestaoContasKPIs } from "./GestaoContasKPIs";
+import { GraficoEvolucao } from "./GraficoEvolucao";
+import { LancarTituloDialog } from "./LancarTituloDialog";
 
 export function TitulosPagarList() {
   const [filters, setFilters] = useState<TituloFilters>({ tipo: 'pagar' });
@@ -60,12 +63,15 @@ export function TitulosPagarList() {
 
   return (
     <>
+      <GestaoContasKPIs tipo="pagar" />
+      
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="flex items-center gap-2">
             <FileText className="h-5 w-5" />
             Contas a Pagar
           </CardTitle>
+          <LancarTituloDialog tipo="pagar" />
         </CardHeader>
         <CardContent>
           {/* Filtros */}
@@ -166,6 +172,8 @@ export function TitulosPagarList() {
           </div>
         </CardContent>
       </Card>
+
+      <GraficoEvolucao tipo="pagar" />
 
       {selectedTitulo && (
         <RegistrarPagamentoDialog
