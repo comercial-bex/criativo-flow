@@ -112,46 +112,90 @@ const handler = async (req: Request): Promise<Response> => {
 };
 
 async function handleListUsers(supabase: any, filters?: any) {
-  // Construir query com JOIN usando !inner (FK está configurada)
-  // JOIN via profiles.id = user_roles.user_id
-  let query = supabase
-    .from('profiles')
-    .select(`
-      *,
-      user_roles!user_roles_user_id_fkey(role),
-      clientes(nome)
-    `);
+  console.log('📋 Buscando lista de usuários com filtros:', filters);
+  
+  try {
+    // 1. Buscar perfis com join de clientes
+    const { data: profiles, error: profilesError } = await supabase
+      .from('profiles')
+      .select(`
+        id,
+        nome,
+        email,
+        status,
+        created_at,
+        cliente_id,
+        clientes!profiles_cliente_id_fkey(nome)
+      `)
+      .order('created_at', { ascending: false });
 
-  // Aplicar filtros
-  if (filters?.role) {
-    query = query.eq('user_roles.role', filters.role);
-  }
+    if (profilesError) {
+      console.error('❌ Erro ao buscar perfis:', profilesError);
+      throw profilesError;
+    }
 
-  if (filters?.status) {
-    query = query.eq('status', filters.status);
-  }
+    console.log(`✅ Buscados ${profiles?.length || 0} perfis`);
 
-  if (filters?.search) {
-    query = query.or(`nome.ilike.%${filters.search}%,email.ilike.%${filters.search}%`);
-  }
+    // 2. Buscar roles de todos os usuários
+    const profileIds = profiles?.map(p => p.id) || [];
+    const { data: userRoles, error: rolesError } = await supabase
+      .from('user_roles')
+      .select('user_id, role')
+      .in('user_id', profileIds);
 
-  // Executar query com ordenação
-  const { data, error } = await query.order('created_at', { ascending: false });
+    if (rolesError) {
+      console.error('⚠️ Erro ao buscar roles (continuando sem roles):', rolesError);
+    }
 
-  if (error) {
+    console.log(`✅ Buscadas ${userRoles?.length || 0} roles`);
+
+    // 3. Criar mapa de roles
+    const roleMap = new Map();
+    userRoles?.forEach(ur => {
+      roleMap.set(ur.user_id, ur.role);
+    });
+
+    // 4. Combinar dados
+    let users = profiles?.map(profile => ({
+      ...profile,
+      user_roles: roleMap.has(profile.id) 
+        ? [{ role: roleMap.get(profile.id) }] 
+        : []
+    })) || [];
+
+    console.log(`✅ Montados ${users.length} usuários completos`);
+
+    // 5. Aplicar filtros em memória
+    if (filters?.role && filters.role !== 'all') {
+      users = users.filter(u => u.user_roles?.[0]?.role === filters.role);
+      console.log(`🔍 Filtrado por role '${filters.role}': ${users.length} usuários`);
+    }
+
+    if (filters?.status && filters.status !== 'all') {
+      users = users.filter(u => u.status === filters.status);
+      console.log(`🔍 Filtrado por status '${filters.status}': ${users.length} usuários`);
+    }
+
+    if (filters?.search) {
+      const searchLower = filters.search.toLowerCase();
+      users = users.filter(u => 
+        u.nome?.toLowerCase().includes(searchLower) ||
+        u.email?.toLowerCase().includes(searchLower) ||
+        u.clientes?.nome?.toLowerCase().includes(searchLower)
+      );
+      console.log(`🔍 Filtrado por busca '${filters.search}': ${users.length} usuários`);
+    }
+
+    console.log(`✅ Retornando ${users.length} usuários após filtros`);
+
+    return new Response(JSON.stringify({ success: true, users }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 200,
+    });
+  } catch (error: any) {
     console.error('❌ Erro ao buscar usuários:', error);
     throw error;
   }
-
-  console.log(`✅ Buscados ${data?.length || 0} usuários com roles`);
-
-  return new Response(JSON.stringify({ 
-    success: true,
-    users: data 
-  }), {
-    status: 200,
-    headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-  });
 }
 
 async function handleResetPassword(supabase: any, userId: string, newPassword: string) {
