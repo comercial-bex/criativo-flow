@@ -49,6 +49,7 @@ import { EditRoleDialog } from '@/components/Admin/EditRoleDialog';
 import { validarColaborador, StatusValidacao } from '@/hooks/useColaboradorValidation';
 import { AlertaDadosIncompletos } from '@/components/RH/AlertaDadosIncompletos';
 import { Pessoa } from '@/hooks/usePessoas';
+import { PessoaEditModal } from '@/components/RH/PessoaEditModal';
 
 interface Profile {
   id: string;
@@ -98,6 +99,8 @@ const Usuarios = () => {
   const [newUserModalOpen, setNewUserModalOpen] = useState(false);
   const [editRoleProfile, setEditRoleProfile] = useState<Profile | null>(null);
   const [editRoleOpen, setEditRoleOpen] = useState(false);
+  const [pessoaEditando, setPessoaEditando] = useState<Pessoa | null>(null);
+  const [modalEdicaoAberto, setModalEdicaoAberto] = useState(false);
   const [editingPendingUser, setEditingPendingUser] = useState(false);
   const [editedTipoCadastro, setEditedTipoCadastro] = useState<'especialista' | 'cliente'>('cliente');
   const [editedDepartamento, setEditedDepartamento] = useState('');
@@ -646,8 +649,9 @@ const Usuarios = () => {
                     <AlertaDadosIncompletos
                       pessoa={profile.pessoa}
                       validacao={profile.validacao}
-                      onEditar={() => {
-                        window.location.href = '/rh/pessoas?edit=' + profile.pessoa?.id;
+                      onEditarInline={() => {
+                        setPessoaEditando(profile.pessoa);
+                        setModalEdicaoAberto(true);
                       }}
                     />
                   )}
@@ -1234,6 +1238,19 @@ Tem certeza que deseja continuar?`
           profile={editRoleProfile}
           onRoleUpdate={handleUpdateRoleFromDialog}
         />
+
+        {pessoaEditando && (
+          <PessoaEditModal
+            open={modalEdicaoAberto}
+            onOpenChange={setModalEdicaoAberto}
+            pessoa={pessoaEditando}
+            onSaved={() => {
+              setModalEdicaoAberto(false);
+              setPessoaEditando(null);
+              fetchData();
+            }}
+          />
+        )}
         </div>
       </TooltipProvider>
     </PermissionGate>

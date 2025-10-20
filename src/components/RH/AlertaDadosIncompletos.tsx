@@ -10,10 +10,11 @@ import { AlertCircle, AlertTriangle, CheckCircle, Edit } from 'lucide-react';
 interface AlertaDadosIncompletosProps {
   pessoa: Pessoa;
   validacao: StatusValidacao;
-  onEditar: () => void;
+  onEditar?: () => void;
+  onEditarInline?: () => void;
 }
 
-export function AlertaDadosIncompletos({ pessoa, validacao, onEditar }: AlertaDadosIncompletosProps) {
+export function AlertaDadosIncompletos({ pessoa, validacao, onEditar, onEditarInline }: AlertaDadosIncompletosProps) {
   const [open, setOpen] = useState(false);
 
   const statusConfig = {
@@ -136,7 +137,11 @@ export function AlertaDadosIncompletos({ pessoa, validacao, onEditar }: AlertaDa
             <Button 
               onClick={() => {
                 setOpen(false);
-                onEditar();
+                if (onEditarInline) {
+                  onEditarInline();
+                } else if (onEditar) {
+                  onEditar();
+                }
               }}
               className="w-full"
             >
