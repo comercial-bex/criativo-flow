@@ -17,7 +17,6 @@ export function useEspecialistas() {
         `)
         .contains('papeis', ['especialista'])
         .eq('status', 'ativo')
-        .not('profile_id', 'is', null)
         .order('nome');
       
       if (error) {
@@ -25,14 +24,22 @@ export function useEspecialistas() {
         throw error;
       }
       
-      return (data || []).map(pessoa => ({
-        id: pessoa.profile_id!,
-        nome: pessoa.nome,
-        email: pessoa.email,
-        telefone: Array.isArray(pessoa.telefones) ? pessoa.telefones[0] : null,
-        especialidade: 'especialista',
-        papeis: pessoa.papeis
-      }));
+      return (data || []).map(pessoa => {
+        // Determinar especialidade com base nos papeis
+        const especialidade = pessoa.papeis?.includes('grs') ? 'grs' :
+                            pessoa.papeis?.includes('design') ? 'design' :
+                            pessoa.papeis?.includes('audiovisual') ? 'audiovisual' :
+                            'especialista';
+        
+        return {
+          id: pessoa.profile_id || pessoa.id,
+          nome: pessoa.nome,
+          email: pessoa.email || '',
+          telefone: Array.isArray(pessoa.telefones) ? pessoa.telefones[0] : null,
+          especialidade,
+          papeis: pessoa.papeis
+        };
+      });
     }
   });
 }

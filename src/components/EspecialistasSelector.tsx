@@ -43,21 +43,28 @@ export function EspecialistasSelector({ value, onChange }: EspecialistasSelector
   const fetchEspecialistas = async () => {
     try {
       const { data, error } = await supabase
-        .from('profiles')
-        .select('id, nome, email, especialidade')
-        .in('especialidade', ['grs', 'design', 'videomaker', 'audiovisual'])
-        .eq('status', 'aprovado')
+        .from('pessoas')
+        .select('id, nome, email, telefones, papeis, profile_id')
+        .contains('papeis', ['especialista'])
+        .eq('status', 'ativo')
         .order('nome');
 
       if (error) throw error;
       
-      // Normalizar especialidades para uso consistente
-      const normalized = (data || []).map(e => ({
-        ...e,
-        especialidade: e.especialidade === 'design' ? 'designer' : 
-                      (e.especialidade === 'videomaker' || e.especialidade === 'audiovisual') ? 'filmmaker' : 
-                      e.especialidade
-      }));
+      // Normalizar especialidades com base nos papeis
+      const normalized = (data || []).map(pessoa => {
+        const especialidade = pessoa.papeis?.includes('grs') ? 'grs' :
+                            pessoa.papeis?.includes('design') ? 'designer' :
+                            pessoa.papeis?.includes('audiovisual') ? 'filmmaker' :
+                            'especialista';
+        
+        return {
+          id: pessoa.profile_id || pessoa.id,
+          nome: pessoa.nome,
+          email: pessoa.email || '',
+          especialidade
+        };
+      });
       
       setEspecialistas(normalized);
     } catch (error) {
