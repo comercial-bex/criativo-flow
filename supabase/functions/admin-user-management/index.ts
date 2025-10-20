@@ -115,7 +115,7 @@ async function handleListUsers(supabase: any, filters?: any) {
   console.log('📋 Buscando lista de usuários com filtros:', filters);
   
   try {
-    // 1. Buscar perfis com join de clientes
+    // 1. Buscar perfis com join de clientes (FK está em pessoas, mas profiles é view)
     const { data: profiles, error: profilesError } = await supabase
       .from('profiles')
       .select(`
@@ -125,7 +125,7 @@ async function handleListUsers(supabase: any, filters?: any) {
         status,
         created_at,
         cliente_id,
-        clientes!profiles_cliente_id_fkey(nome)
+        clientes!pessoas_cliente_id_fkey(nome)
       `)
       .order('created_at', { ascending: false });
 
