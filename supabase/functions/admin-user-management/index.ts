@@ -92,19 +92,19 @@ const handler = async (req: Request): Promise<Response> => {
 
     switch (body.action) {
       case 'list':
-        return await handleListUsers(supabase, body.filters);
+        return await handleListUsers(supabase, body.filters, origin);
       
       case 'reset-password':
-        return await handleResetPassword(supabase, body.user_id!, body.new_password!);
+        return await handleResetPassword(supabase, body.user_id!, body.new_password!, origin);
       
       case 'force-logout':
-        return await handleForceLogout(supabase, body.user_id!);
+        return await handleForceLogout(supabase, body.user_id!, origin);
       
       case 'update-status':
-        return await handleUpdateStatus(supabase, body.user_id!, body.status!);
+        return await handleUpdateStatus(supabase, body.user_id!, body.status!, origin);
       
       case 'delete-user':
-        return await handleDeleteUser(supabase, body.user_id!);
+        return await handleDeleteUser(supabase, body.user_id!, origin);
       
       case 'update-user-complete':
         return await handleUpdateUserComplete(supabase, body.user_id!, body.updates!);
@@ -135,7 +135,8 @@ const handler = async (req: Request): Promise<Response> => {
   }
 };
 
-async function handleListUsers(supabase: any, filters?: any) {
+async function handleListUsers(supabase: any, filters?: any, origin?: string | null) {
+  const corsHeaders = getCorsHeaders(origin);
   console.log('📋 Buscando lista de usuários com filtros:', filters);
   
   try {
@@ -229,7 +230,8 @@ async function handleListUsers(supabase: any, filters?: any) {
   }
 }
 
-async function handleResetPassword(supabase: any, userId: string, newPassword: string) {
+async function handleResetPassword(supabase: any, userId: string, newPassword: string, origin?: string | null) {
+  const corsHeaders = getCorsHeaders(origin);
   const { error } = await supabase.auth.admin.updateUserById(userId, {
     password: newPassword
   });
@@ -244,7 +246,8 @@ async function handleResetPassword(supabase: any, userId: string, newPassword: s
   });
 }
 
-async function handleForceLogout(supabase: any, userId: string) {
+async function handleForceLogout(supabase: any, userId: string, origin?: string | null) {
+  const corsHeaders = getCorsHeaders(origin);
   // Remove all sessions for the user
   const { error } = await supabase.auth.admin.signOut(userId, 'global');
 
@@ -258,7 +261,8 @@ async function handleForceLogout(supabase: any, userId: string) {
   });
 }
 
-async function handleUpdateStatus(supabase: any, userId: string, status: string) {
+async function handleUpdateStatus(supabase: any, userId: string, status: string, origin?: string | null) {
+  const corsHeaders = getCorsHeaders(origin);
   console.log(`📝 Atualizando status para user ${userId}: ${status}`);
   
   // userId = Auth ID (profile_id)
@@ -280,7 +284,8 @@ async function handleUpdateStatus(supabase: any, userId: string, status: string)
   });
 }
 
-async function handleDeleteUser(supabase: any, userId: string) {
+async function handleDeleteUser(supabase: any, userId: string, origin?: string | null) {
+  const corsHeaders = getCorsHeaders(origin);
   console.log(`🗑️ Iniciando deleção de usuário: ${userId}`);
   
   try {
