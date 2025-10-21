@@ -383,23 +383,40 @@ async function handleUpdateUserComplete(
       console.log(`✅ Role atualizada: ${updates.role}`);
     }
     
-    // 2. Atualizar pessoas se há mudanças
+    // 2. Atualizar pessoas se há mudanças (usando id, não profile_id)
     const pessoaUpdates: any = {};
     if (updates.cliente_id !== undefined) pessoaUpdates.cliente_id = updates.cliente_id;
     if (updates.status) pessoaUpdates.status = updates.status;
     if (updates.papeis) pessoaUpdates.papeis = updates.papeis;
     
     if (Object.keys(pessoaUpdates).length > 0) {
-      const { error: pessoaError } = await supabase
+      // Primeiro, verificar se o registro existe em pessoas
+      const { data: pessoaExists, error: checkError } = await supabase
         .from('pessoas')
-        .update(pessoaUpdates)
-        .eq('profile_id', userId);
+        .select('id')
+        .eq('id', userId)
+        .single();
       
-      if (pessoaError) {
-        console.error('❌ Erro ao atualizar pessoas:', pessoaError);
-        throw pessoaError;
+      if (checkError && checkError.code !== 'PGRST116') {
+        console.error('❌ Erro ao verificar pessoa:', checkError);
+        throw checkError;
       }
-      console.log(`✅ Dados em pessoas atualizados:`, pessoaUpdates);
+      
+      if (pessoaExists) {
+        // Atualizar registro existente
+        const { error: pessoaError } = await supabase
+          .from('pessoas')
+          .update(pessoaUpdates)
+          .eq('id', userId);
+        
+        if (pessoaError) {
+          console.error('❌ Erro ao atualizar pessoas:', pessoaError);
+          throw pessoaError;
+        }
+        console.log(`✅ Dados em pessoas atualizados:`, pessoaUpdates);
+      } else {
+        console.log(`⚠️ Registro não encontrado em pessoas para user ${userId}, pulando atualização`);
+      }
     }
     
     // 3. Retornar sucesso

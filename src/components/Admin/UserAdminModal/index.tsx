@@ -78,13 +78,17 @@ export function UserAdminModal({ open, onOpenChange, user, onUpdate }: UserAdmin
       const updates: any = {
         role: selectedRole,
         status: selectedStatus,
-        papeis: selectedPapeis
       };
 
-      // Se é cliente, adicionar cliente_id
-      if (selectedTipo === 'cliente') {
+      // Definir papéis baseado no tipo
+      if (selectedTipo === 'admin') {
+        updates.papeis = ['admin'];
+      } else if (selectedTipo === 'cliente') {
+        updates.papeis = ['cliente'];
         updates.cliente_id = selectedClienteId;
       } else {
+        // Especialista
+        updates.papeis = ['colaborador', selectedRole];
         updates.cliente_id = null;
       }
 
@@ -105,7 +109,7 @@ export function UserAdminModal({ open, onOpenChange, user, onUpdate }: UserAdmin
 
       toast({
         title: '✅ Usuário atualizado com sucesso',
-        description: `${user.nome} foi atualizado`,
+        description: `${user.nome} foi atualizado com tipo: ${selectedTipo}, role: ${selectedRole}`,
       });
 
       onUpdate();
