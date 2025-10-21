@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -72,12 +72,25 @@ export function UserAdminModal({ open, onOpenChange, user, onUpdate }: UserAdmin
   const handleSave = async () => {
     if (!user) return;
 
+    // Validação: Cliente precisa ter cliente_id
+    if (selectedTipo === 'cliente' && !selectedClienteId) {
+      toast({
+        title: '⚠️ Validação',
+        description: 'Selecione o cliente antes de salvar.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setLoading(true);
     try {
+      // Mapear status "ativo" para "aprovado" (compatibilidade)
+      const statusParaEnviar = selectedStatus === 'ativo' ? 'aprovado' : selectedStatus;
+
       // Preparar updates baseado no tipo selecionado
       const updates: any = {
         role: selectedRole,
-        status: selectedStatus,
+        status: statusParaEnviar,
       };
 
       // Definir papéis baseado no tipo
@@ -107,10 +120,20 @@ export function UserAdminModal({ open, onOpenChange, user, onUpdate }: UserAdmin
         throw new Error(data?.error || 'Falha ao atualizar usuário');
       }
 
+      // Toast de sucesso
       toast({
         title: '✅ Usuário atualizado com sucesso',
         description: `${user.nome} foi atualizado com tipo: ${selectedTipo}, role: ${selectedRole}`,
       });
+
+      // Aviso se role foi pulada devido a FK antigo
+      if (data.role_skipped === true) {
+        toast({
+          title: '⚠️ Atenção',
+          description: 'Permissão principal salva em papeis; ajuste estrutural do user_roles pendente (sem impacto para o acesso do usuário).',
+          variant: 'default',
+        });
+      }
 
       onUpdate();
       onOpenChange(false);
@@ -165,6 +188,9 @@ export function UserAdminModal({ open, onOpenChange, user, onUpdate }: UserAdmin
             </Avatar>
             <div className="flex-1">
               <DialogTitle className="text-2xl">{user.nome}</DialogTitle>
+              <DialogDescription className="sr-only">
+                Administração de usuário: visualizar, editar permissões e segurança
+              </DialogDescription>
               <p className="text-sm text-muted-foreground">{user.email}</p>
               <div className="mt-2">{getStatusBadge(user.status)}</div>
             </div>

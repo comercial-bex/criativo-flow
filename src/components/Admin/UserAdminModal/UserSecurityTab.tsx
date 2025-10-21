@@ -150,12 +150,12 @@ export function UserSecurityTab({
             </div>
 
             <div className="flex items-center space-x-3 space-y-0 rounded-lg border p-4">
-              <RadioGroupItem value="bloqueado" id="bloqueado" />
-              <Label htmlFor="bloqueado" className="flex items-center gap-2 cursor-pointer flex-1">
+              <RadioGroupItem value="rejeitado" id="rejeitado" />
+              <Label htmlFor="rejeitado" className="flex items-center gap-2 cursor-pointer flex-1">
                 <Ban className="h-5 w-5 text-red-500" />
                 <div>
-                  <p className="font-medium">Bloqueado</p>
-                  <p className="text-sm text-muted-foreground">Acesso bloqueado permanentemente</p>
+                  <p className="font-medium">Rejeitado</p>
+                  <p className="text-sm text-muted-foreground">Acesso negado</p>
                 </div>
               </Label>
             </div>

@@ -367,23 +367,40 @@ async function handleUpdateUserComplete(
   console.log(`📝 Atualizando usuário ${userId}:`, updates);
   
   try {
-    // 1. Atualizar user_roles se role foi fornecida
+    let roleSkipped = false;
+    
+    // 1. Atualizar user_roles se role foi fornecida (com tolerância ao FK quebrado)
     if (updates.role) {
-      const { error: roleError } = await supabase
-        .from('user_roles')
-        .upsert({ 
-          user_id: userId, 
-          role: updates.role 
-        });
-      
-      if (roleError) {
-        console.error('❌ Erro ao atualizar role:', roleError);
-        throw roleError;
+      try {
+        const { error: roleError } = await supabase
+          .from('user_roles')
+          .upsert({ 
+            user_id: userId, 
+            role: updates.role 
+          });
+        
+        if (roleError) {
+          throw roleError;
+        }
+        console.log(`✅ Role atualizada em user_roles: ${updates.role}`);
+      } catch (e: any) {
+        // Se erro é FK para profiles_deprecated, continuar sem travar
+        if (e?.code === '23503' && String(e?.message || '').includes('profiles_deprecated')) {
+          console.warn(`⚠️ FK antigo em user_roles (profiles_deprecated); gravando somente em pessoas.papeis`);
+          roleSkipped = true;
+        } else {
+          console.error('❌ Erro ao atualizar role:', e);
+          throw e;
+        }
       }
-      console.log(`✅ Role atualizada: ${updates.role}`);
     }
     
-    // 2. Atualizar pessoas se há mudanças (usando id, não profile_id)
+    // 2. Validar cliente_id se tipo é cliente
+    if (updates.papeis?.includes('cliente') && !updates.cliente_id) {
+      throw new Error('Cliente deve ter cliente_id definido');
+    }
+    
+    // 3. Atualizar pessoas se há mudanças (usando id, não profile_id)
     const pessoaUpdates: any = {};
     if (updates.cliente_id !== undefined) pessoaUpdates.cliente_id = updates.cliente_id;
     if (updates.status) pessoaUpdates.status = updates.status;
@@ -419,12 +436,17 @@ async function handleUpdateUserComplete(
       }
     }
     
-    // 3. Retornar sucesso
+    // 4. Retornar sucesso (com flag se role foi pulada)
+    if (roleSkipped) {
+      console.log(`📊 Atualização completa com role_skipped=true para user ${userId}`);
+    }
+    
     return new Response(
       JSON.stringify({ 
         success: true, 
         message: 'Usuário atualizado com sucesso',
-        updates
+        updates,
+        role_skipped: roleSkipped
       }),
       { 
         status: 200, 
