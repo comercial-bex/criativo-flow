@@ -2029,20 +2029,6 @@ export type Database = {
             referencedRelation: "assinaturas"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "fk_clientes_responsavel_pessoas"
-            columns: ["responsavel_id"]
-            isOneToOne: false
-            referencedRelation: "pessoas"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_clientes_responsavel_pessoas"
-            columns: ["responsavel_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
         ]
       }
       clientes_backup_pre_unificacao: {
@@ -11452,20 +11438,6 @@ export type Database = {
             referencedRelation: "vw_client_metrics"
             referencedColumns: ["responsavel_id"]
           },
-          {
-            foreignKeyName: "fk_clientes_responsavel_pessoas"
-            columns: ["responsavel_id"]
-            isOneToOne: false
-            referencedRelation: "pessoas"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_clientes_responsavel_pessoas"
-            columns: ["responsavel_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
         ]
       }
       profiles: {
@@ -12181,6 +12153,10 @@ export type Database = {
           p_titulo: string
           p_trace_id?: string
         }
+        Returns: string
+      }
+      fn_get_default_responsavel: {
+        Args: Record<PropertyKey, never>
         Returns: string
       }
       fn_get_timeline_by_trace: {
