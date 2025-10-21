@@ -4,6 +4,7 @@ import { createClient } from 'jsr:@supabase/supabase-js@2';
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
 };
 
 interface AdminUserRequest {
@@ -374,13 +375,36 @@ async function handleUpdateUserComplete(
         .upsert({ 
           user_id: userId,  // ✅ Auth ID
           role: updates.role 
+        }, {
+          onConflict: 'user_id'  // ✅ Resolver conflito usando a constraint unique de user_id
         });
       
       if (roleError) {
-        console.error('❌ Erro ao atualizar role:', roleError);
-        throw roleError;
+        console.error('❌ Erro ao atualizar role:', {
+          code: roleError.code,
+          message: roleError.message,
+          details: roleError.details
+        });
+        
+        // Se for erro de duplicação, tentar UPDATE direto como fallback
+        if (roleError.code === '23505') {
+          console.log('⚠️ Tentando UPDATE direto como fallback...');
+          const { error: updateError } = await supabase
+            .from('user_roles')
+            .update({ role: updates.role })
+            .eq('user_id', userId);
+          
+          if (updateError) {
+            console.error('❌ Erro no UPDATE direto:', updateError);
+            throw new Error(`Falha ao atualizar role: ${updateError.message}`);
+          }
+          console.log(`✅ Role atualizada via UPDATE direto: ${updates.role}`);
+        } else {
+          throw new Error(`Falha ao atualizar role: ${roleError.message}`);
+        }
+      } else {
+        console.log(`✅ Role atualizada via UPSERT: ${updates.role}`);
       }
-      console.log(`✅ Role atualizada: ${updates.role}`);
     }
     
     // 2. Validar cliente_id se tipo é cliente
