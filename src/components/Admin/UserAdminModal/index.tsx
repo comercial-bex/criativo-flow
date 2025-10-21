@@ -93,6 +93,17 @@ export function UserAdminModal({ open, onOpenChange, user, onUpdate }: UserAdmin
         status: statusParaEnviar,
       };
 
+      // Mapeamento de roles para papeis válidos
+      const roleToModule: Record<string, string> = {
+        designer: 'design',
+        filmmaker: 'audiovisual',
+        rh: 'gestor',
+        grs: 'grs',
+        atendimento: 'atendimento',
+        financeiro: 'financeiro',
+        gestor: 'gestor'
+      };
+
       // Definir papéis baseado no tipo
       if (selectedTipo === 'admin') {
         updates.papeis = ['admin'];
@@ -100,8 +111,9 @@ export function UserAdminModal({ open, onOpenChange, user, onUpdate }: UserAdmin
         updates.papeis = ['cliente'];
         updates.cliente_id = selectedClienteId;
       } else {
-        // Especialista
-        updates.papeis = ['colaborador', selectedRole];
+        // Especialista - mapear role para papel válido
+        const modulePapel = roleToModule[selectedRole] || selectedRole;
+        updates.papeis = ['colaborador', modulePapel];
         updates.cliente_id = null;
       }
 

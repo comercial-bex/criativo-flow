@@ -412,11 +412,31 @@ async function handleUpdateUserComplete(
       throw new Error('Cliente deve ter cliente_id definido');
     }
     
-    // 3. Atualizar pessoas via profile_id
+    // 3. Sanitizar papeis antes de atualizar pessoas
+    const ALLOWED_PAPEIS = new Set(['colaborador','especialista','cliente','grs','design','audiovisual','atendimento','financeiro','gestor','admin']);
+    const PAPEIS_SYNONYMS: Record<string, string> = { 
+      designer: 'design', 
+      filmmaker: 'audiovisual', 
+      rh: 'gestor' 
+    };
+    
+    // 4. Atualizar pessoas via profile_id
     const pessoaUpdates: any = {};
     if (updates.cliente_id !== undefined) pessoaUpdates.cliente_id = updates.cliente_id;
     if (updates.status) pessoaUpdates.status = updates.status;
-    if (updates.papeis) pessoaUpdates.papeis = updates.papeis;
+    
+    // Sanitizar papeis se fornecidos
+    if (Array.isArray(updates.papeis)) {
+      const mapped = updates.papeis.map(p => PAPEIS_SYNONYMS[p] ?? p);
+      const sanitized = mapped.filter(p => ALLOWED_PAPEIS.has(p));
+      console.log('🔎 Papeis recebidos:', updates.papeis, '→ mapeados:', mapped, '→ sanitizados:', sanitized);
+      
+      if (sanitized.length > 0) {
+        pessoaUpdates.papeis = sanitized;
+      } else {
+        console.log('⚠️ Nenhum papel válido após sanitização — mantendo papeis atuais');
+      }
+    }
     
     if (Object.keys(pessoaUpdates).length > 0) {
       const { error: pessoaError } = await supabase
