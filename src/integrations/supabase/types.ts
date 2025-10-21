@@ -7391,6 +7391,7 @@ export type Database = {
           projeto_id: string | null
           responsavel_grs_id: string | null
           status: Database["public"]["Enums"]["status_padrao"] | null
+          status_aprovacao: string | null
           titulo: string
           updated_at: string
         }
@@ -7406,6 +7407,7 @@ export type Database = {
           projeto_id?: string | null
           responsavel_grs_id?: string | null
           status?: Database["public"]["Enums"]["status_padrao"] | null
+          status_aprovacao?: string | null
           titulo: string
           updated_at?: string
         }
@@ -7421,6 +7423,7 @@ export type Database = {
           projeto_id?: string | null
           responsavel_grs_id?: string | null
           status?: Database["public"]["Enums"]["status_padrao"] | null
+          status_aprovacao?: string | null
           titulo?: string
           updated_at?: string
         }
@@ -7721,6 +7724,8 @@ export type Database = {
           persona_alvo: string | null
           planejamento_id: string
           responsavel_id: string | null
+          tarefa_aprovacao_id: string | null
+          tarefa_criacao_id: string | null
           tipo_criativo: string
           titulo: string
           updated_at: string
@@ -7742,6 +7747,8 @@ export type Database = {
           persona_alvo?: string | null
           planejamento_id: string
           responsavel_id?: string | null
+          tarefa_aprovacao_id?: string | null
+          tarefa_criacao_id?: string | null
           tipo_criativo: string
           titulo: string
           updated_at?: string
@@ -7763,6 +7770,8 @@ export type Database = {
           persona_alvo?: string | null
           planejamento_id?: string
           responsavel_id?: string | null
+          tarefa_aprovacao_id?: string | null
+          tarefa_criacao_id?: string | null
           tipo_criativo?: string
           titulo?: string
           updated_at?: string
@@ -7773,6 +7782,34 @@ export type Database = {
             columns: ["planejamento_id"]
             isOneToOne: false
             referencedRelation: "planejamentos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "posts_planejamento_tarefa_aprovacao_id_fkey"
+            columns: ["tarefa_aprovacao_id"]
+            isOneToOne: false
+            referencedRelation: "tarefa"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "posts_planejamento_tarefa_aprovacao_id_fkey"
+            columns: ["tarefa_aprovacao_id"]
+            isOneToOne: false
+            referencedRelation: "vw_dashboard_vencimentos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "posts_planejamento_tarefa_criacao_id_fkey"
+            columns: ["tarefa_criacao_id"]
+            isOneToOne: false
+            referencedRelation: "tarefa"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "posts_planejamento_tarefa_criacao_id_fkey"
+            columns: ["tarefa_criacao_id"]
+            isOneToOne: false
+            referencedRelation: "vw_dashboard_vencimentos"
             referencedColumns: ["id"]
           },
         ]
@@ -8385,7 +8422,7 @@ export type Database = {
           progresso: number | null
           responsavel_atendimento_id: string | null
           responsavel_grs_id: string | null
-          responsavel_id: string | null
+          responsavel_id: string
           status: Database["public"]["Enums"]["status_type"] | null
           tipo_projeto: string | null
           titulo: string
@@ -8406,7 +8443,7 @@ export type Database = {
           progresso?: number | null
           responsavel_atendimento_id?: string | null
           responsavel_grs_id?: string | null
-          responsavel_id?: string | null
+          responsavel_id: string
           status?: Database["public"]["Enums"]["status_type"] | null
           tipo_projeto?: string | null
           titulo: string
@@ -8427,7 +8464,7 @@ export type Database = {
           progresso?: number | null
           responsavel_atendimento_id?: string | null
           responsavel_grs_id?: string | null
-          responsavel_id?: string | null
+          responsavel_id?: string
           status?: Database["public"]["Enums"]["status_type"] | null
           tipo_projeto?: string | null
           titulo?: string
@@ -12091,6 +12128,14 @@ export type Database = {
             referencedColumns: ["responsavel_id"]
           },
         ]
+      }
+      vw_system_integrity: {
+        Row: {
+          check_name: string | null
+          issues_count: number | null
+          status: string | null
+        }
+        Relationships: []
       }
     }
     Functions: {
