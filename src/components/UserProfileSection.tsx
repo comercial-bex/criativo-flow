@@ -18,18 +18,11 @@ export function UserProfileSection() {
       
       const { data: pessoa } = await supabase
         .from('pessoas')
-        .select('nome, email')
+        .select('nome, email, avatar_url')
         .eq('profile_id', user.id)
         .maybeSingle();
-
-      // Buscar avatar_url de profiles (campo não existe em pessoas ainda)
-      const { data: profile } = await supabase
-        .from('pessoas')
-        .select('avatar_url')
-        .eq('id', user.id)
-        .maybeSingle();
       
-      setProfile({ ...pessoa, avatar_url: profile?.avatar_url });
+      setProfile(pessoa);
     };
     
     fetchProfile();

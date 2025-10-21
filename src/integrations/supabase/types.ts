@@ -7017,6 +7017,7 @@ export type Database = {
       pessoas: {
         Row: {
           assinatura_id: string | null
+          avatar_url: string | null
           cargo_atual: string | null
           cargo_id: string | null
           cliente_id: string | null
@@ -7052,6 +7053,7 @@ export type Database = {
         }
         Insert: {
           assinatura_id?: string | null
+          avatar_url?: string | null
           cargo_atual?: string | null
           cargo_id?: string | null
           cliente_id?: string | null
@@ -7087,6 +7089,7 @@ export type Database = {
         }
         Update: {
           assinatura_id?: string | null
+          avatar_url?: string | null
           cargo_atual?: string | null
           cargo_id?: string | null
           cliente_id?: string | null
