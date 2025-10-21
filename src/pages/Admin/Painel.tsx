@@ -322,7 +322,7 @@ export default function AdminPainel() {
                         <Button 
                           size="sm" 
                           variant="outline"
-                          onClick={() => window.location.href = `/usuarios?user=${user.id}`}
+                          onClick={() => window.location.href = `/admin/usuarios`}
                         >
                           <Settings className="h-4 w-4" />
                         </Button>

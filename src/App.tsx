@@ -155,7 +155,7 @@ const ClienteTimeline = lazy(() => import("./pages/Cliente/Timeline"));
 const GRSAgenda = lazy(() => import("./pages/GRS/Agenda"));
 const GRSMensagens = lazy(() => import("./pages/GRS/Mensagens"));
 const Aprovacoes = lazy(() => import("./pages/Aprovacoes"));
-const Usuarios = lazy(() => import("./pages/Usuarios"));
+const AdminUsuarios = lazy(() => import("./pages/Admin/Usuarios"));
 const SystemHealth = lazy(() => import("./pages/Admin/SystemHealth"));
 const BalancoPatrimonial = lazy(() => import("./pages/Financeiro/BalancoPatrimonial"));
 const ClientDetails = lazy(() => import("./pages/ClientDetails"));
@@ -900,8 +900,10 @@ function App() {
                     <Layout><SystemHealth /></Layout>
                   </ProtectedRoute>} />
                 
-                <Route path="/usuarios" element={<ProtectedRoute module="configuracoes" action="canEdit" requiredRole="admin">
-                    <Layout><Usuarios /></Layout>
+                <Route path="/usuarios" element={<Navigate to="/admin/usuarios" replace />} />
+                
+                <Route path="/admin/usuarios" element={<ProtectedRoute module="configuracoes" action="canEdit" requiredRole="admin">
+                    <Layout><AdminUsuarios /></Layout>
                   </ProtectedRoute>} />
                 
                 <Route path="/financeiro/balanco-patrimonial" element={<ProtectedRoute module="financeiro">

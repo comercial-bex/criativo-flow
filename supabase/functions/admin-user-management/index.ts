@@ -7,7 +7,7 @@ const corsHeaders = {
 };
 
 interface AdminUserRequest {
-  action: 'list' | 'reset-password' | 'force-logout' | 'update-status' | 'delete-user';
+  action: 'list' | 'reset-password' | 'force-logout' | 'update-status' | 'delete-user' | 'update-user-complete';
   user_id?: string;
   email?: string;
   new_password?: string;
@@ -16,6 +16,12 @@ interface AdminUserRequest {
     role?: string;
     status?: string;
     search?: string;
+  };
+  updates?: {
+    role?: string;
+    cliente_id?: string | null;
+    status?: string;
+    papeis?: string[];
   };
 }
 
@@ -84,6 +90,9 @@ const handler = async (req: Request): Promise<Response> => {
       
       case 'delete-user':
         return await handleDeleteUser(supabase, body.user_id!);
+      
+      case 'update-user-complete':
+        return await handleUpdateUserComplete(supabase, body.user_id!, body.updates!);
       
       default:
         return new Response(JSON.stringify({ error: 'Invalid action' }), {
@@ -340,6 +349,82 @@ async function handleDeleteUser(supabase: any, userId: string) {
       {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      }
+    );
+  }
+}
+
+async function handleUpdateUserComplete(
+  supabase: any, 
+  userId: string, 
+  updates: {
+    role?: string;
+    cliente_id?: string | null;
+    status?: string;
+    papeis?: string[];
+  }
+) {
+  console.log(`📝 Atualizando usuário ${userId}:`, updates);
+  
+  try {
+    // 1. Atualizar user_roles se role foi fornecida
+    if (updates.role) {
+      const { error: roleError } = await supabase
+        .from('user_roles')
+        .upsert({ 
+          user_id: userId, 
+          role: updates.role 
+        });
+      
+      if (roleError) {
+        console.error('❌ Erro ao atualizar role:', roleError);
+        throw roleError;
+      }
+      console.log(`✅ Role atualizada: ${updates.role}`);
+    }
+    
+    // 2. Atualizar pessoas se há mudanças
+    const pessoaUpdates: any = {};
+    if (updates.cliente_id !== undefined) pessoaUpdates.cliente_id = updates.cliente_id;
+    if (updates.status) pessoaUpdates.status = updates.status;
+    if (updates.papeis) pessoaUpdates.papeis = updates.papeis;
+    
+    if (Object.keys(pessoaUpdates).length > 0) {
+      const { error: pessoaError } = await supabase
+        .from('pessoas')
+        .update(pessoaUpdates)
+        .eq('profile_id', userId);
+      
+      if (pessoaError) {
+        console.error('❌ Erro ao atualizar pessoas:', pessoaError);
+        throw pessoaError;
+      }
+      console.log(`✅ Dados em pessoas atualizados:`, pessoaUpdates);
+    }
+    
+    // 3. Retornar sucesso
+    return new Response(
+      JSON.stringify({ 
+        success: true, 
+        message: 'Usuário atualizado com sucesso',
+        updates
+      }),
+      { 
+        status: 200, 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      }
+    );
+    
+  } catch (error: any) {
+    console.error('❌ Erro ao atualizar usuário:', error);
+    return new Response(
+      JSON.stringify({ 
+        success: false,
+        error: error.message || 'Erro ao atualizar usuário'
+      }),
+      { 
+        status: 500, 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
       }
     );
   }
