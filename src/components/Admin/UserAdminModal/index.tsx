@@ -93,18 +93,19 @@ export function UserAdminModal({ open, onOpenChange, user, onUpdate }: UserAdmin
         status: statusParaEnviar,
       };
 
-      // Mapeamento de roles para papeis válidos
+      // SOLUÇÃO P3: Sincronização user_roles ↔ papeis
+      // Mapeamento de roles para papeis válidos (mantém compatibilidade)
       const roleToModule: Record<string, string> = {
-        designer: 'design',
-        filmmaker: 'audiovisual',
-        rh: 'gestor',
-        grs: 'grs',
+        designer: 'design',       // user_roles.role = 'designer' → papeis = ['colaborador', 'design']
+        filmmaker: 'audiovisual', // user_roles.role = 'filmmaker' → papeis = ['colaborador', 'audiovisual']
+        rh: 'gestor',            // user_roles.role = 'rh' → papeis = ['colaborador', 'gestor']
+        grs: 'grs',              // user_roles.role = 'grs' → papeis = ['colaborador', 'grs']
         atendimento: 'atendimento',
         financeiro: 'financeiro',
         gestor: 'gestor'
       };
 
-      // Definir papéis baseado no tipo
+      // Definir papéis baseado no tipo (sincronizado com user_roles)
       if (selectedTipo === 'admin') {
         updates.papeis = ['admin'];
       } else if (selectedTipo === 'cliente') {
@@ -138,11 +139,11 @@ export function UserAdminModal({ open, onOpenChange, user, onUpdate }: UserAdmin
         description: `${user.nome} foi atualizado com tipo: ${selectedTipo}, role: ${selectedRole}`,
       });
 
-      // Aviso se role foi pulada devido a FK antigo
-      if (data.role_skipped === true) {
+      // Mostrar warnings retornados pela edge function (ex: CPF obrigatório)
+      if (data.warnings && data.warnings.length > 0) {
         toast({
           title: '⚠️ Atenção',
-          description: 'Permissão principal salva em papeis; ajuste estrutural do user_roles pendente (sem impacto para o acesso do usuário).',
+          description: data.warnings.join(' | '),
           variant: 'default',
         });
       }

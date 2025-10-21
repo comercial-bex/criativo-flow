@@ -1,11 +1,22 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from 'jsr:@supabase/supabase-js@2';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
-};
+// Dynamic CORS headers based on request origin
+function getCorsHeaders(origin: string | null): Record<string, string> {
+  const allowedOrigins = [
+    'https://lovable.app',
+    'https://lovableproject.com',
+    'http://localhost:8788',
+  ];
+  
+  const isAllowed = origin && allowedOrigins.some(allowed => origin.includes(allowed));
+  
+  return {
+    'Access-Control-Allow-Origin': isAllowed ? origin : '*',
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
+  };
+}
 
 interface AdminUserRequest {
   action: 'list' | 'reset-password' | 'force-logout' | 'update-status' | 'delete-user' | 'update-user-complete';
@@ -27,6 +38,9 @@ interface AdminUserRequest {
 }
 
 const handler = async (req: Request): Promise<Response> => {
+  const origin = req.headers.get('origin');
+  const corsHeaders = getCorsHeaders(origin);
+  
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -368,6 +382,19 @@ async function handleUpdateUserComplete(
   console.log(`📝 Atualizando usuário ${userId}:`, updates);
   
   try {
+    // 0. Buscar dados atuais do usuário (necessário para validação CPF)
+    const { data: pessoaAtual, error: fetchError } = await supabase
+      .from('pessoas')
+      .select('cpf, papeis')
+      .eq('profile_id', userId)
+      .maybeSingle();
+    
+    if (fetchError) {
+      console.error('❌ Erro ao buscar pessoa atual:', fetchError);
+    }
+    
+    console.log('📊 Pessoa atual:', pessoaAtual);
+    
     // 1. Atualizar user_roles se role foi fornecida (userId = Auth ID)
     if (updates.role) {
       const { error: roleError } = await supabase
@@ -407,12 +434,7 @@ async function handleUpdateUserComplete(
       }
     }
     
-    // 2. Validar cliente_id se tipo é cliente
-    if (updates.papeis?.includes('cliente') && !updates.cliente_id) {
-      throw new Error('Cliente deve ter cliente_id definido');
-    }
-    
-    // 3. Sanitizar papeis antes de atualizar pessoas
+    // 2. Sanitizar papeis ANTES de validações (SOLUÇÃO P1 + P5)
     const ALLOWED_PAPEIS = new Set(['colaborador','especialista','cliente','grs','design','audiovisual','atendimento','financeiro','gestor','admin']);
     const PAPEIS_SYNONYMS: Record<string, string> = { 
       designer: 'design', 
@@ -420,22 +442,46 @@ async function handleUpdateUserComplete(
       rh: 'gestor' 
     };
     
-    // 4. Atualizar pessoas via profile_id
-    const pessoaUpdates: any = {};
-    if (updates.cliente_id !== undefined) pessoaUpdates.cliente_id = updates.cliente_id;
-    if (updates.status) pessoaUpdates.status = updates.status;
+    let papeisFinais: string[] = [];
+    let warnings: string[] = [];
     
-    // Sanitizar papeis se fornecidos
     if (Array.isArray(updates.papeis)) {
       const mapped = updates.papeis.map(p => PAPEIS_SYNONYMS[p] ?? p);
       const sanitized = mapped.filter(p => ALLOWED_PAPEIS.has(p));
       console.log('🔎 Papeis recebidos:', updates.papeis, '→ mapeados:', mapped, '→ sanitizados:', sanitized);
       
       if (sanitized.length > 0) {
-        pessoaUpdates.papeis = sanitized;
+        papeisFinais = sanitized;
       } else {
         console.log('⚠️ Nenhum papel válido após sanitização — mantendo papeis atuais');
+        papeisFinais = pessoaAtual?.papeis || [];
+        warnings.push('Papeis inválidos foram ignorados');
       }
+    }
+    
+    // 3. Validação CPF para clientes (SOLUÇÃO P2)
+    const isTornandoCliente = papeisFinais.includes('cliente');
+    const cpfValido = pessoaAtual?.cpf && pessoaAtual.cpf.length >= 11;
+    
+    if (isTornandoCliente && !cpfValido) {
+      console.warn('⚠️ CPF inválido para cliente — PULANDO atualização de papeis');
+      warnings.push('CPF obrigatório para clientes. Por favor, adicione o CPF antes de definir como cliente.');
+      papeisFinais = pessoaAtual?.papeis || []; // Manter papeis atuais
+    }
+    
+    // 4. Validar cliente_id se tipo é cliente
+    if (papeisFinais.includes('cliente') && !updates.cliente_id) {
+      throw new Error('Cliente deve ter cliente_id definido');
+    }
+    
+    // 5. Preparar updates para pessoas
+    const pessoaUpdates: any = {};
+    if (updates.cliente_id !== undefined) pessoaUpdates.cliente_id = updates.cliente_id;
+    if (updates.status) pessoaUpdates.status = updates.status;
+    
+    // Adicionar papeis finais (já sanitizados e validados)
+    if (papeisFinais.length > 0) {
+      pessoaUpdates.papeis = papeisFinais;
     }
     
     if (Object.keys(pessoaUpdates).length > 0) {
@@ -455,11 +501,12 @@ async function handleUpdateUserComplete(
       JSON.stringify({ 
         success: true, 
         message: 'Usuário atualizado com sucesso',
-        updates
+        updates,
+        warnings: warnings.length > 0 ? warnings : undefined
       }),
       { 
         status: 200, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        headers: { 'Content-Type': 'application/json' } 
       }
     );
     

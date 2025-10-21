@@ -39,6 +39,11 @@ const AdminUsuarios = () => {
     fetchUsers();
   }, []);
 
+  // DOCUMENTAÇÃO P4: Diferença entre profile_id e id
+  // - user.id aqui = Auth ID (vem de profile_id em pessoas)
+  // - pessoas.id = ID interno da tabela pessoas (não usado para Auth)
+  // - user_roles usa user_id = Auth ID (profile_id)
+  
   const fetchUsers = async () => {
     setLoading(true);
     try {
