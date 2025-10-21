@@ -12405,6 +12405,10 @@ export type Database = {
         Args: { p_pessoa_id: string }
         Returns: boolean
       }
+      is_valid_profile_id: {
+        Args: { p_profile_id: string }
+        Returns: boolean
+      }
       log_rls_error: {
         Args: {
           p_error_code?: string
