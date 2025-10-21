@@ -790,6 +790,33 @@ export type Database = {
         }
         Relationships: []
       }
+      backup_fks_pre_sprint1: {
+        Row: {
+          backup_timestamp: string | null
+          campo: string
+          id: string
+          registro_id: string
+          tabela: string
+          valor_antigo: string | null
+        }
+        Insert: {
+          backup_timestamp?: string | null
+          campo: string
+          id?: string
+          registro_id: string
+          tabela: string
+          valor_antigo?: string | null
+        }
+        Update: {
+          backup_timestamp?: string | null
+          campo?: string
+          id?: string
+          registro_id?: string
+          tabela?: string
+          valor_antigo?: string | null
+        }
+        Relationships: []
+      }
       brand_assets: {
         Row: {
           cliente_id: string
@@ -2841,6 +2868,33 @@ export type Database = {
             referencedColumns: ["responsavel_id"]
           },
         ]
+      }
+      dados_orfaos_historico: {
+        Row: {
+          campo: string
+          id: string
+          identificado_em: string | null
+          registro_id: string
+          tabela: string
+          valor_orfao: string
+        }
+        Insert: {
+          campo: string
+          id?: string
+          identificado_em?: string | null
+          registro_id: string
+          tabela: string
+          valor_orfao: string
+        }
+        Update: {
+          campo?: string
+          id?: string
+          identificado_em?: string | null
+          registro_id?: string
+          tabela?: string
+          valor_orfao?: string
+        }
+        Relationships: []
       }
       dividas: {
         Row: {
@@ -11362,6 +11416,13 @@ export type Database = {
         }
         Relationships: []
       }
+      validacao_orfaos_sprint1: {
+        Row: {
+          campo: string | null
+          total_orfaos: number | null
+        }
+        Relationships: []
+      }
       vw_client_metrics: {
         Row: {
           assinatura_nome: string | null
@@ -12204,6 +12265,13 @@ export type Database = {
       remover_papel_pessoa: {
         Args: { p_papel: string; p_pessoa_id: string }
         Returns: boolean
+      }
+      rollback_sprint1: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          registros_restaurados: number
+          tabela: string
+        }[]
       }
       sanitize_error_message: {
         Args: { error_msg: string }
