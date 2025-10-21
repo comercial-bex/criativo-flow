@@ -124,29 +124,30 @@ async function handleListUsers(supabase: any, filters?: any) {
   console.log('📋 Buscando lista de usuários com filtros:', filters);
   
   try {
-    // 1. Buscar perfis com join de clientes (FK está em pessoas, mas profiles é view)
-    const { data: profiles, error: profilesError } = await supabase
-      .from('profiles')
+    // 1. Buscar de PESSOAS (não profiles) para ter acesso ao status
+    const { data: pessoas, error: pessoasError } = await supabase
+      .from('pessoas')
       .select(`
         id,
+        profile_id,
         nome,
         email,
         status,
         created_at,
         cliente_id,
-        clientes!pessoas_cliente_id_fkey(nome)
+        clientes:clientes!pessoas_cliente_id_fkey(nome)
       `)
       .order('created_at', { ascending: false });
 
-    if (profilesError) {
-      console.error('❌ Erro ao buscar perfis:', profilesError);
-      throw profilesError;
+    if (pessoasError) {
+      console.error('❌ Erro ao buscar pessoas:', pessoasError);
+      throw pessoasError;
     }
 
-    console.log(`✅ Buscados ${profiles?.length || 0} perfis`);
+    console.log(`✅ Buscadas ${pessoas?.length || 0} pessoas`);
 
-    // 2. Buscar roles de todos os usuários
-    const profileIds = profiles?.map(p => p.id) || [];
+    // 2. Buscar roles usando profile_id (Auth ID)
+    const profileIds = pessoas?.map(p => p.profile_id).filter(Boolean) || [];
     const { data: userRoles, error: rolesError } = await supabase
       .from('user_roles')
       .select('user_id, role')
@@ -158,17 +159,23 @@ async function handleListUsers(supabase: any, filters?: any) {
 
     console.log(`✅ Buscadas ${userRoles?.length || 0} roles`);
 
-    // 3. Criar mapa de roles
+    // 3. Criar mapa de roles (chave = profile_id = Auth ID)
     const roleMap = new Map();
     userRoles?.forEach(ur => {
       roleMap.set(ur.user_id, ur.role);
     });
 
-    // 4. Combinar dados
-    let users = profiles?.map(profile => ({
-      ...profile,
-      user_roles: roleMap.has(profile.id) 
-        ? [{ role: roleMap.get(profile.id) }] 
+    // 4. Mapear para formato esperado pelo frontend (id = Auth ID)
+    let users = pessoas?.map(p => ({
+      id: p.profile_id || p.id,  // ✅ Auth ID (profile_id)
+      nome: p.nome,
+      email: p.email,
+      status: p.status,
+      created_at: p.created_at,
+      cliente_id: p.cliente_id,
+      clientes: p.clientes,
+      user_roles: roleMap.has(p.profile_id) 
+        ? [{ role: roleMap.get(p.profile_id) }] 
         : []
     })) || [];
 
@@ -237,14 +244,20 @@ async function handleForceLogout(supabase: any, userId: string) {
 }
 
 async function handleUpdateStatus(supabase: any, userId: string, status: string) {
+  console.log(`📝 Atualizando status para user ${userId}: ${status}`);
+  
+  // userId = Auth ID (profile_id)
   const { error } = await supabase
-    .from('profiles')
+    .from('pessoas')
     .update({ status })
-    .eq('id', userId);
+    .eq('profile_id', userId);  // ✅ Localizar via profile_id
 
   if (error) {
+    console.error('❌ Erro ao atualizar status:', error);
     throw error;
   }
+
+  console.log('✅ Status atualizado com sucesso');
 
   return new Response(JSON.stringify({ success: true, message: 'Status updated successfully' }), {
     status: 200,
@@ -256,59 +269,48 @@ async function handleDeleteUser(supabase: any, userId: string) {
   console.log(`🗑️ Iniciando deleção de usuário: ${userId}`);
   
   try {
-    // 1. Buscar dados do perfil antes de deletar (para log)
-    const { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select('email, nome, cliente_id')
-      .eq('id', userId)
-      .single();
+    // 1. Buscar pessoa via profile_id (para log)
+    const { data: pessoa } = await supabase
+      .from('pessoas')
+      .select('id, email, nome')
+      .eq('profile_id', userId)  // ✅ Localizar via profile_id
+      .maybeSingle();
     
-    if (profileError && profileError.code !== 'PGRST116') {
-      console.error('❌ Erro ao buscar perfil:', profileError);
-    } else if (profile) {
-      console.log(`✅ Perfil encontrado: ${profile.email} (${profile.nome})`);
+    if (pessoa) {
+      console.log(`✅ Pessoa encontrada: ${pessoa.email} (${pessoa.nome})`);
     }
     
-    // 2. Tentar deletar do Auth primeiro (cascade automático para profiles)
+    // 2. Deletar do Auth (cascade para user_roles)
     const { error: authDeleteError } = await supabase.auth.admin.deleteUser(userId);
     
     if (authDeleteError) {
-      // Se o erro for "user not found", fazer limpeza manual
+      // Se usuário não existe no Auth, fazer limpeza manual
       if (authDeleteError.message?.includes('not found') || 
-          authDeleteError.message?.includes('Database error loading user')) {
-        console.warn('⚠️ Usuário não encontrado no Auth, fazendo limpeza manual...');
+          authDeleteError.message?.includes('Database error')) {
+        console.warn('⚠️ Usuário não encontrado no Auth, limpeza manual...');
         
-        // Deletar manualmente de profiles (com nova policy RLS)
-        const { error: profileDeleteError } = await supabase
-          .from('profiles')
-          .delete()
-          .eq('id', userId);
-        
-        if (profileDeleteError) {
-          console.error('❌ Erro ao deletar perfil:', profileDeleteError);
+        // Deletar pessoa
+        if (pessoa) {
+          await supabase
+            .from('pessoas')
+            .delete()
+            .eq('id', pessoa.id);
         }
         
-        // Deletar manualmente de user_roles (com nova policy RLS)
-        const { error: rolesDeleteError } = await supabase
+        // Deletar user_roles
+        await supabase
           .from('user_roles')
           .delete()
           .eq('user_id', userId);
-        
-        if (rolesDeleteError) {
-          console.error('❌ Erro ao deletar roles:', rolesDeleteError);
-        }
-        
-        console.log('🧹 Limpeza manual concluída');
         
         return new Response(
           JSON.stringify({ 
             success: true, 
             message: 'Usuário removido (limpeza manual)',
             deleted_user: {
-              email: profile?.email,
-              nome: profile?.nome
-            },
-            cleanup_mode: true
+              email: pessoa?.email,
+              nome: pessoa?.nome
+            }
           }), 
           {
             status: 200,
@@ -317,19 +319,18 @@ async function handleDeleteUser(supabase: any, userId: string) {
         );
       }
       
-      console.error('❌ Erro ao deletar do Auth:', authDeleteError);
       throw new Error(`Erro ao deletar: ${authDeleteError.message}`);
     }
     
-    console.log(`🎉 Usuário ${profile?.email} deletado com sucesso`);
+    console.log(`🎉 Usuário ${pessoa?.email} deletado com sucesso`);
     
     return new Response(
       JSON.stringify({ 
         success: true, 
         message: 'Usuário deletado com sucesso',
         deleted_user: {
-          email: profile?.email,
-          nome: profile?.nome
+          email: pessoa?.email,
+          nome: pessoa?.nome
         }
       }), 
       {
@@ -343,8 +344,7 @@ async function handleDeleteUser(supabase: any, userId: string) {
     return new Response(
       JSON.stringify({ 
         success: false,
-        error: error.message || 'Erro desconhecido ao deletar usuário',
-        details: error
+        error: error.message || 'Erro desconhecido'
       }), 
       {
         status: 500,
@@ -367,32 +367,20 @@ async function handleUpdateUserComplete(
   console.log(`📝 Atualizando usuário ${userId}:`, updates);
   
   try {
-    let roleSkipped = false;
-    
-    // 1. Atualizar user_roles se role foi fornecida (com tolerância ao FK quebrado)
+    // 1. Atualizar user_roles se role foi fornecida (userId = Auth ID)
     if (updates.role) {
-      try {
-        const { error: roleError } = await supabase
-          .from('user_roles')
-          .upsert({ 
-            user_id: userId, 
-            role: updates.role 
-          });
-        
-        if (roleError) {
-          throw roleError;
-        }
-        console.log(`✅ Role atualizada em user_roles: ${updates.role}`);
-      } catch (e: any) {
-        // Se erro é FK para profiles_deprecated, continuar sem travar
-        if (e?.code === '23503' && String(e?.message || '').includes('profiles_deprecated')) {
-          console.warn(`⚠️ FK antigo em user_roles (profiles_deprecated); gravando somente em pessoas.papeis`);
-          roleSkipped = true;
-        } else {
-          console.error('❌ Erro ao atualizar role:', e);
-          throw e;
-        }
+      const { error: roleError } = await supabase
+        .from('user_roles')
+        .upsert({ 
+          user_id: userId,  // ✅ Auth ID
+          role: updates.role 
+        });
+      
+      if (roleError) {
+        console.error('❌ Erro ao atualizar role:', roleError);
+        throw roleError;
       }
+      console.log(`✅ Role atualizada: ${updates.role}`);
     }
     
     // 2. Validar cliente_id se tipo é cliente
@@ -400,53 +388,30 @@ async function handleUpdateUserComplete(
       throw new Error('Cliente deve ter cliente_id definido');
     }
     
-    // 3. Atualizar pessoas se há mudanças (usando id, não profile_id)
+    // 3. Atualizar pessoas via profile_id
     const pessoaUpdates: any = {};
     if (updates.cliente_id !== undefined) pessoaUpdates.cliente_id = updates.cliente_id;
     if (updates.status) pessoaUpdates.status = updates.status;
     if (updates.papeis) pessoaUpdates.papeis = updates.papeis;
     
     if (Object.keys(pessoaUpdates).length > 0) {
-      // Primeiro, verificar se o registro existe em pessoas
-      const { data: pessoaExists, error: checkError } = await supabase
+      const { error: pessoaError } = await supabase
         .from('pessoas')
-        .select('id')
-        .eq('id', userId)
-        .single();
+        .update(pessoaUpdates)
+        .eq('profile_id', userId);  // ✅ Localizar via profile_id
       
-      if (checkError && checkError.code !== 'PGRST116') {
-        console.error('❌ Erro ao verificar pessoa:', checkError);
-        throw checkError;
+      if (pessoaError) {
+        console.error('❌ Erro ao atualizar pessoas:', pessoaError);
+        throw pessoaError;
       }
-      
-      if (pessoaExists) {
-        // Atualizar registro existente
-        const { error: pessoaError } = await supabase
-          .from('pessoas')
-          .update(pessoaUpdates)
-          .eq('id', userId);
-        
-        if (pessoaError) {
-          console.error('❌ Erro ao atualizar pessoas:', pessoaError);
-          throw pessoaError;
-        }
-        console.log(`✅ Dados em pessoas atualizados:`, pessoaUpdates);
-      } else {
-        console.log(`⚠️ Registro não encontrado em pessoas para user ${userId}, pulando atualização`);
-      }
-    }
-    
-    // 4. Retornar sucesso (com flag se role foi pulada)
-    if (roleSkipped) {
-      console.log(`📊 Atualização completa com role_skipped=true para user ${userId}`);
+      console.log(`✅ Dados atualizados em pessoas:`, pessoaUpdates);
     }
     
     return new Response(
       JSON.stringify({ 
         success: true, 
         message: 'Usuário atualizado com sucesso',
-        updates,
-        role_skipped: roleSkipped
+        updates
       }),
       { 
         status: 200, 
