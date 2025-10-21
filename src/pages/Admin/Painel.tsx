@@ -319,7 +319,11 @@ export default function AdminPainel() {
                         <Badge variant={user.status === 'aprovado' ? 'default' : 'secondary'}>
                           {user.status}
                         </Badge>
-                        <Button size="sm" variant="outline">
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => window.location.href = `/admin/usuarios?user=${user.id}`}
+                        >
                           <Settings className="h-4 w-4" />
                         </Button>
                       </div>
