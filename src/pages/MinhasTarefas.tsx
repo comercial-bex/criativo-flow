@@ -340,7 +340,7 @@ export default function MinhasTarefas() {
         // Buscar nome do responsável
         if (task.responsavel_id) {
           const { data: profile } = await supabase
-            .from('profiles')
+            .from('pessoas')
             .select('nome')
             .eq('id', task.responsavel_id)
             .single();

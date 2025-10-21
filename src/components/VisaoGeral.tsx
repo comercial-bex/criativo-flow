@@ -62,7 +62,7 @@ export function VisaoGeral({ planejamento, clienteId, projetoId }: VisaoGeralPro
       // Buscar responsável do planejamento
       if (planejamento.responsavel_grs_id) {
         const { data: responsavelData } = await supabase
-          .from('profiles')
+          .from('pessoas')
           .select('*')
           .eq('id', planejamento.responsavel_grs_id)
           .single();
@@ -78,7 +78,7 @@ export function VisaoGeral({ planejamento, clienteId, projetoId }: VisaoGeralPro
 
         if (responsaveisIds.length > 0) {
           const { data: equipeData } = await supabase
-            .from('profiles')
+            .from('pessoas')
             .select('*')
             .in('id', responsaveisIds);
 

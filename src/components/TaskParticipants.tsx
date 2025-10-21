@@ -35,7 +35,7 @@ export function TaskParticipants({
       // Buscar responsável
       if (responsavelId) {
         const { data } = await supabase
-          .from('profiles')
+          .from('pessoas')
           .select('id, nome, avatar_url')
           .eq('id', responsavelId)
           .single();
@@ -53,7 +53,7 @@ export function TaskParticipants({
       // Buscar executor
       if (executorId && executorId !== responsavelId) {
         const { data } = await supabase
-          .from('profiles')
+          .from('pessoas')
           .select('id, nome, avatar_url')
           .eq('id', executorId)
           .single();

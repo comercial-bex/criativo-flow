@@ -56,7 +56,7 @@ const TarefasUnificadasAudiovisual: React.FC = () => {
       ] = await Promise.all([
         supabase.from('clientes').select('*'),
         supabase.from('projetos').select('*'),
-        supabase.from('profiles').select('*')
+        supabase.from('pessoas').select('*')
       ]);
 
       setClients(clientsData || []);

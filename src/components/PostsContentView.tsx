@@ -62,7 +62,7 @@ export function PostsContentView({ planejamentoId, isTemp = false }: PostsConten
       const responsaveisIds = [...new Set(data?.map(post => post.responsavel_id).filter(Boolean))];
       if (responsaveisIds.length > 0) {
         const { data: profiles } = await supabase
-          .from('profiles')
+          .from('pessoas')
           .select('id, nome, avatar_url')
           .in('id', responsaveisIds);
         

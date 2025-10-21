@@ -86,7 +86,7 @@ export function NewEventModal({ onEventCreated }: { onEventCreated?: () => void 
   useEffect(() => {
     const fetchUsuarios = async () => {
       const { data } = await supabase
-        .from("profiles")
+        .from("pessoas")
         .select("id, nome, email")
         .limit(20);
       

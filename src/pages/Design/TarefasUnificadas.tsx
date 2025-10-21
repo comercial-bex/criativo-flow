@@ -108,7 +108,7 @@ export default function TarefasUnificadasDesign() {
 
       // Buscar designers
       const { data: profilesData, error: profilesError } = await supabase
-        .from('profiles')
+        .from('pessoas')
         .select('id, nome, especialidade')
         .in('especialidade', ['design', 'gestor'])
         .order('nome');

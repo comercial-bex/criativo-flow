@@ -116,7 +116,7 @@ const Usuarios = () => {
     try {
       // 1) Buscar perfis básicos (sem joins implícitos)
       const { data: profilesData, error: profilesError } = await supabase
-        .from('profiles')
+        .from('pessoas')
         .select('*')
         .order('created_at', { ascending: false });
 

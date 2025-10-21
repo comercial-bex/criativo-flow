@@ -24,7 +24,7 @@ export function UserProfileSection() {
 
       // Buscar avatar_url de profiles (campo não existe em pessoas ainda)
       const { data: profile } = await supabase
-        .from('profiles')
+        .from('pessoas')
         .select('avatar_url')
         .eq('id', user.id)
         .maybeSingle();

@@ -115,7 +115,7 @@ export function TaskActivities({ tarefaId, className }: TaskActivitiesProps) {
       if (data && data.length > 0) {
         const userIds = [...new Set(data.map(a => a.user_id))];
         const { data: profilesData } = await supabase
-          .from('profiles')
+          .from('pessoas')
           .select('id, nome')
           .in('id', userIds);
 

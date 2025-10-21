@@ -237,7 +237,7 @@ export function TarefasKanban({ planejamento, clienteId, projetoId, filters }: T
 
       // Buscar profiles
       const { data: profilesData, error: profilesError } = await supabase
-        .from('profiles')
+        .from('pessoas')
         .select('*');
 
       if (profilesError) throw profilesError;

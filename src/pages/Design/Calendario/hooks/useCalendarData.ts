@@ -44,7 +44,7 @@ export const useCalendarData = () => {
           .order('data_inicio', { ascending: true }),
         
         supabase
-          .from('profiles')
+          .from('pessoas')
           .select('id, nome, avatar_url')
       ]);
 

@@ -106,7 +106,7 @@ export function CriarProjetoAvulsoModal({
   const fetchEspecialistas = async () => {
     try {
       const { data, error } = await supabase
-        .from('profiles')
+        .from('pessoas')
         .select('id, nome')
         .eq('status', 'aprovado')
         .order('nome') as { data: any; error: any };

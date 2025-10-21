@@ -539,7 +539,7 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
   const buscarEspecialistaPorEspecialidade = async (especialidade: 'design' | 'videomaker' | 'filmmaker' | 'gerente_redes_sociais'): Promise<string | null> => {
     try {
       const { data, error } = await supabase
-        .from('profiles')
+        .from('pessoas')
         .select('id')
         .eq('status', 'aprovado')
         .maybeSingle() as { data: any; error: any };

@@ -275,7 +275,7 @@ export default function Especialistas() {
         // Validar email duplicado antes de criar
         console.log('🔍 Verificando email duplicado no frontend...');
         const { data: existingProfile, error: checkError } = await supabase
-          .from('profiles')
+          .from('pessoas')
           .select('email')
           .eq('email', formData.email)
           .maybeSingle();

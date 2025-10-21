@@ -24,7 +24,7 @@ export function NewThreadDialog({ open, onOpenChange, onThreadCreated }: NewThre
     queryKey: ['specialists-list'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('profiles')
+        .from('pessoas')
         .select('id, nome, avatar_url')
         .order('nome');
 

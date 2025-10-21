@@ -74,7 +74,7 @@ export function AudiovisualScheduleModal({
     try {
       // Buscar filmmakers
       const { data: filmmakersData } = await supabase
-        .from('profiles')
+        .from('pessoas')
         .select('id, nome')
         .eq('status', 'aprovado')
         .order('nome') as { data: any; error: any };

@@ -87,7 +87,7 @@ export default function EquipamentosPage() {
   const fetchProfiles = async () => {
     try {
       const { data, error } = await supabase
-        .from('profiles')
+        .from('pessoas')
         .select('id, nome')
         .order('nome');
 

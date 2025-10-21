@@ -129,7 +129,7 @@ export default function TarefasUnificadasGRS() {
 
       // Buscar profiles GRS
       const { data: profilesData, error: profilesError } = await supabase
-        .from('profiles')
+        .from('pessoas')
         .select('id, nome')
         .eq('status', 'aprovado')
         .order('nome') as { data: any; error: any };
@@ -213,7 +213,7 @@ export default function TarefasUnificadasGRS() {
 
       if (data.responsavel_id) {
         const { data: profile } = await supabase
-          .from('profiles')
+          .from('pessoas')
           .select('nome')
           .eq('id', data.responsavel_id)
           .single();

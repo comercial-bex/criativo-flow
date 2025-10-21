@@ -26,7 +26,7 @@ export function MentionAutocomplete({ query, onSelect }: MentionAutocompleteProp
       }
 
       const { data, error } = await supabase
-        .from('profiles')
+        .from('pessoas')
         .select('id, nome, avatar_url')
         .ilike('nome', `%${query}%`)
         .limit(5);

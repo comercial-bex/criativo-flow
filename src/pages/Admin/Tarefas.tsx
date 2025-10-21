@@ -93,7 +93,7 @@ export default function AdminTarefas() {
       // Buscar dados dos responsáveis
       const responsavelIds = [...new Set(tarefasData?.map((t: any) => t.responsavel_id).filter(Boolean))];
       const { data: profilesData } = await supabase
-        .from('profiles')
+        .from('pessoas')
         .select('id, nome')
         .in('id', responsavelIds as string[]);
 

@@ -73,7 +73,7 @@ export default function DesignMetas() {
       
       // Buscar designers
       const { data: profilesData, error: profilesError } = await supabase
-        .from('profiles')
+        .from('pessoas')
         .select('id, nome, avatar_url')
         .eq('status', 'aprovado') as { data: any; error: any };
 

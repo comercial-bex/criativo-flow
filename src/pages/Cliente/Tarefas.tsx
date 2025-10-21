@@ -75,7 +75,7 @@ export default function ClienteTarefas() {
       
       // Buscar perfil do cliente para obter cliente_id
       const { data: profile } = await supabase
-        .from('profiles')
+        .from('pessoas')
         .select('cliente_id')
         .eq('id', user.id)
         .single();
@@ -110,7 +110,7 @@ export default function ClienteTarefas() {
       // Buscar dados dos responsáveis
       const responsavelIds = [...new Set(tarefasData?.map((t: any) => t.responsavel_id).filter(Boolean))] as string[];
       const { data: profilesData } = await supabase
-        .from('profiles')
+        .from('pessoas')
         .select('id, nome')
         .in('id', responsavelIds);
 
