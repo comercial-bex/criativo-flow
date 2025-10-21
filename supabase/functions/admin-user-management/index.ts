@@ -217,7 +217,7 @@ async function handleListUsers(supabase: any, filters?: any) {
     console.log(`✅ Retornando ${users.length} usuários após filtros`);
 
     return new Response(JSON.stringify({ success: true, users }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...getCorsHeaders(null), 'Content-Type': 'application/json' },
       status: 200,
     });
   } catch (error: any) {
@@ -237,7 +237,7 @@ async function handleResetPassword(supabase: any, userId: string, newPassword: s
 
   return new Response(JSON.stringify({ success: true, message: 'Password reset successfully' }), {
     status: 200,
-    headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    headers: { ...getCorsHeaders(null), 'Content-Type': 'application/json' }
   });
 }
 
@@ -251,7 +251,7 @@ async function handleForceLogout(supabase: any, userId: string) {
 
   return new Response(JSON.stringify({ success: true, message: 'User logged out successfully' }), {
     status: 200,
-    headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    headers: { ...getCorsHeaders(null), 'Content-Type': 'application/json' }
   });
 }
 
@@ -273,7 +273,7 @@ async function handleUpdateStatus(supabase: any, userId: string, status: string)
 
   return new Response(JSON.stringify({ success: true, message: 'Status updated successfully' }), {
     status: 200,
-    headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    headers: { ...getCorsHeaders(null), 'Content-Type': 'application/json' }
   });
 }
 
@@ -326,7 +326,7 @@ async function handleDeleteUser(supabase: any, userId: string) {
           }), 
           {
             status: 200,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            headers: { ...getCorsHeaders(null), 'Content-Type': 'application/json' }
           }
         );
       }
@@ -347,7 +347,7 @@ async function handleDeleteUser(supabase: any, userId: string) {
       }), 
       {
         status: 200,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        headers: { ...getCorsHeaders(null), 'Content-Type': 'application/json' }
       }
     );
     
@@ -360,7 +360,7 @@ async function handleDeleteUser(supabase: any, userId: string) {
       }), 
       {
         status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        headers: { ...getCorsHeaders(null), 'Content-Type': 'application/json' }
       }
     );
   }
