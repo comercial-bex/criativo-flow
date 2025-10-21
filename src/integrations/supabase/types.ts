@@ -12377,6 +12377,10 @@ export type Database = {
         Args: { user_uuid: string }
         Returns: boolean
       }
+      is_responsavel_of: {
+        Args: { pessoa_id: string }
+        Returns: boolean
+      }
       is_same_cliente: {
         Args: { p_pessoa_id: string }
         Returns: boolean
