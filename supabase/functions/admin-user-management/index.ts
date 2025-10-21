@@ -1,19 +1,11 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from 'jsr:@supabase/supabase-js@2';
 
-// Dynamic CORS based on allowed origins
-const getAllowedOrigin = (requestOrigin: string | null): string => {
-  if (!requestOrigin) return '*';
-  const allowed = [/https:\/\/.*\.lovable\.app$/, /https:\/\/.*\.lovableproject\.com$/];
-  const isAllowed = allowed.some(pattern => pattern.test(requestOrigin));
-  return isAllowed ? requestOrigin : '*';
-};
-
-const getCorsHeaders = (origin: string | null) => ({
-  'Access-Control-Allow-Origin': getAllowedOrigin(origin),
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS'
-});
+  'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
+};
 
 interface AdminUserRequest {
   action: 'list' | 'reset-password' | 'force-logout' | 'update-status' | 'delete-user' | 'update-user-complete';
@@ -35,11 +27,8 @@ interface AdminUserRequest {
 }
 
 const handler = async (req: Request): Promise<Response> => {
-  const origin = req.headers.get('origin');
-  const corsHeaders = getCorsHeaders(origin);
-  
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders, status: 200 });
+    return new Response(null, { headers: corsHeaders });
   }
 
   try {
@@ -217,7 +206,7 @@ async function handleListUsers(supabase: any, filters?: any) {
     console.log(`✅ Retornando ${users.length} usuários após filtros`);
 
     return new Response(JSON.stringify({ success: true, users }), {
-      headers: { ...getCorsHeaders(null), 'Content-Type': 'application/json' },
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     });
   } catch (error: any) {
@@ -237,7 +226,7 @@ async function handleResetPassword(supabase: any, userId: string, newPassword: s
 
   return new Response(JSON.stringify({ success: true, message: 'Password reset successfully' }), {
     status: 200,
-    headers: { ...getCorsHeaders(null), 'Content-Type': 'application/json' }
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' }
   });
 }
 
@@ -251,7 +240,7 @@ async function handleForceLogout(supabase: any, userId: string) {
 
   return new Response(JSON.stringify({ success: true, message: 'User logged out successfully' }), {
     status: 200,
-    headers: { ...getCorsHeaders(null), 'Content-Type': 'application/json' }
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' }
   });
 }
 
@@ -273,7 +262,7 @@ async function handleUpdateStatus(supabase: any, userId: string, status: string)
 
   return new Response(JSON.stringify({ success: true, message: 'Status updated successfully' }), {
     status: 200,
-    headers: { ...getCorsHeaders(null), 'Content-Type': 'application/json' }
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' }
   });
 }
 
@@ -326,7 +315,7 @@ async function handleDeleteUser(supabase: any, userId: string) {
           }), 
           {
             status: 200,
-            headers: { ...getCorsHeaders(null), 'Content-Type': 'application/json' }
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
           }
         );
       }
@@ -347,7 +336,7 @@ async function handleDeleteUser(supabase: any, userId: string) {
       }), 
       {
         status: 200,
-        headers: { ...getCorsHeaders(null), 'Content-Type': 'application/json' }
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }
     );
     
@@ -360,7 +349,7 @@ async function handleDeleteUser(supabase: any, userId: string) {
       }), 
       {
         status: 500,
-        headers: { ...getCorsHeaders(null), 'Content-Type': 'application/json' }
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }
     );
   }
@@ -418,19 +407,12 @@ async function handleUpdateUserComplete(
       }
     }
     
-    // 2. Buscar dados atuais da pessoa para validação
-    const { data: pessoaAtual } = await supabase
-      .from('pessoas')
-      .select('cpf, papeis')
-      .eq('profile_id', userId)
-      .maybeSingle();
-    
-    // 3. Validar cliente_id se tipo é cliente
+    // 2. Validar cliente_id se tipo é cliente
     if (updates.papeis?.includes('cliente') && !updates.cliente_id) {
       throw new Error('Cliente deve ter cliente_id definido');
     }
     
-    // 4. Sanitizar papeis antes de atualizar pessoas
+    // 3. Sanitizar papeis antes de atualizar pessoas
     const ALLOWED_PAPEIS = new Set(['colaborador','especialista','cliente','grs','design','audiovisual','atendimento','financeiro','gestor','admin']);
     const PAPEIS_SYNONYMS: Record<string, string> = { 
       designer: 'design', 
@@ -438,9 +420,7 @@ async function handleUpdateUserComplete(
       rh: 'gestor' 
     };
     
-    const warnings: string[] = [];
-    
-    // 5. Preparar atualização de pessoas via profile_id
+    // 4. Atualizar pessoas via profile_id
     const pessoaUpdates: any = {};
     if (updates.cliente_id !== undefined) pessoaUpdates.cliente_id = updates.cliente_id;
     if (updates.status) pessoaUpdates.status = updates.status;
@@ -451,15 +431,7 @@ async function handleUpdateUserComplete(
       const sanitized = mapped.filter(p => ALLOWED_PAPEIS.has(p));
       console.log('🔎 Papeis recebidos:', updates.papeis, '→ mapeados:', mapped, '→ sanitizados:', sanitized);
       
-      // Verificar se tentando definir como cliente sem CPF válido
-      const temCliente = sanitized.includes('cliente');
-      const cpfValido = pessoaAtual?.cpf && pessoaAtual.cpf.length >= 11;
-      
-      if (temCliente && !cpfValido) {
-        console.log('⚠️ Tentativa de definir papel "cliente" sem CPF válido - pulando atualização de papeis');
-        warnings.push('CPF/CNPJ é obrigatório para definir o usuário como cliente. Salve o documento e tente novamente.');
-        // Não incluir papeis no update para evitar trigger
-      } else if (sanitized.length > 0) {
+      if (sanitized.length > 0) {
         pessoaUpdates.papeis = sanitized;
       } else {
         console.log('⚠️ Nenhum papel válido após sanitização — mantendo papeis atuais');
@@ -474,62 +446,25 @@ async function handleUpdateUserComplete(
       
       if (pessoaError) {
         console.error('❌ Erro ao atualizar pessoas:', pessoaError);
-        
-        // Tratar erros de validação de CPF/CNPJ especificamente
-        if (pessoaError.code === 'P0001' || pessoaError.message?.includes('CPF/CNPJ é obrigatório')) {
-          return new Response(
-            JSON.stringify({
-              success: false,
-              error: 'CPF/CNPJ é obrigatório para clientes'
-            }),
-            { 
-              headers: { ...getCorsHeaders(null), 'Content-Type': 'application/json' },
-              status: 400 
-            }
-          );
-        }
-        
         throw pessoaError;
       }
       console.log(`✅ Dados atualizados em pessoas:`, pessoaUpdates);
     }
     
-    const response: any = {
-      success: true,
-      message: 'Usuário atualizado com sucesso',
-      updates
-    };
-    
-    if (warnings.length > 0) {
-      response.warnings = warnings;
-    }
-    
     return new Response(
-      JSON.stringify(response),
+      JSON.stringify({ 
+        success: true, 
+        message: 'Usuário atualizado com sucesso',
+        updates
+      }),
       { 
         status: 200, 
-        headers: { ...getCorsHeaders(null), 'Content-Type': 'application/json' } 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
       }
     );
     
   } catch (error: any) {
     console.error('❌ Erro ao atualizar usuário:', error);
-    
-    // Erros de validação retornam 400
-    if (error.code === 'P0001' || error.message?.includes('CPF/CNPJ é obrigatório')) {
-      return new Response(
-        JSON.stringify({
-          success: false,
-          error: 'CPF/CNPJ é obrigatório para clientes'
-        }),
-        { 
-          headers: { ...getCorsHeaders(null), 'Content-Type': 'application/json' },
-          status: 400 
-        }
-      );
-    }
-    
-    // Outros erros retornam 500
     return new Response(
       JSON.stringify({ 
         success: false,
@@ -537,7 +472,7 @@ async function handleUpdateUserComplete(
       }),
       { 
         status: 500, 
-        headers: { ...getCorsHeaders(null), 'Content-Type': 'application/json' } 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
       }
     );
   }
