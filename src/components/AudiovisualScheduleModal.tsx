@@ -51,12 +51,12 @@ export function AudiovisualScheduleModal({
     observacoes: ''
   });
   
-  // Inicializar hook apenas quando especialista_id estiver disponível
-  const calendarioHook = formData.especialista_id ? useCalendarioMultidisciplinar({
-    responsavelId: formData.especialista_id,
+  // ✅ Hook SEMPRE chamado para evitar violação de regras do React
+  const calendarioHook = useCalendarioMultidisciplinar({
+    responsavelId: formData.especialista_id || '', // String vazia se não selecionado
     dataInicio: new Date(),
     dataFim: new Date()
-  }) : null;
+  });
 
   useEffect(() => {
     if (open) {

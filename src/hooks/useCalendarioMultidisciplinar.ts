@@ -31,6 +31,12 @@ export const useCalendarioMultidisciplinar = (options: {
   const { data: eventos, isLoading } = useQuery({
     queryKey: ['eventos_calendario', options],
     queryFn: async () => {
+      // ✅ Retorna array vazio se não houver responsavelId
+      if (!options.responsavelId) {
+        logger.debug('Query de eventos pulada - sem responsavelId', 'useCalendarioMultidisciplinar');
+        return [];
+      }
+      
       const result = await queryWithRetry(async () => {
         let query = supabase
           .from('eventos_calendario')
@@ -43,11 +49,8 @@ export const useCalendarioMultidisciplinar = (options: {
           .gte('data_inicio', options.dataInicio.toISOString())
           .lte('data_fim', options.dataFim.toISOString())
           .order('data_inicio')
-          .range(0, 49);
-        
-        if (options.responsavelId) {
-          query = query.eq('responsavel_id', options.responsavelId);
-        }
+          .range(0, 49)
+          .eq('responsavel_id', options.responsavelId);
         
         return await query;
       });
@@ -60,6 +63,7 @@ export const useCalendarioMultidisciplinar = (options: {
       logger.debug('Eventos carregados', 'useCalendarioMultidisciplinar', { count: (result.data as any[])?.length });
       return (result.data as any[]) || [];
     },
+    enabled: !!options.responsavelId, // ✅ Desabilita query se não houver ID
     ...MODULE_QUERY_CONFIG.tarefas
   });
   
