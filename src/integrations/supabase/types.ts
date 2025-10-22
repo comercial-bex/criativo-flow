@@ -640,7 +640,7 @@ export type Database = {
           dados_gov_br: Json | null
           evento: string
           id: string
-          ip_usuario: unknown | null
+          ip_usuario: unknown
           proposta_id: string
           user_agent: string | null
         }
@@ -649,7 +649,7 @@ export type Database = {
           dados_gov_br?: Json | null
           evento: string
           id?: string
-          ip_usuario?: unknown | null
+          ip_usuario?: unknown
           proposta_id: string
           user_agent?: string | null
         }
@@ -658,7 +658,7 @@ export type Database = {
           dados_gov_br?: Json | null
           evento?: string
           id?: string
-          ip_usuario?: unknown | null
+          ip_usuario?: unknown
           proposta_id?: string
           user_agent?: string | null
         }
@@ -765,7 +765,7 @@ export type Database = {
           entidades_afetadas: Json | null
           id: string
           impacto_tipo: string | null
-          ip_address: unknown | null
+          ip_address: unknown
           metadata: Json | null
           trace_id: string
           user_agent: string | null
@@ -784,7 +784,7 @@ export type Database = {
           entidades_afetadas?: Json | null
           id?: string
           impacto_tipo?: string | null
-          ip_address?: unknown | null
+          ip_address?: unknown
           metadata?: Json | null
           trace_id?: string
           user_agent?: string | null
@@ -803,7 +803,7 @@ export type Database = {
           entidades_afetadas?: Json | null
           id?: string
           impacto_tipo?: string | null
-          ip_address?: unknown | null
+          ip_address?: unknown
           metadata?: Json | null
           trace_id?: string
           user_agent?: string | null
@@ -6238,7 +6238,7 @@ export type Database = {
           assinante_email: string | null
           assinante_nome: string
           id: string
-          ip: unknown | null
+          ip: unknown
           referencia_id: string
           referencia_tipo: string
           termo_id: string | null
@@ -6250,7 +6250,7 @@ export type Database = {
           assinante_email?: string | null
           assinante_nome: string
           id?: string
-          ip?: unknown | null
+          ip?: unknown
           referencia_id: string
           referencia_tipo: string
           termo_id?: string | null
@@ -6262,7 +6262,7 @@ export type Database = {
           assinante_email?: string | null
           assinante_nome?: string
           id?: string
-          ip?: unknown | null
+          ip?: unknown
           referencia_id?: string
           referencia_tipo?: string
           termo_id?: string | null
@@ -6707,6 +6707,110 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "vw_client_metrics"
             referencedColumns: ["responsavel_id"]
+          },
+        ]
+      }
+      notas_onboarding: {
+        Row: {
+          analise_ia: Json | null
+          arquivo_anexo_url: string | null
+          arquivo_nome: string | null
+          arquivo_tipo: string | null
+          categoria_ia: string | null
+          cliente_id: string
+          conteudo: string
+          created_at: string | null
+          created_by: string
+          id: string
+          is_active: boolean | null
+          is_archived: boolean | null
+          keywords: string[] | null
+          link_chatgpt: string | null
+          onboarding_id: string | null
+          relevancia_score: number | null
+          tipo_nota: string
+          titulo: string
+          updated_at: string | null
+          updated_by: string | null
+          usado_em_planejamento: boolean | null
+          versao: number | null
+        }
+        Insert: {
+          analise_ia?: Json | null
+          arquivo_anexo_url?: string | null
+          arquivo_nome?: string | null
+          arquivo_tipo?: string | null
+          categoria_ia?: string | null
+          cliente_id: string
+          conteudo: string
+          created_at?: string | null
+          created_by: string
+          id?: string
+          is_active?: boolean | null
+          is_archived?: boolean | null
+          keywords?: string[] | null
+          link_chatgpt?: string | null
+          onboarding_id?: string | null
+          relevancia_score?: number | null
+          tipo_nota: string
+          titulo: string
+          updated_at?: string | null
+          updated_by?: string | null
+          usado_em_planejamento?: boolean | null
+          versao?: number | null
+        }
+        Update: {
+          analise_ia?: Json | null
+          arquivo_anexo_url?: string | null
+          arquivo_nome?: string | null
+          arquivo_tipo?: string | null
+          categoria_ia?: string | null
+          cliente_id?: string
+          conteudo?: string
+          created_at?: string | null
+          created_by?: string
+          id?: string
+          is_active?: boolean | null
+          is_archived?: boolean | null
+          keywords?: string[] | null
+          link_chatgpt?: string | null
+          onboarding_id?: string | null
+          relevancia_score?: number | null
+          tipo_nota?: string
+          titulo?: string
+          updated_at?: string | null
+          updated_by?: string | null
+          usado_em_planejamento?: boolean | null
+          versao?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notas_onboarding_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notas_onboarding_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "mv_grs_dashboard_metrics"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "notas_onboarding_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "vw_client_metrics"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "notas_onboarding_onboarding_id_fkey"
+            columns: ["onboarding_id"]
+            isOneToOne: false
+            referencedRelation: "cliente_onboarding"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -9855,7 +9959,7 @@ export type Database = {
           created_at: string
           error_message: string | null
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           provider: string
           success: boolean
           user_agent: string | null
@@ -9866,7 +9970,7 @@ export type Database = {
           created_at?: string
           error_message?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           provider: string
           success?: boolean
           user_agent?: string | null
@@ -9877,7 +9981,7 @@ export type Database = {
           created_at?: string
           error_message?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           provider?: string
           success?: boolean
           user_agent?: string | null
@@ -11953,10 +12057,10 @@ export type Database = {
       }
       safe_table_metadata: {
         Row: {
-          column_name: unknown | null
+          column_name: unknown
           data_type: string | null
           is_nullable: string | null
-          table_name: unknown | null
+          table_name: unknown
         }
         Relationships: []
       }
@@ -12409,10 +12513,7 @@ export type Database = {
         }
         Returns: boolean
       }
-      auto_sync_orphan_users: {
-        Args: Record<PropertyKey, never>
-        Returns: Json
-      }
+      auto_sync_orphan_users: { Args: never; Returns: Json }
       calcular_folha_mes: {
         Args: { p_competencia: string; p_pessoa_id: string }
         Returns: Json
@@ -12425,19 +12526,16 @@ export type Database = {
         Args: { customer_id: string }
         Returns: boolean
       }
-      can_manage_pessoas: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
+      can_manage_pessoas: { Args: never; Returns: boolean }
       check_orphan_users: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           orphan_count: number
           orphan_emails: string[]
         }[]
       }
       check_user_integrity: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           integrity_score: number
           orphan_auth_users: number
@@ -12494,7 +12592,7 @@ export type Database = {
         Returns: string
       }
       diagnostico_roles_v2: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           percentual_consistencia: number
           pessoas_com_role: number
@@ -12522,7 +12620,7 @@ export type Database = {
         Returns: string
       }
       find_orphan_auth_users: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           auth_user_id: string
           created_at: string
@@ -12530,6 +12628,10 @@ export type Database = {
           has_profile: boolean
           user_metadata: Json
         }[]
+      }
+      fn_agregar_insights_notas: {
+        Args: { p_cliente_id: string }
+        Returns: Json
       }
       fn_calcular_fgts: {
         Args: { p_competencia?: string; p_salario_bruto: number }
@@ -12555,10 +12657,7 @@ export type Database = {
           valor_irrf: number
         }[]
       }
-      fn_calcular_ponto: {
-        Args: { p_ponto_id: string }
-        Returns: undefined
-      }
+      fn_calcular_ponto: { Args: { p_ponto_id: string }; Returns: undefined }
       fn_cred_get_metadata: {
         Args: { p_cliente_id: string; p_projeto_id?: string }
         Returns: {
@@ -12574,9 +12673,9 @@ export type Database = {
           usuario_login: string
         }[]
       }
-      fn_cred_save: {
-        Args:
-          | {
+      fn_cred_save:
+        | {
+            Args: {
               p_categoria: string
               p_cliente_id: string
               p_cred_id?: string
@@ -12587,7 +12686,23 @@ export type Database = {
               p_senha_plain: string
               p_usuario_login: string
             }
-          | {
+            Returns: string
+          }
+        | {
+            Args: {
+              p_categoria: string
+              p_cliente_id: string
+              p_cred_id?: string
+              p_extra_json?: Json
+              p_plataforma: string
+              p_projeto_id: string
+              p_senha_plain: string
+              p_usuario_login: string
+            }
+            Returns: string
+          }
+        | {
+            Args: {
               p_categoria: string
               p_cliente_id: string
               p_cred_id?: string
@@ -12599,18 +12714,8 @@ export type Database = {
               p_url?: string
               p_usuario_login: string
             }
-          | {
-              p_categoria: string
-              p_cliente_id: string
-              p_cred_id?: string
-              p_extra_json?: Json
-              p_plataforma: string
-              p_projeto_id: string
-              p_senha_plain: string
-              p_usuario_login: string
-            }
-        Returns: string
-      }
+            Returns: string
+          }
       fn_cred_save_deprecated: {
         Args: {
           p_categoria: string
@@ -12637,9 +12742,24 @@ export type Database = {
         }
         Returns: Json
       }
-      fn_criar_evento_com_regras: {
-        Args:
-          | {
+      fn_criar_evento_com_regras:
+        | {
+            Args: {
+              p_data_fim: string
+              p_data_inicio: string
+              p_equipamentos_ids?: string[]
+              p_is_extra?: boolean
+              p_local?: string
+              p_modo_criativo?: string
+              p_projeto_id: string
+              p_responsavel_id: string
+              p_tipo: Database["public"]["Enums"]["tipo_evento"]
+              p_titulo: string
+            }
+            Returns: Json
+          }
+        | {
+            Args: {
               p_data_fim: string
               p_data_inicio: string
               p_equipamentos_ids?: string[]
@@ -12653,20 +12773,8 @@ export type Database = {
               p_tipo: Database["public"]["Enums"]["tipo_evento"]
               p_titulo: string
             }
-          | {
-              p_data_fim: string
-              p_data_inicio: string
-              p_equipamentos_ids?: string[]
-              p_is_extra?: boolean
-              p_local?: string
-              p_modo_criativo?: string
-              p_projeto_id: string
-              p_responsavel_id: string
-              p_tipo: Database["public"]["Enums"]["tipo_evento"]
-              p_titulo: string
-            }
-        Returns: Json
-      }
+            Returns: Json
+          }
       fn_criar_reserva_equipamento: {
         Args: {
           p_fim: string
@@ -12694,10 +12802,7 @@ export type Database = {
         }
         Returns: string
       }
-      fn_get_default_responsavel: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
+      fn_get_default_responsavel: { Args: never; Returns: string }
       fn_get_timeline_by_trace: {
         Args: { p_trace_id: string }
         Returns: {
@@ -12721,10 +12826,7 @@ export type Database = {
         }
         Returns: string
       }
-      fn_notificar_vencimentos: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      fn_notificar_vencimentos: { Args: never; Returns: undefined }
       fn_registrar_audit: {
         Args: {
           p_acao: string
@@ -12769,10 +12871,7 @@ export type Database = {
         }
         Returns: Json
       }
-      fn_tarefa_status_prazo: {
-        Args: { p_tarefa_id: string }
-        Returns: string
-      }
+      fn_tarefa_status_prazo: { Args: { p_tarefa_id: string }; Returns: string }
       fn_validar_limite_adiantamento: {
         Args: {
           p_colaborador_id: string
@@ -12837,8 +12936,14 @@ export type Database = {
         }[]
       }
       get_dashboard_financeiro_data: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: unknown[]
+        SetofOptions: {
+          from: "*"
+          to: "mv_dashboard_financeiro"
+          isOneToOne: false
+          isSetofReturn: true
+        }
       }
       get_filtered_customer_data: {
         Args: { customer_id: string }
@@ -12856,14 +12961,8 @@ export type Database = {
           updated_at: string
         }[]
       }
-      get_filtered_customers_list: {
-        Args: Record<PropertyKey, never>
-        Returns: Json
-      }
-      get_filtered_profile: {
-        Args: { profile_id: string }
-        Returns: Json
-      }
+      get_filtered_customers_list: { Args: never; Returns: Json }
+      get_filtered_profile: { Args: { profile_id: string }; Returns: Json }
       get_financeiro_integrado: {
         Args: { p_cliente_id?: string; p_projeto_id?: string }
         Returns: {
@@ -12880,11 +12979,17 @@ export type Database = {
         }[]
       }
       get_fluxo_por_categoria_data: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: unknown[]
+        SetofOptions: {
+          from: "*"
+          to: "vw_fluxo_por_categoria"
+          isOneToOne: false
+          isSetofReturn: true
+        }
       }
       get_grs_dashboard_metrics: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           aprovacoes_pendentes: number
           cliente_id: string
@@ -12912,22 +13017,10 @@ export type Database = {
         }
         Returns: boolean
       }
-      is_admin: {
-        Args: { user_uuid: string }
-        Returns: boolean
-      }
-      is_responsavel_of: {
-        Args: { pessoa_id: string }
-        Returns: boolean
-      }
-      is_same_cliente: {
-        Args: { p_pessoa_id: string }
-        Returns: boolean
-      }
-      is_valid_profile_id: {
-        Args: { p_profile_id: string }
-        Returns: boolean
-      }
+      is_admin: { Args: { user_uuid: string }; Returns: boolean }
+      is_responsavel_of: { Args: { pessoa_id: string }; Returns: boolean }
+      is_same_cliente: { Args: { p_pessoa_id: string }; Returns: boolean }
+      is_valid_profile_id: { Args: { p_profile_id: string }; Returns: boolean }
       log_rls_error: {
         Args: {
           p_error_code?: string
@@ -12950,30 +13043,12 @@ export type Database = {
         }
         Returns: string
       }
-      normalizar_cpf: {
-        Args: { cpf_input: string }
-        Returns: string
-      }
-      popular_checklist_inicial: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      process_social_post_queue: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      refresh_dashboard_financeiro: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      refresh_grs_dashboard_metrics: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      refresh_relatorios_financeiros: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      normalizar_cpf: { Args: { cpf_input: string }; Returns: string }
+      popular_checklist_inicial: { Args: never; Returns: undefined }
+      process_social_post_queue: { Args: never; Returns: undefined }
+      refresh_dashboard_financeiro: { Args: never; Returns: undefined }
+      refresh_grs_dashboard_metrics: { Args: never; Returns: undefined }
+      refresh_relatorios_financeiros: { Args: never; Returns: undefined }
       rejeitar_especialista: {
         Args: { especialista_id: string; observacao?: string }
         Returns: boolean
@@ -12982,14 +13057,8 @@ export type Database = {
         Args: { p_papel: string; p_pessoa_id: string }
         Returns: boolean
       }
-      rollback_sprint1: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
-      sanitize_error_message: {
-        Args: { error_msg: string }
-        Returns: string
-      }
+      rollback_sprint1: { Args: never; Returns: string }
+      sanitize_error_message: { Args: { error_msg: string }; Returns: string }
       save_credential_secure: {
         Args: {
           p_categoria: string
@@ -13023,18 +13092,9 @@ export type Database = {
         Args: { p_cliente_id: string; p_user_id: string }
         Returns: boolean
       }
-      validate_specialist_access: {
-        Args: { p_user_id: string }
-        Returns: Json
-      }
-      validate_user_for_login: {
-        Args: { p_email: string }
-        Returns: Json
-      }
-      vincular_usuarios_clientes: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      validate_specialist_access: { Args: { p_user_id: string }; Returns: Json }
+      validate_user_for_login: { Args: { p_email: string }; Returns: Json }
+      vincular_usuarios_clientes: { Args: never; Returns: undefined }
     }
     Enums: {
       area_enum:

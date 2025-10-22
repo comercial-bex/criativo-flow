@@ -109,3 +109,6 @@ verify_jwt = false
 
 [functions.generate-editorial-content]
 verify_jwt = false
+
+[functions.analyze-nota-onboarding]
+verify_jwt = false
