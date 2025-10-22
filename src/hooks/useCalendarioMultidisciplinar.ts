@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { queryWithRetry } from '@/lib/supabase-query-wrapper';
 import { startOfMonth, endOfMonth } from 'date-fns';
 import { MODULE_QUERY_CONFIG } from '@/lib/queryConfig';
 import { logger } from '@/lib/logger';
@@ -30,28 +31,34 @@ export const useCalendarioMultidisciplinar = (options: {
   const { data: eventos, isLoading } = useQuery({
     queryKey: ['eventos_calendario', options],
     queryFn: async () => {
-      let query = supabase
-        .from('eventos_calendario')
-        .select(`
-          *,
-          responsavel:pessoas!responsavel_id(id, nome, especialidade),
-          projeto:projetos(id, titulo),
-          cliente:clientes(id, nome)
-        `, { count: 'exact' })
-        .gte('data_inicio', options.dataInicio.toISOString())
-        .lte('data_fim', options.dataFim.toISOString())
-        .order('data_inicio')
-        .range(0, 49);
+      const result = await queryWithRetry(async () => {
+        let query = supabase
+          .from('eventos_calendario')
+          .select(`
+            *,
+            responsavel:pessoas!responsavel_id(id, nome),
+            projeto:projetos(id, titulo),
+            cliente:clientes(id, nome)
+          `, { count: 'exact' })
+          .gte('data_inicio', options.dataInicio.toISOString())
+          .lte('data_fim', options.dataFim.toISOString())
+          .order('data_inicio')
+          .range(0, 49);
+        
+        if (options.responsavelId) {
+          query = query.eq('responsavel_id', options.responsavelId);
+        }
+        
+        return await query;
+      });
       
-      if (options.responsavelId) {
-        query = query.eq('responsavel_id', options.responsavelId);
+      if (result.error) {
+        logger.error('Erro ao carregar eventos', 'useCalendarioMultidisciplinar', result.error);
+        throw result.error;
       }
       
-      const { data, error, count } = await query;
-      if (error) throw error;
-      
-      logger.debug('Eventos carregados', 'useCalendarioMultidisciplinar', { count });
-      return data;
+      logger.debug('Eventos carregados', 'useCalendarioMultidisciplinar', { count: (result.data as any[])?.length });
+      return (result.data as any[]) || [];
     },
     ...MODULE_QUERY_CONFIG.tarefas
   });

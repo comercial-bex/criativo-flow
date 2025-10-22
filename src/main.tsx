@@ -5,9 +5,13 @@ import "./styles/introjs-theme.ts";
 import { registerServiceWorker } from "./lib/sw-register";
 import { syncManager } from "./lib/sync-manager";
 import { initializeSentry } from "./lib/sentry-config";
+import { setupSessionRefresh } from "./lib/supabase-session-handler";
 
 // 🔍 FASE 3: Initialize Sentry (production only)
 initializeSentry();
+
+// 🔐 Setup Supabase session refresh handler
+setupSessionRefresh();
 
 // 🛡️ Signal React is starting
 (window as any).__reactStarted = true;
