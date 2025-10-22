@@ -72,27 +72,54 @@ export function AudiovisualScheduleModal({
 
   const fetchData = async () => {
     try {
-      // Buscar filmmakers
-      const { data: filmmakersData } = await supabase
+      // ✅ FASE 2: Verificar sessão antes de fazer queries
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast({
+          title: "Sessão expirada",
+          description: "Faça login novamente",
+          variant: "destructive"
+        });
+        onOpenChange(false);
+        return;
+      }
+
+      // Buscar filmmakers com tratamento de erro
+      const { data: filmmakersData, error: filmmakersError } = await supabase
         .from('pessoas')
         .select('id, nome')
         .eq('status', 'aprovado')
-        .order('nome') as { data: any; error: any };
+        .order('nome');
+
+      if (filmmakersError) {
+        console.error('Erro ao buscar filmmakers:', filmmakersError);
+        throw filmmakersError;
+      }
 
       setFilmmakers(filmmakersData || []);
 
       // Buscar clientes se não foi passado um específico
       if (!clienteId) {
-        const { data: clientesData } = await supabase
+        const { data: clientesData, error: clientesError } = await supabase
           .from('clientes')
           .select('id, nome')
           .eq('status', 'ativo')
           .order('nome');
 
+        if (clientesError) {
+          console.error('Erro ao buscar clientes:', clientesError);
+          throw clientesError;
+        }
+
         setClientes(clientesData || []);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao buscar dados:', error);
+      toast({
+        title: "Erro ao carregar dados",
+        description: error?.message || "Tente novamente ou recarregue a página",
+        variant: "destructive"
+      });
     }
   };
 
@@ -104,6 +131,18 @@ export function AudiovisualScheduleModal({
     const allConflicts: any[] = [];
     
     try {
+      // ✅ FASE 2: Verificar sessão antes de queries
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast({
+          title: "Sessão expirada",
+          description: "Faça login novamente",
+          variant: "destructive"
+        });
+        setCheckingConflicts(false);
+        return;
+      }
+
       const targetDate = format(formData.data_captacao, 'yyyy-MM-dd');
       const horarioInicio = `${targetDate}T${formData.horario_inicio}:00`;
       const horarioFim = formData.horario_fim 
@@ -140,14 +179,30 @@ export function AudiovisualScheduleModal({
           .neq('status', 'concluido' as any) as any)
       ]);
 
+      // Verificar erros e logar
+      if (captacoes.error) {
+        console.error('Erro ao buscar captações:', captacoes.error);
+      }
+      if (eventos.error) {
+        console.error('Erro ao buscar eventos:', eventos.error);
+      }
+      if (tarefas.error) {
+        console.error('Erro ao buscar tarefas:', tarefas.error);
+      }
+
       // Consolidar conflitos com identificação de tipo
       if (captacoes.data) allConflicts.push(...captacoes.data.map(c => ({ ...c, tipo: 'captacao' })));
       if (eventos.data) allConflicts.push(...eventos.data.map(e => ({ ...e, tipo: 'evento' })));
       if (tarefas.data) allConflicts.push(...tarefas.data.map(t => ({ ...t, tipo: 'tarefa' })));
 
       setConflicts(allConflicts);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao verificar conflitos:', error);
+      toast({
+        title: "Erro ao verificar conflitos",
+        description: error?.message || "Não foi possível verificar conflitos de agenda",
+        variant: "destructive"
+      });
     } finally {
       setCheckingConflicts(false);
     }
