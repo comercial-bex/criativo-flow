@@ -14,7 +14,7 @@ export function FluxoCaixaTab() {
     queryKey: ['dashboard-financeiro'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .rpc('get_dashboard_financeiro_data', {})
+        .rpc('get_dashboard_financeiro_data')
         .limit(12);
       
       if (error) throw error;

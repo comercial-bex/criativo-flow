@@ -208,6 +208,7 @@ export function CreatePlanejamentoUnificadoModal({
         onCreated?.(planejamento.id, clienteSelecionado);
       } else if (tipoPlano === 'campanha') {
         // Salvar como projeto tipo campanha
+        const { data: { user } } = await supabase.auth.getUser();
         const { error } = await supabase
           .from('projetos')
           .insert({
@@ -217,7 +218,8 @@ export function CreatePlanejamentoUnificadoModal({
             data_inicio: periodoInicio,
             data_fim: periodoFim,
             status: 'ativo',
-            tipo_projeto: 'campanha'
+            tipo_projeto: 'campanha',
+            responsavel_id: user?.id || ''
           });
 
         if (error) throw error;

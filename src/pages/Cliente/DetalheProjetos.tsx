@@ -156,6 +156,7 @@ function ProjetoForm({ clienteId, onSuccess }: { clienteId: string; onSuccess: (
     setLoading(true);
     
     try {
+      const { data: { user } } = await supabase.auth.getUser();
       const { error } = await supabase
         .from('projetos')
         .insert({
@@ -164,6 +165,7 @@ function ProjetoForm({ clienteId, onSuccess }: { clienteId: string; onSuccess: (
           cliente_id: clienteId,
           orcamento: formData.valor ? parseFloat(formData.valor) : null,
           data_inicio: formData.data_inicio || null,
+          responsavel_id: user?.id || '',
           data_fim: formData.data_fim || null,
           status: 'ativo'
         });

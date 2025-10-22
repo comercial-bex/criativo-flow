@@ -10,7 +10,7 @@ export function FluxoPorCategoria() {
     queryKey: ['fluxo-por-categoria'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .rpc('get_fluxo_por_categoria_data', {});
+        .rpc('get_fluxo_por_categoria_data');
       
       if (error) throw error;
       return data;
