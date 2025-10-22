@@ -34,7 +34,7 @@ export const useCalendarioMultidisciplinar = (options: {
         .from('eventos_calendario')
         .select(`
           *,
-          responsavel:profiles!responsavel_id(id, nome, especialidade),
+          responsavel:pessoas!responsavel_id(id, nome, especialidade),
           projeto:projetos(id, titulo),
           cliente:clientes(id, nome)
         `, { count: 'exact' })
