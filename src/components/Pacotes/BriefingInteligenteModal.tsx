@@ -109,7 +109,13 @@ export function BriefingInteligenteModal({
   };
 
   const handleSalvarBriefing = async () => {
+    console.log('🚀 [BRIEFING] Iniciando salvamento...');
+    console.log('📋 [BRIEFING] Form Data:', formData);
+    console.log('🏢 [BRIEFING] Cliente ID:', clienteId);
+    console.log('📦 [BRIEFING] Pacote:', pacote);
+
     if (!validarEtapa('etapa5')) {
+      console.error('❌ [BRIEFING] Validação falhou na etapa 5');
       toast({
         title: 'Campos obrigatórios',
         description: 'Por favor, preencha todos os campos obrigatórios',
@@ -120,7 +126,16 @@ export function BriefingInteligenteModal({
 
     setLoading(true);
     try {
+      // ✅ Verificar sessão do usuário
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError || !session) {
+        console.error('❌ [BRIEFING] Erro de sessão:', sessionError);
+        throw new Error('Sessão expirada. Faça login novamente.');
+      }
+      console.log('✅ [BRIEFING] Sessão válida:', session.user.id);
+
       // Criar tarefa genérica para o briefing
+      console.log('📝 [BRIEFING] Criando tarefa...');
       const { data: novaTarefa, error: tarefaError } = await supabase
         .from('tarefa')
         .insert({ 
@@ -131,56 +146,87 @@ export function BriefingInteligenteModal({
         .select('id')
         .single();
       
-      if (tarefaError) throw tarefaError;
-      const tarefaId = novaTarefa?.id || '';
+      if (tarefaError) {
+        console.error('❌ [BRIEFING] Erro ao criar tarefa:', tarefaError);
+        throw new Error(`Erro ao criar tarefa: ${tarefaError.message}`);
+      }
+      
+      const tarefaId = novaTarefa?.id;
+      if (!tarefaId) {
+        throw new Error('ID da tarefa não retornado após inserção');
+      }
+      console.log('✅ [BRIEFING] Tarefa criada:', tarefaId);
+
+      // ✅ Preparar dados do briefing com validação
+      const briefingData = {
+        tarefa_id: tarefaId,
+        cliente_id: clienteId,
+        pacote_id: pacote.id,
+        titulo: formData.titulo,
+        objetivo: formData.objetivo,
+        tom: formData.tom,
+        data_entrega: formData.data_entrega || null,
+        veiculacao: formData.veiculacao,
+        mensagem_chave: formData.mensagem_chave,
+        beneficios: formData.beneficios.filter(b => b),
+        provas_sociais: formData.provas_sociais,
+        cta: formData.cta,
+        referencias_visuais: formData.referencias_visuais as any,
+        locucao: formData.locucao,
+        captacao: formData.captacao,
+        ambiente: formData.ambiente,
+        restricoes: formData.restricoes,
+        observacoes: formData.observacoes,
+        logo_url: formData.logo_url,
+        paleta_fontes_url: formData.paleta_fontes_url,
+        manual_marca_url: formData.manual_marca_url,
+        status_briefing: 'completo',
+      };
+
+      console.log('📤 [BRIEFING] Enviando para o banco:', briefingData);
 
       const { data, error } = await supabase
         .from('briefings')
-        .insert({
-          tarefa_id: tarefaId,
-          cliente_id: clienteId,
-          pacote_id: pacote.id,
-          titulo: formData.titulo,
-          objetivo: formData.objetivo,
-          tom: formData.tom,
-          data_entrega: formData.data_entrega,
-          veiculacao: formData.veiculacao,
-          mensagem_chave: formData.mensagem_chave,
-          beneficios: formData.beneficios.filter(b => b),
-          provas_sociais: formData.provas_sociais,
-          cta: formData.cta,
-          referencias_visuais: formData.referencias_visuais as any,
-          locucao: formData.locucao,
-          captacao: formData.captacao,
-          ambiente: formData.ambiente,
-          restricoes: formData.restricoes,
-          observacoes: formData.observacoes,
-          logo_url: formData.logo_url,
-          paleta_fontes_url: formData.paleta_fontes_url,
-          manual_marca_url: formData.manual_marca_url,
-          status_briefing: 'completo',
-        } as any)
+        .insert(briefingData)
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ [BRIEFING] Erro ao inserir:', error);
+        console.error('📊 [BRIEFING] Detalhes do erro:', {
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code
+        });
+        throw new Error(`Erro ao salvar briefing: ${error.message}`);
+      }
+
+      if (!data) {
+        throw new Error('Nenhum dado retornado após inserção do briefing');
+      }
+
+      console.log('✅ [BRIEFING] Salvo com sucesso!', data);
 
       toast({
-        title: 'Sucesso!',
-        description: 'Briefing criado com sucesso',
+        title: '✅ Briefing Criado!',
+        description: `Briefing "${formData.titulo}" salvo com sucesso`,
       });
 
       onSuccess(data.id);
       onOpenChange(false);
-    } catch (error) {
-      console.error('Erro ao salvar briefing:', error);
+    } catch (error: any) {
+      console.error('💥 [BRIEFING] ERRO FATAL:', error);
+      console.error('Stack trace:', error.stack);
+      
       toast({
-        title: 'Erro',
-        description: 'Erro ao salvar briefing',
+        title: 'Erro ao salvar briefing',
+        description: error.message || 'Erro desconhecido. Verifique o console do navegador (F12).',
         variant: 'destructive',
       });
     } finally {
       setLoading(false);
+      console.log('🏁 [BRIEFING] Processo finalizado');
     }
   };
 
