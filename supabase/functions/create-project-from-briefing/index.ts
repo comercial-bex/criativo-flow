@@ -153,10 +153,30 @@ serve(async (req) => {
       console.warn('Erro ao registrar evento:', eventError);
     }
 
+    // 🔄 CORREÇÃO 1: Atualizar briefing com o ID do projeto gerado
+    try {
+      const { error: updateBriefingError } = await supabaseClient
+        .from('briefings')
+        .update({ 
+          projeto_gerado_id: projeto.id,
+          status_briefing: 'aprovado'
+        })
+        .eq('id', briefingId);
+
+      if (updateBriefingError) {
+        console.error('⚠️ Erro ao atualizar briefing:', updateBriefingError);
+      } else {
+        console.log('✅ Briefing atualizado com projeto_gerado_id');
+      }
+    } catch (updateError) {
+      console.warn('Erro ao atualizar briefing:', updateError);
+    }
+
     return new Response(
       JSON.stringify({
         success: true,
         projeto_id: projeto.id,
+        titulo: projeto.titulo,
         tarefas_criadas: tarefasCriadas.length,
         tarefas: tarefasCriadas,
       }),

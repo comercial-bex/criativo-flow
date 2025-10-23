@@ -73,6 +73,16 @@ export function useTarefas(options: UseTarefasOptions = {}) {
 
   const createTarefa = async (novaTarefa: Partial<Tarefa>) => {
     try {
+      // 🔒 CORREÇÃO 2: Validar executor obrigatório
+      if (!novaTarefa.executor_id) {
+        toast({
+          title: '⚠️ Executor Obrigatório',
+          description: 'Selecione um executor para a tarefa',
+          variant: 'destructive',
+        });
+        return { data: null, error: new Error('executor_id é obrigatório') };
+      }
+
       const payload = sanitizeTaskPayload(novaTarefa as any);
       
       const { data, error } = await supabase

@@ -25,32 +25,10 @@ export function NovaOrdemServico({ clienteId }: NovaOrdemServicoProps) {
   };
 
   const handleBriefingSuccess = async (briefingId: string) => {
-    setGerandoProjeto(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('create-project-from-briefing', {
-        body: { briefingId },
-      });
-
-      if (error) throw error;
-
-      toast({
-        title: '✅ Projeto Criado!',
-        description: `Projeto criado com ${data.tarefas_criadas} tarefas`,
-      });
-
-      // Resetar
-      setPacoteSelecionado(null);
-      setItensSelecionados([]);
-    } catch (error) {
-      console.error('Erro ao gerar projeto:', error);
-      toast({
-        title: 'Erro',
-        description: 'Erro ao gerar projeto a partir do briefing',
-        variant: 'destructive',
-      });
-    } finally {
-      setGerandoProjeto(false);
-    }
+    // 🚀 CORREÇÃO 1: Projeto já é gerado automaticamente no BriefingInteligenteModal
+    // Apenas resetar o estado
+    setPacoteSelecionado(null);
+    setItensSelecionados([]);
   };
 
   if (gerandoProjeto) {

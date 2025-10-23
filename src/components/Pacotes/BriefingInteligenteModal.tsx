@@ -208,10 +208,36 @@ export function BriefingInteligenteModal({
 
       console.log('✅ [BRIEFING] Salvo com sucesso!', data);
 
-      toast({
-        title: '✅ Briefing Criado!',
-        description: `Briefing "${formData.titulo}" salvo com sucesso`,
-      });
+      // 🚀 CORREÇÃO 1: Chamar automaticamente a Edge Function para gerar projeto
+      console.log('🚀 [PROJETO] Iniciando geração automática...');
+      try {
+        const { data: projectData, error: projectError } = await supabase.functions.invoke(
+          'create-project-from-briefing',
+          { body: { briefingId: data.id } }
+        );
+
+        if (projectError) {
+          console.error('❌ [PROJETO] Erro ao gerar:', projectError);
+          toast({
+            title: '⚠️ Briefing salvo, mas...',
+            description: 'Erro ao gerar projeto automaticamente. Gere manualmente.',
+            variant: 'destructive',
+          });
+        } else {
+          console.log('✅ [PROJETO] Gerado com sucesso!', projectData);
+          toast({
+            title: '✅ Projeto Criado!',
+            description: `Projeto criado com ${projectData.tarefas_criadas} tarefas`,
+          });
+        }
+      } catch (err) {
+        console.error('💥 [PROJETO] Erro fatal:', err);
+        toast({
+          title: '⚠️ Briefing salvo',
+          description: 'Mas houve erro ao gerar projeto. Tente novamente.',
+          variant: 'destructive',
+        });
+      }
 
       onSuccess(data.id);
       onOpenChange(false);
