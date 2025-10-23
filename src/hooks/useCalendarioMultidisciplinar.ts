@@ -37,14 +37,15 @@ export const useCalendarioMultidisciplinar = (options: {
         return [];
       }
       
+      // ✅ FASE 3: Query com foreign keys explícitas para evitar ambiguidade
       const result = await queryWithRetry(async () => {
         let query = supabase
           .from('eventos_calendario')
           .select(`
             *,
-            responsavel:pessoas!responsavel_id(id, nome),
-            projeto:projetos(id, titulo),
-            cliente:clientes(id, nome)
+            responsavel:pessoas!eventos_calendario_responsavel_id_fkey(id, nome),
+            projeto:projetos!eventos_calendario_projeto_id_fkey(id, titulo),
+            cliente:clientes!eventos_calendario_cliente_id_fkey(id, nome)
           `, { count: 'exact' })
           .gte('data_inicio', options.dataInicio.toISOString())
           .lte('data_fim', options.dataFim.toISOString())
