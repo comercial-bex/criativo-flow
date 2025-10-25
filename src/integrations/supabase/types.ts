@@ -4325,6 +4325,7 @@ export type Database = {
           projeto_id: string | null
           reserva_id: string | null
           tarefa_id: string | null
+          tipo_lancamento: string | null
           tipo_origem: string
           titulo_id: string | null
           unidade: string | null
@@ -4346,6 +4347,7 @@ export type Database = {
           projeto_id?: string | null
           reserva_id?: string | null
           tarefa_id?: string | null
+          tipo_lancamento?: string | null
           tipo_origem: string
           titulo_id?: string | null
           unidade?: string | null
@@ -4367,6 +4369,7 @@ export type Database = {
           projeto_id?: string | null
           reserva_id?: string | null
           tarefa_id?: string | null
+          tipo_lancamento?: string | null
           tipo_origem?: string
           titulo_id?: string | null
           unidade?: string | null
@@ -12344,6 +12347,24 @@ export type Database = {
             referencedColumns: ["responsavel_id"]
           },
         ]
+      }
+      vw_dre_mensal: {
+        Row: {
+          despesas: number | null
+          lucro_liquido: number | null
+          mes: string | null
+          receitas: number | null
+        }
+        Relationships: []
+      }
+      vw_financeiro_resumo: {
+        Row: {
+          mes: string | null
+          quantidade: number | null
+          tipo_lancamento: string | null
+          total: number | null
+        }
+        Relationships: []
       }
       vw_health_check_pessoas: {
         Row: {
