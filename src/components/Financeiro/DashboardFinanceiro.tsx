@@ -8,6 +8,7 @@ import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, L
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { OrigemLancamentoCell } from "./OrigemLancamentoCell";
 
 const COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))'];
 
@@ -207,12 +208,12 @@ export function DashboardFinanceiro() {
                   </TableCell>
                   <TableCell className="text-sm">{lancamento.descricao}</TableCell>
                   <TableCell>
-                    <Badge variant="outline">
-                      {lancamento.tipo_origem === 'tarefa' ? 'Tarefa' : 
-                       lancamento.tipo_origem === 'evento' ? 'Evento' :
-                       lancamento.tipo_origem === 'folha' ? 'Folha' : 
-                       lancamento.tipo_origem}
-                    </Badge>
+                    <OrigemLancamentoCell
+                      tipo_origem={lancamento.tipo_origem}
+                      tarefa_titulo={lancamento.tarefa_titulo}
+                      evento_titulo={lancamento.evento_titulo}
+                      folha_descricao={lancamento.folha_descricao}
+                    />
                   </TableCell>
                   <TableCell className="text-sm">
                     {lancamento.cliente_nome && (

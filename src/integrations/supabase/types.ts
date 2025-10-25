@@ -2353,6 +2353,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "conciliacoes_itens_lancamento_id_fkey"
+            columns: ["lancamento_id"]
+            isOneToOne: false
+            referencedRelation: "vw_lancamentos_origem"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "conciliacoes_itens_titulo_id_fkey"
             columns: ["titulo_id"]
             isOneToOne: false
@@ -12567,6 +12574,169 @@ export type Database = {
           valor: string | null
         }
         Relationships: []
+      }
+      vw_lancamentos_origem: {
+        Row: {
+          cliente_id: string | null
+          cliente_nome: string | null
+          data_lancamento: string | null
+          descricao: string | null
+          evento_id: string | null
+          evento_tipo: Database["public"]["Enums"]["tipo_evento"] | null
+          evento_titulo: string | null
+          folha_descricao: string | null
+          folha_item_id: string | null
+          folha_referencia: string | null
+          id: string | null
+          origem_id: string | null
+          percentual_projeto: number | null
+          projeto_id: string | null
+          projeto_titulo: string | null
+          tarefa_id: string | null
+          tarefa_status:
+            | Database["public"]["Enums"]["status_tarefa_enum"]
+            | null
+          tarefa_titulo: string | null
+          tipo_lancamento: string | null
+          tipo_origem: string | null
+          tipo_transacao: string | null
+          valor: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financeiro_lancamentos_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financeiro_lancamentos_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "mv_grs_dashboard_metrics"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "financeiro_lancamentos_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "vw_client_metrics"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "financeiro_lancamentos_evento_id_fkey"
+            columns: ["evento_id"]
+            isOneToOne: false
+            referencedRelation: "eventos_calendario"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financeiro_lancamentos_folha_item_id_fkey"
+            columns: ["folha_item_id"]
+            isOneToOne: false
+            referencedRelation: "financeiro_folha_itens"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financeiro_lancamentos_projeto_id_fkey"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "projetos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financeiro_lancamentos_projeto_id_fkey"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "vw_custos_projeto"
+            referencedColumns: ["projeto_id"]
+          },
+          {
+            foreignKeyName: "financeiro_lancamentos_projeto_id_fkey"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "vw_projeto_lucro"
+            referencedColumns: ["projeto_id"]
+          },
+          {
+            foreignKeyName: "financeiro_lancamentos_tarefa_id_fkey"
+            columns: ["tarefa_id"]
+            isOneToOne: false
+            referencedRelation: "tarefa"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financeiro_lancamentos_tarefa_id_fkey"
+            columns: ["tarefa_id"]
+            isOneToOne: false
+            referencedRelation: "vw_dashboard_vencimentos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_financeiro_evento"
+            columns: ["evento_id"]
+            isOneToOne: false
+            referencedRelation: "eventos_calendario"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_financeiro_tarefa"
+            columns: ["tarefa_id"]
+            isOneToOne: false
+            referencedRelation: "tarefa"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_financeiro_tarefa"
+            columns: ["tarefa_id"]
+            isOneToOne: false
+            referencedRelation: "vw_dashboard_vencimentos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_lancamentos_evento"
+            columns: ["evento_id"]
+            isOneToOne: false
+            referencedRelation: "eventos_calendario"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_lancamentos_projeto"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "projetos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_lancamentos_projeto"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "vw_custos_projeto"
+            referencedColumns: ["projeto_id"]
+          },
+          {
+            foreignKeyName: "fk_lancamentos_projeto"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "vw_projeto_lucro"
+            referencedColumns: ["projeto_id"]
+          },
+          {
+            foreignKeyName: "fk_lancamentos_tarefa"
+            columns: ["tarefa_id"]
+            isOneToOne: false
+            referencedRelation: "tarefa"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_lancamentos_tarefa"
+            columns: ["tarefa_id"]
+            isOneToOne: false
+            referencedRelation: "vw_dashboard_vencimentos"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       vw_mapa_dividas: {
         Row: {

@@ -15,13 +15,18 @@ export interface LancamentoOrigem {
   id: string;
   data_lancamento: string;
   descricao: string;
-  tipo_origem: string;
-  origem_id: string;
+  tipo_origem: string | null;
+  origem_id: string | null;
   valor: number;
   tarefa_titulo: string | null;
+  tarefa_status: string | null;
   projeto_titulo: string | null;
   cliente_nome: string | null;
   evento_titulo: string | null;
+  evento_tipo: string | null;
+  folha_descricao: string | null;
+  folha_referencia: string | null;
+  tipo_lancamento: string;
   tipo_transacao: string;
   percentual_projeto: number | null;
 }
@@ -42,8 +47,14 @@ export function useFinanceiroDashboard() {
   const { data: lancamentosOrigem = [], isLoading: loadingLancamentos } = useQuery({
     queryKey: ["lancamentos-origem"],
     queryFn: async () => {
-      // Retornar array vazio por enquanto até view ser criada
-      return [] as LancamentoOrigem[];
+      const { data, error } = await supabase
+        .from('vw_lancamentos_origem')
+        .select('*')
+        .order('data_lancamento', { ascending: false })
+        .limit(100);
+      
+      if (error) throw error;
+      return data as LancamentoOrigem[];
     },
     staleTime: 1000 * 60 * 5, // 5 minutos
   });
