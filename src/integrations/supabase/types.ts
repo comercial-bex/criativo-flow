@@ -4311,6 +4311,7 @@ export type Database = {
       financeiro_lancamentos: {
         Row: {
           centro_custo: string | null
+          cliente_id: string | null
           conta_credito_id: string
           conta_debito_id: string
           created_at: string | null
@@ -4318,6 +4319,7 @@ export type Database = {
           data_lancamento: string
           descricao: string
           evento_id: string | null
+          folha_item_id: string | null
           fornecedor_id: string | null
           id: string
           numero_lancamento: number
@@ -4333,6 +4335,7 @@ export type Database = {
         }
         Insert: {
           centro_custo?: string | null
+          cliente_id?: string | null
           conta_credito_id: string
           conta_debito_id: string
           created_at?: string | null
@@ -4340,6 +4343,7 @@ export type Database = {
           data_lancamento: string
           descricao: string
           evento_id?: string | null
+          folha_item_id?: string | null
           fornecedor_id?: string | null
           id?: string
           numero_lancamento?: number
@@ -4355,6 +4359,7 @@ export type Database = {
         }
         Update: {
           centro_custo?: string | null
+          cliente_id?: string | null
           conta_credito_id?: string
           conta_debito_id?: string
           created_at?: string | null
@@ -4362,6 +4367,7 @@ export type Database = {
           data_lancamento?: string
           descricao?: string
           evento_id?: string | null
+          folha_item_id?: string | null
           fornecedor_id?: string | null
           id?: string
           numero_lancamento?: number
@@ -4376,6 +4382,27 @@ export type Database = {
           valor?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "financeiro_lancamentos_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financeiro_lancamentos_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "mv_grs_dashboard_metrics"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "financeiro_lancamentos_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "vw_client_metrics"
+            referencedColumns: ["cliente_id"]
+          },
           {
             foreignKeyName: "financeiro_lancamentos_conta_credito_id_fkey"
             columns: ["conta_credito_id"]
@@ -4395,6 +4422,13 @@ export type Database = {
             columns: ["evento_id"]
             isOneToOne: false
             referencedRelation: "eventos_calendario"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financeiro_lancamentos_folha_item_id_fkey"
+            columns: ["folha_item_id"]
+            isOneToOne: false
+            referencedRelation: "financeiro_folha_itens"
             referencedColumns: ["id"]
           },
           {
@@ -13144,21 +13178,45 @@ export type Database = {
       }
       get_filtered_customers_list: { Args: never; Returns: Json }
       get_filtered_profile: { Args: { profile_id: string }; Returns: Json }
-      get_financeiro_integrado: {
-        Args: { p_cliente_id?: string; p_projeto_id?: string }
-        Returns: {
-          data_lancamento: string
-          descricao: string
-          evento_tipo: string
-          evento_titulo: string
-          id: string
-          projeto_titulo: string
-          tarefa_status: string
-          tarefa_titulo: string
-          tipo: string
-          valor: number
-        }[]
-      }
+      get_financeiro_integrado:
+        | {
+            Args: {
+              p_cliente_id?: string
+              p_data_fim?: string
+              p_data_inicio?: string
+              p_projeto_id?: string
+            }
+            Returns: {
+              centro_custo_nome: string
+              colaborador_nome: string
+              data_lancamento: string
+              descricao: string
+              evento_tipo: string
+              evento_titulo: string
+              id: string
+              projeto_titulo: string
+              tarefa_status: string
+              tarefa_titulo: string
+              tipo: string
+              tipo_origem: string
+              valor: number
+            }[]
+          }
+        | {
+            Args: { p_cliente_id?: string; p_projeto_id?: string }
+            Returns: {
+              data_lancamento: string
+              descricao: string
+              evento_tipo: string
+              evento_titulo: string
+              id: string
+              projeto_titulo: string
+              tarefa_status: string
+              tarefa_titulo: string
+              tipo: string
+              valor: number
+            }[]
+          }
       get_fluxo_por_categoria_data: {
         Args: never
         Returns: unknown[]
