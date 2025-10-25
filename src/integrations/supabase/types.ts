@@ -10393,6 +10393,74 @@ export type Database = {
           },
         ]
       }
+      subtarefas: {
+        Row: {
+          created_at: string | null
+          data_conclusao: string | null
+          descricao: string | null
+          id: string
+          ordem: number
+          responsavel_id: string | null
+          status: string
+          tarefa_pai_id: string
+          titulo: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          data_conclusao?: string | null
+          descricao?: string | null
+          id?: string
+          ordem?: number
+          responsavel_id?: string | null
+          status?: string
+          tarefa_pai_id: string
+          titulo: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          data_conclusao?: string | null
+          descricao?: string | null
+          id?: string
+          ordem?: number
+          responsavel_id?: string | null
+          status?: string
+          tarefa_pai_id?: string
+          titulo?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subtarefas_responsavel_id_fkey"
+            columns: ["responsavel_id"]
+            isOneToOne: false
+            referencedRelation: "pessoas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subtarefas_responsavel_id_fkey"
+            columns: ["responsavel_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subtarefas_tarefa_pai_id_fkey"
+            columns: ["tarefa_pai_id"]
+            isOneToOne: false
+            referencedRelation: "tarefa"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subtarefas_tarefa_pai_id_fkey"
+            columns: ["tarefa_pai_id"]
+            isOneToOne: false
+            referencedRelation: "vw_dashboard_vencimentos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       system_chat_messages: {
         Row: {
           attachments: Json | null
@@ -10954,6 +11022,65 @@ export type Database = {
           },
           {
             foreignKeyName: "tarefa_atividades_tarefa_id_fkey"
+            columns: ["tarefa_id"]
+            isOneToOne: false
+            referencedRelation: "vw_dashboard_vencimentos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tarefa_comentarios: {
+        Row: {
+          autor_id: string
+          conteudo: string
+          created_at: string | null
+          id: string
+          metadados: Json | null
+          tarefa_id: string
+          tipo: string | null
+        }
+        Insert: {
+          autor_id: string
+          conteudo: string
+          created_at?: string | null
+          id?: string
+          metadados?: Json | null
+          tarefa_id: string
+          tipo?: string | null
+        }
+        Update: {
+          autor_id?: string
+          conteudo?: string
+          created_at?: string | null
+          id?: string
+          metadados?: Json | null
+          tarefa_id?: string
+          tipo?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tarefa_comentarios_autor_id_fkey"
+            columns: ["autor_id"]
+            isOneToOne: false
+            referencedRelation: "pessoas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tarefa_comentarios_autor_id_fkey"
+            columns: ["autor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tarefa_comentarios_tarefa_id_fkey"
+            columns: ["tarefa_id"]
+            isOneToOne: false
+            referencedRelation: "tarefa"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tarefa_comentarios_tarefa_id_fkey"
             columns: ["tarefa_id"]
             isOneToOne: false
             referencedRelation: "vw_dashboard_vencimentos"
