@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Tarefa } from '@/types/tarefa';
 import { useToast } from '@/hooks/use-toast';
 import { sanitizeTaskPayload } from '@/utils/tarefaUtils';
+import { useOfflineStorage } from '@/hooks/useOfflineStorage';
 
 interface UseTarefasOptions {
   projetoId?: string;
@@ -19,10 +20,24 @@ export function useTarefas(options: UseTarefasOptions = {}) {
   const [tarefas, setTarefas] = useState<Tarefa[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const { saveTask, isOnline, getCache, setCache, invalidateCache } = useOfflineStorage();
 
   const fetchTarefas = useCallback(async () => {
+    // Gerar chave de cache baseada nos filtros
+    const cacheKey = `tarefas-${JSON.stringify(options)}`;
+    
     try {
       setLoading(true);
+      
+      // Tentar buscar do cache primeiro (se offline)
+      if (!isOnline()) {
+        const cached = await getCache<Tarefa[]>(cacheKey);
+        if (cached) {
+          setTarefas(cached);
+          setLoading(false);
+          return;
+        }
+      }
 
       let query = supabase
         .from('tarefa')
@@ -52,20 +67,40 @@ export function useTarefas(options: UseTarefasOptions = {}) {
       const { data, error } = await query;
 
       if (error) throw error;
-      setTarefas((data || []).map(item => ({
+      
+      const mappedData = (data || []).map(item => ({
         ...item,
         checklist: item.checklist ? JSON.parse(JSON.stringify(item.checklist)) : []
-      })) as Tarefa[]);
-    } catch (error) {
-      toast({
-        title: 'Erro',
-        description: 'Erro ao carregar tarefas',
-        variant: 'destructive',
+      })) as Tarefa[];
+      
+      setTarefas(mappedData);
+      
+      // Salvar no cache (TTL: 5 minutos)
+      await setCache(cacheKey, mappedData, {
+        ttl: 5 * 60 * 1000,
+        tags: ['tarefas', `cliente-${options.clienteId}`, `projeto-${options.projetoId}`].filter(Boolean) as string[]
       });
+    } catch (error) {
+      // Em caso de erro de rede, tentar buscar do cache
+      const cached = await getCache<Tarefa[]>(cacheKey);
+      
+      if (cached) {
+        setTarefas(cached);
+        toast({
+          title: 'Dados do cache',
+          description: 'Mostrando dados salvos localmente',
+        });
+      } else {
+        toast({
+          title: 'Erro',
+          description: 'Erro ao carregar tarefas',
+          variant: 'destructive',
+        });
+      }
     } finally {
       setLoading(false);
     }
-  }, [options, toast]);
+  }, [options, toast, isOnline, getCache, setCache]);
 
   useEffect(() => {
     fetchTarefas();
@@ -73,6 +108,39 @@ export function useTarefas(options: UseTarefasOptions = {}) {
 
   const createTarefa = async (novaTarefa: Partial<Tarefa>) => {
     try {
+      // Se offline, salvar localmente
+      if (!isOnline()) {
+        const offlineTask = {
+          id: crypto.randomUUID(),
+          titulo: novaTarefa.titulo || '',
+          descricao: novaTarefa.descricao || '',
+          status: novaTarefa.status || 'backlog',
+          prioridade: novaTarefa.prioridade || 'media',
+          cliente_id: novaTarefa.cliente_id || null,
+          projeto_id: novaTarefa.projeto_id || null,
+          responsavel_id: novaTarefa.responsavel_id || null,
+          executor_id: novaTarefa.executor_id || null,
+          tipo: novaTarefa.tipo || 'tarefa',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          checklist: novaTarefa.checklist || [],
+          synced: false,
+          local_only: false,
+        };
+
+        await saveTask(offlineTask as any);
+        
+        // Adicionar à lista local
+        setTarefas(prev => [offlineTask as any, ...prev]);
+        
+        toast({
+          title: 'Tarefa salva offline',
+          description: 'Será sincronizada quando você voltar a ficar online',
+        });
+        
+        return { data: offlineTask, error: null };
+      }
+      
       const payload = sanitizeTaskPayload(novaTarefa as any);
       
       const { data, error } = await supabase
@@ -87,6 +155,9 @@ export function useTarefas(options: UseTarefasOptions = {}) {
         ...data,
         checklist: data.checklist ? JSON.parse(JSON.stringify(data.checklist)) : []
       } as Tarefa, ...prev]);
+      
+      // Invalidar cache
+      await invalidateCache('tarefas');
       
       toast({
         title: 'Sucesso',
@@ -122,6 +193,9 @@ export function useTarefas(options: UseTarefasOptions = {}) {
           checklist: data.checklist ? JSON.parse(JSON.stringify(data.checklist)) : t.checklist
         } as Tarefa : t))
       );
+      
+      // Invalidar cache
+      await invalidateCache('tarefas');
 
       toast({
         title: 'Sucesso',
@@ -149,6 +223,9 @@ export function useTarefas(options: UseTarefasOptions = {}) {
       if (error) throw error;
 
       setTarefas((prev) => prev.filter((t) => t.id !== tarefaId));
+      
+      // Invalidar cache
+      await invalidateCache('tarefas');
 
       toast({
         title: 'Sucesso',

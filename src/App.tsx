@@ -17,6 +17,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { logWebVitals } from "@/lib/web-vitals";
 import { analytics } from "@/lib/analytics";
 import { TeamChatWidget } from "@/components/TeamChat/TeamChatWidget";
+import { OfflineIndicator } from "@/components/OfflineIndicator";
 
 // Critical pages (loaded immediately)
 import Auth from "./pages/Auth";
@@ -247,6 +248,7 @@ function App() {
             <TooltipProvider>
               <Toaster />
               <Sonner />
+              <OfflineIndicator />
               
               <BrowserRouter>
                 <AuthProvider>
