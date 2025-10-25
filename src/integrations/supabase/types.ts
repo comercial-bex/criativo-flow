@@ -12568,6 +12568,65 @@ export type Database = {
         }
         Relationships: []
       }
+      vw_mapa_dividas: {
+        Row: {
+          centro_custo_id: string | null
+          centro_custo_nome: string | null
+          cliente_id: string | null
+          cliente_nome: string | null
+          credor_devedor: string | null
+          data_emissao: string | null
+          descricao: string | null
+          divida_id: string | null
+          fornecedor_id: string | null
+          numero_parcelas: number | null
+          parcelas_pagas_count: number | null
+          parcelas_vencidas_count: number | null
+          proximo_vencimento: string | null
+          status: string | null
+          tipo: string | null
+          valor_pago: number | null
+          valor_restante: number | null
+          valor_total: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dividas_centro_custo_id_fkey"
+            columns: ["centro_custo_id"]
+            isOneToOne: false
+            referencedRelation: "centros_custo"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dividas_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dividas_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "mv_grs_dashboard_metrics"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "dividas_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "vw_client_metrics"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "dividas_fornecedor_id_fkey"
+            columns: ["fornecedor_id"]
+            isOneToOne: false
+            referencedRelation: "fornecedores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       vw_planos_publicos: {
         Row: {
           cliente_id: string | null
