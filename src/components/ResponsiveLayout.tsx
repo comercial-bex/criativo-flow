@@ -3,6 +3,7 @@ import { AppSidebar } from "@/components/AppSidebar";
 import { GlobalHeader } from "@/components/GlobalHeader";
 import { BottomNavigation } from "@/components/BottomNavigation";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
+import { NotificationDropdown } from "@/components/NotificationDropdown";
 import { useDeviceType } from "@/hooks/useDeviceType";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -34,8 +35,9 @@ export function ResponsiveLayout({
   if (isMobile) {
     return <div className={`min-h-screen flex flex-col w-full bg-background ${className || ''}`}>
         {/* Mobile Header - Compacto */}
-        <header className="h-14 flex items-center border-b border-bex/20 bg-black/95 px-4 sticky top-0 z-50 shadow-lg shadow-bex/10 safe-area-inset-top ios-optimized-fixed">
+        <header className="h-14 flex items-center justify-between border-b border-bex/20 bg-black/95 px-4 sticky top-0 z-50 shadow-lg shadow-bex/10 safe-area-inset-top ios-optimized-fixed">
           <GlobalHeader />
+          <NotificationDropdown />
         </header>
         
         {/* Mobile Content */}
@@ -59,6 +61,7 @@ export function ResponsiveLayout({
             <div className="flex items-center gap-3 flex-1 px-[79px]">
               <SidebarTrigger className="hover:bg-bex/10 hover:text-bex p-2 rounded-md transition-all border border-transparent hover:border-bex/30" />
               <GlobalHeader className="px-[135px]" />
+              <NotificationDropdown />
             </div>
           </header>
           

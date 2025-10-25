@@ -16,6 +16,8 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useOfflineStorage } from "@/hooks/useOfflineStorage";
+import { CacheIndicator } from "@/components/CacheIndicator";
 
 interface AIInsight {
   type: 'growth' | 'warning' | 'opportunity' | 'success';
@@ -37,6 +39,8 @@ export function AIAnalyticsDashboard() {
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(false);
   const [generatingInsights, setGeneratingInsights] = useState(false);
+  const { getCache, setCache, isOnline } = useOfflineStorage();
+  const [cacheTimestamp, setCacheTimestamp] = useState<Date | null>(null);
 
   useEffect(() => {
     fetchAnalytics();
@@ -45,6 +49,18 @@ export function AIAnalyticsDashboard() {
   const fetchAnalytics = async () => {
     setLoading(true);
     try {
+      // Tentar cache primeiro se offline
+      if (!isOnline()) {
+        const cached = await getCache<{ analytics: AnalyticsData, timestamp: string }>('ai-analytics');
+        if (cached) {
+          setAnalytics(cached.analytics);
+          generateAIInsights(cached.analytics);
+          setCacheTimestamp(new Date(cached.timestamp));
+          setLoading(false);
+          return;
+        }
+      }
+
       // Buscar dados básicos
       const [clientesResult, planejamentosResult] = await Promise.all([
         supabase.from('clientes').select('*'),
@@ -60,9 +76,29 @@ export function AIAnalyticsDashboard() {
 
       setAnalytics(analytics);
       generateAIInsights(analytics);
+
+      // Salvar no cache
+      await setCache('ai-analytics', {
+        analytics,
+        timestamp: new Date().toISOString()
+      }, {
+        ttl: 15 * 60 * 1000, // 15 minutos
+        tags: ['analytics', 'dashboard']
+      });
+      setCacheTimestamp(null);
     } catch (error) {
       console.error('Error fetching analytics:', error);
-      toast.error('Erro ao carregar analytics');
+      
+      // Fallback para cache
+      const cached = await getCache<{ analytics: AnalyticsData, timestamp: string }>('ai-analytics');
+      if (cached) {
+        setAnalytics(cached.analytics);
+        generateAIInsights(cached.analytics);
+        setCacheTimestamp(new Date(cached.timestamp));
+        toast.warning('Exibindo analytics em cache (offline)');
+      } else {
+        toast.error('Erro ao carregar analytics');
+      }
     } finally {
       setLoading(false);
     }
@@ -130,6 +166,11 @@ export function AIAnalyticsDashboard() {
 
   return (
     <div className="space-y-6">
+      {/* Cache Indicator */}
+      {cacheTimestamp && (
+        <CacheIndicator isOnline={isOnline()} timestamp={cacheTimestamp} />
+      )}
+
       {/* Header */}
       <Card className="border-gradient-purple">
         <CardHeader>

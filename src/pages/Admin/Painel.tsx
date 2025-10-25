@@ -29,6 +29,8 @@ import {
 import { AIAnalyticsDashboard } from "@/components/AIAnalyticsDashboard";
 import { useTutorial } from '@/hooks/useTutorial';
 import { TutorialButton } from '@/components/TutorialButton';
+import { useOfflineStorage } from '@/hooks/useOfflineStorage';
+import { CacheIndicator } from '@/components/CacheIndicator';
 
 interface AdminUser {
   id: string;
@@ -52,6 +54,8 @@ export default function AdminPainel() {
   const [filteredUsers, setFilteredUsers] = useState<AdminUser[]>([]);
   const { startTutorial, hasSeenTutorial } = useTutorial('admin-painel');
   const [loading, setLoading] = useState(true);
+  const { getCache, setCache, isOnline } = useOfflineStorage();
+  const [cacheTimestamp, setCacheTimestamp] = useState<Date | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterRole, setFilterRole] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
@@ -74,6 +78,18 @@ export default function AdminPainel() {
   const fetchUsers = async () => {
     setLoading(true);
     try {
+      // Tentar cache primeiro se offline
+      if (!isOnline()) {
+        const cached = await getCache<{ users: AdminUser[], timestamp: string }>('admin-users');
+        if (cached) {
+          setUsers(cached.users);
+          calculateStats(cached.users);
+          setCacheTimestamp(new Date(cached.timestamp));
+          setLoading(false);
+          return;
+        }
+      }
+
       const { data, error } = await supabase.functions.invoke('admin-user-management', {
         body: { action: 'list' }
       });
@@ -83,9 +99,29 @@ export default function AdminPainel() {
       const usersData = data.users || [];
       setUsers(usersData);
       calculateStats(usersData);
+
+      // Salvar no cache
+      await setCache('admin-users', {
+        users: usersData,
+        timestamp: new Date().toISOString()
+      }, {
+        ttl: 10 * 60 * 1000, // 10 minutos
+        tags: ['admin', 'users']
+      });
+      setCacheTimestamp(null);
     } catch (error: any) {
       console.error('Error fetching users:', error);
-      toast.error('Erro ao carregar usuários: ' + error.message);
+      
+      // Fallback para cache em caso de erro
+      const cached = await getCache<{ users: AdminUser[], timestamp: string }>('admin-users');
+      if (cached) {
+        setUsers(cached.users);
+        calculateStats(cached.users);
+        setCacheTimestamp(new Date(cached.timestamp));
+        toast.warning('Exibindo dados em cache (offline)');
+      } else {
+        toast.error('Erro ao carregar usuários: ' + error.message);
+      }
     } finally {
       setLoading(false);
     }
@@ -182,6 +218,11 @@ export default function AdminPainel() {
         <TabsContent value="users">
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+            {cacheTimestamp && (
+              <div className="col-span-full">
+                <CacheIndicator isOnline={isOnline()} timestamp={cacheTimestamp} />
+              </div>
+            )}
             <Card>
               <CardContent className="flex items-center p-6">
                 <Users className="h-8 w-8 text-blue-500" />

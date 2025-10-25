@@ -21,6 +21,8 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useTutorial } from '@/hooks/useTutorial';
 import { TutorialButton } from '@/components/TutorialButton';
+import { useInfiniteTarefas } from '@/hooks/useInfiniteTarefas';
+import { useRef } from 'react';
 
 interface ClienteTask {
   id: string;
@@ -66,7 +68,67 @@ export default function ClienteTarefas() {
   });
   const { toast } = useToast();
 
-  // Buscar tarefas do cliente
+  const [clienteId, setClienteId] = useState<string | null>(null);
+  const observerRef = useRef<IntersectionObserver | null>(null);
+  const loadMoreRef = useRef<HTMLDivElement>(null);
+
+  // Buscar cliente_id do usuário
+  useEffect(() => {
+    const fetchClienteId = async () => {
+      if (!user) return;
+      
+      const { data: profile } = await supabase
+        .from('pessoas')
+        .select('cliente_id')
+        .eq('id', user.id)
+        .single();
+
+      if (profile?.cliente_id) {
+        setClienteId(profile.cliente_id);
+      }
+    };
+
+    fetchClienteId();
+  }, [user]);
+
+  // Usar infinite scroll
+  const {
+    data: infiniteData,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    status: queryStatus
+  } = useInfiniteTarefas({ 
+    clienteId: clienteId || undefined,
+    limit: 20 
+  });
+
+  // Setup intersection observer para infinite scroll
+  useEffect(() => {
+    if (!loadMoreRef.current || !hasNextPage) return;
+
+    observerRef.current = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    observerRef.current.observe(loadMoreRef.current);
+
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
+    };
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+  // Combinar todas as páginas em uma lista
+  const allTasks = infiniteData?.pages.flat() || [];
+
+  // Buscar tarefas do cliente (fallback antigo - removido)
   const fetchClienteTasks = async () => {
     if (!user) return;
 
@@ -181,20 +243,10 @@ export default function ClienteTarefas() {
     setShowCreateModal(false);
   };
 
-  // Filtrar tarefas
-  const filteredTasks = tasks.filter(task => {
-    const matchesSearch = !searchTerm || 
-      task.titulo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      task.projeto_nome?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      task.responsavel_nome?.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    return matchesSearch;
-  });
-
   // Renderizar visualização de lista
   const TaskListView = () => (
     <div className="space-y-3">
-      {filteredTasks.map(task => {
+      {filteredTasks.map((task: any) => {
         const isOverdue = task.data_prazo && new Date(task.data_prazo) < new Date();
         const statusEmAndamento = ['em_andamento', 'a_fazer', 'em_revisao', 'em_analise', 'em_criacao', 'briefing'];
         const isInProgress = statusEmAndamento.includes(task.status);
@@ -254,11 +306,25 @@ export default function ClienteTarefas() {
     </div>
   );
 
+  // Atualizar stats quando dados mudarem
   useEffect(() => {
-    fetchClienteTasks();
-  }, [user]);
+    if (allTasks.length > 0 && clienteId) {
+      // Buscar projetos para calcular stats
+      const fetchProjects = async () => {
+        const { data: projetos } = await supabase
+          .from('projetos')
+          .select('id, titulo')
+          .eq('cliente_id', clienteId);
+        
+        if (projetos) {
+          calculateStats(allTasks as any, projetos);
+        }
+      };
+      fetchProjects();
+    }
+  }, [allTasks, clienteId]);
 
-  if (loading) {
+  if (queryStatus === 'pending' && !infiniteData) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
@@ -268,6 +334,16 @@ export default function ClienteTarefas() {
       </div>
     );
   }
+
+  // Usar allTasks ao invés de tasks
+  const filteredTasks = allTasks.filter((task: any) => {
+    const matchesSearch = !searchTerm || 
+      task.titulo?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      task.projeto_nome?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      task.responsavel_nome?.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    return matchesSearch;
+  });
 
   return (
     <div className="space-y-6">
@@ -344,16 +420,33 @@ export default function ClienteTarefas() {
 
         <TabsContent value="lista">
           <TaskListView />
+          
+          {/* Infinite Scroll Trigger */}
+          {hasNextPage && (
+            <div 
+              ref={loadMoreRef} 
+              className="flex items-center justify-center py-8"
+            >
+              {isFetchingNextPage ? (
+                <div className="text-center">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto mb-2"></div>
+                  <p className="text-sm text-muted-foreground">Carregando mais...</p>
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">Role para carregar mais</p>
+              )}
+            </div>
+          )}
         </TabsContent>
 
         <TabsContent value="kanban">
           <UniversalKanbanBoard
-            tasks={filteredTasks}
+            tasks={filteredTasks as any}
             moduleColumns={moduleConfigurations.geral.map(col => ({ ...col, tasks: [] }))}
             moduleType="geral"
             onTaskMove={() => {}} // Cliente não pode mover tarefas
             onTaskCreate={handleTaskCreate}
-            onTaskClick={handleTaskClick}
+            onTaskClick={handleTaskClick as any}
             showFilters={false}
             showSearch={false}
           />
@@ -371,14 +464,14 @@ export default function ClienteTarefas() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2">
-                    {filteredTasks
-                      .filter(task => task.projeto_nome === projeto)
+                    {(filteredTasks as any)
+                      .filter((task: any) => task.projeto_nome === projeto)
                       .slice(0, 5)
-                      .map(task => (
+                      .map((task: any) => (
                         <div 
                           key={task.id}
                           className="p-2 bg-muted rounded-lg cursor-pointer hover:bg-muted/80"
-                          onClick={() => handleTaskClick(task)}
+                          onClick={() => handleTaskClick(task as any)}
                         >
                           <p className="text-sm font-medium truncate">{task.titulo}</p>
                           <div className="flex items-center justify-between text-xs text-muted-foreground">
