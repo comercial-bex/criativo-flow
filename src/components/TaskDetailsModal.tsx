@@ -23,6 +23,8 @@ import { TaskQuickTimeDialog } from '@/components/TaskQuickTimeDialog';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { supabase } from '@/integrations/supabase/client';
+import { SubtarefasManager } from '@/components/Tasks/SubtarefasManager';
+import { TaskComments } from '@/components/Tasks/TaskComments';
 import {
   Calendar, 
   Clock, 
@@ -575,6 +577,14 @@ export function TaskDetailsModal({ open, onOpenChange, task, onTaskUpdate }: Tas
               <Paperclip className="h-3.5 w-3.5 mr-1.5" />
               Anexos
             </TabsTrigger>
+            <TabsTrigger value="subtarefas" className="modal-tab-trigger-gaming">
+              <Target className="h-3.5 w-3.5 mr-1.5" />
+              Subtarefas
+            </TabsTrigger>
+            <TabsTrigger value="comentarios" className="modal-tab-trigger-gaming">
+              <MessageSquare className="h-3.5 w-3.5 mr-1.5" />
+              Comentários
+            </TabsTrigger>
           </TabsList>
 
           {/* Visão Geral - UNIFICADA */}
@@ -996,6 +1006,16 @@ export function TaskDetailsModal({ open, onOpenChange, task, onTaskUpdate }: Tas
               capaAtualId={task.capa_anexo_id}
               onSetCapa={updateCoverAnexo}
             />
+          </TabsContent>
+
+          {/* Subtarefas */}
+          <TabsContent value="subtarefas" className="mt-4">
+            <SubtarefasManager tarefaId={task.id} />
+          </TabsContent>
+
+          {/* Comentários */}
+          <TabsContent value="comentarios" className="mt-4">
+            <TaskComments tarefaId={task.id} />
           </TabsContent>
         </Tabs>
       </div>
