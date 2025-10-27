@@ -61,7 +61,7 @@ export function ClientUserManagement({ clienteId, clienteData }: ClientUserManag
         .from('cliente_usuarios')
         .select(`
           *,
-          profiles!cliente_usuarios_user_id_fkey (
+          pessoas!cliente_usuarios_user_id_fkey (
             nome,
             email
           )

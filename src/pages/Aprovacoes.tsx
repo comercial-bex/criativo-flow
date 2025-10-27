@@ -55,7 +55,7 @@ export default function Aprovacoes() {
         .select(`
           *,
           clientes!aprovacoes_cliente_cliente_id_fkey(nome),
-          profiles!aprovacoes_cliente_solicitado_por_fkey(nome)
+          pessoas!aprovacoes_cliente_solicitado_por_fkey(nome)
         `)
         .order('created_at', { ascending: false });
 
@@ -64,7 +64,7 @@ export default function Aprovacoes() {
       const formatted = (data || []).map((a: any) => ({
         ...a,
         cliente_nome: a.clientes?.nome,
-        solicitante_nome: a.profiles?.nome
+        solicitante_nome: a.pessoas?.nome
       }));
 
       setAprovacoes(formatted);
