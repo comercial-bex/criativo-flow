@@ -3611,42 +3611,28 @@ export type Database = {
             foreignKeyName: "eventos_calendario_responsavel_id_fkey"
             columns: ["responsavel_id"]
             isOneToOne: false
-            referencedRelation: "profiles_deprecated_backup_2025"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "eventos_calendario_responsavel_id_fkey"
-            columns: ["responsavel_id"]
-            isOneToOne: false
-            referencedRelation: "vw_client_metrics"
-            referencedColumns: ["responsavel_id"]
-          },
-          {
-            foreignKeyName: "eventos_calendario_tarefa_id_fkey"
-            columns: ["tarefa_id"]
-            isOneToOne: false
-            referencedRelation: "tarefas_projeto"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_eventos_responsavel_pessoas"
-            columns: ["responsavel_id"]
-            isOneToOne: false
             referencedRelation: "pessoas"
             referencedColumns: ["profile_id"]
           },
           {
-            foreignKeyName: "fk_eventos_responsavel_pessoas"
+            foreignKeyName: "eventos_calendario_responsavel_id_fkey"
             columns: ["responsavel_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["profile_id"]
           },
           {
-            foreignKeyName: "fk_eventos_responsavel_pessoas"
+            foreignKeyName: "eventos_calendario_responsavel_id_fkey"
             columns: ["responsavel_id"]
             isOneToOne: false
             referencedRelation: "profiles_deprecated"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "eventos_calendario_tarefa_id_fkey"
+            columns: ["tarefa_id"]
+            isOneToOne: false
+            referencedRelation: "tarefas_projeto"
             referencedColumns: ["id"]
           },
         ]
@@ -7503,7 +7489,7 @@ export type Database = {
           nome_fantasia: string | null
           observacoes: string | null
           papeis: string[]
-          profile_id: string | null
+          profile_id: string
           razao_social: string | null
           regime: string | null
           responsavel_id: string | null
@@ -7539,7 +7525,7 @@ export type Database = {
           nome_fantasia?: string | null
           observacoes?: string | null
           papeis?: string[]
-          profile_id?: string | null
+          profile_id: string
           razao_social?: string | null
           regime?: string | null
           responsavel_id?: string | null
@@ -7575,7 +7561,7 @@ export type Database = {
           nome_fantasia?: string | null
           observacoes?: string | null
           papeis?: string[]
-          profile_id?: string | null
+          profile_id?: string
           razao_social?: string | null
           regime?: string | null
           responsavel_id?: string | null
@@ -7628,20 +7614,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "especialidades"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "pessoas_profile_id_fkey"
-            columns: ["profile_id"]
-            isOneToOne: true
-            referencedRelation: "profiles_deprecated_backup_2025"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "pessoas_profile_id_fkey"
-            columns: ["profile_id"]
-            isOneToOne: true
-            referencedRelation: "vw_client_metrics"
-            referencedColumns: ["responsavel_id"]
           },
           {
             foreignKeyName: "pessoas_responsavel_id_fkey"
@@ -12289,20 +12261,6 @@ export type Database = {
             referencedRelation: "vw_client_metrics"
             referencedColumns: ["cliente_id"]
           },
-          {
-            foreignKeyName: "pessoas_profile_id_fkey"
-            columns: ["profile_id"]
-            isOneToOne: true
-            referencedRelation: "profiles_deprecated_backup_2025"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "pessoas_profile_id_fkey"
-            columns: ["profile_id"]
-            isOneToOne: true
-            referencedRelation: "vw_client_metrics"
-            referencedColumns: ["responsavel_id"]
-          },
         ]
       }
       profiles_deprecated: {
@@ -12333,22 +12291,7 @@ export type Database = {
           telefone?: never
           updated_at?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "pessoas_profile_id_fkey"
-            columns: ["id"]
-            isOneToOne: true
-            referencedRelation: "profiles_deprecated_backup_2025"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "pessoas_profile_id_fkey"
-            columns: ["id"]
-            isOneToOne: true
-            referencedRelation: "vw_client_metrics"
-            referencedColumns: ["responsavel_id"]
-          },
-        ]
+        Relationships: []
       }
       rls_errors_stats: {
         Row: {
