@@ -40,6 +40,7 @@ export default function Calendario() {
     : selectedDate;
   
   const { eventos, isLoading } = useCalendarioMultidisciplinar({
+    responsavelId: filtroEspecialidade || undefined,
     dataInicio: startDate,
     dataFim: endDate
   });

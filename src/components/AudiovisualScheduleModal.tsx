@@ -296,13 +296,8 @@ export function AudiovisualScheduleModal({
             responsavel_id: formData.especialista_id,
             status: 'agendado',
             prioridade: 'alta',
-            data_prazo: format(formData.data_captacao, 'yyyy-MM-dd'),
-            observacoes: JSON.stringify({
-              agendamento_id: agendamento.id,
-              local: formData.local,
-              horario: formData.horario_inicio,
-              equipamentos: formData.equipamentos
-            })
+            prazo_executor: formData.data_captacao.toISOString(),
+            observacoes: null
           });
 
         if (tarefaError) throw tarefaError;
