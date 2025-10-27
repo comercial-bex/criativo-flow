@@ -44,8 +44,8 @@ export function ProjetoEspecialistasBadges({ projetoId, size = "sm" }: ProjetoEs
           especialista_id,
           especialidade,
           is_gerente,
-          profiles:especialista_id (
-            id,
+          pessoas!projeto_especialistas_especialista_id_fkey (
+            profile_id,
             nome
           )
         `)
@@ -54,8 +54,8 @@ export function ProjetoEspecialistasBadges({ projetoId, size = "sm" }: ProjetoEs
       if (error) throw error;
 
       const mapped = (data || []).map((item: any) => ({
-        id: item.profiles?.id || '',
-        nome: item.profiles?.nome || 'Desconhecido',
+        id: item.pessoas?.profile_id || '',
+        nome: item.pessoas?.nome || 'Desconhecido',
         especialidade: item.especialidade,
         is_gerente: item.is_gerente
       }));

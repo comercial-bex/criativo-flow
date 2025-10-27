@@ -22,8 +22,8 @@ export function UsuariosTab({ clienteId }: UsuariosTabProps) {
 
   const filteredUsers = users.filter(
     (user) =>
-      user.profiles.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.profiles.email.toLowerCase().includes(searchTerm.toLowerCase())
+      user.pessoas.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.pessoas.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   if (loading) {
@@ -85,11 +85,11 @@ export function UsuariosTab({ clienteId }: UsuariosTabProps) {
               <TableBody>
                 {filteredUsers.map((user) => (
                   <TableRow key={user.id}>
-                    <TableCell className="font-medium">{user.profiles.nome}</TableCell>
+                    <TableCell className="font-medium">{user.pessoas.nome}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <Mail className="h-4 w-4 text-muted-foreground" />
-                        {user.profiles.email}
+                        {user.pessoas.email}
                       </div>
                     </TableCell>
                     <TableCell>

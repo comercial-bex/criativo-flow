@@ -10,7 +10,7 @@ export interface ClientUser {
   permissoes: any;
   ativo: boolean;
   created_at: string;
-  profiles: {
+  pessoas: {
     nome: string;
     email: string;
   };
@@ -26,7 +26,7 @@ export function useClientUsers(clienteId: string) {
         .from("cliente_usuarios")
         .select(`
           *,
-          profiles!user_id (nome, email)
+          pessoas!cliente_usuarios_user_id_fkey (nome, email)
         `)
         .eq("cliente_id", clienteId)
         .order("created_at", { ascending: false });

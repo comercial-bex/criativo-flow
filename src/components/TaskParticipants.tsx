@@ -74,22 +74,21 @@ export function TaskParticipants({
           .from('projetos')
           .select(`
             responsavel_id,
-            profiles:responsavel_id (
-              id,
-              nome,
-              avatar_url
+            pessoas!projetos_responsavel_id_fkey (
+              profile_id,
+              nome
             )
           `)
           .eq('id', projetoId)
           .single();
         
-        if (projeto?.profiles && projeto.responsavel_id !== responsavelId && projeto.responsavel_id !== executorId) {
-          const profile = projeto.profiles as any;
+        if (projeto?.pessoas && projeto.responsavel_id !== responsavelId && projeto.responsavel_id !== executorId) {
+          const pessoa = projeto.pessoas as any;
           parts.push({
-            id: profile.id,
-            name: profile.nome || 'Gerente',
+            id: pessoa.profile_id,
+            name: pessoa.nome || 'Gerente',
             role: 'Gerente do Projeto',
-            avatar: profile.avatar_url,
+            avatar: undefined,
           });
         }
       }

@@ -119,7 +119,7 @@ const convertToKanbanTask = (tarefa: Tarefa, profiles: Profile[]): KanbanTask =>
     prazo_executor: tarefa.prazo_executor,
     data_prazo: tarefa.data_prazo,
     responsavel_nome: responsavel?.nome,
-    responsavel_avatar: responsavel?.avatar_url,
+    responsavel_avatar: undefined, // pessoas não tem avatar_url ainda
     horas_trabalhadas: 0,
     horas_estimadas: tarefa.tempo_estimado || 0,
     created_at: tarefa.created_at
