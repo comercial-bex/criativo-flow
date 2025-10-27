@@ -3731,6 +3731,7 @@ export type Database = {
           is_extra: boolean | null
           local: string | null
           modo_criativo: string | null
+          origem: string | null
           projeto_id: string | null
           quantidade_pecas: number | null
           responsavel_id: string
@@ -3758,6 +3759,7 @@ export type Database = {
           is_extra?: boolean | null
           local?: string | null
           modo_criativo?: string | null
+          origem?: string | null
           projeto_id?: string | null
           quantidade_pecas?: number | null
           responsavel_id: string
@@ -3785,6 +3787,7 @@ export type Database = {
           is_extra?: boolean | null
           local?: string | null
           modo_criativo?: string | null
+          origem?: string | null
           projeto_id?: string | null
           quantidade_pecas?: number | null
           responsavel_id?: string
