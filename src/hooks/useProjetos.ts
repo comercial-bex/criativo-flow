@@ -57,11 +57,19 @@ export interface TarefaProjeto {
   };
 }
 
+interface ProjetoLucro {
+  total_receitas: number;
+  total_custos: number;
+  lucro_liquido: number;
+  margem_lucro: number;
+}
+
 export function useProjetos() {
   const { user } = useAuth();
   const [projetos, setProjetos] = useState<Projeto[]>([]);
   const [tarefas, setTarefas] = useState<TarefaProjeto[]>([]);
   const [loading, setLoading] = useState(true);
+  const isLoading = loading; // ✅ Alias
 
   const fetchProjetos = async () => {
     if (!user) return;
@@ -209,6 +217,20 @@ export function useProjetos() {
     }
   };
 
+  // ✅ SPRINT 3: Calcular lucro do projeto
+  const calcularLucro = async (projetoId: string): Promise<ProjetoLucro> => {
+    const { data, error } = await supabase.rpc('fn_calcular_lucro_projeto' as any, {
+      p_projeto_id: projetoId
+    });
+
+    if (error) {
+      console.error('Erro ao calcular lucro:', error);
+      throw error;
+    }
+    
+    return data[0] as ProjetoLucro;
+  };
+
   useEffect(() => {
     if (user) {
       fetchProjetos();
@@ -220,6 +242,7 @@ export function useProjetos() {
     projetos,
     tarefas,
     loading,
+    isLoading, // ✅ Compatibilidade
     fetchProjetos,
     fetchTarefasPorSetor,
     createProjeto,
@@ -227,5 +250,6 @@ export function useProjetos() {
     deleteProjeto,
     createTarefa,
     updateTarefa,
+    calcularLucro, // ✅ SPRINT 3
   };
 }

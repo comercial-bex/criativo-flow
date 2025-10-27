@@ -31,7 +31,7 @@ interface SecureCredential {
 export function useSecureCredentials(clienteId?: string) {
   const queryClient = useQueryClient();
 
-  // Mutation: Salvar credencial criptografada
+  // ✅ SPRINT 1: Mutation - Salvar credencial criptografada (AES-256)
   const saveCredential = useMutation({
     mutationFn: async (data: CredentialData) => {
       const { data: result, error } = await supabase.rpc('save_credential_secure', {
@@ -50,7 +50,7 @@ export function useSecureCredentials(clienteId?: string) {
       return result;
     },
     onSuccess: () => {
-      smartToast.success("Credencial salva com segurança (criptografada)");
+      smartToast.success("🔒 Credencial salva com criptografia AES-256");
       queryClient.invalidateQueries({ queryKey: ['credentials', clienteId] });
     },
     onError: (error: Error) => {
@@ -58,7 +58,7 @@ export function useSecureCredentials(clienteId?: string) {
     }
   });
 
-  // Mutation: Recuperar credencial decriptada
+  // ✅ SPRINT 1: Mutation - Recuperar credencial descriptografada (segura)
   const getCredentialDecrypted = useMutation({
     mutationFn: async (credId: string) => {
       const { data, error } = await supabase.rpc('get_credential_secure', {
@@ -67,7 +67,7 @@ export function useSecureCredentials(clienteId?: string) {
 
       if (error) throw error;
       
-      // ⚠️ NUNCA logar dados decriptados
+      // ⚠️ NUNCA logar dados decriptados em produção
       return data[0] as SecureCredential;
     },
     onError: (error: Error) => {
