@@ -87,7 +87,7 @@ export function AudiovisualScheduleModal({
       // Buscar filmmakers com tratamento de erro
       const { data: filmmakersData, error: filmmakersError } = await supabase
         .from('pessoas')
-        .select('id, nome')
+        .select('id, profile_id, nome')
         .eq('status', 'aprovado')
         .order('nome');
 
@@ -605,7 +605,7 @@ export function AudiovisualScheduleModal({
                 </SelectTrigger>
                 <SelectContent>
                   {filmmakers.map(filmmaker => (
-                    <SelectItem key={filmmaker.id} value={filmmaker.id}>
+                    <SelectItem key={filmmaker.id} value={filmmaker.profile_id}>
                       <div className="flex items-center gap-2">
                         <User className="h-4 w-4" />
                         {filmmaker.nome}
