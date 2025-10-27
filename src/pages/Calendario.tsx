@@ -33,7 +33,11 @@ export default function Calendario() {
     dataFim: endDate
   });
   
-  const navigateDate = (direction: 'prev' | 'next') => {
+  const navigateDate = (direction: 'prev' | 'next' | 'today') => {
+    if (direction === 'today') {
+      setSelectedDate(new Date());
+      return;
+    }
     const days = 7;
     setSelectedDate(prev => addDays(prev, direction === 'next' ? days : -days));
   };
