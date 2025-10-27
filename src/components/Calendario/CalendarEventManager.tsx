@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { format, startOfWeek, endOfWeek, eachDayOfInterval, startOfMonth, endOfMonth, addDays, isSameDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Card, CardContent } from '@/components/ui/card';
@@ -450,7 +450,7 @@ const WeekView = ({
 
         <div className="grid grid-cols-8">
           {horarios.map(hora => (
-            <>
+            <React.Fragment key={`row-${hora}`}>
               <div key={`hora-${hora}`} className="border-r border-b p-2 text-sm font-medium bg-muted/30">
                 {hora}
               </div>
@@ -476,7 +476,7 @@ const WeekView = ({
                   ))}
                 </div>
               ))}
-            </>
+            </React.Fragment>
           ))}
         </div>
       </div>
