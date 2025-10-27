@@ -2,7 +2,7 @@
 // Database: bex-flow-offline
 
 export const DB_NAME = 'bex-flow-offline';
-export const DB_VERSION = 1;
+export const DB_VERSION = 2;
 
 export interface OfflineTask {
   id: string;
