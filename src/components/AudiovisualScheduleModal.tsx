@@ -308,13 +308,24 @@ export function AudiovisualScheduleModal({
         if (tarefaError) throw tarefaError;
       }
 
-      // 4. Criar evento na agenda geral (CORRIGIDO - FASE 1)
+      // 4. Criar evento na agenda geral (FASE 4 - COMPLETO)
       const dataFim = new Date(dataCaptacao);
       if (formData.horario_fim) {
         const [horaFim, minFim] = formData.horario_fim.split(':');
         dataFim.setHours(parseInt(horaFim), parseInt(minFim));
       } else {
         dataFim.setHours(dataCaptacao.getHours() + 2); // 2 horas por padrão
+      }
+
+      // Buscar profile_id do especialista (CORRIGIDO)
+      const { data: especialista } = await supabase
+        .from('pessoas')
+        .select('profile_id')
+        .eq('id', formData.especialista_id)
+        .single();
+
+      if (!especialista?.profile_id) {
+        console.error('⚠️ Especialista sem profile_id:', formData.especialista_id);
       }
 
       // Buscar user_id atual para created_by
@@ -326,7 +337,7 @@ export function AudiovisualScheduleModal({
           // Campos obrigatórios
           titulo: `📹 ${formData.titulo}`,
           tipo: 'captacao_externa' as const,
-          responsavel_id: formData.especialista_id,
+          responsavel_id: especialista?.profile_id || formData.especialista_id, // ✅ USA profile_id
           data_inicio: dataCaptacao.toISOString(),
           data_fim: dataFim.toISOString(),
           
@@ -336,16 +347,28 @@ export function AudiovisualScheduleModal({
           local: formData.local || null,
           equipamentos_ids: formData.equipamentos.length > 0 ? formData.equipamentos : null,
           descricao: formData.briefing || null,
+          observacoes: JSON.stringify({
+            agendamento_id: agendamento.id,
+            tipo_captacao: 'externa',
+            criado_automaticamente: true
+          }),
           
           // Segurança e controle
           is_bloqueante: true, // ✅ CRÍTICO: Previne conflitos
           is_extra: false,
+          status: 'agendado',
           created_by: user?.id || null
         });
 
       if (eventoError) {
-        console.error('Erro ao criar evento no calendário:', eventoError);
-        // Continua mesmo com erro (não é crítico para o fluxo principal)
+        console.error('❌ Erro ao criar evento no calendário:', eventoError);
+        toast({
+          title: "⚠️ Aviso",
+          description: "Agendamento criado, mas evento não foi adicionado ao calendário",
+          variant: "destructive"
+        });
+      } else {
+        console.log('✅ Evento criado no calendário com sucesso');
       }
 
       // 5. Criar notificação para o Filmmaker
