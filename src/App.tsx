@@ -60,6 +60,7 @@ const GRSCalendarioEditorial = lazy(() => import("./pages/GRS/CalendarioEditoria
 const GRSAprovacoes = lazy(() => import("./pages/GRS/Aprovacoes"));
 const GRSClienteProjetos = lazy(() => import("./pages/GRS/ClienteProjetosFluxo"));
 const GRSClientes = lazy(() => import("./pages/GRS/Clientes"));
+const AgendaEspecialistas = lazy(() => import("./pages/GRS/AgendaEspecialistas")); // ✅ SPRINT 4
 const GRSProjetoTarefas = lazy(() => import("./pages/GRS/ProjetoTarefasKanban"));
 const GRSProjetos = lazy(() => import("./pages/GRS/Projetos"));
 const GRSNovaOrdem = lazy(() => import("./pages/GRS/NovaOrdem"));
@@ -75,6 +76,7 @@ const RelatoriosGerenciais = lazy(() => import("./pages/Financeiro/RelatoriosGer
 const CaixaBancos = lazy(() => import("./pages/Financeiro/CaixaBancos"));
 const CentrosCusto = lazy(() => import("./pages/Financeiro/CentrosCusto"));
 const Conciliacao = lazy(() => import("./pages/Financeiro/Conciliacao"));
+const LucratividadeProjetos = lazy(() => import("./pages/Financeiro/LucratividadeProjetos")); // ✅ SPRINT 3
 const Fornecedores = lazy(() => import("./pages/Fornecedores"));
 const FornecedorDashboard = lazy(() => import("./pages/Fornecedor/Dashboard"));
 const GestorDashboard = lazy(() => import("./pages/Gestor/Dashboard"));
@@ -781,6 +783,11 @@ function App() {
                     <Layout><GRSMensagens /></Layout>
                   </ProtectedRoute>} />
                 
+                {/* ✅ SPRINT 4: Agenda de Especialistas com detecção de conflitos */}
+                <Route path="/grs/agenda-especialistas" element={<ProtectedRoute requiredRole="grs">
+                    <Layout><AgendaEspecialistas /></Layout>
+                  </ProtectedRoute>} />
+                
                 <Route path="/aprovacoes" element={<ProtectedRoute allowedRoles={['admin', 'gestor', 'grs']}>
                     <Layout><Aprovacoes /></Layout>
                   </ProtectedRoute>} />
@@ -819,6 +826,11 @@ function App() {
                 
                 <Route path="/financeiro/conciliacao" element={<ProtectedRoute requiredRole="financeiro">
                     <Layout><Conciliacao /></Layout>
+                  </ProtectedRoute>} />
+                
+                {/* ✅ SPRINT 3: Dashboard de Lucratividade de Projetos */}
+                <Route path="/financeiro/lucratividade" element={<ProtectedRoute requiredRole="financeiro">
+                    <Layout><LucratividadeProjetos /></Layout>
                   </ProtectedRoute>} />
                 
                 {/* Redirects para manter compatibilidade com URLs antigas */}
