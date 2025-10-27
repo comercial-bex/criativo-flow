@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { format, startOfWeek, endOfWeek, addDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Calendar, Plus, AlertTriangle, Filter, Users, Grid3x3 } from 'lucide-react';
+import { Calendar, Plus, AlertTriangle, Filter, Users, Grid3x3, Video } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -15,8 +15,10 @@ import {
 } from '@/components/ui/select';
 import { useCalendarioUnificado } from '@/hooks/useCalendarioUnificado';
 import { useConflictDetection } from '@/hooks/useConflictDetection';
+import { usePessoasAtivas } from '@/hooks/usePessoasAtivas';
 import { CalendarEventManager } from '@/components/Calendario/CalendarEventManager';
 import { ModalCriarEvento } from '@/components/Calendario/ModalCriarEvento';
+import { AudiovisualScheduleModal } from '@/components/AudiovisualScheduleModal';
 import { useUserRole } from '@/hooks/useUserRole';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -29,7 +31,12 @@ export default function CalendarioUnificado() {
   const [filtroTipo, setFiltroTipo] = useState<string>('todos');
   const [filtroOrigem, setFiltroOrigem] = useState<string>('todos');
   const [modalAberto, setModalAberto] = useState(false);
+  const [modalCaptacaoAberto, setModalCaptacaoAberto] = useState(false);
   const [dataInicialModal, setDataInicialModal] = useState<Date | undefined>();
+  const [activeTab, setActiveTab] = useState('calendario');
+  
+  // Buscar pessoas ativas para o filtro de responsáveis
+  const { data: pessoasAtivas = [], isLoading: loadingPessoas } = usePessoasAtivas();
   
   const startDate = startOfWeek(selectedDate, { weekStartsOn: 1 });
   const endDate = endOfWeek(selectedDate, { weekStartsOn: 1 });
@@ -96,13 +103,26 @@ export default function CalendarioUnificado() {
         </div>
         
         {canEdit && (
-          <Button 
-            size="lg" 
-            onClick={() => handleAbrirModal()}
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            Novo Evento
-          </Button>
+          <div className="flex items-center gap-3">
+            <Button 
+              size="lg" 
+              variant="default"
+              onClick={() => handleAbrirModal()}
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              Novo Evento
+            </Button>
+            
+            <Button 
+              size="lg" 
+              variant="outline"
+              onClick={() => setModalCaptacaoAberto(true)}
+              className="border-orange-500 text-orange-600 hover:bg-orange-50 dark:border-orange-400 dark:text-orange-400 dark:hover:bg-orange-950"
+            >
+              <Video className="mr-2 h-4 w-4" />
+              Agendar Captação
+            </Button>
+          </div>
         )}
       </div>
 
@@ -237,13 +257,17 @@ export default function CalendarioUnificado() {
               </SelectContent>
             </Select>
 
-            <Select value={filtroResponsavel} onValueChange={setFiltroResponsavel}>
+            <Select value={filtroResponsavel} onValueChange={setFiltroResponsavel} disabled={loadingPessoas}>
               <SelectTrigger>
-                <SelectValue placeholder="Responsável" />
+                <SelectValue placeholder={loadingPessoas ? "Carregando..." : "Responsável"} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="todos">Todos</SelectItem>
-                {/* TODO: Buscar lista de responsáveis dinamicamente */}
+                {pessoasAtivas.map((pessoa) => (
+                  <SelectItem key={pessoa.id} value={pessoa.id}>
+                    {pessoa.nome}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -295,6 +319,15 @@ export default function CalendarioUnificado() {
         open={modalAberto}
         onClose={() => setModalAberto(false)}
         dataInicial={dataInicialModal}
+      />
+      
+      <AudiovisualScheduleModal
+        open={modalCaptacaoAberto}
+        onOpenChange={setModalCaptacaoAberto}
+        onScheduleCreated={() => {
+          setModalCaptacaoAberto(false);
+          window.location.reload();
+        }}
       />
     </div>
   );

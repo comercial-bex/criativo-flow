@@ -56,11 +56,11 @@ export const useCalendarioUnificado = (filtros: FiltrosCalendario = {}) => {
     dataFim = endOfWeek(new Date(), { weekStartsOn: 1 })
   } = filtros;
 
-  // Query principal - buscar eventos
+  // Query otimizada - buscar eventos com filtros aplicados no servidor
   const { data: eventos, isLoading, error, refetch } = useQuery({
     queryKey: ['calendario-unificado', { responsavelId, tipo, origem, dataInicio: dataInicio.toISOString(), dataFim: dataFim.toISOString() }],
     queryFn: async (): Promise<EventoUnificado[]> => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('eventos_calendario')
         .select(`
           *,
@@ -70,45 +70,29 @@ export const useCalendarioUnificado = (filtros: FiltrosCalendario = {}) => {
         `)
         .gte('data_inicio', dataInicio.toISOString())
         .lte('data_fim', dataFim.toISOString())
-        .eq(responsavelId ? 'responsavel_id' : 'id', responsavelId || '00000000-0000-0000-0000-000000000000')
         .order('data_inicio');
+
+      // Aplicar TODOS os filtros no servidor (server-side)
+      if (responsavelId && responsavelId !== 'todos') {
+        query = query.eq('responsavel_id', responsavelId);
+      }
+
+      if (tipo && tipo !== 'todos') {
+        query = query.eq('tipo', tipo as any);
+      }
+
+      if (origem && origem !== 'todos') {
+        query = query.eq('origem', origem as any);
+      }
+
+      const { data, error } = await query;
 
       if (error) {
         console.error('Erro ao buscar eventos:', error);
         throw error;
       }
 
-      let filteredData = data || [];
-
-      // Remover filtro de responsavel se for '00000000...'
-      if (responsavelId) {
-        filteredData = filteredData;
-      } else {
-        const { data: allData } = await supabase
-          .from('eventos_calendario')
-          .select(`
-            *,
-            responsavel:pessoas!responsavel_id(id, nome, avatar_url, papeis),
-            projeto:projetos!projeto_id(id, titulo),
-            cliente:clientes!cliente_id(id, nome)
-          `)
-          .gte('data_inicio', dataInicio.toISOString())
-          .lte('data_fim', dataFim.toISOString())
-          .order('data_inicio');
-        
-        filteredData = allData || [];
-      }
-
-      // Filtrar manualmente por tipo e origem
-      if (tipo && tipo !== 'todos') {
-        filteredData = filteredData.filter((e: any) => e.tipo === tipo);
-      }
-
-      if (origem && origem !== 'todos') {
-        filteredData = filteredData.filter((e: any) => e.origem === origem);
-      }
-
-      return filteredData as any;
+      return (data || []) as any;
     },
     staleTime: 30000, // 30 segundos
     gcTime: 300000, // 5 minutos

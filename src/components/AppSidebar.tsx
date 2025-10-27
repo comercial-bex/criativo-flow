@@ -72,7 +72,7 @@ export function AppSidebar() {
       items: [
         { title: "Hub de Inteligência", url: "/inteligencia", icon: Icons.Brain },
         { title: "🔮 Análise Preditiva", url: "/inteligencia/preditiva", icon: Icons.TrendingUp },
-        { title: "Calendário Multidisciplinar", url: "/inteligencia/calendario", icon: Icons.CalendarDays },
+        { title: "Calendário Unificado", url: "/calendario", icon: Icons.CalendarDays },
         { title: "Análises", url: "/inteligencia/analises", icon: Icons.BarChart3 },
         { title: "Insights", url: "/inteligencia/insights", icon: Icons.Lightbulb },
         { title: "Previsões", url: "/inteligencia/previsoes", icon: Icons.TrendingUp },
@@ -91,7 +91,7 @@ export function AppSidebar() {
           { title: "Tarefas", url: "/grs/tarefas", icon: Icons.CheckSquare },
           { title: "Calendário Editorial", url: "/grs/calendario-editorial", icon: Icons.CalendarDays },
           { title: "🎬 Roteiro IA", url: "/grs/roteiro-ia", icon: Icons.Film },
-          { title: "Agenda Multidisciplinar", url: "/calendario", icon: Icons.CalendarClock },
+          { title: "Calendário Unificado", url: "/calendario", icon: Icons.CalendarClock },
           { title: "Relatórios", url: "/grs/relatorios", icon: Icons.FileText },
           { title: "Cliente (Detalhes)", url: "/grs/cliente", icon: Icons.User },
         ],
@@ -145,7 +145,7 @@ export function AppSidebar() {
       items: [
         { title: "🎨 Painel Design", url: "/design/dashboard", icon: Icons.LayoutDashboard },
         { title: "Minhas Tarefas", url: "/design/minhas-tarefas", icon: Icons.CheckSquare },
-        { title: "Calendário", url: "/design/calendario", icon: Icons.Calendar },
+        { title: "Calendário Unificado", url: "/calendario", icon: Icons.Calendar },
         { title: "Aprovações", url: "/design/aprovacoes", icon: Icons.Eye },
         { title: "Biblioteca", url: "/design/biblioteca", icon: Icons.Images },
         { title: "Metas", url: "/design/metas", icon: Icons.Target },
@@ -162,7 +162,7 @@ export function AppSidebar() {
         { title: "Tarefas Unificadas", url: "/audiovisual/tarefas-unificadas", icon: Icons.KanbanSquare },
         { title: "Captações", url: "/audiovisual/captacoes", icon: Icons.Camera },
         { title: "Projetos", url: "/audiovisual/projetos", icon: Icons.Film },
-        { title: "Agenda Multidisciplinar", url: "/calendario", icon: Icons.CalendarClock },
+        { title: "Calendário Unificado", url: "/calendario", icon: Icons.CalendarClock },
       ],
       permissions: ["audiovisual"]
     },

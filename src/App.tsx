@@ -141,7 +141,6 @@ const FolhaPagamento = lazy(() => import("./pages/Financeiro/FolhaPagamento"));
 const Pessoas = lazy(() => import("./pages/RH/Pessoas"));
 const Ponto = lazy(() => import("./pages/RH/Ponto"));
 const BalanceteContabil = lazy(() => import("./pages/Financeiro/BalanceteContabil"));
-const Calendario = lazy(() => import("./pages/Calendario"));
 const CalendarioUnificado = lazy(() => import("./pages/CalendarioUnificado"));
 const Inventario = lazy(() => import("./pages/Inventario"));
 const AccessRejectedPage = lazy(() => import("./pages/AccessRejectedPage"));
@@ -686,11 +685,6 @@ function App() {
                 {/* Calendário Multidisciplinar Unificado */}
                 <Route path="/calendario" element={<ProtectedRoute allowedRoles={['admin', 'gestor', 'grs', 'filmmaker', 'designer']}>
                     <Layout className="px-[71px]"><CalendarioUnificado /></Layout>
-                  </ProtectedRoute>} />
-                
-                {/* Rota legada - redirect */}
-                <Route path="/calendario-old" element={<ProtectedRoute allowedRoles={['admin', 'gestor', 'grs', 'filmmaker', 'designer']}>
-                    <Layout className="px-[71px]"><Calendario /></Layout>
                   </ProtectedRoute>} />
 
                 {/* Inventário */}
