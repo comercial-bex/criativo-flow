@@ -8018,7 +8018,9 @@ export type Database = {
           objetivo_postagem: string
           persona_alvo: string | null
           planejamento_id: string
+          rede_social: string | null
           responsavel_id: string | null
+          status: Database["public"]["Enums"]["post_status_enum"] | null
           tarefa_aprovacao_id: string | null
           tarefa_criacao_id: string | null
           tipo_criativo: string
@@ -8041,7 +8043,9 @@ export type Database = {
           objetivo_postagem: string
           persona_alvo?: string | null
           planejamento_id: string
+          rede_social?: string | null
           responsavel_id?: string | null
+          status?: Database["public"]["Enums"]["post_status_enum"] | null
           tarefa_aprovacao_id?: string | null
           tarefa_criacao_id?: string | null
           tipo_criativo: string
@@ -8064,7 +8068,9 @@ export type Database = {
           objetivo_postagem?: string
           persona_alvo?: string | null
           planejamento_id?: string
+          rede_social?: string | null
           responsavel_id?: string | null
+          status?: Database["public"]["Enums"]["post_status_enum"] | null
           tarefa_aprovacao_id?: string | null
           tarefa_criacao_id?: string | null
           tipo_criativo?: string
@@ -13729,6 +13735,15 @@ export type Database = {
         | "spot_radio"
         | "doc"
         | "outro"
+      post_status_enum:
+        | "rascunho"
+        | "em_aprovacao"
+        | "aprovado"
+        | "reprovado"
+        | "em_producao"
+        | "aguardando_publicacao"
+        | "publicado"
+        | "cancelado"
       prioridade_enum: "baixa" | "media" | "alta" | "critica"
       priority_type: "baixa" | "media" | "alta" | "urgente"
       provedor_ia_roteiro:
@@ -14078,6 +14093,16 @@ export const Constants = {
         "spot_radio",
         "doc",
         "outro",
+      ],
+      post_status_enum: [
+        "rascunho",
+        "em_aprovacao",
+        "aprovado",
+        "reprovado",
+        "em_producao",
+        "aguardando_publicacao",
+        "publicado",
+        "cancelado",
       ],
       prioridade_enum: ["baixa", "media", "alta", "critica"],
       priority_type: ["baixa", "media", "alta", "urgente"],

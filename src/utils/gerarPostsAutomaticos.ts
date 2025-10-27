@@ -95,7 +95,7 @@ export async function gerarPostsAutomaticos(
           gerado_automaticamente: true,
           data_geracao: new Date().toISOString()
         }),
-        status: 'pendente'
+        status: 'rascunho' // ✅ Agora existe na tabela
       });
     }
 

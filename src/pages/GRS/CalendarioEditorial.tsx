@@ -26,6 +26,7 @@ interface Post {
   anexo_url: string | null;
   legenda: string | null;
   planejamento_id: string;
+  status?: string;
   planejamentos: {
     clientes: Cliente;
   };
@@ -63,6 +64,7 @@ export default function GRSCalendarioEditorial() {
           anexo_url,
           legenda,
           planejamento_id,
+          status,
           planejamentos (
             clientes (
               id,
@@ -128,6 +130,34 @@ export default function GRSCalendarioEditorial() {
       case 'stories': return 'bg-green-500';
       default: return 'bg-gray-500';
     }
+  };
+
+  const getStatusBadge = (status: string) => {
+    const colors: Record<string, string> = {
+      rascunho: 'bg-gray-500',
+      em_aprovacao: 'bg-yellow-500',
+      aprovado: 'bg-green-500',
+      reprovado: 'bg-red-500',
+      em_producao: 'bg-blue-500',
+      aguardando_publicacao: 'bg-purple-500',
+      publicado: 'bg-emerald-600',
+      cancelado: 'bg-gray-400'
+    };
+    return colors[status] || 'bg-gray-500';
+  };
+
+  const getStatusLabel = (status: string) => {
+    const labels: Record<string, string> = {
+      rascunho: 'Rascunho',
+      em_aprovacao: 'Em Aprovação',
+      aprovado: 'Aprovado',
+      reprovado: 'Reprovado',
+      em_producao: 'Em Produção',
+      aguardando_publicacao: 'Aguardando',
+      publicado: 'Publicado',
+      cancelado: 'Cancelado'
+    };
+    return labels[status] || status;
   };
 
   if (loading) {
@@ -307,6 +337,11 @@ export default function GRSCalendarioEditorial() {
                     <Badge className={`${getTipoCreativoColor(post.tipo_criativo)} text-white`}>
                       {post.tipo_criativo}
                     </Badge>
+                    {post.status && (
+                      <Badge className={`${getStatusBadge(post.status)} text-white`}>
+                        {getStatusLabel(post.status)}
+                      </Badge>
+                    )}
                     <div>
                       <h4 className="font-medium">{post.titulo}</h4>
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
