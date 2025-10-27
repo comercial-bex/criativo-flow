@@ -326,7 +326,7 @@ export function AudiovisualScheduleModal({
           // Campos obrigatórios
           titulo: `📹 ${formData.titulo}`,
           tipo: 'captacao_externa' as const,
-          responsavel_id: formData.especialista_id, // ✅ Já vem como profile_id do Select
+          responsavel_id: formData.especialista_id,
           data_inicio: dataCaptacao.toISOString(),
           data_fim: dataFim.toISOString(),
           
@@ -335,15 +335,15 @@ export function AudiovisualScheduleModal({
           cliente_id: formData.cliente_id,
           local: formData.local || null,
           equipamentos_ids: formData.equipamentos.length > 0 ? formData.equipamentos : null,
-          descricao: formData.briefing || null,
-          observacoes: JSON.stringify({
-            agendamento_id: agendamento.id,
-            tipo_captacao: 'externa',
-            criado_automaticamente: true
-          }),
+          descricao: [
+            formData.briefing || '',
+            `\n📋 Agendamento: ${agendamento.id}`,
+            `🎬 Tipo: Captação Externa`,
+            `🤖 Criado automaticamente`
+          ].filter(Boolean).join('\n') || null,
           
           // Segurança e controle
-          is_bloqueante: true, // ✅ CRÍTICO: Previne conflitos
+          is_bloqueante: true,
           is_extra: false,
           status: 'agendado',
           created_by: user?.id || null
