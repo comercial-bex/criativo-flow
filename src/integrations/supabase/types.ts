@@ -9319,34 +9319,6 @@ export type Database = {
             referencedColumns: ["responsavel_profile_id"]
           },
           {
-            foreignKeyName: "projetos_cliente_id_fkey"
-            columns: ["cliente_id"]
-            isOneToOne: false
-            referencedRelation: "clientes"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "projetos_cliente_id_fkey"
-            columns: ["cliente_id"]
-            isOneToOne: false
-            referencedRelation: "mv_grs_dashboard_metrics"
-            referencedColumns: ["cliente_id"]
-          },
-          {
-            foreignKeyName: "projetos_cliente_id_fkey"
-            columns: ["cliente_id"]
-            isOneToOne: false
-            referencedRelation: "vw_calendario_completo"
-            referencedColumns: ["cliente_id"]
-          },
-          {
-            foreignKeyName: "projetos_cliente_id_fkey"
-            columns: ["cliente_id"]
-            isOneToOne: false
-            referencedRelation: "vw_client_metrics"
-            referencedColumns: ["cliente_id"]
-          },
-          {
             foreignKeyName: "projetos_created_by_fkey"
             columns: ["created_by"]
             isOneToOne: false
@@ -13292,34 +13264,6 @@ export type Database = {
           },
           {
             foreignKeyName: "fk_projetos_cliente"
-            columns: ["cliente_id"]
-            isOneToOne: false
-            referencedRelation: "vw_client_metrics"
-            referencedColumns: ["cliente_id"]
-          },
-          {
-            foreignKeyName: "projetos_cliente_id_fkey"
-            columns: ["cliente_id"]
-            isOneToOne: false
-            referencedRelation: "clientes"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "projetos_cliente_id_fkey"
-            columns: ["cliente_id"]
-            isOneToOne: false
-            referencedRelation: "mv_grs_dashboard_metrics"
-            referencedColumns: ["cliente_id"]
-          },
-          {
-            foreignKeyName: "projetos_cliente_id_fkey"
-            columns: ["cliente_id"]
-            isOneToOne: false
-            referencedRelation: "vw_calendario_completo"
-            referencedColumns: ["cliente_id"]
-          },
-          {
-            foreignKeyName: "projetos_cliente_id_fkey"
             columns: ["cliente_id"]
             isOneToOne: false
             referencedRelation: "vw_client_metrics"
