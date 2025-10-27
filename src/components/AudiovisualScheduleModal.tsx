@@ -317,17 +317,6 @@ export function AudiovisualScheduleModal({
         dataFim.setHours(dataCaptacao.getHours() + 2); // 2 horas por padrão
       }
 
-      // Buscar profile_id do especialista (CORRIGIDO)
-      const { data: especialista } = await supabase
-        .from('pessoas')
-        .select('profile_id')
-        .eq('id', formData.especialista_id)
-        .single();
-
-      if (!especialista?.profile_id) {
-        console.error('⚠️ Especialista sem profile_id:', formData.especialista_id);
-      }
-
       // Buscar user_id atual para created_by
       const { data: { user } } = await supabase.auth.getUser();
 
@@ -337,7 +326,7 @@ export function AudiovisualScheduleModal({
           // Campos obrigatórios
           titulo: `📹 ${formData.titulo}`,
           tipo: 'captacao_externa' as const,
-          responsavel_id: especialista?.profile_id || formData.especialista_id, // ✅ USA profile_id
+          responsavel_id: formData.especialista_id, // ✅ Já vem como profile_id do Select
           data_inicio: dataCaptacao.toISOString(),
           data_fim: dataFim.toISOString(),
           
