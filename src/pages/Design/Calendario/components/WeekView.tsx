@@ -78,7 +78,7 @@ export const WeekView = ({
                   <div className="space-y-1">
                     {eventosDoDia.map(evento => (
                       <div key={evento.id} onClick={() => onEventoClick(evento)}>
-                        <EventoCard evento={evento} compact />
+                        <EventoCard evento={evento} variant="compact" />
                       </div>
                     ))}
                     {tarefasDoDia.slice(0, 1).map(tarefa => (

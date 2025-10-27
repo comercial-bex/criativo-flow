@@ -104,7 +104,7 @@ export const MonthView = ({
 
                 {eventosDoDia.slice(0, 1).map((evento) => (
                   <div key={evento.id} onClick={(e) => { e.stopPropagation(); onEventoClick(evento); }}>
-                    <EventoCard evento={evento} compact />
+                    <EventoCard evento={evento} variant="compact" />
                   </div>
                 ))}
 
