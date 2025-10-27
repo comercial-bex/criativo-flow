@@ -20,20 +20,20 @@ export function FinanceSection({ clienteId }: FinanceSectionProps) {
 
   const fetchFinanceiro = async () => {
     const { data } = await supabase
-      .from('transacoes_financeiras')
+      .from('financeiro_lancamentos')
       .select('*')
       .eq('cliente_id', clienteId)
-      .order('data_vencimento', { ascending: false })
+      .order('data_lancamento', { ascending: false })
       .limit(10);
 
     if (data) {
       setTransacoes(data);
       
       const total = data.reduce((sum, t) => sum + Number(t.valor), 0);
-      const pago = data.filter(t => t.status === 'pago').reduce((sum, t) => sum + Number(t.valor), 0);
-      const pendente = data.filter(t => t.status === 'pendente').reduce((sum, t) => sum + Number(t.valor), 0);
+      const receitas = data.filter(t => t.tipo_origem === 'receita').reduce((sum, t) => sum + Number(t.valor), 0);
+      const despesas = data.filter(t => t.tipo_origem === 'despesa').reduce((sum, t) => sum + Number(t.valor), 0);
       
-      setResumo({ total, pago, pendente });
+      setResumo({ total, pago: receitas, pendente: despesas });
     }
   };
 
@@ -91,17 +91,17 @@ export function FinanceSection({ clienteId }: FinanceSectionProps) {
             {transacoes.map((transacao) => (
               <div key={transacao.id} className="flex items-center justify-between p-3 border rounded-lg">
                 <div>
-                  <p className="font-medium">{transacao.descricao || 'Pagamento'}</p>
+                  <p className="font-medium">{transacao.descricao || 'Lançamento'}</p>
                   <p className="text-xs text-muted-foreground">
-                    Vencimento: {format(new Date(transacao.data_vencimento), 'dd MMM yyyy', { locale: ptBR })}
+                    Data: {format(new Date(transacao.data_lancamento), 'dd MMM yyyy', { locale: ptBR })}
                   </p>
                 </div>
                 <div className="flex items-center gap-4">
                   <span className="font-bold">
                     {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(transacao.valor)}
                   </span>
-                  <Badge variant={transacao.status === 'pago' ? 'default' : 'secondary'}>
-                    {transacao.status}
+                  <Badge variant={transacao.tipo_origem === 'receita' ? 'default' : 'secondary'}>
+                    {transacao.tipo_origem}
                   </Badge>
                 </div>
               </div>
