@@ -3915,7 +3915,21 @@ export type Database = {
             foreignKeyName: "eventos_calendario_tarefa_id_fkey"
             columns: ["tarefa_id"]
             isOneToOne: false
-            referencedRelation: "tarefas_projeto"
+            referencedRelation: "tarefa"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "eventos_calendario_tarefa_id_fkey"
+            columns: ["tarefa_id"]
+            isOneToOne: false
+            referencedRelation: "vw_calendario_completo"
+            referencedColumns: ["tarefa_id"]
+          },
+          {
+            foreignKeyName: "eventos_calendario_tarefa_id_fkey"
+            columns: ["tarefa_id"]
+            isOneToOne: false
+            referencedRelation: "vw_dashboard_vencimentos"
             referencedColumns: ["id"]
           },
         ]
@@ -12855,7 +12869,7 @@ export type Database = {
         Insert: {
           created_at?: string | null
           id?: string
-          role: Database["public"]["Enums"]["user_role"]
+          role?: Database["public"]["Enums"]["user_role"]
           updated_at?: string | null
           user_id?: string | null
         }
