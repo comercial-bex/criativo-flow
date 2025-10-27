@@ -10778,6 +10778,7 @@ export type Database = {
       tarefa: {
         Row: {
           area: Database["public"]["Enums"]["area_enum"][] | null
+          auto_criar_evento: boolean | null
           campanha_id: string | null
           canais: Database["public"]["Enums"]["canal_enum"][] | null
           capa_anexo_id: string | null
@@ -10787,10 +10788,12 @@ export type Database = {
           created_at: string | null
           created_by: string | null
           cta: string | null
+          custo_execucao: number | null
           data_entrega_prevista: string | null
           data_inicio_prevista: string | null
           data_publicacao: string | null
           descricao: string | null
+          evento_calendario_id: string | null
           executor_area:
             | Database["public"]["Enums"]["executor_area_enum"]
             | null
@@ -10799,6 +10802,7 @@ export type Database = {
           horas_estimadas: number | null
           horas_trabalhadas: number | null
           id: string
+          is_faturavel: boolean | null
           kpis: Json | null
           labels: Json | null
           numero_protocolo: string | null
@@ -10818,9 +10822,11 @@ export type Database = {
           trace_id: string | null
           updated_at: string | null
           updated_by: string | null
+          valor_faturamento: number | null
         }
         Insert: {
           area?: Database["public"]["Enums"]["area_enum"][] | null
+          auto_criar_evento?: boolean | null
           campanha_id?: string | null
           canais?: Database["public"]["Enums"]["canal_enum"][] | null
           capa_anexo_id?: string | null
@@ -10830,10 +10836,12 @@ export type Database = {
           created_at?: string | null
           created_by?: string | null
           cta?: string | null
+          custo_execucao?: number | null
           data_entrega_prevista?: string | null
           data_inicio_prevista?: string | null
           data_publicacao?: string | null
           descricao?: string | null
+          evento_calendario_id?: string | null
           executor_area?:
             | Database["public"]["Enums"]["executor_area_enum"]
             | null
@@ -10842,6 +10850,7 @@ export type Database = {
           horas_estimadas?: number | null
           horas_trabalhadas?: number | null
           id?: string
+          is_faturavel?: boolean | null
           kpis?: Json | null
           labels?: Json | null
           numero_protocolo?: string | null
@@ -10861,9 +10870,11 @@ export type Database = {
           trace_id?: string | null
           updated_at?: string | null
           updated_by?: string | null
+          valor_faturamento?: number | null
         }
         Update: {
           area?: Database["public"]["Enums"]["area_enum"][] | null
+          auto_criar_evento?: boolean | null
           campanha_id?: string | null
           canais?: Database["public"]["Enums"]["canal_enum"][] | null
           capa_anexo_id?: string | null
@@ -10873,10 +10884,12 @@ export type Database = {
           created_at?: string | null
           created_by?: string | null
           cta?: string | null
+          custo_execucao?: number | null
           data_entrega_prevista?: string | null
           data_inicio_prevista?: string | null
           data_publicacao?: string | null
           descricao?: string | null
+          evento_calendario_id?: string | null
           executor_area?:
             | Database["public"]["Enums"]["executor_area_enum"]
             | null
@@ -10885,6 +10898,7 @@ export type Database = {
           horas_estimadas?: number | null
           horas_trabalhadas?: number | null
           id?: string
+          is_faturavel?: boolean | null
           kpis?: Json | null
           labels?: Json | null
           numero_protocolo?: string | null
@@ -10904,6 +10918,7 @@ export type Database = {
           trace_id?: string | null
           updated_at?: string | null
           updated_by?: string | null
+          valor_faturamento?: number | null
         }
         Relationships: [
           {
@@ -10982,6 +10997,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "vw_client_metrics"
             referencedColumns: ["responsavel_id"]
+          },
+          {
+            foreignKeyName: "tarefa_evento_calendario_id_fkey"
+            columns: ["evento_calendario_id"]
+            isOneToOne: false
+            referencedRelation: "eventos_calendario"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "tarefa_executor_id_fkey"
