@@ -76,17 +76,13 @@ export function useImportarExtrato() {
         throw new Error(`Falha no upload: ${uploadError.message}`);
       }
 
-      // Verificar se o arquivo foi criado
-      const { data: fileCheck, error: checkError } = await supabase.storage
-        .from("extratos_bancarios")
-        .list('extratos', { 
-          search: fileName.split('_').slice(1).join('_')
-        });
-
-      if (checkError || !fileCheck || fileCheck.length === 0) {
-        console.error('❌ Arquivo não encontrado após upload');
-        throw new Error('Arquivo não foi encontrado após upload');
+      // Verificar dados do upload
+      if (!uploadData || !uploadData.path) {
+        console.error('❌ Upload retornou dados inválidos');
+        throw new Error('Falha ao confirmar upload do arquivo');
       }
+
+      console.log('✅ Arquivo salvo com sucesso:', uploadData.path);
 
       // Obter URL pública
       const { data: { publicUrl } } = supabase.storage
