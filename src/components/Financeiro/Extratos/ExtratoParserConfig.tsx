@@ -3,15 +3,18 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Sparkles, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { smartToast } from "@/lib/smart-toast";
 
 interface ExtratoParserConfigProps {
   onSave: (config: any) => void;
   onBack: () => void;
   loading?: boolean;
+  file?: File;
 }
 
-export function ExtratoParserConfig({ onSave, onBack, loading }: ExtratoParserConfigProps) {
+export function ExtratoParserConfig({ onSave, onBack, loading, file }: ExtratoParserConfigProps) {
   const [config, setConfig] = useState({
     delimitador: ',',
     linhaInicial: 1,
@@ -25,6 +28,55 @@ export function ExtratoParserConfig({ onSave, onBack, loading }: ExtratoParserCo
     },
   });
 
+  const [analyzingAI, setAnalyzingAI] = useState(false);
+  const [aiSuggestion, setAiSuggestion] = useState<any>(null);
+  const [preview, setPreview] = useState<any[]>([]);
+
+  const handleAnalyzeWithAI = async () => {
+    if (!file) {
+      smartToast.error('Nenhum arquivo selecionado');
+      return;
+    }
+
+    setAnalyzingAI(true);
+    setAiSuggestion(null);
+    setPreview([]);
+
+    try {
+      // Ler primeiras 20 linhas do arquivo
+      const text = await file.text();
+      const lines = text.split('\n').slice(0, 20).join('\n');
+
+      smartToast.loading('Analisando estrutura do arquivo...');
+
+      const { data, error } = await supabase.functions.invoke('analyze-extrato-structure', {
+        body: {
+          fileContent: lines,
+          fileName: file.name
+        }
+      });
+
+      if (error) throw error;
+
+      if (data.success) {
+        setAiSuggestion(data);
+        setPreview(data.preview || []);
+        setConfig(data.config);
+        
+        smartToast.success('Configuração detectada!', 
+          `Confiança: ${(data.confianca * 100).toFixed(0)}%`
+        );
+      } else {
+        throw new Error(data.error || 'Erro ao analisar arquivo');
+      }
+    } catch (error: any) {
+      console.error('Erro na análise IA:', error);
+      smartToast.error('Erro ao analisar arquivo', error.message);
+    } finally {
+      setAnalyzingAI(false);
+    }
+  };
+
   const handleSave = () => {
     onSave(config);
   };
@@ -32,7 +84,76 @@ export function ExtratoParserConfig({ onSave, onBack, loading }: ExtratoParserCo
   return (
     <div className="space-y-6 py-4">
       <div className="space-y-4">
-        <h3 className="font-semibold">Configuração do Parser CSV</h3>
+        <div className="flex items-center justify-between">
+          <h3 className="font-semibold">Configuração do Parser CSV</h3>
+          
+          {file && (
+            <Button
+              onClick={handleAnalyzeWithAI}
+              disabled={analyzingAI || loading}
+              variant="outline"
+              size="sm"
+            >
+              {analyzingAI ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Analisando...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  Detectar com IA
+                </>
+              )}
+            </Button>
+          )}
+        </div>
+
+        {/* AI Suggestion Card */}
+        {aiSuggestion && (
+          <div className="bg-primary/5 border border-primary/20 rounded-lg p-4 space-y-3">
+            <div className="flex items-start justify-between">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-primary" />
+                  <span className="font-medium text-sm">Configuração sugerida pela IA</span>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {aiSuggestion.bancoDetectado}
+                </p>
+              </div>
+              
+              <div className={`px-2 py-1 rounded text-xs font-medium ${
+                aiSuggestion.confianca >= 0.9 
+                  ? 'bg-green-500/10 text-green-700 dark:text-green-400'
+                  : aiSuggestion.confianca >= 0.7
+                  ? 'bg-yellow-500/10 text-yellow-700 dark:text-yellow-400'
+                  : 'bg-red-500/10 text-red-700 dark:text-red-400'
+              }`}>
+                {(aiSuggestion.confianca * 100).toFixed(0)}% confiança
+              </div>
+            </div>
+
+            {preview.length > 0 && (
+              <div className="space-y-2 pt-2 border-t border-primary/10">
+                <p className="text-xs font-medium text-muted-foreground">
+                  Preview (3 primeiras transações):
+                </p>
+                <div className="space-y-1">
+                  {preview.map((item, idx) => (
+                    <div key={idx} className="text-xs bg-background/50 rounded px-2 py-1.5 font-mono">
+                      <span className="text-primary">{item.data}</span>
+                      {' • '}
+                      <span className="text-foreground">{item.descricao}</span>
+                      {' • '}
+                      <span className="font-semibold">{item.valor}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
         
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">

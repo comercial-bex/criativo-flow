@@ -193,6 +193,7 @@ export function DialogImportarExtrato({ open, onOpenChange }: DialogImportarExtr
             onSave={handleParserConfigSave}
             onBack={() => setStep(2)}
             loading={parsingExtrato}
+            file={selectedFile}
           />
         )}
 

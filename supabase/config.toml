@@ -127,3 +127,6 @@ verify_jwt = false
 
 [functions.importar-transacoes-aprovadas]
 verify_jwt = false
+
+[functions.analyze-extrato-structure]
+verify_jwt = false
