@@ -63,7 +63,8 @@ const tipoCategories: Record<string, string> = {
   pausa_automatica: 'Sistema',
   deslocamento: 'Deslocamento',
   preparacao: 'Preparação',
-  backup: 'Backup'
+  backup: 'Backup',
+  feriado: 'Feriado' // 🎉 Adicionar feriados
 };
 
 const tipoColors: Record<string, string> = {
@@ -78,7 +79,8 @@ const tipoColors: Record<string, string> = {
   pausa_automatica: 'bg-gray-400',
   deslocamento: 'bg-yellow-500',
   preparacao: 'bg-amber-500',
-  backup: 'bg-orange-600'
+  backup: 'bg-orange-600',
+  feriado: 'bg-red-600' // 🎉 Cor vermelha para feriados
 };
 
 export const CalendarEventManager = ({ events, currentDate, onNavigate, onDateClick, isLoading }: CalendarEventManagerProps) => {

@@ -21,6 +21,8 @@ import { ModalCriarEvento } from '@/components/Calendario/ModalCriarEvento';
 import { AudiovisualScheduleModal } from '@/components/AudiovisualScheduleModal';
 import { useUserRole } from '@/hooks/useUserRole';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ConflictAlert } from '@/components/Calendario/ConflictAlert';
+import { FeriadoBadge } from '@/components/Calendario/FeriadoBadge';
 
 export default function CalendarioUnificado() {
   const { role } = useUserRole();
@@ -68,6 +70,7 @@ export default function CalendarioUnificado() {
   // Estatísticas
   const stats = {
     total: eventos.length,
+    feriados: eventos.filter(e => e.tipo === 'feriado').length,
     captacoes: eventos.filter(e => e.tipo === 'captacao_externa' || e.tipo === 'captacao_interna').length,
     criacao: eventos.filter(e => e.tipo?.includes('criacao')).length,
     edicao: eventos.filter(e => e.tipo?.includes('edicao')).length,
@@ -126,33 +129,28 @@ export default function CalendarioUnificado() {
         )}
       </div>
 
-      {/* Alertas de Conflitos */}
-      {hasConflitos && (
-        <Alert variant={conflitosAlta.length > 0 ? "destructive" : "default"} className="border-warning">
-          <AlertTriangle className="h-4 w-4" />
-          <AlertTitle className="font-bold">
-            {conflitosAlta.length > 0 ? '⚠️ Conflitos Críticos Detectados!' : '⚠️ Atenção: Sobrecarga'}
+      {/* 🎉 Alertas de Conflitos e Feriados */}
+      <ConflictAlert conflitos={conflitos} />
+
+      {/* 🎉 Feriados na Semana */}
+      {stats.feriados > 0 && (
+        <Alert className="border-red-300 bg-red-50 dark:bg-red-950/20">
+          <Calendar className="h-4 w-4 text-red-600" />
+          <AlertTitle className="font-bold text-red-900 dark:text-red-200">
+            🎉 {stats.feriados} Feriado{stats.feriados > 1 ? 's' : ''} nesta semana
           </AlertTitle>
-          <AlertDescription className="mt-2 space-y-1">
-            {conflitosAlta.length > 0 && (
-              <p className="font-medium">
-                {conflitosAlta.length} conflito(s) de horário - eventos se sobrepõem
-              </p>
-            )}
-            {conflitosMedia.length > 0 && (
-              <p>
-                {conflitosMedia.length} dia(s) com sobrecarga (&gt;3 eventos)
-              </p>
-            )}
-            <div className="mt-3 flex flex-wrap gap-2">
-              {conflitos.slice(0, 3).map((conflito, idx) => (
-                <Badge key={idx} variant={conflito.severidade === 'alta' ? 'destructive' : 'secondary'}>
-                  {conflito.responsavel}: {conflito.mensagem}
-                </Badge>
-              ))}
-              {conflitos.length > 3 && (
-                <Badge variant="outline">+{conflitos.length - 3} mais</Badge>
-              )}
+          <AlertDescription className="mt-2">
+            <div className="flex flex-wrap gap-2">
+              {eventos
+                .filter(e => e.tipo === 'feriado')
+                .map(feriado => (
+                  <FeriadoBadge 
+                    key={feriado.id}
+                    nome={feriado.titulo}
+                    tipo={feriado.descricao?.includes('facultativo') ? 'facultativo' : 'nacional'}
+                    size="sm"
+                  />
+                ))}
             </div>
           </AlertDescription>
         </Alert>

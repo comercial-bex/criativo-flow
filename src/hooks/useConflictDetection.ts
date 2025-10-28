@@ -23,6 +23,8 @@ export const useConflictDetection = (eventos: EventoUnificado[]) => {
     
     eventos.forEach(evento => {
       if (!evento.responsavel_id) return;
+      // 🎉 Ignorar feriados e eventos de sistema
+      if (evento.tipo === 'feriado' || evento.origem === 'sistema') return;
       
       const key = evento.responsavel_id;
       if (!eventosPorResponsavel[key]) {
