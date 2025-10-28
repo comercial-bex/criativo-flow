@@ -175,6 +175,11 @@ export function ExtratosTransacoesReview({ extratoId, onImportComplete, comprova
                     {transacao.numero_documento && (
                       <p className="text-xs text-muted-foreground">Doc: {transacao.numero_documento}</p>
                     )}
+                    {transacao.categoria_sugerida && (
+                      <Badge variant="outline" className="mt-1 text-xs">
+                        {transacao.categoria_sugerida}
+                      </Badge>
+                    )}
                   </div>
                 </TableCell>
                 <TableCell className="font-semibold">

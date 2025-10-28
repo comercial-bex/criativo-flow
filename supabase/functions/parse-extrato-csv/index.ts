@@ -117,6 +117,28 @@ serve(async (req) => {
         tipoMovimento = 'debito';
       }
 
+      // Detectar categoria/tipo de transação na descrição
+      let categoriaTransacao = null;
+      const descLower = descricao.toLowerCase();
+      
+      if (descLower.includes('pix')) {
+        categoriaTransacao = 'PIX';
+      } else if (descLower.includes('ted')) {
+        categoriaTransacao = 'TED';
+      } else if (descLower.includes('doc')) {
+        categoriaTransacao = 'DOC';
+      } else if (descLower.includes('boleto') || descLower.includes('pagamento')) {
+        categoriaTransacao = 'Boleto';
+      } else if (descLower.includes('transferencia') || descLower.includes('transferência')) {
+        categoriaTransacao = 'Transferência';
+      } else if (descLower.includes('deposito') || descLower.includes('depósito')) {
+        categoriaTransacao = 'Depósito';
+      } else if (descLower.includes('saque')) {
+        categoriaTransacao = 'Saque';
+      } else if (descLower.includes('tarifa') || descLower.includes('taxa')) {
+        categoriaTransacao = 'Tarifa';
+      }
+
       transactions.push({
         extrato_id: extratoId,
         data_transacao: dataTransacao,
@@ -124,6 +146,7 @@ serve(async (req) => {
         valor,
         tipo_movimento: tipoMovimento,
         numero_documento: documento || null,
+        categoria_sugerida: categoriaTransacao,
       });
     }
 
