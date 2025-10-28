@@ -115,3 +115,15 @@ verify_jwt = false
 
 [functions.sync-feriados]
 verify_jwt = false
+
+[functions.parse-extrato-ofx]
+verify_jwt = false
+
+[functions.parse-extrato-csv]
+verify_jwt = false
+
+[functions.process-extrato-transacoes]
+verify_jwt = false
+
+[functions.importar-transacoes-aprovadas]
+verify_jwt = false

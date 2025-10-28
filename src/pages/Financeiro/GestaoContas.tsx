@@ -10,7 +10,7 @@ import { SectionHeader } from "@/components/SectionHeader";
 import { PrevisaoFluxoCard } from "@/components/Financeiro/PrevisaoFluxoCard";
 import { DashboardVencimentos } from "@/components/Financeiro/DashboardVencimentos";
 import { FABLancamento } from "@/components/Financeiro/FABLancamento";
-import { DialogImportarExtrato } from "@/components/Financeiro/Extratos";
+import { DialogImportarExtrato, ExtratosHistoryCard } from "@/components/Financeiro/Extratos";
 import { Button } from "@/components/ui/button";
 import { FileText, CreditCard, AlertCircle, DollarSign, ListFilter, PieChart, Upload } from "lucide-react";
 
@@ -45,6 +45,9 @@ export default function GestaoContas() {
         </div>
         <PrevisaoFluxoCard />
       </div>
+
+      {/* Histórico de Importações de Extratos */}
+      <ExtratosHistoryCard />
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-6">
