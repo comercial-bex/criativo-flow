@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Upload, FileText, CheckCircle2, ChevronRight, ChevronLeft } from "lucide-react";
@@ -109,6 +109,13 @@ export function DialogImportarExtrato({ open, onOpenChange }: DialogImportarExtr
       <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-2xl">Importar Extrato Bancário</DialogTitle>
+          <DialogDescription>
+            {step === 1 && "Selecione o arquivo de extrato bancário para importação"}
+            {step === 2 && "Escolha a conta bancária de destino para este extrato"}
+            {step === 3 && "Configure as colunas do arquivo CSV"}
+            {step === 4 && "Aguarde enquanto processamos as transações"}
+            {step === 5 && "Revise e confirme as transações importadas"}
+          </DialogDescription>
         </DialogHeader>
 
         {/* Progress Bar */}

@@ -64,11 +64,29 @@ export function useImportarExtrato() {
       const filePath = `extratos/${fileName}`;
 
       // Upload para Storage
-      const { error: uploadError } = await supabase.storage
+      const { data: uploadData, error: uploadError } = await supabase.storage
         .from("extratos_bancarios")
-        .upload(filePath, file);
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        console.error('❌ Erro ao fazer upload:', uploadError);
+        throw new Error(`Falha no upload: ${uploadError.message}`);
+      }
+
+      // Verificar se o arquivo foi criado
+      const { data: fileCheck, error: checkError } = await supabase.storage
+        .from("extratos_bancarios")
+        .list('extratos', { 
+          search: fileName.split('_').slice(1).join('_')
+        });
+
+      if (checkError || !fileCheck || fileCheck.length === 0) {
+        console.error('❌ Arquivo não encontrado após upload');
+        throw new Error('Arquivo não foi encontrado após upload');
+      }
 
       // Obter URL pública
       const { data: { publicUrl } } = supabase.storage
