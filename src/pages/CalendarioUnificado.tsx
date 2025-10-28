@@ -37,6 +37,7 @@ export default function CalendarioUnificado() {
   const [filtroTipo, setFiltroTipo] = useState<string>('todos');
   const [filtroOrigem, setFiltroOrigem] = useState<string>('todos');
   const [filtroMunicipio, setFiltroMunicipio] = useState<string>('todos');
+  const [filtroTipoFeriado, setFiltroTipoFeriado] = useState<string>('todos');
   const [modalAberto, setModalAberto] = useState(false);
   const [modalCaptacaoAberto, setModalCaptacaoAberto] = useState(false);
   const [dataInicialModal, setDataInicialModal] = useState<Date | undefined>();
@@ -49,12 +50,31 @@ export default function CalendarioUnificado() {
   const startDate = startOfWeek(selectedDate, { weekStartsOn: 1 });
   const endDate = endOfWeek(selectedDate, { weekStartsOn: 1 });
   
-  const { eventos, isLoading } = useCalendarioUnificado({
+  const { eventos: eventosRaw, isLoading } = useCalendarioUnificado({
     responsavelId: filtroResponsavel !== 'todos' ? filtroResponsavel : undefined,
     tipo: filtroTipo,
     origem: filtroOrigem,
     dataInicio: startDate,
     dataFim: endDate
+  });
+
+  // Filtrar eventos por tipo de feriado e município
+  const eventos = eventosRaw.filter(evento => {
+    // Filtro de município para feriados
+    if (filtroMunicipio !== 'todos' && evento.tipo === 'feriado') {
+      if (evento.cidade && evento.cidade !== filtroMunicipio) return false;
+      if (!evento.cidade && filtroMunicipio !== 'todos') return false;
+    }
+
+    // Filtro de tipo de feriado
+    if (filtroTipoFeriado !== 'todos' && evento.tipo === 'feriado') {
+      const tipoFeriado = evento.is_ponto_facultativo 
+        ? 'facultativo' 
+        : evento.origem || 'nacional';
+      if (tipoFeriado !== filtroTipoFeriado) return false;
+    }
+
+    return true;
   });
 
   const { conflitos, hasConflitos, conflitosAlta, conflitosMedia } = useConflictDetection(eventos);
@@ -320,6 +340,22 @@ export default function CalendarioUnificado() {
                 <SelectItem value="Santana">Santana</SelectItem>
                 <SelectItem value="Oiapoque">Oiapoque</SelectItem>
                 <SelectItem value="Laranjal do Jari">Laranjal do Jari</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="mt-4">
+            <Select value={filtroTipoFeriado} onValueChange={setFiltroTipoFeriado}>
+              <SelectTrigger>
+                <SelectValue placeholder="Tipo de Feriado" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="todos">Todos os Feriados</SelectItem>
+                <SelectItem value="nacional">Nacionais</SelectItem>
+                <SelectItem value="estadual">Estaduais</SelectItem>
+                <SelectItem value="municipal">Municipais</SelectItem>
+                <SelectItem value="facultativo">Pontos Facultativos</SelectItem>
+                <SelectItem value="comemorativo">Datas Comemorativas</SelectItem>
               </SelectContent>
             </Select>
           </div>

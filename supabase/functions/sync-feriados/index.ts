@@ -59,11 +59,12 @@ Deno.serve(async (req) => {
     console.log(`📦 Preparando inserção de ${feriadosFormatados.length} feriados no banco...`);
 
     // 4. Inserir no Supabase (usando upsert para evitar duplicatas)
+    // ignoreDuplicates: true -> NÃO sobrescreve feriados regionais/comemorativos existentes
     const { data, error } = await supabase
       .from('feriados_nacionais')
       .upsert(feriadosFormatados, {
         onConflict: 'data',
-        ignoreDuplicates: false
+        ignoreDuplicates: true // ← CRÍTICO: Preserva feriados regionais e comemorativos
       });
 
     if (error) {

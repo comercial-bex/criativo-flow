@@ -518,6 +518,28 @@ const MonthView = ({
     );
   };
 
+  const getFeriadosDodia = (dia: Date, eventos: any[]) => {
+    return eventos.filter(evento => 
+      evento.tipo === 'feriado' && isSameDay(new Date(evento.data_inicio), dia)
+    );
+  };
+
+  const getTipoBadgeColor = (tipo: string) => {
+    switch (tipo) {
+      case 'nacional': return 'bg-red-500 text-white';
+      case 'estadual': return 'bg-yellow-500 text-white';
+      case 'municipal': return 'bg-blue-500 text-white';
+      case 'facultativo': return 'bg-orange-500 text-white';
+      case 'comemorativo': return 'bg-gray-400 text-white';
+      default: return 'bg-red-500 text-white';
+    }
+  };
+
+  const isFeriadoProlongado = (dia: Date, feriados: any[]) => {
+    const diaSemana = dia.getDay();
+    return feriados.length > 0 && (diaSemana === 1 || diaSemana === 5); // Segunda ou Sexta
+  };
+
   return (
     <div>
       <div className="grid grid-cols-7 border-b bg-muted/50">
@@ -534,27 +556,55 @@ const MonthView = ({
           const isCurrentMonth = day.getMonth() === currentDate.getMonth();
           const isToday = isSameDay(day, new Date());
 
+          const feriadosDia = getFeriadosDodia(day, eventos);
+          const isProlongado = isFeriadoProlongado(day, feriadosDia);
+
           return (
             <div
               key={index}
               onClick={() => onDateClick?.(day)}
               className={cn(
-                'min-h-24 border-b border-r p-2 cursor-pointer hover:bg-accent/50 transition-colors',
+                'min-h-24 border-b border-r p-2 cursor-pointer hover:bg-accent/50 transition-colors relative',
                 !isCurrentMonth && 'bg-muted/30',
-                isToday && 'bg-primary/10'
+                isToday && 'bg-primary/10',
+                feriadosDia.length > 0 && 'bg-red-50 dark:bg-red-950/20'
               )}
               onDragOver={(e) => e.preventDefault()}
               onDrop={() => onDrop(day)}
             >
+              {/* Indicador de Feriado no Topo */}
+              {feriadosDia.length > 0 && (
+                <div className="absolute top-0 left-0 right-0 space-y-0.5">
+                  {feriadosDia.map(feriado => (
+                    <div 
+                      key={feriado.id}
+                      className={cn(
+                        'text-[9px] font-semibold px-1 py-0.5 text-center truncate',
+                        getTipoBadgeColor(feriado.origem || 'nacional')
+                      )}
+                      title={feriado.titulo}
+                    >
+                      🎉 {feriado.titulo}
+                    </div>
+                  ))}
+                  {isProlongado && (
+                    <div className="text-[8px] bg-purple-500 text-white px-1 py-0.5 text-center font-bold">
+                      🎊 FERIADO PROLONGADO
+                    </div>
+                  )}
+                </div>
+              )}
+
               <div className={cn(
                 'text-sm font-medium mb-1',
+                feriadosDia.length > 0 ? 'mt-6' : '',
                 !isCurrentMonth && 'text-muted-foreground',
                 isToday && 'text-primary font-bold'
               )}>
                 {day.getDate()}
               </div>
               <div className="space-y-1">
-                {dayEvents.slice(0, 3).map(evento => (
+                {dayEvents.filter(e => e.tipo !== 'feriado').slice(0, 2).map(evento => (
                   <EventoCard 
                     key={evento.id} 
                     evento={evento} 
@@ -564,9 +614,9 @@ const MonthView = ({
                     onDragEnd={onDragEnd}
                   />
                 ))}
-                {dayEvents.length > 3 && (
+                {dayEvents.filter(e => e.tipo !== 'feriado').length > 2 && (
                   <div className="text-xs text-muted-foreground">
-                    +{dayEvents.length - 3} mais
+                    +{dayEvents.filter(e => e.tipo !== 'feriado').length - 2} mais
                   </div>
                 )}
               </div>

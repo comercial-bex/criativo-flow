@@ -15,8 +15,11 @@ import { useProjetos } from '@/hooks/useProjetos';
 import { EquipamentosSelector } from '@/components/Inventario/EquipamentosSelector';
 import { AddressSearch } from '@/components/AddressSearch';
 import { smartToast } from '@/lib/smart-toast';
-import { Loader2, AlertTriangle, Lightbulb } from 'lucide-react';
-import { format } from 'date-fns';
+import { Loader2, AlertTriangle, Lightbulb, PartyPopper } from 'lucide-react';
+import { format, isSameDay } from 'date-fns';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 interface ModalCriarEventoProps {
   open: boolean;
@@ -59,6 +62,21 @@ export const ModalCriarEvento = ({ open, onClose, dataInicial, responsavelIdInic
 
   const { data: especialistas } = useEspecialistas();
   const { projetos } = useProjetos();
+
+  // Verificar feriados na data selecionada
+  const { data: feriadosNoDia = [] } = useQuery({
+    queryKey: ['feriado', dataInicio],
+    queryFn: async () => {
+      if (!dataInicio) return [];
+      const dataEvento = new Date(dataInicio);
+      const { data } = await supabase
+        .from('feriados_nacionais')
+        .select('*')
+        .eq('data', format(dataEvento, 'yyyy-MM-dd'));
+      return data || [];
+    },
+    enabled: !!dataInicio
+  });
 
   useEffect(() => {
     if (dataInicial) {
@@ -315,6 +333,31 @@ export const ModalCriarEvento = ({ open, onClose, dataInicial, responsavelIdInic
                 />
               </div>
             </div>
+
+            {/* ALERTA DE FERIADO */}
+            {feriadosNoDia.length > 0 && (
+              <Alert variant="default" className="border-yellow-500 bg-yellow-50 dark:bg-yellow-950/20">
+                <PartyPopper className="h-5 w-5 text-yellow-600" />
+                <AlertTitle className="text-yellow-800 dark:text-yellow-300 font-semibold">
+                  ⚠️ Atenção: Feriado nesta data!
+                </AlertTitle>
+                <AlertDescription className="text-yellow-700 dark:text-yellow-400">
+                  {feriadosNoDia.map(f => (
+                    <div key={f.id} className="mt-1">
+                      <strong>{f.nome}</strong> ({f.tipo === 'facultativo' ? 'Ponto Facultativo' : 
+                        f.tipo === 'nacional' ? 'Feriado Nacional' : 
+                        f.tipo === 'estadual' ? 'Feriado Estadual' : 
+                        f.tipo === 'municipal' ? 'Feriado Municipal' : 
+                        'Data Comemorativa'})
+                      {f.descricao && <p className="text-xs mt-0.5">{f.descricao}</p>}
+                    </div>
+                  ))}
+                  <p className="text-xs mt-2 font-medium">
+                    Considere reagendar para evitar baixa produtividade ou conflitos de agenda.
+                  </p>
+                </AlertDescription>
+              </Alert>
+            )}
 
             <div className="flex items-center gap-2">
               <Button
