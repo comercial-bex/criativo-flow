@@ -56,31 +56,52 @@ serve(async (req) => {
 
     const fileContent = await fileData.text();
 
-    // Parse CSV
-    const lines = fileContent.split('\n').slice(linhaInicial);
+    // Parse CSV - Ler header se necessário
+    const allLines = fileContent.split('\n');
+    const headerLine = allLines[0]; // Primeira linha = header
+    const headerColumns = headerLine.split(delimitador).map(col => col.trim().replace(/^"|"$/g, ''));
+    
+    // Começar da linha especificada (pular header)
+    const dataLines = allLines.slice(linhaInicial);
     const transactions: any[] = [];
 
     let periodoInicio: string | null = null;
     let periodoFim: string | null = null;
 
-    for (const line of lines) {
+    for (const line of dataLines) {
       if (!line.trim()) continue;
 
       const columns = line.split(delimitador).map(col => col.trim().replace(/^"|"$/g, ''));
 
-      // Mapear colunas
+      // Mapear colunas (suporta índice numérico OU nome da coluna)
       const getColumn = (mapping: string | undefined) => {
         if (!mapping) return undefined;
         
+        // Tentar como índice numérico primeiro
         const index = parseInt(mapping);
         if (!isNaN(index)) {
           return columns[index]?.trim();
         }
         
-        // Busca por nome (case-insensitive)
-        return columns.find(col => 
-          col && col.toLowerCase().includes(mapping.toLowerCase())
-        )?.trim();
+        // Buscar por nome de coluna no header
+        const colIndex = headerColumns.findIndex(header => 
+          header.toLowerCase() === mapping.toLowerCase()
+        );
+        
+        if (colIndex >= 0) {
+          return columns[colIndex]?.trim();
+        }
+        
+        // Fallback: busca parcial no header
+        const partialIndex = headerColumns.findIndex(header =>
+          header.toLowerCase().includes(mapping.toLowerCase())
+        );
+        
+        if (partialIndex >= 0) {
+          return columns[partialIndex]?.trim();
+        }
+        
+        return undefined;
       };
 
       const dataStr = getColumn(mapeamentoColunas.data);
@@ -113,6 +134,9 @@ serve(async (req) => {
 
       // Determinar tipo de movimento
       let tipoMovimento: 'credito' | 'debito' = 'credito';
+      
+      // Definir descLower ANTES de usar
+      const descLower = descricao.toLowerCase();
 
       // 1. Verifica coluna tipo primeiro (mais confiável)
       if (tipoStr) {
@@ -132,7 +156,6 @@ serve(async (req) => {
 
       // Detectar categoria/tipo de transação na descrição
       let categoriaTransacao = null;
-      const descLower = descricao.toLowerCase();
       
       if (descLower.includes('pix')) {
         categoriaTransacao = 'PIX';
