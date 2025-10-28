@@ -56,18 +56,13 @@ export const useCalendarioUnificado = (filtros: FiltrosCalendario = {}) => {
     dataFim = endOfWeek(new Date(), { weekStartsOn: 1 })
   } = filtros;
 
-  // Query otimizada - buscar eventos com filtros aplicados no servidor
+  // Query OTIMIZADA - usar view unificada vw_calendario_unificado
   const { data: eventos, isLoading, error, refetch } = useQuery({
     queryKey: ['calendario-unificado', { responsavelId, tipo, origem, dataInicio: dataInicio.toISOString(), dataFim: dataFim.toISOString() }],
     queryFn: async (): Promise<EventoUnificado[]> => {
       let query = supabase
-        .from('eventos_calendario')
-        .select(`
-          *,
-          responsavel:pessoas!responsavel_id(id, nome, avatar_url, papeis),
-          projeto:projetos!projeto_id(id, titulo),
-          cliente:clientes!cliente_id(id, nome)
-        `)
+        .from('vw_calendario_unificado')
+        .select('*')
         .gte('data_inicio', dataInicio.toISOString())
         .lte('data_fim', dataFim.toISOString())
         .order('data_inicio');

@@ -35,57 +35,29 @@ export function AgendaUnificada() {
 
   const fetchEvents = async () => {
     try {
-      const [captacoesRes, tarefasRes, eventosRes] = await Promise.all([
-        supabase.from('captacoes_agenda').select('id, titulo, data_captacao, status'),
-        supabase.from('tarefa').select('id, titulo, prazo_executor, status'),
-        supabase.from('eventos_calendario').select('id, titulo, data_inicio, cor, status, tipo')
-      ]);
+      // 🚀 USAR VIEW UNIFICADA - 1 query ao invés de 3!
+      const { data, error } = await supabase
+        .from('vw_calendario_unificado')
+        .select('*')
+        .order('data_inicio');
 
-      const allEvents: AgendaEvent[] = [];
+      if (error) throw error;
 
-      // Captações Audiovisual (vermelho)
-      if (captacoesRes.data) {
-        captacoesRes.data.forEach((c) => {
-          allEvents.push({
-            id: c.id,
-            titulo: c.titulo,
-            data: new Date(c.data_captacao),
-            tipo: 'captacao',
-            status: c.status,
-            cor: '#ef4444'
-          });
-        });
-      }
-
-      // Tarefas com Prazo (azul)
-      if (tarefasRes.data) {
-        tarefasRes.data.forEach((t: any) => {
-          if (t.prazo_executor) {
-            allEvents.push({
-              id: t.id,
-              titulo: t.titulo,
-              data: new Date(t.prazo_executor),
-              tipo: 'tarefa',
-              status: t.status,
-              cor: '#3b82f6'
-            });
-          }
-        });
-      }
-
-      // Eventos do Calendário Unificado (cores variadas)
-      if (eventosRes.data) {
-        eventosRes.data.forEach((e) => {
-          allEvents.push({
-            id: e.id,
-            titulo: e.titulo,
-            data: new Date(e.data_inicio),
-            tipo: 'evento',
-            status: e.status,
-            cor: e.cor || '#22c55e'
-          });
-        });
-      }
+      // Transformar para AgendaEvent
+      const allEvents: AgendaEvent[] = (data || []).map(e => {
+        let tipo: 'captacao' | 'tarefa' | 'evento' = 'evento';
+        if (e.origem === 'audiovisual') tipo = 'captacao';
+        else if (e.origem === 'grs') tipo = 'tarefa';
+        
+        return {
+          id: e.id,
+          titulo: e.titulo || 'Evento sem título',
+          data: new Date(e.data_inicio || ''),
+          tipo,
+          status: e.status || 'agendado',
+          cor: e.cor || '#8b5cf6'
+        };
+      });
 
       setEvents(allEvents);
     } catch (error) {

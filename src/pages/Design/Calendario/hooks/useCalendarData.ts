@@ -25,21 +25,10 @@ export const useCalendarData = () => {
       console.log('[Design/Calendário] 🔍 Iniciando busca de dados...');
       console.log('[Design/Calendário] 👤 User ID:', user.id);
 
-      const [tarefasResult, eventosResult, profilesResult] = await Promise.all([
+      // 🚀 USAR VIEW UNIFICADA - mais eficiente!
+      const [eventosResult, profilesResult] = await Promise.all([
         supabase
-          .from('tarefa')
-          .select(`
-            id, titulo, descricao, status, prioridade,
-            executor_id, executor_area, cliente_id,
-            prazo_executor, data_inicio_prevista, data_entrega_prevista,
-            kpis
-          `)
-          .in('executor_area', ['Criativo', 'Audiovisual'])
-          .eq('executor_id', user.id)
-          .order('prazo_executor', { ascending: true }),
-        
-        supabase
-          .from('eventos_calendario')
+          .from('vw_calendario_unificado')
           .select('*')
           .order('data_inicio', { ascending: true }),
         
@@ -48,19 +37,31 @@ export const useCalendarData = () => {
           .select('id, nome, avatar_url')
       ]);
 
-      console.log('[Design/Calendário] ✅ Tarefas:', tarefasResult.data?.length, 'itens');
-      console.log('[Design/Calendário] 📋 Tarefas completas:', tarefasResult.data);
-      console.log('[Design/Calendário] ❌ Erro tarefas:', tarefasResult.error);
       console.log('[Design/Calendário] 📅 Eventos:', eventosResult.data?.length, 'itens');
       console.log('[Design/Calendário] 📋 Eventos completos:', eventosResult.data);
       console.log('[Design/Calendário] ❌ Erro eventos:', eventosResult.error);
 
-      if (tarefasResult.error) throw tarefasResult.error;
       if (eventosResult.error) throw eventosResult.error;
       if (profilesResult.error) throw profilesResult.error;
 
-      setTarefas(tarefasResult.data || []);
-      setEventos(eventosResult.data || []);
+      // Separar tarefas do usuário dos eventos
+      const todosEventos = eventosResult.data || [];
+      const tarefasDoUsuario = todosEventos
+        .filter(e => e.origem === 'grs' && e.responsavel_id === user.id)
+        .map(e => ({
+          id: e.tarefa_id || e.id,
+          titulo: e.titulo,
+          prazo_executor: e.data_fim,
+          executor_id: e.responsavel_id,
+          executor_area: 'Criativo',
+          cliente_id: e.cliente_id,
+          status: e.status
+        })) as any;
+      
+      console.log('[Design/Calendário] ✅ Tarefas extraídas:', tarefasDoUsuario.length, 'itens');
+
+      setTarefas(tarefasDoUsuario);
+      setEventos(todosEventos as any);
       setProfiles(profilesResult.data || []);
     } catch (error: any) {
       toast({
