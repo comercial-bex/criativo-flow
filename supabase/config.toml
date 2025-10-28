@@ -112,3 +112,6 @@ verify_jwt = false
 
 [functions.analyze-nota-onboarding]
 verify_jwt = false
+
+[functions.sync-feriados]
+verify_jwt = false

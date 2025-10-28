@@ -34,6 +34,9 @@ export interface EventoUnificado {
   is_automatico?: boolean;
   is_bloqueante?: boolean;
   is_extra?: boolean;
+  estado?: string;
+  cidade?: string;
+  is_ponto_facultativo?: boolean;
 }
 
 export interface FiltrosCalendario {

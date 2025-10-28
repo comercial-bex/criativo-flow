@@ -23,19 +23,25 @@ import { useUserRole } from '@/hooks/useUserRole';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ConflictAlert } from '@/components/Calendario/ConflictAlert';
 import { FeriadoBadge } from '@/components/Calendario/FeriadoBadge';
+import { useSyncFeriados } from '@/hooks/useSyncFeriados';
+import { RefreshCw } from 'lucide-react';
 
 export default function CalendarioUnificado() {
   const { role } = useUserRole();
   const canEdit = ['admin', 'gestor', 'grs'].includes(role || '');
+  const isAdmin = role === 'admin';
+  const { syncFeriados, isSyncing } = useSyncFeriados();
   
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [filtroResponsavel, setFiltroResponsavel] = useState<string>('todos');
   const [filtroTipo, setFiltroTipo] = useState<string>('todos');
   const [filtroOrigem, setFiltroOrigem] = useState<string>('todos');
+  const [filtroMunicipio, setFiltroMunicipio] = useState<string>('todos');
   const [modalAberto, setModalAberto] = useState(false);
   const [modalCaptacaoAberto, setModalCaptacaoAberto] = useState(false);
   const [dataInicialModal, setDataInicialModal] = useState<Date | undefined>();
   const [activeTab, setActiveTab] = useState('calendario');
+  const [syncingFeriados, setSyncingFeriados] = useState(false);
   
   // Buscar pessoas ativas para o filtro de responsáveis
   const { data: pessoasAtivas = [], isLoading: loadingPessoas } = usePessoasAtivas();
@@ -65,6 +71,11 @@ export default function CalendarioUnificado() {
   const handleAbrirModal = (data?: Date) => {
     setDataInicialModal(data);
     setModalAberto(true);
+  };
+
+  const handleSyncFeriados = async () => {
+    await syncFeriados();
+    window.location.reload();
   };
 
   // Estatísticas
@@ -125,6 +136,19 @@ export default function CalendarioUnificado() {
               <Video className="mr-2 h-4 w-4" />
               Agendar Captação
             </Button>
+
+            {isAdmin && (
+              <Button 
+                size="lg" 
+                variant="outline"
+                onClick={handleSyncFeriados}
+                disabled={isSyncing}
+                className="border-green-500 text-green-600 hover:bg-green-50 dark:border-green-400 dark:text-green-400 dark:hover:bg-green-950"
+              >
+                <RefreshCw className={`mr-2 h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
+                Sincronizar Feriados
+              </Button>
+            )}
           </div>
         )}
       </div>
@@ -143,14 +167,31 @@ export default function CalendarioUnificado() {
             <div className="flex flex-wrap gap-2">
               {eventos
                 .filter(e => e.tipo === 'feriado')
-                .map(feriado => (
-                  <FeriadoBadge 
-                    key={feriado.id}
-                    nome={feriado.titulo}
-                    tipo={feriado.descricao?.includes('facultativo') ? 'facultativo' : 'nacional'}
-                    size="sm"
-                  />
-                ))}
+                .filter(e => {
+                  if (filtroMunicipio === 'todos') return true;
+                  // Se houver cidade no evento, filtrar por município
+                  return !e.cidade || e.cidade === filtroMunicipio;
+                })
+                .map(feriado => {
+                  // Determinar tipo do feriado
+                  let tipoFeriado = 'nacional';
+                  if (feriado.is_ponto_facultativo || feriado.descricao?.includes('facultativo')) {
+                    tipoFeriado = 'facultativo';
+                  } else if (feriado.cidade) {
+                    tipoFeriado = 'municipal';
+                  } else if (feriado.estado) {
+                    tipoFeriado = 'estadual';
+                  }
+                  
+                  return (
+                    <FeriadoBadge 
+                      key={feriado.id}
+                      nome={feriado.titulo}
+                      tipo={tipoFeriado}
+                      size="sm"
+                    />
+                  );
+                })}
             </div>
           </AlertDescription>
         </Alert>
@@ -224,7 +265,7 @@ export default function CalendarioUnificado() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <Select value={filtroTipo} onValueChange={setFiltroTipo}>
               <SelectTrigger>
                 <SelectValue placeholder="Tipo de evento" />
@@ -266,6 +307,19 @@ export default function CalendarioUnificado() {
                     {pessoa.nome}
                   </SelectItem>
                 ))}
+              </SelectContent>
+            </Select>
+
+            <Select value={filtroMunicipio} onValueChange={setFiltroMunicipio}>
+              <SelectTrigger>
+                <SelectValue placeholder="Município" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="todos">Todos os municípios</SelectItem>
+                <SelectItem value="Macapá">Macapá</SelectItem>
+                <SelectItem value="Santana">Santana</SelectItem>
+                <SelectItem value="Oiapoque">Oiapoque</SelectItem>
+                <SelectItem value="Laranjal do Jari">Laranjal do Jari</SelectItem>
               </SelectContent>
             </Select>
           </div>
