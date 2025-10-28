@@ -22,6 +22,7 @@ export function DialogImportarExtrato({ open, onOpenChange }: DialogImportarExtr
   const [selectedConta, setSelectedConta] = useState<string>("");
   const [parserConfig, setParserConfig] = useState<any>(null);
   const [extratoId, setExtratoId] = useState<string | null>(null);
+  const [comprovantes, setComprovantes] = useState<File[]>([]);
 
   const { uploadExtrato, uploadingExtrato, parseExtrato, parsingExtrato, processarTransacoes, processandoTransacoes } = useImportarExtrato();
   const { contas } = useContasBancarias();
@@ -32,6 +33,7 @@ export function DialogImportarExtrato({ open, onOpenChange }: DialogImportarExtr
     setSelectedConta("");
     setParserConfig(null);
     setExtratoId(null);
+    setComprovantes([]);
   };
 
   const handleFileSelect = (file: File) => {
@@ -130,7 +132,11 @@ export function DialogImportarExtrato({ open, onOpenChange }: DialogImportarExtr
         {/* Step 1: Upload */}
         {step === 1 && (
           <div className="py-8">
-            <ExtratosUploadZone onFileSelect={handleFileSelect} />
+            <ExtratosUploadZone 
+              onFileSelect={handleFileSelect}
+              onComprovantesSelect={setComprovantes}
+              comprovantes={comprovantes}
+            />
           </div>
         )}
 
@@ -213,6 +219,7 @@ export function DialogImportarExtrato({ open, onOpenChange }: DialogImportarExtr
           <ExtratosTransacoesReview
             extratoId={extratoId}
             onImportComplete={handleImportComplete}
+            comprovantes={comprovantes}
           />
         )}
       </DialogContent>

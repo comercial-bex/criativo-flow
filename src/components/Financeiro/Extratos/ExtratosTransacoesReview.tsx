@@ -14,16 +14,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 interface ExtratosTransacoesReviewProps {
   extratoId: string;
   onImportComplete: () => void;
+  comprovantes?: File[];
 }
 
-export function ExtratosTransacoesReview({ extratoId, onImportComplete }: ExtratosTransacoesReviewProps) {
+export function ExtratosTransacoesReview({ extratoId, onImportComplete, comprovantes = [] }: ExtratosTransacoesReviewProps) {
   const { transacoes, isLoading } = useTransacoesExtrato(extratoId);
-  const { importarSelecionadas, importando, atualizarTransacao } = useImportarExtrato();
+  const { importarSelecionadas, importando, atualizarTransacao, uploadComprovante } = useImportarExtrato();
   const { data: clientes = [] } = useEntidades('receber');
   const { data: fornecedores = [] } = useEntidades('pagar');
   
   const [selecionadas, setSelecionadas] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [comprovantesVinculados, setComprovantesVinculados] = useState<Record<string, number>>({});
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
@@ -49,6 +51,14 @@ export function ExtratosTransacoesReview({ extratoId, onImportComplete }: Extrat
         status_processamento: 'revisado'
       }
     });
+  };
+
+  const handleVincularComprovante = (transacaoId: string, comprovanteIndex: number) => {
+    const file = comprovantes[comprovanteIndex];
+    if (file) {
+      uploadComprovante({ transacaoId, file });
+      setComprovantesVinculados({ ...comprovantesVinculados, [transacaoId]: comprovanteIndex });
+    }
   };
 
   const handleImportar = () => {
@@ -131,6 +141,7 @@ export function ExtratosTransacoesReview({ extratoId, onImportComplete }: Extrat
               <TableHead>Valor</TableHead>
               <TableHead>Vinculação</TableHead>
               <TableHead>Confiança</TableHead>
+              {comprovantes.length > 0 && <TableHead>Comprovante</TableHead>}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -198,6 +209,29 @@ export function ExtratosTransacoesReview({ extratoId, onImportComplete }: Extrat
                 <TableCell>
                   {transacao.confianca_vinculo > 0 && getConfiancaBadge(transacao.confianca_vinculo)}
                 </TableCell>
+                {comprovantes.length > 0 && (
+                  <TableCell>
+                    <Select
+                      value={comprovantesVinculados[transacao.id]?.toString() || transacao.comprovante_url ? "uploaded" : ""}
+                      onValueChange={(value) => {
+                        if (value !== "uploaded") {
+                          handleVincularComprovante(transacao.id, parseInt(value));
+                        }
+                      }}
+                    >
+                      <SelectTrigger className="w-[180px]">
+                        <SelectValue placeholder="Sem comprovante" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {comprovantes.map((file, index) => (
+                          <SelectItem key={index} value={index.toString()}>
+                            {file.name.slice(0, 20)}...
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </TableCell>
+                )}
               </TableRow>
             ))}
           </TableBody>
