@@ -4062,6 +4062,139 @@ export type Database = {
           },
         ]
       }
+      extratos_importados: {
+        Row: {
+          arquivo_nome: string
+          arquivo_url: string
+          conta_bancaria_id: string
+          created_at: string
+          created_by: string | null
+          data_importacao: string
+          formato: Database["public"]["Enums"]["formato_extrato_enum"]
+          id: string
+          metadados: Json | null
+          periodo_fim: string | null
+          periodo_inicio: string | null
+          status: Database["public"]["Enums"]["status_extrato_enum"]
+          total_transacoes: number | null
+          transacoes_processadas: number | null
+          updated_at: string
+        }
+        Insert: {
+          arquivo_nome: string
+          arquivo_url: string
+          conta_bancaria_id: string
+          created_at?: string
+          created_by?: string | null
+          data_importacao?: string
+          formato: Database["public"]["Enums"]["formato_extrato_enum"]
+          id?: string
+          metadados?: Json | null
+          periodo_fim?: string | null
+          periodo_inicio?: string | null
+          status?: Database["public"]["Enums"]["status_extrato_enum"]
+          total_transacoes?: number | null
+          transacoes_processadas?: number | null
+          updated_at?: string
+        }
+        Update: {
+          arquivo_nome?: string
+          arquivo_url?: string
+          conta_bancaria_id?: string
+          created_at?: string
+          created_by?: string | null
+          data_importacao?: string
+          formato?: Database["public"]["Enums"]["formato_extrato_enum"]
+          id?: string
+          metadados?: Json | null
+          periodo_fim?: string | null
+          periodo_inicio?: string | null
+          status?: Database["public"]["Enums"]["status_extrato_enum"]
+          total_transacoes?: number | null
+          transacoes_processadas?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "extratos_importados_conta_bancaria_id_fkey"
+            columns: ["conta_bancaria_id"]
+            isOneToOne: false
+            referencedRelation: "contas_bancarias"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      extratos_transacoes_temp: {
+        Row: {
+          categoria_sugerida: string | null
+          cliente_sugerido_id: string | null
+          comprovante_url: string | null
+          confianca_vinculo: number | null
+          created_at: string
+          data_transacao: string
+          descricao: string
+          extrato_id: string
+          fornecedor_sugerido_id: string | null
+          id: string
+          numero_documento: string | null
+          observacoes_usuario: string | null
+          saldo_apos_transacao: number | null
+          status_processamento: Database["public"]["Enums"]["status_processamento_enum"]
+          tipo_movimento: Database["public"]["Enums"]["tipo_movimento_enum"]
+          titulo_vinculado_id: string | null
+          updated_at: string
+          valor: number
+        }
+        Insert: {
+          categoria_sugerida?: string | null
+          cliente_sugerido_id?: string | null
+          comprovante_url?: string | null
+          confianca_vinculo?: number | null
+          created_at?: string
+          data_transacao: string
+          descricao: string
+          extrato_id: string
+          fornecedor_sugerido_id?: string | null
+          id?: string
+          numero_documento?: string | null
+          observacoes_usuario?: string | null
+          saldo_apos_transacao?: number | null
+          status_processamento?: Database["public"]["Enums"]["status_processamento_enum"]
+          tipo_movimento: Database["public"]["Enums"]["tipo_movimento_enum"]
+          titulo_vinculado_id?: string | null
+          updated_at?: string
+          valor: number
+        }
+        Update: {
+          categoria_sugerida?: string | null
+          cliente_sugerido_id?: string | null
+          comprovante_url?: string | null
+          confianca_vinculo?: number | null
+          created_at?: string
+          data_transacao?: string
+          descricao?: string
+          extrato_id?: string
+          fornecedor_sugerido_id?: string | null
+          id?: string
+          numero_documento?: string | null
+          observacoes_usuario?: string | null
+          saldo_apos_transacao?: number | null
+          status_processamento?: Database["public"]["Enums"]["status_processamento_enum"]
+          tipo_movimento?: Database["public"]["Enums"]["tipo_movimento_enum"]
+          titulo_vinculado_id?: string | null
+          updated_at?: string
+          valor?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "extratos_transacoes_temp_extrato_id_fkey"
+            columns: ["extrato_id"]
+            isOneToOne: false
+            referencedRelation: "extratos_importados"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       faq_suporte: {
         Row: {
           ativo: boolean
@@ -14362,6 +14495,21 @@ export type Database = {
         }
         Returns: Json
       }
+      fn_sugerir_vinculo_transacao: {
+        Args: {
+          p_data_transacao: string
+          p_descricao: string
+          p_tipo_movimento: string
+          p_valor: number
+        }
+        Returns: {
+          confianca: number
+          entidade_id: string
+          entidade_nome: string
+          entidade_tipo: string
+          titulo_id: string
+        }[]
+      }
       fn_tarefa_status_prazo: { Args: { p_tarefa_id: string }; Returns: string }
       fn_validar_limite_adiantamento: {
         Args: {
@@ -14660,6 +14808,7 @@ export type Database = {
         | "gestor"
       etapa_carreira_enum: "trainee" | "estagiario" | "especialista" | "gestor"
       executor_area_enum: "Audiovisual" | "Criativo"
+      formato_extrato_enum: "ofx" | "csv"
       motivo_ponto_enum:
         | "operacional"
         | "cliente"
@@ -14720,6 +14869,7 @@ export type Database = {
         | "em_andamento"
         | "concluido"
         | "cancelado"
+      status_extrato_enum: "processando" | "concluido" | "erro"
       status_folha: "aberta" | "processada" | "fechada"
       status_item_folha: "pendente" | "pago" | "cancelado"
       status_padrao:
@@ -14735,6 +14885,11 @@ export type Database = {
         | "aprovado_gestor"
         | "aprovado_rh"
         | "rejeitado"
+      status_processamento_enum:
+        | "pendente"
+        | "revisado"
+        | "importado"
+        | "descartado"
       status_roteiro: "rascunho" | "em_revisao" | "aprovado" | "publicado"
       status_tarefa_enum:
         | "backlog"
@@ -14808,6 +14963,7 @@ export type Database = {
         | "preparacao"
         | "backup"
         | "feriado"
+      tipo_movimento_enum: "credito" | "debito"
       tipo_pontuacao:
         | "feedback_positivo"
         | "entrega_prazo"
@@ -15017,6 +15173,7 @@ export const Constants = {
       ],
       etapa_carreira_enum: ["trainee", "estagiario", "especialista", "gestor"],
       executor_area_enum: ["Audiovisual", "Criativo"],
+      formato_extrato_enum: ["ofx", "csv"],
       motivo_ponto_enum: [
         "operacional",
         "cliente",
@@ -15084,6 +15241,7 @@ export const Constants = {
         "concluido",
         "cancelado",
       ],
+      status_extrato_enum: ["processando", "concluido", "erro"],
       status_folha: ["aberta", "processada", "fechada"],
       status_item_folha: ["pendente", "pago", "cancelado"],
       status_padrao: [
@@ -15100,6 +15258,12 @@ export const Constants = {
         "aprovado_gestor",
         "aprovado_rh",
         "rejeitado",
+      ],
+      status_processamento_enum: [
+        "pendente",
+        "revisado",
+        "importado",
+        "descartado",
       ],
       status_roteiro: ["rascunho", "em_revisao", "aprovado", "publicado"],
       status_tarefa_enum: [
@@ -15179,6 +15343,7 @@ export const Constants = {
         "backup",
         "feriado",
       ],
+      tipo_movimento_enum: ["credito", "debito"],
       tipo_pontuacao: [
         "feedback_positivo",
         "entrega_prazo",

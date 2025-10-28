@@ -10,12 +10,15 @@ import { SectionHeader } from "@/components/SectionHeader";
 import { PrevisaoFluxoCard } from "@/components/Financeiro/PrevisaoFluxoCard";
 import { DashboardVencimentos } from "@/components/Financeiro/DashboardVencimentos";
 import { FABLancamento } from "@/components/Financeiro/FABLancamento";
-import { FileText, CreditCard, AlertCircle, DollarSign, ListFilter, PieChart } from "lucide-react";
+import { DialogImportarExtrato } from "@/components/Financeiro/Extratos";
+import { Button } from "@/components/ui/button";
+import { FileText, CreditCard, AlertCircle, DollarSign, ListFilter, PieChart, Upload } from "lucide-react";
 
 export default function GestaoContas() {
   const [searchParams] = useSearchParams();
   const tabInicial = searchParams.get('tab') || 'receber';
   const [activeTab, setActiveTab] = useState(tabInicial);
+  const [dialogImportarOpen, setDialogImportarOpen] = useState(false);
 
   useEffect(() => {
     const tab = searchParams.get('tab');
@@ -24,10 +27,16 @@ export default function GestaoContas() {
 
   return (
     <div className="container mx-auto p-6 space-y-6">
-      <SectionHeader
-        title="Gestão de Contas"
-        description="Gestão completa de contas a receber, pagar, dívidas e inadimplência"
-      />
+      <div className="flex items-center justify-between">
+        <SectionHeader
+          title="Gestão de Contas"
+          description="Gestão completa de contas a receber, pagar, dívidas e inadimplência"
+        />
+        <Button onClick={() => setDialogImportarOpen(true)} size="lg">
+          <Upload className="w-4 h-4 mr-2" />
+          Importar Extratos
+        </Button>
+      </div>
 
       {/* Dashboard de Métricas e Previsão de Fluxo */}
       <div className="grid gap-6 md:grid-cols-3">
@@ -92,6 +101,9 @@ export default function GestaoContas() {
 
       {/* FAB UNIFICADO */}
       <FABLancamento />
+
+      {/* DIALOG IMPORTAR EXTRATOS */}
+      <DialogImportarExtrato open={dialogImportarOpen} onOpenChange={setDialogImportarOpen} />
     </div>
   );
 }
