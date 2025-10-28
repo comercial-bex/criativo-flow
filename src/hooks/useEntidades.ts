@@ -11,7 +11,8 @@ const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 
 async function fetchEntidades(tipo: 'pagar' | 'receber'): Promise<Entidade[]> {
   const tabela = tipo === 'receber' ? 'clientes' : 'fornecedores';
-  const url = `${SUPABASE_URL}/rest/v1/${tabela}?select=id,razao_social,nome_fantasia&ativo=eq.true&order=razao_social.asc`;
+  const filtroAtivo = tipo === 'pagar' ? '&ativo=eq.true' : ''; // Só aplica em fornecedores
+  const url = `${SUPABASE_URL}/rest/v1/${tabela}?select=id,razao_social,nome_fantasia${filtroAtivo}&order=razao_social.asc`;
   
   const token = localStorage.getItem('sb-xvpqgwbktpfodbuhwqhh-auth-token');
   const authToken = token ? JSON.parse(token).access_token : null;

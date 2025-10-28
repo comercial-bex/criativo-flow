@@ -22,8 +22,8 @@ export function ExtratoParserConfig({ onSave, onBack, loading, file }: ExtratoPa
       data: '0',
       descricao: '3',
       valor: '1',
-      tipo: '',
-      saldo: '',
+      tipo: undefined,
+      saldo: undefined,
       documento: '2',
     },
   });
@@ -237,7 +237,7 @@ export function ExtratoParserConfig({ onSave, onBack, loading, file }: ExtratoPa
               <Label>Tipo (Débito/Crédito)</Label>
               <Input
                 placeholder="Ex: 3, D, Tipo"
-                value={config.mapeamentoColunas.tipo}
+                value={config.mapeamentoColunas.tipo || ''}
                 onChange={(e) =>
                   setConfig({
                     ...config,
@@ -251,7 +251,7 @@ export function ExtratoParserConfig({ onSave, onBack, loading, file }: ExtratoPa
               <Label>Saldo</Label>
               <Input
                 placeholder="Ex: 4, E, Saldo"
-                value={config.mapeamentoColunas.saldo}
+                value={config.mapeamentoColunas.saldo || ''}
                 onChange={(e) =>
                   setConfig({
                     ...config,

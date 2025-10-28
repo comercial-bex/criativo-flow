@@ -11,12 +11,16 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  let config: any;
+
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const { extratoId, config } = await req.json();
+    const body = await req.json();
+    const { extratoId, config: receivedConfig } = body;
+    config = receivedConfig;
 
     if (!extratoId) {
       throw new Error('extratoId é obrigatório');
@@ -104,16 +108,25 @@ serve(async (req) => {
       if (!periodoFim || dataTransacao > periodoFim) periodoFim = dataTransacao;
 
       // Converter valor
-      const valor = Math.abs(parseFloat(valorStr.replace(/[^\d,-]/g, '').replace(',', '.')));
+      const valorNumerico = parseFloat(valorStr.replace(/[^\d,-]/g, '').replace(',', '.'));
+      const valor = Math.abs(valorNumerico);
 
       // Determinar tipo de movimento
-      let tipoMovimento = 'credito';
+      let tipoMovimento: 'credito' | 'debito' = 'credito';
+
+      // 1. Verifica coluna tipo primeiro (mais confiável)
       if (tipoStr) {
         const tipo = tipoStr.toLowerCase();
-        if (tipo.includes('debito') || tipo.includes('débito') || tipo.includes('d') || valorStr.includes('-')) {
+        if (tipo.includes('d') || tipo.includes('debito') || tipo.includes('débito') || tipo.includes('saida') || tipo.includes('saída')) {
           tipoMovimento = 'debito';
         }
-      } else if (valorStr.includes('-')) {
+      }
+      // 2. Se não tem coluna tipo, verifica sinal negativo no valor
+      else if (valorStr.includes('-') || valorNumerico < 0) {
+        tipoMovimento = 'debito';
+      }
+      // 3. Contexto da descrição (backup)
+      else if (descLower.includes('pagamento') || descLower.includes('saque') || descLower.includes('tarifa')) {
         tipoMovimento = 'debito';
       }
 
@@ -183,7 +196,7 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('❌ Erro ao processar CSV:', error);
-    console.error('📋 Config recebida:', config);
+    console.error('📋 Config recebida:', JSON.stringify(config || {}, null, 2));
     return new Response(
       JSON.stringify({ 
         error: error.message,
