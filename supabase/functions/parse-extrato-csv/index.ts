@@ -22,7 +22,16 @@ serve(async (req) => {
       throw new Error('extratoId é obrigatório');
     }
 
-    const { delimitador = ',', linhaInicial = 1, mapeamentoColunas } = config || {};
+    if (!config || !config.mapeamentoColunas) {
+      throw new Error('config.mapeamentoColunas é obrigatório');
+    }
+
+    const { delimitador = ',', linhaInicial = 1, mapeamentoColunas } = config;
+
+    // Validar mapeamento mínimo
+    if (!mapeamentoColunas.data || !mapeamentoColunas.descricao || !mapeamentoColunas.valor) {
+      throw new Error('Mapeamento incompleto: data, descricao e valor são obrigatórios');
+    }
 
     // Buscar extrato
     const { data: extrato, error: extratoError } = await supabase
@@ -56,18 +65,30 @@ serve(async (req) => {
       const columns = line.split(delimitador).map(col => col.trim().replace(/^"|"$/g, ''));
 
       // Mapear colunas
-      const getColumn = (mapping: string) => {
+      const getColumn = (mapping: string | undefined) => {
+        if (!mapping) return undefined;
+        
         const index = parseInt(mapping);
-        return isNaN(index) ? columns.find(col => col.toLowerCase().includes(mapping.toLowerCase())) : columns[index];
+        if (!isNaN(index)) {
+          return columns[index]?.trim();
+        }
+        
+        // Busca por nome (case-insensitive)
+        return columns.find(col => 
+          col && col.toLowerCase().includes(mapping.toLowerCase())
+        )?.trim();
       };
 
       const dataStr = getColumn(mapeamentoColunas.data);
       const descricao = getColumn(mapeamentoColunas.descricao);
       const valorStr = getColumn(mapeamentoColunas.valor);
-      const tipoStr = getColumn(mapeamentoColunas.tipo);
-      const documento = getColumn(mapeamentoColunas.documento);
+      const tipoStr = mapeamentoColunas.tipo ? getColumn(mapeamentoColunas.tipo) : undefined;
+      const documento = mapeamentoColunas.documento ? getColumn(mapeamentoColunas.documento) : undefined;
 
-      if (!dataStr || !descricao || !valorStr) continue;
+      if (!dataStr || !descricao || !valorStr) {
+        console.log('⚠️ Linha ignorada (dados faltando):', { dataStr, descricao, valorStr });
+        continue;
+      }
 
       // Converter data (suporta DD/MM/YYYY, YYYY-MM-DD)
       let dataTransacao: string;
@@ -138,9 +159,13 @@ serve(async (req) => {
     );
 
   } catch (error) {
-    console.error('Erro ao processar CSV:', error);
+    console.error('❌ Erro ao processar CSV:', error);
+    console.error('📋 Config recebida:', config);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error.message,
+        detalhes: 'Verifique se a configuração de colunas está correta'
+      }),
       { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
