@@ -3715,6 +3715,7 @@ export type Database = {
       }
       eventos_calendario: {
         Row: {
+          captacao_id: string | null
           cliente_id: string | null
           cor: string | null
           created_at: string | null
@@ -3743,6 +3744,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          captacao_id?: string | null
           cliente_id?: string | null
           cor?: string | null
           created_at?: string | null
@@ -3771,6 +3773,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          captacao_id?: string | null
           cliente_id?: string | null
           cor?: string | null
           created_at?: string | null
@@ -3856,6 +3859,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "eventos_calendario_evento_pai_id_fkey"
+            columns: ["evento_pai_id"]
+            isOneToOne: false
+            referencedRelation: "vw_calendario_unificado"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "eventos_calendario_projeto_id_fkey"
             columns: ["projeto_id"]
             isOneToOne: false
@@ -3927,6 +3937,41 @@ export type Database = {
           },
           {
             foreignKeyName: "eventos_calendario_tarefa_id_fkey"
+            columns: ["tarefa_id"]
+            isOneToOne: false
+            referencedRelation: "vw_dashboard_vencimentos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_eventos_captacao"
+            columns: ["captacao_id"]
+            isOneToOne: false
+            referencedRelation: "captacoes_agenda"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_eventos_captacao"
+            columns: ["captacao_id"]
+            isOneToOne: false
+            referencedRelation: "vw_calendario_completo"
+            referencedColumns: ["captacao_id"]
+          },
+          {
+            foreignKeyName: "fk_eventos_tarefa"
+            columns: ["tarefa_id"]
+            isOneToOne: false
+            referencedRelation: "tarefa"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_eventos_tarefa"
+            columns: ["tarefa_id"]
+            isOneToOne: false
+            referencedRelation: "vw_calendario_completo"
+            referencedColumns: ["tarefa_id"]
+          },
+          {
+            foreignKeyName: "fk_eventos_tarefa"
             columns: ["tarefa_id"]
             isOneToOne: false
             referencedRelation: "vw_dashboard_vencimentos"
@@ -4757,6 +4802,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "financeiro_lancamentos_evento_id_fkey"
+            columns: ["evento_id"]
+            isOneToOne: false
+            referencedRelation: "vw_calendario_unificado"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "financeiro_lancamentos_folha_item_id_fkey"
             columns: ["folha_item_id"]
             isOneToOne: false
@@ -4848,6 +4900,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "fk_financeiro_evento"
+            columns: ["evento_id"]
+            isOneToOne: false
+            referencedRelation: "vw_calendario_unificado"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "fk_financeiro_tarefa"
             columns: ["tarefa_id"]
             isOneToOne: false
@@ -4880,6 +4939,13 @@ export type Database = {
             columns: ["evento_id"]
             isOneToOne: false
             referencedRelation: "vw_calendario_completo"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_lancamentos_evento"
+            columns: ["evento_id"]
+            isOneToOne: false
+            referencedRelation: "vw_calendario_unificado"
             referencedColumns: ["id"]
           },
           {
@@ -11687,6 +11753,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "tarefa_evento_calendario_id_fkey"
+            columns: ["evento_calendario_id"]
+            isOneToOne: false
+            referencedRelation: "vw_calendario_unificado"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "tarefa_produto_id_fkey"
             columns: ["produto_id"]
             isOneToOne: false
@@ -13078,6 +13151,177 @@ export type Database = {
         }
         Relationships: []
       }
+      vw_calendario_unificado: {
+        Row: {
+          captacao_id: string | null
+          cliente_id: string | null
+          cliente_nome: string | null
+          cor: string | null
+          created_at: string | null
+          data_fim: string | null
+          data_inicio: string | null
+          descricao: string | null
+          duracao_minutos: number | null
+          id: string | null
+          is_automatico: boolean | null
+          local: string | null
+          origem: string | null
+          projeto_id: string | null
+          projeto_titulo: string | null
+          responsavel_avatar: string | null
+          responsavel_id: string | null
+          responsavel_nome: string | null
+          responsavel_papeis: string[] | null
+          status: Database["public"]["Enums"]["status_evento"] | null
+          tarefa_id: string | null
+          tipo: Database["public"]["Enums"]["tipo_evento"] | null
+          tipo_origem: string | null
+          titulo: string | null
+          updated_at: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "eventos_calendario_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "eventos_calendario_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "mv_grs_dashboard_metrics"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "eventos_calendario_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "vw_calendario_completo"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "eventos_calendario_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "vw_client_metrics"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "eventos_calendario_projeto_id_fkey"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "projetos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "eventos_calendario_projeto_id_fkey"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "vw_calendario_completo"
+            referencedColumns: ["projeto_id"]
+          },
+          {
+            foreignKeyName: "eventos_calendario_projeto_id_fkey"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "vw_custos_projeto"
+            referencedColumns: ["projeto_id"]
+          },
+          {
+            foreignKeyName: "eventos_calendario_projeto_id_fkey"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "vw_projeto_lucro"
+            referencedColumns: ["projeto_id"]
+          },
+          {
+            foreignKeyName: "eventos_calendario_responsavel_id_fkey"
+            columns: ["responsavel_id"]
+            isOneToOne: false
+            referencedRelation: "pessoas"
+            referencedColumns: ["profile_id"]
+          },
+          {
+            foreignKeyName: "eventos_calendario_responsavel_id_fkey"
+            columns: ["responsavel_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["profile_id"]
+          },
+          {
+            foreignKeyName: "eventos_calendario_responsavel_id_fkey"
+            columns: ["responsavel_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_deprecated"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "eventos_calendario_responsavel_id_fkey"
+            columns: ["responsavel_id"]
+            isOneToOne: false
+            referencedRelation: "vw_calendario_completo"
+            referencedColumns: ["responsavel_profile_id"]
+          },
+          {
+            foreignKeyName: "eventos_calendario_tarefa_id_fkey"
+            columns: ["tarefa_id"]
+            isOneToOne: false
+            referencedRelation: "tarefa"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "eventos_calendario_tarefa_id_fkey"
+            columns: ["tarefa_id"]
+            isOneToOne: false
+            referencedRelation: "vw_calendario_completo"
+            referencedColumns: ["tarefa_id"]
+          },
+          {
+            foreignKeyName: "eventos_calendario_tarefa_id_fkey"
+            columns: ["tarefa_id"]
+            isOneToOne: false
+            referencedRelation: "vw_dashboard_vencimentos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_eventos_captacao"
+            columns: ["captacao_id"]
+            isOneToOne: false
+            referencedRelation: "captacoes_agenda"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_eventos_captacao"
+            columns: ["captacao_id"]
+            isOneToOne: false
+            referencedRelation: "vw_calendario_completo"
+            referencedColumns: ["captacao_id"]
+          },
+          {
+            foreignKeyName: "fk_eventos_tarefa"
+            columns: ["tarefa_id"]
+            isOneToOne: false
+            referencedRelation: "tarefa"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_eventos_tarefa"
+            columns: ["tarefa_id"]
+            isOneToOne: false
+            referencedRelation: "vw_calendario_completo"
+            referencedColumns: ["tarefa_id"]
+          },
+          {
+            foreignKeyName: "fk_eventos_tarefa"
+            columns: ["tarefa_id"]
+            isOneToOne: false
+            referencedRelation: "vw_dashboard_vencimentos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       vw_client_metrics: {
         Row: {
           assinatura_nome: string | null
@@ -13484,6 +13728,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "financeiro_lancamentos_evento_id_fkey"
+            columns: ["evento_id"]
+            isOneToOne: false
+            referencedRelation: "vw_calendario_unificado"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "financeiro_lancamentos_folha_item_id_fkey"
             columns: ["folha_item_id"]
             isOneToOne: false
@@ -13554,6 +13805,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "fk_financeiro_evento"
+            columns: ["evento_id"]
+            isOneToOne: false
+            referencedRelation: "vw_calendario_unificado"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "fk_financeiro_tarefa"
             columns: ["tarefa_id"]
             isOneToOne: false
@@ -13586,6 +13844,13 @@ export type Database = {
             columns: ["evento_id"]
             isOneToOne: false
             referencedRelation: "vw_calendario_completo"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_lancamentos_evento"
+            columns: ["evento_id"]
+            isOneToOne: false
+            referencedRelation: "vw_calendario_unificado"
             referencedColumns: ["id"]
           },
           {
@@ -13849,6 +14114,14 @@ export type Database = {
           check_name: string | null
           issues_count: number | null
           status: string | null
+        }
+        Relationships: []
+      }
+      vw_validacao_calendario_sync: {
+        Row: {
+          metrica: string | null
+          status: string | null
+          valor: string | null
         }
         Relationships: []
       }
@@ -14455,6 +14728,20 @@ export type Database = {
           p_usuario_login: string
         }
         Returns: string
+      }
+      sync_captacoes_to_calendar: {
+        Args: never
+        Returns: {
+          captacoes_sincronizadas: number
+          erros: string[]
+        }[]
+      }
+      sync_tarefas_to_calendar: {
+        Args: never
+        Returns: {
+          erros: string[]
+          tarefas_sincronizadas: number
+        }[]
       }
       update_connector_status: {
         Args: {
