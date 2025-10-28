@@ -19,12 +19,12 @@ export function ExtratoParserConfig({ onSave, onBack, loading, file }: ExtratoPa
     delimitador: ',',
     linhaInicial: 1,
     mapeamentoColunas: {
-      data: '',
-      descricao: '',
-      valor: '',
+      data: '0',
+      descricao: '3',
+      valor: '1',
       tipo: '',
       saldo: '',
-      documento: '',
+      documento: '2',
     },
   });
 

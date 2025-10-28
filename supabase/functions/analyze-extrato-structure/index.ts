@@ -160,16 +160,26 @@ Retorne APENAS o JSON de configuração, sem texto adicional.`;
     const dataLines = lines.split('\n').slice(config.linhaInicial || 1).filter(l => l.trim());
     
     for (let i = 0; i < Math.min(3, dataLines.length); i++) {
-      const cells = dataLines[i].split(config.delimitador);
-      const dataIdx = parseInt(config.mapeamentoColunas.data) || 0;
-      const descIdx = parseInt(config.mapeamentoColunas.descricao) || 1;
-      const valorIdx = parseInt(config.mapeamentoColunas.valor) || 2;
+      const cells = dataLines[i].split(config.delimitador).map(c => c.trim().replace(/^"|"$/g, ''));
       
-      if (cells.length > Math.max(dataIdx, descIdx, valorIdx)) {
+      // Função helper para extrair valor da coluna
+      const getColumn = (mapping: string) => {
+        if (!mapping) return '-';
+        const index = parseInt(mapping);
+        if (!isNaN(index)) {
+          return cells[index] || '-';
+        }
+        // Busca por nome (case-insensitive) - pega header
+        const header = lines.split('\n')[0].split(config.delimitador).map(h => h.trim());
+        const colIndex = header.findIndex(h => h.toLowerCase() === mapping.toLowerCase());
+        return colIndex >= 0 ? cells[colIndex] || '-' : '-';
+      };
+      
+      if (cells.length > 0) {
         preview.push({
-          data: cells[dataIdx]?.trim() || '-',
-          descricao: cells[descIdx]?.trim() || '-',
-          valor: cells[valorIdx]?.trim() || '-'
+          data: getColumn(config.mapeamentoColunas.data),
+          descricao: getColumn(config.mapeamentoColunas.descricao),
+          valor: getColumn(config.mapeamentoColunas.valor)
         });
       }
     }
