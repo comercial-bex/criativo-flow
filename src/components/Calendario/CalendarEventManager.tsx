@@ -339,9 +339,9 @@ export const CalendarEventManager = ({ events, currentDate, onNavigate, onDateCl
         )}
       </div>
 
-      {/* Calendar View */}
-      <Card>
-        <CardContent className="p-4">
+      {/* Calendar View - FASE 2 Gaming Card */}
+      <Card className="overflow-hidden">
+        <CardContent className="p-6">
           {isLoading ? (
             <div className="text-center py-8 text-muted-foreground">Carregando...</div>
           ) : view === 'week' ? (
@@ -524,105 +524,123 @@ const MonthView = ({
     );
   };
 
-  const getTipoBadgeColor = (tipo: string) => {
-    switch (tipo) {
-      case 'nacional': return 'bg-red-500 text-white';
-      case 'estadual': return 'bg-yellow-500 text-white';
-      case 'municipal': return 'bg-blue-500 text-white';
-      case 'facultativo': return 'bg-orange-500 text-white';
-      case 'comemorativo': return 'bg-gray-400 text-white';
-      default: return 'bg-red-500 text-white';
-    }
-  };
-
-  const isFeriadoProlongado = (dia: Date, feriados: any[]) => {
-    const diaSemana = dia.getDay();
-    return feriados.length > 0 && (diaSemana === 1 || diaSemana === 5); // Segunda ou Sexta
+  const getEventTypeDot = (tipo: string) => {
+    return tipoColors[tipo] || 'bg-gray-500';
   };
 
   return (
-    <div>
-      <div className="grid grid-cols-7 border-b bg-muted/50">
-        {['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'].map(dia => (
-          <div key={dia} className="border-r p-2 text-center text-sm font-semibold last:border-r-0">
-            {dia}
-          </div>
-        ))}
-      </div>
+    <div className="rounded-2xl border-2 border-border overflow-hidden">
+      {/* Double border effect - FASE 2 */}
+      <div className="rounded-xl border-2 border-border/50 m-1" 
+           style={{ boxShadow: '0px 2px 1.5px 0px rgba(165, 174, 184, 0.32) inset' }}>
+        
+        {/* Header dos dias da semana */}
+        <div className="grid grid-cols-7 border-b bg-muted/30">
+          {['SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB', 'DOM'].map(dia => (
+            <div key={dia} className="p-3 text-center">
+              <span className="text-xs font-medium text-muted-foreground">{dia}</span>
+            </div>
+          ))}
+        </div>
 
-      <div className="grid grid-cols-7">
-        {days.map((day, index) => {
-          const dayEvents = getEventosDodia(day, eventos);
-          const isCurrentMonth = day.getMonth() === currentDate.getMonth();
-          const isToday = isSameDay(day, new Date());
+        {/* Grid de dias */}
+        <div className="grid grid-cols-7 gap-2 p-3">
+          {days.map((day, index) => {
+            const dayEvents = getEventosDodia(day, eventos);
+            const nonHolidayEvents = dayEvents.filter(e => e.tipo !== 'feriado');
+            const isCurrentMonth = day.getMonth() === currentDate.getMonth();
+            const isToday = isSameDay(day, new Date());
+            const feriadosDia = getFeriadosDodia(day, eventos);
 
-          const feriadosDia = getFeriadosDodia(day, eventos);
-          const isProlongado = isFeriadoProlongado(day, feriadosDia);
+            return (
+              <div
+                key={index}
+                onClick={() => onDateClick?.(day)}
+                className={cn(
+                  'group relative min-h-[100px] rounded-xl border-2 p-3 cursor-pointer transition-all duration-300',
+                  'hover:scale-[1.02] hover:shadow-lg',
+                  !isCurrentMonth && 'opacity-40 bg-muted/20',
+                  isCurrentMonth && 'bg-background border-border',
+                  isToday && 'bg-primary/5 border-primary ring-2 ring-primary/30',
+                  feriadosDia.length > 0 && 'bg-red-50/50 dark:bg-red-950/10 border-red-200 dark:border-red-900'
+                )}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={() => onDrop(day)}
+              >
+                {/* Gradient hover effect - FASE 2 */}
+                <div className="absolute inset-0 bg-gradient-to-tl from-primary/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl pointer-events-none" />
+                
+                {/* Feriado badge no topo direito */}
+                {feriadosDia.length > 0 && (
+                  <div className="absolute -top-1 -right-1 z-10">
+                    <Badge className="h-5 px-1.5 text-[9px] bg-red-500 text-white border-0">
+                      🎉 {feriadosDia[0].titulo.slice(0, 8)}
+                    </Badge>
+                  </div>
+                )}
 
-          return (
-            <div
-              key={index}
-              onClick={() => onDateClick?.(day)}
-              className={cn(
-                'min-h-24 border-b border-r p-2 cursor-pointer hover:bg-accent/50 transition-colors relative',
-                !isCurrentMonth && 'bg-muted/30',
-                isToday && 'bg-primary/10',
-                feriadosDia.length > 0 && 'bg-red-50 dark:bg-red-950/20'
-              )}
-              onDragOver={(e) => e.preventDefault()}
-              onDrop={() => onDrop(day)}
-            >
-              {/* Indicador de Feriado no Topo */}
-              {feriadosDia.length > 0 && (
-                <div className="absolute top-0 left-0 right-0 space-y-0.5">
-                  {feriadosDia.map(feriado => (
-                    <div 
-                      key={feriado.id}
+                {/* Número do dia - FASE 1 */}
+                <div className="flex items-center justify-center mb-3">
+                  <span className={cn(
+                    'text-2xl font-bold',
+                    !isCurrentMonth && 'text-muted-foreground',
+                    isToday && 'text-primary'
+                  )}>
+                    {day.getDate()}
+                  </span>
+                </div>
+
+                {/* Event indicators - FASE 4 mini-badges */}
+                <div className="space-y-1">
+                  {nonHolidayEvents.slice(0, 3).map((evento, idx) => (
+                    <div
+                      key={evento.id}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onEventClick(evento);
+                      }}
+                      draggable
+                      onDragStart={() => onDragStart(evento)}
+                      onDragEnd={onDragEnd}
                       className={cn(
-                        'text-[9px] font-semibold px-1 py-0.5 text-center truncate',
-                        getTipoBadgeColor(feriado.origem || 'nacional')
+                        'px-2 py-0.5 rounded text-[10px] font-medium text-white truncate cursor-pointer',
+                        'hover:opacity-80 transition-opacity',
+                        getEventTypeDot(evento.tipo)
                       )}
-                      title={feriado.titulo}
+                      title={evento.titulo}
                     >
-                      🎉 {feriado.titulo}
+                      {evento.titulo.slice(0, 12)}
+                      {evento.is_extra && ' ⚡'}
+                      {evento.is_automatico && ' 🤖'}
                     </div>
                   ))}
-                  {isProlongado && (
-                    <div className="text-[8px] bg-purple-500 text-white px-1 py-0.5 text-center font-bold">
-                      🎊 FERIADO PROLONGADO
+                  
+                  {/* +N badge - FASE 4 */}
+                  {nonHolidayEvents.length > 3 && (
+                    <div className="text-center">
+                      <Badge variant="secondary" className="h-4 px-1.5 text-[9px]">
+                        +{nonHolidayEvents.length - 3}
+                      </Badge>
                     </div>
                   )}
                 </div>
-              )}
 
-              <div className={cn(
-                'text-sm font-medium mb-1',
-                feriadosDia.length > 0 ? 'mt-6' : '',
-                !isCurrentMonth && 'text-muted-foreground',
-                isToday && 'text-primary font-bold'
-              )}>
-                {day.getDate()}
-              </div>
-              <div className="space-y-1">
-                {dayEvents.filter(e => e.tipo !== 'feriado').slice(0, 2).map(evento => (
-                  <EventoCard 
-                    key={evento.id} 
-                    evento={evento} 
-                    variant="compact"
-                    onClick={() => onEventClick(evento)}
-                    onDragStart={onDragStart}
-                    onDragEnd={onDragEnd}
-                  />
-                ))}
-                {dayEvents.filter(e => e.tipo !== 'feriado').length > 2 && (
-                  <div className="text-xs text-muted-foreground">
-                    +{dayEvents.filter(e => e.tipo !== 'feriado').length - 2} mais
+                {/* Event type dots - FASE 1 */}
+                {nonHolidayEvents.length > 0 && (
+                  <div className="absolute bottom-2 left-2 flex gap-1">
+                    {Array.from(new Set(nonHolidayEvents.map(e => e.tipo))).slice(0, 4).map((tipo, idx) => (
+                      <div
+                        key={idx}
+                        className={cn('h-1.5 w-1.5 rounded-full', getEventTypeDot(tipo))}
+                        title={tipoCategories[tipo]}
+                      />
+                    ))}
                   </div>
                 )}
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
     </div>
   );
