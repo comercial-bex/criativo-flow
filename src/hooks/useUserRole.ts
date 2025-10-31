@@ -52,11 +52,11 @@ export function useUserRole() {
 
     const fetchRole = async () => {
       try {
-        // ✅ FONTE ÚNICA: user_roles (após Refatoração Cirúrgica)
+        // ✅ SPRINT 1: Ler de pessoas.papeis (fonte de verdade) 
         const { data, error } = await supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', user.id)
+          .from('pessoas')
+          .select('papeis')
+          .eq('profile_id', user.id)
           .maybeSingle();
 
         clearTimeout(roleTimeout);
@@ -68,8 +68,10 @@ export function useUserRole() {
           return;
         }
 
-        const userRole = (data?.role as UserRole) || null;
-        console.log('👤 UserRole: Fetched role:', userRole);
+        // Mapear primeiro papel para role (compatibilidade)
+        const papeis = data?.papeis || [];
+        const userRole = (papeis.length > 0 ? papeis[0] : null) as UserRole;
+        console.log('👤 UserRole: Fetched role from papeis:', userRole);
         
         if (userRole) {
           authCache.set(`user_role_${user.id}`, userRole);

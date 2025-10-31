@@ -93,10 +93,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         const userId = authData.session.user.id;
         console.log('🔐 Auth: Validando integridade do usuário:', userId);
         
-      // ✅ MIGRADO: Verificar pessoa na estrutura unificada
+      // ✅ SPRINT 1: Query unificada de pessoas (já contém status e role via user_roles)
       const { data: pessoa, error: pessoaError } = await supabase
         .from('pessoas')
-        .select('id, status, profile_id')
+        .select('id, status, profile_id, papeis')
         .eq('profile_id', userId)
         .maybeSingle();
         
@@ -132,26 +132,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         };
       }
         
-        // 3. Verificar se role está atribuída
-        const { data: role, error: roleError } = await supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', userId)
-          .maybeSingle();
-        
-        if (roleError) {
-          console.error('🔐 Auth: Erro ao buscar role:', roleError);
-          await supabase.auth.signOut();
-          return { error: { message: 'Erro ao validar permissões. Tente novamente.' } };
-        }
-        
-        if (!role) {
-          console.warn('🔐 Auth: Nenhuma role atribuída');
+        // 3. Verificar se há papéis atribuídos
+        if (!pessoa.papeis || pessoa.papeis.length === 0) {
+          console.warn('🔐 Auth: Nenhum papel atribuído');
           await supabase.auth.signOut();
           return { error: { message: 'Você não tem permissões atribuídas. Entre em contato com o administrador.' } };
         }
         
-        console.log('✅ Auth: Validação de integridade concluída - Role:', role.role);
+        console.log('✅ Auth: Validação de integridade concluída - Papéis:', pessoa.papeis);
       }
       
       console.log('🔐 Auth: Login realizado com sucesso');
