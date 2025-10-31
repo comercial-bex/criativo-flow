@@ -84,6 +84,13 @@ export type Database = {
             foreignKeyName: "admin_temp_data_cliente_id_fkey"
             columns: ["cliente_id"]
             isOneToOne: false
+            referencedRelation: "mv_cliente_timeline"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "admin_temp_data_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
             referencedRelation: "mv_grs_dashboard_metrics"
             referencedColumns: ["cliente_id"]
           },
@@ -223,6 +230,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "clientes"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "analise_competitiva_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "mv_cliente_timeline"
+            referencedColumns: ["cliente_id"]
           },
           {
             foreignKeyName: "analise_competitiva_cliente_id_fkey"
@@ -489,6 +503,13 @@ export type Database = {
             foreignKeyName: "aprovacoes_cliente_cliente_id_fkey"
             columns: ["cliente_id"]
             isOneToOne: false
+            referencedRelation: "mv_cliente_timeline"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "aprovacoes_cliente_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
             referencedRelation: "mv_grs_dashboard_metrics"
             referencedColumns: ["cliente_id"]
           },
@@ -587,6 +608,13 @@ export type Database = {
             foreignKeyName: "fk_aprovacoes_cliente"
             columns: ["cliente_id"]
             isOneToOne: false
+            referencedRelation: "mv_cliente_timeline"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "fk_aprovacoes_cliente"
+            columns: ["cliente_id"]
+            isOneToOne: false
             referencedRelation: "mv_grs_dashboard_metrics"
             referencedColumns: ["cliente_id"]
           },
@@ -610,6 +638,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "clientes"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_aprovacoes_cliente_cliente"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "mv_cliente_timeline"
+            referencedColumns: ["cliente_id"]
           },
           {
             foreignKeyName: "fk_aprovacoes_cliente_cliente"
@@ -979,6 +1014,45 @@ export type Database = {
         }
         Relationships: []
       }
+      audit_universal: {
+        Row: {
+          dados_antigos: Json | null
+          dados_novos: Json | null
+          id: string
+          ip_address: unknown
+          operacao: string
+          registro_id: string
+          tabela: string
+          timestamp: string | null
+          user_agent: string | null
+          usuario_id: string | null
+        }
+        Insert: {
+          dados_antigos?: Json | null
+          dados_novos?: Json | null
+          id?: string
+          ip_address?: unknown
+          operacao: string
+          registro_id: string
+          tabela: string
+          timestamp?: string | null
+          user_agent?: string | null
+          usuario_id?: string | null
+        }
+        Update: {
+          dados_antigos?: Json | null
+          dados_novos?: Json | null
+          id?: string
+          ip_address?: unknown
+          operacao?: string
+          registro_id?: string
+          tabela?: string
+          timestamp?: string | null
+          user_agent?: string | null
+          usuario_id?: string | null
+        }
+        Relationships: []
+      }
       backup_fks_pre_sprint1: {
         Row: {
           backup_timestamp: string | null
@@ -1056,6 +1130,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "clientes"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "brand_assets_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "mv_cliente_timeline"
+            referencedColumns: ["cliente_id"]
           },
           {
             foreignKeyName: "brand_assets_cliente_id_fkey"
@@ -1215,6 +1296,13 @@ export type Database = {
             foreignKeyName: "briefings_cliente_id_fkey"
             columns: ["cliente_id"]
             isOneToOne: false
+            referencedRelation: "mv_cliente_timeline"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "briefings_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
             referencedRelation: "mv_grs_dashboard_metrics"
             referencedColumns: ["cliente_id"]
           },
@@ -1287,6 +1375,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "clientes"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_briefings_cliente"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "mv_cliente_timeline"
+            referencedColumns: ["cliente_id"]
           },
           {
             foreignKeyName: "fk_briefings_cliente"
@@ -1489,6 +1584,13 @@ export type Database = {
             foreignKeyName: "campanha_cliente_id_fkey"
             columns: ["cliente_id"]
             isOneToOne: false
+            referencedRelation: "mv_cliente_timeline"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "campanha_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
             referencedRelation: "mv_grs_dashboard_metrics"
             referencedColumns: ["cliente_id"]
           },
@@ -1555,6 +1657,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "clientes"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_captacoes_cliente"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "mv_cliente_timeline"
+            referencedColumns: ["cliente_id"]
           },
           {
             foreignKeyName: "fk_captacoes_cliente"
@@ -1734,6 +1843,13 @@ export type Database = {
             foreignKeyName: "cliente_documentos_cliente_id_fkey"
             columns: ["cliente_id"]
             isOneToOne: false
+            referencedRelation: "mv_cliente_timeline"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "cliente_documentos_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
             referencedRelation: "mv_grs_dashboard_metrics"
             referencedColumns: ["cliente_id"]
           },
@@ -1844,6 +1960,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "clientes"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cliente_metas_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "mv_cliente_timeline"
+            referencedColumns: ["cliente_id"]
           },
           {
             foreignKeyName: "cliente_metas_cliente_id_fkey"
@@ -2061,6 +2184,13 @@ export type Database = {
             foreignKeyName: "fk_cliente"
             columns: ["cliente_id"]
             isOneToOne: false
+            referencedRelation: "mv_cliente_timeline"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "fk_cliente"
+            columns: ["cliente_id"]
+            isOneToOne: false
             referencedRelation: "mv_grs_dashboard_metrics"
             referencedColumns: ["cliente_id"]
           },
@@ -2135,6 +2265,13 @@ export type Database = {
             foreignKeyName: "cliente_tickets_cliente_id_fkey"
             columns: ["cliente_id"]
             isOneToOne: false
+            referencedRelation: "mv_cliente_timeline"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "cliente_tickets_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
             referencedRelation: "mv_grs_dashboard_metrics"
             referencedColumns: ["cliente_id"]
           },
@@ -2195,6 +2332,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "clientes"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cliente_usuarios_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "mv_cliente_timeline"
+            referencedColumns: ["cliente_id"]
           },
           {
             foreignKeyName: "cliente_usuarios_cliente_id_fkey"
@@ -2667,6 +2811,13 @@ export type Database = {
             foreignKeyName: "concorrentes_analise_cliente_id_fkey"
             columns: ["cliente_id"]
             isOneToOne: false
+            referencedRelation: "mv_cliente_timeline"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "concorrentes_analise_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
             referencedRelation: "mv_grs_dashboard_metrics"
             referencedColumns: ["cliente_id"]
           },
@@ -3040,6 +3191,13 @@ export type Database = {
             foreignKeyName: "contratos_cliente_id_fkey"
             columns: ["cliente_id"]
             isOneToOne: false
+            referencedRelation: "mv_cliente_timeline"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "contratos_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
             referencedRelation: "mv_grs_dashboard_metrics"
             referencedColumns: ["cliente_id"]
           },
@@ -3240,6 +3398,13 @@ export type Database = {
             foreignKeyName: "credenciais_cliente_cliente_id_fkey"
             columns: ["cliente_id"]
             isOneToOne: false
+            referencedRelation: "mv_cliente_timeline"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "credenciais_cliente_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
             referencedRelation: "mv_grs_dashboard_metrics"
             referencedColumns: ["cliente_id"]
           },
@@ -3424,6 +3589,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "clientes"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dividas_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "mv_cliente_timeline"
+            referencedColumns: ["cliente_id"]
           },
           {
             foreignKeyName: "dividas_cliente_id_fkey"
@@ -3741,6 +3913,13 @@ export type Database = {
             foreignKeyName: "eventos_agenda_cliente_id_fkey"
             columns: ["cliente_id"]
             isOneToOne: false
+            referencedRelation: "mv_cliente_timeline"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "eventos_agenda_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
             referencedRelation: "mv_grs_dashboard_metrics"
             referencedColumns: ["cliente_id"]
           },
@@ -3904,6 +4083,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "clientes"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "eventos_calendario_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "mv_cliente_timeline"
+            referencedColumns: ["cliente_id"]
           },
           {
             foreignKeyName: "eventos_calendario_cliente_id_fkey"
@@ -4113,6 +4299,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "clientes"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exportacoes_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "mv_cliente_timeline"
+            referencedColumns: ["cliente_id"]
           },
           {
             foreignKeyName: "exportacoes_cliente_id_fkey"
@@ -4393,6 +4586,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "clientes"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "faturas_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "mv_cliente_timeline"
+            referencedColumns: ["cliente_id"]
           },
           {
             foreignKeyName: "faturas_cliente_id_fkey"
@@ -5044,6 +5244,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "clientes"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financeiro_lancamentos_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "mv_cliente_timeline"
+            referencedColumns: ["cliente_id"]
           },
           {
             foreignKeyName: "financeiro_lancamentos_cliente_id_fkey"
@@ -6198,6 +6405,13 @@ export type Database = {
             foreignKeyName: "intelligence_alerts_cliente_id_fkey"
             columns: ["cliente_id"]
             isOneToOne: false
+            referencedRelation: "mv_cliente_timeline"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "intelligence_alerts_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
             referencedRelation: "mv_grs_dashboard_metrics"
             referencedColumns: ["cliente_id"]
           },
@@ -6398,6 +6612,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "clientes"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventario_alugueis_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "mv_cliente_timeline"
+            referencedColumns: ["cliente_id"]
           },
           {
             foreignKeyName: "inventario_alugueis_cliente_id_fkey"
@@ -6797,6 +7018,13 @@ export type Database = {
             foreignKeyName: "inventario_movimentacoes_cliente_id_fkey"
             columns: ["cliente_id"]
             isOneToOne: false
+            referencedRelation: "mv_cliente_timeline"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "inventario_movimentacoes_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
             referencedRelation: "mv_grs_dashboard_metrics"
             referencedColumns: ["cliente_id"]
           },
@@ -6936,6 +7164,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "clientes"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventario_reservas_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "mv_cliente_timeline"
+            referencedColumns: ["cliente_id"]
           },
           {
             foreignKeyName: "inventario_reservas_cliente_id_fkey"
@@ -7326,6 +7561,13 @@ export type Database = {
             foreignKeyName: "logs_atividade_cliente_id_fkey"
             columns: ["cliente_id"]
             isOneToOne: false
+            referencedRelation: "mv_cliente_timeline"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "logs_atividade_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
             referencedRelation: "mv_grs_dashboard_metrics"
             referencedColumns: ["cliente_id"]
           },
@@ -7484,6 +7726,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "clientes"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notas_cliente_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "mv_cliente_timeline"
+            referencedColumns: ["cliente_id"]
           },
           {
             foreignKeyName: "notas_cliente_cliente_id_fkey"
@@ -7651,6 +7900,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "clientes"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notas_onboarding_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "mv_cliente_timeline"
+            referencedColumns: ["cliente_id"]
           },
           {
             foreignKeyName: "notas_onboarding_cliente_id_fkey"
@@ -7921,6 +8177,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "clientes"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orcamentos_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "mv_cliente_timeline"
+            referencedColumns: ["cliente_id"]
           },
           {
             foreignKeyName: "orcamentos_cliente_id_fkey"
@@ -8453,6 +8716,13 @@ export type Database = {
             foreignKeyName: "pessoas_cliente_id_fkey"
             columns: ["cliente_id"]
             isOneToOne: false
+            referencedRelation: "mv_cliente_timeline"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "pessoas_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
             referencedRelation: "mv_grs_dashboard_metrics"
             referencedColumns: ["cliente_id"]
           },
@@ -8556,6 +8826,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "clientes"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "planejamentos_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "mv_cliente_timeline"
+            referencedColumns: ["cliente_id"]
           },
           {
             foreignKeyName: "planejamentos_cliente_id_fkey"
@@ -8685,6 +8962,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "clientes"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "planos_estrategicos_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "mv_cliente_timeline"
+            referencedColumns: ["cliente_id"]
           },
           {
             foreignKeyName: "planos_estrategicos_cliente_id_fkey"
@@ -9457,6 +9741,13 @@ export type Database = {
             foreignKeyName: "profiles_cliente_id_fkey"
             columns: ["cliente_id"]
             isOneToOne: false
+            referencedRelation: "mv_cliente_timeline"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "profiles_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
             referencedRelation: "mv_grs_dashboard_metrics"
             referencedColumns: ["cliente_id"]
           },
@@ -9682,6 +9973,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "clientes"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_projetos_cliente"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "mv_cliente_timeline"
+            referencedColumns: ["cliente_id"]
           },
           {
             foreignKeyName: "fk_projetos_cliente"
@@ -10035,6 +10333,13 @@ export type Database = {
             foreignKeyName: "propostas_cliente_id_fkey"
             columns: ["cliente_id"]
             isOneToOne: false
+            referencedRelation: "mv_cliente_timeline"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "propostas_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
             referencedRelation: "mv_grs_dashboard_metrics"
             referencedColumns: ["cliente_id"]
           },
@@ -10210,6 +10515,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "clientes"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "relatorios_benchmark_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "mv_cliente_timeline"
+            referencedColumns: ["cliente_id"]
           },
           {
             foreignKeyName: "relatorios_benchmark_cliente_id_fkey"
@@ -10907,6 +11219,13 @@ export type Database = {
             foreignKeyName: "roteiros_cliente_id_fkey"
             columns: ["cliente_id"]
             isOneToOne: false
+            referencedRelation: "mv_cliente_timeline"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "roteiros_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
             referencedRelation: "mv_grs_dashboard_metrics"
             referencedColumns: ["cliente_id"]
           },
@@ -11075,6 +11394,13 @@ export type Database = {
             foreignKeyName: "social_connection_logs_cliente_id_fkey"
             columns: ["cliente_id"]
             isOneToOne: false
+            referencedRelation: "mv_cliente_timeline"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "social_connection_logs_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
             referencedRelation: "mv_grs_dashboard_metrics"
             referencedColumns: ["cliente_id"]
           },
@@ -11227,6 +11553,13 @@ export type Database = {
             foreignKeyName: "social_integrations_cliente_cliente_id_fkey"
             columns: ["cliente_id"]
             isOneToOne: false
+            referencedRelation: "mv_cliente_timeline"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "social_integrations_cliente_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
             referencedRelation: "mv_grs_dashboard_metrics"
             referencedColumns: ["cliente_id"]
           },
@@ -11322,6 +11655,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "clientes"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "social_metrics_cliente_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "mv_cliente_timeline"
+            referencedColumns: ["cliente_id"]
           },
           {
             foreignKeyName: "social_metrics_cliente_cliente_id_fkey"
@@ -12053,6 +12393,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "clientes"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tarefa_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "mv_cliente_timeline"
+            referencedColumns: ["cliente_id"]
           },
           {
             foreignKeyName: "tarefa_cliente_id_fkey"
@@ -13029,6 +13376,13 @@ export type Database = {
             foreignKeyName: "titulos_financeiros_cliente_id_fkey"
             columns: ["cliente_id"]
             isOneToOne: false
+            referencedRelation: "mv_cliente_timeline"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "titulos_financeiros_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
             referencedRelation: "mv_grs_dashboard_metrics"
             referencedColumns: ["cliente_id"]
           },
@@ -13175,6 +13529,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "clientes"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transacoes_financeiras_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "mv_cliente_timeline"
+            referencedColumns: ["cliente_id"]
           },
           {
             foreignKeyName: "transacoes_financeiras_cliente_id_fkey"
@@ -13429,6 +13790,13 @@ export type Database = {
         }
         Relationships: []
       }
+      mv_cliente_timeline: {
+        Row: {
+          cliente_id: string | null
+          timeline: Json | null
+        }
+        Relationships: []
+      }
       mv_grs_dashboard_metrics: {
         Row: {
           cliente_created_at: string | null
@@ -13500,6 +13868,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "clientes"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pessoas_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "mv_cliente_timeline"
+            referencedColumns: ["cliente_id"]
           },
           {
             foreignKeyName: "pessoas_cliente_id_fkey"
@@ -13579,6 +13954,363 @@ export type Database = {
           total: number | null
         }
         Relationships: []
+      }
+      vw_briefings_legacy: {
+        Row: {
+          anexo_url: string | null
+          call_to_action: string | null
+          cliente_id: string | null
+          created_at: string | null
+          decided_at: string | null
+          decidido_por: string | null
+          descricao: string | null
+          formato_postagem: string | null
+          hashtags: string[] | null
+          id: string | null
+          legenda: string | null
+          motivo_reprovacao: string | null
+          objetivo_postagem: string | null
+          projeto_id: string | null
+          rede_social: string | null
+          solicitado_por: string | null
+          status_briefing: string | null
+          tarefa_id: string | null
+          titulo: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          anexo_url?: string | null
+          call_to_action?: string | null
+          cliente_id?: string | null
+          created_at?: string | null
+          decided_at?: string | null
+          decidido_por?: string | null
+          descricao?: string | null
+          formato_postagem?: string | null
+          hashtags?: string[] | null
+          id?: string | null
+          legenda?: string | null
+          motivo_reprovacao?: string | null
+          objetivo_postagem?: string | null
+          projeto_id?: string | null
+          rede_social?: string | null
+          solicitado_por?: string | null
+          status_briefing?: string | null
+          tarefa_id?: string | null
+          titulo?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          anexo_url?: string | null
+          call_to_action?: string | null
+          cliente_id?: string | null
+          created_at?: string | null
+          decided_at?: string | null
+          decidido_por?: string | null
+          descricao?: string | null
+          formato_postagem?: string | null
+          hashtags?: string[] | null
+          id?: string | null
+          legenda?: string | null
+          motivo_reprovacao?: string | null
+          objetivo_postagem?: string | null
+          projeto_id?: string | null
+          rede_social?: string | null
+          solicitado_por?: string | null
+          status_briefing?: string | null
+          tarefa_id?: string | null
+          titulo?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aprovacoes_cliente_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "aprovacoes_cliente_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "mv_cliente_timeline"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "aprovacoes_cliente_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "mv_grs_dashboard_metrics"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "aprovacoes_cliente_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "vw_calendario_completo"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "aprovacoes_cliente_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "vw_client_metrics"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "aprovacoes_cliente_decidido_por_fkey"
+            columns: ["decidido_por"]
+            isOneToOne: false
+            referencedRelation: "profiles_deprecated_backup_2025"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "aprovacoes_cliente_decidido_por_fkey"
+            columns: ["decidido_por"]
+            isOneToOne: false
+            referencedRelation: "vw_client_metrics"
+            referencedColumns: ["responsavel_id"]
+          },
+          {
+            foreignKeyName: "aprovacoes_cliente_projeto_id_fkey"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "projetos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "aprovacoes_cliente_projeto_id_fkey"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "vw_calendario_completo"
+            referencedColumns: ["projeto_id"]
+          },
+          {
+            foreignKeyName: "aprovacoes_cliente_projeto_id_fkey"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "vw_custos_projeto"
+            referencedColumns: ["projeto_id"]
+          },
+          {
+            foreignKeyName: "aprovacoes_cliente_projeto_id_fkey"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "vw_dashboard_financeiro_projeto"
+            referencedColumns: ["projeto_id"]
+          },
+          {
+            foreignKeyName: "aprovacoes_cliente_projeto_id_fkey"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "vw_projeto_lucro"
+            referencedColumns: ["projeto_id"]
+          },
+          {
+            foreignKeyName: "aprovacoes_cliente_solicitado_por_fkey"
+            columns: ["solicitado_por"]
+            isOneToOne: false
+            referencedRelation: "profiles_deprecated_backup_2025"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "aprovacoes_cliente_solicitado_por_fkey"
+            columns: ["solicitado_por"]
+            isOneToOne: false
+            referencedRelation: "vw_client_metrics"
+            referencedColumns: ["responsavel_id"]
+          },
+          {
+            foreignKeyName: "aprovacoes_cliente_tarefa_id_fkey"
+            columns: ["tarefa_id"]
+            isOneToOne: false
+            referencedRelation: "tarefas_projeto"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_aprovacoes_cliente"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_aprovacoes_cliente"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "mv_cliente_timeline"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "fk_aprovacoes_cliente"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "mv_grs_dashboard_metrics"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "fk_aprovacoes_cliente"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "vw_calendario_completo"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "fk_aprovacoes_cliente"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "vw_client_metrics"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "fk_aprovacoes_cliente_cliente"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_aprovacoes_cliente_cliente"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "mv_cliente_timeline"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "fk_aprovacoes_cliente_cliente"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "mv_grs_dashboard_metrics"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "fk_aprovacoes_cliente_cliente"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "vw_calendario_completo"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "fk_aprovacoes_cliente_cliente"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "vw_client_metrics"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "fk_aprovacoes_cliente_projeto"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "projetos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_aprovacoes_cliente_projeto"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "vw_calendario_completo"
+            referencedColumns: ["projeto_id"]
+          },
+          {
+            foreignKeyName: "fk_aprovacoes_cliente_projeto"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "vw_custos_projeto"
+            referencedColumns: ["projeto_id"]
+          },
+          {
+            foreignKeyName: "fk_aprovacoes_cliente_projeto"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "vw_dashboard_financeiro_projeto"
+            referencedColumns: ["projeto_id"]
+          },
+          {
+            foreignKeyName: "fk_aprovacoes_cliente_projeto"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "vw_projeto_lucro"
+            referencedColumns: ["projeto_id"]
+          },
+          {
+            foreignKeyName: "fk_aprovacoes_cliente_tarefa"
+            columns: ["tarefa_id"]
+            isOneToOne: false
+            referencedRelation: "tarefa"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_aprovacoes_cliente_tarefa"
+            columns: ["tarefa_id"]
+            isOneToOne: false
+            referencedRelation: "vw_calendario_completo"
+            referencedColumns: ["tarefa_id"]
+          },
+          {
+            foreignKeyName: "fk_aprovacoes_cliente_tarefa"
+            columns: ["tarefa_id"]
+            isOneToOne: false
+            referencedRelation: "vw_dashboard_vencimentos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_aprovacoes_projeto"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "projetos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_aprovacoes_projeto"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "vw_calendario_completo"
+            referencedColumns: ["projeto_id"]
+          },
+          {
+            foreignKeyName: "fk_aprovacoes_projeto"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "vw_custos_projeto"
+            referencedColumns: ["projeto_id"]
+          },
+          {
+            foreignKeyName: "fk_aprovacoes_projeto"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "vw_dashboard_financeiro_projeto"
+            referencedColumns: ["projeto_id"]
+          },
+          {
+            foreignKeyName: "fk_aprovacoes_projeto"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "vw_projeto_lucro"
+            referencedColumns: ["projeto_id"]
+          },
+          {
+            foreignKeyName: "fk_aprovacoes_tarefa"
+            columns: ["tarefa_id"]
+            isOneToOne: false
+            referencedRelation: "tarefa"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_aprovacoes_tarefa"
+            columns: ["tarefa_id"]
+            isOneToOne: false
+            referencedRelation: "vw_calendario_completo"
+            referencedColumns: ["tarefa_id"]
+          },
+          {
+            foreignKeyName: "fk_aprovacoes_tarefa"
+            columns: ["tarefa_id"]
+            isOneToOne: false
+            referencedRelation: "vw_dashboard_vencimentos"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       vw_calendario_completo: {
         Row: {
@@ -13739,6 +14471,13 @@ export type Database = {
             foreignKeyName: "credenciais_cliente_cliente_id_fkey"
             columns: ["cliente_id"]
             isOneToOne: false
+            referencedRelation: "mv_cliente_timeline"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "credenciais_cliente_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
             referencedRelation: "mv_grs_dashboard_metrics"
             referencedColumns: ["cliente_id"]
           },
@@ -13834,6 +14573,13 @@ export type Database = {
             foreignKeyName: "fk_projetos_cliente"
             columns: ["cliente_id"]
             isOneToOne: false
+            referencedRelation: "mv_cliente_timeline"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "fk_projetos_cliente"
+            columns: ["cliente_id"]
+            isOneToOne: false
             referencedRelation: "mv_grs_dashboard_metrics"
             referencedColumns: ["cliente_id"]
           },
@@ -13872,6 +14618,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "clientes"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_projetos_cliente"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "mv_cliente_timeline"
+            referencedColumns: ["cliente_id"]
           },
           {
             foreignKeyName: "fk_projetos_cliente"
@@ -13971,6 +14724,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "clientes"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tarefa_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "mv_cliente_timeline"
+            referencedColumns: ["cliente_id"]
           },
           {
             foreignKeyName: "tarefa_cliente_id_fkey"
@@ -14082,6 +14842,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "clientes"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financeiro_lancamentos_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "mv_cliente_timeline"
+            referencedColumns: ["cliente_id"]
           },
           {
             foreignKeyName: "financeiro_lancamentos_cliente_id_fkey"
@@ -14328,6 +15095,13 @@ export type Database = {
             foreignKeyName: "dividas_cliente_id_fkey"
             columns: ["cliente_id"]
             isOneToOne: false
+            referencedRelation: "mv_cliente_timeline"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "dividas_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
             referencedRelation: "mv_grs_dashboard_metrics"
             referencedColumns: ["cliente_id"]
           },
@@ -14398,6 +15172,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "clientes"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "planos_estrategicos_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "mv_cliente_timeline"
+            referencedColumns: ["cliente_id"]
           },
           {
             foreignKeyName: "planos_estrategicos_cliente_id_fkey"
@@ -14978,6 +15759,16 @@ export type Database = {
         Args: { ano: number; tipo: string }
         Returns: string
       }
+      get_cliente_timeline: {
+        Args: { p_cliente_id: string; p_limit?: number }
+        Returns: {
+          data: string
+          entidade: string
+          metadata: Json
+          tipo: string
+          titulo: string
+        }[]
+      }
       get_credential_secure: {
         Args: { p_cred_id: string }
         Returns: {
@@ -15134,6 +15925,7 @@ export type Database = {
       normalizar_cpf: { Args: { cpf_input: string }; Returns: string }
       popular_checklist_inicial: { Args: never; Returns: undefined }
       process_social_post_queue: { Args: never; Returns: undefined }
+      refresh_cliente_timeline: { Args: never; Returns: undefined }
       refresh_dashboard_financeiro: { Args: never; Returns: undefined }
       refresh_grs_dashboard_metrics: { Args: never; Returns: undefined }
       refresh_relatorios_financeiros: { Args: never; Returns: undefined }
