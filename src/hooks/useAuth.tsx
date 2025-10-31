@@ -93,7 +93,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         const userId = authData.session.user.id;
         console.log('🔐 Auth: Validando integridade do usuário:', userId);
         
-      // 1. Verificar se pessoa existe na nova estrutura
+      // ✅ MIGRADO: Verificar pessoa na estrutura unificada
       const { data: pessoa, error: pessoaError } = await supabase
         .from('pessoas')
         .select('id, status, profile_id')

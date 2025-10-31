@@ -18,6 +18,7 @@ export function useAccessControl() {
       }
 
       try {
+        // ✅ JÁ ESTÁ CORRETO: pessoas.profile_id
         const { data } = await supabase
           .from('pessoas')
           .select('status, nome, email')
