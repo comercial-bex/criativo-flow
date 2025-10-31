@@ -15350,6 +15350,7 @@ export type Database = {
           tamanho_depois_mb: number
         }[]
       }
+      create_admin_user: { Args: never; Returns: Json }
       create_client_user_direct: {
         Args: {
           p_cliente_id: string
