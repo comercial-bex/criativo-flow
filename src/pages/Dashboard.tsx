@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { BarChart3, Users, FolderOpen, Target, Clock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { BuilderComponent } from '@/components/BuilderComponent';
 import { SectionHeader } from '@/components/SectionHeader';
 import { StatsGrid } from '@/components/StatsGrid';
 import { QuickActions } from '@/components/QuickActions';
@@ -155,6 +156,9 @@ function Dashboard() {
 
   return (
     <div className="p-6 space-y-8">
+      {/* Builder.io Layout */}
+      <BuilderComponent model="page" />
+
       <div className="flex items-center justify-between">
         <SectionHeader
           title="Dashboard"
