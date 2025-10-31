@@ -1,5 +1,5 @@
 import { useKPIDashboard } from '@/hooks/useKPIDashboard';
-import { useAlertasCriticos } from '@/hooks/useAlertasCriticos';
+import { useAlertasCriticos, type AlertaCritico } from '@/hooks/useAlertasCriticos';
 import { StatsGrid } from '@/components/StatsGrid';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';

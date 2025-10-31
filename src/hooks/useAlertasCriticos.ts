@@ -12,7 +12,8 @@ export function useAlertasCriticos() {
   return useQuery({
     queryKey: ['alertas-criticos'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // @ts-ignore - View criada na migração, types serão atualizados
+      const { data, error } = await (supabase as any)
         .from('vw_alertas_pendentes')
         .select('*');
       

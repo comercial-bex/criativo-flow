@@ -29,6 +29,7 @@ export function useKPIDashboard() {
   return useQuery({
     queryKey: ['kpi-dashboard'],
     queryFn: async () => {
+      // @ts-ignore - RPC function criada na migração, types serão atualizados
       const { data, error } = await supabase.rpc('get_kpis_dashboard');
       
       if (error) {
