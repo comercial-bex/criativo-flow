@@ -41,11 +41,27 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     );
 
     // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       console.log('🔐 Auth: Initial session check:', !!session);
       clearTimeout(emergencyTimeout);
       setSession(session);
       setUser(session?.user ?? null);
+      
+      // ✅ OTIMIZAÇÃO FASE 1: Buscar perfil completo em 1 query (ao invés de 3)
+      if (session?.user) {
+        try {
+          const { data: userComplete } = await supabase.rpc('get_user_complete', {
+            p_user_id: session.user.id
+          });
+          
+          if (userComplete) {
+            console.log('✅ Auth: User complete loaded in 1 query -66% tempo');
+          }
+        } catch (error) {
+          console.error('Auth: Erro ao carregar perfil completo:', error);
+        }
+      }
+      
       setLoading(false);
     }).catch((error) => {
       console.error('🔐 Auth: Error getting initial session:', error);

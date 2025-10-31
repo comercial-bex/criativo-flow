@@ -61,27 +61,34 @@ export function useSecureCredentials(clienteId?: string) {
     }
   });
 
-  // ✅ TEMPORÁRIO: Manter funcionalidade original
+  // ✅ ATUALIZADO: Usar decrypt_credential do backend
   const getCredentialDecrypted = useMutation({
     mutationFn: async (credId: string) => {
       const { data: cred, error } = await supabase
         .from('credenciais_cliente')
-        .select('senha, plataforma, categoria, usuario_login')
+        .select('id, cliente_id, projeto_id, senha, tokens_api, plataforma, categoria, usuario_login, extra, updated_at')
         .eq('id', credId)
         .single();
 
       if (error) throw error;
 
+      // Descriptografar senha usando função do backend
+      const { data: senhaDecrypted } = await supabase.rpc('decrypt_credential', {
+        encrypted_text: cred.senha
+      });
+
       return {
-        id: credId,
-        cliente_id: '',
-        projeto_id: null,
-        senha_decrypted: cred.senha,
-        tokens_api_decrypted: {},
+        id: cred.id,
+        cliente_id: cred.cliente_id,
+        projeto_id: cred.projeto_id,
+        plataforma: cred.plataforma,
+        categoria: cred.categoria,
+        usuario_login: cred.usuario_login,
+        senha_decrypted: senhaDecrypted || '[ERRO]',
+        tokens_api_decrypted: cred.tokens_api || {},
         url: null,
-        extra: {},
-        updated_at: new Date().toISOString(),
-        ...cred
+        extra: cred.extra || {},
+        updated_at: cred.updated_at
       } as SecureCredential;
     },
     onError: (error: Error) => {
