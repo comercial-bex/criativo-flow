@@ -3094,6 +3094,39 @@ export type Database = {
           },
         ]
       }
+      credenciais_audit_log: {
+        Row: {
+          accessed_at: string
+          accessed_by: string | null
+          action: string
+          credential_id: string
+          id: string
+          ip_address: unknown
+          metadata: Json | null
+          success: boolean
+        }
+        Insert: {
+          accessed_at?: string
+          accessed_by?: string | null
+          action: string
+          credential_id: string
+          id?: string
+          ip_address?: unknown
+          metadata?: Json | null
+          success?: boolean
+        }
+        Update: {
+          accessed_at?: string
+          accessed_by?: string | null
+          action?: string
+          credential_id?: string
+          id?: string
+          ip_address?: unknown
+          metadata?: Json | null
+          success?: boolean
+        }
+        Relationships: []
+      }
       credenciais_cliente: {
         Row: {
           categoria: string
@@ -13112,6 +13145,24 @@ export type Database = {
       }
     }
     Views: {
+      credenciais_status_seguranca: {
+        Row: {
+          credenciais_criptografadas: number | null
+          credenciais_sem_criptografia: number | null
+          percentual_seguro: number | null
+          total_credenciais: number | null
+        }
+        Relationships: []
+      }
+      estrategia1_progresso: {
+        Row: {
+          meta: number | null
+          metrica: string | null
+          unidade: string | null
+          valor_atual: number | null
+        }
+        Relationships: []
+      }
       mv_grs_dashboard_metrics: {
         Row: {
           cliente_created_at: string | null
@@ -14151,6 +14202,14 @@ export type Database = {
           total_auth_users: number
           users_with_profile: number
           users_with_role: number
+        }[]
+      }
+      cleanup_posts_temporarios: {
+        Args: never
+        Returns: {
+          deletados: number
+          tamanho_antes_mb: number
+          tamanho_depois_mb: number
         }[]
       }
       create_client_user_direct: {
