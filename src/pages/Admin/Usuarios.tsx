@@ -20,10 +20,12 @@ import {
   CheckCircle,
   XCircle,
   Palette,
-  Shield
+  Shield,
+  Key
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { UserAdminModal, AdminUser } from '@/components/Admin/UserAdminModal';
+import { UserPasswordModal } from '@/components/Admin/UserPasswordModal';
 
 const AdminUsuarios = () => {
   const [users, setUsers] = useState<AdminUser[]>([]);
@@ -33,6 +35,11 @@ const AdminUsuarios = () => {
   const [filterStatus, setFilterStatus] = useState('all');
   const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [passwordModalOpen, setPasswordModalOpen] = useState(false);
+  const [selectedUserForPassword, setSelectedUserForPassword] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -193,13 +200,26 @@ const AdminUsuarios = () => {
         <TableCell>{user.clientes?.nome || user.empresa || '-'}</TableCell>
         <TableCell>{getStatusBadge(user.status)}</TableCell>
         <TableCell className="text-right">
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => handleOpenModal(user)}
-          >
-            <Settings className="h-4 w-4" />
-          </Button>
+          <div className="flex items-center justify-end gap-2">
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => {
+                setSelectedUserForPassword({ id: user.id, name: user.nome || user.email || 'Usuário' });
+                setPasswordModalOpen(true);
+              }}
+              title="Redefinir Senha"
+            >
+              <Key className="h-4 w-4" />
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => handleOpenModal(user)}
+            >
+              <Settings className="h-4 w-4" />
+            </Button>
+          </div>
         </TableCell>
       </TableRow>
     );
@@ -424,6 +444,16 @@ const AdminUsuarios = () => {
         user={selectedUser}
         onUpdate={handleUpdate}
       />
+
+      {selectedUserForPassword && (
+        <UserPasswordModal
+          open={passwordModalOpen}
+          onOpenChange={setPasswordModalOpen}
+          userId={selectedUserForPassword.id}
+          userName={selectedUserForPassword.name}
+          mode="generate"
+        />
+      )}
     </div>
   );
 };

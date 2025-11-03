@@ -223,6 +223,16 @@ function App() {
   useEffect(() => {
     (window as any).__reactMounted = true;
     initAnalytics();
+    
+    // Limpar Service Worker antigo para resolver CORS do manifest.json
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then((registrations) => {
+        registrations.forEach((registration) => {
+          console.log('🧹 Desregistrando Service Worker antigo...');
+          registration.unregister();
+        });
+      });
+    }
   }, []);
 
   // Move PublicRoute inside App component so it has access to AuthProvider context

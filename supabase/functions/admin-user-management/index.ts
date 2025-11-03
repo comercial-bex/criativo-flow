@@ -95,7 +95,7 @@ const handler = async (req: Request): Promise<Response> => {
         return await handleListUsers(supabase, body.filters, origin);
       
       case 'reset-password':
-        return await handleResetPassword(supabase, body.user_id!, body.new_password!, origin);
+        return await handleResetPassword(supabase, body.user_id!, body.new_password, origin);
       
       case 'force-logout':
         return await handleForceLogout(supabase, body.user_id!, origin);
@@ -230,17 +230,50 @@ async function handleListUsers(supabase: any, filters?: any, origin?: string | n
   }
 }
 
-async function handleResetPassword(supabase: any, userId: string, newPassword: string, origin?: string | null) {
+// Gerador de senha forte
+function generateStrongPassword(length = 16): string {
+  const lowercase = 'abcdefghijklmnopqrstuvwxyz';
+  const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const numbers = '0123456789';
+  const special = '!@#$%^&*()_+-=[]{}';
+  
+  const allChars = lowercase + uppercase + numbers + special;
+  
+  // Garantir pelo menos 1 de cada tipo
+  let password = '';
+  password += lowercase[Math.floor(Math.random() * lowercase.length)];
+  password += uppercase[Math.floor(Math.random() * uppercase.length)];
+  password += numbers[Math.floor(Math.random() * numbers.length)];
+  password += special[Math.floor(Math.random() * special.length)];
+  
+  // Preencher o resto
+  for (let i = 4; i < length; i++) {
+    password += allChars[Math.floor(Math.random() * allChars.length)];
+  }
+  
+  // Embaralhar
+  return password.split('').sort(() => Math.random() - 0.5).join('');
+}
+
+async function handleResetPassword(supabase: any, userId: string, newPassword?: string, origin?: string | null) {
   const corsHeaders = getCorsHeaders(origin);
+  
+  // Gerar senha forte se não fornecida
+  const passwordToUse = newPassword || generateStrongPassword(16);
+  
   const { error } = await supabase.auth.admin.updateUserById(userId, {
-    password: newPassword
+    password: passwordToUse
   });
 
   if (error) {
     throw error;
   }
 
-  return new Response(JSON.stringify({ success: true, message: 'Password reset successfully' }), {
+  return new Response(JSON.stringify({ 
+    success: true, 
+    message: 'Password reset successfully',
+    new_password: passwordToUse
+  }), {
     status: 200,
     headers: { ...corsHeaders, 'Content-Type': 'application/json' }
   });
