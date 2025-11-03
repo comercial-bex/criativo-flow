@@ -94,8 +94,8 @@ const AdminUsuarios = () => {
   // Filtrar usuários localmente
   const filteredUsers = users.filter(user => {
     const matchesSearch = !searchTerm || 
-      user.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase());
+      user.nome?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email?.toLowerCase().includes(searchTerm.toLowerCase());
     
     const role = user.user_roles?.[0]?.role || user.role;
     const matchesRole = filterRole === 'all' || role === filterRole;
@@ -187,8 +187,8 @@ const AdminUsuarios = () => {
     
     return (
       <TableRow key={user.id}>
-        <TableCell className="font-medium">{user.nome}</TableCell>
-        <TableCell>{user.email}</TableCell>
+        <TableCell className="font-medium">{user.nome || 'N/A'}</TableCell>
+        <TableCell>{user.email || 'N/A'}</TableCell>
         <TableCell>{getRoleBadge(role)}</TableCell>
         <TableCell>{user.clientes?.nome || user.empresa || '-'}</TableCell>
         <TableCell>{getStatusBadge(user.status)}</TableCell>
@@ -324,8 +324,8 @@ const AdminUsuarios = () => {
                     ) : (
                       specialists.map(user => (
                         <TableRow key={user.id}>
-                          <TableCell className="font-medium">{user.nome}</TableCell>
-                          <TableCell>{user.email}</TableCell>
+                          <TableCell className="font-medium">{user.nome || 'N/A'}</TableCell>
+                          <TableCell>{user.email || 'N/A'}</TableCell>
                           <TableCell>{getRoleBadge(user.user_roles?.[0]?.role || user.role)}</TableCell>
                           <TableCell>{getStatusBadge(user.status)}</TableCell>
                           <TableCell className="text-right">
@@ -361,8 +361,8 @@ const AdminUsuarios = () => {
                     ) : (
                       clients.map(user => (
                         <TableRow key={user.id}>
-                          <TableCell className="font-medium">{user.nome}</TableCell>
-                          <TableCell>{user.email}</TableCell>
+                          <TableCell className="font-medium">{user.nome || 'N/A'}</TableCell>
+                          <TableCell>{user.email || 'N/A'}</TableCell>
                           <TableCell>{user.clientes?.nome || user.empresa || '-'}</TableCell>
                           <TableCell>{getStatusBadge(user.status)}</TableCell>
                           <TableCell className="text-right">
@@ -398,8 +398,8 @@ const AdminUsuarios = () => {
                     ) : (
                       pending.map(user => (
                         <TableRow key={user.id}>
-                          <TableCell className="font-medium">{user.nome}</TableCell>
-                          <TableCell>{user.email}</TableCell>
+                          <TableCell className="font-medium">{user.nome || 'N/A'}</TableCell>
+                          <TableCell>{user.email || 'N/A'}</TableCell>
                           <TableCell>{getRoleBadge(user.user_roles?.[0]?.role || user.role)}</TableCell>
                           <TableCell>{new Date(user.created_at).toLocaleDateString('pt-BR')}</TableCell>
                           <TableCell className="text-right">

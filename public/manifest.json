@@ -9,6 +9,7 @@
   "orientation": "portrait-primary",
   "scope": "/",
   "lang": "pt-BR",
+  "cache_version": "4.0.3",
   "icons": [
     {
       "src": "/logo-bex-apk.svg",
