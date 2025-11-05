@@ -159,6 +159,7 @@ const GRSAgenda = lazy(() => import("./pages/GRS/Agenda"));
 const GRSMensagens = lazy(() => import("./pages/GRS/Mensagens"));
 const Aprovacoes = lazy(() => import("./pages/Aprovacoes"));
 const AdminUsuarios = lazy(() => import("./pages/Admin/Usuarios"));
+const OnboardingDashboardPage = lazy(() => import("./pages/OnboardingDashboardPage"));
 const SystemHealth = lazy(() => import("./pages/Admin/SystemHealth"));
 const BalancoPatrimonial = lazy(() => import("./pages/Financeiro/BalancoPatrimonial"));
 const ClientDetails = lazy(() => import("./pages/ClientDetails"));
@@ -919,6 +920,10 @@ function App() {
                 
                 <Route path="/admin/usuarios" element={<ProtectedRoute module="configuracoes" action="canEdit" requiredRole="admin">
                     <Layout><AdminUsuarios /></Layout>
+                  </ProtectedRoute>} />
+                
+                <Route path="/admin/onboarding" element={<ProtectedRoute module="financeiro" requiredRole="admin">
+                    <Layout><OnboardingDashboardPage /></Layout>
                   </ProtectedRoute>} />
                 
                 <Route path="/financeiro/balanco-patrimonial" element={<ProtectedRoute module="financeiro">

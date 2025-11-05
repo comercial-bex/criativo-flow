@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { OnboardingForm } from '@/components/OnboardingForm';
+import { OnboardingModal } from '@/components/OnboardingModal';
 import { MobileClientCard } from '@/components/MobileClientCard';
 import { ClientCard } from '@/components/ClientCard';
 import { ClientViewModal } from '@/components/ClientViewModal';
@@ -83,6 +84,7 @@ function Clientes() {
   const [sortBy, setSortBy] = useState('created_at');
   const [showForm, setShowForm] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showOnboardingModal, setShowOnboardingModal] = useState(false);
   const [selectedCliente, setSelectedCliente] = useState<Cliente | null>(null);
   const [showCredentials, setShowCredentials] = useState(false);
   const [credentials, setCredentials] = useState({ email: '', senha: '', nomeCliente: '' });
@@ -370,7 +372,7 @@ function Clientes() {
       return;
     }
     setSelectedCliente(cliente);
-    setShowOnboarding(true);
+    setShowOnboardingModal(true); // Usar novo modal simplificado
   };
 
   const getStatusColor = (status: string) => {
@@ -957,7 +959,7 @@ function Clientes() {
         nomeCliente={credentials.nomeCliente}
       />
 
-      {/* Modal de Onboarding */}
+      {/* Modal de Onboarding Completo (legado) */}
       {selectedCliente && (
         <OnboardingForm
           isOpen={showOnboarding}
@@ -971,6 +973,20 @@ function Clientes() {
             email: selectedCliente.email,
             telefone: selectedCliente.telefone,
             endereco: selectedCliente.endereco
+          }}
+        />
+      )}
+
+      {/* Novo Modal de Onboarding Simplificado */}
+      {selectedCliente && (
+        <OnboardingModal
+          open={showOnboardingModal}
+          onOpenChange={setShowOnboardingModal}
+          clienteId={selectedCliente.id}
+          clienteNome={selectedCliente.nome}
+          onComplete={() => {
+            fetchClientes();
+            setShowOnboardingModal(false);
           }}
         />
       )}
