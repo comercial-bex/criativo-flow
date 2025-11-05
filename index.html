@@ -27,6 +27,33 @@
     <link rel="apple-touch-icon" href="/logo-bex-apk.svg" />
     <link rel="apple-touch-startup-image" href="/logo-bex-apk.svg" />
     
+    <!-- 🔧 Service Worker Hard Reset - ANTES do React carregar -->
+    <script>
+      (async () => {
+        if ('serviceWorker' in navigator) {
+          try {
+            const registrations = await navigator.serviceWorker.getRegistrations();
+            for (const reg of registrations) {
+              console.log('🧹 Desregistrando SW:', reg.scope);
+              await reg.unregister();
+            }
+            
+            if ('caches' in window) {
+              const cacheNames = await caches.keys();
+              for (const name of cacheNames) {
+                console.log('🗑️ Removendo cache:', name);
+                await caches.delete(name);
+              }
+            }
+            
+            console.log('✅ Service Worker e caches limpos');
+          } catch (e) {
+            console.warn('⚠️ Erro ao limpar SW:', e);
+          }
+        }
+      })();
+    </script>
+    
     <!-- 🛡️ Boot Watchdog v4.0.3 -->
     <script>
       (function() {

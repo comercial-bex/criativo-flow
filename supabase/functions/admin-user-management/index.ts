@@ -106,8 +106,8 @@ const handler = async (req: Request): Promise<Response> => {
       case 'delete-user':
         return await handleDeleteUser(supabase, body.user_id!, origin);
       
-      case 'update-user-complete':
-        return await handleUpdateUserComplete(supabase, body.user_id!, body.updates!);
+    case 'update-user-complete':
+      return await handleUpdateUserComplete(supabase, body.user_id!, body.updates!, origin);
       
       default:
         return new Response(JSON.stringify({ error: 'Invalid action' }), {
@@ -415,8 +415,10 @@ async function handleUpdateUserComplete(
     cliente_id?: string | null;
     status?: string;
     papeis?: string[];
-  }
+  },
+  origin?: string | null
 ) {
+  const corsHeaders = getCorsHeaders(origin);
   console.log(`📝 Atualizando usuário ${userId}:`, updates);
   
   try {
