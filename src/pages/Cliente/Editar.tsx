@@ -21,6 +21,7 @@ interface Cliente {
   status: 'ativo' | 'inativo' | 'pendente' | 'arquivado';
   responsavel_id?: string;
   assinatura_id?: string;
+  valor_personalizado?: number | null;
   created_at?: string;
   updated_at?: string;
 }
@@ -44,7 +45,8 @@ export default function ClienteEditar() {
     cnpj_cpf: "",
     endereco: "",
     status: "ativo",
-    assinatura_id: ""
+    assinatura_id: "",
+    valor_personalizado: undefined
   });
 
   // Carregar dados do cliente e assinaturas
@@ -110,7 +112,8 @@ export default function ClienteEditar() {
         cnpj_cpf: formData.cnpj_cpf || null,
         endereco: formData.endereco || null,
         status: formData.status!,
-        assinatura_id: (formData.assinatura_id && formData.assinatura_id !== 'none') ? formData.assinatura_id : null
+        assinatura_id: (formData.assinatura_id && formData.assinatura_id !== 'none') ? formData.assinatura_id : null,
+        valor_personalizado: formData.valor_personalizado ?? null
       };
 
       const { error } = await supabase
@@ -240,7 +243,14 @@ export default function ClienteEditar() {
                 <Label htmlFor="assinatura">Plano de Assinatura</Label>
                 <Select 
                   value={formData.assinatura_id || 'none'} 
-                  onValueChange={(value) => setFormData({ ...formData, assinatura_id: value === 'none' ? '' : value })}
+                  onValueChange={(value) => {
+                    const planoSelecionado = assinaturas.find(a => a.id === value);
+                    setFormData({ 
+                      ...formData, 
+                      assinatura_id: value === 'none' ? '' : value,
+                      valor_personalizado: planoSelecionado ? planoSelecionado.preco : undefined
+                    });
+                  }}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Selecione um plano" />
@@ -254,6 +264,39 @@ export default function ClienteEditar() {
                     ))}
                   </SelectContent>
                 </Select>
+                
+                {/* Campo de Valor Personalizado */}
+                {formData.assinatura_id && formData.assinatura_id !== 'none' && (
+                  <div className="mt-2 space-y-2">
+                    <Label htmlFor="valor_personalizado" className="text-sm text-muted-foreground">
+                      Valor Personalizado (opcional)
+                    </Label>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium">R$</span>
+                      <Input
+                        id="valor_personalizado"
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        placeholder={(() => {
+                          const plano = assinaturas.find(a => a.id === formData.assinatura_id);
+                          return plano ? `Padrão: ${plano.preco.toFixed(2)}` : "0.00";
+                        })()}
+                        value={formData.valor_personalizado ?? ''}
+                        onChange={(e) => setFormData({ 
+                          ...formData, 
+                          valor_personalizado: e.target.value ? parseFloat(e.target.value) : undefined 
+                        })}
+                      />
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {formData.valor_personalizado 
+                        ? `Valor customizado: R$ ${formData.valor_personalizado.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
+                        : "Deixe vazio para usar o valor padrão do plano"
+                      }
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
 

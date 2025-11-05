@@ -13,6 +13,7 @@ interface Cliente {
   endereco?: string;
   status: string;
   assinatura_id?: string;
+  valor_personalizado?: number | null;
   logo_url?: string;
 }
 
@@ -25,6 +26,7 @@ interface ClientCardProps {
   getStatusColor: (status: string) => string;
   getStatusText: (status: string) => string;
   getAssinaturaNome: (id?: string) => string;
+  getAssinaturaPreco: (cliente: Cliente) => number | null;
   clienteTemAssinatura: (cliente: Cliente) => boolean;
 }
 
@@ -37,6 +39,7 @@ export function ClientCard({
   getStatusColor,
   getStatusText,
   getAssinaturaNome,
+  getAssinaturaPreco,
   clienteTemAssinatura
 }: ClientCardProps) {
   const getInitials = (name: string) => {
@@ -69,6 +72,14 @@ export function ClientCard({
               </h3>
               <p className="text-sm text-muted-foreground truncate">
                 {getAssinaturaNome(cliente.assinatura_id)}
+                {getAssinaturaPreco(cliente) && (
+                  <span className="ml-2 font-medium">
+                    R$ {getAssinaturaPreco(cliente)!.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                    {cliente.valor_personalizado && (
+                      <span className="ml-1 text-xs text-orange-500">(customizado)</span>
+                    )}
+                  </span>
+                )}
               </p>
             </div>
           </div>

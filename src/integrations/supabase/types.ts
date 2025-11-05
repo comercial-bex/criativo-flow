@@ -2411,6 +2411,7 @@ export type Database = {
           status: Database["public"]["Enums"]["status_type"] | null
           telefone: string | null
           updated_at: string | null
+          valor_personalizado: number | null
         }
         Insert: {
           assinatura_id?: string | null
@@ -2431,6 +2432,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["status_type"] | null
           telefone?: string | null
           updated_at?: string | null
+          valor_personalizado?: number | null
         }
         Update: {
           assinatura_id?: string | null
@@ -2451,6 +2453,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["status_type"] | null
           telefone?: string | null
           updated_at?: string | null
+          valor_personalizado?: number | null
         }
         Relationships: [
           {

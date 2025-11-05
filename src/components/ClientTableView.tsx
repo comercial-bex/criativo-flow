@@ -12,6 +12,7 @@ interface Cliente {
   telefone?: string;
   status: string;
   assinatura_id?: string;
+  valor_personalizado?: number | null;
   logo_url?: string;
   created_at?: string;
 }
@@ -25,6 +26,7 @@ interface ClientTableViewProps {
   getStatusColor: (status: string) => string;
   getStatusText: (status: string) => string;
   getAssinaturaNome: (id?: string) => string;
+  getAssinaturaPreco: (cliente: Cliente) => number | null;
   clienteTemAssinatura: (cliente: Cliente) => boolean;
 }
 
@@ -37,6 +39,7 @@ export function ClientTableView({
   getStatusColor,
   getStatusText,
   getAssinaturaNome,
+  getAssinaturaPreco,
   clienteTemAssinatura
 }: ClientTableViewProps) {
   const getInitials = (name: string) => {
@@ -101,7 +104,17 @@ export function ClientTableView({
               </TableCell>
               
               <TableCell className="hidden lg:table-cell">
-                <span className="text-sm">{getAssinaturaNome(cliente.assinatura_id)}</span>
+                <div className="flex flex-col">
+                  <span className="text-sm">{getAssinaturaNome(cliente.assinatura_id)}</span>
+                  {getAssinaturaPreco(cliente) && (
+                    <span className="text-xs text-muted-foreground">
+                      R$ {getAssinaturaPreco(cliente)!.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      {cliente.valor_personalizado && (
+                        <span className="ml-1 text-orange-500">(custom)</span>
+                      )}
+                    </span>
+                  )}
+                </div>
               </TableCell>
               
               <TableCell>

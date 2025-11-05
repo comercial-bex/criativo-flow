@@ -13,6 +13,7 @@ interface Cliente {
   endereco?: string;
   status: string;
   assinatura_id?: string;
+  valor_personalizado?: number | null;
 }
 
 interface MobileClientCardProps {
@@ -23,6 +24,7 @@ interface MobileClientCardProps {
   getStatusColor: (status: string) => string;
   getStatusText: (status: string) => string;
   getAssinaturaNome: (id?: string) => string;
+  getAssinaturaPreco: (cliente: Cliente) => number | null;
   clienteTemAssinatura: (cliente: Cliente) => boolean;
 }
 
@@ -34,6 +36,7 @@ export function MobileClientCard({
   getStatusColor,
   getStatusText,
   getAssinaturaNome,
+  getAssinaturaPreco,
   clienteTemAssinatura
 }: MobileClientCardProps) {
   return (
@@ -52,6 +55,14 @@ export function MobileClientCard({
               </h3>
               <p className="text-sm text-muted-foreground truncate">
                 {getAssinaturaNome(cliente.assinatura_id)}
+                {getAssinaturaPreco(cliente) && (
+                  <span className="ml-2 font-medium text-xs">
+                    R$ {getAssinaturaPreco(cliente)!.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                    {cliente.valor_personalizado && (
+                      <span className="ml-1 text-orange-500">(custom)</span>
+                    )}
+                  </span>
+                )}
               </p>
             </div>
           </div>

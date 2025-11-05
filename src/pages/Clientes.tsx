@@ -399,6 +399,16 @@ function Clientes() {
     return assinatura ? assinatura.nome : 'Plano não encontrado';
   };
 
+  const getAssinaturaPreco = (cliente: Cliente): number | null => {
+    if (!cliente.assinatura_id) return null;
+    // Use custom value if available, otherwise use default plan price
+    if (cliente.valor_personalizado !== null && cliente.valor_personalizado !== undefined) {
+      return cliente.valor_personalizado;
+    }
+    const assinatura = assinaturas.find(a => a.id === cliente.assinatura_id);
+    return assinatura ? assinatura.preco : null;
+  };
+
   const clienteTemAssinatura = (cliente: Cliente) => {
     return cliente.assinatura_id && assinaturas.some(a => a.id === cliente.assinatura_id);
   };
@@ -863,6 +873,7 @@ function Clientes() {
           getStatusColor={getStatusColor}
           getStatusText={getStatusText}
           getAssinaturaNome={getAssinaturaNome}
+          getAssinaturaPreco={getAssinaturaPreco}
           clienteTemAssinatura={clienteTemAssinatura}
         />
       ) : (
@@ -878,6 +889,7 @@ function Clientes() {
                 getStatusColor={getStatusColor}
                 getStatusText={getStatusText}
                 getAssinaturaNome={getAssinaturaNome}
+                getAssinaturaPreco={getAssinaturaPreco}
                 clienteTemAssinatura={clienteTemAssinatura}
               />
             ) : (
@@ -891,6 +903,7 @@ function Clientes() {
                 getStatusColor={getStatusColor}
                 getStatusText={getStatusText}
                 getAssinaturaNome={getAssinaturaNome}
+                getAssinaturaPreco={getAssinaturaPreco}
                 clienteTemAssinatura={clienteTemAssinatura}
               />
             )

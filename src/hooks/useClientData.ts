@@ -12,6 +12,7 @@ export interface Cliente {
   status: 'ativo' | 'inativo' | 'pendente' | 'arquivado';
   responsavel_id?: string;
   assinatura_id?: string;
+  valor_personalizado?: number | null; // Custom subscription value for this client
   created_at?: string;
   updated_at?: string;
   // Logo da empresa
