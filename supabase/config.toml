@@ -133,3 +133,6 @@ verify_jwt = false
 
 [functions.analyze-onboarding-complete]
 verify_jwt = false
+
+[functions.suggest-campaigns]
+verify_jwt = false

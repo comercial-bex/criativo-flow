@@ -24,6 +24,13 @@ export interface OnboardingData {
   frequencia_postagens: string;
   tipos_conteudo: string[];
   midia_paga: string;
+  link_instagram?: string;
+  link_facebook?: string;
+  link_linkedin?: string;
+  link_tiktok?: string;
+  link_youtube?: string;
+  link_site?: string;
+  link_google_maps?: string;
   
   // Step 4: SWOT
   forcas: string;

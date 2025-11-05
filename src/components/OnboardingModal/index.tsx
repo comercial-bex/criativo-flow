@@ -9,6 +9,7 @@ import { StepEmpresa } from './steps/StepEmpresa';
 import { StepPublico } from './steps/StepPublico';
 import { StepDigital } from './steps/StepDigital';
 import { StepSwot } from './steps/StepSwot';
+import { StepConcorrencia } from './steps/StepConcorrencia';
 import { StepObjetivos } from './steps/StepObjetivos';
 import { StepMarca } from './steps/StepMarca';
 import { StepPlano } from './steps/StepPlano';
@@ -80,7 +81,7 @@ export function OnboardingModal({
     campanhas_mensais: []
   });
 
-  const totalSteps = 7;
+  const totalSteps = 8;
   const progress = (currentStep / totalSteps) * 100;
 
   const steps = [
@@ -88,9 +89,10 @@ export function OnboardingModal({
     { number: 2, title: 'Público', icon: '🎯', component: StepPublico },
     { number: 3, title: 'Digital', icon: '📱', component: StepDigital },
     { number: 4, title: 'SWOT', icon: '📊', component: StepSwot },
-    { number: 5, title: 'Objetivos', icon: '🎯', component: StepObjetivos },
-    { number: 6, title: 'Marca', icon: '✨', component: StepMarca },
-    { number: 7, title: 'Plano', icon: '📅', component: StepPlano }
+    { number: 5, title: 'Concorrência', icon: '⚔️', component: StepConcorrencia },
+    { number: 6, title: 'Objetivos', icon: '🎯', component: StepObjetivos },
+    { number: 7, title: 'Marca', icon: '✨', component: StepMarca },
+    { number: 8, title: 'Plano', icon: '📅', component: StepPlano }
   ];
 
   useEffect(() => {

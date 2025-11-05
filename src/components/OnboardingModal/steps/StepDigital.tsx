@@ -3,17 +3,39 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { ExternalLink, Check, X } from 'lucide-react';
 import { StepProps } from '../types';
 
 const presencaDigitalOptions = [
-  { value: 'instagram', label: 'Instagram' },
-  { value: 'facebook', label: 'Facebook' },
-  { value: 'linkedin', label: 'LinkedIn' },
-  { value: 'tiktok', label: 'TikTok' },
-  { value: 'youtube', label: 'YouTube' },
-  { value: 'site', label: 'Site próprio' },
+  { value: 'instagram', label: 'Instagram', linkField: 'link_instagram', placeholder: 'https://instagram.com/sua.empresa' },
+  { value: 'facebook', label: 'Facebook', linkField: 'link_facebook', placeholder: 'https://facebook.com/suaempresa' },
+  { value: 'linkedin', label: 'LinkedIn', linkField: 'link_linkedin', placeholder: 'https://linkedin.com/company/suaempresa' },
+  { value: 'tiktok', label: 'TikTok', linkField: 'link_tiktok', placeholder: 'https://tiktok.com/@suaempresa' },
+  { value: 'youtube', label: 'YouTube', linkField: 'link_youtube', placeholder: 'https://youtube.com/@suaempresa' },
+  { value: 'site', label: 'Site próprio', linkField: 'link_site', placeholder: 'https://www.seusite.com.br' },
   { value: 'ecommerce', label: 'E-commerce' }
 ];
+
+const validateUrl = (url: string, platform: string): boolean => {
+  if (!url) return true;
+  try {
+    const urlObj = new URL(url);
+    const platformDomains: Record<string, string[]> = {
+      instagram: ['instagram.com'],
+      facebook: ['facebook.com', 'fb.com'],
+      linkedin: ['linkedin.com'],
+      tiktok: ['tiktok.com'],
+      youtube: ['youtube.com', 'youtu.be'],
+      site: []
+    };
+    
+    if (platformDomains[platform]?.length === 0) return true;
+    return platformDomains[platform]?.some(domain => urlObj.hostname.includes(domain)) ?? false;
+  } catch {
+    return false;
+  }
+};
 
 const conteudoOptions = [
   { value: 'fotos', label: 'Fotos/Imagens' },
@@ -53,22 +75,76 @@ export function StepDigital({ formData, setFormData }: StepProps) {
       <div className="space-y-4">
         <div className="space-y-3">
           <Label>Onde sua empresa está presente? *</Label>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {presencaDigitalOptions.map((option) => (
-              <div key={option.value} className="flex items-center space-x-2">
-                <Checkbox
-                  id={`presenca-${option.value}`}
-                  checked={formData.presenca_digital?.includes(option.value)}
-                  onCheckedChange={() => handlePresencaCheckbox(option.value)}
-                />
-                <label
-                  htmlFor={`presenca-${option.value}`}
-                  className="text-sm font-medium leading-none cursor-pointer"
-                >
-                  {option.label}
-                </label>
-              </div>
-            ))}
+          <Alert className="mb-3">
+            <ExternalLink className="h-4 w-4" />
+            <AlertDescription className="text-xs">
+              Adicione os links das redes sociais para análise automática de métricas e comparação com concorrentes.
+            </AlertDescription>
+          </Alert>
+          <div className="space-y-3">
+            {presencaDigitalOptions.map((option) => {
+              const isChecked = formData.presenca_digital?.includes(option.value);
+              const linkField = option.linkField as keyof typeof formData;
+              const linkValue = linkField ? (formData[linkField] as string) || '' : '';
+              const isValidUrl = linkField ? validateUrl(linkValue, option.value) : true;
+              
+              return (
+                <div key={option.value} className="space-y-2">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`presenca-${option.value}`}
+                      checked={isChecked}
+                      onCheckedChange={() => handlePresencaCheckbox(option.value)}
+                    />
+                    <label
+                      htmlFor={`presenca-${option.value}`}
+                      className="text-sm font-medium leading-none cursor-pointer"
+                    >
+                      {option.label}
+                    </label>
+                  </div>
+                  
+                  {isChecked && linkField && (
+                    <div className="ml-6 relative">
+                      <Input
+                        type="url"
+                        value={linkValue}
+                        onChange={(e) => setFormData({ ...formData, [linkField]: e.target.value })}
+                        placeholder={option.placeholder}
+                        className={`pr-8 ${linkValue && !isValidUrl ? 'border-destructive' : linkValue && isValidUrl ? 'border-green-500' : ''}`}
+                      />
+                      {linkValue && (
+                        <div className="absolute right-2 top-1/2 -translate-y-1/2">
+                          {isValidUrl ? (
+                            <Check className="h-4 w-4 text-green-500" />
+                          ) : (
+                            <X className="h-4 w-4 text-destructive" />
+                          )}
+                        </div>
+                      )}
+                      {linkValue && !isValidUrl && (
+                        <p className="text-xs text-destructive mt-1">
+                          URL inválida para {option.label}
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+          
+          <div className="mt-4 space-y-2">
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="presenca-ecommerce"
+                checked={formData.presenca_digital?.includes('ecommerce')}
+                onCheckedChange={() => handlePresencaCheckbox('ecommerce')}
+              />
+              <label htmlFor="presenca-ecommerce" className="text-sm font-medium leading-none cursor-pointer">
+                E-commerce
+              </label>
+            </div>
           </div>
         </div>
 

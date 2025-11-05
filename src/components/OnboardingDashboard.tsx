@@ -66,37 +66,49 @@ export function OnboardingDashboard() {
         // Step 1: Empresa
         if (onboarding.segmento_atuacao && onboarding.produtos_servicos) {
           step = 1;
-          progress = 16.67;
+          progress = 12.5;
         }
 
         // Step 2: Público
         if (onboarding.publico_alvo?.length && onboarding.dores_problemas) {
           step = 2;
-          progress = 33.33;
+          progress = 25;
         }
 
         // Step 3: Digital
         if (onboarding.presenca_digital?.length && onboarding.tipos_conteudo?.length) {
           step = 3;
-          progress = 50;
+          progress = 37.5;
         }
 
         // Step 4: SWOT
         if (onboarding.forcas && onboarding.fraquezas && onboarding.oportunidades && onboarding.ameacas) {
           step = 4;
-          progress = 66.67;
+          progress = 50;
         }
 
-        // Step 5: Objetivos
-        if (onboarding.objetivos_digitais && onboarding.onde_6_meses && onboarding.resultados_esperados?.length) {
+        // Step 5: Concorrência (opcional, não bloqueia progresso)
+        if (step >= 4) {
           step = 5;
-          progress = 83.33;
+          progress = 62.5;
         }
 
-        // Step 6: Marca
-        if (onboarding.valores_principais && onboarding.tom_voz?.length && onboarding.como_lembrada) {
+        // Step 6: Objetivos
+        if (onboarding.objetivos_digitais && onboarding.onde_6_meses && onboarding.resultados_esperados?.length) {
           step = 6;
-          progress = 85.71;
+          progress = 75;
+        }
+
+        // Step 7: Marca
+        if (onboarding.valores_principais && onboarding.tom_voz?.length && onboarding.como_lembrada) {
+          step = 7;
+          progress = 87.5;
+        }
+
+        // Step 8: Plano
+        if (onboarding.duracao_contrato_meses && onboarding.areas_foco?.length) {
+          step = 8;
+          progress = 100;
         }
 
         // Step 7: Plano

@@ -2078,6 +2078,13 @@ export type Database = {
           frequencia_postagens: string | null
           historia_marca: string | null
           id: string
+          link_facebook: string | null
+          link_google_maps: string | null
+          link_instagram: string | null
+          link_linkedin: string | null
+          link_site: string | null
+          link_tiktok: string | null
+          link_youtube: string | null
           localizacao: string | null
           materiais_impressos: string[] | null
           midia_paga: string | null
@@ -2134,6 +2141,13 @@ export type Database = {
           frequencia_postagens?: string | null
           historia_marca?: string | null
           id?: string
+          link_facebook?: string | null
+          link_google_maps?: string | null
+          link_instagram?: string | null
+          link_linkedin?: string | null
+          link_site?: string | null
+          link_tiktok?: string | null
+          link_youtube?: string | null
           localizacao?: string | null
           materiais_impressos?: string[] | null
           midia_paga?: string | null
@@ -2190,6 +2204,13 @@ export type Database = {
           frequencia_postagens?: string | null
           historia_marca?: string | null
           id?: string
+          link_facebook?: string | null
+          link_google_maps?: string | null
+          link_instagram?: string | null
+          link_linkedin?: string | null
+          link_site?: string | null
+          link_tiktok?: string | null
+          link_youtube?: string | null
           localizacao?: string | null
           materiais_impressos?: string[] | null
           midia_paga?: string | null

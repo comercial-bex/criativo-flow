@@ -4,10 +4,12 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Calendar, Target, TrendingUp, Plus, X } from 'lucide-react';
+import { Calendar, Target, TrendingUp, Plus, X, Sparkles, Loader2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { smartToast } from '@/lib/smart-toast';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface Assinatura {
   id: string;
@@ -19,6 +21,7 @@ interface Assinatura {
 export function StepPlano({ formData, setFormData }: StepProps) {
   const [assinaturas, setAssinaturas] = useState<Assinatura[]>([]);
   const [novaCampanha, setNovaCampanha] = useState({ mes: 1, nome: '', tipo: 'promocional' as const, descricao: '' });
+  const [suggeringCampaigns, setSuggeringCampaigns] = useState(false);
 
   useEffect(() => {
     loadAssinaturas();
@@ -68,6 +71,42 @@ export function StepPlano({ formData, setFormData }: StepProps) {
       ...formData,
       campanhas_mensais: campanhas.filter((_, i) => i !== index)
     });
+  };
+
+  const sugerirCampanhas = async () => {
+    if (!formData.localizacao || !formData.segmento_atuacao || !formData.duracao_contrato_meses) {
+      smartToast.error('Preencha localização, segmento e duração do contrato primeiro');
+      return;
+    }
+
+    setSuggeringCampaigns(true);
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('suggest-campaigns', {
+        body: {
+          localizacao: formData.localizacao,
+          segmento: formData.segmento_atuacao,
+          duracao_meses: formData.duracao_contrato_meses
+        }
+      });
+
+      if (error) throw error;
+
+      if (data.success && data.campanhas) {
+        setFormData({
+          ...formData,
+          campanhas_mensais: data.campanhas
+        });
+        smartToast.success('Campanhas sugeridas!', `${data.campanhas.length} campanhas adicionadas`);
+      } else {
+        throw new Error(data.error || 'Erro ao sugerir campanhas');
+      }
+    } catch (error: any) {
+      console.error('Erro ao sugerir campanhas:', error);
+      smartToast.error('Erro ao sugerir campanhas', error.message || 'Tente novamente');
+    } finally {
+      setSuggeringCampaigns(false);
+    }
   };
 
   return (
@@ -159,10 +198,40 @@ export function StepPlano({ formData, setFormData }: StepProps) {
 
       {/* Campanhas Mensais */}
       <div className="space-y-3">
-        <Label className="text-lg font-semibold">Campanhas Sazonais (Opcional)</Label>
-        <p className="text-sm text-muted-foreground mb-3">
-          Adicione campanhas importantes como Black Friday, Natal, etc. A IA irá incorporá-las no cronograma de ações.
-        </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <Label className="text-lg font-semibold">Campanhas Sazonais (Opcional)</Label>
+            <p className="text-sm text-muted-foreground mt-1">
+              Adicione campanhas importantes como Black Friday, Natal, etc. A IA irá incorporá-las no cronograma de ações.
+            </p>
+          </div>
+          <Button
+            type="button"
+            onClick={sugerirCampanhas}
+            disabled={suggeringCampaigns || !formData.localizacao || !formData.segmento_atuacao || !formData.duracao_contrato_meses}
+            variant="outline"
+          >
+            {suggeringCampaigns ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Gerando...
+              </>
+            ) : (
+              <>
+                <Sparkles className="h-4 w-4 mr-2" />
+                Sugerir Campanhas
+              </>
+            )}
+          </Button>
+        </div>
+
+        {(!formData.localizacao || !formData.segmento_atuacao || !formData.duracao_contrato_meses) && (
+          <Alert>
+            <AlertDescription className="text-xs">
+              Para gerar sugestões inteligentes, complete os dados de <strong>Empresa</strong> (Step 1) e selecione a <strong>duração do contrato</strong> acima.
+            </AlertDescription>
+          </Alert>
+        )}
 
         {/* Lista de campanhas adicionadas */}
         {formData.campanhas_mensais && formData.campanhas_mensais.length > 0 && (
