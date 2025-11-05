@@ -11,6 +11,8 @@ import { StepDigital } from './steps/StepDigital';
 import { StepSwot } from './steps/StepSwot';
 import { StepObjetivos } from './steps/StepObjetivos';
 import { StepMarca } from './steps/StepMarca';
+import { StepPlano } from './steps/StepPlano';
+import { RelatorioPreview } from './RelatorioPreview';
 import type { OnboardingData } from './types';
 
 interface OnboardingModalProps {
@@ -30,6 +32,9 @@ export function OnboardingModal({
 }: OnboardingModalProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [analyzingIA, setAnalyzingIA] = useState(false);
+  const [showRelatorio, setShowRelatorio] = useState(false);
+  const [relatorioData, setRelatorioData] = useState({ relatorio: '', metas: 0, campanhas: 0, planoId: '' });
   const [formData, setFormData] = useState<OnboardingData>({
     // Step 1: Empresa
     nome_empresa: clienteNome,
@@ -66,10 +71,16 @@ export function OnboardingModal({
     historia_marca: '',
     valores_principais: '',
     tom_voz: [],
-    como_lembrada: ''
+    como_lembrada: '',
+    
+    // Step 7: Plano
+    duracao_contrato_meses: undefined,
+    assinatura_id: undefined,
+    areas_foco: [],
+    campanhas_mensais: []
   });
 
-  const totalSteps = 6;
+  const totalSteps = 7;
   const progress = (currentStep / totalSteps) * 100;
 
   const steps = [
@@ -78,7 +89,8 @@ export function OnboardingModal({
     { number: 3, title: 'Digital', icon: '📱', component: StepDigital },
     { number: 4, title: 'SWOT', icon: '📊', component: StepSwot },
     { number: 5, title: 'Objetivos', icon: '🎯', component: StepObjetivos },
-    { number: 6, title: 'Marca', icon: '✨', component: StepMarca }
+    { number: 6, title: 'Marca', icon: '✨', component: StepMarca },
+    { number: 7, title: 'Plano', icon: '📅', component: StepPlano }
   ];
 
   useEffect(() => {
@@ -152,19 +164,20 @@ export function OnboardingModal({
 
       const payload = {
         cliente_id: clienteId,
-        ...formData
+        ...formData,
+        campanhas_mensais: formData.campanhas_mensais ? JSON.stringify(formData.campanhas_mensais) : null
       };
 
       let result;
       if (existing) {
         result = await supabase
           .from('cliente_onboarding')
-          .update(payload)
+          .update(payload as any)
           .eq('cliente_id', clienteId);
       } else {
         result = await supabase
           .from('cliente_onboarding')
-          .insert([payload]);
+          .insert([payload as any]);
       }
 
       if (result.error) throw result.error;
@@ -174,15 +187,60 @@ export function OnboardingModal({
       if (autoAdvance && currentStep < totalSteps) {
         setCurrentStep(currentStep + 1);
       } else if (currentStep === totalSteps) {
-        toast.success('🎉 Onboarding concluído!');
-        onComplete?.();
-        onOpenChange(false);
+        // Step 7 concluído - chamar IA
+        await handleAnalyzeComplete();
       }
     } catch (error) {
       console.error('Erro ao salvar:', error);
       toast.error('Erro ao salvar progresso');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleAnalyzeComplete = async () => {
+    try {
+      setAnalyzingIA(true);
+      toast.info('🤖 IA analisando seus dados e gerando plano estratégico...');
+
+      // Buscar o ID do onboarding
+      const { data: onboardingData } = await supabase
+        .from('cliente_onboarding')
+        .select('id')
+        .eq('cliente_id', clienteId)
+        .single();
+
+      if (!onboardingData) {
+        throw new Error('Onboarding não encontrado');
+      }
+
+      const { data, error } = await supabase.functions.invoke('analyze-onboarding-complete', {
+        body: {
+          onboardingId: onboardingData.id,
+          clienteId: clienteId
+        }
+      });
+
+      if (error) throw error;
+
+      if (data.success) {
+        setRelatorioData({
+          relatorio: data.relatorio,
+          metas: data.metas_criadas,
+          campanhas: data.campanhas_criadas,
+          planoId: data.plano_estrategico_id
+        });
+        setShowRelatorio(true);
+        toast.success('✅ Plano estratégico gerado com sucesso!');
+        onComplete?.();
+      } else {
+        throw new Error(data.error || 'Erro ao gerar plano');
+      }
+    } catch (error) {
+      console.error('Erro ao analisar onboarding:', error);
+      toast.error('Erro ao gerar plano estratégico. Tente novamente.');
+    } finally {
+      setAnalyzingIA(false);
     }
   };
 
@@ -273,12 +331,12 @@ export function OnboardingModal({
 
           <Button
             onClick={handleNext}
-            disabled={loading}
+            disabled={loading || analyzingIA}
           >
-            {loading ? 'Salvando...' : currentStep === totalSteps ? (
+            {analyzingIA ? '🤖 Gerando plano com IA...' : loading ? 'Salvando...' : currentStep === totalSteps ? (
               <>
                 <Check className="h-4 w-4 mr-2" />
-                Concluir
+                Concluir & Gerar Plano
               </>
             ) : (
               <>
@@ -289,6 +347,22 @@ export function OnboardingModal({
           </Button>
         </div>
       </DialogContent>
+
+      {/* Modal de Preview do Relatório */}
+      <RelatorioPreview
+        open={showRelatorio}
+        onOpenChange={(open) => {
+          setShowRelatorio(open);
+          if (!open) {
+            onOpenChange(false);
+          }
+        }}
+        relatorio={relatorioData.relatorio}
+        metasCriadas={relatorioData.metas}
+        campanhasCriadas={relatorioData.campanhas}
+        planoId={relatorioData.planoId}
+        clienteNome={clienteNome}
+      />
     </Dialog>
   );
 }

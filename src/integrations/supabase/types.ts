@@ -1535,7 +1535,9 @@ export type Database = {
           metricas: Json | null
           nome: string
           objetivo: string | null
+          onboarding_id: string | null
           orcamento: number | null
+          origem_onboarding: boolean | null
           status_aprovacao: string | null
           tipo_campanha: string | null
           updated_at: string | null
@@ -1551,7 +1553,9 @@ export type Database = {
           metricas?: Json | null
           nome: string
           objetivo?: string | null
+          onboarding_id?: string | null
           orcamento?: number | null
+          origem_onboarding?: boolean | null
           status_aprovacao?: string | null
           tipo_campanha?: string | null
           updated_at?: string | null
@@ -1567,7 +1571,9 @@ export type Database = {
           metricas?: Json | null
           nome?: string
           objetivo?: string | null
+          onboarding_id?: string | null
           orcamento?: number | null
+          origem_onboarding?: boolean | null
           status_aprovacao?: string | null
           tipo_campanha?: string | null
           updated_at?: string | null
@@ -1607,6 +1613,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "vw_client_metrics"
             referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "campanha_onboarding_id_fkey"
+            columns: ["onboarding_id"]
+            isOneToOne: false
+            referencedRelation: "cliente_onboarding"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1906,10 +1919,13 @@ export type Database = {
       }
       cliente_metas: {
         Row: {
+          area_foco: string | null
           cliente_id: string
           created_at: string | null
           descricao: string | null
           id: string
+          mes_referencia: number | null
+          origem_onboarding_id: string | null
           periodo_fim: string
           periodo_inicio: string
           progresso_percent: number | null
@@ -1922,10 +1938,13 @@ export type Database = {
           valor_atual: number | null
         }
         Insert: {
+          area_foco?: string | null
           cliente_id: string
           created_at?: string | null
           descricao?: string | null
           id?: string
+          mes_referencia?: number | null
+          origem_onboarding_id?: string | null
           periodo_fim: string
           periodo_inicio: string
           progresso_percent?: number | null
@@ -1938,10 +1957,13 @@ export type Database = {
           valor_atual?: number | null
         }
         Update: {
+          area_foco?: string | null
           cliente_id?: string
           created_at?: string | null
           descricao?: string | null
           id?: string
+          mes_referencia?: number | null
+          origem_onboarding_id?: string | null
           periodo_fim?: string
           periodo_inicio?: string
           progresso_percent?: number | null
@@ -1989,6 +2011,13 @@ export type Database = {
             referencedRelation: "vw_client_metrics"
             referencedColumns: ["cliente_id"]
           },
+          {
+            foreignKeyName: "cliente_metas_origem_onboarding_id_fkey"
+            columns: ["origem_onboarding_id"]
+            isOneToOne: false
+            referencedRelation: "cliente_onboarding"
+            referencedColumns: ["id"]
+          },
         ]
       }
       cliente_objetivos: {
@@ -2025,7 +2054,9 @@ export type Database = {
         Row: {
           ameacas: string | null
           area_atendimento: string | null
+          areas_foco: string[] | null
           assinatura_id: string | null
+          campanhas_mensais: Json | null
           canais_atendimento_ativos: string | null
           canais_contato: string | null
           cliente_id: string
@@ -2035,6 +2066,7 @@ export type Database = {
           created_at: string
           diferenciais: string | null
           dores_problemas: string | null
+          duracao_contrato_meses: number | null
           equipe_vendas_externa: string | null
           estrutura_atual: string | null
           fatores_crise: string | null
@@ -2055,12 +2087,15 @@ export type Database = {
           objetivos_offline: string | null
           onde_6_meses: string | null
           oportunidades: string | null
+          plano_estrategico_id: string | null
           presenca_digital: string[] | null
           presenca_digital_outros: string | null
           produtos_servicos: string | null
           publico_alvo: string[] | null
           publico_alvo_outros: string | null
           relacionamento_clientes: string[] | null
+          relatorio_gerado_em: string | null
+          relatorio_ia_gerado: string | null
           resultados_esperados: string[] | null
           segmento_atuacao: string | null
           tempo_mercado: string | null
@@ -2075,7 +2110,9 @@ export type Database = {
         Insert: {
           ameacas?: string | null
           area_atendimento?: string | null
+          areas_foco?: string[] | null
           assinatura_id?: string | null
+          campanhas_mensais?: Json | null
           canais_atendimento_ativos?: string | null
           canais_contato?: string | null
           cliente_id: string
@@ -2085,6 +2122,7 @@ export type Database = {
           created_at?: string
           diferenciais?: string | null
           dores_problemas?: string | null
+          duracao_contrato_meses?: number | null
           equipe_vendas_externa?: string | null
           estrutura_atual?: string | null
           fatores_crise?: string | null
@@ -2105,12 +2143,15 @@ export type Database = {
           objetivos_offline?: string | null
           onde_6_meses?: string | null
           oportunidades?: string | null
+          plano_estrategico_id?: string | null
           presenca_digital?: string[] | null
           presenca_digital_outros?: string | null
           produtos_servicos?: string | null
           publico_alvo?: string[] | null
           publico_alvo_outros?: string | null
           relacionamento_clientes?: string[] | null
+          relatorio_gerado_em?: string | null
+          relatorio_ia_gerado?: string | null
           resultados_esperados?: string[] | null
           segmento_atuacao?: string | null
           tempo_mercado?: string | null
@@ -2125,7 +2166,9 @@ export type Database = {
         Update: {
           ameacas?: string | null
           area_atendimento?: string | null
+          areas_foco?: string[] | null
           assinatura_id?: string | null
+          campanhas_mensais?: Json | null
           canais_atendimento_ativos?: string | null
           canais_contato?: string | null
           cliente_id?: string
@@ -2135,6 +2178,7 @@ export type Database = {
           created_at?: string
           diferenciais?: string | null
           dores_problemas?: string | null
+          duracao_contrato_meses?: number | null
           equipe_vendas_externa?: string | null
           estrutura_atual?: string | null
           fatores_crise?: string | null
@@ -2155,12 +2199,15 @@ export type Database = {
           objetivos_offline?: string | null
           onde_6_meses?: string | null
           oportunidades?: string | null
+          plano_estrategico_id?: string | null
           presenca_digital?: string[] | null
           presenca_digital_outros?: string | null
           produtos_servicos?: string | null
           publico_alvo?: string[] | null
           publico_alvo_outros?: string | null
           relacionamento_clientes?: string[] | null
+          relatorio_gerado_em?: string | null
+          relatorio_ia_gerado?: string | null
           resultados_esperados?: string[] | null
           segmento_atuacao?: string | null
           tempo_mercado?: string | null
@@ -2173,6 +2220,20 @@ export type Database = {
           valorizado?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "cliente_onboarding_plano_estrategico_id_fkey"
+            columns: ["plano_estrategico_id"]
+            isOneToOne: false
+            referencedRelation: "planos_estrategicos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cliente_onboarding_plano_estrategico_id_fkey"
+            columns: ["plano_estrategico_id"]
+            isOneToOne: false
+            referencedRelation: "vw_planos_publicos"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "fk_cliente"
             columns: ["cliente_id"]

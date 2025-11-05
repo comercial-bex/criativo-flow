@@ -1,3 +1,10 @@
+export interface CampanhaMensal {
+  mes: number; // 1-12
+  nome: string;
+  tipo: 'promocional' | 'sazonal' | 'lancamento' | 'institucional';
+  descricao?: string;
+}
+
 export interface OnboardingData {
   // Step 1: Empresa
   nome_empresa: string;
@@ -35,6 +42,12 @@ export interface OnboardingData {
   valores_principais: string;
   tom_voz: string[];
   como_lembrada: string;
+  
+  // Step 7: Plano & Campanhas
+  duracao_contrato_meses?: 3 | 6 | 12;
+  assinatura_id?: string;
+  areas_foco?: string[];
+  campanhas_mensais?: CampanhaMensal[];
 }
 
 export interface StepProps {

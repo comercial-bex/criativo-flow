@@ -96,6 +96,12 @@ export function OnboardingDashboard() {
         // Step 6: Marca
         if (onboarding.valores_principais && onboarding.tom_voz?.length && onboarding.como_lembrada) {
           step = 6;
+          progress = 85.71;
+        }
+
+        // Step 7: Plano
+        if (onboarding.duracao_contrato_meses && onboarding.areas_foco?.length) {
+          step = 7;
           progress = 100;
         }
 
@@ -223,7 +229,7 @@ export function OnboardingDashboard() {
                     <Progress value={cliente.progresso} className="h-2" />
                     {cliente.status !== 'não_iniciado' && (
                       <p className="text-xs text-muted-foreground">
-                        Último passo concluído: Etapa {cliente.ultimo_step} de 6
+                        Último passo concluído: Etapa {cliente.ultimo_step} de 7
                       </p>
                     )}
                   </div>
