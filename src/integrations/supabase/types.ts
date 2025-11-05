@@ -15408,12 +15408,7 @@ export type Database = {
           total_pessoas: number
         }[]
       }
-      encrypt_credential:
-        | {
-            Args: { p_key_name?: string; p_plaintext: string }
-            Returns: string
-          }
-        | { Args: { plain_text: string }; Returns: string }
+      encrypt_credential: { Args: { credential_text: string }; Returns: string }
       ensure_profile_exists: {
         Args: {
           p_cliente_id?: string
