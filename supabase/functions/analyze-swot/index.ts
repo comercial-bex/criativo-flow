@@ -58,7 +58,8 @@ serve(async (req) => {
 
     // Preparar prompt contextualizado para análise da matriz SWOT
     const prompt = `
-Você é um consultor estratégico especializado em marketing digital e crescimento empresarial. Analise a empresa "${clienteData.nome}" e forneça uma análise SWOT prática e direcionada.
+Você é um consultor estratégico especializado em marketing digital e crescimento empresarial. 
+Analise a empresa "${clienteData.nome}" e forneça uma análise SWOT estruturada em JSON.
 
 CONTEXTO DA EMPRESA:
 Empresa: ${onboardingData.nome_empresa}
@@ -72,7 +73,6 @@ Público-alvo: ${onboardingData.publico_alvo?.join(', ')}
 Principais dores: ${onboardingData.dores_problemas}
 O que valorizam: ${onboardingData.valorizado}
 Ticket médio: ${onboardingData.ticket_medio}
-Como encontram a empresa: ${onboardingData.como_encontram?.join(', ')}
 
 PRESENÇA DIGITAL ATUAL:
 Canais ativos: ${onboardingData.presenca_digital?.join(', ')}
@@ -83,7 +83,6 @@ Objetivos digitais: ${onboardingData.objetivos_digitais}
 COMPETIÇÃO E DIFERENCIAÇÃO:
 Concorrentes: ${onboardingData.concorrentes_diretos}
 Diferenciais: ${onboardingData.diferenciais}
-Como quer ser lembrada: ${onboardingData.como_lembrada}
 
 OBJETIVOS E VISÃO:
 Onde quer estar em 6 meses: ${onboardingData.onde_6_meses}
@@ -95,24 +94,16 @@ INSTRUÇÕES:
 3. Seja específico sobre o segmento ${onboardingData.segmento_atuacao}
 4. Foque em ações práticas e viáveis
 5. Use linguagem natural e profissional
-6. Não use emojis, marcadores técnicos ou formatação excessiva
 
-Formate a resposta assim:
+Retorne APENAS um objeto JSON válido com a seguinte estrutura:
+{
+  "forcas": ["força 1", "força 2", "força 3"],
+  "fraquezas": ["fraqueza 1", "fraqueza 2", "fraqueza 3"],
+  "oportunidades": ["oportunidade 1", "oportunidade 2", "oportunidade 3"],
+  "ameacas": ["ameaça 1", "ameaça 2", "ameaça 3"]
+}
 
-FORÇAS
-Liste 3-4 pontos fortes específicos da empresa baseados nos dados reais fornecidos. Considere vantagens competitivas, recursos disponíveis e diferenciações genuínas.
-
-OPORTUNIDADES  
-Identifique 3-4 oportunidades reais de mercado considerando a localização, público-alvo e segmento. Foque em tendências locais e necessidades não atendidas do público específico.
-
-FRAQUEZAS
-Aponte 3-4 limitações ou gaps que impedem o crescimento, baseados nos dados fornecidos. Seja direto sobre gargalos operacionais, digitais ou de posicionamento.
-
-AMEAÇAS
-Liste 3-4 riscos reais do mercado local e segmento. Considere concorrência, mudanças no comportamento do consumidor local e vulnerabilidades específicas.
-
-RECOMENDAÇÕES ESTRATÉGICAS
-Forneça 2-3 ações prioritárias específicas para os próximos 90 dias, considerando o contexto real da empresa e mercado local.
+Cada item deve ter entre 80-150 caracteres e ser específico para esta empresa e contexto.
 `;
 
     // Chamar OpenAI
@@ -145,11 +136,27 @@ Forneça 2-3 ações prioritárias específicas para os próximos 90 dias, consi
     }
 
     const data = await response.json();
-    const analysis = data.choices[0].message.content;
+    const analysisText = data.choices[0].message.content;
+
+    // Parse JSON da resposta
+    let swotData;
+    try {
+      // Tentar extrair JSON do texto (caso venha com markdown ou texto extra)
+      const jsonMatch = analysisText.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        swotData = JSON.parse(jsonMatch[0]);
+      } else {
+        swotData = JSON.parse(analysisText);
+      }
+    } catch (parseError) {
+      console.error('Erro ao parsear JSON da IA:', parseError);
+      console.error('Resposta recebida:', analysisText);
+      throw new Error('Não foi possível processar a análise SWOT gerada pela IA');
+    }
 
     return new Response(JSON.stringify({ 
       success: true,
-      analysis,
+      swot: swotData,
       clienteNome: clienteData.nome,
       onboardingData 
     }), {
