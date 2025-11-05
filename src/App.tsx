@@ -162,6 +162,7 @@ const AdminUsuarios = lazy(() => import("./pages/Admin/Usuarios"));
 const OnboardingDashboardPage = lazy(() => import("./pages/OnboardingDashboardPage"));
 const SystemHealth = lazy(() => import("./pages/Admin/SystemHealth"));
 const BalancoPatrimonial = lazy(() => import("./pages/Financeiro/BalancoPatrimonial"));
+const MetasDashboardPage = lazy(() => import("./pages/MetasDashboardPage"));
 const ClientDetails = lazy(() => import("./pages/ClientDetails"));
 const TimelinePage = lazy(() => import("./pages/ClientDetails/TimelinePage"));
 const DetailsPage = lazy(() => import("./pages/ClientDetails/DetailsPage"));
@@ -924,6 +925,10 @@ function App() {
                 
                 <Route path="/admin/onboarding" element={<ProtectedRoute module="financeiro" requiredRole="admin">
                     <Layout><OnboardingDashboardPage /></Layout>
+                  </ProtectedRoute>} />
+                
+                <Route path="/metas/dashboard" element={<ProtectedRoute module="financeiro" requiredRole="admin">
+                    <Layout><MetasDashboardPage /></Layout>
                   </ProtectedRoute>} />
                 
                 <Route path="/financeiro/balanco-patrimonial" element={<ProtectedRoute module="financeiro">

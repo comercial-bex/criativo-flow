@@ -176,6 +176,7 @@ export function AppSidebar() {
         { title: "Tarefas", url: "/admin/tarefas", icon: Icons.ClipboardCheck },
         { title: "Usuários", url: "/usuarios", icon: Icons.Users2 },
         { title: "📋 Dashboard Onboarding", url: "/admin/onboarding", icon: Icons.ClipboardCheck },
+        { title: "🎯 Dashboard de Metas", url: "/metas/dashboard", icon: Icons.Target },
         { title: "Equipamentos", url: "/inventario", icon: Icons.Package },
         { title: "Sistema", url: "/admin/system-health", icon: Icons.Settings },
         { title: "🔌 Monitor de Conexões", url: "/configuracoes/monitor", icon: Icons.Activity },
