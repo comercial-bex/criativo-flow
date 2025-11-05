@@ -57,7 +57,7 @@ serve(async (req) => {
     }
 
     const duracaoMeses = onboarding.duracao_contrato_meses || 6;
-    const postsPlano = assinatura?.qtd_posts_mes || 30;
+    const postsPlano = assinatura?.posts_mensais || 30;
     const areasFoco = onboarding.areas_foco || [];
     const campanhasMensais = onboarding.campanhas_mensais || [];
 

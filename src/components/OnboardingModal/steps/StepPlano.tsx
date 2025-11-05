@@ -164,7 +164,7 @@ export function StepPlano({ formData, setFormData }: StepProps) {
           <SelectContent>
             {assinaturas.map(ass => (
               <SelectItem key={ass.id} value={ass.id}>
-                {ass.nome} - {ass.posts_mensais} posts/mês (R$ {ass.preco.toFixed(2)})
+                {ass.nome} - {ass.posts_mensais} posts/mês
               </SelectItem>
             ))}
           </SelectContent>
