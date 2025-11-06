@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useProdutos } from "@/hooks/useProdutos";
+import { useProdutosCatalogo } from "@/hooks/useProdutosCatalogo";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,7 +13,7 @@ import { TutorialButton } from '@/components/TutorialButton';
 
 export default function ProdutosFinanceiro() {
   const navigate = useNavigate();
-  const { produtos, loading } = useProdutos();
+  const { produtos, loading } = useProdutosCatalogo({ tipo: ['produto', 'servico'] });
   const { role } = usePermissions();
   const [searchTerm, setSearchTerm] = useState("");
   const { startTutorial, hasSeenTutorial } = useTutorial('financeiro-produtos');

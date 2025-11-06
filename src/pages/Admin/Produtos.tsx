@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useProdutos } from "@/hooks/useProdutos";
+import { useProdutosCatalogo } from "@/hooks/useProdutosCatalogo";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,7 +13,7 @@ import { TutorialButton } from '@/components/TutorialButton';
 export default function Produtos() {
   const { startTutorial, hasSeenTutorial } = useTutorial('admin-produtos');
   const navigate = useNavigate();
-  const { produtos, loading } = useProdutos();
+  const { produtos, loading } = useProdutosCatalogo();
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("todos");
 

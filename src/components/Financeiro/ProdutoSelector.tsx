@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useProdutosFinanceiro } from "@/hooks/useProdutosFinanceiro";
+import { useProdutosCatalogo } from "@/hooks/useProdutosCatalogo";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
@@ -14,7 +14,10 @@ interface ProdutoSelectorProps {
 }
 
 export function ProdutoSelector({ value, onChange, onCreateNew }: ProdutoSelectorProps) {
-  const { produtosDisponiveis, loadingProdutos } = useProdutosFinanceiro();
+  const { produtos: produtosDisponiveis, loading: loadingProdutos } = useProdutosCatalogo({ 
+    tipo: ['produto', 'servico'], 
+    ativo: true 
+  });
   const [open, setOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
