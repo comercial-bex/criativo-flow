@@ -33,7 +33,7 @@ export default function ProdutosFinanceiro() {
         <div>
           <h1 className="text-3xl font-bold">Produtos & Serviços</h1>
           <p className="text-muted-foreground">
-            Catálogo de produtos para lançamentos financeiros
+            Catálogo de produtos para orçamentos, propostas e contratos
           </p>
         </div>
         {canCreate && (

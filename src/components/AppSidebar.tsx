@@ -115,9 +115,10 @@ export function AppSidebar() {
       items: [
         { title: "Dashboard", url: "/gestao/dashboard", icon: Icons.TrendingUp },
         { title: "Clientes", url: "/clientes", icon: Icons.Users },
-        { title: "Contratos", url: "/admin/contratos", icon: Icons.FileSignature },
         { title: "Orçamentos", url: "/administrativo/orcamentos", icon: Icons.Calculator },
         { title: "Propostas", url: "/administrativo/propostas", icon: Icons.FileText },
+        { title: "Contratos", url: "/admin/contratos", icon: Icons.FileSignature },
+        { title: "📦 Produtos & Serviços", url: "/financeiro/produtos", icon: Icons.Package },
         { 
           title: "💰 Gestão de Contas", 
           url: "/financeiro/gestao-contas", 
@@ -177,6 +178,7 @@ export function AppSidebar() {
         { title: "Usuários", url: "/usuarios", icon: Icons.Users2 },
         { title: "📋 Dashboard Onboarding", url: "/admin/onboarding", icon: Icons.ClipboardCheck },
         { title: "🎯 Dashboard de Metas", url: "/metas/dashboard", icon: Icons.Target },
+        { title: "📦 Produtos (Config)", url: "/admin/produtos", icon: Icons.Package },
         { title: "Equipamentos", url: "/inventario", icon: Icons.Package },
         { title: "Sistema", url: "/admin/system-health", icon: Icons.Settings },
         { title: "🔌 Monitor de Conexões", url: "/configuracoes/monitor", icon: Icons.Activity },
