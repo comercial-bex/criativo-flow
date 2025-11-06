@@ -2020,6 +2020,44 @@ export type Database = {
           },
         ]
       }
+      cliente_metas_historico: {
+        Row: {
+          created_at: string | null
+          data_registro: string
+          id: string
+          meta_id: string
+          observacao: string | null
+          progresso_percent: number
+          valor_registrado: number
+        }
+        Insert: {
+          created_at?: string | null
+          data_registro?: string
+          id?: string
+          meta_id: string
+          observacao?: string | null
+          progresso_percent: number
+          valor_registrado: number
+        }
+        Update: {
+          created_at?: string | null
+          data_registro?: string
+          id?: string
+          meta_id?: string
+          observacao?: string | null
+          progresso_percent?: number
+          valor_registrado?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cliente_metas_historico_meta_id_fkey"
+            columns: ["meta_id"]
+            isOneToOne: false
+            referencedRelation: "cliente_metas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cliente_objetivos: {
         Row: {
           analise_estrategica: string | null
@@ -2919,6 +2957,65 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "vw_client_metrics"
             referencedColumns: ["cliente_id"]
+          },
+        ]
+      }
+      concorrentes_metricas_historico: {
+        Row: {
+          concorrente_id: string
+          created_at: string | null
+          data_coleta: string
+          engajamento_percent: number | null
+          frequencia_posts_semana: number | null
+          id: string
+          media_comments: number | null
+          media_likes: number | null
+          seguidores_facebook: number | null
+          seguidores_instagram: number | null
+          seguidores_linkedin: number | null
+          seguidores_tiktok: number | null
+          seguidores_youtube: number | null
+          snapshot_completo: Json | null
+        }
+        Insert: {
+          concorrente_id: string
+          created_at?: string | null
+          data_coleta?: string
+          engajamento_percent?: number | null
+          frequencia_posts_semana?: number | null
+          id?: string
+          media_comments?: number | null
+          media_likes?: number | null
+          seguidores_facebook?: number | null
+          seguidores_instagram?: number | null
+          seguidores_linkedin?: number | null
+          seguidores_tiktok?: number | null
+          seguidores_youtube?: number | null
+          snapshot_completo?: Json | null
+        }
+        Update: {
+          concorrente_id?: string
+          created_at?: string | null
+          data_coleta?: string
+          engajamento_percent?: number | null
+          frequencia_posts_semana?: number | null
+          id?: string
+          media_comments?: number | null
+          media_likes?: number | null
+          seguidores_facebook?: number | null
+          seguidores_instagram?: number | null
+          seguidores_linkedin?: number | null
+          seguidores_tiktok?: number | null
+          seguidores_youtube?: number | null
+          snapshot_completo?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "concorrentes_metricas_historico_concorrente_id_fkey"
+            columns: ["concorrente_id"]
+            isOneToOne: false
+            referencedRelation: "concorrentes_analise"
+            referencedColumns: ["id"]
           },
         ]
       }

@@ -84,9 +84,7 @@ export function useMetasVisualizacao(filters: UseMetasVisualizacaoFilters = {}) 
 
       // Buscar histórico para todas as metas
       const metasIds = metas.map(m => m.id);
-      // @ts-ignore - Tabela criada na migração, types serão atualizados
       const { data: historicos, error: histError } = await supabase
-        // @ts-ignore
         .from('cliente_metas_historico')
         .select('*')
         .in('meta_id', metasIds)
