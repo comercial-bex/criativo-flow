@@ -1,6 +1,8 @@
 // Offline Queue Manager
 // Gerencia fila de operações quando offline
 
+import { DB_NAME, DB_VERSION, openDatabase } from './db/indexeddb';
+
 export interface QueueItem {
   id: string;
   operation: 'INSERT' | 'UPDATE' | 'DELETE';
@@ -19,31 +21,19 @@ export interface QueueStats {
 }
 
 class OfflineQueue {
-  private dbName = 'bex-flow-offline';
+  private dbName = DB_NAME; // ✅ Usar constante centralizada
   private storeName = 'offline-queue';
   private db: IDBDatabase | null = null;
 
   async init(): Promise<void> {
-    return new Promise((resolve, reject) => {
-      const request = indexedDB.open(this.dbName, 1);
-
-      request.onerror = () => reject(request.error);
-      request.onsuccess = () => {
-        this.db = request.result;
-        resolve();
-      };
-
-      request.onupgradeneeded = (event) => {
-        const db = (event.target as IDBOpenDBRequest).result;
-        
-        if (!db.objectStoreNames.contains(this.storeName)) {
-          const store = db.createObjectStore(this.storeName, { keyPath: 'id' });
-          store.createIndex('timestamp', 'timestamp', { unique: false });
-          store.createIndex('userId', 'userId', { unique: false });
-          store.createIndex('retries', 'retries', { unique: false });
-        }
-      };
-    });
+    try {
+      // ✅ Usar função centralizada que já usa DB_VERSION = 2
+      this.db = await openDatabase();
+      console.log('✅ OfflineQueue: IndexedDB inicializado (v' + DB_VERSION + ')');
+    } catch (error) {
+      console.error('❌ Erro ao abrir IndexedDB (OfflineQueue):', error);
+      throw error;
+    }
   }
 
   private async ensureDB(): Promise<IDBDatabase> {
