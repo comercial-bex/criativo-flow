@@ -25,6 +25,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { smartToast } from "@/lib/smart-toast";
 import { gerarPDFOrcamento } from "@/utils/pdfExport";
+import { useToast } from "@/hooks/use-toast";
 
 const statusColors: Record<string, string> = {
   rascunho: "bg-muted text-muted-foreground",
@@ -45,6 +46,7 @@ const statusLabels: Record<string, string> = {
 export default function OrcamentoDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const { orcamento, loading, converterParaProposta, duplicarOrcamento } = useOrcamento(id);
 
   const { data: itens = [] } = useQuery({
@@ -81,8 +83,21 @@ export default function OrcamentoDetails() {
     duplicarOrcamento(id);
   };
 
-  const handleExportarPDF = () => {
-    gerarPDFOrcamento(orcamento, itens);
+  const handleExportarPDF = async () => {
+    try {
+      await gerarPDFOrcamento(orcamento, itens);
+      toast({
+        title: "PDF gerado com sucesso!",
+        description: "O arquivo foi baixado automaticamente.",
+      });
+    } catch (error) {
+      console.error('Erro ao gerar PDF:', error);
+      toast({
+        title: "Erro ao gerar PDF",
+        description: "Não foi possível gerar o arquivo.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (

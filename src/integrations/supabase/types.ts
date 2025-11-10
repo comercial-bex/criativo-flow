@@ -3033,6 +3033,75 @@ export type Database = {
           },
         ]
       }
+      configuracoes_empresa: {
+        Row: {
+          agencia: string | null
+          banco_codigo: string | null
+          banco_nome: string | null
+          cnpj: string | null
+          conta: string | null
+          created_at: string | null
+          email: string | null
+          endereco_completo: string | null
+          id: string
+          inscricao_estadual: string | null
+          logo_url: string | null
+          nome_fantasia: string | null
+          pix_chave: string | null
+          pix_tipo: string | null
+          razao_social: string
+          telefone: string | null
+          termos_condicoes: string | null
+          texto_rodape: string | null
+          updated_at: string | null
+          website: string | null
+        }
+        Insert: {
+          agencia?: string | null
+          banco_codigo?: string | null
+          banco_nome?: string | null
+          cnpj?: string | null
+          conta?: string | null
+          created_at?: string | null
+          email?: string | null
+          endereco_completo?: string | null
+          id?: string
+          inscricao_estadual?: string | null
+          logo_url?: string | null
+          nome_fantasia?: string | null
+          pix_chave?: string | null
+          pix_tipo?: string | null
+          razao_social: string
+          telefone?: string | null
+          termos_condicoes?: string | null
+          texto_rodape?: string | null
+          updated_at?: string | null
+          website?: string | null
+        }
+        Update: {
+          agencia?: string | null
+          banco_codigo?: string | null
+          banco_nome?: string | null
+          cnpj?: string | null
+          conta?: string | null
+          created_at?: string | null
+          email?: string | null
+          endereco_completo?: string | null
+          id?: string
+          inscricao_estadual?: string | null
+          logo_url?: string | null
+          nome_fantasia?: string | null
+          pix_chave?: string | null
+          pix_tipo?: string | null
+          razao_social?: string
+          telefone?: string | null
+          termos_condicoes?: string | null
+          texto_rodape?: string | null
+          updated_at?: string | null
+          website?: string | null
+        }
+        Relationships: []
+      }
       connector_status: {
         Row: {
           calls_this_hour: number | null
