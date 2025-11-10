@@ -22,12 +22,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     console.log('🔐 Auth: Initializing auth provider');
     
-    // Aggressive timeout to prevent infinite loading
+    // ✅ FASE 3: Timeout aumentado para 15s (conexões lentas)
     const emergencyTimeout = setTimeout(() => {
-      console.error('🚨 Auth: TIMEOUT 5s - Forçando loading=false');
+      console.error('🚨 Auth: TIMEOUT 15s - Forçando loading=false');
       console.log('📊 Auth Debug: User:', !!user, 'Session:', !!session);
+      console.log('📊 Network:', navigator.onLine ? 'Online' : 'Offline');
+      console.log('📊 Timestamp:', new Date().toISOString());
       setLoading(false);
-    }, 5000); // ✅ Aumentado de 1s para 5s
+    }, 15000); // ✅ Aumentado de 5s para 15s
 
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(

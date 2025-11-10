@@ -23,8 +23,43 @@ window.onerror = (msg, src, line, col, err) => {
   return false;
 };
 
+// ✅ FASE 4: Proteção contra VersionError de IndexedDB
 window.onunhandledrejection = (e) => {
   console.error('[UNHANDLED REJECTION]', e.reason || e);
+  
+  // Se for VersionError, tentar recuperar automaticamente
+  if (e.reason?.name === 'VersionError' || String(e.reason).includes('VersionError')) {
+    console.warn('⚠️ VersionError detectado no IndexedDB, limpando banco...');
+    
+    // Prevenir propagação do erro
+    e.preventDefault();
+    
+    // Limpar IndexedDB completamente
+    try {
+      const dbName = 'bex-flow-offline';
+      const deleteRequest = indexedDB.deleteDatabase(dbName);
+      
+      deleteRequest.onsuccess = () => {
+        console.log('✅ IndexedDB limpo com sucesso, recarregando em 1s...');
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
+      };
+      
+      deleteRequest.onerror = () => {
+        console.error('❌ Erro ao limpar IndexedDB, recarregando mesmo assim...');
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
+      };
+    } catch (err) {
+      console.error('❌ Erro ao tentar limpar IndexedDB:', err);
+      // Recarregar mesmo em caso de erro
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+    }
+  }
 };
 
 // 🚀 Render com proteção contra crash
