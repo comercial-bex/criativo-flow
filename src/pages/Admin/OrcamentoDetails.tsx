@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { 
   ArrowLeft, 
   Edit, 
@@ -15,9 +16,11 @@ import {
   Send,
   Building,
   Calendar,
-  Download
+  Download,
+  DollarSign
 } from "lucide-react";
 import { TimelineLog } from "@/components/Admin/TimelineLog";
+import { TransacoesVinculadas } from "@/components/Financeiro/TransacoesVinculadas";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { smartToast } from "@/lib/smart-toast";
@@ -124,11 +127,12 @@ export default function OrcamentoDetails() {
 
       {/* Tabs */}
       <Tabs defaultValue="resumo" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className="grid w-full grid-cols-7">
           <TabsTrigger value="resumo">Resumo</TabsTrigger>
           <TabsTrigger value="itens">Itens</TabsTrigger>
           <TabsTrigger value="cliente">Cliente</TabsTrigger>
           <TabsTrigger value="condicoes">Condições</TabsTrigger>
+          <TabsTrigger value="financeiro">Financeiro</TabsTrigger>
           <TabsTrigger value="historico">Histórico</TabsTrigger>
           <TabsTrigger value="anexos">Anexos</TabsTrigger>
         </TabsList>
@@ -289,6 +293,26 @@ export default function OrcamentoDetails() {
                   {orcamento.observacoes}
                 </p>
               </>
+            )}
+          </Card>
+        </TabsContent>
+
+        {/* Financeiro */}
+        <TabsContent value="financeiro">
+          <Card className="p-6">
+            <div className="flex items-center gap-2 mb-4">
+              <DollarSign className="h-5 w-5" />
+              <h3 className="text-lg font-semibold">Integração Financeira</h3>
+            </div>
+            
+            {orcamento.status === 'aprovado' ? (
+              <TransacoesVinculadas orcamentoId={id!} />
+            ) : (
+              <Alert>
+                <AlertDescription>
+                  Transações financeiras serão geradas automaticamente quando o orçamento for aprovado.
+                </AlertDescription>
+              </Alert>
             )}
           </Card>
         </TabsContent>

@@ -13765,8 +13765,10 @@ export type Database = {
           folha_item_id: string | null
           id: string
           observacoes: string | null
+          orcamento_id: string | null
           produto_id: string | null
           projeto_id: string | null
+          proposta_id: string | null
           responsavel_id: string | null
           status: string
           tarefa_id: string | null
@@ -13786,8 +13788,10 @@ export type Database = {
           folha_item_id?: string | null
           id?: string
           observacoes?: string | null
+          orcamento_id?: string | null
           produto_id?: string | null
           projeto_id?: string | null
+          proposta_id?: string | null
           responsavel_id?: string | null
           status?: string
           tarefa_id?: string | null
@@ -13807,8 +13811,10 @@ export type Database = {
           folha_item_id?: string | null
           id?: string
           observacoes?: string | null
+          orcamento_id?: string | null
           produto_id?: string | null
           projeto_id?: string | null
+          proposta_id?: string | null
           responsavel_id?: string | null
           status?: string
           tarefa_id?: string | null
@@ -13882,6 +13888,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "transacoes_financeiras_orcamento_id_fkey"
+            columns: ["orcamento_id"]
+            isOneToOne: false
+            referencedRelation: "orcamentos"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "transacoes_financeiras_produto_id_fkey"
             columns: ["produto_id"]
             isOneToOne: false
@@ -13936,6 +13949,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "vw_projeto_lucro"
             referencedColumns: ["projeto_id"]
+          },
+          {
+            foreignKeyName: "transacoes_financeiras_proposta_id_fkey"
+            columns: ["proposta_id"]
+            isOneToOne: false
+            referencedRelation: "propostas"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "transacoes_financeiras_tarefa_id_fkey"
@@ -16489,6 +16509,13 @@ export type Database = {
       status_extrato_enum: "processando" | "concluido" | "erro"
       status_folha: "aberta" | "processada" | "fechada"
       status_item_folha: "pendente" | "pago" | "cancelado"
+      status_orcamento:
+        | "rascunho"
+        | "enviado"
+        | "aprovado"
+        | "rejeitado"
+        | "expirado"
+        | "arquivado"
       status_padrao:
         | "rascunho"
         | "em_revisao"
@@ -16861,6 +16888,14 @@ export const Constants = {
       status_extrato_enum: ["processando", "concluido", "erro"],
       status_folha: ["aberta", "processada", "fechada"],
       status_item_folha: ["pendente", "pago", "cancelado"],
+      status_orcamento: [
+        "rascunho",
+        "enviado",
+        "aprovado",
+        "rejeitado",
+        "expirado",
+        "arquivado",
+      ],
       status_padrao: [
         "rascunho",
         "em_revisao",

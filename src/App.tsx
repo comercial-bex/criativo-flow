@@ -560,6 +560,10 @@ function App() {
                     <Layout><OrcamentoDetails /></Layout>
                   </ProtectedRoute>} />
                 
+                <Route path="/administrativo/orcamentos/:id" element={<ProtectedRoute module="administrativo">
+                    <Layout><OrcamentoDetails /></Layout>
+                  </ProtectedRoute>} />
+                
                 <Route path="/admin/propostas/:id" element={<ProtectedRoute module="administrativo">
                     <Layout><PropostaDetails /></Layout>
                   </ProtectedRoute>} />

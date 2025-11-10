@@ -294,6 +294,21 @@ export default function Orcamentos() {
   };
 
   const handleDelete = async (id: string) => {
+    // Verificar se tem transações vinculadas
+    const { data: transacoes } = await supabase
+      .from("transacoes_financeiras")
+      .select("id")
+      .eq("orcamento_id", id);
+
+    if (transacoes && transacoes.length > 0) {
+      toast({
+        title: "Não é possível excluir",
+        description: `Este orçamento possui ${transacoes.length} transação(ões) financeira(s) vinculada(s). Arquive ao invés de excluir.`,
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (!confirm("Tem certeza que deseja excluir este orçamento?")) return;
 
     try {
