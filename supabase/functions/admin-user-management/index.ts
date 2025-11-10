@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from 'jsr:@supabase/supabase-js@2';
+import { validateAdminFilters, formatValidationErrors } from "../_shared/validation.ts";
 
 // Dynamic CORS headers based on request origin
 function getCorsHeaders(origin: string | null): Record<string, string> {
@@ -137,7 +138,21 @@ const handler = async (req: Request): Promise<Response> => {
 
 async function handleListUsers(supabase: any, filters?: any, origin?: string | null) {
   const corsHeaders = getCorsHeaders(origin);
-  console.log('📋 Buscando lista de usuários com filtros:', filters);
+  
+  // Validate filters
+  const validation = validateAdminFilters(filters);
+  if (!validation.success) {
+    console.error('❌ Filter validation failed:', validation.errors);
+    return new Response(
+      JSON.stringify(formatValidationErrors(validation.errors!)),
+      { 
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      }
+    );
+  }
+  
+  console.log('📋 Buscando lista de usuários com filtros:', validation.data);
   
   try {
     // 1. Buscar de PESSOAS (não profiles) para ter acesso ao status

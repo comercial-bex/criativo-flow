@@ -2,6 +2,14 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'jsr:@supabase/supabase-js@2';
 
+// ========================================
+// VALIDATION UTILITIES
+// ========================================
+const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+const phoneRegex = /^(\+55\s?)?(\(?\d{2}\)?\s?)?\d{4,5}-?\d{4}$/;
+const validEspecialidades = ['grs', 'design', 'audiovisual', 'atendimento', 'financeiro', 'trafego', 'gestor', 'rh'] as const;
+const validRoles = ['admin', 'cliente', 'especialista'] as const;
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -53,36 +61,96 @@ serve(async (req) => {
     const body: SignupRequest = await req.json();
     const { email, password, metadata, role = 'cliente' } = body;
 
-    // Validação obrigatória
-    if (!email || !password) {
-      console.error('🔐 Signup: Credenciais ausentes');
-      return new Response(
-        JSON.stringify({ 
-          error: 'MISSING_CREDENTIALS',
-          message: 'Email e senha são obrigatórios' 
-        }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    // ========================================
+    // COMPREHENSIVE INPUT VALIDATION
+    // ========================================
+    const validationErrors: string[] = [];
+
+    // Email validation
+    if (!email) {
+      validationErrors.push('Email é obrigatório');
+    } else if (email.length > 255) {
+      validationErrors.push('Email deve ter no máximo 255 caracteres');
+    } else if (!emailRegex.test(email)) {
+      validationErrors.push('Email inválido. Use formato: exemplo@dominio.com');
     }
 
+    // Password validation
+    if (!password) {
+      validationErrors.push('Senha é obrigatória');
+    } else if (password.length < 8) {
+      validationErrors.push('Senha deve ter no mínimo 8 caracteres');
+    } else if (password.length > 72) {
+      validationErrors.push('Senha deve ter no máximo 72 caracteres');
+    } else {
+      if (!/[A-Z]/.test(password)) {
+        validationErrors.push('Senha deve conter pelo menos uma letra maiúscula');
+      }
+      if (!/[a-z]/.test(password)) {
+        validationErrors.push('Senha deve conter pelo menos uma letra minúscula');
+      }
+      if (!/[0-9]/.test(password)) {
+        validationErrors.push('Senha deve conter pelo menos um número');
+      }
+      if (!/[^A-Za-z0-9]/.test(password)) {
+        validationErrors.push('Senha deve conter pelo menos um caractere especial');
+      }
+    }
+
+    // Nome validation
     if (!metadata?.nome) {
-      console.error('🔐 Signup: Nome ausente');
-      return new Response(
-        JSON.stringify({ 
-          error: 'MISSING_NAME',
-          message: 'Nome é obrigatório' 
-        }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      validationErrors.push('Nome é obrigatório');
+    } else {
+      const trimmedNome = metadata.nome.trim();
+      if (trimmedNome.length < 2) {
+        validationErrors.push('Nome deve ter no mínimo 2 caracteres');
+      }
+      if (trimmedNome.length > 100) {
+        validationErrors.push('Nome deve ter no máximo 100 caracteres');
+      }
+    }
+
+    // Telefone validation (optional)
+    if (metadata?.telefone && !phoneRegex.test(metadata.telefone)) {
+      validationErrors.push('Telefone inválido. Use formato: (11) 98765-4321');
+    }
+
+    // Especialidade validation (optional)
+    if (metadata?.especialidade && !validEspecialidades.includes(metadata.especialidade as any)) {
+      validationErrors.push(`Especialidade inválida. Valores permitidos: ${validEspecialidades.join(', ')}`);
+    }
+
+    // Role validation
+    if (role && !validRoles.includes(role as any)) {
+      validationErrors.push(`Role inválida. Valores permitidos: ${validRoles.join(', ')}`);
+    }
+
+    // Cliente_id validation (optional UUID)
+    if (metadata?.cliente_id) {
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      if (!uuidRegex.test(metadata.cliente_id)) {
+        validationErrors.push('cliente_id deve ser um UUID válido');
+      }
+    }
+
+    // Empresa validation (optional length limit)
+    if (metadata?.empresa && metadata.empresa.length > 200) {
+      validationErrors.push('Nome da empresa deve ter no máximo 200 caracteres');
     }
 
     // VALIDAÇÃO CRÍTICA: Não permitir cliente_id e especialidade simultaneamente
-    if (metadata.cliente_id && metadata.especialidade) {
-      console.error('🔐 Signup: Conflito cliente_id + especialidade');
+    if (metadata?.cliente_id && metadata?.especialidade) {
+      validationErrors.push('Usuário não pode ser cliente e especialista simultaneamente');
+    }
+
+    // Return validation errors if any
+    if (validationErrors.length > 0) {
+      console.error('🔐 Signup: Validação falhou:', validationErrors);
       return new Response(
         JSON.stringify({ 
-          error: 'INVALID_METADATA',
-          message: 'Usuário não pode ser cliente e especialista simultaneamente' 
+          error: 'VALIDATION_ERROR',
+          message: 'Dados inválidos fornecidos',
+          errors: validationErrors
         }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );

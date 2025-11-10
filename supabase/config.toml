@@ -45,52 +45,52 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.generate-content-with-ai]
-verify_jwt = false
+verify_jwt = true
 
 [functions.cnpj-lookup]
-verify_jwt = false
+verify_jwt = true
 
 [functions.create-user]
-verify_jwt = false
+verify_jwt = true
 
 [functions.signup]
 verify_jwt = false
 
 [functions.generate-contract-clauses]
-verify_jwt = false
+verify_jwt = true
 
 [functions.event-bus]
 verify_jwt = false
 
 [functions.analyze-social-links]
-verify_jwt = false
+verify_jwt = true
 
 [functions.generate-task-briefing]
-verify_jwt = false
+verify_jwt = true
 
 [functions.generate-reflexao]
-verify_jwt = false
+verify_jwt = true
 
 [functions.gerar-insights-diarios]
-verify_jwt = false
+verify_jwt = true
 
 [functions.avaliar-meta-smart]
-verify_jwt = false
+verify_jwt = true
 
 [functions.prever-horarios-foco]
-verify_jwt = false
+verify_jwt = true
 
 [functions.generate-roteiro-audiovisual]
-verify_jwt = false
+verify_jwt = true
 
 [functions.analyze-competitor]
-verify_jwt = false
+verify_jwt = true
 
 [functions.generate-competitive-report]
-verify_jwt = false
+verify_jwt = true
 
 [functions.generate-roteiro-gpt4]
-verify_jwt = false
+verify_jwt = true
 
 [functions.monitor-test-connection]
 verify_jwt = true
@@ -99,40 +99,40 @@ verify_jwt = true
 verify_jwt = true
 
 [functions.monitor-chat-assistant]
-verify_jwt = false
+verify_jwt = true
 
 [functions.validate-social-account]
-verify_jwt = false
+verify_jwt = true
 
 [functions.generate-strategic-plan]
-verify_jwt = false
+verify_jwt = true
 
 [functions.generate-editorial-content]
-verify_jwt = false
+verify_jwt = true
 
 [functions.analyze-nota-onboarding]
-verify_jwt = false
+verify_jwt = true
 
 [functions.sync-feriados]
-verify_jwt = false
+verify_jwt = true
 
 [functions.parse-extrato-ofx]
-verify_jwt = false
+verify_jwt = true
 
 [functions.parse-extrato-csv]
-verify_jwt = false
+verify_jwt = true
 
 [functions.process-extrato-transacoes]
-verify_jwt = false
+verify_jwt = true
 
 [functions.importar-transacoes-aprovadas]
-verify_jwt = false
+verify_jwt = true
 
 [functions.analyze-extrato-structure]
-verify_jwt = false
+verify_jwt = true
 
 [functions.analyze-onboarding-complete]
-verify_jwt = false
+verify_jwt = true
 
 [functions.suggest-campaigns]
-verify_jwt = false
+verify_jwt = true

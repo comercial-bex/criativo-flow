@@ -345,3 +345,58 @@ export function formatValidationErrors(errors: ValidationError[]) {
     details: errors,
   };
 }
+
+// ========================================
+// FILTER VALIDATION
+// ========================================
+
+const validStatuses = ['ativo', 'inativo', 'pendente', 'bloqueado'] as const;
+
+export interface AdminFiltersInput {
+  role?: string;
+  status?: string;
+  search?: string;
+}
+
+export function validateAdminFilters(
+  filters?: Partial<AdminFiltersInput>
+): ValidationResult<AdminFiltersInput> {
+  if (!filters) {
+    return { success: true, data: {} };
+  }
+
+  const errors: ValidationError[] = [];
+
+  // Validate role if provided
+  if (filters.role) {
+    const roleError = validateRole(filters.role);
+    if (roleError) errors.push(roleError);
+  }
+
+  // Validate status if provided
+  if (filters.status && !validStatuses.includes(filters.status as any)) {
+    errors.push({
+      field: 'status',
+      message: `Status inválido. Valores permitidos: ${validStatuses.join(', ')}`,
+      code: 'invalid_value',
+    });
+  }
+
+  // Validate search length
+  if (filters.search && filters.search.length > 200) {
+    errors.push({
+      field: 'search',
+      message: 'Termo de busca deve ter no máximo 200 caracteres',
+      code: 'max_length',
+    });
+  }
+
+  if (errors.length > 0) {
+    return { success: false, errors };
+  }
+
+  return {
+    success: true,
+    data: filters as AdminFiltersInput,
+  };
+}
