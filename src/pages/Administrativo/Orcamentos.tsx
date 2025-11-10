@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -70,6 +71,7 @@ export default function Orcamentos() {
   const [editingOrcamento, setEditingOrcamento] = useState<Orcamento | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const navigate = useNavigate();
   const { startTutorial, hasSeenTutorial, isActive } = useTutorial('administrativo-orcamentos');
 
   // Form state
@@ -317,6 +319,10 @@ export default function Orcamentos() {
     }
   };
 
+  const handleView = (id: string) => {
+    navigate(`/admin/orcamentos/${id}`);
+  };
+
   if (loading) {
     return <div className="flex items-center justify-center h-64">Carregando...</div>;
   }
@@ -559,6 +565,14 @@ export default function Orcamentos() {
                     {statusLabels[orcamento.status]}
                   </Badge>
                   <div className="flex gap-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => handleView(orcamento.id)}
+                      title="Ver detalhes"
+                    >
+                      <Eye className="h-4 w-4" />
+                    </Button>
                     <Button variant="outline" size="sm" onClick={() => handleEdit(orcamento)}>
                       <Edit className="h-4 w-4" />
                     </Button>
