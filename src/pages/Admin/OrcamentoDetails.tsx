@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useOrcamento } from "@/hooks/useOrcamento";
 import { useQuery } from "@tanstack/react-query";
@@ -21,6 +22,9 @@ import {
 } from "lucide-react";
 import { TimelineLog } from "@/components/Admin/TimelineLog";
 import { TransacoesVinculadas } from "@/components/Financeiro/TransacoesVinculadas";
+import { OrcamentoPreview } from "@/components/Orcamento/OrcamentoPreview";
+import { PreviewActionBar } from "@/components/Orcamento/PreviewActionBar";
+import { EnviarOrcamentoDialog } from "@/components/Orcamento/EnviarOrcamentoDialog";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { smartToast } from "@/lib/smart-toast";
@@ -48,6 +52,7 @@ export default function OrcamentoDetails() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { orcamento, loading, converterParaProposta, duplicarOrcamento } = useOrcamento(id);
+  const [emailDialogOpen, setEmailDialogOpen] = useState(false);
 
   const { data: itens = [] } = useQuery({
     queryKey: ["orcamento_itens", id],
@@ -381,6 +386,13 @@ export default function OrcamentoDetails() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      <EnviarOrcamentoDialog
+        open={emailDialogOpen}
+        onOpenChange={setEmailDialogOpen}
+        orcamento={orcamento}
+        itens={itens}
+      />
     </div>
   );
 }
