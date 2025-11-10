@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Plus, FileText, Calendar, DollarSign, User, Trash2, Edit, Eye } from "lucide-react";
+import { Plus, FileText, Calendar, DollarSign, User, Trash2, Edit, Eye, Archive } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
@@ -310,6 +310,32 @@ export default function Orcamentos() {
     navigate(`/admin/orcamentos/${id}`);
   };
 
+  const handleArquivar = async (id: string) => {
+    if (!confirm("Tem certeza que deseja arquivar este orçamento?")) return;
+
+    try {
+      const { error } = await supabase
+        .from('orcamentos')
+        .update({ status: 'arquivado' })
+        .eq('id', id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Orçamento arquivado",
+        description: "Orçamento arquivado com sucesso!",
+      });
+
+      fetchData();
+    } catch (error: any) {
+      toast({
+        title: "Erro ao arquivar orçamento",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
   if (loading) {
     return <div className="flex items-center justify-center h-64">Carregando...</div>;
   }
@@ -563,9 +589,26 @@ export default function Orcamentos() {
                     <Button variant="outline" size="sm" onClick={() => handleEdit(orcamento)}>
                       <Edit className="h-4 w-4" />
                     </Button>
-                    <Button variant="outline" size="sm" onClick={() => handleDelete(orcamento.id)}>
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    {orcamento.status === 'aprovado' && (
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => handleArquivar(orcamento.id)}
+                        title="Arquivar orçamento"
+                      >
+                        <Archive className="h-4 w-4" />
+                      </Button>
+                    )}
+                    {orcamento.status !== 'aprovado' && (
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => handleDelete(orcamento.id)}
+                        title="Excluir orçamento"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
                   </div>
                 </div>
               </div>
