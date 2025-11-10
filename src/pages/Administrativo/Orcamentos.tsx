@@ -261,36 +261,8 @@ export default function Orcamentos() {
     }
   };
 
-  const handleEdit = async (orcamento: Orcamento) => {
-    setFormData({
-      titulo: orcamento.titulo,
-      descricao: orcamento.descricao || "",
-      cliente_id: orcamento.cliente_id || "",
-      data_validade: orcamento.data_validade,
-      observacoes: orcamento.observacoes || "",
-      status: orcamento.status
-    });
-
-    // Buscar itens do orçamento
-    const { data: itensData } = await supabase
-      .from('orcamento_itens')
-      .select('*')
-      .eq('orcamento_id', orcamento.id);
-
-    if (itensData && itensData.length > 0) {
-      setItens(itensData.map(item => ({
-        id: item.id,
-        produto_servico: item.produto_servico,
-        descricao: item.descricao || "",
-        quantidade: item.quantidade,
-        preco_unitario: item.preco_unitario,
-        desconto_percentual: item.desconto_percentual || 0,
-        valor_total: item.valor_total
-      })));
-    }
-
-    setEditingOrcamento(orcamento);
-    setDialogOpen(true);
+  const handleEdit = (orcamento: Orcamento) => {
+    navigate(`/admin/orcamentos/${orcamento.id}/edit`);
   };
 
   const handleDelete = async (id: string) => {

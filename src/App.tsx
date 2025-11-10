@@ -111,6 +111,7 @@ const ApresentacaoRelatorio = lazy(() => import("./pages/ApresentacaoRelatorio")
 const ContractTemplates = lazy(() => import("./pages/Admin/ContractTemplates"));
 const ContractTemplateForm = lazy(() => import("./pages/Admin/ContractTemplateForm"));
 const OrcamentoDetails = lazy(() => import("./pages/Admin/OrcamentoDetails"));
+const OrcamentoEditForm = lazy(() => import("./pages/Admin/OrcamentoEditForm"));
 const PropostaDetails = lazy(() => import("./pages/Admin/PropostaDetails"));
 const PropostaView = lazy(() => import("./pages/Public/PropostaView"));
 const Produtos = lazy(() => import("./pages/Admin/Produtos"));
@@ -560,8 +561,16 @@ function App() {
                     <Layout><OrcamentoDetails /></Layout>
                   </ProtectedRoute>} />
                 
+                <Route path="/admin/orcamentos/:id/edit" element={<ProtectedRoute module="administrativo">
+                    <Layout><OrcamentoEditForm /></Layout>
+                  </ProtectedRoute>} />
+                
                 <Route path="/administrativo/orcamentos/:id" element={<ProtectedRoute module="administrativo">
                     <Layout><OrcamentoDetails /></Layout>
+                  </ProtectedRoute>} />
+                
+                <Route path="/administrativo/orcamentos/:id/edit" element={<ProtectedRoute module="administrativo">
+                    <Layout><OrcamentoEditForm /></Layout>
                   </ProtectedRoute>} />
                 
                 <Route path="/admin/propostas/:id" element={<ProtectedRoute module="administrativo">
