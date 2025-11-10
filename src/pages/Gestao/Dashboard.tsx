@@ -1,10 +1,9 @@
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { RefreshCw, Download, TrendingUp, DollarSign, Calculator, FileSignature } from "lucide-react";
-import { useGestaoDashboard } from "@/hooks/useGestaoDashboard";
+import { RefreshCw, TrendingUp, DollarSign, Calculator, FileSignature, AlertTriangle, Wallet, Users } from "lucide-react";
+import { useUnifiedFinancialData } from "@/hooks/useUnifiedFinancialData";
 import { useFinancialExports } from "@/hooks/useFinancialExports";
-import { DashboardHeader } from "@/components/Financeiro/DashboardHeader";
 import { FilterBar, FilterValues } from "@/components/Financeiro/FilterBar";
 import { KPICards } from "@/components/Financeiro/KPICards";
 import { ReceitasDespesasChart } from "@/components/Financeiro/Charts/ReceitasDespesasChart";
@@ -13,6 +12,7 @@ import { ComposicaoDespesasChart } from "@/components/Financeiro/Charts/Composic
 import { ReceitaClienteChart } from "@/components/Financeiro/Charts/ReceitaClienteChart";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { startOfMonth, endOfMonth, subMonths, startOfYear } from "date-fns";
 
 const GestaoDashboard = () => {
@@ -42,7 +42,7 @@ const GestaoDashboard = () => {
 
   const { startDate, endDate } = getDateRange(periodo);
 
-  const { financeiro, comercial, loading } = useGestaoDashboard({
+  const { financeiro, comercial, kpiDashboard, errorKPIDashboard, loading } = useUnifiedFinancialData({
     startDate,
     endDate,
     type
@@ -86,6 +86,31 @@ const GestaoDashboard = () => {
 
       <FilterBar onApply={handleApplyFilters} />
 
+      {/* ALERTAS CRÍTICOS */}
+      {errorKPIDashboard && (
+        <Alert variant="destructive">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertTitle>Erro ao carregar KPIs</AlertTitle>
+          <AlertDescription>
+            Não foi possível carregar alguns indicadores. Verifique sua conexão e tente novamente.
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {financeiro.dividas.porTipo.aPagar.vencidas > 0 && (
+        <Alert variant="destructive">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertTitle>Dívidas Vencidas</AlertTitle>
+          <AlertDescription>
+            Você tem {financeiro.dividas.porTipo.aPagar.vencidas} dívida(s) vencida(s) a pagar. 
+            Total: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(
+              financeiro.dividas.mapa.filter(d => d.tipo === 'pagar' && d.parcelas_vencidas_count > 0)
+                .reduce((acc, d) => acc + d.valor_restante, 0)
+            )}
+          </AlertDescription>
+        </Alert>
+      )}
+
       {/* SEÇÃO FINANCEIRA */}
       <div className="space-y-6">
         <div className="flex items-center gap-2">
@@ -94,6 +119,81 @@ const GestaoDashboard = () => {
         </div>
 
         <KPICards data={financeiro.kpis} loading={loading} />
+
+        {/* SEÇÃO DE DÍVIDAS E FOLHA */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Card className="p-6 border-l-4 border-l-red-500">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Total a Pagar</p>
+                <p className="text-2xl font-bold text-red-600">
+                  {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(
+                    financeiro.dividas.porTipo.aPagar.total
+                  )}
+                </p>
+                {financeiro.dividas.porTipo.aPagar.vencidas > 0 && (
+                  <p className="text-xs text-red-500 font-medium mt-1">
+                    {financeiro.dividas.porTipo.aPagar.vencidas} vencida(s)
+                  </p>
+                )}
+              </div>
+              <AlertTriangle className="h-8 w-8 text-red-500" />
+            </div>
+          </Card>
+
+          <Card className="p-6 border-l-4 border-l-green-500">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Total a Receber</p>
+                <p className="text-2xl font-bold text-green-600">
+                  {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(
+                    financeiro.dividas.porTipo.aReceber.total
+                  )}
+                </p>
+                {financeiro.dividas.porTipo.aReceber.vencidas > 0 && (
+                  <p className="text-xs text-orange-500 font-medium mt-1">
+                    {financeiro.dividas.porTipo.aReceber.vencidas} inadimplente(s)
+                  </p>
+                )}
+              </div>
+              <Wallet className="h-8 w-8 text-green-500" />
+            </div>
+          </Card>
+
+          <Card className="p-6 border-l-4 border-l-blue-500">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Folha de Pagamento</p>
+                <p className="text-2xl font-bold text-blue-600">
+                  {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(
+                    financeiro.folha.total
+                  )}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {financeiro.folha.detalhes.length} registro(s)
+                </p>
+              </div>
+              <Users className="h-8 w-8 text-blue-500" />
+            </div>
+          </Card>
+
+          <Card className="p-6 border-l-4 border-l-purple-500">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Inadimplência</p>
+                <p className="text-2xl font-bold text-purple-600">
+                  {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(
+                    financeiro.dividas.totais.totalRestante
+                  )}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {financeiro.dividas.totais.totalVencidas} título(s)
+                </p>
+              </div>
+              <AlertTriangle className="h-8 w-8 text-purple-500" />
+            </div>
+          </Card>
+        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <ReceitasDespesasChart 
