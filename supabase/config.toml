@@ -136,3 +136,6 @@ verify_jwt = true
 
 [functions.suggest-campaigns]
 verify_jwt = true
+
+[functions.enviar-orcamento-email]
+verify_jwt = true

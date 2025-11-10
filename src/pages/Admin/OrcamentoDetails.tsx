@@ -64,6 +64,17 @@ export default function OrcamentoDetails() {
     enabled: !!id,
   });
 
+  const { data: empresa } = useQuery({
+    queryKey: ["configuracoes_empresa"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("configuracoes_empresa")
+        .select("*")
+        .single();
+      return data;
+    },
+  });
+
   if (loading || !orcamento) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -141,16 +152,37 @@ export default function OrcamentoDetails() {
       </div>
 
       {/* Tabs */}
-      <Tabs defaultValue="resumo" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-7">
-          <TabsTrigger value="resumo">Resumo</TabsTrigger>
-          <TabsTrigger value="itens">Itens</TabsTrigger>
-          <TabsTrigger value="cliente">Cliente</TabsTrigger>
-          <TabsTrigger value="condicoes">Condições</TabsTrigger>
-          <TabsTrigger value="financeiro">Financeiro</TabsTrigger>
-          <TabsTrigger value="historico">Histórico</TabsTrigger>
-          <TabsTrigger value="anexos">Anexos</TabsTrigger>
-        </TabsList>
+      <Tabs defaultValue="previa" className="space-y-6">
+            <TabsList className="grid w-full grid-cols-8">
+              <TabsTrigger value="previa">Prévia</TabsTrigger>
+              <TabsTrigger value="resumo">Resumo</TabsTrigger>
+              <TabsTrigger value="itens">Itens</TabsTrigger>
+              <TabsTrigger value="cliente">Cliente</TabsTrigger>
+              <TabsTrigger value="condicoes">Condições</TabsTrigger>
+              <TabsTrigger value="financeiro">Financeiro</TabsTrigger>
+              <TabsTrigger value="historico">Histórico</TabsTrigger>
+              <TabsTrigger value="anexos">Anexos</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="previa">
+              <PreviewActionBar
+                orcamento={orcamento}
+                onEdit={() => navigate(`/admin/orcamentos/${id}/edit`)}
+                onExport={handleExportarPDF}
+                onSend={() => setEmailDialogOpen(true)}
+                onDuplicate={handleDuplicar}
+                onConvert={handleConverterProposta}
+              />
+              <div className="bg-muted/30 p-6 rounded-lg">
+                <OrcamentoPreview 
+                  orcamento={orcamento}
+                  itens={itens}
+                  empresa={empresa}
+                  modo="visualizacao"
+                  onEdit={() => navigate(`/admin/orcamentos/${id}/edit`)}
+                />
+              </div>
+            </TabsContent>
 
         {/* Resumo */}
         <TabsContent value="resumo">
