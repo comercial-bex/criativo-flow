@@ -2,7 +2,6 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "next-themes";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { useAuth, AuthProvider } from "@/hooks/useAuth";
 import { Layout } from "@/components/Layout";
@@ -18,6 +17,7 @@ import { logWebVitals } from "@/lib/web-vitals";
 import { analytics } from "@/lib/analytics";
 import { TeamChatWidget } from "@/components/TeamChat/TeamChatWidget";
 import { OfflineIndicator } from "@/components/OfflineIndicator";
+import { useFrontendHealth } from "@/hooks/useFrontendHealth";
 
 // Critical pages (loaded immediately)
 import Auth from "./pages/Auth";
@@ -221,6 +221,9 @@ const initAnalytics = () => {
   }
 };
 function App() {
+  // Frontend health monitoring (only in dev mode)
+  useFrontendHealth();
+  
   // Signal React has mounted
   useEffect(() => {
     (window as any).__reactMounted = true;
@@ -251,7 +254,6 @@ function App() {
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false} forcedTheme="dark" disableTransitionOnChange>
           <BexThemeProvider>
             <TooltipProvider>
-              <Toaster />
               <Sonner />
               <OfflineIndicator />
               

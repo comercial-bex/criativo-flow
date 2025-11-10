@@ -466,6 +466,23 @@ All colors MUST be HSL.
 
 /* === BEX Gaming Component Classes === */
 @layer components {
+  /* Layout utility classes for consistent spacing */
+  .layout-header {
+    @apply px-4 lg:px-6 py-3;
+  }
+  
+  .layout-content {
+    @apply p-4 lg:p-6;
+  }
+  
+  .layout-sidebar {
+    @apply p-3 lg:p-4;
+  }
+  
+  .layout-footer {
+    @apply px-4 py-2;
+  }
+  
   /* Gaming Card Base */
   .card-gaming {
     @apply bg-black/40 backdrop-blur-md border border-bex/20;

@@ -1,17 +1,25 @@
 import { toast } from 'sonner';
 
 export const smartToast = {
-  success: (message: string, description?: string) => 
-    toast.success(`✅ ${message}`, { description }),
+  success: (message: string, description?: string, duration?: number) => 
+    toast.success(`✅ ${message}`, { description, duration }),
   
-  error: (message: string, description?: string) => 
-    toast.error(`❌ ${message}`, { description }),
+  error: (message: string, description?: string, duration?: number) => 
+    toast.error(`❌ ${message}`, { description, duration }),
   
-  loading: (message: string) => 
-    toast.loading(`⏳ ${message}`),
+  loading: (message: string, duration?: number) => 
+    toast.loading(`⏳ ${message}`, { duration }),
   
-  info: (message: string, description?: string) => 
-    toast.info(`ℹ️ ${message}`, { description }),
+  info: (message: string, description?: string, duration?: number) => 
+    toast.info(`ℹ️ ${message}`, { description, duration }),
+  
+  dismiss: (toastId?: string | number) => {
+    if (toastId) {
+      toast.dismiss(toastId);
+    } else {
+      toast.dismiss();
+    }
+  },
   
   promise: <T,>(
     promise: Promise<T>,
