@@ -33,14 +33,15 @@ export function useModalPreload() {
           queryClient.setQueryData(['especialistas-simple'], especialistas);
         }
 
-        // Pré-carregar assinaturas
+        // Pré-carregar assinaturas (agora de produtos)
         const { data: assinaturas } = await supabase
-          .from('assinaturas')
+          .from('produtos')
           .select('*')
-          .eq('status', 'ativo');
+          .eq('tipo', 'plano_assinatura')
+          .eq('ativo', true);
 
         if (assinaturas) {
-          queryClient.setQueryData(['assinaturas'], assinaturas);
+          queryClient.setQueryData(['produtos-catalogo', { tipo: 'plano_assinatura', ativo: true }], assinaturas);
         }
 
         console.log('✅ Dados de modais pré-carregados');

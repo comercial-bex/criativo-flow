@@ -10,6 +10,7 @@ import { SectionHeader } from "@/components/SectionHeader";
 import { ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { AdminClienteControls } from "@/components/AdminClienteControls";
+import { useProdutosCatalogo } from "@/hooks/useProdutosCatalogo";
 
 interface Cliente {
   id: string;
@@ -26,17 +27,12 @@ interface Cliente {
   updated_at?: string;
 }
 
-interface Assinatura {
-  id: string;
-  nome: string;
-  preco: number;
-}
-
-
 export default function ClienteEditar() {
   const { clienteId } = useParams<{ clienteId: string }>();
   const navigate = useNavigate();
-  const [assinaturas, setAssinaturas] = useState<Assinatura[]>([]);
+  const { produtos: assinaturas } = useProdutosCatalogo({ 
+    tipo: 'plano_assinatura' 
+  });
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<Partial<Cliente>>({
     nome: "",
@@ -49,27 +45,12 @@ export default function ClienteEditar() {
     valor_personalizado: undefined
   });
 
-  // Carregar dados do cliente e assinaturas
+  // Carregar dados do cliente
   useEffect(() => {
-    fetchAssinaturas();
     if (clienteId) {
       fetchCliente();
     }
   }, [clienteId]);
-
-  const fetchAssinaturas = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('assinaturas')
-        .select('*')
-        .order('nome');
-
-      if (error) throw error;
-      setAssinaturas(data || []);
-    } catch (error) {
-      console.error('Erro ao carregar assinaturas:', error);
-    }
-  };
 
   const fetchCliente = async () => {
     if (!clienteId) return;
@@ -248,7 +229,7 @@ export default function ClienteEditar() {
                     setFormData({ 
                       ...formData, 
                       assinatura_id: value === 'none' ? '' : value,
-                      valor_personalizado: planoSelecionado ? planoSelecionado.preco : undefined
+                      valor_personalizado: planoSelecionado ? planoSelecionado.preco_padrao : undefined
                     });
                   }}
                 >
@@ -259,7 +240,7 @@ export default function ClienteEditar() {
                     <SelectItem value="none">Sem assinatura</SelectItem>
                     {assinaturas.map((assinatura) => (
                       <SelectItem key={assinatura.id} value={assinatura.id}>
-                        {assinatura.nome} - R$ {assinatura.preco.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                        {assinatura.nome} - R$ {assinatura.preco_padrao.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -280,7 +261,7 @@ export default function ClienteEditar() {
                         min="0"
                         placeholder={(() => {
                           const plano = assinaturas.find(a => a.id === formData.assinatura_id);
-                          return plano ? `Padrão: ${plano.preco.toFixed(2)}` : "0.00";
+                          return plano ? `Padrão: ${plano.preco_padrao.toFixed(2)}` : "0.00";
                         })()}
                         value={formData.valor_personalizado ?? ''}
                         onChange={(e) => setFormData({ 

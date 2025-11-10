@@ -112,6 +112,20 @@ export type Database = {
             foreignKeyName: "admin_temp_data_produto_id_fkey"
             columns: ["produto_id"]
             isOneToOne: false
+            referencedRelation: "assinaturas_compat"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "admin_temp_data_produto_id_fkey"
+            columns: ["produto_id"]
+            isOneToOne: false
+            referencedRelation: "pacotes_compat"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "admin_temp_data_produto_id_fkey"
+            columns: ["produto_id"]
+            isOneToOne: false
             referencedRelation: "produtos"
             referencedColumns: ["id"]
           },
@@ -3197,6 +3211,20 @@ export type Database = {
             columns: ["contrato_id"]
             isOneToOne: false
             referencedRelation: "contratos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contrato_itens_produto_id_fkey"
+            columns: ["produto_id"]
+            isOneToOne: false
+            referencedRelation: "assinaturas_compat"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contrato_itens_produto_id_fkey"
+            columns: ["produto_id"]
+            isOneToOne: false
+            referencedRelation: "pacotes_compat"
             referencedColumns: ["id"]
           },
           {
@@ -8262,6 +8290,20 @@ export type Database = {
             foreignKeyName: "orcamento_itens_produto_id_fkey"
             columns: ["produto_id"]
             isOneToOne: false
+            referencedRelation: "assinaturas_compat"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orcamento_itens_produto_id_fkey"
+            columns: ["produto_id"]
+            isOneToOne: false
+            referencedRelation: "pacotes_compat"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orcamento_itens_produto_id_fkey"
+            columns: ["produto_id"]
+            isOneToOne: false
             referencedRelation: "produtos"
             referencedColumns: ["id"]
           },
@@ -9787,7 +9829,35 @@ export type Database = {
             foreignKeyName: "produto_componentes_produto_filho_id_fkey"
             columns: ["produto_filho_id"]
             isOneToOne: false
+            referencedRelation: "assinaturas_compat"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "produto_componentes_produto_filho_id_fkey"
+            columns: ["produto_filho_id"]
+            isOneToOne: false
+            referencedRelation: "pacotes_compat"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "produto_componentes_produto_filho_id_fkey"
+            columns: ["produto_filho_id"]
+            isOneToOne: false
             referencedRelation: "produtos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "produto_componentes_produto_pai_id_fkey"
+            columns: ["produto_pai_id"]
+            isOneToOne: false
+            referencedRelation: "assinaturas_compat"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "produto_componentes_produto_pai_id_fkey"
+            columns: ["produto_pai_id"]
+            isOneToOne: false
+            referencedRelation: "pacotes_compat"
             referencedColumns: ["id"]
           },
           {
@@ -9801,52 +9871,88 @@ export type Database = {
       }
       produtos: {
         Row: {
+          anuncios_facebook: boolean | null
+          anuncios_google: boolean | null
           ativo: boolean | null
           categoria: string | null
           created_at: string | null
           custo: number | null
           descricao: string | null
+          duracao_dias: number | null
           id: string
           imposto_percent: number | null
           lead_time_dias: number | null
+          metadados: Json | null
           nome: string
           observacoes: string | null
+          ordem_exibicao: number | null
+          periodo: string | null
+          posts_mensais: number | null
+          preco_base: number | null
           preco_padrao: number
+          recursos: string[] | null
+          reels_suporte: boolean | null
+          requer_briefing: boolean | null
           sku: string
+          slug: string | null
           tipo: string | null
           unidade: string | null
           updated_at: string | null
         }
         Insert: {
+          anuncios_facebook?: boolean | null
+          anuncios_google?: boolean | null
           ativo?: boolean | null
           categoria?: string | null
           created_at?: string | null
           custo?: number | null
           descricao?: string | null
+          duracao_dias?: number | null
           id?: string
           imposto_percent?: number | null
           lead_time_dias?: number | null
+          metadados?: Json | null
           nome: string
           observacoes?: string | null
+          ordem_exibicao?: number | null
+          periodo?: string | null
+          posts_mensais?: number | null
+          preco_base?: number | null
           preco_padrao: number
+          recursos?: string[] | null
+          reels_suporte?: boolean | null
+          requer_briefing?: boolean | null
           sku: string
+          slug?: string | null
           tipo?: string | null
           unidade?: string | null
           updated_at?: string | null
         }
         Update: {
+          anuncios_facebook?: boolean | null
+          anuncios_google?: boolean | null
           ativo?: boolean | null
           categoria?: string | null
           created_at?: string | null
           custo?: number | null
           descricao?: string | null
+          duracao_dias?: number | null
           id?: string
           imposto_percent?: number | null
           lead_time_dias?: number | null
+          metadados?: Json | null
           nome?: string
           observacoes?: string | null
+          ordem_exibicao?: number | null
+          periodo?: string | null
+          posts_mensais?: number | null
+          preco_base?: number | null
           preco_padrao?: number
+          recursos?: string[] | null
+          reels_suporte?: boolean | null
+          requer_briefing?: boolean | null
           sku?: string
+          slug?: string | null
           tipo?: string | null
           unidade?: string | null
           updated_at?: string | null
@@ -10378,6 +10484,20 @@ export type Database = {
           unidade?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "proposta_itens_produto_id_fkey"
+            columns: ["produto_id"]
+            isOneToOne: false
+            referencedRelation: "assinaturas_compat"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "proposta_itens_produto_id_fkey"
+            columns: ["produto_id"]
+            isOneToOne: false
+            referencedRelation: "pacotes_compat"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "proposta_itens_produto_id_fkey"
             columns: ["produto_id"]
@@ -13765,6 +13885,20 @@ export type Database = {
             foreignKeyName: "transacoes_financeiras_produto_id_fkey"
             columns: ["produto_id"]
             isOneToOne: false
+            referencedRelation: "assinaturas_compat"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transacoes_financeiras_produto_id_fkey"
+            columns: ["produto_id"]
+            isOneToOne: false
+            referencedRelation: "pacotes_compat"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transacoes_financeiras_produto_id_fkey"
+            columns: ["produto_id"]
+            isOneToOne: false
             referencedRelation: "produtos"
             referencedColumns: ["id"]
           },
@@ -13945,6 +14079,51 @@ export type Database = {
       }
     }
     Views: {
+      assinaturas_compat: {
+        Row: {
+          anuncios_facebook: boolean | null
+          anuncios_google: boolean | null
+          created_at: string | null
+          id: string | null
+          nome: string | null
+          periodo: string | null
+          posts_mensais: number | null
+          preco: number | null
+          recursos: string[] | null
+          reels_suporte: boolean | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          anuncios_facebook?: boolean | null
+          anuncios_google?: boolean | null
+          created_at?: string | null
+          id?: string | null
+          nome?: string | null
+          periodo?: string | null
+          posts_mensais?: number | null
+          preco?: number | null
+          recursos?: string[] | null
+          reels_suporte?: boolean | null
+          status?: never
+          updated_at?: string | null
+        }
+        Update: {
+          anuncios_facebook?: boolean | null
+          anuncios_google?: boolean | null
+          created_at?: string | null
+          id?: string | null
+          nome?: string | null
+          periodo?: string | null
+          posts_mensais?: number | null
+          preco?: number | null
+          recursos?: string[] | null
+          reels_suporte?: boolean | null
+          status?: never
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       credenciais_status_seguranca: {
         Row: {
           credenciais_criptografadas: number | null
@@ -14008,6 +14187,42 @@ export type Database = {
             referencedColumns: ["responsavel_id"]
           },
         ]
+      }
+      pacotes_compat: {
+        Row: {
+          ativo: boolean | null
+          created_at: string | null
+          descricao: string | null
+          id: string | null
+          nome: string | null
+          preco_base: number | null
+          slug: string | null
+          tipo: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          ativo?: boolean | null
+          created_at?: string | null
+          descricao?: string | null
+          id?: string | null
+          nome?: string | null
+          preco_base?: number | null
+          slug?: string | null
+          tipo?: never
+          updated_at?: string | null
+        }
+        Update: {
+          ativo?: boolean | null
+          created_at?: string | null
+          descricao?: string | null
+          id?: string | null
+          nome?: string | null
+          preco_base?: number | null
+          slug?: string | null
+          tipo?: never
+          updated_at?: string | null
+        }
+        Relationships: []
       }
       profiles: {
         Row: {

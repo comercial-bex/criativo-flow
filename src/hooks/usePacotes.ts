@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useProdutosCatalogo, type ProdutoCatalogo } from './useProdutosCatalogo';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { smartToast } from '@/lib/smart-toast';
 
 export interface Pacote {
   id: string;
@@ -40,31 +40,29 @@ export interface PacoteTaskTemplate {
 }
 
 export function usePacotes() {
-  const [pacotes, setPacotes] = useState<Pacote[]>([]);
-  const [loading, setLoading] = useState(true);
-  const { toast } = useToast();
+  const { produtos, loading, ...rest } = useProdutosCatalogo({ 
+    tipo: 'pacote_servico',
+    ativo: true 
+  });
+
+  // Converter produtos para formato Pacote para compatibilidade
+  const pacotes: Pacote[] = produtos.map(p => ({
+    id: p.id,
+    nome: p.nome,
+    slug: p.slug || '',
+    descricao: p.descricao || '',
+    tipo: (p.categoria === 'Mídias Sociais' ? 'social' : 
+           p.categoria === 'Audiovisual' ? 'audiovisual' :
+           p.categoria === 'Premium' ? 'premium' : 'avulso') as Pacote['tipo'],
+    ativo: p.ativo,
+    preco_base: p.preco_base || p.preco_padrao,
+    created_at: p.created_at,
+    updated_at: p.updated_at
+  }));
 
   const fetchPacotes = async () => {
-    try {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from('pacotes')
-        .select('*')
-        .eq('ativo', true)
-        .order('tipo', { ascending: true });
-
-      if (error) throw error;
-      setPacotes((data || []) as Pacote[]);
-    } catch (error) {
-      console.error('Erro ao buscar pacotes:', error);
-      toast({
-        title: 'Erro',
-        description: 'Erro ao carregar pacotes',
-        variant: 'destructive',
-      });
-    } finally {
-      setLoading(false);
-    }
+    // Compatibilidade - agora usa useProdutosCatalogo
+    return pacotes;
   };
 
   const fetchPacoteItens = async (pacoteId: string): Promise<PacoteItem[]> => {
@@ -79,11 +77,7 @@ export function usePacotes() {
       return (data || []) as PacoteItem[];
     } catch (error) {
       console.error('Erro ao buscar itens do pacote:', error);
-      toast({
-        title: 'Erro',
-        description: 'Erro ao carregar itens do pacote',
-        variant: 'destructive',
-      });
+      smartToast.error('Erro ao carregar itens do pacote');
       return [];
     }
   };
@@ -102,10 +96,6 @@ export function usePacotes() {
       return [];
     }
   };
-
-  useEffect(() => {
-    fetchPacotes();
-  }, []);
 
   return {
     pacotes,

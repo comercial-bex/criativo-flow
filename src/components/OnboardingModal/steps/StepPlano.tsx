@@ -5,37 +5,20 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Calendar, Target, TrendingUp, Plus, X, Sparkles, Loader2 } from 'lucide-react';
-import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { useState } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { smartToast } from '@/lib/smart-toast';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-
-interface Assinatura {
-  id: string;
-  nome: string;
-  posts_mensais: number;
-  preco: number;
-}
+import { useProdutosCatalogo, type ProdutoCatalogo } from '@/hooks/useProdutosCatalogo';
+import { supabase } from '@/integrations/supabase/client';
 
 export function StepPlano({ formData, setFormData }: StepProps) {
-  const [assinaturas, setAssinaturas] = useState<Assinatura[]>([]);
+  const { produtos: assinaturas } = useProdutosCatalogo({ 
+    tipo: 'plano_assinatura',
+    ativo: true 
+  });
   const [novaCampanha, setNovaCampanha] = useState({ mes: 1, nome: '', tipo: 'promocional' as const, descricao: '' });
   const [suggeringCampaigns, setSuggeringCampaigns] = useState(false);
-
-  useEffect(() => {
-    loadAssinaturas();
-  }, []);
-
-  const loadAssinaturas = async () => {
-    const { data } = await supabase
-      .from('assinaturas')
-      .select('id, nome, posts_mensais, preco')
-      .eq('status', 'ativo')
-      .order('posts_mensais');
-    
-    if (data) setAssinaturas(data as Assinatura[]);
-  };
 
   const areasFocoOptions = [
     { value: 'vendas', label: '💰 Vendas e Conversão', description: 'Aumentar vendas diretas e taxas de conversão' },
@@ -164,7 +147,7 @@ export function StepPlano({ formData, setFormData }: StepProps) {
           <SelectContent>
             {assinaturas.map(ass => (
               <SelectItem key={ass.id} value={ass.id}>
-                {ass.nome} - {ass.posts_mensais} posts/mês
+                {ass.nome} - {ass.posts_mensais || 0} posts/mês
               </SelectItem>
             ))}
           </SelectContent>

@@ -45,6 +45,7 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { toast } from 'sonner';
+import { useProdutosCatalogo } from '@/hooks/useProdutosCatalogo';
 
 // Extended form data interface with additional address fields
 interface FormData extends Partial<Cliente> {
@@ -55,12 +56,6 @@ interface FormData extends Partial<Cliente> {
   cidade?: string;
   uf?: string;
   cep?: string;
-}
-
-interface Assinatura {
-  id: string;
-  nome: string;
-  preco: number;
 }
 
 function Clientes() {
@@ -79,7 +74,9 @@ function Clientes() {
   
   // Add ref to track if component is mounted
   const mountedRef = useRef(true);
-  const [assinaturas, setAssinaturas] = useState<Assinatura[]>([]);
+  const { produtos: assinaturas } = useProdutosCatalogo({ 
+    tipo: 'plano_assinatura' 
+  });
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('created_at');
   const [showForm, setShowForm] = useState(false);
@@ -120,8 +117,6 @@ function Clientes() {
   const { toast: toastHook } = useToast();
 
   useEffect(() => {
-    fetchAssinaturas();
-    
     // Cleanup function to mark component as unmounted
     return () => {
       mountedRef.current = false;
@@ -181,23 +176,6 @@ function Clientes() {
     }
   };
 
-  const fetchAssinaturas = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('assinaturas')
-        .select('*')
-        .order('nome');
-
-      if (error) throw error;
-      
-      // Only update state if component is still mounted
-      if (mountedRef.current) {
-        setAssinaturas(data || []);
-      }
-    } catch (error) {
-      console.error('Erro ao carregar assinaturas:', error);
-    }
-  };
 
   const filteredClientes = clientes.filter(cliente =>
     cliente.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -408,7 +386,7 @@ function Clientes() {
       return cliente.valor_personalizado;
     }
     const assinatura = assinaturas.find(a => a.id === cliente.assinatura_id);
-    return assinatura ? assinatura.preco : null;
+    return assinatura ? assinatura.preco_padrao : null;
   };
 
   const clienteTemAssinatura = (cliente: Cliente) => {
@@ -769,13 +747,13 @@ function Clientes() {
                     <SelectTrigger className={isMobile ? "h-12" : ""}>
                       <SelectValue placeholder="Selecione um plano" />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">Sem assinatura</SelectItem>
-                      {assinaturas.map((assinatura) => (
-                        <SelectItem key={assinatura.id} value={assinatura.id}>
-                          {assinatura.nome} - R$ {assinatura.preco.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                        </SelectItem>
-                      ))}
+                <SelectContent>
+                  <SelectItem value="none">Sem assinatura</SelectItem>
+                  {assinaturas.map((assinatura) => (
+                    <SelectItem key={assinatura.id} value={assinatura.id}>
+                      {assinatura.nome} - R$ {assinatura.preco_padrao.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                    </SelectItem>
+                  ))}
                     </SelectContent>
                   </Select>
                 </div>
