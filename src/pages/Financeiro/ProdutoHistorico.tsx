@@ -53,7 +53,7 @@ export default function ProdutoHistorico() {
   return (
     <div className="container mx-auto py-6 space-y-6">
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => navigate("/financeiro/produtos")}>
+        <Button variant="ghost" size="icon" onClick={() => navigate("/admin/produtos")}>
           <ArrowLeft className="w-4 h-4" />
         </Button>
         <div>

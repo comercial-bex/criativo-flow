@@ -118,7 +118,7 @@ export function AppSidebar() {
         { title: "Orçamentos", url: "/administrativo/orcamentos", icon: Icons.Calculator },
         { title: "Propostas", url: "/administrativo/propostas", icon: Icons.FileText },
         { title: "Contratos", url: "/admin/contratos", icon: Icons.FileSignature },
-        { title: "📦 Produtos & Serviços", url: "/financeiro/produtos", icon: Icons.Package },
+        { title: "📦 Produtos & Serviços", url: "/admin/produtos", icon: Icons.Package },
         { 
           title: "💰 Gestão de Contas", 
           url: "/financeiro/gestao-contas", 

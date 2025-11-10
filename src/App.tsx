@@ -40,7 +40,6 @@ const InteligenciaInsights = lazy(() => import("./pages/Inteligencia/Insights"))
 const InteligenciaPrevisoes = lazy(() => import("./pages/Inteligencia/Previsoes"));
 const InteligenciaMetricas = lazy(() => import("./pages/Inteligencia/Metricas"));
 const CategoriasFinanceiras = lazy(() => import("./pages/CategoriasFinanceiras"));
-const ProdutosFinanceiro = lazy(() => import("./pages/Financeiro/Produtos"));
 const ProdutoHistorico = lazy(() => import("./pages/Financeiro/ProdutoHistorico"));
 const Configuracoes = lazy(() => import("./pages/Configuracoes"));
 const Funcoes = lazy(() => import("./pages/Configuracoes/Funcoes"));
@@ -316,11 +315,7 @@ function App() {
                     <Layout><CategoriasFinanceiras /></Layout>
                   </ProtectedRoute>} />
                 
-                <Route path="/financeiro/produtos" element={<ProtectedRoute module="financeiro">
-                    <Layout><ProdutosFinanceiro /></Layout>
-                  </ProtectedRoute>} />
-                
-                <Route path="/financeiro/produtos/:id/historico" element={<ProtectedRoute module="financeiro">
+                <Route path="/admin/produtos/:id/historico" element={<ProtectedRoute module="administrativo">
                     <Layout><ProdutoHistorico /></Layout>
                   </ProtectedRoute>} />
                 
