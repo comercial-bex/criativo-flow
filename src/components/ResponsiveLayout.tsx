@@ -56,7 +56,7 @@ export function ResponsiveLayout({
         <AppSidebar />
         
         <div className="flex flex-col min-h-screen flex-1 overflow-hidden">
-          <header className={`layout-header ${isTablet ? 'h-14' : 'h-16'} flex items-center border-b border-bex/20 bg-black/95 sticky top-0 z-40 shadow-lg shadow-bex/10 safe-area-inset-top ios-optimized-fixed`}>
+          <header className={`layout-header ${isTablet ? 'min-h-14 py-2' : 'min-h-16 py-2'} flex items-center border-b border-bex/20 bg-black/95 sticky top-0 z-40 shadow-lg shadow-bex/10 safe-area-inset-top ios-optimized-fixed`}>
             <div className={`flex items-center ${SPACING.header.gap} flex-1`}>
               <SidebarTrigger className="hover:bg-bex/10 hover:text-bex p-2 rounded-md transition-all border border-transparent hover:border-bex/30" />
               <GlobalHeader />

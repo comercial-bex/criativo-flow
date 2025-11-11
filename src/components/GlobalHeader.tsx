@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { useUniversalSearch } from "@/hooks/useUniversalSearch";
@@ -25,7 +26,13 @@ export function GlobalHeader({ className }: GlobalHeaderProps = {}) {
   const isMobile = deviceType === 'mobile';
 
   return (
-    <div className="flex items-center justify-between w-full">
+    <div className="flex flex-col w-full gap-2">
+      {/* Breadcrumbs - Desktop/Tablet only */}
+      {!isMobile && (
+        <Breadcrumbs maxItems={5} className="px-1" />
+      )}
+      
+      <div className="flex items-center justify-between w-full">
       {isMobile ? (
         <>
           {/* Mobile Layout */}
@@ -141,6 +148,7 @@ export function GlobalHeader({ className }: GlobalHeaderProps = {}) {
           </div>
         </>
       )}
+      </div>
     </div>
   );
 }
