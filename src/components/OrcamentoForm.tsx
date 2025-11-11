@@ -9,6 +9,7 @@ import { Plus, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
+import { useClientesAtivos } from "@/hooks/useClientesOptimized";
 
 interface OrcamentoItem {
   id?: string;
@@ -18,11 +19,6 @@ interface OrcamentoItem {
   preco_unitario: number;
   desconto_percentual: number;
   valor_total: number;
-}
-
-interface Cliente {
-  id: string;
-  nome: string;
 }
 
 interface OrcamentoFormProps {
@@ -47,32 +43,12 @@ export function OrcamentoForm({ onSuccess }: OrcamentoFormProps) {
       valor_total: 0,
     }
   ]);
-  const [clientes, setClientes] = useState<Cliente[]>([]);
+  
+  // ✅ Hook otimizado para clientes
+  const { data: clientes = [] } = useClientesAtivos();
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
-
-  useEffect(() => {
-    fetchClientes();
-  }, []);
-
-  const fetchClientes = async () => {
-    try {
-      const { data, error } = await supabase
-        .from("clientes")
-        .select("id, nome")
-        .order("nome");
-
-      if (error) throw error;
-      setClientes(data || []);
-    } catch (error: any) {
-      toast({
-        title: "Erro ao carregar clientes",
-        description: error.message,
-        variant: "destructive",
-      });
-    }
-  };
 
   const calcularValorItem = (item: OrcamentoItem) => {
     const subtotal = item.quantidade * item.preco_unitario;

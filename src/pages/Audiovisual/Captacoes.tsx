@@ -15,6 +15,7 @@ import { ptBR } from "date-fns/locale";
 import { useToast } from "@/hooks/use-toast";
 import { useTutorial } from '@/hooks/useTutorial';
 import { TutorialButton } from '@/components/TutorialButton';
+import { useClientesAtivos } from "@/hooks/useClientesOptimized";
 
 interface CaptacaoAgenda {
   id: string;
@@ -38,10 +39,12 @@ export default function CaptacoesPage() {
   const { toast } = useToast();
   const { startTutorial, hasSeenTutorial } = useTutorial('audiovisual-captacoes');
   const [captacoes, setCaptacoes] = useState<CaptacaoAgenda[]>([]);
-  const [clientes, setClientes] = useState<Cliente[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingCaptacao, setEditingCaptacao] = useState<CaptacaoAgenda | null>(null);
+
+  // ✅ Hook otimizado para clientes
+  const { data: clientes = [] } = useClientesAtivos();
 
   const [formData, setFormData] = useState({
     titulo: "",
@@ -56,7 +59,6 @@ export default function CaptacoesPage() {
   useEffect(() => {
     if (user) {
       fetchCaptacoes();
-      fetchClientes();
     }
   }, [user]);
 
@@ -82,20 +84,6 @@ export default function CaptacoesPage() {
       });
     } finally {
       setLoading(false);
-    }
-  };
-
-  const fetchClientes = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('clientes')
-        .select('id, nome')
-        .order('nome');
-
-      if (error) throw error;
-      setClientes(data || []);
-    } catch (error) {
-      console.error('Erro ao carregar clientes:', error);
     }
   };
 

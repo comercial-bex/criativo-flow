@@ -19,6 +19,7 @@ import { useProjetos } from '@/hooks/useProjetos';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { EspecialistasSelector } from '@/components/EspecialistasSelector';
+import { useClientesAtivos } from '@/hooks/useClientesOptimized';
 
 interface CriarProjetoAvulsoModalProps {
   open: boolean;
@@ -41,8 +42,10 @@ export function CriarProjetoAvulsoModal({
   const { user } = useAuth();
   const { createProjeto } = useProjetos();
   const [loading, setLoading] = useState(false);
-  const [clientes, setClientes] = useState<any[]>([]);
   const [especialistas, setEspecialistas] = useState<any[]>([]);
+  
+  // ✅ Hook otimizado para clientes
+  const { data: clientes = [] } = useClientesAtivos();
   
   const [especialistasSelecionados, setEspecialistasSelecionados] = useState({
     grs_id: null,
@@ -65,43 +68,9 @@ export function CriarProjetoAvulsoModal({
 
   useEffect(() => {
     if (open) {
-      fetchClientes();
       fetchEspecialistas();
     }
   }, [open]);
-  
-  // Sincronizar responsavel_grs_id com especialistas
-  useEffect(() => {
-    if (formData.responsavel_grs_id && !especialistasSelecionados.grs_id) {
-      setEspecialistasSelecionados(prev => ({
-        ...prev,
-        grs_id: formData.responsavel_grs_id
-      }));
-    }
-  }, [formData.responsavel_grs_id]);
-
-  useEffect(() => {
-    setFormData(prev => ({
-      ...prev,
-      tipo_projeto: tipo,
-      cliente_id: clienteId || prev.cliente_id
-    }));
-  }, [tipo, clienteId]);
-
-  const fetchClientes = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('clientes')
-        .select('id, nome')
-        .eq('status', 'ativo')
-        .order('nome');
-
-      if (error) throw error;
-      setClientes(data || []);
-    } catch (error) {
-      console.error('Erro ao buscar clientes:', error);
-    }
-  };
 
   const fetchEspecialistas = async () => {
     try {

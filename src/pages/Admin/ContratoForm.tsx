@@ -27,6 +27,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useClientes } from "@/hooks/useClientesOptimized";
 
 export default function ContratoForm() {
   const navigate = useNavigate();
@@ -39,7 +40,8 @@ export default function ContratoForm() {
   const projetoIdPrefill = searchParams.get("projeto_id");
   const isEditMode = Boolean(id);
   
-  const [clientes, setClientes] = useState<any[]>([]);
+  // ✅ Hook otimizado para clientes
+  const { data: clientes = [] } = useClientes();
   const [projetos, setProjetos] = useState<any[]>([]);
   const [templates, setTemplates] = useState<any[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
@@ -103,40 +105,8 @@ export default function ContratoForm() {
   const canDelete = role === 'admin' || role === 'gestor';
 
   useEffect(() => {
-    fetchClientes();
     fetchTemplates();
   }, []);
-
-  useEffect(() => {
-    if (isEditMode && id) {
-      const contract = contracts.find(c => c.id === id);
-      if (contract) {
-        setCurrentContract(contract);
-        setFormData({
-          titulo: contract.titulo || "",
-          cliente_id: contract.cliente_id || "",
-          projeto_id: contract.projeto_id || "",
-          tipo: contract.tipo || "servico",
-          descricao: contract.descricao || "",
-          escopo: contract.escopo || "",
-          sla: contract.sla || "",
-          confidencialidade: contract.confidencialidade || false,
-          propriedade_intelectual: contract.propriedade_intelectual || "",
-          rescisao: contract.rescisao || "",
-          foro: contract.foro || "",
-          condicoes_comerciais: contract.condicoes_comerciais || "",
-          valor_mensal: contract.valor_mensal || 0,
-          valor_avulso: contract.valor_avulso || 0,
-          valor_recorrente: contract.valor_recorrente || 0,
-          renovacao: contract.renovacao || "nenhuma",
-          reajuste_indice: contract.reajuste_indice || "",
-          data_inicio: contract.data_inicio || "",
-          data_fim: contract.data_fim || "",
-          status: contract.status || "rascunho",
-        });
-      }
-    }
-  }, [id, contracts, isEditMode]);
 
   useEffect(() => {
     if (formData.cliente_id) {
@@ -147,15 +117,6 @@ export default function ContratoForm() {
   useEffect(() => {
     setDraft(formData);
   }, [formData]);
-
-  const fetchClientes = async () => {
-    const { data } = await supabase
-      .from("clientes")
-      .select("id, nome, cnpj_cpf, endereco")
-      .order("nome");
-    
-    setClientes(data || []);
-  };
 
   const fetchProjetos = async (clienteId: string) => {
     const { data } = await supabase

@@ -16,6 +16,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useCalendarioMultidisciplinar } from '@/hooks/useCalendarioMultidisciplinar';
+import { useClientesAtivos } from '@/hooks/useClientesOptimized';
 
 interface AudiovisualScheduleModalProps {
   open: boolean;
@@ -35,8 +36,11 @@ export function AudiovisualScheduleModal({
   const [checkingConflicts, setCheckingConflicts] = useState(false);
   const [conflicts, setConflicts] = useState<any[]>([]);
   const [filmmakers, setFilmmakers] = useState<any[]>([]);
-  const [clientes, setClientes] = useState<any[]>([]);
   const [suggestedSlot, setSuggestedSlot] = useState<any>(null);
+  
+  // ✅ Hook otimizado para clientes (apenas se não foi passado clienteId específico)
+  const { data: clientesData = [] } = useClientesAtivos();
+  const clientes = clienteId ? [] : clientesData;
 
   const [formData, setFormData] = useState({
     titulo: '',
@@ -97,22 +101,6 @@ export function AudiovisualScheduleModal({
       }
 
       setFilmmakers(filmmakersData || []);
-
-      // Buscar clientes se não foi passado um específico
-      if (!clienteId) {
-        const { data: clientesData, error: clientesError } = await supabase
-          .from('clientes')
-          .select('id, nome')
-          .eq('status', 'ativo')
-          .order('nome');
-
-        if (clientesError) {
-          console.error('Erro ao buscar clientes:', clientesError);
-          throw clientesError;
-        }
-
-        setClientes(clientesData || []);
-      }
     } catch (error: any) {
       console.error('Erro ao buscar dados:', error);
       toast({

@@ -13,6 +13,7 @@ import { TutorialButton } from '@/components/TutorialButton';
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
+import { useClientesAtivos } from "@/hooks/useClientesOptimized";
 
 interface BrandAsset {
   id: string;
@@ -39,7 +40,9 @@ export default function DesignBiblioteca() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCliente, setSelectedCliente] = useState<string>("todos");
   const [selectedTipo, setSelectedTipo] = useState<string>("todos");
-  const [clientes, setClientes] = useState<Array<{ id: string; nome: string }>>([]);
+  
+  // ✅ Hook otimizado para clientes
+  const { data: clientes = [] } = useClientesAtivos();
   
   // Upload state
   const [uploadData, setUploadData] = useState({
@@ -50,24 +53,8 @@ export default function DesignBiblioteca() {
   });
 
   useEffect(() => {
-    fetchClientes();
     fetchAssets();
   }, [selectedCliente, selectedTipo]);
-
-  const fetchClientes = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('clientes')
-        .select('id, nome')
-        .eq('status', 'ativo')
-        .order('nome');
-
-      if (error) throw error;
-      setClientes(data || []);
-    } catch (error) {
-      console.error('❌ [Biblioteca] Erro ao carregar clientes:', error);
-    }
-  };
 
   const fetchAssets = async () => {
     try {
