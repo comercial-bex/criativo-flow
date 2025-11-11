@@ -472,8 +472,8 @@ export function AppSidebar() {
                       "flex items-center px-4 py-3 mb-1 text-sm rounded-lg transition-all duration-300 relative overflow-hidden",
                       "hover:translate-x-1",
                       isActive
-                        ? 'bg-gradient-to-r from-bex/20 to-transparent text-bex-green border-l-2 border-bex-green shadow-md shadow-bex/20'
-                        : 'text-sidebar-foreground hover:bg-bex-green/10 hover:text-bex-green hover:border-l-2 hover:border-bex/50'
+                        ? 'bg-gradient-to-r from-bex/10 to-transparent text-bex-green border-l-4 border-bex shadow-lg shadow-bex/30 font-medium'
+                        : 'text-sidebar-foreground hover:bg-bex-green/5 hover:text-bex-green hover:border-l-2 hover:border-bex-green/50'
                     )}
                   >
                     {isPrefetching && (
