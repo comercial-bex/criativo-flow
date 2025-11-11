@@ -29,6 +29,7 @@ import { useFinanceiroKPIs } from "@/hooks/useFinanceiroKPIs";
 import { useCategoriasFinanceiras, CategoriaFinanceira } from "@/hooks/useCategoriasFinanceiras";
 import { useClientesAtivos } from "@/hooks/useClientesOptimized";
 import { useDebounceFilter } from "@/hooks/useDebounceFilter";
+import { useProjetosOptimized } from "@/hooks/useProjetosOptimized";
 
 interface Projeto {
   id: string;
@@ -87,27 +88,13 @@ export default function Financeiro() {
   });
 
   // ============================================================================
-  // BUSCAR PROJETOS (mantido do código original)
+  // BUSCAR PROJETOS COM HOOK OTIMIZADO
   // ============================================================================
-  const [projetos, setProjetos] = useState<Projeto[]>([]);
-
-  useEffect(() => {
-    const fetchProjetos = async () => {
-      try {
-        const { data } = await supabase
-          .from("projetos")
-          .select("id, titulo")
-          .eq("status", "ativo")
-          .order("titulo");
-        
-        if (data) setProjetos(data);
-      } catch (error) {
-        console.error('Erro ao carregar projetos:', error);
-      }
-    };
-    
-    fetchProjetos();
-  }, []);
+  const { data: projetosData } = useProjetosOptimized({ 
+    status: 'ativo',
+    includeRelations: false 
+  });
+  const projetos = projetosData?.projetos || [];
 
   // ============================================================================
   // HANDLERS (Otimizados com mutations do TanStack Query)

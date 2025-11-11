@@ -10,6 +10,8 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { useTutorial } from '@/hooks/useTutorial';
 import { TutorialButton } from '@/components/TutorialButton';
+import { useClientesAtivos } from '@/hooks/useClientesOptimized';
+import { useProjetosOptimized } from '@/hooks/useProjetosOptimized';
 
 // Interface para tarefas do Audiovisual
 interface AudiovisualTask {
@@ -34,8 +36,12 @@ interface AudiovisualTask {
 
 const MinhasTarefasAudiovisual: React.FC = () => {
   const [tasks, setTasks] = useState<AudiovisualTask[]>([]);
-  const [clients, setClients] = useState<any[]>([]);
-  const [projects, setProjects] = useState<any[]>([]);
+  
+  // ✅ Hooks otimizados para clientes e projetos
+  const { data: clients = [] } = useClientesAtivos();
+  const { data: projectsData } = useProjetosOptimized({ includeRelations: true });
+  const projects = projectsData?.projetos || [];
+  
   const [profiles, setProfiles] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedTask, setSelectedTask] = useState<AudiovisualTask | null>(null);
@@ -73,19 +79,8 @@ const MinhasTarefasAudiovisual: React.FC = () => {
         return;
       }
 
-      // Buscar clientes, projetos e perfis primeiro
-      const [
-        { data: clientsData },
-        { data: projectsData },
-        { data: profilesData }
-      ] = await Promise.all([
-        supabase.from('clientes').select('*'),
-        supabase.from('projetos').select('*'),
-        supabase.from('pessoas').select('*')
-      ]);
-
-      setClients(clientsData || []);
-      setProjects(projectsData || []);
+      // Buscar perfis
+      const { data: profilesData } = await supabase.from('pessoas').select('*');
       setProfiles(profilesData || []);
 
       // Buscar APENAS tarefas atribuídas ao executor atual (audiovisual)
@@ -108,8 +103,8 @@ const MinhasTarefasAudiovisual: React.FC = () => {
           prioridade: task.prioridade as 'baixa' | 'media' | 'alta',
           setor_responsavel: 'audiovisual',
           responsavel_nome: 'Executor',
-          cliente_nome: (clientsData || []).find(c => c.id === task.projeto_id)?.nome || 'Sem cliente',
-          projeto_nome: (projectsData || []).find(p => p.id === task.projeto_id)?.titulo || 'Sem projeto'
+          cliente_nome: clients.find(c => c.id === task.projeto_id)?.nome || 'Sem cliente',
+          projeto_nome: projects.find(p => p.id === task.projeto_id)?.titulo || 'Sem projeto'
         })) || [];
         
         setTasks(formattedTasks);

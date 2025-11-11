@@ -42,6 +42,8 @@ export default function ContratoForm() {
   
   // ✅ Hook otimizado para clientes
   const { data: clientes = [] } = useClientes();
+  
+  // Estado local para projetos filtrados
   const [projetos, setProjetos] = useState<any[]>([]);
   const [templates, setTemplates] = useState<any[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState<any>(null);

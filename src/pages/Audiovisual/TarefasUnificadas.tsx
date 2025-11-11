@@ -9,6 +9,8 @@ import { TaskDetailsModal } from '@/components/TaskDetailsModal';
 import { CreateTaskModal } from '@/components/CreateTaskModal';
 import { useToast } from '@/hooks/use-toast';
 import { sanitizeTaskPayload, calcularStatusPrazo } from '@/utils/tarefaUtils';
+import { useClientesAtivos } from '@/hooks/useClientesOptimized';
+import { useProjetosOptimized } from '@/hooks/useProjetosOptimized';
 
 // Interface para tarefas do Audiovisual
 interface AudiovisualTask {
@@ -34,8 +36,12 @@ interface AudiovisualTask {
 
 const TarefasUnificadasAudiovisual: React.FC = () => {
   const [tasks, setTasks] = useState<AudiovisualTask[]>([]);
-  const [clients, setClients] = useState<any[]>([]);
-  const [projects, setProjects] = useState<any[]>([]);
+  
+  // ✅ Hooks otimizados para clientes e projetos
+  const { data: clients = [] } = useClientesAtivos();
+  const { data: projectsData } = useProjetosOptimized({ includeRelations: true });
+  const projects = projectsData?.projetos || [];
+  
   const [profiles, setProfiles] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedTask, setSelectedTask] = useState<AudiovisualTask | null>(null);
@@ -48,19 +54,8 @@ const TarefasUnificadasAudiovisual: React.FC = () => {
     try {
       setLoading(true);
 
-      // Buscar clientes, projetos e perfis primeiro
-      const [
-        { data: clientsData },
-        { data: projectsData },
-        { data: profilesData }
-      ] = await Promise.all([
-        supabase.from('clientes').select('*'),
-        supabase.from('projetos').select('*'),
-        supabase.from('pessoas').select('*')
-      ]);
-
-      setClients(clientsData || []);
-      setProjects(projectsData || []);
+      // Buscar perfis
+      const { data: profilesData } = await supabase.from('pessoas').select('*');
       setProfiles(profilesData || []);
 
       // FASE 2: Buscar apenas tarefas do setor audiovisual
@@ -86,8 +81,8 @@ const TarefasUnificadasAudiovisual: React.FC = () => {
           ...task,
           prioridade: task.prioridade as 'baixa' | 'media' | 'alta',
           responsavel_nome: task.profiles?.nome || 'Não atribuído',
-          cliente_nome: (clientsData || []).find(c => c.id === task.projeto_id)?.nome || 'Sem cliente',
-          projeto_nome: (projectsData || []).find(p => p.id === task.projeto_id)?.titulo || 'Sem projeto',
+          cliente_nome: clients.find(c => c.id === task.projeto_id)?.nome || 'Sem cliente',
+          projeto_nome: projects.find(p => p.id === task.projeto_id)?.titulo || 'Sem projeto',
           setor_responsavel: task.setor_responsavel || (task.area && task.area[0]) || 'audiovisual'
         })) || [];
         
