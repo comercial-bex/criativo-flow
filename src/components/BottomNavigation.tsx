@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Home, Users, FileText, DollarSign, Settings, MoreHorizontal, Calendar, BarChart3, Trophy } from 'lucide-react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -33,6 +34,7 @@ export function BottomNavigation() {
   const location = useLocation();
   const currentPath = location.pathname;
   const { user } = useAuth();
+  const [prefetchingUrls, setPrefetchingUrls] = useState<Set<string>>(new Set());
   const {
     prefetchDashboardGRS,
     prefetchProjetos,
@@ -44,15 +46,27 @@ export function BottomNavigation() {
     return currentPath.startsWith(url);
   };
 
-  const handlePrefetch = (url: string) => {
-    if (!user?.id) return;
+  const handlePrefetch = async (url: string) => {
+    if (!user?.id || prefetchingUrls.has(url)) return;
     
-    if (url === '/dashboard') {
-      prefetchDashboardGRS(user.id);
-    } else if (url.includes('/cliente/projetos')) {
-      prefetchProjetos();
-    } else if (url.includes('/clientes')) {
-      prefetchClientes();
+    setPrefetchingUrls(prev => new Set(prev).add(url));
+    
+    try {
+      if (url === '/dashboard') {
+        await prefetchDashboardGRS(user.id);
+      } else if (url.includes('/cliente/projetos')) {
+        await prefetchProjetos();
+      } else if (url.includes('/clientes')) {
+        await prefetchClientes();
+      }
+    } finally {
+      setTimeout(() => {
+        setPrefetchingUrls(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(url);
+          return newSet;
+        });
+      }, 500);
     }
   };
 
@@ -86,14 +100,19 @@ export function BottomNavigation() {
                         onMouseEnter={() => handlePrefetch(moreItem.url)}
                         onFocus={() => handlePrefetch(moreItem.url)}
                         className={cn(
-                          'flex flex-col items-center gap-3 p-4 rounded-xl transition-all duration-200 min-h-[80px] hover:scale-105',
+                          'flex flex-col items-center gap-3 p-4 rounded-xl transition-all duration-200 min-h-[80px] hover:scale-105 relative overflow-hidden',
                           isActiveRoute(moreItem.url)
                             ? 'bg-primary/15 text-primary shadow-sm'
                             : 'hover:bg-muted/80 active:bg-muted'
                         )}
                       >
-                        <moreItem.icon className="h-7 w-7" />
-                        <span className="text-sm font-medium text-center">{moreItem.title}</span>
+                        {prefetchingUrls.has(moreItem.url) && (
+                          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/10 to-transparent animate-shimmer" 
+                               style={{ backgroundSize: '200% 100%' }}
+                          />
+                        )}
+                        <moreItem.icon className={cn("h-7 w-7 relative z-10", prefetchingUrls.has(moreItem.url) && "animate-pulse")} />
+                        <span className="text-sm font-medium text-center relative z-10">{moreItem.title}</span>
                       </NavLink>
                     ))}
                   </div>
@@ -109,14 +128,19 @@ export function BottomNavigation() {
               onMouseEnter={() => handlePrefetch(item.url)}
               onFocus={() => handlePrefetch(item.url)}
               className={cn(
-                'flex flex-col items-center gap-1 py-3 px-2 rounded-xl transition-all duration-200 min-h-[56px] text-xs min-w-[64px] hover:scale-105 active:scale-95',
+                'flex flex-col items-center gap-1 py-3 px-2 rounded-xl transition-all duration-200 min-h-[56px] text-xs min-w-[64px] hover:scale-105 active:scale-95 relative overflow-hidden',
                 isActiveRoute(item.url)
                   ? 'text-primary bg-primary/15 shadow-sm'
                   : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
               )}
             >
-              <item.icon className="h-6 w-6" />
-              <span className="text-[11px] font-medium">{item.title}</span>
+              {prefetchingUrls.has(item.url) && (
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/10 to-transparent animate-shimmer" 
+                     style={{ backgroundSize: '200% 100%' }}
+                />
+              )}
+              <item.icon className={cn("h-6 w-6 relative z-10", prefetchingUrls.has(item.url) && "animate-pulse")} />
+              <span className="text-[11px] font-medium relative z-10">{item.title}</span>
             </NavLink>
           );
         })}

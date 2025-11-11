@@ -51,6 +51,7 @@ export function AppSidebar() {
   const [selectedModule, setSelectedModule] = useState<string>("inicio");
   const [clientSelectorOpen, setClientSelectorOpen] = useState(false);
   const [pendingUrl, setPendingUrl] = useState<string>("");
+  const [prefetchingUrls, setPrefetchingUrls] = useState<Set<string>>(new Set());
   
   // Hook de prefetch inteligente
   const {
@@ -419,26 +420,44 @@ export function AppSidebar() {
               {currentModule?.items.map((item, index) => {
                 const isItemActive = isActive(item.url);
                 const Icon = item.icon;
+                const isPrefetching = prefetchingUrls.has(item.url);
                 
                 // Função para fazer prefetch baseado na rota
-                const handlePrefetch = () => {
-                  if (!user?.id) return;
+                const handlePrefetch = async () => {
+                  if (!user?.id || isPrefetching) return;
                   
-                  // Prefetch baseado na URL de destino
-                  if (item.url.includes('/grs/minhas-tarefas')) {
-                    prefetchMinhasTarefas(user.id);
-                    prefetchTarefasStats(user.id);
-                  } else if (item.url.includes('/grs/dashboard')) {
-                    prefetchDashboardGRS(user.id);
-                  } else if (item.url.includes('/grs/projetos') || item.url.includes('/grs/cliente-projetos')) {
-                    prefetchProjetos();
-                    prefetchClientes();
-                  } else if (item.url.includes('/audiovisual/minhas-tarefas')) {
-                    prefetchDashboardSetor(user.id, 'Audiovisual');
-                  } else if (item.url.includes('/design/minhas-tarefas')) {
-                    prefetchDashboardSetor(user.id, 'Criativo');
-                  } else if (item.url.includes('/audiovisual') || item.url.includes('/design')) {
-                    prefetchProjetos();
+                  setPrefetchingUrls(prev => new Set(prev).add(item.url));
+                  
+                  try {
+                    // Prefetch baseado na URL de destino
+                    if (item.url.includes('/grs/minhas-tarefas')) {
+                      await Promise.all([
+                        prefetchMinhasTarefas(user.id),
+                        prefetchTarefasStats(user.id)
+                      ]);
+                    } else if (item.url.includes('/grs/dashboard')) {
+                      await prefetchDashboardGRS(user.id);
+                    } else if (item.url.includes('/grs/projetos') || item.url.includes('/grs/cliente-projetos')) {
+                      await Promise.all([
+                        prefetchProjetos(),
+                        prefetchClientes()
+                      ]);
+                    } else if (item.url.includes('/audiovisual/minhas-tarefas')) {
+                      await prefetchDashboardSetor(user.id, 'Audiovisual');
+                    } else if (item.url.includes('/design/minhas-tarefas')) {
+                      await prefetchDashboardSetor(user.id, 'Criativo');
+                    } else if (item.url.includes('/audiovisual') || item.url.includes('/design')) {
+                      await prefetchProjetos();
+                    }
+                  } finally {
+                    // Remove do set após 500ms
+                    setTimeout(() => {
+                      setPrefetchingUrls(prev => {
+                        const newSet = new Set(prev);
+                        newSet.delete(item.url);
+                        return newSet;
+                      });
+                    }, 500);
                   }
                 };
                 
@@ -450,15 +469,25 @@ export function AppSidebar() {
                     onMouseEnter={handlePrefetch}
                     onFocus={handlePrefetch}
                     className={({ isActive }) => cn(
-                      "flex items-center px-4 py-3 mb-1 text-sm rounded-lg transition-all duration-300",
+                      "flex items-center px-4 py-3 mb-1 text-sm rounded-lg transition-all duration-300 relative overflow-hidden",
                       "hover:translate-x-1",
                       isActive
                         ? 'bg-gradient-to-r from-bex/20 to-transparent text-bex-green border-l-2 border-bex-green shadow-md shadow-bex/20'
                         : 'text-sidebar-foreground hover:bg-bex-green/10 hover:text-bex-green hover:border-l-2 hover:border-bex/50'
                     )}
                   >
-                    <Icon className="mr-3 h-4 w-4" />
-                    <span>{item.title}</span>
+                    {isPrefetching && (
+                      <div className="absolute inset-0 overflow-hidden">
+                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-bex-green/10 to-transparent animate-shimmer" 
+                             style={{
+                               backgroundSize: '200% 100%',
+                               animation: 'shimmer 1.5s infinite'
+                             }}
+                        />
+                      </div>
+                    )}
+                    <Icon className={cn("mr-3 h-4 w-4 relative z-10", isPrefetching && "animate-pulse")} />
+                    <span className="relative z-10">{item.title}</span>
                   </NavLink>
                 );
               })}

@@ -731,3 +731,17 @@ All colors MUST be HSL.
     transform: scale(1.1);
   }
 }
+
+/* Shimmer animation for prefetch loading */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 1.5s ease-in-out infinite;
+}
