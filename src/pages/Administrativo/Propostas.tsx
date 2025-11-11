@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, FileText, Calendar, DollarSign, User, Eye, Edit, Trash2, Signature, Copy, Mail } from "lucide-react";
+import { Plus, FileText, Calendar, DollarSign, User, Eye, Edit, Trash2, Signature, Copy, Mail, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
@@ -19,6 +19,7 @@ import { PropostaPreviewMini } from "@/components/Proposta/PropostaPreviewMini";
 import { AssinaturasProgress } from "@/components/Proposta/AssinaturasProgress";
 import { EnviarPropostaDialog } from "@/components/Proposta/EnviarPropostaDialog";
 import { useQuery } from "@tanstack/react-query";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 interface Orcamento {
   id: string;
@@ -88,7 +89,7 @@ export default function Propostas() {
 
   const fetchData = async () => {
     try {
-      // Buscar propostas com itens e assinaturas
+      // Buscar propostas
       const { data: propostasData, error: propostasError } = await supabase
         .from('propostas')
         .select(`
@@ -132,6 +133,46 @@ export default function Propostas() {
       setLoading(false);
     }
   };
+
+  // Fase 1: Buscar TODOS os itens e assinaturas FORA do loop (corrige Hook Rules Violation)
+  const { data: todosItens, isLoading: loadingItens } = useQuery({
+    queryKey: ["proposta_itens_all"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("proposta_itens")
+        .select("*");
+      return data || [];
+    },
+  });
+
+  const { data: todasAssinaturas, isLoading: loadingAssinaturas } = useQuery({
+    queryKey: ["proposta_assinaturas_all"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("proposta_assinaturas")
+        .select("*");
+      return data || [];
+    },
+  });
+
+  // Fase 3: Memoização para otimizar performance
+  const itensPorProposta = useMemo(() => {
+    if (!todosItens) return {};
+    return todosItens.reduce((acc, item) => {
+      if (!acc[item.proposta_id]) acc[item.proposta_id] = [];
+      acc[item.proposta_id].push(item);
+      return acc;
+    }, {} as Record<string, any[]>);
+  }, [todosItens]);
+
+  const assinaturasPorProposta = useMemo(() => {
+    if (!todasAssinaturas) return {};
+    return todasAssinaturas.reduce((acc, assinatura) => {
+      if (!acc[assinatura.proposta_id]) acc[assinatura.proposta_id] = [];
+      acc[assinatura.proposta_id].push(assinatura);
+      return acc;
+    }, {} as Record<string, any[]>);
+  }, [todasAssinaturas]);
 
   const resetForm = () => {
     setFormData({
@@ -213,12 +254,19 @@ export default function Propostas() {
     }
   };
 
-  if (loading) {
-    return <div className="flex items-center justify-center h-64">Carregando...</div>;
+  // Fase 4: Loading states
+  if (loading || loadingItens || loadingAssinaturas) {
+    return (
+      <div className="flex items-center justify-center h-64 gap-3">
+        <Loader2 className="h-6 w-6 animate-spin" />
+        <span>Carregando propostas...</span>
+      </div>
+    );
   }
 
   return (
-    <div className="space-y-6">
+    <ErrorBoundary>
+      <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Propostas Comerciais</h1>
@@ -339,30 +387,9 @@ export default function Propostas() {
       {/* Lista de Propostas */}
       <div className="grid grid-cols-1 gap-6">
         {propostas.map((proposta) => {
-          const PropostaItensQuery = useQuery({
-            queryKey: ["proposta_itens", proposta.id],
-            queryFn: async () => {
-              const { data } = await supabase
-                .from("proposta_itens")
-                .select("*")
-                .eq("proposta_id", proposta.id);
-              return data || [];
-            },
-          });
-
-          const AssinaturasQuery = useQuery({
-            queryKey: ["proposta_assinaturas", proposta.id],
-            queryFn: async () => {
-              const { data } = await supabase
-                .from("proposta_assinaturas")
-                .select("*")
-                .eq("proposta_id", proposta.id);
-              return data || [];
-            },
-          });
-
-          const itens = PropostaItensQuery.data || [];
-          const assinaturas = AssinaturasQuery.data || [];
+          // Fase 1: Filtrar dados sem usar hooks dentro do loop
+          const itens = itensPorProposta[proposta.id] || [];
+          const assinaturas = assinaturasPorProposta[proposta.id] || [];
 
           return (
             <Card key={proposta.id} className="hover:shadow-lg transition-shadow">
@@ -478,8 +505,9 @@ export default function Propostas() {
         open={!!emailDialogProposta}
         onOpenChange={(open) => !open && setEmailDialogProposta(null)}
         proposta={emailDialogProposta!}
-        itens={[]} // Será carregado dentro do dialog
+        itens={emailDialogProposta ? itensPorProposta[emailDialogProposta.id] || [] : []}
       />
-    </div>
+      </div>
+    </ErrorBoundary>
   );
 }
