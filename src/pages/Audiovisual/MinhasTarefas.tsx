@@ -112,11 +112,7 @@ const MinhasTarefasAudiovisual: React.FC = () => {
     setShowTaskModal(true);
   };
 
-  // Calculate stats
-  const totalTasks = tasks.length;
-  const inProgressTasks = stats.em_andamento;
-  const completedWeekTasks = stats.concluidas_semana;
-  const overdueTasks = stats.vencidas;
+  if (isLoading) {
     return (
       <div className="p-6 space-y-6">
         <div className="flex justify-between items-center">
@@ -161,7 +157,7 @@ const MinhasTarefasAudiovisual: React.FC = () => {
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-yellow-600">{stats.emAndamento}</div>
+            <div className="text-2xl font-bold text-yellow-600">{stats.em_andamento}</div>
           </CardContent>
         </Card>
 
@@ -171,7 +167,7 @@ const MinhasTarefasAudiovisual: React.FC = () => {
             <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-blue-600">{stats.revisao}</div>
+            <div className="text-2xl font-bold text-blue-600">0</div>
           </CardContent>
         </Card>
 
@@ -181,7 +177,7 @@ const MinhasTarefasAudiovisual: React.FC = () => {
             <AlertTriangle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-600">{stats.atrasadas}</div>
+            <div className="text-2xl font-bold text-red-600">{stats.vencidas}</div>
           </CardContent>
         </Card>
 
@@ -225,10 +221,7 @@ const MinhasTarefasAudiovisual: React.FC = () => {
             if (!open) setSelectedTask(null);
           }}
           task={selectedTask}
-          onTaskUpdate={async (taskId, updates) => {
-            await handleTaskUpdate(taskId, updates);
-            fetchData();
-          }}
+          onTaskUpdate={handleTaskUpdate}
         />
       )}
 

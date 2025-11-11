@@ -103,10 +103,7 @@ export default function MinhasTarefas() {
     const matchesSearch = searchTerm === '' || 
       task.titulo.toLowerCase().includes(searchTerm.toLowerCase()) ||
       task.projetos?.titulo?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (task.projetos?.clientes && 
-       typeof task.projetos.clientes === 'object' && 
-       'nome' in task.projetos.clientes &&
-       task.projetos.clientes.nome?.toLowerCase().includes(searchTerm.toLowerCase()));
+      task.cliente_nome?.toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesStatus = statusFilter === 'all' || task.status === statusFilter;
     const matchesPriority = priorityFilter === 'all' || task.prioridade === priorityFilter;

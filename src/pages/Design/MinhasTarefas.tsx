@@ -92,20 +92,13 @@ export default function MinhasTarefasDesign() {
         return;
       }
 
-      const { error } = await supabase
-        .from('tarefa')
-        .update({ 
+      await updateTarefaMutation.mutateAsync({
+        id: taskId,
+        updates: {
           status: newStatus as any,
-          observacoes: observations ? `${task.observacoes || ''}\n${observations}` : task.observacoes,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', taskId);
-
-      if (error) throw error;
-
-      setTasks(prev => prev.map(task => 
-        task.id === taskId ? { ...task, status: newStatus } : task
-      ));
+          observacoes: observations ? `${task.observacoes || ''}\n${observations}` : task.observacoes
+        }
+      });
 
       toast({
         title: "Sucesso",
@@ -113,12 +106,7 @@ export default function MinhasTarefasDesign() {
       });
 
     } catch (error) {
-      console.error('Erro ao mover tarefa:', error);
-      toast({
-        title: "Erro",
-        description: "Erro ao atualizar status da tarefa.",
-        variant: "destructive",
-      });
+      // Error handled by mutation
     }
   };
 
@@ -138,16 +126,10 @@ export default function MinhasTarefasDesign() {
           return obj;
         }, {});
 
-      const { error } = await supabase
-        .from('tarefa')
-        .update({ ...filteredUpdates, updated_at: new Date().toISOString() })
-        .eq('id', taskId);
-
-      if (error) throw error;
-
-      setTasks(prev => prev.map(task => 
-        task.id === taskId ? { ...task, ...filteredUpdates } : task
-      ));
+      await updateTarefaMutation.mutateAsync({
+        id: taskId,
+        updates: filteredUpdates
+      });
 
       toast({
         title: "Sucesso",
@@ -155,23 +137,10 @@ export default function MinhasTarefasDesign() {
       });
 
     } catch (error) {
-      console.error('Erro ao atualizar tarefa:', error);
-      toast({
-        title: "Erro",
-        description: "Erro ao atualizar tarefa.",
-        variant: "destructive",
-      });
+      // Error handled by mutation
     }
   };
 
-  // Estatísticas
-  const stats = {
-    total: tasks.length,
-    briefing: tasks.filter(t => t.status === 'briefing').length,
-    emCriacao: tasks.filter(t => t.status === 'em_criacao').length,
-    aprovacaoCliente: tasks.filter(t => t.status === 'aprovacao_cliente').length,
-    entregues: tasks.filter(t => t.status === 'entregue').length
-  };
 
   if (isLoading) {
     return (
@@ -220,7 +189,7 @@ export default function MinhasTarefasDesign() {
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-blue-600">{stats.briefing}</div>
+            <div className="text-2xl font-bold text-blue-600">0</div>
           </CardContent>
         </Card>
 
@@ -230,7 +199,7 @@ export default function MinhasTarefasDesign() {
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-yellow-600">{stats.emCriacao}</div>
+            <div className="text-2xl font-bold text-yellow-600">{stats.em_andamento}</div>
           </CardContent>
         </Card>
 
@@ -240,7 +209,7 @@ export default function MinhasTarefasDesign() {
             <CheckCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">{stats.entregues}</div>
+            <div className="text-2xl font-bold text-green-600">{stats.concluidas_semana}</div>
           </CardContent>
         </Card>
       </div>
@@ -262,10 +231,7 @@ export default function MinhasTarefasDesign() {
           open={showTaskModal}
           onOpenChange={setShowTaskModal}
           task={selectedTask as any}
-          onTaskUpdate={async (taskId, updates) => {
-            await handleTaskUpdate(taskId, updates);
-            fetchData();
-          }}
+          onTaskUpdate={handleTaskUpdate}
         />
       )}
     </div>
