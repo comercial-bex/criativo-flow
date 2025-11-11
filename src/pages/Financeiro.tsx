@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -7,15 +7,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Plus, Search, TrendingUp, TrendingDown, DollarSign, Clock, Edit2, Trash2, Users, ArrowRight } from "lucide-react";
+import { CalendarIcon, Search, TrendingUp, TrendingDown, DollarSign, Clock, Edit2, Trash2, Users, ArrowRight } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
 import { ProdutoSelector } from "@/components/Financeiro/ProdutoSelector";
 import { CadastroProdutoRapido } from "@/components/Financeiro/CadastroProdutoRapido";
 import { useProdutosFinanceiro } from "@/hooks/useProdutosFinanceiro";
@@ -24,38 +24,11 @@ import { TutorialButton } from '@/components/TutorialButton';
 import { useNavigate } from 'react-router-dom';
 import { DataSyncIndicator } from '@/components/Admin/DataSyncIndicator';
 import { CardsAcessoRapido } from '@/components/Financeiro/CardsAcessoRapido';
-import { FABLancamento } from '@/components/Financeiro/FABLancamento';
-
-interface CategoriaFinanceira {
-  id: string;
-  nome: string;
-  tipo: "receita" | "despesa";
-  cor: string;
-  descricao?: string;
-}
-
-interface TransacaoFinanceira {
-  id: string;
-  titulo: string;
-  descricao?: string;
-  valor: number;
-  tipo: "pagar" | "receber";
-  status: "pendente" | "pago" | "atrasado" | "cancelado";
-  data_vencimento: string;
-  data_pagamento?: string;
-  categoria_id?: string;
-  cliente_id?: string;
-  projeto_id?: string;
-  observacoes?: string;
-  categorias_financeiras?: CategoriaFinanceira;
-  clientes?: { nome: string };
-  projetos?: { titulo: string };
-}
-
-interface Cliente {
-  id: string;
-  nome: string;
-}
+import { useTransacoes, useCreateTransacao, useUpdateTransacao, useDeleteTransacao, TransacaoFinanceira, TransacaoInput } from "@/hooks/useTransacoesFinanceiras";
+import { useFinanceiroKPIs } from "@/hooks/useFinanceiroKPIs";
+import { useCategoriasFinanceiras, CategoriaFinanceira } from "@/hooks/useCategoriasFinanceiras";
+import { useClientes } from "@/hooks/useClientes";
+import { useDebounceFilter } from "@/hooks/useDebounceFilter";
 
 interface Projeto {
   id: string;
@@ -63,21 +36,46 @@ interface Projeto {
 }
 
 export default function Financeiro() {
-  const [transacoes, setTransacoes] = useState<TransacaoFinanceira[]>([]);
-  const [categorias, setCategorias] = useState<CategoriaFinanceira[]>([]);
-  const [clientes, setClientes] = useState<Cliente[]>([]);
-  const [projetos, setProjetos] = useState<Projeto[]>([]);
+  // ============================================================================
+  // STATE & HOOKS
+  // ============================================================================
   const [searchTerm, setSearchTerm] = useState("");
   const [filterTipo, setFilterTipo] = useState<string>("todos");
   const [filterStatus, setFilterStatus] = useState<string>("todos");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingTransaction, setEditingTransaction] = useState<TransacaoFinanceira | null>(null);
-  const { toast } = useToast();
+  const [editingTransaction, setEditingTransaction] = useState<any>(null);
   const { startTutorial, hasSeenTutorial } = useTutorial('financeiro-transacoes');
   const navigate = useNavigate();
 
   const [modalCadastroRapido, setModalCadastroRapido] = useState(false);
   const { produtosDisponiveis, createTempData } = useProdutosFinanceiro();
+
+  // ✅ DEBOUNCE: Evita queries a cada keystroke
+  const debouncedSearch = useDebounceFilter(searchTerm, 500);
+  const debouncedFilterTipo = useDebounceFilter(filterTipo, 300);
+  const debouncedFilterStatus = useDebounceFilter(filterStatus, 300);
+
+  // ✅ HOOKS COM CACHE (TanStack Query)
+  const { data: kpis, isLoading: loadingKPIs } = useFinanceiroKPIs();
+  const { data: categorias = [], isLoading: loadingCategorias } = useCategoriasFinanceiras();
+  const { data: allClientes = [], isLoading: loadingClientes } = useClientes();
+  
+  // Filtrar apenas clientes ativos
+  const clientes = useMemo(() => 
+    allClientes.filter(c => c.status === 'ativo'),
+    [allClientes]
+  );
+
+  // Buscar transações com filtros debounced
+  const { data: transacoes = [], isLoading: loadingTransacoes } = useTransacoes({
+    tipo: debouncedFilterTipo !== 'todos' ? (debouncedFilterTipo as any) : undefined,
+    status: debouncedFilterStatus !== 'todos' ? debouncedFilterStatus : undefined,
+  });
+
+  // Mutations
+  const createMutation = useCreateTransacao();
+  const updateMutation = useUpdateTransacao();
+  const deleteMutation = useDeleteTransacao();
   
   const [novaTransacao, setNovaTransacao] = useState({
     titulo: "",
@@ -94,115 +92,66 @@ export default function Financeiro() {
     observacoes: ""
   });
 
+  // ============================================================================
+  // BUSCAR PROJETOS (mantido do código original)
+  // ============================================================================
+  const [projetos, setProjetos] = useState<Projeto[]>([]);
+
   useEffect(() => {
-    fetchData();
+    const fetchProjetos = async () => {
+      try {
+        const { data } = await supabase
+          .from("projetos")
+          .select("id, titulo")
+          .eq("status", "ativo")
+          .order("titulo");
+        
+        if (data) setProjetos(data);
+      } catch (error) {
+        console.error('Erro ao carregar projetos:', error);
+      }
+    };
+    
+    fetchProjetos();
   }, []);
 
-  const fetchData = async () => {
-    try {
-      // Buscar transações
-      const { data: transacoesData, error: transacoesError } = await supabase
-        .from("transacoes_financeiras")
-        .select(`
-          *,
-          categorias_financeiras (id, nome, tipo, cor),
-          clientes (nome),
-          projetos (titulo)
-        `)
-        .order("data_vencimento", { ascending: false });
-
-      if (transacoesError) throw transacoesError;
-      setTransacoes((transacoesData as TransacaoFinanceira[]) || []);
-
-      // Buscar categorias
-      const { data: categoriasData, error: categoriasError } = await supabase
-        .from("categorias_financeiras")
-        .select("*")
-        .order("nome");
-
-      if (categoriasError) throw categoriasError;
-      setCategorias((categoriasData as CategoriaFinanceira[]) || []);
-
-      // Buscar clientes
-      const { data: clientesData, error: clientesError } = await supabase
-        .from("clientes")
-        .select("id, nome")
-        .eq("status", "ativo")
-        .order("nome");
-
-      if (clientesError) throw clientesError;
-      setClientes(clientesData || []);
-
-      // Buscar projetos
-      const { data: projetosData, error: projetosError } = await supabase
-        .from("projetos")
-        .select("id, titulo")
-        .eq("status", "ativo")
-        .order("titulo");
-
-      if (projetosError) throw projetosError;
-      setProjetos(projetosData || []);
-    } catch (error) {
-      toast({
-        title: "Erro",
-        description: "Erro ao carregar dados financeiros",
-        variant: "destructive"
-      });
-    }
-  };
-
+  // ============================================================================
+  // HANDLERS (Otimizados com mutations do TanStack Query)
+  // ============================================================================
   const handleSaveTransacao = async () => {
     try {
       const valor = parseFloat(novaTransacao.valor);
       if (isNaN(valor) || valor <= 0) {
-        toast({
-          title: "Erro",
-          description: "Valor deve ser um número válido maior que zero",
-          variant: "destructive"
-        });
+        toast.error("Valor deve ser um número válido maior que zero");
         return;
       }
 
-      const transacaoData = {
+      const transacaoData: Partial<TransacaoInput> = {
         titulo: novaTransacao.titulo.trim(),
-        descricao: novaTransacao.descricao?.trim() || null,
+        descricao: novaTransacao.descricao?.trim() || undefined,
         valor,
-        tipo: novaTransacao.tipo,
+        tipo: (novaTransacao.tipo === 'receber' ? 'receita' : 'despesa') as 'receita' | 'despesa',
         status: novaTransacao.status,
         data_vencimento: format(novaTransacao.data_vencimento, "yyyy-MM-dd"),
         data_pagamento: novaTransacao.data_pagamento 
           ? format(novaTransacao.data_pagamento, "yyyy-MM-dd") 
-          : null,
-        categoria_id: novaTransacao.categoria_id || null,
-        cliente_id: novaTransacao.cliente_id || null,
-        projeto_id: novaTransacao.projeto_id || null,
-        produto_id: novaTransacao.produto_id || null,
-        observacoes: novaTransacao.observacoes?.trim() || null
+          : undefined,
+        categoria_id: novaTransacao.categoria_id || undefined,
+        cliente_id: novaTransacao.cliente_id || undefined,
+        projeto_id: novaTransacao.projeto_id || undefined,
+        observacoes: novaTransacao.observacoes?.trim() || undefined,
       };
 
       if (editingTransaction) {
-        const { error } = await supabase
-          .from("transacoes_financeiras")
-          .update(transacaoData)
-          .eq("id", editingTransaction.id);
-
-        if (error) throw error;
-
-        toast({
-          title: "Sucesso",
-          description: "Transação atualizada com sucesso!"
+        await updateMutation.mutateAsync({ 
+          id: editingTransaction.id, 
+          data: transacaoData 
         });
       } else {
-        const { data: novaTransacaoData, error } = await supabase
-          .from("transacoes_financeiras")
-          .insert([transacaoData])
-          .select()
-          .single();
-
-        if (error) throw error;
+        const novaTransacaoData = await createMutation.mutateAsync(transacaoData as any);
 
         // Sincronização automática com módulo administrativo
-        if (novaTransacao.produto_id && novaTransacao.cliente_id) {
+        if (novaTransacao.produto_id && novaTransacao.cliente_id && novaTransacaoData) {
           const produtoInfo = produtosDisponiveis.find(p => p.id === novaTransacao.produto_id);
           
           if (produtoInfo) {
@@ -216,22 +165,12 @@ export default function Financeiro() {
             });
           }
         }
-
-        toast({
-          title: "Sucesso",
-          description: "Transação criada com sucesso!"
-        });
       }
 
       setIsDialogOpen(false);
       resetForm();
-      fetchData();
     } catch (error) {
-      toast({
-        title: "Erro",
-        description: "Erro ao salvar transação",
-        variant: "destructive"
-      });
+      console.error('Erro ao salvar transação:', error);
     }
   };
 
@@ -265,14 +204,18 @@ export default function Financeiro() {
     setIsDialogOpen(true);
   };
 
-  const handleEdit = (transacao: TransacaoFinanceira) => {
+  const handleEdit = (transacao: any) => {
     setEditingTransaction(transacao);
+    
+    // Converter tipo de volta para o formato do form
+    const tipoForm = transacao.tipo === 'receita' ? 'receber' : 'pagar';
+    
     setNovaTransacao({
-      titulo: transacao.titulo,
+      titulo: transacao.titulo || "",
       descricao: transacao.descricao || "",
-      valor: transacao.valor.toString(),
-      tipo: transacao.tipo,
-      status: transacao.status,
+      valor: transacao.valor?.toString() || "",
+      tipo: tipoForm as "pagar" | "receber",
+      status: transacao.status as "pendente" | "pago" | "atrasado" | "cancelado",
       data_vencimento: new Date(transacao.data_vencimento),
       data_pagamento: transacao.data_pagamento ? new Date(transacao.data_pagamento) : undefined,
       categoria_id: transacao.categoria_id || "",
@@ -286,27 +229,11 @@ export default function Financeiro() {
 
   const handleDelete = async (id: string) => {
     if (!confirm("Tem certeza que deseja excluir esta transação?")) return;
-
+    
     try {
-      const { error } = await supabase
-        .from("transacoes_financeiras")
-        .delete()
-        .eq("id", id);
-
-      if (error) throw error;
-
-      toast({
-        title: "Sucesso",
-        description: "Transação excluída com sucesso!"
-      });
-
-      fetchData();
+      await deleteMutation.mutateAsync(id);
     } catch (error) {
-      toast({
-        title: "Erro",
-        description: "Erro ao excluir transação",
-        variant: "destructive"
-      });
+      console.error('Erro ao excluir transação:', error);
     }
   };
 
@@ -320,24 +247,24 @@ export default function Financeiro() {
     }
   };
 
-  const filteredTransacoes = transacoes.filter(transacao => {
-    const matchesSearch = transacao.titulo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         transacao.descricao?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesTipo = filterTipo === "todos" || transacao.tipo === filterTipo;
-    const matchesStatus = filterStatus === "todos" || transacao.status === filterStatus;
-    
-    return matchesSearch && matchesTipo && matchesStatus;
-  });
+  // ============================================================================
+  // FILTROS E CÁLCULOS OTIMIZADOS (useMemo para evitar recálculos)
+  // ============================================================================
+  const filteredTransacoes = useMemo(() => {
+    return transacoes.filter(transacao => {
+      const matchesSearch = 
+        transacao.titulo?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+        transacao.descricao?.toLowerCase().includes(debouncedSearch.toLowerCase());
+      
+      return matchesSearch;
+    });
+  }, [transacoes, debouncedSearch]);
 
-  const totalReceber = transacoes
-    .filter(t => t.tipo === "receber" && t.status !== "cancelado")
-    .reduce((sum, t) => sum + t.valor, 0);
-
-  const totalPagar = transacoes
-    .filter(t => t.tipo === "pagar" && t.status !== "cancelado")
-    .reduce((sum, t) => sum + t.valor, 0);
-
-  const saldoLiquido = totalReceber - totalPagar;
+  // KPIs já vêm do hook otimizado
+  const totalReceber = kpis?.totalReceber || 0;
+  const totalPagar = kpis?.totalPagar || 0;
+  const saldoLiquido = kpis?.saldoLiquido || 0;
+  const vencendoHoje = kpis?.vencendoHoje || 0;
 
   return (
     <div className="space-y-8 p-6">
@@ -424,10 +351,7 @@ export default function Financeiro() {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">
-              {transacoes.filter(t => 
-                new Date(t.data_vencimento).toDateString() === new Date().toDateString() &&
-                t.status === "pendente"
-              ).length}
+              {vencendoHoje}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
               transações para hoje
@@ -710,11 +634,23 @@ export default function Financeiro() {
             </div>
 
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={() => setIsDialogOpen(false)}
+                disabled={createMutation.isPending || updateMutation.isPending}
+              >
                 Cancelar
               </Button>
-              <Button type="button" onClick={handleSaveTransacao}>
-                {editingTransaction ? "Atualizar" : "Criar"}
+              <Button 
+                type="button" 
+                onClick={handleSaveTransacao}
+                disabled={createMutation.isPending || updateMutation.isPending}
+              >
+                {createMutation.isPending || updateMutation.isPending 
+                  ? "Salvando..." 
+                  : editingTransaction ? "Atualizar" : "Criar"
+                }
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -725,7 +661,6 @@ export default function Financeiro() {
           onOpenChange={setModalCadastroRapido}
           onSuccess={(produtoId) => {
             setNovaTransacao({ ...novaTransacao, produto_id: produtoId });
-            fetchData();
           }}
         />
       </div>
@@ -792,12 +727,12 @@ export default function Financeiro() {
                 <TableRow key={transacao.id} className="hover:bg-muted/50 transition-colors">
                   <TableCell className="font-medium">{transacao.titulo}</TableCell>
                   <TableCell>
-                    <Badge variant={transacao.tipo === "receber" ? "default" : "secondary"} className="font-medium">
-                      {transacao.tipo === "receber" ? "A Receber" : "A Pagar"}
+                    <Badge variant={transacao.tipo === "receita" ? "default" : "secondary"} className="font-medium">
+                      {transacao.tipo === "receita" ? "A Receber" : "A Pagar"}
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    <span className={`font-semibold ${transacao.tipo === "receber" ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}>
+                    <span className={`font-semibold ${transacao.tipo === "receita" ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}>
                       R$ {transacao.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </span>
                   </TableCell>
@@ -828,8 +763,9 @@ export default function Financeiro() {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => handleEdit(transacao)}
+                       onClick={() => handleEdit(transacao)}
                         className="hover:bg-primary/10 hover:text-primary hover:border-primary transition-colors"
+                        disabled={updateMutation.isPending}
                       >
                         <Edit2 className="h-4 w-4" />
                       </Button>
@@ -837,6 +773,7 @@ export default function Financeiro() {
                         variant="outline"
                         size="sm"
                         onClick={() => handleDelete(transacao.id)}
+                        disabled={deleteMutation.isPending}
                         className="hover:bg-destructive/10 hover:text-destructive hover:border-destructive transition-colors"
                       >
                         <Trash2 className="h-4 w-4" />
@@ -878,9 +815,6 @@ export default function Financeiro() {
           </div>
         </CardHeader>
       </Card>
-
-      {/* Botão Flutuante de Ação Rápida */}
-      <FABLancamento />
     </div>
   );
 }

@@ -19,6 +19,20 @@ export interface TransacaoFinanceira {
   observacoes?: string;
   created_at?: string;
   updated_at?: string;
+  categorias_financeiras?: {
+    id: string;
+    nome: string;
+    tipo: string;
+    cor: string;
+  };
+  clientes?: {
+    id: string;
+    nome: string;
+  };
+  projetos?: {
+    id: string;
+    titulo: string;
+  };
 }
 
 export interface TransacaoInput {
@@ -59,21 +73,21 @@ export function useTransacoes(params: FetchTransacoesParams = {}) {
         .from('transacoes_financeiras')
         .select(`
           *,
-          categorias_financeiras (
+          categorias_financeiras:categoria_id (
             id,
             nome,
             tipo,
             cor
           ),
-          clientes (
+          clientes:cliente_id (
             id,
             nome
           ),
-          projetos (
+          projetos:projeto_id (
             id,
             titulo
           ),
-          centros_custo (
+          centros_custo:centro_custo_id (
             id,
             nome,
             codigo
