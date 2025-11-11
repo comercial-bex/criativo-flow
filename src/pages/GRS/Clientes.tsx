@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { useClientData } from "@/hooks/useClientData";
+import { useClientes } from "@/hooks/useClientes";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,7 +16,7 @@ import { useState } from "react";
 
 export default function GRSClientes() {
   const navigate = useNavigate();
-  const { clientes, loading } = useClientData();
+  const { data: clientes = [], isLoading } = useClientes();
   const [searchTerm, setSearchTerm] = useState("");
 
   const filteredClientes = clientes?.filter(cliente =>
@@ -33,7 +33,7 @@ export default function GRSClientes() {
     }
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
