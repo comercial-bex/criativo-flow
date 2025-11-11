@@ -10,11 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { EspecialistasSelector } from "./EspecialistasSelector";
 import { useTutorial } from '@/hooks/useTutorial';
 import { TutorialButton } from '@/components/TutorialButton';
-
-interface Cliente {
-  id: string;
-  nome: string;
-}
+import { useClientesAtivos } from '@/hooks/useClientesOptimized';
 
 interface CreatePlanejamentoModalProps {
   open: boolean;
@@ -32,7 +28,9 @@ export function CreatePlanejamentoModal({
   const { toast } = useToast();
   const { startTutorial, hasSeenTutorial } = useTutorial('create-planejamento-modal');
   const [loading, setLoading] = useState(false);
-  const [clientes, setClientes] = useState<Cliente[]>([]);
+  
+  // ✅ Hook otimizado para clientes
+  const { data: clientes = [] } = useClientesAtivos();
 
   // Start tutorial when modal opens if not seen before
   useEffect(() => {
@@ -48,36 +46,12 @@ export function CreatePlanejamentoModal({
     mes_referencia: "",
     descricao: "",
     especialistas: {
-      grs_id: null as string | null,
-      designer_id: null as string | null,
-      filmmaker_id: null as string | null,
-      gerente_id: null as string | null
+      grs_id: null,
+      designer_id: null,
+      filmmaker_id: null,
+      gerente_id: null
     }
   });
-
-  useEffect(() => {
-    if (open) {
-      fetchClientes();
-      if (clienteId) {
-        setFormData(prev => ({ ...prev, cliente_id: clienteId }));
-      }
-    }
-  }, [open, clienteId]);
-
-  const fetchClientes = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('clientes')
-        .select('id, nome')
-        .eq('status', 'ativo')
-        .order('nome');
-
-      if (error) throw error;
-      setClientes(data || []);
-    } catch (error) {
-      console.error('Erro ao carregar clientes:', error);
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -27,7 +27,7 @@ import { CardsAcessoRapido } from '@/components/Financeiro/CardsAcessoRapido';
 import { useTransacoes, useCreateTransacao, useUpdateTransacao, useDeleteTransacao, TransacaoFinanceira, TransacaoInput } from "@/hooks/useTransacoesFinanceiras";
 import { useFinanceiroKPIs } from "@/hooks/useFinanceiroKPIs";
 import { useCategoriasFinanceiras, CategoriaFinanceira } from "@/hooks/useCategoriasFinanceiras";
-import { useClientes } from "@/hooks/useClientes";
+import { useClientesAtivos } from "@/hooks/useClientesOptimized";
 import { useDebounceFilter } from "@/hooks/useDebounceFilter";
 
 interface Projeto {
@@ -55,16 +55,10 @@ export default function Financeiro() {
   const debouncedFilterTipo = useDebounceFilter(filterTipo, 300);
   const debouncedFilterStatus = useDebounceFilter(filterStatus, 300);
 
-  // ✅ HOOKS COM CACHE (TanStack Query)
+  // ✅ HOOKS COM CACHE (TanStack Query) - Clientes ativos já filtrados
   const { data: kpis, isLoading: loadingKPIs } = useFinanceiroKPIs();
   const { data: categorias = [], isLoading: loadingCategorias } = useCategoriasFinanceiras();
-  const { data: allClientes = [], isLoading: loadingClientes } = useClientes();
-  
-  // Filtrar apenas clientes ativos
-  const clientes = useMemo(() => 
-    allClientes.filter(c => c.status === 'ativo'),
-    [allClientes]
-  );
+  const { data: clientes = [], isLoading: loadingClientes } = useClientesAtivos();
 
   // Buscar transações com filtros debounced
   const { data: transacoes = [], isLoading: loadingTransacoes } = useTransacoes({

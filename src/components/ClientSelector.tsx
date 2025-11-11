@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Users, Building2, ChevronRight } from "lucide-react";
-import { useClientes } from "@/hooks/useClientes";
+import { useClientesAtivos } from "@/hooks/useClientesOptimized";
 import { useClientContext } from "@/hooks/useClientContext";
 
 
@@ -14,14 +14,8 @@ interface ClientSelectorProps {
 }
 
 export function ClientSelector({ onClientSelect, selectedClientId, showContext = true }: ClientSelectorProps) {
-  const { data: allClientes = [], isLoading } = useClientes();
+  const { data: clientes = [], isLoading } = useClientesAtivos();
   const { clienteId, clienteName, isInClientContext } = useClientContext();
-
-  // Filter only active clients and memoize
-  const clientes = useMemo(() => 
-    allClientes.filter(c => c.status === 'ativo'),
-    [allClientes]
-  );
 
   useEffect(() => {
     if (isInClientContext && clienteId && !selectedClientId) {

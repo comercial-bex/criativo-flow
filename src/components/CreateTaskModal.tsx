@@ -20,6 +20,7 @@ import { BriefingForm } from './BriefingForm';
 import { AIBriefingGenerator } from './AIBriefingGenerator';
 import { TaskReferencesTab } from './TaskReferencesTab';
 import { useOperationalPermissions } from '@/hooks/useOperationalPermissions';
+import { useClientesAtivos } from '@/hooks/useClientesOptimized';
 import { supabase } from '@/integrations/supabase/client';
 import { useEspecialistas } from '@/hooks/useEspecialistas';
 import type { TipoTarefa } from '@/types/tarefa';
@@ -51,7 +52,9 @@ export function CreateTaskModal({
   const [vinculadaPlanejamento, setVinculadaPlanejamento] = useState(false);
   const [planejamentos, setPlanejamentos] = useState<any[]>([]);
   const [selectedPlanejamento, setSelectedPlanejamento] = useState('');
-  const [clientes, setClientes] = useState<any[]>([]);
+  
+  // ✅ Hook otimizado para clientes
+  const { data: clientes = [] } = useClientesAtivos();
   const [selectedCliente, setSelectedCliente] = useState(clienteId || '');
   const [activeTab, setActiveTab] = useState('basico');
   const [loadingAI, setLoadingAI] = useState(false);
@@ -190,78 +193,12 @@ export function CreateTaskModal({
     return null;
   }
 
-  // Buscar clientes quando modal abrir
-  useEffect(() => {
-    if (open) {
-      fetchClientes();
-    }
-  }, [open]);
-
   // Buscar projetos quando cliente for selecionado
   useEffect(() => {
     if (selectedCliente) {
       fetchProjetosByCliente(selectedCliente);
     }
   }, [selectedCliente]);
-
-  // Buscar planejamentos quando cliente for selecionado E vinculação estiver ativa
-  useEffect(() => {
-    if (selectedCliente && vinculadaPlanejamento) {
-      fetchPlanejamentos(selectedCliente);
-    }
-  }, [selectedCliente, vinculadaPlanejamento]);
-
-  // Auto-preencher cliente/projeto quando modal for aberto dentro de um projeto
-  useEffect(() => {
-    const autoPreencherProjeto = async () => {
-      if (!open || !projetoId) return;
-      
-      console.log('🎯 Auto-preenchendo projeto:', { clienteId, projetoId });
-      
-      // Se já tem clienteId, usar direto
-      if (clienteId) {
-        setSelectedCliente(clienteId);
-        setSelectedProjeto(projetoId);
-        fetchProjetosByCliente(clienteId);
-        return;
-      }
-      
-      // Buscar cliente_id do projeto
-      try {
-        const { data, error } = await supabase
-          .from('projetos')
-          .select('cliente_id')
-          .eq('id', projetoId)
-          .single();
-        
-        if (!error && data?.cliente_id) {
-          console.log('✅ Cliente encontrado do projeto:', data.cliente_id);
-          setSelectedCliente(data.cliente_id);
-          setSelectedProjeto(projetoId);
-          fetchProjetosByCliente(data.cliente_id);
-        }
-      } catch (err) {
-        console.error('Erro ao buscar cliente do projeto:', err);
-      }
-    };
-    
-    autoPreencherProjeto();
-  }, [open, projetoId, clienteId]);
-
-  const fetchClientes = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('clientes')
-        .select('id, nome')
-        .eq('status', 'ativo')
-        .order('nome');
-      
-      if (error) throw error;
-      setClientes(data || []);
-    } catch (error) {
-      console.error('Erro ao buscar clientes:', error);
-    }
-  };
 
   const fetchProjetosByCliente = async (clienteId: string) => {
     try {

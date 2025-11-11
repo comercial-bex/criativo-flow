@@ -3,8 +3,7 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Shield, User, Palette, Video, Target, BarChart3, DollarSign, Phone, UserCog } from 'lucide-react';
-import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { useClientesAtivos } from '@/hooks/useClientesOptimized';
 
 interface UserRoleTabProps {
   selectedTipo: 'admin' | 'cliente' | 'especialista';
@@ -17,12 +16,6 @@ interface UserRoleTabProps {
   setSelectedPapeis: (papeis: string[]) => void;
 }
 
-interface Cliente {
-  id: string;
-  nome: string;
-  nome_fantasia?: string;
-}
-
 export function UserRoleTab({
   selectedTipo,
   setSelectedTipo,
@@ -33,20 +26,8 @@ export function UserRoleTab({
   selectedPapeis,
   setSelectedPapeis,
 }: UserRoleTabProps) {
-  const [clientes, setClientes] = useState<Cliente[]>([]);
-
-  useEffect(() => {
-    fetchClientes();
-  }, []);
-
-  const fetchClientes = async () => {
-    const { data } = await supabase
-      .from('clientes')
-      .select('id, nome, nome_fantasia')
-      .order('nome');
-    
-    if (data) setClientes(data);
-  };
+  // ✅ Hook otimizado para clientes
+  const { data: clientes = [] } = useClientesAtivos();
 
   const handleTipoChange = (tipo: 'admin' | 'cliente' | 'especialista') => {
     setSelectedTipo(tipo);
