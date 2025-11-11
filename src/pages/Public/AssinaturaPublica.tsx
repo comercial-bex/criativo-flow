@@ -55,25 +55,31 @@ export default function AssinaturaPublica() {
     mutationFn: async (assinaturaBase64: string) => {
       if (!assinatura) return;
 
-      // Capturar IP do usuário (simplificado)
       const ipResponse = await fetch('https://api.ipify.org?format=json');
       const { ip } = await ipResponse.json();
 
-      const { error } = await supabase
-        .from("proposta_assinaturas")
-        .update({
-          status: "assinado",
-          data_assinatura: new Date().toISOString(),
-          assinatura_base64: assinaturaBase64,
-          ip_assinatura: ip,
-        })
-        .eq("id", assinatura.id);
+      const { data, error } = await supabase.rpc('submit_proposta_signature' as any, {
+        p_token: token,
+        p_nome_completo: assinatura.nome_assinante || '',
+        p_email: assinatura.email_assinante || '',
+        p_signature_base64: assinaturaBase64,
+        p_ip_address: ip,
+        p_aceite_termos: aceiteTermos
+      });
 
       if (error) throw error;
+      
+      const result = data as { success: boolean; error?: string };
+      if (!result?.success) {
+        throw new Error(result?.error || 'Erro ao processar assinatura');
+      }
+      
+      return result;
     },
     onSuccess: () => {
       smartToast.success("Proposta assinada com sucesso!");
       setAssinando(false);
+      setTimeout(() => navigate('/'), 2000);
     },
     onError: (error: any) => {
       smartToast.error("Erro ao assinar proposta", error.message);
