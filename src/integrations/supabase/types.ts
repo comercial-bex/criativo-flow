@@ -10509,6 +10509,71 @@ export type Database = {
           },
         ]
       }
+      proposta_assinaturas: {
+        Row: {
+          assinatura_base64: string | null
+          cargo: string | null
+          certificado_digital: string | null
+          created_at: string | null
+          data_assinatura: string | null
+          data_envio: string | null
+          data_visualizacao: string | null
+          email_assinante: string
+          id: string
+          ip_assinatura: string | null
+          nome_assinante: string
+          observacoes: string | null
+          proposta_id: string
+          status: string
+          token_assinatura: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          assinatura_base64?: string | null
+          cargo?: string | null
+          certificado_digital?: string | null
+          created_at?: string | null
+          data_assinatura?: string | null
+          data_envio?: string | null
+          data_visualizacao?: string | null
+          email_assinante: string
+          id?: string
+          ip_assinatura?: string | null
+          nome_assinante: string
+          observacoes?: string | null
+          proposta_id: string
+          status?: string
+          token_assinatura?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          assinatura_base64?: string | null
+          cargo?: string | null
+          certificado_digital?: string | null
+          created_at?: string | null
+          data_assinatura?: string | null
+          data_envio?: string | null
+          data_visualizacao?: string | null
+          email_assinante?: string
+          id?: string
+          ip_assinatura?: string | null
+          nome_assinante?: string
+          observacoes?: string | null
+          proposta_id?: string
+          status?: string
+          token_assinatura?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "proposta_assinaturas_proposta_id_fkey"
+            columns: ["proposta_id"]
+            isOneToOne: false
+            referencedRelation: "propostas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       proposta_itens: {
         Row: {
           created_at: string | null

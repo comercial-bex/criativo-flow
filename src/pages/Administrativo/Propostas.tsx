@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -7,13 +8,17 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, FileText, Calendar, DollarSign, User, Download, Send, Eye, Edit, Trash2, Signature } from "lucide-react";
+import { Plus, FileText, Calendar, DollarSign, User, Eye, Edit, Trash2, Signature, Copy, Mail } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useTutorial } from "@/hooks/useTutorial";
 import { TutorialButton } from "@/components/TutorialButton";
+import { PropostaPreviewMini } from "@/components/Proposta/PropostaPreviewMini";
+import { AssinaturasProgress } from "@/components/Proposta/AssinaturasProgress";
+import { EnviarPropostaDialog } from "@/components/Proposta/EnviarPropostaDialog";
+import { useQuery } from "@tanstack/react-query";
 
 interface Orcamento {
   id: string;
@@ -60,9 +65,11 @@ const statusLabels = {
 };
 
 export default function Propostas() {
+  const navigate = useNavigate();
   const [propostas, setPropostas] = useState<Proposta[]>([]);
   const [orcamentos, setOrcamentos] = useState<Orcamento[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [emailDialogProposta, setEmailDialogProposta] = useState<Proposta | null>(null);
   const [editingProposta, setEditingProposta] = useState<Proposta | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
@@ -81,7 +88,7 @@ export default function Propostas() {
 
   const fetchData = async () => {
     try {
-      // Buscar propostas
+      // Buscar propostas com itens e assinaturas
       const { data: propostasData, error: propostasError } = await supabase
         .from('propostas')
         .select(`
@@ -177,13 +184,7 @@ export default function Propostas() {
   };
 
   const handleEdit = (proposta: Proposta) => {
-    setFormData({
-      titulo: proposta.titulo,
-      orcamento_id: proposta.orcamento_id,
-      observacoes: ""
-    });
-    setEditingProposta(proposta);
-    setDialogOpen(true);
+    navigate(`/administrativo/propostas/${proposta.id}/edit`);
   };
 
   const handleDelete = async (id: string) => {
@@ -206,111 +207,6 @@ export default function Propostas() {
     } catch (error: any) {
       toast({
         title: "Erro ao excluir proposta",
-        description: error.message,
-        variant: "destructive",
-      });
-    }
-  };
-
-  const gerarPDF = async (proposta: Proposta) => {
-    try {
-      toast({
-        title: "Gerando PDF",
-        description: "PDF da proposta está sendo gerado...",
-      });
-
-      // Aqui você implementaria a geração do PDF
-      // Por enquanto, apenas simulamos o processo
-      await new Promise(resolve => setTimeout(resolve, 2000));
-
-      // Atualizar o status para enviado
-      const { error } = await supabase
-        .from('propostas')
-        .update({ 
-          pdf_path: `/propostas/${proposta.id}.pdf`,
-          data_envio: new Date().toISOString()
-        })
-        .eq('id', proposta.id);
-
-      if (error) throw error;
-
-      toast({
-        title: "PDF gerado",
-        description: "PDF da proposta foi gerado com sucesso!",
-      });
-
-      fetchData();
-    } catch (error: any) {
-      toast({
-        title: "Erro ao gerar PDF",
-        description: error.message,
-        variant: "destructive",
-      });
-    }
-  };
-
-  const enviarParaAssinatura = async (proposta: Proposta) => {
-    try {
-      toast({
-        title: "Enviando para assinatura",
-        description: "Proposta está sendo enviada para assinatura eletrônica...",
-      });
-
-      // Simular integração com GOV.br
-      await new Promise(resolve => setTimeout(resolve, 2000));
-
-      const { error } = await supabase
-        .from('propostas')
-        .update({ 
-          assinatura_status: 'enviado',
-          assinatura_url: `https://assinador.gov.br/proposal/${proposta.id}`,
-          data_envio: new Date().toISOString()
-        })
-        .eq('id', proposta.id);
-
-      if (error) throw error;
-
-      toast({
-        title: "Enviado para assinatura",
-        description: "Proposta enviada para assinatura eletrônica via GOV.br!",
-      });
-
-      fetchData();
-    } catch (error: any) {
-      toast({
-        title: "Erro ao enviar para assinatura",
-        description: error.message,
-        variant: "destructive",
-      });
-    }
-  };
-
-  const criarPrevisaoFinanceira = async (proposta: Proposta) => {
-    try {
-      const orcamento = proposta.orcamentos;
-      if (!orcamento) return;
-
-      const previsaoData = {
-        proposta_id: proposta.id,
-        valor_mensal: orcamento.valor_final,
-        data_inicio: new Date().toISOString().split('T')[0],
-        parcelas: 1,
-        status: 'confirmado'
-      };
-
-      const { error } = await supabase
-        .from('financeiro_previsao')
-        .insert(previsaoData);
-
-      if (error) throw error;
-
-      toast({
-        title: "Previsão financeira criada",
-        description: "Receita prevista adicionada ao módulo financeiro!",
-      });
-    } catch (error: any) {
-      toast({
-        title: "Erro ao criar previsão financeira",
         description: error.message,
         variant: "destructive",
       });
@@ -442,99 +338,129 @@ export default function Propostas() {
 
       {/* Lista de Propostas */}
       <div className="grid grid-cols-1 gap-6">
-        {propostas.map((proposta) => (
-          <Card key={proposta.id}>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="flex items-center gap-2">
-                    <FileText className="h-5 w-5" />
-                    {proposta.titulo}
-                  </CardTitle>
-                  <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
-                    {proposta.orcamentos?.clientes && (
-                      <div className="flex items-center gap-1">
-                        <User className="h-4 w-4" />
-                        {proposta.orcamentos.clientes.nome}
-                      </div>
-                    )}
-                    <div className="flex items-center gap-1">
-                      <DollarSign className="h-4 w-4" />
-                      R$ {proposta.orcamentos?.valor_final.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+        {propostas.map((proposta) => {
+          const PropostaItensQuery = useQuery({
+            queryKey: ["proposta_itens", proposta.id],
+            queryFn: async () => {
+              const { data } = await supabase
+                .from("proposta_itens")
+                .select("*")
+                .eq("proposta_id", proposta.id);
+              return data || [];
+            },
+          });
+
+          const AssinaturasQuery = useQuery({
+            queryKey: ["proposta_assinaturas", proposta.id],
+            queryFn: async () => {
+              const { data } = await supabase
+                .from("proposta_assinaturas")
+                .select("*")
+                .eq("proposta_id", proposta.id);
+              return data || [];
+            },
+          });
+
+          const itens = PropostaItensQuery.data || [];
+          const assinaturas = AssinaturasQuery.data || [];
+
+          return (
+            <Card key={proposta.id} className="hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-2">
+                      <CardTitle className="flex items-center gap-2">
+                        <FileText className="h-5 w-5" />
+                        {proposta.titulo}
+                      </CardTitle>
+                      <Badge className={statusColors[proposta.assinatura_status]}>
+                        {statusLabels[proposta.assinatura_status]}
+                      </Badge>
                     </div>
-                    {proposta.data_envio && (
+                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                      {proposta.orcamentos?.clientes && (
+                        <div className="flex items-center gap-1">
+                          <User className="h-4 w-4" />
+                          {proposta.orcamentos.clientes.nome}
+                        </div>
+                      )}
                       <div className="flex items-center gap-1">
-                        <Send className="h-4 w-4" />
-                        Enviado: {format(new Date(proposta.data_envio), "dd/MM/yyyy", { locale: ptBR })}
+                        <Calendar className="h-4 w-4" />
+                        {format(new Date(proposta.created_at), "dd/MM/yyyy", { locale: ptBR })}
                       </div>
-                    )}
+                      <div className="flex items-center gap-1">
+                        <DollarSign className="h-4 w-4" />
+                        R$ {proposta.orcamentos?.valor_final.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      </div>
+                    </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Badge className={statusColors[proposta.assinatura_status]}>
-                    {statusLabels[proposta.assinatura_status]}
-                  </Badge>
+              </CardHeader>
+
+              <CardContent className="space-y-4">
+                {/* Preview Mini */}
+                {itens.length > 0 && <PropostaPreviewMini proposta={proposta} itens={itens} />}
+
+                {/* Progresso de Assinaturas */}
+                {assinaturas.length > 0 && <AssinaturasProgress assinaturas={assinaturas} />}
+
+                {/* Ações Rápidas */}
+                <div className="flex flex-wrap gap-2 pt-2">
+                  <Button 
+                    variant="default" 
+                    size="sm" 
+                    onClick={() => navigate(`/administrativo/propostas/${proposta.id}`)}
+                  >
+                    <Eye className="mr-1 h-4 w-4" />
+                    Ver Detalhes
+                  </Button>
+
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => navigate(`/administrativo/propostas/${proposta.id}/edit`)}
+                  >
+                    <Edit className="mr-1 h-4 w-4" />
+                    Editar
+                  </Button>
+
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => setEmailDialogProposta(proposta)}
+                  >
+                    <Mail className="mr-1 h-4 w-4" />
+                    Enviar Email
+                  </Button>
+
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => {
+                      const link = `${window.location.origin}/public/proposta/${proposta.link_publico}`;
+                      navigator.clipboard.writeText(link);
+                      toast({ title: "Link copiado!" });
+                    }}
+                  >
+                    <Copy className="mr-1 h-4 w-4" />
+                    Copiar Link
+                  </Button>
+
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => handleDelete(proposta.id)}
+                    className="text-destructive hover:text-destructive"
+                  >
+                    <Trash2 className="mr-1 h-4 w-4" />
+                    Excluir
+                  </Button>
                 </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-wrap gap-2">
-                {!proposta.pdf_path && (
-                  <Button variant="outline" size="sm" onClick={() => gerarPDF(proposta)}>
-                    <FileText className="mr-1 h-4 w-4" />
-                    Gerar PDF
-                  </Button>
-                )}
-                
-                {proposta.pdf_path && proposta.assinatura_status === 'pendente' && (
-                  <Button variant="outline" size="sm" onClick={() => enviarParaAssinatura(proposta)}>
-                    <Signature className="mr-1 h-4 w-4" />
-                    Enviar p/ Assinatura
-                  </Button>
-                )}
-                
-                {proposta.assinatura_url && (
-                  <Button variant="outline" size="sm" asChild>
-                    <a href={proposta.assinatura_url} target="_blank" rel="noopener noreferrer">
-                      <Eye className="mr-1 h-4 w-4" />
-                      Ver Assinatura
-                    </a>
-                  </Button>
-                )}
-                
-                {proposta.pdf_assinado_path && (
-                  <Button variant="outline" size="sm">
-                    <Download className="mr-1 h-4 w-4" />
-                    Download PDF Assinado
-                  </Button>
-                )}
-                
-                {proposta.assinatura_status === 'assinado' && (
-                  <Button variant="outline" size="sm" onClick={() => criarPrevisaoFinanceira(proposta)}>
-                    <DollarSign className="mr-1 h-4 w-4" />
-                    Criar Previsão Financeira
-                  </Button>
-                )}
-                
-                <Button variant="outline" size="sm" onClick={() => handleEdit(proposta)}>
-                  <Edit className="mr-1 h-4 w-4" />
-                  Editar
-                </Button>
-                
-                <Button variant="outline" size="sm" onClick={() => handleDelete(proposta.id)}>
-                  <Trash2 className="mr-1 h-4 w-4" />
-                  Excluir
-                </Button>
-              </div>
-              
-              {proposta.visualizado_em && (
-                <p className="text-xs text-muted-foreground mt-2">
-                  Visualizado em: {format(new Date(proposta.visualizado_em), "dd/MM/yyyy HH:mm", { locale: ptBR })}
-                </p>
-              )}
-            </CardContent>
-          </Card>
-        ))}
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
 
       {propostas.length === 0 && (
@@ -546,6 +472,14 @@ export default function Propostas() {
           </CardContent>
         </Card>
       )}
+
+      {/* Dialog de Envio de Email */}
+      <EnviarPropostaDialog
+        open={!!emailDialogProposta}
+        onOpenChange={(open) => !open && setEmailDialogProposta(null)}
+        proposta={emailDialogProposta!}
+        itens={[]} // Será carregado dentro do dialog
+      />
     </div>
   );
 }

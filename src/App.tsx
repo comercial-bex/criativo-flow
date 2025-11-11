@@ -113,8 +113,9 @@ const ContractTemplateForm = lazy(() => import("./pages/Admin/ContractTemplateFo
 const OrcamentoDetails = lazy(() => import("./pages/Admin/OrcamentoDetails"));
 const OrcamentoEditForm = lazy(() => import("./pages/Admin/OrcamentoEditForm"));
 const ConfiguracoesEmpresa = lazy(() => import("./pages/Admin/ConfiguracoesEmpresa"));
-const PropostaDetails = lazy(() => import("./pages/Admin/PropostaDetails"));
+const PropostaDetails = lazy(() => import("./pages/Administrativo/PropostaDetails"));
 const PropostaView = lazy(() => import("./pages/Public/PropostaView"));
+const AssinaturaPublica = lazy(() => import("./pages/Public/AssinaturaPublica"));
 const Produtos = lazy(() => import("./pages/Admin/Produtos"));
 const ProdutoForm = lazy(() => import("./components/Admin/ProdutoForm"));
 const ProdutoDetails = lazy(() => import("./pages/Admin/ProdutoDetails"));
@@ -574,9 +575,16 @@ function App() {
                     <Layout><OrcamentoEditForm /></Layout>
                   </ProtectedRoute>} />
                 
-                <Route path="/admin/propostas/:id" element={<ProtectedRoute module="administrativo">
+                <Route path="/administrativo/propostas/:id" element={<ProtectedRoute module="administrativo">
                     <Layout><PropostaDetails /></Layout>
                   </ProtectedRoute>} />
+                
+                <Route path="/administrativo/propostas/:id/edit" element={<ProtectedRoute module="administrativo">
+                    <Layout><PropostaDetails /></Layout>
+                  </ProtectedRoute>} />
+                
+                {/* Rota pública de assinatura */}
+                <Route path="/public/proposta-assinatura/:token" element={<AssinaturaPublica />} />
                 
                 <Route path="/admin/configuracoes-empresa" element={<ProtectedRoute module="administrativo">
                     <Layout><ConfiguracoesEmpresa /></Layout>

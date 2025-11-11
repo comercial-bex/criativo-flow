@@ -25,6 +25,8 @@ import { StatusWorkflow } from "@/components/Admin/StatusWorkflow";
 import { PropostaPreview } from "@/components/Proposta/PropostaPreview";
 import { PropostaActionBar } from "@/components/Proposta/PropostaActionBar";
 import { EnviarPropostaDialog } from "@/components/Proposta/EnviarPropostaDialog";
+import { GestaoAssinaturas } from "@/components/Proposta/GestaoAssinaturas";
+import { AssinaturasDashboard } from "@/components/Proposta/AssinaturasDashboard";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { smartToast } from "@/lib/smart-toast";
@@ -247,8 +249,9 @@ export default function PropostaDetails() {
 
       {/* Tabs */}
       <Tabs defaultValue="previa" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-8">
+        <TabsList className="grid w-full grid-cols-9">
           <TabsTrigger value="previa">Prévia</TabsTrigger>
+          <TabsTrigger value="assinaturas">Assinaturas</TabsTrigger>
           <TabsTrigger value="resumo">Resumo</TabsTrigger>
           <TabsTrigger value="itens">Itens</TabsTrigger>
           <TabsTrigger value="cliente">Cliente</TabsTrigger>
@@ -272,6 +275,17 @@ export default function PropostaDetails() {
             status={proposta.assinatura_status}
             hasLink={!!linkPublico}
           />
+        </TabsContent>
+
+        {/* Assinaturas */}
+        <TabsContent value="assinaturas">
+          <div className="grid gap-6">
+            <AssinaturasDashboard 
+              propostaId={id!} 
+              onConverterContrato={proposta.assinatura_status === "assinado" ? handleGerarContrato : undefined}
+            />
+            <GestaoAssinaturas propostaId={id!} />
+          </div>
         </TabsContent>
 
         {/* Resumo */}
