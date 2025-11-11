@@ -1,6 +1,5 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useClientData, type Cliente } from '@/hooks/useClientData';
 import { supabase } from '@/integrations/supabase/client';
 import { SectionHeader } from '@/components/SectionHeader';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -19,7 +18,6 @@ import { ClientCard } from '@/components/ClientCard';
 import { ClientViewModal } from '@/components/ClientViewModal';
 import { ClientTableView } from '@/components/ClientTableView';
 import { PermissionWrapper } from '@/components/PermissionWrapper';
-
 import { ClientLogoUpload } from '@/components/ClientLogoUpload';
 import { useTutorial } from '@/hooks/useTutorial';
 import { TutorialButton } from '@/components/TutorialButton';
@@ -46,6 +44,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { toast } from 'sonner';
 import { useProdutosCatalogo } from '@/hooks/useProdutosCatalogo';
+import { useClientes, useCreateCliente, useUpdateCliente, useDeleteCliente, type Cliente, type ClienteInput } from '@/hooks/useClientesOptimized';
 
 // Extended form data interface with additional address fields
 interface FormData extends Partial<Cliente> {
@@ -56,6 +55,10 @@ interface FormData extends Partial<Cliente> {
   cidade?: string;
   uf?: string;
   cep?: string;
+  email_login?: string;
+  senha_temporaria?: string;
+  criar_conta?: boolean;
+  status_conta?: string;
 }
 
 function Clientes() {
@@ -63,14 +66,12 @@ function Clientes() {
   const deviceType = useDeviceType();
   const isMobile = deviceType === 'mobile';
   const { startTutorial, hasSeenTutorial } = useTutorial('clientes');
-  const { 
-    clientes, 
-    loading, 
-    error: clientesError, 
-    fetchClientes, 
-    createCliente, 
-    deleteCliente 
-  } = useClientData();
+  
+  // ✅ Hooks otimizados com cache do TanStack Query
+  const { data: clientes = [], isLoading: loading } = useClientes();
+  const createClienteMutation = useCreateCliente();
+  const updateClienteMutation = useUpdateCliente();
+  const deleteClienteMutation = useDeleteCliente();
   
   // Add ref to track if component is mounted
   const mountedRef = useRef(true);
@@ -185,25 +186,32 @@ function Clientes() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!formData.nome || !formData.cnpj_cpf) {
+      toast.error('Preencha todos os campos obrigatórios');
+      return;
+    }
 
     try {
-      const clienteData = {
+      // Preparar dados do cliente
+      const clienteData: ClienteInput = {
         nome: formData.nome!,
-        email: formData.email || null,
-        telefone: formData.telefone || null,
-        cnpj_cpf: formData.cnpj_cpf || null,
-        endereco: formData.endereco || null,
-        status: formData.status! as 'ativo' | 'inativo' | 'pendente' | 'arquivado',
-        assinatura_id: (formData.assinatura_id && formData.assinatura_id !== 'none') ? formData.assinatura_id : undefined
+        razao_social: formData.razao_social || undefined,
+        nome_fantasia: formData.nome_fantasia || undefined,
+        email: formData.email || undefined,
+        telefone: formData.telefone || undefined,
+        cnpj_cpf: formData.cnpj_cpf || undefined,
+        situacao_cadastral: formData.situacao_cadastral,
+        cnae_principal: formData.cnae_principal,
+        endereco: formData.endereco || undefined,
+        status: formData.status || 'ativo',
+        assinatura_id: formData.assinatura_id || undefined,
+        valor_personalizado: formData.valor_personalizado,
+        logo_url: formData.logo_url || undefined
       };
 
-      const { data: novoCliente, error } = await createCliente(clienteData);
-
-      if (error) {
-        console.error('Erro ao criar cliente:', error);
-        toast.error('Erro ao criar cliente');
-        return;
-      }
+      // ✅ Usar mutation otimizada
+      const novoCliente = await createClienteMutation.mutateAsync(clienteData);
 
       // Se deve criar conta de acesso
       if (formData.criar_conta && formData.email_login && novoCliente) {
@@ -334,12 +342,11 @@ function Clientes() {
 
   const handleDelete = async (id: string) => {
     try {
-      // Usar o hook useClientData que já tem verificações de permissão
-      await deleteCliente(id);
-      toast.success("Cliente removido com sucesso!");
+      // ✅ Usar mutation otimizada
+      await deleteClienteMutation.mutateAsync(id);
     } catch (error) {
       console.error('Erro ao excluir cliente:', error);
-      toast.error('Erro ao excluir cliente');
+      // Toast de erro já tratado pela mutation
     }
   };
 
@@ -963,7 +970,7 @@ function Clientes() {
           clienteId={selectedCliente.id}
           clienteNome={selectedCliente.nome}
           onComplete={() => {
-            fetchClientes();
+            // Cache é atualizado automaticamente pelo TanStack Query
             setShowOnboardingModal(false);
           }}
         />
