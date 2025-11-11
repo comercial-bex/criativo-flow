@@ -35,7 +35,8 @@ import { EditProjetoModal } from '@/components/EditProjetoModal';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { useProjetos } from '@/hooks/useProjetos';
+import { useProjetosOptimized, useUpdateProjetoOptimized, useDeleteProjetoOptimized } from '@/hooks/useProjetosOptimized';
+import { useCliente } from '@/hooks/useClientesOptimized';
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useTutorial } from '@/hooks/useTutorial';
@@ -71,82 +72,18 @@ export default function ClienteProjetos() {
   const { toast } = useToast();
   const { startTutorial, hasSeenTutorial } = useTutorial('grs-cliente-projetos');
   
-  const { updateProjeto, deleteProjeto } = useProjetos();
+  // Use optimized hooks
+  const { data: cliente, isLoading: clienteLoading } = useCliente(clienteId);
+  const { data: projetosData, isLoading: projetosLoading } = useProjetosOptimized({ clienteId });
+  const updateProjetoMutation = useUpdateProjetoOptimized();
+  const deleteProjetoMutation = useDeleteProjetoOptimized();
   
-  const [cliente, setCliente] = useState<Cliente | null>(null);
-  const [projetos, setProjetos] = useState<Projeto[]>([]);
-  const [loading, setLoading] = useState(true);
   const [tipoModal, setTipoModal] = useState<'avulso' | 'campanha' | 'plano_editorial' | null>(null);
-  const [projetoEdit, setProjetoEdit] = useState<Projeto | null>(null);
+  const [projetoEdit, setProjetoEdit] = useState<any>(null);
   const [projetoDeleteId, setProjetoDeleteId] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (clienteId) {
-      fetchClienteData();
-      fetchProjetos();
-    }
-  }, [clienteId]);
-
-  const fetchClienteData = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('clientes')
-        .select('id, nome, status')
-        .eq('id', clienteId)
-        .single();
-
-      if (error) throw error;
-      setCliente(data);
-    } catch (error) {
-      console.error('Erro ao buscar cliente:', error);
-      toast({
-        title: "Erro",
-        description: "Erro ao carregar dados do cliente.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const fetchProjetos = async () => {
-    try {
-      const { data: projetosData, error } = await supabase
-        .from('projetos')
-        .select('*')
-        .eq('cliente_id', clienteId)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-
-      // Buscar nomes dos responsáveis
-      const projetosComResponsavel = await Promise.all((projetosData || []).map(async (projeto) => {
-        if (!projeto.responsavel_id) {
-          return { ...projeto, profiles: undefined };
-        }
-        
-        const { data: pessoa } = await supabase
-          .from('pessoas')
-          .select('nome')
-          .eq('profile_id', projeto.responsavel_id)
-          .maybeSingle();
-        
-        return {
-          ...projeto,
-          profiles: pessoa ? { nome: pessoa.nome } : undefined
-        };
-      }));
-
-      setProjetos(projetosComResponsavel || []);
-    } catch (error) {
-      console.error('Erro ao buscar projetos:', error);
-      toast({
-        title: "Erro",
-        description: "Erro ao carregar projetos.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+  const loading = clienteLoading || projetosLoading;
+  const projetos = projetosData?.projetos || [];
 
 
   const getStatusBadge = (status: string | null) => {
@@ -174,10 +111,11 @@ export default function ClienteProjetos() {
   const handleDeleteProjeto = async () => {
     if (!projetoDeleteId) return;
     
-    const success = await deleteProjeto(projetoDeleteId);
-    if (success) {
+    try {
+      await deleteProjetoMutation.mutateAsync(projetoDeleteId);
       setProjetoDeleteId(null);
-      fetchProjetos();
+    } catch (error) {
+      // Error handled by mutation
     }
   };
 
@@ -265,7 +203,6 @@ export default function ClienteProjetos() {
           onOpenChange={(open) => !open && setTipoModal(null)}
           clienteId={clienteId}
           tipo={tipoModal}
-          onSuccess={() => fetchProjetos()}
         />
       )}
 
@@ -276,10 +213,7 @@ export default function ClienteProjetos() {
           onOpenChange={(open) => !open && setTipoModal(null)}
           clienteId={clienteId}
           tipo="plano_editorial"
-          onSuccess={() => {
-            fetchProjetos();
-            setTipoModal(null);
-          }}
+          onSuccess={() => setTipoModal(null)}
           onPlanejamentoCreated={(planejamentoId, clienteId) => {
             navigate(`/grs/cliente/${clienteId}/planejamento/${planejamentoId}?tab=plano-editorial`);
             setTipoModal(null);
@@ -386,9 +320,9 @@ export default function ClienteProjetos() {
               
               <CardContent className="space-y-4">
                 <div className="flex items-center gap-2">
-                  {projeto.orcamento && (
+                  {projeto.orcamento_estimado && (
                     <Badge variant="outline" className="text-xs">
-                      R$ {projeto.orcamento.toLocaleString('pt-BR')}
+                      R$ {projeto.orcamento_estimado.toLocaleString('pt-BR')}
                     </Badge>
                   )}
                 </div>
@@ -409,20 +343,19 @@ export default function ClienteProjetos() {
                       <span>Início: {format(new Date(projeto.data_inicio), 'dd/MM/yy')}</span>
                     </div>
                   )}
-                  {projeto.data_fim && (
+                  {projeto.data_prazo && (
                     <div className="flex items-center gap-1">
                       <Clock className="h-3 w-3" />
-                      <span>Fim: {format(new Date(projeto.data_fim), 'dd/MM/yy')}</span>
+                      <span>Prazo: {format(new Date(projeto.data_prazo), 'dd/MM/yy')}</span>
                     </div>
                   )}
                 </div>
 
-                {/* Responsável */}
-                {projeto.profiles && (
+                {/* Responsável GRS */}
+                {projeto.responsavel_grs_id && (
                   <div className="flex items-center gap-2 text-sm">
                     <User className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-muted-foreground">por</span>
-                    <span className="font-medium">{projeto.profiles.nome}</span>
+                    <span className="text-muted-foreground">GRS</span>
                   </div>
                 )}
 
@@ -446,11 +379,12 @@ export default function ClienteProjetos() {
         onOpenChange={(open) => !open && setProjetoEdit(null)}
         projeto={projetoEdit}
         onSave={async (id, updates) => {
-          const success = await updateProjeto(id, updates);
-          if (success) {
-            fetchProjetos();
+          try {
+            await updateProjetoMutation.mutateAsync({ id, updates });
+            return true;
+          } catch (error) {
+            return false;
           }
-          return success;
         }}
       />
 

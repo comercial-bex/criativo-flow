@@ -12,7 +12,8 @@ import { SectionHeader } from '@/components/SectionHeader';
 import { ProjectStatusIndicator } from '@/components/ProjectStatusIndicator';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { useProjetos } from '@/hooks/useProjetos';
+import { useProjetosOptimized } from '@/hooks/useProjetosOptimized';
+import { useCliente } from '@/hooks/useClientesOptimized';
 import { useEspecialistas } from '@/hooks/useEspecialistas';
 import { useStrategicPlans } from '@/hooks/useStrategicPlans';
 import { 
@@ -101,9 +102,11 @@ export default function ClienteProjetosFluxo() {
   const { clienteId } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [cliente, setCliente] = useState<Cliente | null>(null);
-  const [projetosUnificados, setProjetosUnificados] = useState<ProjetoUnificado[]>([]);
-  const [loading, setLoading] = useState(true);
+  
+  // Use optimized hooks
+  const { data: cliente, isLoading: clienteLoading } = useCliente(clienteId);
+  const { data: projetosData, isLoading: projetosLoading } = useProjetosOptimized({ clienteId });
+  
   const [filtroTipo, setFiltroTipo] = useState<'todos' | 'recorrentes' | 'avulsos'>('todos');
   
   // Modais de acesso rápido
@@ -116,90 +119,27 @@ export default function ClienteProjetosFluxo() {
   const [tipoModal, setTipoModal] = useState<'avulso' | 'campanha' | null>(null);
   
   const permissions = useClientAccessPermissions();
-  const { createProjeto } = useProjetos();
   const { data: especialistasGRS } = useEspecialistas();
   const { plans, objectives, loading: plansLoading } = useStrategicPlans(clienteId);
+  
+  const [planejamentosUnificados, setPlanejamentosUnificados] = useState<ProjetoUnificado[]>([]);
+  const [planejamentosLoading, setPlanejamentosLoading] = useState(true);
 
+  // Fetch planejamentos separately (since they're in a different table)
   useEffect(() => {
-    if (clienteId) {
-      fetchClienteData();
-      fetchProjetosUnificados();
-    }
-  }, [clienteId]);
-
-  const fetchClienteData = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('clientes')
-        .select('*')
-        .eq('id', clienteId)
-        .single();
-
-      if (error) throw error;
-      setCliente(data);
-    } catch (error) {
-      console.error('Erro ao buscar dados do cliente:', error);
-      toast({
-        title: "Erro",
-        description: "Não foi possível carregar os dados do cliente",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const fetchProjetosUnificados = async () => {
-    try {
-      // Buscar projetos
-      const { data: projetosData, error: projetosError } = await supabase
-        .from('projetos')
-        .select('*')
-        .eq('cliente_id', clienteId)
-        .order('created_at', { ascending: false });
-
-      if (projetosError) throw projetosError;
+    const fetchPlanejamentos = async () => {
+      if (!clienteId) return;
       
-      // Buscar tarefas separadamente para cada projeto
-      const projetosComTarefas = await Promise.all((projetosData || []).map(async (projeto) => {
-        const { data: tarefasData } = await supabase
-          .from('tarefa')
+      try {
+        const { data: planejamentosData, error } = await supabase
+          .from('planejamentos')
           .select('*')
-          .eq('projeto_id', projeto.id);
-        
-        return {
-          ...projeto,
-          tarefas: tarefasData || []
-        };
-      }));
+          .eq('cliente_id', clienteId)
+          .order('created_at', { ascending: false });
 
-      // Buscar planejamentos
-      const { data: planejamentosData, error: planejamentosError } = await supabase
-        .from('planejamentos')
-        .select('*')
-        .eq('cliente_id', clienteId)
-        .order('created_at', { ascending: false });
+        if (error) throw error;
 
-      if (planejamentosError) throw planejamentosError;
-
-      // Unificar projetos
-      const projetosUnificados: ProjetoUnificado[] = [
-        ...(projetosComTarefas || []).map(projeto => ({
-          id: projeto.id,
-          titulo: projeto.titulo || 'Projeto sem título',
-          descricao: projeto.descricao,
-          status: projeto.status,
-          cliente_id: projeto.cliente_id,
-          created_at: projeto.created_at,
-          updated_at: projeto.updated_at,
-          tipo_fonte: 'projeto' as const,
-          tipo_projeto: (projeto.tipo_projeto || 'plano_editorial') as any,
-          data_inicio: projeto.data_inicio,
-          data_fim: projeto.data_fim,
-          data_prazo: projeto.data_prazo,
-          orcamento: projeto.orcamento,
-          responsavel_id: projeto.responsavel_id,
-          tarefas: projeto.tarefas
-        })),
-        ...(planejamentosData || []).map(planejamento => ({
+        const planejamentos = (planejamentosData || []).map(planejamento => ({
           id: planejamento.id,
           titulo: planejamento.titulo,
           descricao: planejamento.descricao,
@@ -213,24 +153,42 @@ export default function ClienteProjetosFluxo() {
           data_envio_cliente: planejamento.data_envio_cliente,
           data_aprovacao_cliente: planejamento.data_aprovacao_cliente,
           observacoes_cliente: planejamento.observacoes_cliente
-        }))
-      ];
+        }));
+        
+        setPlanejamentosUnificados(planejamentos);
+      } catch (error) {
+        console.error('Erro ao buscar planejamentos:', error);
+      } finally {
+        setPlanejamentosLoading(false);
+      }
+    };
+    
+    fetchPlanejamentos();
+  }, [clienteId]);
 
-      // Ordenar por data de criação mais recente
-      projetosUnificados.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-      
-      setProjetosUnificados(projetosUnificados);
-    } catch (error) {
-      console.error('Erro ao buscar dados:', error);
-      toast({
-        title: "Erro",
-        description: "Não foi possível carregar os dados",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Combine projetos and planejamentos
+  const projetosUnificados: ProjetoUnificado[] = [
+    ...(projetosData?.projetos || []).map(projeto => ({
+      id: projeto.id,
+      titulo: projeto.titulo || 'Projeto sem título',
+      descricao: projeto.descricao,
+      status: projeto.status,
+      cliente_id: projeto.cliente_id,
+      created_at: projeto.created_at,
+      updated_at: projeto.updated_at,
+      tipo_fonte: 'projeto' as const,
+      tipo_projeto: (projeto.tipo_projeto || 'plano_editorial') as any,
+      data_inicio: projeto.data_inicio,
+      data_fim: projeto.data_prazo,
+      data_prazo: projeto.data_prazo,
+      orcamento: projeto.orcamento_estimado,
+      responsavel_id: projeto.responsavel_grs_id,
+      tarefas: []
+    })),
+    ...planejamentosUnificados
+  ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+  const loading = clienteLoading || projetosLoading || planejamentosLoading;
 
   const handleAbrirProjeto = (projeto: ProjetoUnificado) => {
     if (projeto.tipo_fonte === 'projeto') {
@@ -369,7 +327,6 @@ export default function ClienteProjetosFluxo() {
           onOpenChange={(open) => !open && setTipoModal(null)}
           clienteId={clienteId}
           tipo={tipoModal}
-          onSuccess={() => fetchProjetosUnificados()}
         />
       )}
 

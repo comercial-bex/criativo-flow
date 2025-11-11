@@ -18,6 +18,8 @@ import { useDeviceType } from "@/hooks/useDeviceType";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
+import { useProjetosOptimized } from "@/hooks/useProjetosOptimized";
+import { useClientesAtivos } from "@/hooks/useClientesOptimized";
 import { useTutorial } from '@/hooks/useTutorial';
 import { TutorialButton } from '@/components/TutorialButton';
 
@@ -403,95 +405,58 @@ export default function ClienteProjetos() {
   const navigate = useNavigate();
   const deviceType = useDeviceType();
   const isMobile = deviceType === 'mobile';
-  const [clientes, setClientes] = useState<ClienteComProjetos[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
+  const { startTutorial, hasSeenTutorial } = useTutorial('cliente-projetos');
+  
+  // Use optimized hooks
+  const { data: clientesData, isLoading: clientesLoading } = useClientesAtivos();
+  const { data: projetosData, isLoading: projetosLoading } = useProjetosOptimized({});
+  
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("todos");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [projetoEdit, setProjetoEdit] = useState<any>(null);
   const [projetoDeleteId, setProjetoDeleteId] = useState<string | null>(null);
-  const { toast } = useToast();
-  const { startTutorial, hasSeenTutorial } = useTutorial('cliente-projetos');
 
-  
   // Utility function to check if string is a valid UUID
   const isUuid = (v: string) =>
     /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/.test(v);
 
-  // Carregar dados reais do Supabase
-  useEffect(() => {
-    fetchClientesComProjetos();
-  }, []);
+  // Transform data from optimized hooks
+  const clientes: ClienteComProjetos[] = (clientesData || []).map(cliente => {
+    const clienteProjetos = (projetosData?.projetos || []).filter(p => p.cliente_id === cliente.id);
+    
+    const projetos = clienteProjetos.map(projeto => ({
+      id: projeto.id,
+      titulo: projeto.titulo,
+      status: projeto.status as 'ativo' | 'concluido' | 'pendente' | 'pausado',
+      valor: projeto.orcamento_estimado || 0,
+      dataInicio: projeto.data_inicio || '',
+      dataFim: projeto.data_prazo || '',
+      progresso: projeto.progresso || (projeto.status === 'ativo' ? 50 : 
+                projeto.status === 'pendente' ? 0 : 25),
+      tipo: 'Geral'
+    }));
 
-  const fetchClientesComProjetos = async () => {
-    setLoading(true);
-    try {
-      // Buscar clientes com seus projetos
-      const { data: clientesData, error: clientesError } = await supabase
-        .from('clientes')
-        .select(`
-          id,
-          nome,
-          email,
-          status,
-          projetos (
-            id,
-            titulo,
-            status,
-            orcamento,
-            data_inicio,
-            data_fim,
-            descricao
-          )
-        `)
-        .order('nome');
+    const statusCounts = {
+      ativo: projetos.filter(p => p.status === 'ativo').length,
+      concluido: projetos.filter(p => p.status === 'concluido').length,
+      pendente: projetos.filter(p => p.status === 'pendente').length,
+      pausado: projetos.filter(p => p.status === 'pausado').length,
+    };
 
-      if (clientesError) throw clientesError;
+    return {
+      id: cliente.id,
+      nome: cliente.nome,
+      email: cliente.email || '',
+      status: cliente.status as 'ativo' | 'inativo' | 'prospecto',
+      projetos,
+      totalProjetos: projetos.length,
+      statusCounts
+    };
+  });
 
-      // Transformar dados para o formato esperado
-      const clientesFormatados: ClienteComProjetos[] = (clientesData || []).map(cliente => {
-        const projetos = (cliente.projetos || []).map(projeto => ({
-          id: projeto.id,
-          titulo: projeto.titulo,
-          status: projeto.status as 'ativo' | 'concluido' | 'pendente' | 'pausado',
-          valor: projeto.orcamento || 0,
-          dataInicio: projeto.data_inicio || '',
-          dataFim: projeto.data_fim || '',
-          progresso: projeto.status === 'ativo' ? 50 : 
-                    projeto.status === 'pendente' ? 0 : 25,
-          tipo: 'Geral'
-        }));
-
-        const statusCounts = {
-          ativo: projetos.filter(p => p.status === 'ativo').length,
-          concluido: projetos.filter(p => p.status === 'concluido').length,
-          pendente: projetos.filter(p => p.status === 'pendente').length,
-          pausado: projetos.filter(p => p.status === 'pausado').length,
-        };
-
-        return {
-          id: cliente.id,
-          nome: cliente.nome,
-          email: cliente.email || '',
-          status: cliente.status as 'ativo' | 'inativo' | 'prospecto',
-          projetos,
-          totalProjetos: projetos.length,
-          statusCounts
-        };
-      });
-
-      setClientes(clientesFormatados);
-    } catch (error) {
-      console.error('Erro ao carregar clientes e projetos:', error);
-      toast({
-        title: "Erro ao carregar dados",
-        description: "Não foi possível carregar os clientes e projetos",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+  const loading = clientesLoading || projetosLoading;
 
   const goToClienteDetalhes = async (cliente: any) => {
     try {
@@ -533,7 +498,6 @@ export default function ClienteProjetos() {
       });
 
       setProjetoEdit(null);
-      fetchClientesComProjetos();
       return true;
     } catch (error) {
       console.error('Erro ao atualizar projeto:', error);
@@ -563,7 +527,6 @@ export default function ClienteProjetos() {
       });
 
       setProjetoDeleteId(null);
-      fetchClientesComProjetos();
     } catch (error) {
       console.error('Erro ao excluir projeto:', error);
       toast({
@@ -791,7 +754,6 @@ export default function ClienteProjetos() {
           </DialogHeader>
           <ProjetoForm onSuccess={() => {
             setDialogOpen(false);
-            fetchClientesComProjetos(); // Recarregar dados
           }} />
         </DialogContent>
       </Dialog>

@@ -14,6 +14,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Calendar, Users, Clock, AlertCircle, TrendingUp, BarChart3, Plus, Send, Info, FileText, CheckCircle, Eye, Bell, MessageSquare, Zap, Megaphone, ChevronDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
+import { useProjetosOptimized } from "@/hooks/useProjetosOptimized";
+import { useClientesAtivos } from "@/hooks/useClientesOptimized";
 import { GamificationWidget } from "@/components/GamificationWidget";
 import { CalendarWidget } from "@/components/CalendarWidget";
 import { SimpleHelpModal } from "@/components/SimpleHelpModal";
@@ -51,168 +54,109 @@ type FiltroStatus = 'todos' | 'ativos' | 'concluidos';
 export default function GRSDashboard() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
   const { startTutorial, hasSeenTutorial } = useTutorial('grs-dashboard');
+  
+  // Use optimized hooks
+  const { data: clientesData } = useClientesAtivos();
+  const { data: projetosGRSData, isLoading: projetosLoading } = useProjetosOptimized({ 
+    responsavelGrsId: user?.id 
+  });
+  
+  const [clientesComProjetos, setClientesComProjetos] = useState<ClienteComProjetos[]>([]);
+  const [planejamentosLoading, setPlanejamentosLoading] = useState(true);
+  const [planejamentos, setPlanejamentos] = useState<any[]>([]);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [tipoModal, setTipoModal] = useState<'avulso' | 'campanha' | 'plano_editorial'>('avulso');
+  const [filtroStatus, setFiltroStatus] = useState<FiltroStatus>('todos');
+  
   const [metrics, setMetrics] = useState<DashboardMetrics>({
     clientesAtivos: 0,
     totalProjetos: 0,
     projetosAtivos: 0,
     projetosConcluidos: 0
   });
-  const [clientesComProjetos, setClientesComProjetos] = useState<ClienteComProjetos[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [tipoModal, setTipoModal] = useState<'avulso' | 'campanha' | 'plano_editorial'>('avulso');
-  const [filtroStatus, setFiltroStatus] = useState<FiltroStatus>('todos');
 
+  // Fetch planejamentos separately
   useEffect(() => {
-    fetchClientesEProjetos();
-  }, []);
+    const fetchPlanejamentos = async () => {
+      if (!user?.id) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('planejamentos')
+          .select('id, cliente_id, status')
+          .eq('responsavel_grs_id', user.id);
 
-  const fetchClientesEProjetos = async () => {
-    try {
-      // 🔍 FASE 1: Buscar usuário logado
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        toast({
-          title: "Erro de autenticação",
-          description: "Usuário não autenticado",
-          variant: "destructive",
-        });
-        setLoading(false);
-        return;
+        if (error) throw error;
+        setPlanejamentos(data || []);
+      } catch (error) {
+        console.error('Erro ao buscar planejamentos:', error);
+      } finally {
+        setPlanejamentosLoading(false);
       }
+    };
+    
+    fetchPlanejamentos();
+  }, [user?.id]);
 
-      // Buscando dados do GRS
+  // Calculate metrics when data changes
+  useEffect(() => {
+    if (!clientesData || !projetosGRSData || planejamentosLoading) return;
 
-      // Buscar todos os clientes ativos (filtraremos por projetos depois)
-      const { data: clientes, error: clientesError } = await supabase
-        .from('clientes')
-        .select('id, nome, email, status')
-        .eq('status', 'ativo')
-        .order('nome');
+    const clientes = clientesData;
+    const projetos = projetosGRSData.projetos || [];
 
-      if (clientesError) throw clientesError;
+    const clientesComStats = clientes.map(cliente => {
+      const projetosCliente = projetos.filter(p => p.cliente_id === cliente.id) || [];
+      const planejamentosCliente = planejamentos.filter(p => p.cliente_id === cliente.id) || [];
+      
+      const todosProjetos = [...projetosCliente, ...planejamentosCliente];
+      
+      // Simulação de aprovações e mensagens
+      const aprovacoesPendentes = Math.floor(Math.random() * 2);
+      const mensagensNaoLidas = Math.floor(Math.random() * 3);
+      
+      return {
+        id: cliente.id,
+        nome: cliente.nome,
+        email: cliente.email || '',
+        status: cliente.status,
+        totalProjetos: todosProjetos.length,
+        projetosAtivos: todosProjetos.filter(p => 
+          ['em_andamento', 'em_producao', 'iniciado', 'ativo'].includes(p.status)
+        ).length,
+        projetosConcluidos: todosProjetos.filter(p => 
+          ['concluido', 'finalizado', 'entregue'].includes(p.status)
+        ).length,
+        projetosPendentes: todosProjetos.filter(p => 
+          ['pendente', 'aguardando', 'em_aprovacao_final'].includes(p.status)
+        ).length,
+        projetosPausados: todosProjetos.filter(p => 
+          ['pausado', 'suspenso'].includes(p.status)
+        ).length,
+        aprovacoesPendentes,
+        mensagensNaoLidas,
+      };
+    }).filter(cliente => cliente.totalProjetos > 0);
 
-      // 🎯 FASE 2: Buscar projetos onde GRS está vinculado
-      // 1️⃣ Buscar projetos onde GRS é responsável direto
-      const { data: projetosResponsavel, error: projetosError1 } = await supabase
-        .from('projetos')
-        .select('id, cliente_id, status, responsavel_grs_id')
-        .eq('responsavel_grs_id', user.id);
+    setClientesComProjetos(clientesComStats);
 
-      if (projetosError1) throw projetosError1;
+    // Calculate global metrics
+    const totalClientesAtivos = clientesComStats.length;
+    const totalProjetos = clientesComStats.reduce((acc, c) => acc + c.totalProjetos, 0);
+    const totalAtivos = clientesComStats.reduce((acc, c) => acc + c.projetosAtivos, 0);
+    const totalConcluidos = clientesComStats.reduce((acc, c) => acc + c.projetosConcluidos, 0);
 
-      // 2️⃣ Buscar projetos onde GRS está como especialista
-      const { data: especialistaLinks, error: projetosError2 } = await supabase
-        .from('projeto_especialistas')
-        .select('projeto_id')
-        .eq('especialista_id', user.id)
-        .eq('especialidade', 'grs');
+    setMetrics({
+      clientesAtivos: totalClientesAtivos,
+      totalProjetos,
+      projetosAtivos: totalAtivos,
+      projetosConcluidos: totalConcluidos
+    });
+  }, [clientesData, projetosGRSData, planejamentos, planejamentosLoading]);
 
-      if (projetosError2) throw projetosError2;
-
-      // 3️⃣ Se houver projetos como especialista, buscar seus dados completos
-      let projetosEspecialista: any[] = [];
-      if (especialistaLinks && especialistaLinks.length > 0) {
-        const projetoIds = especialistaLinks.map(link => link.projeto_id);
-        
-        const { data, error: projetosError3 } = await supabase
-          .from('projetos')
-          .select('id, cliente_id, status, responsavel_grs_id')
-          .in('id', projetoIds);
-          
-        if (projetosError3) throw projetosError3;
-        
-        projetosEspecialista = data || [];
-      }
-
-      // 4️⃣ Unir e remover duplicatas
-      const projetosMap = new Map();
-
-      // Adicionar projetos como responsável
-      (projetosResponsavel || []).forEach(projeto => {
-        projetosMap.set(projeto.id, projeto);
-      });
-
-      // Adicionar projetos como especialista (não sobrescreve duplicatas)
-      projetosEspecialista.forEach(projeto => {
-        if (!projetosMap.has(projeto.id)) {
-          projetosMap.set(projeto.id, projeto);
-        }
-      });
-
-      // Converter Map para array
-      const projetos = Array.from(projetosMap.values());
-
-      // 🎯 FASE 3: Filtrar planejamentos vinculados
-      const { data: planejamentos, error: planejamentosError } = await supabase
-        .from('planejamentos')
-        .select('id, cliente_id, status')
-        .eq('responsavel_grs_id', user.id);  // ✅ Filtrar por GRS responsável
-
-      if (planejamentosError) throw planejamentosError;
-
-      // Simulação de dados de aprovações e mensagens para demonstração
-      // Em produção, buscar das tabelas reais
-
-      // Calculate metrics per client
-      const clientesComStats = clientes?.map(cliente => {
-        const projetosCliente = projetos?.filter(p => p.cliente_id === cliente.id) || [];
-        const planejamentosCliente = planejamentos?.filter(p => p.cliente_id === cliente.id) || [];
-        
-        const todosProjetos = [...projetosCliente, ...planejamentosCliente];
-        
-        // Contar aprovações pendentes para este cliente (simulação por agora)
-        const aprovacoesPendentes = Math.floor(Math.random() * 2); // 0-1 aprovações pendentes
-        
-        // Contar mensagens não lidas para usuários deste cliente (simulação)
-        const mensagensNaoLidas = Math.floor(Math.random() * 3); // 0-2 mensagens
-        
-        return {
-          ...cliente,
-          totalProjetos: todosProjetos.length,
-          projetosAtivos: todosProjetos.filter(p => 
-            ['em_andamento', 'em_producao', 'iniciado', 'ativo'].includes(p.status)
-          ).length,
-          projetosConcluidos: todosProjetos.filter(p => 
-            ['concluido', 'finalizado', 'entregue'].includes(p.status)
-          ).length,
-          projetosPendentes: todosProjetos.filter(p => 
-            ['pendente', 'aguardando', 'em_aprovacao_final'].includes(p.status)
-          ).length,
-          projetosPausados: todosProjetos.filter(p => 
-            ['pausado', 'suspenso'].includes(p.status)
-          ).length,
-          aprovacoesPendentes,
-          mensagensNaoLidas,
-        };
-      }).filter(cliente => cliente.totalProjetos > 0) || [];
-
-      setClientesComProjetos(clientesComStats);
-
-      // Calculate global metrics
-      const totalClientesAtivos = clientesComStats.length;
-      const totalProjetos = clientesComStats.reduce((acc, c) => acc + c.totalProjetos, 0);
-      const totalAtivos = clientesComStats.reduce((acc, c) => acc + c.projetosAtivos, 0);
-      const totalConcluidos = clientesComStats.reduce((acc, c) => acc + c.projetosConcluidos, 0);
-
-      setMetrics({
-        clientesAtivos: totalClientesAtivos,
-        totalProjetos: totalProjetos,
-        projetosAtivos: totalAtivos,
-        projetosConcluidos: totalConcluidos
-      });
-
-    } catch (error: any) {
-      toast({
-        title: "❌ Erro ao carregar dashboard",
-        description: error?.message || "Não foi possível carregar os dados. Tente novamente.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+  const loading = projetosLoading || planejamentosLoading;
 
 
   const metricsData = [
@@ -402,19 +346,10 @@ export default function GRSDashboard() {
           open={dialogOpen}
           onOpenChange={setDialogOpen}
           tipo={tipoModal}
-          onSuccess={async () => {
+          onSuccess={() => {
             setDialogOpen(false);
-            
             toast({
               title: "✅ Projeto criado com sucesso!",
-              description: "Atualizando dashboard...",
-            });
-            
-            setLoading(true);
-            await fetchClientesEProjetos();
-            
-            toast({
-              title: "✅ Dashboard atualizado!",
               description: "O novo projeto já aparece na lista.",
             });
           }}
