@@ -1,24 +1,18 @@
 import { Layout } from '@/components/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Phone, Mail, Building } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { useClientes } from '@/hooks/useClientes';
 import { Button } from '@/components/ui/button';
+import { useMemo } from 'react';
 
 export default function CRMContatos() {
-  const { data: clientes, isLoading } = useQuery({
-    queryKey: ['crm-contatos'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('clientes')
-        .select('id, nome, email, telefone')
-        .eq('status', 'ativo')
-        .order('nome');
-      
-      if (error) throw error;
-      return data;
-    }
-  });
+  const { data: clientes = [], isLoading } = useClientes();
+
+  // Filter only active clients for contacts view
+  const clientesAtivos = useMemo(() => 
+    clientes.filter(cliente => cliente.status === 'ativo'),
+    [clientes]
+  );
 
   return (
     <Layout>
@@ -40,7 +34,7 @@ export default function CRMContatos() {
               <p>Carregando contatos...</p>
             ) : (
               <div className="space-y-4">
-                {clientes?.map((cliente) => (
+                {clientesAtivos?.map((cliente) => (
                   <div key={cliente.id} className="flex items-center justify-between p-4 border rounded-lg">
                     <div>
                       <h3 className="font-semibold">{cliente.nome}</h3>
