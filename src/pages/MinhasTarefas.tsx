@@ -1,4 +1,9 @@
-import { useState, useEffect } from 'react';
+/**
+ * Módulo de Tarefas - Componente otimizado com TanStack Query
+ * Substituído por hooks otimizados - veja useTarefasOptimized.ts
+ */
+
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -7,277 +12,48 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { UniversalKanbanBoard } from '@/components/UniversalKanbanBoard';
 import { TaskDetailsModal } from '@/components/TaskDetailsModal';
-import { CreateTaskModal } from '@/components/CreateTaskModal';
 import { 
   CheckSquare, 
   Clock, 
   AlertTriangle, 
   TrendingUp,
   Search,
-  Filter,
-  Calendar,
   User,
   List,
-  Kanban,
-  CalendarDays,
-  Clock3,
-  AlertCircle,
-  Plus
+  Kanban
 } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { useToast } from '@/hooks/use-toast';
 import { useUserRole } from '@/hooks/useUserRole';
-import { format, parseISO, startOfWeek, endOfWeek, eachDayOfInterval, isSameDay } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
-
-// Interface para tarefas unificadas
-interface MyTask {
-  id: string;
-  titulo: string;
-  descricao?: string;
-  status: string;
-  prioridade: 'alta' | 'media' | 'baixa';
-  data_inicio?: string;
-  data_prazo?: string;
-  horas_trabalhadas?: number;
-  responsavel_id?: string;
-  responsavel_nome?: string;
-  setor_responsavel: string;
-  projeto_id?: string;
-  projeto_nome?: string;
-  cliente_nome?: string;
-  observacoes?: string;
-  anexos?: string[];
-  created_at: string;
-  updated_at: string;
-  aprovacao_status?: string;
-  labels?: Array<{
-    id: string;
-    name: string;
-    color: string;
-  }>;
-  checklist?: Array<{
-    id: string;
-    text: string;
-    completed: boolean;
-  }>;
-  comments?: Array<{
-    id: string;
-    user: string;
-    text: string;
-    date: string;
-  }>;
-  attachments?: Array<{
-    id: string;
-    name: string;
-    url: string;
-    type: string;
-  }>;
-}
-
-// Componente de Lista de Tarefas
-const TaskListView = ({ 
-  tasks, 
-  onTaskClick 
-}: { 
-  tasks: MyTask[], 
-  onTaskClick: (task: MyTask) => void 
-}) => {
-  const getPriorityIcon = (priority: string) => {
-    switch (priority) {
-      case 'alta': return '🔴';
-      case 'media': return '🟡';
-      case 'baixa': return '🟢';
-      default: return '⚪';
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'concluido': return 'bg-green-100 text-green-800';
-      case 'em_andamento': return 'bg-blue-100 text-blue-800';
-      case 'em_revisao': return 'bg-yellow-100 text-yellow-800';
-      case 'aprovado': return 'bg-green-100 text-green-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  return (
-    <div className="space-y-3">
-      {tasks.map((task) => (
-        <Card 
-          key={task.id} 
-          className="cursor-pointer hover:shadow-md transition-shadow"
-          onClick={() => onTaskClick(task)}
-        >
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex-1">
-                <div className="flex items-center gap-3 mb-2">
-                  <span className="text-lg">{getPriorityIcon(task.prioridade)}</span>
-                  <h3 className="font-semibold text-foreground">{task.titulo}</h3>
-                  <Badge className={getStatusColor(task.status)}>
-                    {task.status.replace('_', ' ')}
-                  </Badge>
-                </div>
-                
-                <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                  {task.projeto_nome && (
-                    <span className="flex items-center gap-1">
-                      <Clock3 className="h-3 w-3" />
-                      {task.projeto_nome}
-                    </span>
-                  )}
-                  {task.cliente_nome && (
-                    <span>{task.cliente_nome}</span>
-                  )}
-                  {task.data_prazo && (
-                    <span className="flex items-center gap-1">
-                      <Calendar className="h-3 w-3" />
-                      {format(parseISO(task.data_prazo), 'dd/MM/yyyy', { locale: ptBR })}
-                    </span>
-                  )}
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-2">
-                {task.data_prazo && new Date(task.data_prazo) < new Date() && task.status !== 'concluido' && (
-                  <AlertCircle className="h-4 w-4 text-red-500" />
-                )}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      ))}
-    </div>
-  );
-};
-
-// Componente de Calendário de Tarefas
-const TaskCalendarView = ({ 
-  tasks, 
-  onTaskClick 
-}: { 
-  tasks: MyTask[], 
-  onTaskClick: (task: MyTask) => void 
-}) => {
-  const [currentWeek, setCurrentWeek] = useState(new Date());
-  
-  const weekStart = startOfWeek(currentWeek, { locale: ptBR });
-  const weekEnd = endOfWeek(currentWeek, { locale: ptBR });
-  const weekDays = eachDayOfInterval({ start: weekStart, end: weekEnd });
-
-  const getTasksForDay = (day: Date) => {
-    return tasks.filter(task => {
-      if (!task.data_prazo) return false;
-      return isSameDay(parseISO(task.data_prazo), day);
-    });
-  };
-
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'alta': return 'border-l-red-500 bg-red-50';
-      case 'media': return 'border-l-yellow-500 bg-yellow-50';
-      case 'baixa': return 'border-l-green-500 bg-green-50';
-      default: return 'border-l-gray-500 bg-gray-50';
-    }
-  };
-
-  return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold">
-          {format(weekStart, 'dd', { locale: ptBR })} - {format(weekEnd, 'dd MMMM yyyy', { locale: ptBR })}
-        </h3>
-        <div className="flex gap-2">
-          <Button 
-            variant="outline" 
-            onClick={() => setCurrentWeek(new Date(currentWeek.getTime() - 7 * 24 * 60 * 60 * 1000))}
-          >
-            Anterior
-          </Button>
-          <Button 
-            variant="outline" 
-            onClick={() => setCurrentWeek(new Date())}
-          >
-            Hoje
-          </Button>
-          <Button 
-            variant="outline" 
-            onClick={() => setCurrentWeek(new Date(currentWeek.getTime() + 7 * 24 * 60 * 60 * 1000))}
-          >
-            Próxima
-          </Button>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-7 gap-4">
-        {weekDays.map((day) => {
-          const dayTasks = getTasksForDay(day);
-          const isToday = isSameDay(day, new Date());
-          
-          return (
-            <Card key={day.toISOString()} className={isToday ? 'ring-2 ring-primary' : ''}>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm text-center">
-                  <div className={`${isToday ? 'text-primary font-bold' : 'text-muted-foreground'}`}>
-                    {format(day, 'EEE', { locale: ptBR })}
-                  </div>
-                  <div className={`text-lg ${isToday ? 'text-primary font-bold' : ''}`}>
-                    {format(day, 'dd')}
-                  </div>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2 min-h-[200px]">
-                {dayTasks.map((task) => (
-                  <div
-                    key={task.id}
-                    className={`p-2 rounded border-l-4 cursor-pointer hover:shadow-sm transition-shadow ${getPriorityColor(task.prioridade)}`}
-                    onClick={() => onTaskClick(task)}
-                  >
-                    <div className="text-xs font-medium text-foreground truncate">
-                      {task.titulo}
-                    </div>
-                    {task.cliente_nome && (
-                      <div className="text-xs text-muted-foreground truncate">
-                        {task.cliente_nome}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
-    </div>
-  );
-};
+import { useMinhasTarefas, useTarefasStats, useUpdateTarefa } from '@/hooks/useTarefasOptimized';
+import { useDebounceFilter } from '@/hooks/useDebounceFilter';
 
 export default function MinhasTarefas() {
   const { user } = useAuth();
   const { role } = useUserRole();
-  const { toast } = useToast();
   
-  const [tasks, setTasks] = useState<MyTask[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedTask, setSelectedTask] = useState<MyTask | null>(null);
-  const [showTaskModal, setShowTaskModal] = useState(false);
-  const [activeView, setActiveView] = useState('kanban');
+  // Usar hooks otimizados
+  const { data, isLoading } = useMinhasTarefas(user?.id);
+  const { data: statsData } = useTarefasStats(user?.id);
+  const updateTarefa = useUpdateTarefa();
   
-  // Filters
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [priorityFilter, setPriorityFilter] = useState('all');
-
-  // Stats
-  const [stats, setStats] = useState({
+  const tasks = data?.tarefas || [];
+  const stats = statsData || {
     total: 0,
     em_andamento: 0,
     vencidas: 0,
     concluidas_semana: 0
-  });
+  };
+  
+  const [selectedTask, setSelectedTask] = useState<any | null>(null);
+  const [showTaskModal, setShowTaskModal] = useState(false);
+  const [activeView, setActiveView] = useState('kanban');
+  
+  // Filters com debounce
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [priorityFilter, setPriorityFilter] = useState('all');
+  
+  const debouncedSearch = useDebounceFilter(searchTerm, 300);
 
   // Configuração de colunas baseada no papel do usuário
   const getModuleColumns = () => {
@@ -309,182 +85,25 @@ export default function MinhasTarefas() {
     }
   };
 
-  useEffect(() => {
-    if (user) {
-      fetchMyTasks();
-    }
-  }, [user]);
-
-  useEffect(() => {
-    calculateStats();
-  }, [tasks]);
-
-  const fetchMyTasks = async () => {
-    try {
-      setLoading(true);
-      
-      const { data, error } = await supabase
-        .from('tarefa')
-        .select('*')
-        .eq('responsavel_id', user?.id)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-
-      // Buscar dados relacionados para cada tarefa
-      const formattedTasks = await Promise.all((data || []).map(async (task) => {
-        let responsavel_nome = '';
-        let cliente_nome = '';
-        let projeto_nome = '';
-
-        // Buscar nome do responsável
-        if (task.responsavel_id) {
-          const { data: profile } = await supabase
-            .from('pessoas')
-            .select('nome')
-            .eq('id', task.responsavel_id)
-            .single();
-          responsavel_nome = profile?.nome || '';
-        }
-
-        // Buscar dados do projeto e cliente
-        if (task.projeto_id) {
-          const { data: projeto } = await supabase
-            .from('projetos')
-            .select('titulo, cliente_id')
-            .eq('id', task.projeto_id)
-            .single();
-          
-          if (projeto) {
-            projeto_nome = projeto.titulo;
-            
-            // Buscar cliente separadamente
-            if (projeto.cliente_id) {
-              const { data: cliente } = await supabase
-                .from('clientes')
-                .select('nome')
-                .eq('id', projeto.cliente_id)
-                .single();
-              cliente_nome = cliente?.nome || '';
-            }
-          }
-        }
-
-        return {
-          ...task,
-          prioridade: task.prioridade as 'alta' | 'media' | 'baixa',
-          setor_responsavel: 'grs',
-          responsavel_nome,
-          cliente_nome,
-          projeto_nome,
-          observacoes: '',
-          labels: [], // Placeholder para labels futuras
-          checklist: [], // Placeholder para checklist futuro
-          comments: [], // Placeholder para comentários futuros
-          attachments: [] // Placeholder para anexos futuros
-        };
-      }));
-
-      setTasks(formattedTasks);
-    } catch (error) {
-      console.error('Erro ao carregar minhas tarefas:', error);
-      toast({
-        title: "Erro ao carregar tarefas",
-        description: "Não foi possível carregar suas tarefas",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const calculateStats = () => {
-    const total = tasks.length;
-    const em_andamento = tasks.filter(t => t.status === 'em_andamento').length;
-    
-    // Calcular tarefas vencidas
-    const now = new Date();
-    const vencidas = tasks.filter(t => {
-      if (!t.data_prazo || t.status === 'concluido') return false;
-      return new Date(t.data_prazo) < now;
-    }).length;
-
-    // Calcular concluídas na semana
-    const oneWeekAgo = new Date();
-    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-    const concluidas_semana = tasks.filter(t => {
-      if (t.status !== 'concluido') return false;
-      return new Date(t.updated_at) >= oneWeekAgo;
-    }).length;
-
-    setStats({ total, em_andamento, vencidas, concluidas_semana });
-  };
-
   const handleTaskMove = async (taskId: string, newStatus: string) => {
     try {
-      const { error } = await supabase
-        .from('tarefa')
-        .update({ status: newStatus as any })
-        .eq('id', taskId);
-
-      if (error) throw error;
-
-      setTasks(tasks.map(task => 
-        task.id === taskId ? { ...task, status: newStatus } : task
-      ));
-
-      toast({
-        title: "Status atualizado!",
-        description: "A tarefa foi movida com sucesso.",
-      });
+      await updateTarefa.mutateAsync({ id: taskId, updates: { status: newStatus } });
     } catch (error) {
       console.error('Erro ao atualizar status:', error);
-      toast({
-        title: "Erro ao atualizar status",
-        description: "Não foi possível atualizar o status da tarefa",
-        variant: "destructive",
-      });
     }
   };
 
-  const handleTaskUpdate = async (taskId: string, updates: Partial<MyTask>) => {
-    try {
-      const { error } = await supabase
-        .from('tarefa')
-        .update(updates as any)
-        .eq('id', taskId);
-
-      if (error) throw error;
-
-      setTasks(tasks.map(task => 
-        task.id === taskId ? { ...task, ...updates } : task
-      ));
-
-      toast({
-        title: "Tarefa atualizada!",
-        description: "As alterações foram salvas com sucesso.",
-      });
-    } catch (error) {
-      console.error('Erro ao atualizar tarefa:', error);
-      toast({
-        title: "Erro ao atualizar tarefa",
-        description: "Não foi possível atualizar a tarefa",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleTaskClick = (task: MyTask) => {
+  const handleTaskClick = (task: any) => {
     setSelectedTask(task);
     setShowTaskModal(true);
   };
 
-  // Filtrar tarefas
+  // Filtrar tarefas com debounce
   const filteredTasks = tasks.filter(task => {
-    const matchesSearch = searchTerm === '' || 
-      task.titulo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      task.projeto_nome?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      task.cliente_nome?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = debouncedSearch === '' || 
+      task.titulo?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+      task.projeto_nome?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+      task.cliente_nome?.toLowerCase().includes(debouncedSearch.toLowerCase());
     
     const matchesStatus = statusFilter === 'all' || task.status === statusFilter;
     const matchesPriority = priorityFilter === 'all' || task.prioridade === priorityFilter;
@@ -523,7 +142,7 @@ export default function MinhasTarefas() {
     }
   ];
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="p-6 space-y-6">
         <div className="text-center py-8">
@@ -544,106 +163,91 @@ export default function MinhasTarefas() {
             Minhas Tarefas
           </h1>
           <p className="text-muted-foreground">
-            Dashboard personalizado com suas atribuições • {role ? role.toUpperCase() : 'Especialista'}
+            Gerencie suas tarefas e acompanhe seu progresso
           </p>
         </div>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {statsCards.map((item, index) => (
-          <Card key={index} className="hover:shadow-md transition-shadow">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                {item.title}
-              </CardTitle>
-              <item.icon className={`h-4 w-4 ${item.color}`} />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{item.value}</div>
-              <p className="text-xs text-muted-foreground">
-                {item.description}
-              </p>
-            </CardContent>
-          </Card>
-        ))}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        {statsCards.map((stat, index) => {
+          const Icon = stat.icon;
+          return (
+            <Card key={index}>
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">{stat.title}</p>
+                    <p className="text-2xl font-bold">{stat.value}</p>
+                    <p className="text-xs text-muted-foreground">{stat.description}</p>
+                  </div>
+                  <Icon className={`h-8 w-8 ${stat.color}`} />
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
 
       {/* Filters */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Filtros</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex gap-4 flex-wrap">
-            <div className="flex-1 min-w-[300px]">
-              <div className="relative">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Buscar por tarefa, projeto ou cliente..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-            </div>
-            
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-48">
-                <SelectValue placeholder="Filtrar por status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos os status</SelectItem>
-                <SelectItem value="backlog">A Fazer</SelectItem>
-                <SelectItem value="em_andamento">Em Andamento</SelectItem>
-                <SelectItem value="em_revisao">Em Revisão</SelectItem>
-                <SelectItem value="aprovado">Aprovado</SelectItem>
-                <SelectItem value="concluido">Concluído</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Select value={priorityFilter} onValueChange={setPriorityFilter}>
-              <SelectTrigger className="w-48">
-                <SelectValue placeholder="Filtrar por prioridade" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todas as prioridades</SelectItem>
-                <SelectItem value="alta">🔴 Alta</SelectItem>
-                <SelectItem value="media">🟡 Média</SelectItem>
-                <SelectItem value="baixa">🟢 Baixa</SelectItem>
-              </SelectContent>
-            </Select>
+      <div className="flex flex-col md:flex-row gap-4">
+        <div className="flex-1">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Buscar tarefas..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
           </div>
-        </CardContent>
-      </Card>
+        </div>
+        <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <SelectTrigger className="w-full md:w-[200px]">
+            <SelectValue placeholder="Status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos os status</SelectItem>
+            <SelectItem value="backlog">Backlog</SelectItem>
+            <SelectItem value="em_andamento">Em Andamento</SelectItem>
+            <SelectItem value="em_revisao">Em Revisão</SelectItem>
+            <SelectItem value="aprovado">Aprovado</SelectItem>
+            <SelectItem value="concluido">Concluído</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={priorityFilter} onValueChange={setPriorityFilter}>
+          <SelectTrigger className="w-full md:w-[200px]">
+            <SelectValue placeholder="Prioridade" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todas</SelectItem>
+            <SelectItem value="alta">Alta</SelectItem>
+            <SelectItem value="media">Média</SelectItem>
+            <SelectItem value="baixa">Baixa</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
 
-      {/* Views Tabs */}
+      {/* View Toggle */}
       <Tabs value={activeView} onValueChange={setActiveView}>
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="kanban" className="flex items-center gap-2">
-            <Kanban className="h-4 w-4" />
+        <TabsList>
+          <TabsTrigger value="kanban">
+            <Kanban className="h-4 w-4 mr-2" />
             Kanban
           </TabsTrigger>
-          <TabsTrigger value="list" className="flex items-center gap-2">
-            <List className="h-4 w-4" />
+          <TabsTrigger value="list">
+            <List className="h-4 w-4 mr-2" />
             Lista
-          </TabsTrigger>
-          <TabsTrigger value="calendar" className="flex items-center gap-2">
-            <CalendarDays className="h-4 w-4" />
-            Calendário
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="kanban" className="mt-6">
           <UniversalKanbanBoard
             tasks={filteredTasks}
-            moduleColumns={getModuleColumns()}
-            moduleType="geral"
+            columns={getModuleColumns()}
             onTaskMove={handleTaskMove}
             onTaskClick={handleTaskClick}
-            onTaskCreate={() => {}} // Não aplicável para visualização pessoal
-            showSearch={false}
-            showFilters={false}
+            module={role || 'grs'}
           />
         </TabsContent>
 
@@ -653,42 +257,42 @@ export default function MinhasTarefas() {
               <CardTitle>Lista de Tarefas</CardTitle>
             </CardHeader>
             <CardContent>
-              {filteredTasks.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  Nenhuma tarefa encontrada
-                </div>
-              ) : (
-                <TaskListView tasks={filteredTasks} onTaskClick={handleTaskClick} />
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="calendar" className="mt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Calendário de Tarefas</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <TaskCalendarView tasks={filteredTasks} onTaskClick={handleTaskClick} />
+              <div className="space-y-2">
+                {filteredTasks.map((task) => (
+                  <div
+                    key={task.id}
+                    onClick={() => handleTaskClick(task)}
+                    className="p-4 border rounded-lg hover:bg-muted cursor-pointer transition-colors"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <h4 className="font-medium">{task.titulo}</h4>
+                        <p className="text-sm text-muted-foreground">
+                          {task.projeto_nome} • {task.cliente_nome}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge variant={task.prioridade === 'alta' ? 'destructive' : 'secondary'}>
+                          {task.prioridade}
+                        </Badge>
+                        <Badge variant="outline">{task.status}</Badge>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
 
-      {/* Task Modal */}
-      {showTaskModal && selectedTask && (
+      {/* Task Details Modal */}
+      {selectedTask && (
         <TaskDetailsModal
+          task={selectedTask}
           open={showTaskModal}
-          onOpenChange={(open) => {
-            setShowTaskModal(open);
-            if (!open) setSelectedTask(null);
-          }}
-          task={selectedTask as any}
-          onTaskUpdate={async (taskId, updates) => {
-            await handleTaskUpdate(taskId, updates as any);
-            fetchMyTasks();
-          }}
+          onOpenChange={setShowTaskModal}
+          onTaskUpdate={() => {}}
         />
       )}
     </div>

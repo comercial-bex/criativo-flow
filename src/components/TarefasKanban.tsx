@@ -32,6 +32,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { CreateTaskModal } from "./CreateTaskModal";
 import { ModernKanbanCard, type KanbanTask } from "./ModernKanbanCard";
+import { useTarefas, useUpdateTarefa } from "@/hooks/useTarefasOptimized";
 
 interface TarefasKanbanProps {
   planejamento: {
@@ -193,9 +194,11 @@ function DroppableColumn({
 
 
 export function TarefasKanban({ planejamento, clienteId, projetoId, filters }: TarefasKanbanProps) {
-  const [tarefas, setTarefas] = useState<Tarefa[]>([]);
+  const { data, isLoading } = useTarefas({ projetoId, includeRelations: true });
+  const updateTarefa = useUpdateTarefa();
+  
+  const tarefas = data?.tarefas || [];
   const [profiles, setProfiles] = useState<Profile[]>([]);
-  const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingTarefa, setEditingTarefa] = useState<Tarefa | null>(null);
   const [activeTarefa, setActiveTarefa] = useState<Tarefa | null>(null);
