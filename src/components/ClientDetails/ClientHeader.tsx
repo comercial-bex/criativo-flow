@@ -1,5 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { useCliente } from "@/hooks/useClientes";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -25,19 +24,7 @@ interface ClientHeaderProps {
 }
 
 export function ClientHeader({ clienteId }: ClientHeaderProps) {
-  const { data: cliente } = useQuery({
-    queryKey: ['cliente-nome', clienteId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('clientes')
-        .select('nome')
-        .eq('id', clienteId)
-        .single();
-      
-      if (error) throw error;
-      return data;
-    },
-  });
+  const { data: cliente } = useCliente(clienteId);
 
   return (
     <div className="border-b bg-background p-4 space-y-4">

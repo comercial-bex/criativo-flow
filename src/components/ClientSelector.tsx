@@ -1,18 +1,11 @@
-import { useState, useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Users, Building2, ChevronRight } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { useClientes } from "@/hooks/useClientes";
 import { useClientContext } from "@/hooks/useClientContext";
 
-interface Cliente {
-  id: string;
-  nome: string;
-  status: string;
-  responsavel_id?: string;
-}
 
 interface ClientSelectorProps {
   onClientSelect: (clienteId: string | null) => void;
@@ -21,36 +14,20 @@ interface ClientSelectorProps {
 }
 
 export function ClientSelector({ onClientSelect, selectedClientId, showContext = true }: ClientSelectorProps) {
-  const [clientes, setClientes] = useState<Cliente[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: allClientes = [], isLoading } = useClientes();
   const { clienteId, clienteName, isInClientContext } = useClientContext();
 
-  useEffect(() => {
-    fetchClientes();
-  }, []);
+  // Filter only active clients and memoize
+  const clientes = useMemo(() => 
+    allClientes.filter(c => c.status === 'ativo'),
+    [allClientes]
+  );
 
   useEffect(() => {
     if (isInClientContext && clienteId && !selectedClientId) {
       onClientSelect(clienteId);
     }
   }, [isInClientContext, clienteId, selectedClientId, onClientSelect]);
-
-  const fetchClientes = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('clientes')
-        .select('id, nome, status, responsavel_id')
-        .eq('status', 'ativo')
-        .order('nome');
-
-      if (error) throw error;
-      setClientes(data || []);
-    } catch (error) {
-      console.error('Erro ao carregar clientes:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const selectedClient = clientes.find(c => c.id === selectedClientId);
 
@@ -83,10 +60,10 @@ export function ClientSelector({ onClientSelect, selectedClientId, showContext =
             console.log('🔄 ClientSelector: selecionado', clienteId);
             onClientSelect(clienteId);
           }}
-          disabled={loading}
+          disabled={isLoading}
         >
           <SelectTrigger className="w-full">
-            <SelectValue placeholder={loading ? "Carregando..." : "Selecione um cliente"} />
+            <SelectValue placeholder={isLoading ? "Carregando..." : "Selecione um cliente"} />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="todos">
