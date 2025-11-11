@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { ThemeProvider } from "next-themes";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -18,6 +19,7 @@ import { analytics } from "@/lib/analytics";
 import { TeamChatWidget } from "@/components/TeamChat/TeamChatWidget";
 import { OfflineIndicator } from "@/components/OfflineIndicator";
 import { useFrontendHealth } from "@/hooks/useFrontendHealth";
+import { createLocalStoragePersister, shouldDehydrateQuery } from "@/lib/queryPersister";
 
 // Critical pages (loaded immediately)
 import Auth from "./pages/Auth";
@@ -176,25 +178,24 @@ const ContractsPage = lazy(() => import("./pages/ClientDetails/ContractsPage"));
 const FinancePage = lazy(() => import("./pages/ClientDetails/FinancePage"));
 const NotesPage = lazy(() => import("./pages/ClientDetails/NotesPage"));
 const SocialIntegrationsPage = lazy(() => import("./pages/ClientDetails/SocialIntegrationsPage"));
+
+// Criar persister para cache
+const persister = createLocalStoragePersister();
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 10 * 60 * 1000,
-      // 10 minutos (otimizado para PWA)
-      gcTime: 30 * 60 * 1000,
-      // 30 minutos
+      staleTime: 10 * 60 * 1000, // 10 minutos (otimizado para PWA)
+      gcTime: 30 * 60 * 1000, // 30 minutos
       refetchOnWindowFocus: false,
-      refetchOnReconnect: true,
-      // ✅ Ativar para PWA
+      refetchOnReconnect: true, // ✅ Ativar para PWA
       refetchOnMount: false,
-      retry: 2,
-      // 2 tentativas
+      retry: 2, // 2 tentativas
       networkMode: 'offlineFirst' as const // ✅ Suporte offline
     },
     mutations: {
       retry: 2,
-      networkMode: 'offlineFirst' as const,
-      // ✅ Suporte offline
+      networkMode: 'offlineFirst' as const, // ✅ Suporte offline
       onSuccess: () => {}
     }
   }
@@ -252,7 +253,16 @@ function App() {
     return <>{children}</>;
   };
   return <ErrorBoundary>
-      <QueryClientProvider client={queryClient}>
+      <PersistQueryClientProvider 
+        client={queryClient}
+        persistOptions={{
+          persister,
+          maxAge: 7 * 24 * 60 * 60 * 1000, // 7 dias
+          dehydrateOptions: {
+            shouldDehydrateQuery,
+          },
+        }}
+      >
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false} forcedTheme="dark" disableTransitionOnChange>
           <BexThemeProvider>
             <TooltipProvider>
@@ -967,7 +977,7 @@ function App() {
         </TooltipProvider>
         </BexThemeProvider>
       </ThemeProvider>
-    </QueryClientProvider>
+    </PersistQueryClientProvider>
     </ErrorBoundary>;
 }
 export default App;
