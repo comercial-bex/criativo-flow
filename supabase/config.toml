@@ -139,3 +139,9 @@ verify_jwt = true
 
 [functions.enviar-orcamento-email]
 verify_jwt = true
+
+[functions.enviar-proposta-email]
+verify_jwt = true
+
+[functions.enviar-contrato-email]
+verify_jwt = true

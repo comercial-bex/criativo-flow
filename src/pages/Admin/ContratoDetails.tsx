@@ -19,11 +19,15 @@ import { StatusWorkflow } from "@/components/Admin/StatusWorkflow";
 import { TimelineLog } from "@/components/Admin/TimelineLog";
 import { FaturasList } from "@/components/Admin/FaturasList";
 import { UploadPDF } from "@/components/Admin/UploadPDF";
+import { ContractPreview } from "@/components/Contrato/ContractPreview";
+import { ContractActionBar } from "@/components/Contrato/ContractActionBar";
+import { EnviarContratoDialog } from "@/components/Contrato/EnviarContratoDialog";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
 import { smartToast } from "@/lib/smart-toast";
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 
 const statusColors: Record<string, string> = {
   rascunho: "bg-muted text-muted-foreground",
@@ -48,8 +52,22 @@ export default function ContratoDetails() {
   const navigate = useNavigate();
   const { contracts, loading, updateStatus, uploadContractFile, gerarFaturas } = useContracts();
   const [uploading, setUploading] = useState(false);
+  const [emailDialogOpen, setEmailDialogOpen] = useState(false);
 
   const contrato = contracts.find((c) => c.id === id);
+
+  const { data: empresa } = useQuery({
+    queryKey: ["configuracoes_empresa"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("configuracoes_empresa")
+        .select("*")
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+  });
 
   if (loading) {
     return (
@@ -149,6 +167,14 @@ export default function ContratoDetails() {
     smartToast.success("Contrato finalizado e vigente!");
   };
 
+  const handleExportarPDF = () => {
+    smartToast.info("Exportação de PDF em desenvolvimento");
+  };
+
+  const handlePrint = () => {
+    window.print();
+  };
+
   return (
     <div className="container mx-auto p-6 max-w-7xl">
       {/* Header */}
@@ -193,8 +219,9 @@ export default function ContratoDetails() {
       </Card>
 
       {/* Tabs */}
-      <Tabs defaultValue="resumo" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-7">
+      <Tabs defaultValue="previa" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-8">
+          <TabsTrigger value="previa">Prévia</TabsTrigger>
           <TabsTrigger value="resumo">Resumo</TabsTrigger>
           <TabsTrigger value="escopo">Escopo & SLA</TabsTrigger>
           <TabsTrigger value="clausulas">Cláusulas</TabsTrigger>
@@ -203,6 +230,20 @@ export default function ContratoDetails() {
           <TabsTrigger value="documentos">Documentos</TabsTrigger>
           <TabsTrigger value="timeline">Histórico</TabsTrigger>
         </TabsList>
+
+        {/* Prévia */}
+        <TabsContent value="previa">
+          <ContractPreview contrato={contrato} empresa={empresa} />
+          <ContractActionBar
+            onEdit={() => navigate(`/admin/contratos/${id}/edit`)}
+            onExportPDF={handleExportarPDF}
+            onSendEmail={() => setEmailDialogOpen(true)}
+            onPrint={handlePrint}
+            onEnviarAssinatura={contrato.status === "rascunho" ? handleEnviarAssinatura : undefined}
+            onGerarFaturas={(contrato.status === "vigente" || contrato.status === "assinado") ? handleGerarFaturas : undefined}
+            status={contrato.status}
+          />
+        </TabsContent>
 
         {/* Resumo */}
         <TabsContent value="resumo">
@@ -431,6 +472,12 @@ export default function ContratoDetails() {
           />
         </TabsContent>
       </Tabs>
+
+      <EnviarContratoDialog
+        open={emailDialogOpen}
+        onOpenChange={setEmailDialogOpen}
+        contrato={contrato}
+      />
     </div>
   );
 }

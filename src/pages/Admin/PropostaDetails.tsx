@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useProposta } from "@/hooks/useProposta";
 import { useQuery } from "@tanstack/react-query";
@@ -21,6 +22,9 @@ import {
 } from "lucide-react";
 import { TimelineLog } from "@/components/Admin/TimelineLog";
 import { StatusWorkflow } from "@/components/Admin/StatusWorkflow";
+import { PropostaPreview } from "@/components/Proposta/PropostaPreview";
+import { PropostaActionBar } from "@/components/Proposta/PropostaActionBar";
+import { EnviarPropostaDialog } from "@/components/Proposta/EnviarPropostaDialog";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { smartToast } from "@/lib/smart-toast";
@@ -45,6 +49,7 @@ const statusLabels: Record<string, string> = {
 export default function PropostaDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [emailDialogOpen, setEmailDialogOpen] = useState(false);
   const { 
     proposta, 
     loading, 
@@ -85,6 +90,19 @@ export default function PropostaDetails() {
     enabled: !!proposta?.numero,
   });
 
+  const { data: empresa } = useQuery({
+    queryKey: ["configuracoes_empresa"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("configuracoes_empresa")
+        .select("*")
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+  });
+
   if (loading || !proposta) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -116,6 +134,17 @@ export default function PropostaDetails() {
   const linkPublico = proposta.link_publico 
     ? `${window.location.origin}/public/proposta/${proposta.link_publico}`
     : null;
+
+  const handleCopyLink = () => {
+    if (linkPublico) {
+      navigator.clipboard.writeText(linkPublico);
+      smartToast.success("Link copiado para a área de transferência!");
+    }
+  };
+
+  const handlePrint = () => {
+    window.print();
+  };
 
   return (
     <div className="container mx-auto p-6 max-w-7xl">
@@ -217,8 +246,9 @@ export default function PropostaDetails() {
       )}
 
       {/* Tabs */}
-      <Tabs defaultValue="resumo" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-7">
+      <Tabs defaultValue="previa" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-8">
+          <TabsTrigger value="previa">Prévia</TabsTrigger>
           <TabsTrigger value="resumo">Resumo</TabsTrigger>
           <TabsTrigger value="itens">Itens</TabsTrigger>
           <TabsTrigger value="cliente">Cliente</TabsTrigger>
@@ -227,6 +257,22 @@ export default function PropostaDetails() {
           <TabsTrigger value="historico">Histórico</TabsTrigger>
           <TabsTrigger value="documentos">Documentos</TabsTrigger>
         </TabsList>
+
+        {/* Prévia */}
+        <TabsContent value="previa">
+          <PropostaPreview proposta={proposta} itens={itens} empresa={empresa} />
+          <PropostaActionBar
+            onEdit={() => navigate(`/administrativo/propostas/${id}/edit`)}
+            onExportPDF={handleExportarPDF}
+            onSendEmail={() => setEmailDialogOpen(true)}
+            onCopyLink={handleCopyLink}
+            onPrint={handlePrint}
+            onGerarContrato={proposta.assinatura_status === "assinado" ? handleGerarContrato : undefined}
+            onNovaVersao={handleNovaVersao}
+            status={proposta.assinatura_status}
+            hasLink={!!linkPublico}
+          />
+        </TabsContent>
 
         {/* Resumo */}
         <TabsContent value="resumo">
@@ -410,6 +456,13 @@ export default function PropostaDetails() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      <EnviarPropostaDialog
+        open={emailDialogOpen}
+        onOpenChange={setEmailDialogOpen}
+        proposta={proposta}
+        itens={itens}
+      />
     </div>
   );
 }
