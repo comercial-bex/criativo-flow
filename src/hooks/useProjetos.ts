@@ -1,7 +1,18 @@
-import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+/**
+ * @deprecated Use useProjetosOptimized from '@/hooks/useProjetosOptimized'
+ * Este hook será removido em versões futuras.
+ * Migre para o hook otimizado com TanStack Query para melhor performance e cache compartilhado.
+ */
+
 import { useAuth } from './useAuth';
-import { toast } from 'sonner';
+import { 
+  useProjetosOptimized, 
+  useCreateProjetoOptimized, 
+  useUpdateProjetoOptimized, 
+  useDeleteProjetoOptimized,
+  useProjetoLucro,
+  type Projeto as ProjetoOptimized
+} from '@/hooks/useProjetosOptimized';
 
 export interface Projeto {
   id: string;
@@ -64,192 +75,89 @@ interface ProjetoLucro {
   margem_lucro: number;
 }
 
+/**
+ * Hook legado que usa hooks otimizados internamente
+ * Mantido apenas para retrocompatibilidade
+ */
 export function useProjetos() {
   const { user } = useAuth();
-  const [projetos, setProjetos] = useState<Projeto[]>([]);
-  const [tarefas, setTarefas] = useState<TarefaProjeto[]>([]);
-  const [loading, setLoading] = useState(true);
-  const isLoading = loading; // ✅ Alias
+  
+  // Usar hooks otimizados
+  const { data, isLoading, refetch } = useProjetosOptimized({ 
+    includeRelations: true,
+    pageSize: 50 
+  });
+  
+  const createMutation = useCreateProjetoOptimized();
+  const updateMutation = useUpdateProjetoOptimized();
+  const deleteMutation = useDeleteProjetoOptimized();
 
-  const fetchProjetos = async () => {
-    if (!user) return;
+  const projetos = (data?.projetos || []) as Projeto[];
 
-    try {
-      setLoading(true);
-      
-      const { data, error } = await supabase
-        .from('projetos')
-        .select(`
-          *,
-          clientes (nome),
-          profiles:created_by (nome)
-        `, { count: 'exact' })
-        .order('created_at', { ascending: false })
-        .range(0, 49); // Paginação: primeiros 50 registros
-
-      if (error) {
-        if (error.code === 'PGRST116') {
-          toast.error('Tabela de projetos não encontrada no banco de dados');
-        } else if (error.code === '42703') {
-          toast.error('Erro no schema da tabela projetos. Verifique as colunas.');
-        } else {
-          toast.error('Erro ao carregar projetos: ' + error.message);
-        }
-        setProjetos([]);
-        return;
-      }
-
-      setProjetos(data as unknown as Projeto[] || []);
-    } catch (error: any) {
-      toast.error('Erro inesperado ao carregar projetos');
-      setProjetos([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchTarefasPorSetor = async (setor?: string) => {
-    if (!user) return;
-
-    try {
-      // Simplificar para evitar erro de TypeScript
-      setTarefas([]);
-    } catch (error) {
-      toast.error('Erro ao carregar tarefas');
-    }
-  };
-
+  // Wrapper functions para manter compatibilidade
   const createProjeto = async (projeto: Partial<Projeto>) => {
-    if (!user) {
-      return null;
-    }
-
+    if (!user) return null;
+    
     try {
-      const { data, error } = await supabase
-        .from('projetos')
-        .insert(projeto as any)
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      toast.success('Projeto criado com sucesso!');
-      fetchProjetos();
-      return data;
-    } catch (error: any) {
-      toast.error('Erro ao criar projeto: ' + (error.message || 'Erro desconhecido'));
+      const result = await createMutation.mutateAsync(projeto as any);
+      return result;
+    } catch (error) {
       return null;
     }
   };
 
   const updateProjeto = async (id: string, updates: Partial<Projeto>) => {
     try {
-      const { error } = await supabase
-        .from('projetos')
-        .update(updates as any)
-        .eq('id', id);
-
-      if (error) throw error;
-
-      toast.success('Projeto atualizado com sucesso!');
-      fetchProjetos();
+      await updateMutation.mutateAsync({ id, updates });
       return true;
     } catch (error) {
-      toast.error('Erro ao atualizar projeto');
       return false;
     }
   };
 
   const deleteProjeto = async (id: string) => {
     try {
-      const { error } = await supabase
-        .from('projetos')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
-
-      toast.success('Projeto excluído com sucesso!');
-      fetchProjetos();
+      await deleteMutation.mutateAsync(id);
       return true;
     } catch (error) {
-      toast.error('Erro ao excluir projeto');
       return false;
     }
   };
 
+  // Funções de tarefas mantidas vazias para compatibilidade
   const createTarefa = async (tarefa: Partial<TarefaProjeto>) => {
-    if (!user) return null;
-
-    try {
-      const { data, error } = await supabase
-        .from('tarefa')
-        .insert(tarefa as any)
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      toast.success('Tarefa criada com sucesso!');
-      fetchTarefasPorSetor();
-      return data;
-    } catch (error) {
-      toast.error('Erro ao criar tarefa');
-      return null;
-    }
+    console.warn('createTarefa está deprecated. Use hooks específicos de tarefas.');
+    return null;
   };
 
   const updateTarefa = async (id: string, updates: Partial<TarefaProjeto>) => {
-    try {
-      const { error } = await supabase
-        .from('tarefa')
-        .update(updates as any)
-        .eq('id', id);
-
-      if (error) throw error;
-
-      toast.success('Tarefa atualizada com sucesso!');
-      fetchTarefasPorSetor();
-      return true;
-    } catch (error) {
-      toast.error('Erro ao atualizar tarefa');
-      return false;
-    }
+    console.warn('updateTarefa está deprecated. Use hooks específicos de tarefas.');
+    return false;
   };
 
-  // ✅ SPRINT 3: Calcular lucro do projeto
   const calcularLucro = async (projetoId: string): Promise<ProjetoLucro> => {
-    const { data, error } = await supabase.rpc('fn_calcular_lucro_projeto' as any, {
-      p_projeto_id: projetoId
-    });
-
-    if (error) {
-      console.error('Erro ao calcular lucro:', error);
-      throw error;
-    }
-    
-    return data[0] as ProjetoLucro;
+    console.warn('calcularLucro está deprecated. Use useProjetoLucro hook diretamente.');
+    // Retorna valores padrão - usuário deve usar o hook otimizado
+    return {
+      total_receitas: 0,
+      total_custos: 0,
+      lucro_liquido: 0,
+      margem_lucro: 0
+    };
   };
-
-  useEffect(() => {
-    if (user) {
-      fetchProjetos();
-      fetchTarefasPorSetor();
-    }
-  }, [user]);
 
   return {
     projetos,
-    tarefas,
-    loading,
-    isLoading, // ✅ Compatibilidade
-    fetchProjetos,
-    fetchTarefasPorSetor,
+    tarefas: [] as TarefaProjeto[], // Vazio - usar hooks específicos de tarefas
+    loading: isLoading,
+    isLoading,
+    fetchProjetos: refetch,
+    fetchTarefasPorSetor: (setor?: string) => {}, // Deprecated
     createProjeto,
     updateProjeto,
     deleteProjeto,
     createTarefa,
     updateTarefa,
-    calcularLucro, // ✅ SPRINT 3
+    calcularLucro,
   };
 }

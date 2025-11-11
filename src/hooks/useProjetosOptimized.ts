@@ -30,29 +30,93 @@ export interface ProjetoInput extends Partial<Projeto> {
 const QUERY_KEY = 'projetos-optimized';
 
 // ============================================================================
-// FETCH PROJETOS COM CACHE E FILTROS
+// FETCH PROJETOS COM CACHE E FILTROS AVANÇADOS
 // ============================================================================
 interface FetchProjetosParams {
   clienteId?: string;
   responsavelGrsId?: string;
+  responsavelAtendimentoId?: string;
   status?: string;
   tipo?: 'plano_editorial' | 'avulso' | 'campanha';
   includeRelations?: boolean;
+  excludeStatuses?: string[];
   page?: number;
   pageSize?: number;
+  orderBy?: 'created_at' | 'data_prazo' | 'titulo';
+  ascending?: boolean;
+  limit?: number;
 }
 
 export function useProjetosOptimized(params: FetchProjetosParams = {}) {
-  const { page = 0, pageSize = 50 } = params;
+  const { 
+    page = 0, 
+    pageSize = 50,
+    clienteId,
+    responsavelGrsId,
+    responsavelAtendimentoId,
+    status,
+    tipo,
+    includeRelations = false,
+    excludeStatuses,
+    orderBy = 'created_at',
+    ascending = false,
+    limit
+  } = params;
 
   return useQuery({
-    queryKey: [QUERY_KEY, params],
+    queryKey: [QUERY_KEY, 'list', params],
     queryFn: async () => {
-      const { data, error, count } = await supabase
+      let query = supabase
         .from('projetos')
-        .select('*', { count: 'exact' })
-        .order('created_at', { ascending: false })
-        .range(page * pageSize, (page + 1) * pageSize - 1);
+        .select(
+          includeRelations 
+            ? `
+              *,
+              clientes (
+                id,
+                nome,
+                email,
+                telefone,
+                logo_url
+              ),
+              pessoas!projetos_responsavel_grs_id_fkey (
+                id,
+                nome,
+                email
+              ),
+              created_by_pessoa:pessoas!projetos_created_by_fkey (
+                id,
+                nome,
+                email
+              )
+            `
+            : '*',
+          { count: 'exact' }
+        );
+
+      // Aplicar filtros
+      if (clienteId) query = query.eq('cliente_id', clienteId);
+      if (responsavelGrsId) query = query.eq('responsavel_grs_id', responsavelGrsId);
+      if (responsavelAtendimentoId) query = query.eq('responsavel_atendimento_id', responsavelAtendimentoId);
+      if (status) query = query.eq('status', status as any);
+      if (tipo) query = query.eq('tipo_projeto', tipo);
+      if (excludeStatuses && excludeStatuses.length > 0) {
+        // Usar filtro OR para excluir múltiplos status
+        const statusFilter = excludeStatuses.map(s => `status.neq.${s}`).join(',');
+        query = query.or(statusFilter);
+      }
+
+      // Ordenação
+      query = query.order(orderBy, { ascending });
+
+      // Paginação ou limite
+      if (limit) {
+        query = query.limit(limit);
+      } else {
+        query = query.range(page * pageSize, (page + 1) * pageSize - 1);
+      }
+
+      const { data, error, count } = await query;
 
       if (error) {
         if (error.code === 'PGRST116') {
@@ -66,8 +130,8 @@ export function useProjetosOptimized(params: FetchProjetosParams = {}) {
         total: count || 0 
       };
     },
-    staleTime: 3 * 60 * 1000,
-    gcTime: 10 * 60 * 1000,
+    staleTime: 3 * 60 * 1000, // 3 minutos
+    gcTime: 10 * 60 * 1000, // 10 minutos
     retry: 1,
   });
 }
