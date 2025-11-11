@@ -1,102 +1,79 @@
-import { useEffect, useState } from 'react';
+import { useQueries } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { BarChart3, Users, FolderOpen, Target, Clock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-// BuilderComponent removido - não necessário
 import { SectionHeader } from '@/components/SectionHeader';
 import { StatsGrid } from '@/components/StatsGrid';
 import { QuickActions } from '@/components/QuickActions';
 import { useTutorial } from '@/hooks/useTutorial';
 import { TutorialButton } from '@/components/TutorialButton';
-import { SkeletonDashboard } from '@/components/ui/skeleton-dashboard';
-import { Skeleton } from '@/components/ui/skeleton';
-
-interface DashboardStats {
-  totalClientes: number;
-  totalProjetos: number;
-  totalLeads: number;
-  tarefasPendentes: number;
-}
+import { QUERY_CONFIG } from '@/lib/queryConfig';
 
 function Dashboard() {
-  const [stats, setStats] = useState<DashboardStats>({
-    totalClientes: 0,
-    totalProjetos: 0,
-    totalLeads: 0,
-    tarefasPendentes: 0
-  });
-  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const { startTutorial, hasSeenTutorial } = useTutorial('dashboard');
 
-  useEffect(() => {
-    // FASE 3: Renderizar UI imediatamente
-    setLoading(false);
-    
-    const fetchStats = async () => {
-      try {
-        // Try to fetch stats, but use fallbacks if tables don't exist
-        const fetchClientesCount = async () => {
-          try {
-            const { count } = await supabase.from('clientes').select('*', { count: 'exact' });
-            return count || 0;
-          } catch { return 0; }
-        };
+  // Execute todas as queries em paralelo com useQueries
+  const queries = useQueries({
+    queries: [
+      {
+        queryKey: ['dashboard-stats', 'clientes'],
+        queryFn: async () => {
+          const { count, error } = await supabase
+            .from('clientes')
+            .select('*', { count: 'exact', head: true });
+          if (error) throw error;
+          return count || 0;
+        },
+        ...QUERY_CONFIG.semiStatic,
+      },
+      {
+        queryKey: ['dashboard-stats', 'projetos'],
+        queryFn: async () => {
+          const { count, error } = await supabase
+            .from('projetos')
+            .select('*', { count: 'exact', head: true });
+          if (error) throw error;
+          return count || 0;
+        },
+        ...QUERY_CONFIG.semiStatic,
+      },
+      {
+        queryKey: ['dashboard-stats', 'leads'],
+        queryFn: async () => {
+          const { count, error } = await supabase
+            .from('leads')
+            .select('*', { count: 'exact', head: true });
+          if (error) throw error;
+          return count || 0;
+        },
+        ...QUERY_CONFIG.dynamic,
+      },
+      {
+        queryKey: ['dashboard-stats', 'tarefas-pendentes'],
+        queryFn: async () => {
+          const { count, error } = await supabase
+            .from('tarefa')
+            .select('*', { count: 'exact', head: true })
+            .neq('status', 'concluido');
+          if (error) throw error;
+          return count || 0;
+        },
+        ...QUERY_CONFIG.dynamic,
+      },
+    ],
+  });
 
-        const fetchProjetosCount = async () => {
-          try {
-            const { count } = await supabase.from('projetos').select('*', { count: 'exact' });
-            return count || 0;
-          } catch { return 0; }
-        };
+  // Extrai resultados e estados de loading
+  const [clientesQuery, projetosQuery, leadsQuery, tarefasQuery] = queries;
+  const isLoading = queries.some(q => q.isLoading);
 
-        const fetchLeadsCount = async () => {
-          try {
-            const { count } = await supabase.from('leads').select('*', { count: 'exact' });
-            return count || 0;
-          } catch { return 0; }
-        };
-
-        const fetchTarefasCount = async () => {
-          try {
-            const { count } = await supabase.from('tarefa').select('*', { count: 'exact' }).neq('status', 'concluido');
-            return count || 0;
-          } catch { return 0; }
-        };
-
-        const statsPromises = [
-          fetchClientesCount(),
-          fetchProjetosCount(),
-          fetchLeadsCount(),
-          fetchTarefasCount()
-        ];
-
-        const [totalClientes, totalProjetos, totalLeads, tarefasPendentes] = await Promise.all(statsPromises);
-
-        setStats({
-          totalClientes,
-          totalProjetos,
-          totalLeads,
-          tarefasPendentes
-        });
-      } catch (error) {
-        console.error('Erro ao carregar estatísticas:', error);
-        setStats({
-          totalClientes: 0,
-          totalProjetos: 0,
-          totalLeads: 0,
-          tarefasPendentes: 0
-        });
-      }
-    };
-
-    // FASE 3: Buscar dados em background usando requestIdleCallback
-    if (typeof requestIdleCallback !== 'undefined') {
-      requestIdleCallback(() => fetchStats());
-    } else {
-      setTimeout(() => fetchStats(), 0);
-    }
-  }, []);
+  const stats = {
+    totalClientes: clientesQuery.data ?? 0,
+    totalProjetos: projetosQuery.data ?? 0,
+    totalLeads: leadsQuery.data ?? 0,
+    tarefasPendentes: tarefasQuery.data ?? 0,
+  };
 
   const statsData = [
     {
@@ -155,7 +132,7 @@ function Dashboard() {
   ];
 
   return (
-    <div className="p-6 space-y-8">
+    <div className="p-6 space-y-8 animate-fade-in">
       <div className="flex items-center justify-between">
         <SectionHeader
           title="Dashboard"
@@ -166,7 +143,7 @@ function Dashboard() {
       </div>
 
       <div data-tour="kpis">
-        <StatsGrid stats={statsData} />
+        <StatsGrid stats={statsData} loading={isLoading} />
       </div>
 
       <div data-tour="acoes-rapidas">
