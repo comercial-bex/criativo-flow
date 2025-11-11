@@ -14,6 +14,19 @@ serve(async (req) => {
   try {
     const { connection_id } = await req.json();
     
+    // Caso especial: verificar disponibilidade da Edge Function
+    if (connection_id === 'check-availability') {
+      console.log('[Monitor] Availability check - Edge Function is running');
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          available: true,
+          message: 'Edge Function is available'
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+      );
+    }
+    
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
