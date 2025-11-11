@@ -54,11 +54,15 @@ import {
   MoreVertical,
   Eye,
   Edit3,
-  Trash2
+  Trash2,
+  CheckCircle2,
+  Pencil,
+  Inbox
   } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useTutorial } from '@/hooks/useTutorial';
 import { TutorialButton } from '@/components/TutorialButton';
+import { EmptyState } from "@/components/ui/empty-state";
 
 interface Lead {
   id: string;
@@ -581,14 +585,12 @@ function CRM() {
                             />
                           ))}
                           {groupedLeads[status.value]?.length === 0 && (
-                            <div className="flex flex-col items-center justify-center py-12 text-center">
-                              <div className="rounded-full bg-muted/50 p-3 mb-3">
-                                <Users className="h-6 w-6 text-muted-foreground" />
-                              </div>
-                              <p className="text-sm text-muted-foreground">
-                                Nenhum lead nesta etapa
-                              </p>
-                            </div>
+                            <EmptyState
+                              icon={Inbox}
+                              title={`Nenhum lead em ${status.label}`}
+                              description={`Arraste leads de outras etapas ou crie um novo para começar`}
+                              className="py-8"
+                            />
                           )}
                         </div>
                       </SortableContext>

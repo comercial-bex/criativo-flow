@@ -11,7 +11,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Search, Filter, FolderOpen, Users, BarChart3, Plus, Eye } from "lucide-react";
+import { Search, Filter, FolderOpen, Users, BarChart3, Plus, Eye, Briefcase } from "lucide-react";
+import { EmptyState } from "@/components/ui/empty-state";
 import { SectionHeader } from "@/components/SectionHeader";
 import { MobileProjetoCard } from "@/components/MobileProjetoCard";
 import { EditProjetoModal } from '@/components/EditProjetoModal';
@@ -660,20 +661,36 @@ export default function ClienteProjetos() {
       {/* Conteúdo Principal - Mobile vs Desktop */}
       {isMobile ? (
         /* Mobile: Cards Layout */
-        <div className="space-y-4">
-          {filteredClientes.map((cliente) => (
-            <MobileProjetoCard
-              key={cliente.id}
-              cliente={cliente}
-              onViewDetails={() => goToClienteDetalhes(cliente)}
-              onEditProjeto={(projeto) => setProjetoEdit(projeto)}
-              onDeleteProjeto={(projetoId) => setProjetoDeleteId(projetoId)}
-              getStatusColor={getStatusColor}
-              getStatusText={getStatusText}
-              getClienteStatusColor={getClienteStatusColor}
-            />
-          ))}
-        </div>
+        filteredClientes.length === 0 ? (
+          <Card>
+            <CardContent className="p-6">
+              <EmptyState
+                icon={Briefcase}
+                title="Nenhum projeto encontrado"
+                description={debouncedSearchTerm || filters.statusFilter !== "todos" 
+                  ? "Tente ajustar os filtros para encontrar projetos" 
+                  : "Crie um novo projeto para começar a gerenciar seu trabalho"}
+                actionLabel={!debouncedSearchTerm && filters.statusFilter === "todos" ? "Novo Projeto" : undefined}
+                onAction={!debouncedSearchTerm && filters.statusFilter === "todos" ? () => setDialogOpen(true) : undefined}
+              />
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="space-y-4">
+            {filteredClientes.map((cliente) => (
+              <MobileProjetoCard
+                key={cliente.id}
+                cliente={cliente}
+                onViewDetails={() => goToClienteDetalhes(cliente)}
+                onEditProjeto={(projeto) => setProjetoEdit(projeto)}
+                onDeleteProjeto={(projetoId) => setProjetoDeleteId(projetoId)}
+                getStatusColor={getStatusColor}
+                getStatusText={getStatusText}
+                getClienteStatusColor={getClienteStatusColor}
+              />
+            ))}
+          </div>
+        )
       ) : (
         /* Desktop: Table Layout */
         <Card>
@@ -695,52 +712,68 @@ export default function ClienteProjetos() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredClientes.map((cliente) => (
-                  <TableRow key={cliente.id} className="hover:bg-muted/50">
-                    <TableCell>
-                      <div>
-                        <p className="font-medium">{cliente.nome}</p>
-                        <p className="text-sm text-muted-foreground">{cliente.email}</p>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-center font-medium">{cliente.totalProjetos}</TableCell>
-                    <TableCell className="text-center">
-                      <Badge variant="outline" className="bg-green-50 text-green-700">
-                        {cliente.statusCounts.ativo}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <Badge variant="outline" className="bg-blue-50 text-blue-700">
-                        {cliente.statusCounts.concluido}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <Badge variant="outline" className="bg-yellow-50 text-yellow-700">
-                        {cliente.statusCounts.pendente}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <Badge variant="outline" className="bg-red-50 text-red-700">
-                        {cliente.statusCounts.pausado}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge className={getClienteStatusColor(cliente.status)}>
-                        {cliente.status.charAt(0).toUpperCase() + cliente.status.slice(1)}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 w-8 p-0"
-                        onClick={() => goToClienteDetalhes(cliente)}
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
+                {filteredClientes.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={8}>
+                      <EmptyState
+                        icon={Briefcase}
+                        title="Nenhum projeto encontrado"
+                        description={debouncedSearchTerm || filters.statusFilter !== "todos" 
+                          ? "Tente ajustar os filtros para encontrar projetos" 
+                          : "Crie um novo projeto para começar a gerenciar seu trabalho"}
+                        actionLabel={!debouncedSearchTerm && filters.statusFilter === "todos" ? "Novo Projeto" : undefined}
+                        onAction={!debouncedSearchTerm && filters.statusFilter === "todos" ? () => setDialogOpen(true) : undefined}
+                      />
                     </TableCell>
                   </TableRow>
-                ))}
+                ) : (
+                  filteredClientes.map((cliente) => (
+                    <TableRow key={cliente.id} className="hover:bg-muted/50">
+                      <TableCell>
+                        <div>
+                          <p className="font-medium">{cliente.nome}</p>
+                          <p className="text-sm text-muted-foreground">{cliente.email}</p>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-center font-medium">{cliente.totalProjetos}</TableCell>
+                      <TableCell className="text-center">
+                        <Badge variant="outline" className="bg-green-50 text-green-700">
+                          {cliente.statusCounts.ativo}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <Badge variant="outline" className="bg-blue-50 text-blue-700">
+                          {cliente.statusCounts.concluido}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <Badge variant="outline" className="bg-yellow-50 text-yellow-700">
+                          {cliente.statusCounts.pendente}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <Badge variant="outline" className="bg-red-50 text-red-700">
+                          {cliente.statusCounts.pausado}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge className={getClienteStatusColor(cliente.status)}>
+                          {cliente.status.charAt(0).toUpperCase() + cliente.status.slice(1)}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 w-8 p-0"
+                          onClick={() => goToClienteDetalhes(cliente)}
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
               </TableBody>
             </Table>
           </CardContent>

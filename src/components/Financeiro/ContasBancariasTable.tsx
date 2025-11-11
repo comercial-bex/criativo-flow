@@ -3,8 +3,9 @@ import { useContasBancarias } from "@/hooks/useContasBancarias";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2, Wallet } from "lucide-react";
 import { ContaBancariaDialog } from "./ContaBancariaDialog";
+import { EmptyState } from "@/components/ui/empty-state";
 import type { ContaBancaria } from "@/hooks/useContasBancarias";
 
 export function ContasBancariasTable() {
@@ -50,8 +51,14 @@ export function ContasBancariasTable() {
           <TableBody>
             {contas.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center text-muted-foreground">
-                  Nenhuma conta cadastrada
+                <TableCell colSpan={7}>
+                  <EmptyState
+                    icon={Wallet}
+                    title="Nenhuma conta bancária cadastrada"
+                    description="Adicione contas bancárias e caixas para gerenciar suas finanças de forma organizada"
+                    actionLabel="Nova Conta"
+                    onAction={() => {}}
+                  />
                 </TableCell>
               </TableRow>
             ) : (
