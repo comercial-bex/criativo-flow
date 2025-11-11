@@ -59,6 +59,7 @@ const handler = async (req: Request): Promise<Response> => {
     // Verify admin permission
     const authHeader = req.headers.get('authorization');
     if (!authHeader) {
+      console.error('❌ No authorization header');
       return new Response(JSON.stringify({ error: 'No authorization header' }), {
         status: 401,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -66,14 +67,26 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     const token = authHeader.replace('Bearer ', '');
+    console.log('🔑 Validando token...');
+    
     const { data: { user }, error: userError } = await supabase.auth.getUser(token);
     
     if (userError || !user) {
-      return new Response(JSON.stringify({ error: 'Invalid token' }), {
+      console.error('❌ Token inválido:', { 
+        error: userError?.message, 
+        hasUser: !!user,
+        tokenLength: token.length 
+      });
+      return new Response(JSON.stringify({ 
+        error: 'Invalid token',
+        details: userError?.message || 'User not found'
+      }), {
         status: 401,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
+    
+    console.log(`✅ Token válido para usuário: ${user.email}`);
 
     // Check if user is admin
     const { data: roleData } = await supabase

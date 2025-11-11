@@ -145,3 +145,6 @@ verify_jwt = true
 
 [functions.enviar-contrato-email]
 verify_jwt = true
+
+[functions.admin-user-management]
+verify_jwt = false
