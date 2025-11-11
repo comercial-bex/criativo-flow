@@ -3,6 +3,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useEffect, useState } from "react";
 import bexLogo from "@/assets/logo-bex.png";
 import { supabase } from "@/integrations/supabase/client";
+import { SyncButton } from "./SyncButton";
 
 /**
  * ✅ MIGRADO PARA NOVA ESTRUTURA UNIFICADA
@@ -36,13 +37,14 @@ export function UserProfileSection() {
 
   return (
     <div className="p-6 border-b border-sidebar-border animate-fade-in">
-      {/* Logo BEX */}
-      <div className="flex justify-center mb-6">
+      {/* Header com Logo e Sync Button */}
+      <div className="flex justify-between items-center mb-6">
         <img 
           src={bexLogo} 
           alt="BEX Logo" 
           className="h-12 w-auto hover-lift"
         />
+        <SyncButton />
       </div>
 
       {/* Avatar Centralizado e Maior */}

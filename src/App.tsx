@@ -20,6 +20,7 @@ import { TeamChatWidget } from "@/components/TeamChat/TeamChatWidget";
 import { OfflineIndicator } from "@/components/OfflineIndicator";
 import { useFrontendHealth } from "@/hooks/useFrontendHealth";
 import { createLocalStoragePersister, shouldDehydrateQuery } from "@/lib/queryPersister";
+import { useBackgroundSync } from "@/hooks/useBackgroundSync";
 
 // Critical pages (loaded immediately)
 import Auth from "./pages/Auth";
@@ -226,6 +227,9 @@ const initAnalytics = () => {
 function App() {
   // Frontend health monitoring (only in dev mode)
   useFrontendHealth();
+  
+  // Background sync para cache automático
+  useBackgroundSync({ enabled: true });
   
   // Signal React has mounted
   useEffect(() => {
