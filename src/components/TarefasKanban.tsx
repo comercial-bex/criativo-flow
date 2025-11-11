@@ -194,8 +194,8 @@ function DroppableColumn({
 
 
 export function TarefasKanban({ planejamento, clienteId, projetoId, filters }: TarefasKanbanProps) {
-  const { data, isLoading } = useTarefas({ projetoId, includeRelations: true });
-  const updateTarefa = useUpdateTarefa();
+  const { data, isLoading, refetch } = useTarefas({ projetoId, includeRelations: true });
+  const updateTarefaMutation = useUpdateTarefa();
   
   const tarefas = data?.tarefas || [];
   const [profiles, setProfiles] = useState<Profile[]>([]);
@@ -216,45 +216,19 @@ export function TarefasKanban({ planejamento, clienteId, projetoId, filters }: T
   );
 
   useEffect(() => {
-    fetchData();
-  }, [projetoId, filters]);
+    fetchProfiles();
+  }, []);
 
-  const fetchData = async () => {
+  const fetchProfiles = async () => {
     try {
-      // Buscar tarefas
-      const { data: tarefasData, error: tarefasError } = await supabase
-        .from('tarefa')
-        .select('*')
-        .eq('projeto_id', projetoId)
-        .order('created_at', { ascending: false });
-
-      if (tarefasError) throw tarefasError;
-      
-      // Mapear prazo_executor para data_prazo para compatibilidade com UI
-      const tarefasProcessadas = (tarefasData || []).map(t => ({
-        ...t,
-        data_prazo: t.prazo_executor
-      }));
-      
-      setTarefas(tarefasProcessadas);
-
-      // Buscar profiles
       const { data: profilesData, error: profilesError } = await supabase
         .from('pessoas')
         .select('*');
 
       if (profilesError) throw profilesError;
       setProfiles(profilesData || []);
-
     } catch (error) {
-      console.error('Erro ao buscar dados:', error);
-      toast({
-        title: "Erro",
-        description: "Erro ao carregar tarefas.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
+      console.error('Erro ao buscar profiles:', error);
     }
   };
 
@@ -303,9 +277,6 @@ export function TarefasKanban({ planejamento, clienteId, projetoId, filters }: T
 
       if (error) throw error;
 
-      setTarefas(prev => prev.map(tarefa => 
-        tarefa.id === tarefaId ? { ...tarefa, status: novoStatus } : tarefa
-      ));
 
       toast({
         title: "Sucesso",
@@ -358,7 +329,7 @@ export function TarefasKanban({ planejamento, clienteId, projetoId, filters }: T
       if (error) throw error;
 
       // Atualizar lista local
-      await fetchData();
+      await refetch();
 
       return data;
     } catch (error: any) {
@@ -371,7 +342,7 @@ export function TarefasKanban({ planejamento, clienteId, projetoId, filters }: T
     return tarefas.filter(tarefa => tarefa.status === status);
   };
 
-  const updateTarefa = async (tarefaId: string, updates: any) => {
+  const handleUpdateTarefa = async (tarefaId: string, updates: any) => {
     try {
       // Mapear data_prazo para prazo_executor
       const mappedUpdates = { ...updates };
@@ -379,33 +350,13 @@ export function TarefasKanban({ planejamento, clienteId, projetoId, filters }: T
         mappedUpdates.prazo_executor = updates.data_prazo;
         delete mappedUpdates.data_prazo;
       }
-      
-      // Remover campos que não existem na tabela
-      delete mappedUpdates.tempo_estimado;
-      delete mappedUpdates.anexos;
 
-      const { error } = await supabase
-        .from('tarefa')
-        .update(mappedUpdates)
-        .eq('id', tarefaId);
-
-      if (error) throw error;
-
-      await fetchData();
-
-      toast({
-        title: "Sucesso",
-        description: "Tarefa atualizada com sucesso!",
-      });
+      await updateTarefaMutation.mutateAsync({ id: tarefaId, updates: mappedUpdates });
     } catch (error) {
       console.error('Erro ao atualizar tarefa:', error);
-      toast({
-        title: "Erro",
-        description: "Erro ao atualizar tarefa.",
-        variant: "destructive",
-      });
     }
   };
+
 
   const uploadFile = async (file: File, tarefaId: string) => {
     try {
@@ -434,7 +385,7 @@ export function TarefasKanban({ planejamento, clienteId, projetoId, filters }: T
 
       const novosAnexos = [...anexosAtuais, novoAnexo];
 
-      await updateTarefa(tarefaId, { anexos: novosAnexos });
+      await handleUpdateTarefa(tarefaId, { anexos: novosAnexos });
 
       toast({
         title: "Sucesso",
@@ -465,7 +416,7 @@ export function TarefasKanban({ planejamento, clienteId, projetoId, filters }: T
       const tarefa = tarefas.find(t => t.id === tarefaId);
       const anexosAtualizados = (tarefa?.anexos || []).filter((anexo: any) => anexo.path !== attachmentPath);
 
-      await updateTarefa(tarefaId, { anexos: anexosAtualizados });
+      await handleUpdateTarefa(tarefaId, { anexos: anexosAtualizados });
 
       toast({
         title: "Sucesso",
@@ -507,7 +458,7 @@ export function TarefasKanban({ planejamento, clienteId, projetoId, filters }: T
     }
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="space-y-6 animate-pulse">
         <div className="h-32 bg-muted rounded-lg"></div>
@@ -724,7 +675,7 @@ export function TarefasKanban({ planejamento, clienteId, projetoId, filters }: T
                   </Button>
                   <Button 
                     onClick={() => {
-                      updateTarefa(editingTarefa.id, {
+                      handleUpdateTarefa(editingTarefa.id, {
                         titulo: editingTarefa.titulo,
                         descricao: editingTarefa.descricao,
                         tipo: editingTarefa.tipo,

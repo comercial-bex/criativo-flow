@@ -243,11 +243,12 @@ export default function MinhasTarefas() {
 
         <TabsContent value="kanban" className="mt-6">
           <UniversalKanbanBoard
-            tasks={filteredTasks}
-            columns={getModuleColumns()}
+            tasks={filteredTasks as any}
+            moduleColumns={getModuleColumns() as any}
+            moduleType={role === 'designer' ? 'design' : 'grs'}
             onTaskMove={handleTaskMove}
+            onTaskCreate={() => {}}
             onTaskClick={handleTaskClick}
-            module={role || 'grs'}
           />
         </TabsContent>
 
