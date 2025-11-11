@@ -119,13 +119,6 @@ export type Database = {
             foreignKeyName: "admin_temp_data_produto_id_fkey"
             columns: ["produto_id"]
             isOneToOne: false
-            referencedRelation: "pacotes_compat"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "admin_temp_data_produto_id_fkey"
-            columns: ["produto_id"]
-            isOneToOne: false
             referencedRelation: "produtos"
             referencedColumns: ["id"]
           },
@@ -1339,6 +1332,13 @@ export type Database = {
             columns: ["pacote_id"]
             isOneToOne: false
             referencedRelation: "pacotes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "briefings_pacote_id_fkey"
+            columns: ["pacote_id"]
+            isOneToOne: false
+            referencedRelation: "pacotes_compat"
             referencedColumns: ["id"]
           },
           {
@@ -3287,13 +3287,6 @@ export type Database = {
             columns: ["produto_id"]
             isOneToOne: false
             referencedRelation: "assinaturas_compat"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "contrato_itens_produto_id_fkey"
-            columns: ["produto_id"]
-            isOneToOne: false
-            referencedRelation: "pacotes_compat"
             referencedColumns: ["id"]
           },
           {
@@ -8366,13 +8359,6 @@ export type Database = {
             foreignKeyName: "orcamento_itens_produto_id_fkey"
             columns: ["produto_id"]
             isOneToOne: false
-            referencedRelation: "pacotes_compat"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "orcamento_itens_produto_id_fkey"
-            columns: ["produto_id"]
-            isOneToOne: false
             referencedRelation: "produtos"
             referencedColumns: ["id"]
           },
@@ -8604,6 +8590,13 @@ export type Database = {
             columns: ["pacote_id"]
             isOneToOne: false
             referencedRelation: "pacotes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pacote_itens_pacote_id_fkey"
+            columns: ["pacote_id"]
+            isOneToOne: false
+            referencedRelation: "pacotes_compat"
             referencedColumns: ["id"]
           },
         ]
@@ -9905,13 +9898,6 @@ export type Database = {
             foreignKeyName: "produto_componentes_produto_filho_id_fkey"
             columns: ["produto_filho_id"]
             isOneToOne: false
-            referencedRelation: "pacotes_compat"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "produto_componentes_produto_filho_id_fkey"
-            columns: ["produto_filho_id"]
-            isOneToOne: false
             referencedRelation: "produtos"
             referencedColumns: ["id"]
           },
@@ -9920,13 +9906,6 @@ export type Database = {
             columns: ["produto_pai_id"]
             isOneToOne: false
             referencedRelation: "assinaturas_compat"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "produto_componentes_produto_pai_id_fkey"
-            columns: ["produto_pai_id"]
-            isOneToOne: false
-            referencedRelation: "pacotes_compat"
             referencedColumns: ["id"]
           },
           {
@@ -10623,13 +10602,6 @@ export type Database = {
             columns: ["produto_id"]
             isOneToOne: false
             referencedRelation: "assinaturas_compat"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "proposta_itens_produto_id_fkey"
-            columns: ["produto_id"]
-            isOneToOne: false
-            referencedRelation: "pacotes_compat"
             referencedColumns: ["id"]
           },
           {
@@ -14039,13 +14011,6 @@ export type Database = {
             foreignKeyName: "transacoes_financeiras_produto_id_fkey"
             columns: ["produto_id"]
             isOneToOne: false
-            referencedRelation: "pacotes_compat"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "transacoes_financeiras_produto_id_fkey"
-            columns: ["produto_id"]
-            isOneToOne: false
             referencedRelation: "produtos"
             referencedColumns: ["id"]
           },
@@ -14362,7 +14327,7 @@ export type Database = {
           nome?: string | null
           preco_base?: number | null
           slug?: string | null
-          tipo?: never
+          tipo?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -14373,7 +14338,7 @@ export type Database = {
           nome?: string | null
           preco_base?: number | null
           slug?: string | null
-          tipo?: never
+          tipo?: string | null
           updated_at?: string | null
         }
         Relationships: []
@@ -15353,9 +15318,14 @@ export type Database = {
       }
       vw_health_check_pessoas: {
         Row: {
-          metrica: string | null
-          severidade: string | null
-          valor: string | null
+          aprovados: number | null
+          com_profile_id: number | null
+          pendentes: number | null
+          percentual_com_profile: number | null
+          rejeitados: number | null
+          sem_profile_id: number | null
+          suspensos: number | null
+          total_pessoas: number | null
         }
         Relationships: []
       }
