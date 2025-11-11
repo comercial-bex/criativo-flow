@@ -5,6 +5,8 @@ import React, { useState, useMemo } from "react";
 import { usePermissions } from "@/hooks/usePermissions";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useDynamicModules } from "@/hooks/useDynamicModules";
+import { useAuth } from "@/hooks/useAuth";
+import { usePrefetchData } from "@/hooks/usePrefetchData";
 import { UserProfileSection } from "./UserProfileSection";
 import { UserActionsModule } from "./UserActionsModule";
 import { ClientSelector } from "./ClientSelector";
@@ -40,6 +42,7 @@ interface Module {
 
 export function AppSidebar() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { hasModuleAccess } = usePermissions();
   const { role } = useUserRole();
   const { modules: dbModules, loading } = useDynamicModules();
@@ -48,6 +51,16 @@ export function AppSidebar() {
   const [selectedModule, setSelectedModule] = useState<string>("inicio");
   const [clientSelectorOpen, setClientSelectorOpen] = useState(false);
   const [pendingUrl, setPendingUrl] = useState<string>("");
+  
+  // Hook de prefetch inteligente
+  const {
+    prefetchMinhasTarefas,
+    prefetchTarefasStats,
+    prefetchDashboardGRS,
+    prefetchDashboardSetor,
+    prefetchProjetos,
+    prefetchClientes,
+  } = usePrefetchData();
   const [selectedClienteId, setSelectedClienteId] = useState<string | null>(
     localStorage.getItem('admin_selected_cliente_id')
   );
@@ -407,11 +420,35 @@ export function AppSidebar() {
                 const isItemActive = isActive(item.url);
                 const Icon = item.icon;
                 
+                // Função para fazer prefetch baseado na rota
+                const handlePrefetch = () => {
+                  if (!user?.id) return;
+                  
+                  // Prefetch baseado na URL de destino
+                  if (item.url.includes('/grs/minhas-tarefas')) {
+                    prefetchMinhasTarefas(user.id);
+                    prefetchTarefasStats(user.id);
+                  } else if (item.url.includes('/grs/dashboard')) {
+                    prefetchDashboardGRS(user.id);
+                  } else if (item.url.includes('/grs/projetos') || item.url.includes('/grs/cliente-projetos')) {
+                    prefetchProjetos();
+                    prefetchClientes();
+                  } else if (item.url.includes('/audiovisual/minhas-tarefas')) {
+                    prefetchDashboardSetor(user.id, 'Audiovisual');
+                  } else if (item.url.includes('/design/minhas-tarefas')) {
+                    prefetchDashboardSetor(user.id, 'Criativo');
+                  } else if (item.url.includes('/audiovisual') || item.url.includes('/design')) {
+                    prefetchProjetos();
+                  }
+                };
+                
                 return (
                   <NavLink
                     key={item.url}
                     to={item.url}
                     onClick={(e) => handleClientModuleClick(item.url, e)}
+                    onMouseEnter={handlePrefetch}
+                    onFocus={handlePrefetch}
                     className={({ isActive }) => cn(
                       "flex items-center px-4 py-3 mb-1 text-sm rounded-lg transition-all duration-300",
                       "hover:translate-x-1",

@@ -2,6 +2,8 @@ import { Home, Users, FileText, DollarSign, Settings, MoreHorizontal, Calendar, 
 import { NavLink, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/hooks/useAuth';
+import { usePrefetchData } from '@/hooks/usePrefetchData';
 import {
   Sheet,
   SheetContent,
@@ -30,10 +32,28 @@ const moreNavItems = [
 export function BottomNavigation() {
   const location = useLocation();
   const currentPath = location.pathname;
+  const { user } = useAuth();
+  const {
+    prefetchDashboardGRS,
+    prefetchProjetos,
+    prefetchClientes,
+  } = usePrefetchData();
 
   const isActiveRoute = (url: string) => {
     if (url === '/dashboard') return currentPath === '/' || currentPath === '/dashboard';
     return currentPath.startsWith(url);
+  };
+
+  const handlePrefetch = (url: string) => {
+    if (!user?.id) return;
+    
+    if (url === '/dashboard') {
+      prefetchDashboardGRS(user.id);
+    } else if (url.includes('/cliente/projetos')) {
+      prefetchProjetos();
+    } else if (url.includes('/clientes')) {
+      prefetchClientes();
+    }
   };
 
   return (
@@ -63,6 +83,8 @@ export function BottomNavigation() {
                       <NavLink
                         key={moreItem.title}
                         to={moreItem.url}
+                        onMouseEnter={() => handlePrefetch(moreItem.url)}
+                        onFocus={() => handlePrefetch(moreItem.url)}
                         className={cn(
                           'flex flex-col items-center gap-3 p-4 rounded-xl transition-all duration-200 min-h-[80px] hover:scale-105',
                           isActiveRoute(moreItem.url)
@@ -84,6 +106,8 @@ export function BottomNavigation() {
             <NavLink
               key={item.title}
               to={item.url}
+              onMouseEnter={() => handlePrefetch(item.url)}
+              onFocus={() => handlePrefetch(item.url)}
               className={cn(
                 'flex flex-col items-center gap-1 py-3 px-2 rounded-xl transition-all duration-200 min-h-[56px] text-xs min-w-[64px] hover:scale-105 active:scale-95',
                 isActiveRoute(item.url)
