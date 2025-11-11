@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
+import { TableSkeleton } from "@/components/ui/table-skeleton";
 import { useQuery } from '@tanstack/react-query';
 import { useDebounce } from '@/hooks/useDebounce';
 import { PERFORMANCE_CONFIG } from '@/lib/performance-config';
@@ -594,9 +595,8 @@ export default function FolhaPagamento() {
               <tbody className="divide-y">
                 {isLoading ? (
                   <tr>
-                    <td colSpan={8} className="py-12 text-center">
-                      <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
-                      <p className="text-muted-foreground mt-2">Carregando...</p>
+                    <td colSpan={8}>
+                      <TableSkeleton columns={8} rows={5} showHeader={false} />
                     </td>
                   </tr>
                 ) : itensFiltrados.length === 0 ? (

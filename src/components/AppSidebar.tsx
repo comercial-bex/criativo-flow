@@ -1,4 +1,5 @@
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import { BexSkeleton } from "@/components/ui/bex-skeleton";
 import * as Icons from "lucide-react";
 import { LucideIcon } from "lucide-react";
 import React, { useState, useMemo } from "react";
@@ -335,10 +336,27 @@ export function AppSidebar() {
 
   if (loading) {
     return (
-      <Sidebar collapsible="icon">
-        <SidebarContent>
-          <div className="p-4 text-center text-sm text-muted-foreground">
-            Carregando módulos...
+      <Sidebar 
+        className={cn(
+          "h-screen bg-bex-dark border-r border-bex-green/20",
+          "w-[280px]"
+        )} 
+        collapsible="icon"
+      >
+        <SidebarContent className="p-4 space-y-4">
+          <div className="space-y-3">
+            <BexSkeleton className="h-12 w-12 rounded-full" />
+            <BexSkeleton className="h-6 w-3/4" />
+            <BexSkeleton className="h-4 w-1/2" />
+          </div>
+          <div className="space-y-2 pt-4">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <BexSkeleton 
+                key={i} 
+                className="h-10 w-full rounded-lg"
+                style={{ animationDelay: `${i * 0.1}s` }}
+              />
+            ))}
           </div>
         </SidebarContent>
       </Sidebar>

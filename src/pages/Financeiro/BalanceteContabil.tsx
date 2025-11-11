@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { TableSkeleton } from "@/components/ui/table-skeleton";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -212,8 +213,8 @@ export default function BalanceteContabil() {
               <tbody>
                 {isLoading ? (
                   <tr>
-                    <td colSpan={7} className="px-6 py-12 text-center text-muted-foreground">
-                      Carregando...
+                    <td colSpan={7}>
+                      <TableSkeleton columns={7} rows={5} showHeader={false} />
                     </td>
                   </tr>
                 ) : folhasFiltradas.length === 0 ? (

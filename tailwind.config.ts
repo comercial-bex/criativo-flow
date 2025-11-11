@@ -120,6 +120,14 @@ export default {
             transform: "scale(1.02)" 
           },
         },
+        shimmer: {
+          "0%": {
+            transform: "translateX(-100%)",
+          },
+          "100%": {
+            transform: "translateX(100%)",
+          },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -128,6 +136,7 @@ export default {
         "scale-in": "scaleIn 0.2s ease-out",
         "slide-in": "slideIn 0.3s ease-out",
         "pulse-glow": "pulse-glow 3s ease-in-out infinite",
+        "shimmer": "shimmer 2s infinite",
       },
     },
   },

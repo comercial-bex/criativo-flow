@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { CardSkeleton } from "@/components/ui/card-skeleton";
+import { TableSkeleton } from "@/components/ui/table-skeleton";
 import { useNavigate } from "react-router-dom";
 import { BexCard, BexCardContent, BexCardHeader, BexCardTitle } from "@/components/ui/bex-card";
 import { Button } from "@/components/ui/button";
@@ -385,7 +387,7 @@ export default function GRSDashboard() {
         </BexCardHeader>
         <BexCardContent>
           {loading ? (
-            <div className="text-center py-8">Carregando...</div>
+            <TableSkeleton columns={7} rows={5} showHeader={false} />
           ) : clientesComProjetos.length === 0 ? (
             <div className="text-center py-8">
               <p className="text-muted-foreground">

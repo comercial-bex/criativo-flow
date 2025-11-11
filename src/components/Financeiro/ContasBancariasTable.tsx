@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Pencil, Trash2, Wallet } from "lucide-react";
 import { ContaBancariaDialog } from "./ContaBancariaDialog";
 import { EmptyState } from "@/components/ui/empty-state";
+import { TableSkeleton } from "@/components/ui/table-skeleton";
 import type { ContaBancaria } from "@/hooks/useContasBancarias";
 
 export function ContasBancariasTable() {
@@ -13,7 +14,11 @@ export function ContasBancariasTable() {
   const [editingConta, setEditingConta] = useState<ContaBancaria | null>(null);
 
   if (isLoading) {
-    return <div>Carregando...</div>;
+    return (
+      <div className="border rounded-lg">
+        <TableSkeleton columns={7} rows={5} />
+      </div>
+    );
   }
 
   const formatCurrency = (value: number) => {

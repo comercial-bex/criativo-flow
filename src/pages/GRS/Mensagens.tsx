@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { CardSkeleton } from "@/components/ui/card-skeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -373,7 +374,7 @@ export default function Mensagens() {
           </CardHeader>
           <CardContent>
             {loading ? (
-              <div className="text-center py-8">Carregando...</div>
+              <CardSkeleton showHeader={false} lines={5} />
             ) : (
               <div className="space-y-4">
                 {filteredReviews.map((item) => (
@@ -434,7 +435,7 @@ export default function Mensagens() {
           </CardHeader>
           <CardContent>
             {loading ? (
-              <div className="text-center py-8">Carregando...</div>
+              <CardSkeleton showHeader={false} lines={5} />
             ) : (
               <div className="space-y-4">
                 {messages.map((message) => (

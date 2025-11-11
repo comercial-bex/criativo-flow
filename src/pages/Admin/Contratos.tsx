@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { CardListSkeleton } from "@/components/ui/card-skeleton";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -135,7 +136,11 @@ export default function Contratos() {
   };
 
   if (loading) {
-    return <div className="flex items-center justify-center h-64">Carregando...</div>;
+    return (
+      <div className="container mx-auto p-6 space-y-6">
+        <CardListSkeleton count={4} showHeader={true} lines={5} />
+      </div>
+    );
   }
 
   return (

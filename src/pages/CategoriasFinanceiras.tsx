@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { TableSkeleton } from "@/components/ui/table-skeleton";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -172,7 +173,13 @@ export default function CategoriasFinanceiras() {
   };
 
   if (loading) {
-    return <div className="p-6">Carregando...</div>;
+    return (
+      <div className="p-6">
+        <div className="border rounded-lg">
+          <TableSkeleton columns={5} rows={8} />
+        </div>
+      </div>
+    );
   }
 
   return (
