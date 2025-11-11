@@ -17,6 +17,12 @@ import {
   SidebarContent,
   useSidebar,
 } from "@/components/ui/sidebar";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
 // Função auxiliar para mapear nome de ícone para componente Lucide
@@ -364,7 +370,8 @@ export function AppSidebar() {
   }
 
   return (
-    <Sidebar 
+    <TooltipProvider delayDuration={300}>
+    <Sidebar
       className={cn(
         "h-screen bg-bex-dark border-r border-bex-green/20 transition-all duration-300 ease-in-out",
         state === "collapsed" ? "w-[56px]" : "w-[280px]"
@@ -383,20 +390,28 @@ export function AppSidebar() {
             const Icon = module.icon;
             
             return (
-              <button
-                key={module.id}
-                onClick={() => setSelectedModule(module.id)}
-                className={cn(
-                  "w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-300",
-                  "backdrop-blur-md",
-                  isSelected 
-                    ? 'bg-bex-dark text-bex-green shadow-lg shadow-bex/30 scale-105' 
-                    : 'bg-bex-green/90 text-bex-dark hover:bg-white/90 hover:scale-110 hover:shadow-md'
-                )}
-                title={module.title}
-              >
-                <Icon size={20} />
-              </button>
+              <Tooltip key={module.id}>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => setSelectedModule(module.id)}
+                    className={cn(
+                      "w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-300",
+                      "backdrop-blur-md",
+                      isSelected 
+                        ? 'bg-bex-dark text-bex-green shadow-lg shadow-bex/30 scale-105' 
+                        : 'bg-bex-green/90 text-bex-dark hover:bg-white/90 hover:scale-110 hover:shadow-md'
+                    )}
+                  >
+                    <Icon size={20} />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent 
+                  side="right" 
+                  className="bg-bex text-bex-dark font-medium border-bex-green/20"
+                >
+                  <p>{module.title}</p>
+                </TooltipContent>
+              </Tooltip>
             );
           })}
 
@@ -479,7 +494,7 @@ export function AppSidebar() {
                   }
                 };
                 
-                return (
+                const navLinkContent = (
                   <NavLink
                     key={item.url}
                     to={item.url}
@@ -508,6 +523,10 @@ export function AppSidebar() {
                     <span className="relative z-10">{item.title}</span>
                   </NavLink>
                 );
+
+                // Se sidebar está colapsada (ícone only mode), não renderizar itens expandidos
+                // pois o usuário só vê os ícones dos módulos na coluna esquerda
+                return navLinkContent;
               })}
             </div>
           </div>
@@ -528,5 +547,6 @@ export function AppSidebar() {
         </DialogContent>
       </Dialog>
     </Sidebar>
+    </TooltipProvider>
   );
 }
