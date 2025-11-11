@@ -11,6 +11,7 @@ import { SmartRedirect } from "@/components/SmartRedirect";
 import { SpecialistGuard } from "@/components/SpecialistGuard";
 import { DeprecatedRouteRedirect } from "@/components/DeprecatedRouteRedirect";
 import { BexThemeProvider } from "@/contexts/BexThemeContext";
+import { BexToastProvider } from "@/components/BexToast";
 import { Suspense, lazy, useEffect } from "react";
 import { FullScreenLoader } from "@/components/FullScreenLoader";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
@@ -140,6 +141,7 @@ const DesignMinhasTarefas = lazy(() => import("./pages/Design/MinhasTarefas"));
 const Gamificacao = lazy(() => import("./pages/Gamificacao"));
 const GamificacaoAdmin = lazy(() => import("./pages/GamificacaoAdmin"));
 const StyleGuide = lazy(() => import("./pages/StyleGuide"));
+const ToastDemo = lazy(() => import("./pages/ToastDemo"));
 const Colaboradores = lazy(() => import("./pages/RH/Colaboradores"));
 const ColaboradorDetalhes = lazy(() => import("./pages/RH/ColaboradorDetalhes"));
 const FolhaPonto = lazy(() => import("./pages/RH/FolhaPonto"));
@@ -275,10 +277,11 @@ function App() {
               
               <BrowserRouter>
                 <AuthProvider>
-                  <BackgroundSyncProvider />
-                  <TeamChatWidget />
-                  <Suspense fallback={<FullScreenLoader />}>
-                    <Routes>
+                  <BexToastProvider>
+                    <BackgroundSyncProvider />
+                    <TeamChatWidget />
+                    <Suspense fallback={<FullScreenLoader />}>
+                      <Routes>
                 {/* Public routes */}
                 <Route path="/auth" element={<PublicRoute><Auth /></PublicRoute>} />
                 <Route path="/auth/callback" element={<AuthCallback />} />
@@ -375,6 +378,10 @@ function App() {
                 
                 <Route path="/style-guide" element={<ProtectedRoute>
                     <Layout><StyleGuide /></Layout>
+                  </ProtectedRoute>} />
+                
+                <Route path="/toast-demo" element={<ProtectedRoute>
+                    <Layout><ToastDemo /></Layout>
                   </ProtectedRoute>} />
                 
                 <Route path="/inventario" element={<ProtectedRoute module="inventario">
@@ -977,6 +984,7 @@ function App() {
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>
+            </BexToastProvider>
             </AuthProvider>
           </BrowserRouter>
         </TooltipProvider>

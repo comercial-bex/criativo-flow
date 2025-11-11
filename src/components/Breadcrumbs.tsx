@@ -227,6 +227,7 @@ const routeConfig: Record<string, { label: string; icon?: string }> = {
   "/perfil": { label: "Perfil", icon: "User" },
   "/planos": { label: "Planos", icon: "Package" },
   "/style-guide": { label: "Guia de Estilo", icon: "Palette" },
+  "/toast-demo": { label: "Demo de Toasts", icon: "Bell" },
   "/design-system": { label: "Design System", icon: "Component" },
 };
 
