@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
+import { useDebounce } from '@/hooks/useDebounce';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -61,10 +62,12 @@ export default function MinhasTarefas() {
   const [selectedTask, setSelectedTask] = useState<any | null>(null);
   const [showTaskDetails, setShowTaskDetails] = useState(false);
   
-  // Filters
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [priorityFilter, setPriorityFilter] = useState('all');
+  // Consolidação de filtros em um único estado
+  const [filters, setFilters] = useState({
+    searchTerm: '',
+    status: 'all',
+    priority: 'all'
+  });
 
   const handleTaskMove = async (taskId: string, newStatus: string) => {
     try {
@@ -98,18 +101,23 @@ export default function MinhasTarefas() {
     setShowTaskDetails(true);
   };
 
-  // Filter tasks based on search and filters
-  const filteredTasks = tasks.filter(task => {
-    const matchesSearch = searchTerm === '' || 
-      task.titulo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      task.projetos?.titulo?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      task.cliente_nome?.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesStatus = statusFilter === 'all' || task.status === statusFilter;
-    const matchesPriority = priorityFilter === 'all' || task.prioridade === priorityFilter;
-    
-    return matchesSearch && matchesStatus && matchesPriority;
-  });
+  // Debounce do searchTerm para evitar re-renders excessivos
+  const debouncedSearchTerm = useDebounce(filters.searchTerm, 300);
+  
+  // Filter tasks based on search and filters com useMemo
+  const filteredTasks = useMemo(() => {
+    return tasks.filter(task => {
+      const matchesSearch = debouncedSearchTerm === '' || 
+        task.titulo.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+        task.projetos?.titulo?.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+        task.cliente_nome?.toLowerCase().includes(debouncedSearchTerm.toLowerCase());
+      
+      const matchesStatus = filters.status === 'all' || task.status === filters.status;
+      const matchesPriority = filters.priority === 'all' || task.prioridade === filters.priority;
+      
+      return matchesSearch && matchesStatus && matchesPriority;
+    });
+  }, [tasks, debouncedSearchTerm, filters.status, filters.priority]);
 
   const statsCards = [
     {
@@ -187,14 +195,14 @@ export default function MinhasTarefas() {
                 <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Buscar por tarefa, projeto ou cliente..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  value={filters.searchTerm}
+                  onChange={(e) => setFilters(prev => ({ ...prev, searchTerm: e.target.value }))}
                   className="pl-10"
                 />
               </div>
             </div>
             
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <Select value={filters.status} onValueChange={(status) => setFilters(prev => ({ ...prev, status }))}>
               <SelectTrigger className="w-48">
                 <SelectValue placeholder="Filtrar por status" />
               </SelectTrigger>
@@ -206,7 +214,7 @@ export default function MinhasTarefas() {
               </SelectContent>
             </Select>
 
-            <Select value={priorityFilter} onValueChange={setPriorityFilter}>
+            <Select value={filters.priority} onValueChange={(priority) => setFilters(prev => ({ ...prev, priority }))}>
               <SelectTrigger className="w-48">
                 <SelectValue placeholder="Filtrar por prioridade" />
               </SelectTrigger>

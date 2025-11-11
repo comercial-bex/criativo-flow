@@ -187,13 +187,14 @@ const persister = createLocalStoragePersister();
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 10 * 60 * 1000, // 10 minutos (otimizado para PWA)
-      gcTime: 30 * 60 * 1000, // 30 minutos
+      staleTime: 5 * 60 * 1000, // 5 minutos (otimizado)
+      gcTime: 15 * 60 * 1000, // 15 minutos
       refetchOnWindowFocus: false,
-      refetchOnReconnect: true, // ✅ Ativar para PWA
+      refetchOnReconnect: true,
       refetchOnMount: false,
-      retry: 2, // 2 tentativas
-      networkMode: 'offlineFirst' as const // ✅ Suporte offline
+      retry: 3, // 3 tentativas com backoff
+      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000), // Exponential backoff
+      networkMode: 'offlineFirst' as const
     },
     mutations: {
       retry: 2,
