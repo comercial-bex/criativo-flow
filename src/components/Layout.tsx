@@ -1,4 +1,5 @@
 import { ResponsiveLayout } from "@/components/ResponsiveLayout";
+import { PageTransition } from "@/components/PageTransition";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -6,5 +7,9 @@ interface LayoutProps {
 }
 
 export function Layout({ children, className }: LayoutProps) {
-  return <ResponsiveLayout className={className}>{children}</ResponsiveLayout>;
+  return (
+    <ResponsiveLayout className={className}>
+      <PageTransition>{children}</PageTransition>
+    </ResponsiveLayout>
+  );
 }

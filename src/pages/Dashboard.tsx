@@ -1,4 +1,5 @@
 import { useQueries } from '@tanstack/react-query';
+import { StaggerChildren, StaggerItem } from '@/components/transitions';
 import { supabase } from '@/integrations/supabase/client';
 import { BarChart3, Users, FolderOpen, Target, Clock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -132,27 +133,35 @@ function Dashboard() {
   ];
 
   return (
-    <div className="p-6 space-y-8 animate-fade-in">
-      <div className="flex items-center justify-between">
-        <SectionHeader
-          title="Dashboard"
-          description="Visão geral dos seus dados e métricas importantes"
-          icon={BarChart3}
-        />
-        <TutorialButton onStart={startTutorial} hasSeenTutorial={hasSeenTutorial} />
-      </div>
+    <div className="p-6 space-y-8">
+      <StaggerChildren staggerDelay={0.1}>
+        <StaggerItem>
+          <div className="flex items-center justify-between">
+            <SectionHeader
+              title="Dashboard"
+              description="Visão geral dos seus dados e métricas importantes"
+              icon={BarChart3}
+            />
+            <TutorialButton onStart={startTutorial} hasSeenTutorial={hasSeenTutorial} />
+          </div>
+        </StaggerItem>
 
-      <div data-tour="kpis">
-        <StatsGrid stats={statsData} loading={isLoading} />
-      </div>
+        <StaggerItem delay={0.1}>
+          <div data-tour="kpis">
+            <StatsGrid stats={statsData} loading={isLoading} />
+          </div>
+        </StaggerItem>
 
-      <div data-tour="acoes-rapidas">
-        <QuickActions
-          title="Acesso Rápido"
-          actions={quickActions}
-          columns={4}
-        />
-      </div>
+        <StaggerItem delay={0.2}>
+          <div data-tour="acoes-rapidas">
+            <QuickActions
+              title="Acesso Rápido"
+              actions={quickActions}
+              columns={4}
+            />
+          </div>
+        </StaggerItem>
+      </StaggerChildren>
     </div>
   );
 }
