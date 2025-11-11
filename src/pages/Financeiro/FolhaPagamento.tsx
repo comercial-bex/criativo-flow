@@ -1,5 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useDebounce } from '@/hooks/useDebounce';
+import { PERFORMANCE_CONFIG } from '@/lib/performance-config';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -51,13 +53,19 @@ export default function FolhaPagamento() {
   const [etapaAtual, setEtapaAtual] = useState(1);
   const [mostrarWizard, setMostrarWizard] = useState(false);
   
-  // Filtros
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('todos');
-  const [sortBy, setSortBy] = useState('nome-asc');
-  const [showCharts, setShowCharts] = useState(false);
+  // Filtros consolidados
+  const [filters, setFilters] = useState({
+    searchTerm: '',
+    statusFilter: 'todos',
+    sortBy: 'nome-asc',
+    showCharts: false
+  });
 
-  // Carregar veículos via useQuery  
+
+  // Debounce search term
+  const debouncedSearchTerm = useDebounce(filters.searchTerm, PERFORMANCE_CONFIG.DEBOUNCE_SEARCH);
+
+  // Carregar veículos via useQuery
   const { data: veiculosData = [] } = useQuery({
     queryKey: ['veiculos-inventario'],
     queryFn: async () => {
@@ -216,18 +224,18 @@ export default function FolhaPagamento() {
   // Filtrar e ordenar itens
   const itensFiltrados = useMemo(() => {
     let filtered = itens.filter(item => {
-      const matchSearch = !searchTerm || 
-        item.colaborador?.nome_completo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.colaborador?.cpf_cnpj.includes(searchTerm);
+      const matchSearch = !debouncedSearchTerm || 
+        item.colaborador?.nome_completo.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+        item.colaborador?.cpf_cnpj.includes(debouncedSearchTerm);
       
-      const matchStatus = statusFilter === 'todos' || item.status === statusFilter;
+      const matchStatus = filters.statusFilter === 'todos' || item.status === filters.statusFilter;
       
       return matchSearch && matchStatus;
     });
     
     // Ordenar
     filtered.sort((a, b) => {
-      switch (sortBy) {
+      switch (filters.sortBy) {
         case 'nome-asc':
           return (a.colaborador?.nome_completo || '').localeCompare(b.colaborador?.nome_completo || '');
         case 'nome-desc':
@@ -244,7 +252,7 @@ export default function FolhaPagamento() {
     });
     
     return filtered;
-  }, [itens, searchTerm, statusFilter, sortBy]);
+  }, [itens, debouncedSearchTerm, filters.statusFilter, filters.sortBy]);
 
   const handleExportCSV = () => {
     if (!itens.length) {
@@ -409,10 +417,10 @@ export default function FolhaPagamento() {
           </Button>
           <Button
             variant="outline"
-            onClick={() => setShowCharts(!showCharts)}
+            onClick={() => setFilters(prev => ({ ...prev, showCharts: !prev.showCharts }))}
           >
             <BarChart3 className="h-4 w-4 mr-2" />
-            {showCharts ? 'Ocultar' : 'Ver'} Gráficos
+            {filters.showCharts ? 'Ocultar' : 'Ver'} Gráficos
           </Button>
           <Button
             variant="outline"
@@ -448,7 +456,7 @@ export default function FolhaPagamento() {
       </Card>
 
       {/* Gráficos Analytics */}
-      {showCharts && (
+      {filters.showCharts && (
         <motion.div
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: 'auto' }}
@@ -562,12 +570,12 @@ export default function FolhaPagamento() {
         </CardHeader>
         <CardContent>
           <FolhaTableFilters
-            searchTerm={searchTerm}
-            onSearchChange={setSearchTerm}
-            statusFilter={statusFilter}
-            onStatusFilterChange={setStatusFilter}
-            sortBy={sortBy}
-            onSortChange={setSortBy}
+            searchTerm={filters.searchTerm}
+            onSearchChange={(value) => setFilters(prev => ({ ...prev, searchTerm: value }))}
+            statusFilter={filters.statusFilter}
+            onStatusFilterChange={(value) => setFilters(prev => ({ ...prev, statusFilter: value }))}
+            sortBy={filters.sortBy}
+            onSortChange={(value) => setFilters(prev => ({ ...prev, sortBy: value }))}
           />
           <div className="overflow-x-auto">
             <table className="w-full">

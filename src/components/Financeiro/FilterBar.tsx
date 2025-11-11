@@ -16,11 +16,14 @@ interface FilterBarProps {
 }
 
 export function FilterBar({ onApply }: FilterBarProps) {
-  const [periodo, setPeriodo] = useState<"mes" | "trimestre" | "ano">("mes");
-  const [tipo, setTipo] = useState<"all" | "receita" | "despesa">("all");
+  // Consolidated filters state
+  const [filters, setFilters] = useState<FilterValues>({
+    periodo: "mes",
+    tipo: "all"
+  });
 
   const handleApply = () => {
-    onApply({ periodo, tipo });
+    onApply(filters);
   };
 
   return (
@@ -29,7 +32,7 @@ export function FilterBar({ onApply }: FilterBarProps) {
         <div className="flex flex-col md:flex-row gap-4 items-end">
           <div className="flex-1">
             <Label htmlFor="periodo" className="text-sm font-semibold">Período</Label>
-            <Select value={periodo} onValueChange={(value: any) => setPeriodo(value)}>
+            <Select value={filters.periodo} onValueChange={(value: any) => setFilters(prev => ({ ...prev, periodo: value }))}>
               <SelectTrigger id="periodo" className="mt-1.5 border-primary/30 focus:border-primary">
                 <SelectValue />
               </SelectTrigger>
@@ -43,7 +46,7 @@ export function FilterBar({ onApply }: FilterBarProps) {
 
           <div className="flex-1">
             <Label htmlFor="tipo" className="text-sm font-semibold">Tipo</Label>
-            <Select value={tipo} onValueChange={(value: any) => setTipo(value)}>
+            <Select value={filters.tipo} onValueChange={(value: any) => setFilters(prev => ({ ...prev, tipo: value }))}>
               <SelectTrigger id="tipo" className="mt-1.5 border-primary/30 focus:border-primary">
                 <SelectValue />
               </SelectTrigger>

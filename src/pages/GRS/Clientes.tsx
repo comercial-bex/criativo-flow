@@ -1,5 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { useClientes } from "@/hooks/useClientes";
+import { useMemo, useState } from "react";
+import { useDebounce } from '@/hooks/useDebounce';
+import { PERFORMANCE_CONFIG } from '@/lib/performance-config';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,17 +15,20 @@ import {
   ArrowRight,
   Filter
 } from "lucide-react";
-import { useState } from "react";
 
 export default function GRSClientes() {
   const navigate = useNavigate();
   const { data: clientes = [], isLoading } = useClientes();
   const [searchTerm, setSearchTerm] = useState("");
+  
+  const debouncedSearchTerm = useDebounce(searchTerm, PERFORMANCE_CONFIG.DEBOUNCE_SEARCH);
 
-  const filteredClientes = clientes?.filter(cliente =>
-    cliente.nome?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    cliente.cnpj_cpf?.includes(searchTerm)
-  ) || [];
+  const filteredClientes = useMemo(() => {
+    return clientes?.filter(cliente =>
+      cliente.nome?.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+      cliente.cnpj_cpf?.includes(debouncedSearchTerm)
+    ) || [];
+  }, [clientes, debouncedSearchTerm]);
 
   const getStatusColor = (status: string): "default" | "destructive" | "outline" | "secondary" => {
     switch (status) {

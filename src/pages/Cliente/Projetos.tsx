@@ -1,5 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
+import { useDebounce } from '@/hooks/useDebounce';
+import { PERFORMANCE_CONFIG } from '@/lib/performance-config';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -412,11 +414,17 @@ export default function ClienteProjetos() {
   const { data: clientesData, isLoading: clientesLoading } = useClientesAtivos();
   const { data: projetosData, isLoading: projetosLoading } = useProjetosOptimized({});
   
-  const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("todos");
+  // Consolidated filters state
+  const [filters, setFilters] = useState({
+    searchTerm: "",
+    statusFilter: "todos"
+  });
+  
   const [dialogOpen, setDialogOpen] = useState(false);
   const [projetoEdit, setProjetoEdit] = useState<any>(null);
   const [projetoDeleteId, setProjetoDeleteId] = useState<string | null>(null);
+  
+  const debouncedSearchTerm = useDebounce(filters.searchTerm, PERFORMANCE_CONFIG.DEBOUNCE_SEARCH);
 
   // Utility function to check if string is a valid UUID
   const isUuid = (v: string) =>
@@ -537,14 +545,16 @@ export default function ClienteProjetos() {
     }
   };
 
-  const filteredClientes = clientes
-    .filter(cliente => cliente.status === 'ativo') // Apenas clientes ativos têm projetos
-    .filter(cliente => {
-      const matchesSearch = cliente.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           cliente.email.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesStatus = statusFilter === "todos" || cliente.status === statusFilter;
-      return matchesSearch && matchesStatus;
-    });
+  const filteredClientes = useMemo(() => {
+    return clientes
+      .filter(cliente => cliente.status === 'ativo') // Apenas clientes ativos têm projetos
+      .filter(cliente => {
+        const matchesSearch = cliente.nome.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+                             cliente.email.toLowerCase().includes(debouncedSearchTerm.toLowerCase());
+        const matchesStatus = filters.statusFilter === "todos" || cliente.status === filters.statusFilter;
+        return matchesSearch && matchesStatus;
+      });
+  }, [clientes, debouncedSearchTerm, filters.statusFilter]);
 
   return (
     <div className={`${isMobile ? 'p-4 space-y-6' : 'p-6 space-y-6'}`}>
@@ -567,12 +577,12 @@ export default function ClienteProjetos() {
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder={isMobile ? "Buscar..." : "Buscar cliente..."}
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            value={filters.searchTerm}
+            onChange={(e) => setFilters(prev => ({ ...prev, searchTerm: e.target.value }))}
             className={`pl-10 ${isMobile ? 'h-12 text-base' : ''}`}
           />
         </div>
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
+        <Select value={filters.statusFilter} onValueChange={(value) => setFilters(prev => ({ ...prev, statusFilter: value }))}>
           <SelectTrigger className={isMobile ? 'h-12' : 'w-full sm:w-48'}>
             <Filter className="h-4 w-4 mr-2" />
             <SelectValue placeholder="Filtrar clientes" />

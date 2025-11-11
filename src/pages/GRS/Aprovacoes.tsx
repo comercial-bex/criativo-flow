@@ -1,5 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useDebounce } from '@/hooks/useDebounce';
+import { PERFORMANCE_CONFIG } from '@/lib/performance-config';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -36,16 +38,24 @@ interface Planejamento {
 export default function GRSAprovacoes() {
   const [planejamentos, setPlanejamentos] = useState<Planejamento[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("pendentes");
-  const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
+  
+  // Consolidated filters state
+  const [filters, setFilters] = useState({
+    searchTerm: "",
+    statusFilter: "pendentes",
+    selectedClientId: null as string | null
+  });
+  
   const navigate = useNavigate();
   const { toast } = useToast();
   const { startTutorial, hasSeenTutorial } = useTutorial('grs-aprovacoes');
 
+  // Debounce search term
+  const debouncedSearchTerm = useDebounce(filters.searchTerm, PERFORMANCE_CONFIG.DEBOUNCE_SEARCH);
+
   useEffect(() => {
     fetchAprovacoes();
-  }, [statusFilter, selectedClientId]);
+  }, [filters.statusFilter, filters.selectedClientId]);
 
   const fetchAprovacoes = async () => {
     try {
@@ -68,17 +78,17 @@ export default function GRSAprovacoes() {
         .order('mes_referencia', { ascending: false });
 
       // Filtrar por status
-      if (statusFilter === "pendentes") {
+      if (filters.statusFilter === "pendentes") {
         query = query.in('status', ['em_aprovacao_final', 'em_revisao']);
-      } else if (statusFilter === "aprovados") {
+      } else if (filters.statusFilter === "aprovados") {
         query = query.eq('status', 'finalizado');
-      } else if (statusFilter === "reprovados") {
+      } else if (filters.statusFilter === "reprovados") {
         query = query.eq('status', 'reprovado');
       }
 
       // Filtrar por cliente se selecionado
-      if (selectedClientId) {
-        query = query.eq('cliente_id', selectedClientId);
+      if (filters.selectedClientId) {
+        query = query.eq('cliente_id', filters.selectedClientId);
       }
 
       const { data, error } = await query;
@@ -160,11 +170,14 @@ Seu planejamento de ${mesFormatado} está pronto para aprovação! 📋✨
 Qualquer dúvida, estamos aqui para ajudar! 💚`;
   };
 
-  const filteredPlanejamentos = planejamentos.filter(planejamento => {
-    const matchesSearch = planejamento.titulo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         planejamento.clientes.nome.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesSearch;
-  });
+  // Filter planejamentos with debounced search
+  const filteredPlanejamentos = useMemo(() => {
+    return planejamentos.filter(planejamento => {
+      const matchesSearch = planejamento.titulo.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+                           planejamento.clientes.nome.toLowerCase().includes(debouncedSearchTerm.toLowerCase());
+      return matchesSearch;
+    });
+  }, [planejamentos, debouncedSearchTerm]);
 
   const helpContent = {
     title: "Como usar as Aprovações",
@@ -216,8 +229,8 @@ Qualquer dúvida, estamos aqui para ajudar! 💚`;
 
       {/* Client Selector */}
       <ClientSelector 
-        onClientSelect={setSelectedClientId}
-        selectedClientId={selectedClientId}
+        onClientSelect={(clientId) => setFilters(prev => ({ ...prev, selectedClientId: clientId }))}
+        selectedClientId={filters.selectedClientId}
         showContext={true}
       />
 
@@ -227,12 +240,12 @@ Qualquer dúvida, estamos aqui para ajudar! 💚`;
           <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
           <Input
             placeholder="Buscar por cliente ou título..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            value={filters.searchTerm}
+            onChange={(e) => setFilters(prev => ({ ...prev, searchTerm: e.target.value }))}
             className="pl-10"
           />
         </div>
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
+        <Select value={filters.statusFilter} onValueChange={(value) => setFilters(prev => ({ ...prev, statusFilter: value }))}>
           <SelectTrigger className="w-48">
             <SelectValue placeholder="Filtrar por status" />
           </SelectTrigger>
@@ -389,10 +402,10 @@ Qualquer dúvida, estamos aqui para ajudar! 💚`;
           <CardContent className="p-8 text-center">
             <CheckCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <h3 className="text-lg font-semibold mb-2">
-              {statusFilter === "pendentes" ? "Nenhuma aprovação pendente" : "Nenhuma aprovação encontrada"}
+              {filters.statusFilter === "pendentes" ? "Nenhuma aprovação pendente" : "Nenhuma aprovação encontrada"}
             </h3>
             <p className="text-muted-foreground">
-              {statusFilter === "pendentes" 
+              {filters.statusFilter === "pendentes" 
                 ? "Parabéns! Não há aprovações pendentes no momento."
                 : "Tente ajustar os filtros de busca ou verifique se há planejamentos cadastrados."
               }
