@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,31 +7,31 @@ import { Textarea } from "@/components/ui/textarea";
 import { SectionHeader } from "@/components/SectionHeader";
 import { DataTable } from "@/components/DataTable";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Edit, Trash2, Save, X } from "lucide-react";
+import { Plus, Save, X } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { supabase } from "@/integrations/supabase/client";
+import { useProdutosCatalogo } from "@/hooks/useProdutosCatalogo";
 import { toast } from "@/hooks/use-toast";
 
 interface Assinatura {
-  id: string;
+  id?: string;
   nome: string;
-  preco: number;
+  preco_padrao: number;
   periodo: string;
   posts_mensais: number;
   reels_suporte: boolean;
   anuncios_facebook: boolean;
   anuncios_google: boolean;
   recursos: string[];
-  status: string;
-  created_at?: string;
-  updated_at?: string;
+  ativo: boolean;
 }
 
 export default function Planos() {
-  const [assinaturas, setAssinaturas] = useState<Assinatura[]>([]);
+  const { produtos: assinaturas, loading, createProduto, updateProduto } = useProdutosCatalogo({ 
+    tipo: 'plano_assinatura' 
+  });
+  
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingAssinatura, setEditingAssinatura] = useState<Assinatura | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [editingAssinatura, setEditingAssinatura] = useState<any | null>(null);
   const [formData, setFormData] = useState({
     nome: '',
     preco: '',
@@ -41,32 +41,8 @@ export default function Planos() {
     anuncios_facebook: false,
     anuncios_google: false,
     recursos: '',
-    status: 'ativo'
+    ativo: true
   });
-
-  // Carregar assinaturas do banco
-  useEffect(() => {
-    fetchAssinaturas();
-  }, []);
-
-  const fetchAssinaturas = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('assinaturas')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setAssinaturas(data || []);
-    } catch (error) {
-      console.error('Erro ao carregar assinaturas:', error);
-      toast({
-        title: "Erro",
-        description: "Não foi possível carregar os planos de assinatura.",
-        variant: "destructive"
-      });
-    }
-  };
 
   const resetForm = () => {
     setFormData({
@@ -78,14 +54,13 @@ export default function Planos() {
       anuncios_facebook: false,
       anuncios_google: false,
       recursos: '',
-      status: 'ativo'
+      ativo: true
     });
     setEditingAssinatura(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
     
     try {
       const recursos = formData.recursos
@@ -93,48 +68,33 @@ export default function Planos() {
         .map(r => r.trim())
         .filter(r => r.length > 0);
 
-      const assinaturaData = {
+      const produtoData = {
+        tipo: 'plano_assinatura' as const,
         nome: formData.nome,
-        preco: parseFloat(formData.preco),
+        preco_padrao: parseFloat(formData.preco),
         periodo: formData.periodo,
         posts_mensais: parseInt(formData.posts_mensais),
         reels_suporte: formData.reels_suporte,
         anuncios_facebook: formData.anuncios_facebook,
         anuncios_google: formData.anuncios_google,
         recursos,
-        status: formData.status
+        ativo: formData.ativo,
+        // Campos obrigatórios para produtos
+        sku: `PLAN-${formData.nome.toUpperCase()}`,
+        unidade: 'mensal',
+        custo: null,
+        imposto_percent: 0,
+        categoria: 'Planos de Assinatura'
       };
 
-      if (editingAssinatura) {
-        // Atualizar assinatura existente
-        const { error } = await supabase
-          .from('assinaturas')
-          .update(assinaturaData)
-          .eq('id', editingAssinatura.id);
-
-        if (error) throw error;
-
-        toast({
-          title: "Sucesso",
-          description: "Plano de assinatura atualizado com sucesso."
-        });
+      if (editingAssinatura?.id) {
+        updateProduto({ id: editingAssinatura.id, ...produtoData });
       } else {
-        // Criar nova assinatura
-        const { error } = await supabase
-          .from('assinaturas')
-          .insert(assinaturaData as any);
-
-        if (error) throw error;
-
-        toast({
-          title: "Sucesso",
-          description: "Novo plano de assinatura criado com sucesso."
-        });
+        createProduto(produtoData);
       }
 
       setIsDialogOpen(false);
       resetForm();
-      fetchAssinaturas(); // Recarregar lista
     } catch (error) {
       console.error('Erro ao salvar assinatura:', error);
       toast({
@@ -142,50 +102,23 @@ export default function Planos() {
         description: "Não foi possível salvar o plano de assinatura.",
         variant: "destructive"
       });
-    } finally {
-      setLoading(false);
     }
   };
 
-  const handleEdit = (assinatura: Assinatura) => {
+  const handleEdit = (assinatura: any) => {
     setEditingAssinatura(assinatura);
     setFormData({
       nome: assinatura.nome,
-      preco: assinatura.preco.toString(),
-      periodo: assinatura.periodo,
+      preco: assinatura.preco_padrao.toString(),
+      periodo: assinatura.periodo || 'mensal',
       posts_mensais: assinatura.posts_mensais.toString(),
       reels_suporte: assinatura.reels_suporte,
       anuncios_facebook: assinatura.anuncios_facebook,
       anuncios_google: assinatura.anuncios_google,
       recursos: assinatura.recursos?.join('\n') || '',
-      status: assinatura.status
+      ativo: assinatura.ativo
     });
     setIsDialogOpen(true);
-  };
-
-  const handleDelete = async (id: string) => {
-    try {
-      const { error } = await supabase
-        .from('assinaturas')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
-
-      toast({
-        title: "Sucesso",
-        description: "Plano de assinatura removido com sucesso."
-      });
-      
-      fetchAssinaturas(); // Recarregar lista
-    } catch (error) {
-      console.error('Erro ao deletar assinatura:', error);
-      toast({
-        title: "Erro",
-        description: "Não foi possível remover o plano de assinatura.",
-        variant: "destructive"
-      });
-    }
   };
 
   const columns = [
@@ -194,7 +127,7 @@ export default function Planos() {
       label: "Nome do Plano",
     },
     {
-      key: "preco",
+      key: "preco_padrao",
       label: "Preço",
       render: (value: number) => `R$ ${value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
     },
@@ -218,11 +151,11 @@ export default function Planos() {
       render: (value: boolean) => value ? "Sim" : "Não",
     },
     {
-      key: "status",
+      key: "ativo",
       label: "Status",
-      render: (value: string) => (
-        <Badge variant={value === 'ativo' ? 'default' : 'secondary'}>
-          {value}
+      render: (value: boolean) => (
+        <Badge variant={value ? 'default' : 'secondary'}>
+          {value ? 'Ativo' : 'Inativo'}
         </Badge>
       ),
     },
@@ -231,13 +164,8 @@ export default function Planos() {
   const actions = [
     {
       label: "Editar",
-      onClick: (row: Assinatura) => handleEdit(row),
+      onClick: (row: any) => handleEdit(row),
       variant: 'outline' as const
-    },
-    {
-      label: "Excluir",
-      onClick: (row: Assinatura) => handleDelete(row.id),
-      variant: 'destructive' as const
     }
   ];
 
@@ -361,9 +289,9 @@ export default function Planos() {
                   <X className="h-4 w-4 mr-2" />
                   Cancelar
                 </Button>
-                <Button type="submit" disabled={loading}>
+                <Button type="submit">
                   <Save className="h-4 w-4 mr-2" />
-                  {loading ? "Salvando..." : editingAssinatura ? 'Atualizar' : 'Cadastrar'}
+                  {editingAssinatura ? 'Atualizar' : 'Cadastrar'}
                 </Button>
               </div>
             </form>
