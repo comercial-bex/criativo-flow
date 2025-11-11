@@ -4,12 +4,48 @@ import { ChevronRight, Home } from "lucide-react";
 import * as Icons from "lucide-react";
 import { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import {
+  useClienteResolver,
+  useProjetoResolver,
+  useRoteiroResolver,
+  useContratoResolver,
+  useProdutoResolver,
+  useOrcamentoResolver,
+  usePropostaResolver,
+  useColaboradorResolver,
+  useTarefaResolver,
+  usePlanejamentoResolver,
+} from "@/hooks/useBreadcrumbResolvers";
+import { DynamicBreadcrumbItem } from "./DynamicBreadcrumbItem";
 
 interface BreadcrumbItem {
   label: string;
   path: string;
   icon?: LucideIcon;
+  isDynamic?: boolean;
+  resolvedLabel?: string;
+  isLoading?: boolean;
 }
+
+// Mapeamento de segmentos de rota para tipos de recursos
+const resourceTypeMap: Record<string, string> = {
+  "clients": "cliente",
+  "clientes": "cliente",
+  "projetos": "projeto",
+  "projects": "projeto",
+  "roteiro-ia": "roteiro",
+  "contratos": "contrato",
+  "contracts": "contrato",
+  "produtos": "produto",
+  "products": "produto",
+  "orcamentos": "orcamento",
+  "propostas": "proposta",
+  "colaboradores": "colaborador",
+  "tarefa": "tarefa",
+  "tarefas": "tarefa",
+  "planejamentos": "planejamento",
+  "planejamento": "planejamento",
+};
 
 // Mapeamento de rotas para configuração de breadcrumbs
 const routeConfig: Record<string, { label: string; icon?: string }> = {
@@ -213,38 +249,54 @@ export function useBreadcrumbs() {
     ];
 
     let currentPath = '';
+    let previousSegment = '';
     
     pathSegments.forEach((segment, index) => {
       currentPath += `/${segment}`;
       
-      // Pular segmentos que são IDs (UUIDs ou números)
+      // Detectar IDs (UUIDs ou números)
       const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(segment);
       const isNumeric = /^\d+$/.test(segment);
       
       if (isUUID || isNumeric) {
-        return;
-      }
-
-      const config = routeConfig[currentPath];
-      
-      if (config) {
-        items.push({
-          label: config.label,
-          path: currentPath,
-          icon: config.icon ? getIconComponent(config.icon) : undefined,
-        });
-      } else {
-        // Fallback: capitalizar o segmento
-        const label = segment
-          .split('-')
-          .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-          .join(' ');
+        // Este é um ID - marcar como dinâmico e associar ao tipo de recurso
+        const resourceType = resourceTypeMap[previousSegment];
         
         items.push({
-          label,
+          label: segment,
           path: currentPath,
+          isDynamic: true,
+          resolvedLabel: undefined, // Será resolvido pelo componente
+          isLoading: true,
         });
+        
+        // Armazenar metadata para o componente saber que tipo de recurso é
+        (items[items.length - 1] as any).resourceType = resourceType;
+        (items[items.length - 1] as any).resourceId = segment;
+      } else {
+        const config = routeConfig[currentPath];
+        
+        if (config) {
+          items.push({
+            label: config.label,
+            path: currentPath,
+            icon: config.icon ? getIconComponent(config.icon) : undefined,
+          });
+        } else {
+          // Fallback: capitalizar o segmento
+          const label = segment
+            .split('-')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ');
+          
+          items.push({
+            label,
+            path: currentPath,
+          });
+        }
       }
+      
+      previousSegment = segment;
     });
 
     return items;
@@ -283,6 +335,9 @@ export function Breadcrumbs({ className, maxItems }: BreadcrumbsProps) {
         const isLast = index === displayBreadcrumbs.length - 1;
         const Icon = item.icon;
         const isEllipsis = item.label === "...";
+        const isDynamic = (item as any).isDynamic;
+        const resourceType = (item as any).resourceType;
+        const resourceId = (item as any).resourceId;
 
         if (isEllipsis) {
           return (
@@ -299,7 +354,16 @@ export function Breadcrumbs({ className, maxItems }: BreadcrumbsProps) {
               <ChevronRight className="h-4 w-4 text-muted-foreground mx-1" />
             )}
             
-            {isLast ? (
+            {isDynamic ? (
+              <DynamicBreadcrumbItem
+                resourceType={resourceType}
+                resourceId={resourceId}
+                path={item.path}
+                isLast={isLast}
+                icon={Icon}
+                fallbackLabel={item.label}
+              />
+            ) : isLast ? (
               <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-bex/10 text-bex font-medium">
                 {Icon && <Icon className="h-3.5 w-3.5" />}
                 <span>{item.label}</span>
