@@ -35,6 +35,15 @@ const routeConfig: Record<string, { label: string; icon?: string }> = {
   "/grs/calendario-editorial": { label: "Calendário Editorial", icon: "CalendarDays" },
   "/grs/roteiro-ia": { label: "Roteiro IA", icon: "Film" },
   "/grs/roteiro-ia/novo": { label: "Novo Roteiro", icon: "FilePlus" },
+  "/grs/agenda": { label: "Agenda", icon: "CalendarDays" },
+  "/grs/agenda-especialistas": { label: "Agenda Especialistas", icon: "Users" },
+  "/grs/mensagens": { label: "Mensagens", icon: "MessageSquare" },
+  "/grs/clientes": { label: "Clientes GRS", icon: "Users" },
+  "/grs/projetos": { label: "Projetos GRS", icon: "FolderOpen" },
+  "/grs/nova-ordem": { label: "Nova Ordem", icon: "FilePlus" },
+  "/grs/agendamento-social": { label: "Agendamento Social", icon: "Share2" },
+  "/grs/planejamento-estrategico": { label: "Planejamento Estratégico", icon: "Target" },
+  "/grs/aprovacoes": { label: "Aprovações", icon: "CheckCircle" },
   "/grs/relatorios": { label: "Relatórios", icon: "FileText" },
   "/grs/cliente": { label: "Cliente", icon: "User" },
   
@@ -43,9 +52,27 @@ const routeConfig: Record<string, { label: string; icon?: string }> = {
   "/crm/contatos": { label: "Contatos", icon: "Phone" },
   "/crm/historico": { label: "Histórico", icon: "History" },
   
+  // Atendimento
+  "/atendimento": { label: "Atendimento", icon: "Headphones" },
+  "/atendimento/inbox": { label: "Inbox", icon: "Inbox" },
+  "/atendimento/dashboard": { label: "Dashboard Atendimento", icon: "LayoutDashboard" },
+  
   // Clientes
   "/clientes": { label: "Clientes", icon: "Users" },
   "/clientes/projetos": { label: "Projetos", icon: "FolderOpen" },
+  "/clients": { label: "Detalhes do Cliente", icon: "User" },
+  
+  // Client Details (nested routes)
+  "/details": { label: "Detalhes", icon: "Info" },
+  "/projects": { label: "Projetos", icon: "FolderOpen" },
+  "/contracts": { label: "Contratos", icon: "FileSignature" },
+  "/finance": { label: "Financeiro", icon: "DollarSign" },
+  "/files": { label: "Arquivos", icon: "FileText" },
+  "/timeline": { label: "Timeline", icon: "History" },
+  "/contacts": { label: "Contatos", icon: "Phone" },
+  "/notes": { label: "Notas", icon: "StickyNote" },
+  "/requests": { label: "Solicitações", icon: "MessageSquare" },
+  "/social-integrations": { label: "Redes Sociais", icon: "Share2" },
   
   // Financeiro
   "/financeiro": { label: "Financeiro", icon: "DollarSign" },
@@ -56,14 +83,28 @@ const routeConfig: Record<string, { label: string; icon?: string }> = {
   "/financeiro/conciliacao": { label: "Conciliação", icon: "CheckCircle" },
   "/financeiro/centros-custo": { label: "Centros de Custo", icon: "FolderTree" },
   "/financeiro/folha": { label: "Folha de Pagamento", icon: "Wallet" },
+  "/financeiro/balancete": { label: "Balancete Contábil", icon: "FileSpreadsheet" },
+  "/financeiro/balanco-patrimonial": { label: "Balanço Patrimonial", icon: "Scale" },
+  "/financeiro/lucratividade-projetos": { label: "Lucratividade Projetos", icon: "TrendingUp" },
+  "/financeiro/categorias": { label: "Categorias", icon: "Tags" },
   
   // Admin
   "/admin": { label: "Admin", icon: "Shield" },
   "/admin/painel": { label: "Painel", icon: "LayoutDashboard" },
   "/admin/contratos": { label: "Contratos", icon: "FileSignature" },
+  "/admin/contratos/novo": { label: "Novo Contrato", icon: "FilePlus" },
   "/admin/produtos": { label: "Produtos", icon: "Package" },
+  "/admin/produtos/novo": { label: "Novo Produto", icon: "PackagePlus" },
   "/admin/tarefas": { label: "Tarefas", icon: "ClipboardCheck" },
   "/admin/onboarding": { label: "Onboarding", icon: "ClipboardCheck" },
+  "/admin/usuarios": { label: "Usuários", icon: "Users" },
+  "/admin/logs": { label: "Logs do Sistema", icon: "FileText" },
+  "/admin/notificacoes": { label: "Central de Notificações", icon: "Bell" },
+  "/admin/system-health": { label: "Saúde do Sistema", icon: "Activity" },
+  "/admin/configuracoes-empresa": { label: "Configurações da Empresa", icon: "Building" },
+  "/admin/templates": { label: "Templates de Contrato", icon: "FileText" },
+  "/admin/templates/novo": { label: "Novo Template", icon: "FilePlus" },
+  "/admin/homologacao": { label: "Homologação MVP", icon: "CheckSquare" },
   
   // Design
   "/design": { label: "Design", icon: "Palette" },
@@ -76,14 +117,81 @@ const routeConfig: Record<string, { label: string; icon?: string }> = {
   "/audiovisual": { label: "Audiovisual", icon: "Video" },
   "/audiovisual/dashboard": { label: "Dashboard", icon: "LayoutDashboard" },
   "/audiovisual/tarefas": { label: "Tarefas", icon: "CheckSquare" },
+  "/audiovisual/minhas-tarefas": { label: "Minhas Tarefas", icon: "User" },
   "/audiovisual/captacoes": { label: "Captações", icon: "Camera" },
   "/audiovisual/projetos": { label: "Projetos", icon: "Film" },
+  "/audiovisual/equipamentos": { label: "Equipamentos", icon: "Clapperboard" },
+  
+  // Administrativo
+  "/administrativo": { label: "Administrativo", icon: "Briefcase" },
+  "/administrativo/dashboard": { label: "Dashboard", icon: "LayoutDashboard" },
+  "/administrativo/orcamentos": { label: "Orçamentos", icon: "Calculator" },
+  "/administrativo/propostas": { label: "Propostas", icon: "FileText" },
+  
+  // Cliente Portal
+  "/cliente": { label: "Portal do Cliente", icon: "User" },
+  "/cliente/painel": { label: "Painel", icon: "LayoutDashboard" },
+  "/cliente/painel-v2": { label: "Painel V2", icon: "LayoutDashboard" },
+  "/cliente/projetos": { label: "Meus Projetos", icon: "FolderOpen" },
+  "/cliente/planejamento-visual": { label: "Planejamento Visual", icon: "Eye" },
+  "/cliente/aprovacoes": { label: "Aprovações", icon: "CheckCircle" },
+  "/cliente/tarefas": { label: "Tarefas", icon: "CheckSquare" },
+  "/cliente/timeline": { label: "Timeline", icon: "History" },
+  "/cliente/perfil": { label: "Perfil", icon: "User" },
+  "/cliente/editar": { label: "Editar Perfil", icon: "Edit" },
+  "/cliente/planos": { label: "Planos", icon: "Package" },
+  "/cliente/exportacoes": { label: "Exportações", icon: "Download" },
+  "/cliente/social-analytics": { label: "Analytics Social", icon: "BarChart3" },
+  
+  // RH
+  "/rh": { label: "Recursos Humanos", icon: "Users" },
+  "/rh/colaboradores": { label: "Colaboradores", icon: "Users" },
+  "/rh/folha-ponto": { label: "Folha de Ponto", icon: "Clock" },
+  "/rh/pessoas": { label: "Pessoas", icon: "UserCircle" },
+  "/rh/ponto": { label: "Ponto", icon: "Timer" },
+  
+  // Tráfego
+  "/trafego": { label: "Tráfego", icon: "TrendingUp" },
+  "/trafego/dashboard": { label: "Dashboard Tráfego", icon: "LayoutDashboard" },
+  
+  // Fornecedores
+  "/fornecedores": { label: "Fornecedores", icon: "Truck" },
+  "/fornecedor": { label: "Portal Fornecedor", icon: "Package" },
+  "/fornecedor/dashboard": { label: "Dashboard", icon: "LayoutDashboard" },
+  
+  // Gestão
+  "/gestao": { label: "Gestão", icon: "Settings" },
+  "/gestor": { label: "Gestor", icon: "UserCog" },
+  "/gestor/dashboard": { label: "Dashboard Gestor", icon: "LayoutDashboard" },
+  
+  // Especialistas
+  "/especialistas": { label: "Especialistas", icon: "Users" },
+  "/especialista": { label: "Especialista", icon: "UserCircle" },
+  "/especialista/dashboard": { label: "Dashboard Especialista", icon: "LayoutDashboard" },
+  
+  // Gamificação
+  "/gamificacao": { label: "Gamificação", icon: "Trophy" },
+  "/gamificacao/admin": { label: "Admin Gamificação", icon: "Shield" },
+  
+  // Inventário
+  "/inventario": { label: "Inventário", icon: "Archive" },
+  
+  // Aprovações
+  "/aprovacoes": { label: "Aprovações", icon: "CheckCircle" },
+  "/aprovacao-job": { label: "Aprovação de Job", icon: "Briefcase" },
   
   // Outros
   "/calendario": { label: "Calendário", icon: "CalendarDays" },
   "/metas": { label: "Metas", icon: "Target" },
+  "/minhas-tarefas": { label: "Minhas Tarefas", icon: "CheckSquare" },
   "/relatorios": { label: "Relatórios", icon: "FileText" },
   "/configuracoes": { label: "Configurações", icon: "Settings" },
+  "/configuracoes/funcoes": { label: "Funções", icon: "UserCog" },
+  "/configuracoes/monitor": { label: "Monitor", icon: "Monitor" },
+  "/perfil": { label: "Perfil", icon: "User" },
+  "/planos": { label: "Planos", icon: "Package" },
+  "/style-guide": { label: "Guia de Estilo", icon: "Palette" },
+  "/design-system": { label: "Design System", icon: "Component" },
 };
 
 const getIconComponent = (iconName: string): LucideIcon => {
