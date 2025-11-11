@@ -21,6 +21,7 @@ import { OfflineIndicator } from "@/components/OfflineIndicator";
 import { useFrontendHealth } from "@/hooks/useFrontendHealth";
 import { createLocalStoragePersister, shouldDehydrateQuery } from "@/lib/queryPersister";
 import { BackgroundSyncProvider } from "@/components/BackgroundSyncProvider";
+import { MetricsDevTools } from "@/components/MetricsDevTools";
 
 // Critical pages (loaded immediately)
 import Auth from "./pages/Auth";
@@ -269,6 +270,7 @@ function App() {
             <TooltipProvider>
               <Sonner />
               <OfflineIndicator />
+              <MetricsDevTools />
               
               <BrowserRouter>
                 <AuthProvider>

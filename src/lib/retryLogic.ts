@@ -3,6 +3,8 @@
  * Implementa tentativas progressivamente mais lentas em caso de falha
  */
 
+import { useMetricsStore } from '@/store/metricsStore';
+
 interface RetryConfig {
   maxRetries?: number;
   baseDelay?: number;
@@ -53,13 +55,16 @@ export async function withRetry<T>(
 ): Promise<T> {
   const finalConfig = { ...DEFAULT_CONFIG, ...config };
   let lastError: any;
+  const startTime = Date.now();
 
   for (let attempt = 0; attempt <= finalConfig.maxRetries; attempt++) {
     try {
       const result = await fn();
       
-      // Log de sucesso se houve retries
+      // Registrar sucesso nas métricas
       if (attempt > 0) {
+        const retryTime = Date.now() - startTime;
+        useMetricsStore.getState().recordRetry('general', true, retryTime);
         console.log(`✅ Retry bem-sucedido após ${attempt} tentativa(s)`);
       }
       
@@ -67,11 +72,19 @@ export async function withRetry<T>(
     } catch (error) {
       lastError = error;
       
+      // Registrar erro nas métricas
+      useMetricsStore.getState().recordNetworkError('general', String(error));
+      
       // Verificar se deve fazer retry
       const shouldRetry = finalConfig.shouldRetry(error, attempt);
       const hasRetriesLeft = attempt < finalConfig.maxRetries;
       
       if (!shouldRetry || !hasRetriesLeft) {
+        // Registrar falha final
+        if (attempt > 0) {
+          const retryTime = Date.now() - startTime;
+          useMetricsStore.getState().recordRetry('general', false, retryTime);
+        }
         console.error(`❌ Falha após ${attempt + 1} tentativa(s):`, error);
         throw error;
       }
@@ -103,6 +116,7 @@ export async function withQueryRetry<T>(
   }
 ): Promise<T> {
   const priority = options?.priority || 'normal';
+  const startTime = Date.now();
   
   // Configurações por prioridade
   const configs = {
@@ -123,7 +137,19 @@ export async function withQueryRetry<T>(
     },
   };
 
-  return withRetry(fn, configs[priority]);
+  try {
+    const result = await withRetry(fn, configs[priority]);
+    
+    // Registrar tempo de query nas métricas
+    const queryTime = Date.now() - startTime;
+    useMetricsStore.getState().recordQueryTime(queryKey, queryTime);
+    
+    return result;
+  } catch (error) {
+    // Registrar erro específico da query
+    useMetricsStore.getState().recordNetworkError(queryKey, String(error));
+    throw error;
+  }
 }
 
 /**
