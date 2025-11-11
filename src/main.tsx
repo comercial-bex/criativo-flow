@@ -131,7 +131,7 @@ if (import.meta.env.PROD) {
   }
   
   localStorage.setItem('app-version', APP_VERSION);
-  console.log(`🎮 BEX Flow v${APP_VERSION} - Performance Fix`);
+  console.log(`🎮 SISTEMAS BEX v${APP_VERSION} - Performance Fix`);
   
   // 🔍 Detectar ambiente Lovable preview
   const isLovablePreview = window.location.hostname.includes('lovable.dev') || 

@@ -141,7 +141,7 @@ const VideoBackground: React.FC<VideoBackgroundProps> = ({ videoUrl, imageUrl })
                 <video
                     ref={videoRef}
                     className="absolute inset-0 min-w-full min-h-full object-cover w-auto h-auto"
-                    poster="/logo-bex-apk.svg"
+                    poster="/logo-bex.png"
                     loop
                     muted
                     playsInline

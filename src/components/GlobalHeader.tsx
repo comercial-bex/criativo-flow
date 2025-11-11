@@ -30,7 +30,7 @@ export function GlobalHeader({ className }: GlobalHeaderProps = {}) {
         <>
           {/* Mobile Layout */}
           <div className="flex items-center gap-2 flex-1">
-            <h1 className="text-lg font-semibold text-foreground">BEX Flow</h1>
+            <h1 className="text-lg font-semibold text-foreground">SISTEMAS BEX</h1>
           </div>
           
           <div className="flex items-center gap-2">

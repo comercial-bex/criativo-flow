@@ -30,7 +30,7 @@ export default function ConfiguracoesEmpresa() {
     pix_chave: '',
     texto_rodape: '',
     termos_condicoes: '',
-    logo_url: '/logo-bex-apk.svg'
+    logo_url: '/logo-bex.png'
   });
 
   useEffect(() => {
@@ -189,7 +189,7 @@ export default function ConfiguracoesEmpresa() {
                 id="logo_url"
                 value={formData.logo_url || ''}
                 onChange={(e) => setFormData({ ...formData, logo_url: e.target.value })}
-                placeholder="/logo-bex-apk.svg"
+                placeholder="/logo-bex.png"
               />
             </div>
           </div>

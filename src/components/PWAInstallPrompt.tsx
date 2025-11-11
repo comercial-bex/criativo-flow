@@ -66,7 +66,7 @@ export function PWAInstallPrompt() {
         <CardContent className="p-4">
           <div className="flex items-start gap-3">
             <div className="flex-1">
-              <h3 className="font-medium text-sm mb-1">Instalar BEX Flow</h3>
+              <h3 className="font-medium text-sm mb-1">Instalar SISTEMAS BEX</h3>
               <p className="text-xs text-muted-foreground mb-3">
                 Adicione à sua tela inicial para acesso rápido como app nativo
               </p>

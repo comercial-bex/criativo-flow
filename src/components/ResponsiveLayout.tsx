@@ -71,7 +71,7 @@ export function ResponsiveLayout({
           <footer className="layout-footer border-t border-border/50 bg-card/50 backdrop-blur-sm flex items-center justify-between text-xs text-muted-foreground">
             <div className={`flex items-center ${SPACING.footer.gap}`}>
               <span onClick={() => setShowVersion(!showVersion)} className="cursor-pointer hover:text-bex transition-colors">
-                🎮 BEX Flow v4.0.2
+                🎮 SISTEMAS BEX v4.0.2
               </span>
               {showVersion && <span className="text-[10px] opacity-60">- Gamer Edition</span>}
             </div>

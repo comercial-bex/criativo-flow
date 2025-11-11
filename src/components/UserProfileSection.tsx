@@ -1,7 +1,7 @@
 import { BexAvatar, BexAvatarFallback, BexAvatarImage } from "@/components/ui/bex-avatar";
 import { useAuth } from "@/hooks/useAuth";
 import { useEffect, useState } from "react";
-import bexLogo from "@/assets/logo-bex-apk.svg";
+import bexLogo from "@/assets/logo-bex.png";
 import { supabase } from "@/integrations/supabase/client";
 
 /**

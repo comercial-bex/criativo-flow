@@ -57,7 +57,7 @@ async function buscarDadosEmpresa() {
       conta: 'N/A',
       pix_chave: 'N/A',
       pix_tipo: 'email',
-      logo_url: '/logo-bex-apk.svg'
+      logo_url: '/logo-bex.png'
     };
   } catch (error) {
     console.error('Erro ao buscar dados da empresa:', error);
@@ -75,7 +75,7 @@ async function buscarDadosEmpresa() {
       conta: 'N/A',
       pix_chave: 'N/A',
       pix_tipo: 'email',
-      logo_url: '/logo-bex-apk.svg'
+      logo_url: '/logo-bex.png'
     };
   }
 }
@@ -87,7 +87,7 @@ export const gerarPDFOrcamento = async (orcamento: any, itens: any[]) => {
   
   // Buscar dados da empresa
   const empresa = await buscarDadosEmpresa();
-  const logoBase64 = await carregarLogoBEX(empresa.logo_url || '/logo-bex-apk.svg');
+  const logoBase64 = await carregarLogoBEX(empresa.logo_url || '/logo-bex.png');
   
   let yPos = 15;
   
