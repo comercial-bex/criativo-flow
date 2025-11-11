@@ -59,6 +59,7 @@ const QUERY_KEY = 'tarefas-optimized';
 // ============================================================================
 interface FetchTarefasParams {
   responsavelId?: string;
+  executorId?: string;
   projetoId?: string;
   clienteId?: string;
   status?: string;
@@ -72,6 +73,7 @@ interface FetchTarefasParams {
 export function useTarefas(params: FetchTarefasParams = {}) {
   const {
     responsavelId,
+    executorId,
     projetoId,
     clienteId,
     status,
@@ -111,6 +113,7 @@ export function useTarefas(params: FetchTarefasParams = {}) {
 
       // Aplicar filtros
       if (responsavelId) query = query.eq('responsavel_id', responsavelId);
+      if (executorId) query = query.eq('executor_id', executorId);
       if (projetoId) query = query.eq('projeto_id', projetoId);
       if (clienteId) query = query.eq('cliente_id', clienteId);
       if (status) query = query.eq('status', status as any);

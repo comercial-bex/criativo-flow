@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Users, Clock, AlertTriangle, CheckCircle2 } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { UniversalKanbanBoard } from '@/components/UniversalKanbanBoard';
@@ -12,6 +11,7 @@ import { useTutorial } from '@/hooks/useTutorial';
 import { TutorialButton } from '@/components/TutorialButton';
 import { useClientesAtivos } from '@/hooks/useClientesOptimized';
 import { useProjetosOptimized } from '@/hooks/useProjetosOptimized';
+import { useTarefas, useUpdateTarefa, useTarefasStats } from '@/hooks/useTarefasOptimized';
 
 // Interface para tarefas do Audiovisual
 interface AudiovisualTask {
@@ -35,20 +35,33 @@ interface AudiovisualTask {
 }
 
 const MinhasTarefasAudiovisual: React.FC = () => {
-  const [tasks, setTasks] = useState<AudiovisualTask[]>([]);
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const { startTutorial, hasSeenTutorial } = useTutorial('audiovisual-minhas-tarefas');
   
-  // ✅ Hooks otimizados para clientes e projetos
+  // ✅ Hooks otimizados
   const { data: clients = [] } = useClientesAtivos();
   const { data: projectsData } = useProjetosOptimized({ includeRelations: true });
-  const projects = projectsData?.projetos || [];
+  const { data: tarefasData, isLoading } = useTarefas({ 
+    executorId: user?.id,
+    includeRelations: true 
+  });
+  const { data: statsData } = useTarefasStats(user?.id);
+  const updateTarefaMutation = useUpdateTarefa();
   
-  const [profiles, setProfiles] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedTask, setSelectedTask] = useState<AudiovisualTask | null>(null);
+  const projects = projectsData?.projetos || [];
+  const tasks = tarefasData?.tarefas || [];
+  const stats = statsData || {
+    total: 0,
+    em_andamento: 0,
+    concluidas_semana: 0,
+    vencidas: 0
+  };
+  
+  const [selectedTask, setSelectedTask] = useState<any | null>(null);
   const [showTaskModal, setShowTaskModal] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedColumnId, setSelectedColumnId] = useState<string | null>(null);
-  const { toast } = useToast();
 
   const handleTaskCreate = (columnId?: string) => {
     toast({
@@ -59,158 +72,51 @@ const MinhasTarefasAudiovisual: React.FC = () => {
   };
 
   const handleTaskCreated = async () => {
-    await fetchData();
     setShowCreateModal(false);
   };
-  const { user } = useAuth();
-  const { startTutorial, hasSeenTutorial } = useTutorial('audiovisual-minhas-tarefas');
 
-  // Fetch inicial dos dados - APENAS tarefas atribuídas ao usuário
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-
-      if (!user?.id) {
-        toast({
-          title: "Erro",
-          description: "Usuário não autenticado",
-          variant: "destructive"
-        });
-        return;
-      }
-
-      // Buscar perfis
-      const { data: profilesData } = await supabase.from('pessoas').select('*');
-      setProfiles(profilesData || []);
-
-      // Buscar APENAS tarefas atribuídas ao executor atual (audiovisual)
-      const { data: audiovisualTasksData, error: audiovisualTasksError } = await supabase
-        .from('tarefa')
-        .select('*')
-        .eq('executor_id', user.id) // FILTRO CRÍTICO: apenas tarefas do executor
-        .order('created_at', { ascending: false });
-
-      if (audiovisualTasksError) {
-        console.error('Erro ao buscar tarefas:', audiovisualTasksError);
-        toast({
-          title: "Erro",
-          description: "Erro ao carregar tarefas",
-          variant: "destructive"
-        });
-      } else {
-        const formattedTasks = audiovisualTasksData?.map((task: any) => ({
-          ...task,
-          prioridade: task.prioridade as 'baixa' | 'media' | 'alta',
-          setor_responsavel: 'audiovisual',
-          responsavel_nome: 'Executor',
-          cliente_nome: clients.find(c => c.id === task.projeto_id)?.nome || 'Sem cliente',
-          projeto_nome: projects.find(p => p.id === task.projeto_id)?.titulo || 'Sem projeto'
-        })) || [];
-        
-        setTasks(formattedTasks);
-      }
-
-    } catch (error) {
-      console.error('Erro geral:', error);
-      toast({
-        title: "Erro",
-        description: "Erro ao carregar dados",
-        variant: "destructive"
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchData();
-  }, [user?.id]);
-
-  // Mover tarefa entre colunas (permitido para execução)
+  // Mover tarefa entre colunas
   const handleTaskMove = async (taskId: string, newStatus: string, observation?: string) => {
     try {
-      const { error } = await supabase
-        .from('tarefa')
-        .update({ 
+      await updateTarefaMutation.mutateAsync({
+        id: taskId,
+        updates: {
           status: newStatus as any,
-          ...(observation && { observacoes: observation }),
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', taskId);
-
-      if (error) throw error;
-
-      // Atualizar estado local
-      setTasks(prev => prev.map(task => 
-        task.id === taskId 
-          ? { ...task, status: newStatus, ...(observation && { observacoes: observation }) }
-          : task
-      ));
-
-      toast({
-        title: "Sucesso",
-        description: "Status atualizado com sucesso",
+          ...(observation && { observacoes: observation })
+        }
       });
 
+      toast({
+        title: "✅ Sucesso",
+        description: `Tarefa movida para ${newStatus}`,
+      });
     } catch (error) {
-      console.error('Erro ao mover tarefa:', error);
-      toast({
-        title: "Erro",
-        description: "Erro ao atualizar status",
-        variant: "destructive"
-      });
+      // Error handled by mutation
     }
   };
 
-  // Atualizar tarefa (apenas campos de execução, não escopo/SLA)
-  const handleTaskUpdate = async (taskId: string, updates: Partial<AudiovisualTask>) => {
+  // Atualizar tarefa
+  const handleTaskUpdate = async (taskId: string, updates: any) => {
     try {
-      // Bloquear edição de campos críticos (apenas execução permitida)
-      const allowedFields = ['status', 'horas_trabalhadas', 'observacoes', 'anexos'];
-      const filteredUpdates = Object.keys(updates)
-        .filter(key => allowedFields.includes(key))
-        .reduce((obj: any, key) => {
-          obj[key] = updates[key as keyof AudiovisualTask];
-          return obj;
-        }, {});
-
-      const { error } = await supabase
-        .from('tarefa')
-        .update({ ...filteredUpdates, updated_at: new Date().toISOString() })
-        .eq('id', taskId);
-
-      if (error) throw error;
-
-      setTasks(prev => prev.map(task => 
-        task.id === taskId ? { ...task, ...filteredUpdates } : task
-      ));
-
-      toast({
-        title: "Sucesso",
-        description: "Tarefa atualizada com sucesso",
+      await updateTarefaMutation.mutateAsync({
+        id: taskId,
+        updates
       });
-
     } catch (error) {
-      console.error('Erro ao atualizar tarefa:', error);
-      toast({
-        title: "Erro",
-        description: "Erro ao atualizar tarefa",
-        variant: "destructive"
-      });
+      // Error handled by mutation
     }
   };
 
-  // Calcular estatísticas
-  const stats = {
-    total: tasks.length,
-    emAndamento: tasks.filter(t => ['pre_producao', 'gravacao', 'pos_producao'].includes(t.status)).length,
-    revisao: tasks.filter(t => t.status === 'pos_producao').length,
-    atrasadas: tasks.filter(t => 
-      t.data_prazo && new Date(t.data_prazo) < new Date() && t.status !== 'entregue'
-    ).length
+  const handleTaskClick = (task: any) => {
+    setSelectedTask(task);
+    setShowTaskModal(true);
   };
 
-  if (loading) {
+  // Calculate stats
+  const totalTasks = tasks.length;
+  const inProgressTasks = stats.em_andamento;
+  const completedWeekTasks = stats.concluidas_semana;
+  const overdueTasks = stats.vencidas;
     return (
       <div className="p-6 space-y-6">
         <div className="flex justify-between items-center">

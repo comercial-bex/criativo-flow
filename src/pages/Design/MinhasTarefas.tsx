@@ -1,10 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { UniversalKanbanBoard } from '@/components/UniversalKanbanBoard';
 import { TaskDetailsModal } from '@/components/TaskDetailsModal';
 import { CreateTaskModal } from '@/components/CreateTaskModal';
-import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { 
@@ -16,6 +15,7 @@ import {
 } from 'lucide-react';
 import { useTutorial } from '@/hooks/useTutorial';
 import { TutorialButton } from '@/components/TutorialButton';
+import { useTarefas, useUpdateTarefa, useTarefasStats } from '@/hooks/useTarefasOptimized';
 
 interface DesignTask {
   id: string;
@@ -44,15 +44,30 @@ interface DesignTask {
 }
 
 export default function MinhasTarefasDesign() {
-  const [tasks, setTasks] = useState<DesignTask[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedTask, setSelectedTask] = useState<DesignTask | null>(null);
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const { startTutorial, hasSeenTutorial } = useTutorial('design-minhas-tarefas');
+  
+  // Use optimized hooks
+  const { data: tarefasData, isLoading } = useTarefas({ 
+    executorId: user?.id,
+    includeRelations: true 
+  });
+  const { data: statsData } = useTarefasStats(user?.id);
+  const updateTarefaMutation = useUpdateTarefa();
+  
+  const tasks = tarefasData?.tarefas || [];
+  const stats = statsData || {
+    total: 0,
+    em_andamento: 0,
+    concluidas_semana: 0,
+    vencidas: 0
+  };
+  
+  const [selectedTask, setSelectedTask] = useState<any | null>(null);
   const [showTaskModal, setShowTaskModal] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedColumnId, setSelectedColumnId] = useState<string | null>(null);
-
-  const { user } = useAuth();
-  const { toast } = useToast();
 
   const handleTaskCreate = () => {
     toast({
@@ -60,58 +75,6 @@ export default function MinhasTarefasDesign() {
       description: "Apenas GRS e Administradores podem criar tarefas.",
       variant: "destructive"
     });
-  };
-  const { startTutorial, hasSeenTutorial } = useTutorial('design-minhas-tarefas');
-
-  useEffect(() => {
-    if (user?.id) {
-      fetchData();
-    }
-  }, [user?.id]);
-
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-
-      if (!user?.id) {
-        toast({
-          title: "Erro",
-          description: "Usuário não autenticado",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      // Buscar APENAS tarefas atribuídas ao executor atual (design)
-      const { data: tasksData, error: tasksError } = await supabase
-        .from('tarefa')
-        .select('*')
-        .eq('executor_id', user.id) // FILTRO CRÍTICO: apenas tarefas do executor
-        .order('created_at', { ascending: false });
-
-      if (tasksError) throw tasksError;
-
-      // Processar tarefas
-      const processedTasks = tasksData?.map(task => ({
-        ...task,
-        prioridade: task.prioridade as 'baixa' | 'media' | 'alta',
-        setor_responsavel: 'design',
-        observacoes: (task as any).observacoes || '',
-        checklist: task.checklist ? JSON.parse(JSON.stringify(task.checklist)) : []
-      })) || [];
-
-      setTasks(processedTasks);
-
-    } catch (error) {
-      console.error('Erro ao buscar dados:', error);
-      toast({
-        title: "Erro",
-        description: "Erro ao carregar suas tarefas.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
   };
 
   const handleTaskMove = async (taskId: string, newStatus: string, observations?: string) => {
@@ -210,7 +173,7 @@ export default function MinhasTarefasDesign() {
     entregues: tasks.filter(t => t.status === 'entregue').length
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="p-6">
         <div className="animate-pulse space-y-4">

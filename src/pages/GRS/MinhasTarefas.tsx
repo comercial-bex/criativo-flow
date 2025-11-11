@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -17,12 +17,12 @@ import {
   Calendar,
   User
 } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { TaskWithDeadline } from '@/utils/statusUtils';
 import { useTutorial } from '@/hooks/useTutorial';
 import { TutorialButton } from '@/components/TutorialButton';
+import { useMinhasTarefas, useTarefasStats, useUpdateTarefa } from '@/hooks/useTarefasOptimized';
 
 interface MyTask extends TaskWithDeadline {
   descricao?: string;
@@ -44,9 +44,21 @@ export default function MinhasTarefas() {
   const { user } = useAuth();
   const { toast } = useToast();
   const { startTutorial, hasSeenTutorial } = useTutorial('grs-minhas-tarefas');
-  const [tasks, setTasks] = useState<MyTask[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedTask, setSelectedTask] = useState<MyTask | null>(null);
+  
+  // Use optimized hooks
+  const { data, isLoading } = useMinhasTarefas(user?.id);
+  const { data: statsData } = useTarefasStats(user?.id);
+  const updateTarefaMutation = useUpdateTarefa();
+  
+  const tasks = data?.tarefas || [];
+  const stats = statsData || {
+    total: 0,
+    em_andamento: 0,
+    vencidas: 0,
+    concluidas_semana: 0
+  };
+  
+  const [selectedTask, setSelectedTask] = useState<any | null>(null);
   const [showTaskDetails, setShowTaskDetails] = useState(false);
   
   // Filters
@@ -54,138 +66,34 @@ export default function MinhasTarefas() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [priorityFilter, setPriorityFilter] = useState('all');
 
-  // Stats
-  const [stats, setStats] = useState({
-    total: 0,
-    em_andamento: 0,
-    vencidas: 0,
-    concluidas_semana: 0
-  });
-
-  useEffect(() => {
-    if (user) {
-      fetchMyTasks();
-    }
-  }, [user]);
-
-  useEffect(() => {
-    calculateStats();
-  }, [tasks]);
-
-  const fetchMyTasks = async () => {
-    try {
-      setLoading(true);
-      
-      const { data, error } = await supabase
-        .from('tarefa')
-        .select(`
-          *,
-          responsavel:profiles!responsavel_id (nome),
-          projetos!projeto_id (
-            titulo,
-            clientes (nome)
-          )
-        `)
-        .eq('responsavel_id', user?.id)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-
-      const formattedTasks = (data || []).map((task: any) => ({
-        ...task,
-        responsavel_nome: task.responsavel?.nome || 'Não atribuído',
-        prioridade: task.prioridade as 'baixa' | 'media' | 'alta',
-        setor_responsavel: task.setor_responsavel || (task.area && task.area[0]) || 'GRS',
-        data_prazo: task.prazo_executor // Map for TaskKanbanBoard compatibility
-      }));
-
-      setTasks(formattedTasks as MyTask[]);
-    } catch (error) {
-      console.error('Erro ao carregar minhas tarefas:', error);
-      toast({
-        title: "Erro ao carregar tarefas",
-        description: "Não foi possível carregar suas tarefas",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const calculateStats = () => {
-    const total = tasks.length;
-    const em_andamento = tasks.filter(t => t.status === 'em_andamento').length;
-    
-    // Calculate overdue tasks
-    const now = new Date();
-    const vencidas = tasks.filter(t => {
-      if (!t.data_prazo || t.status === 'concluido') return false;
-      return new Date(t.data_prazo) < now;
-    }).length;
-
-    // Calculate completed this week
-    const oneWeekAgo = new Date();
-    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-    const concluidas_semana = tasks.filter(t => {
-      if (t.status !== 'concluido') return false;
-      return new Date(t.created_at) >= oneWeekAgo;
-    }).length;
-
-    setStats({ total, em_andamento, vencidas, concluidas_semana });
-  };
-
   const handleTaskMove = async (taskId: string, newStatus: string) => {
     try {
-      const { error } = await supabase
-        .from('tarefa')
-        .update({ status: newStatus as any })
-        .eq('id', taskId);
-
-      if (error) throw error;
-
-      setTasks(tasks.map(task => 
-        task.id === taskId ? { ...task, status: newStatus } : task
-      ));
+      await updateTarefaMutation.mutateAsync({ 
+        id: taskId, 
+        updates: { status: newStatus as any }
+      });
 
       toast({
         title: "Status atualizado!",
         description: "A tarefa foi movida com sucesso.",
       });
     } catch (error) {
-      console.error('Erro ao atualizar status:', error);
-      toast({
-        title: "Erro ao atualizar status",
-        description: "Não foi possível atualizar o status da tarefa",
-        variant: "destructive",
-      });
+      // Error handled by mutation
     }
   };
 
-  const handleTaskUpdate = async (taskId: string, updates: Partial<MyTask>) => {
+  const handleTaskUpdate = async (taskId: string, updates: any) => {
     try {
-      const { error } = await supabase
-        .from('tarefa')
-        .update(updates as any)
-        .eq('id', taskId);
-
-      if (error) throw error;
-
-      setTasks(tasks.map(task => 
-        task.id === taskId ? { ...task, ...updates } : task
-      ));
-
-      fetchMyTasks(); // Refresh to get updated data
-    } catch (error) {
-      console.error('Erro ao atualizar tarefa:', error);
-      toast({
-        title: "Erro ao atualizar tarefa",
-        description: "Não foi possível atualizar a tarefa",
-        variant: "destructive",
+      await updateTarefaMutation.mutateAsync({ 
+        id: taskId, 
+        updates 
       });
+    } catch (error) {
+      // Error handled by mutation
     }
   };
 
-  const handleTaskClick = (task: MyTask) => {
+  const handleTaskClick = (task: any) => {
     setSelectedTask(task);
     setShowTaskDetails(true);
   };
@@ -195,7 +103,10 @@ export default function MinhasTarefas() {
     const matchesSearch = searchTerm === '' || 
       task.titulo.toLowerCase().includes(searchTerm.toLowerCase()) ||
       task.projetos?.titulo?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      task.projetos?.clientes?.nome?.toLowerCase().includes(searchTerm.toLowerCase());
+      (task.projetos?.clientes && 
+       typeof task.projetos.clientes === 'object' && 
+       'nome' in task.projetos.clientes &&
+       task.projetos.clientes.nome?.toLowerCase().includes(searchTerm.toLowerCase()));
     
     const matchesStatus = statusFilter === 'all' || task.status === statusFilter;
     const matchesPriority = priorityFilter === 'all' || task.prioridade === priorityFilter;
@@ -314,7 +225,7 @@ export default function MinhasTarefas() {
       </Card>
 
       {/* Tasks Kanban */}
-      {loading ? (
+      {isLoading ? (
         <div className="text-center py-8">Carregando suas tarefas...</div>
       ) : (
         <TaskKanbanBoard
