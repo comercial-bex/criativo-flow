@@ -3789,9 +3789,11 @@ export type Database = {
       datas_comemorativas: {
         Row: {
           created_at: string | null
+          created_by: string | null
           data_fixa: string | null
           descricao: string | null
           id: string
+          manual: boolean | null
           mes_referencia: number | null
           nome: string
           potencial_engajamento: string | null
@@ -3802,9 +3804,11 @@ export type Database = {
         }
         Insert: {
           created_at?: string | null
+          created_by?: string | null
           data_fixa?: string | null
           descricao?: string | null
           id?: string
+          manual?: boolean | null
           mes_referencia?: number | null
           nome: string
           potencial_engajamento?: string | null
@@ -3815,9 +3819,11 @@ export type Database = {
         }
         Update: {
           created_at?: string | null
+          created_by?: string | null
           data_fixa?: string | null
           descricao?: string | null
           id?: string
+          manual?: boolean | null
           mes_referencia?: number | null
           nome?: string
           potencial_engajamento?: string | null

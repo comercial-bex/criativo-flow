@@ -12,6 +12,8 @@ export interface DataComemorativa {
   descricao: string | null;
   potencial_engajamento: 'alto' | 'medio' | 'baixo';
   sugestao_campanha: string | null;
+  manual?: boolean;
+  created_by?: string;
 }
 
 export interface PlanejamentoCampanha {
@@ -118,6 +120,65 @@ export function useDatasComemoratias(planejamentoId: string, mesReferencia?: str
     }
   };
 
+  const adicionarDataManual = async (data: Omit<DataComemorativa, 'id'>) => {
+    try {
+      const { data: userData } = await supabase.auth.getUser();
+      
+      const { data: novaData, error } = await supabase
+        .from('datas_comemorativas')
+        .insert({
+          ...data,
+          manual: true,
+          created_by: userData.user?.id
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      setDatas([...datas, novaData as DataComemorativa]);
+      return { data: novaData, error: null };
+    } catch (error) {
+      console.error('Erro ao adicionar data manual:', error);
+      return { data: null, error };
+    }
+  };
+
+  const editarDataManual = async (id: string, updates: Partial<DataComemorativa>) => {
+    try {
+      const { data: updatedData, error } = await supabase
+        .from('datas_comemorativas')
+        .update(updates)
+        .eq('id', id)
+        .eq('manual', true)
+        .select()
+        .single();
+
+      if (error) throw error;
+      setDatas(datas.map(d => d.id === id ? updatedData as DataComemorativa : d));
+      return { data: updatedData, error: null };
+    } catch (error) {
+      console.error('Erro ao editar data manual:', error);
+      return { data: null, error };
+    }
+  };
+
+  const removerDataManual = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('datas_comemorativas')
+        .delete()
+        .eq('id', id)
+        .eq('manual', true);
+
+      if (error) throw error;
+      setDatas(datas.filter(d => d.id !== id));
+      return { error: null };
+    } catch (error) {
+      console.error('Erro ao remover data manual:', error);
+      return { error };
+    }
+  };
+
   return {
     datas,
     campanhas,
@@ -127,6 +188,9 @@ export function useDatasComemoratias(planejamentoId: string, mesReferencia?: str
       fetchCampanhas();
     },
     adicionarCampanha,
-    removerCampanha
+    removerCampanha,
+    adicionarDataManual,
+    editarDataManual,
+    removerDataManual
   };
 }

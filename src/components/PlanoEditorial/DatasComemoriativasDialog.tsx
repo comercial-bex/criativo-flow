@@ -7,9 +7,19 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
-import { Calendar, Search, TrendingUp, Sparkles, Plus } from 'lucide-react';
+import { Calendar, Search, TrendingUp, Sparkles, Plus, Trash2, Edit2 } from 'lucide-react';
 import { DataComemorativa } from '@/hooks/useDatasComemoratias';
 import { toast } from '@/lib/toast-compat';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 interface DatasComemoriativasDialogProps {
   open: boolean;
@@ -17,6 +27,7 @@ interface DatasComemoriativasDialogProps {
   datas: DataComemorativa[];
   mesReferencia: string;
   onSalvar: (campanhasSelecionadas: CampanhaSelecionada[]) => void;
+  onRemoverDataManual?: (id: string) => void;
 }
 
 interface CampanhaSelecionada {
@@ -36,11 +47,13 @@ export function DatasComemoriativasDialog({
   onOpenChange,
   datas,
   mesReferencia,
-  onSalvar
+  onSalvar,
+  onRemoverDataManual
 }: DatasComemoriativasDialogProps) {
   const [busca, setBusca] = useState('');
   const [filtroEngajamento, setFiltroEngajamento] = useState<string>('todos');
   const [campanhasSelecionadas, setCampanhasSelecionadas] = useState<Map<string, CampanhaSelecionada>>(new Map());
+  const [dataParaDeletar, setDataParaDeletar] = useState<string | null>(null);
 
   const mes = new Date(mesReferencia).getMonth() + 1;
   const ano = new Date(mesReferencia).getFullYear();
@@ -58,6 +71,11 @@ export function DatasComemoriativasDialog({
   const datasSegmento = useMemo(() => 
     datas.filter(d => d.tipo === 'segmento' && d.mes_referencia === mes),
     [datas, mes]
+  );
+
+  const datasManuais = useMemo(() => 
+    datas.filter(d => d.manual === true),
+    [datas]
   );
 
   const filtrarDatas = (datasList: DataComemorativa[]) => {
@@ -135,7 +153,14 @@ export function DatasComemoriativasDialog({
     setCampanhasSelecionadas(new Map());
   };
 
-  const renderDataCard = (data: DataComemorativa) => {
+  const handleDeletarDataManual = () => {
+    if (dataParaDeletar && onRemoverDataManual) {
+      onRemoverDataManual(dataParaDeletar);
+      setDataParaDeletar(null);
+    }
+  };
+
+  const renderDataCard = (data: DataComemorativa, showActions = false) => {
     const selecionada = campanhasSelecionadas.has(data.id);
     const campanha = campanhasSelecionadas.get(data.id);
 
@@ -153,6 +178,9 @@ export function DatasComemoriativasDialog({
                 <Label htmlFor={`data-${data.id}`} className="font-semibold cursor-pointer">
                   {data.nome} {data.data_fixa && `(${data.data_fixa})`}
                 </Label>
+                {data.manual && (
+                  <Badge variant="outline" className="text-xs">✏️ Manual</Badge>
+                )}
               </div>
               
               <div className="flex items-center gap-2 mb-2 flex-wrap">
@@ -171,6 +199,19 @@ export function DatasComemoriativasDialog({
                 <p className="text-sm text-muted-foreground">💡 {data.sugestao_campanha}</p>
               )}
             </div>
+
+            {showActions && data.manual && (
+              <div className="flex gap-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setDataParaDeletar(data.id)}
+                  className="h-8 w-8 p-0"
+                >
+                  <Trash2 className="h-4 w-4 text-destructive" />
+                </Button>
+              </div>
+            )}
           </div>
 
           {selecionada && campanha && (
@@ -243,7 +284,7 @@ export function DatasComemoriativasDialog({
 
           {/* Tabs */}
           <Tabs defaultValue="nacionais" className="flex-1 overflow-hidden flex flex-col">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="nacionais">
                 🇧🇷 Nacionais ({datasNacionais.length})
               </TabsTrigger>
@@ -253,11 +294,14 @@ export function DatasComemoriativasDialog({
               <TabsTrigger value="segmentos">
                 🎯 Segmentos ({datasSegmento.length})
               </TabsTrigger>
+              <TabsTrigger value="manuais">
+                ✏️ Manuais ({datasManuais.length})
+              </TabsTrigger>
             </TabsList>
 
             <div className="flex-1 overflow-y-auto mt-4">
               <TabsContent value="nacionais" className="space-y-3 m-0">
-                {filtrarDatas(datasNacionais).map(renderDataCard)}
+                {filtrarDatas(datasNacionais).map(data => renderDataCard(data, false))}
                 {filtrarDatas(datasNacionais).length === 0 && (
                   <p className="text-center text-muted-foreground py-8">
                     Nenhuma data nacional encontrada para este mês
@@ -266,7 +310,7 @@ export function DatasComemoriativasDialog({
               </TabsContent>
 
               <TabsContent value="regionais" className="space-y-3 m-0">
-                {filtrarDatas(datasRegionais).map(renderDataCard)}
+                {filtrarDatas(datasRegionais).map(data => renderDataCard(data, false))}
                 {filtrarDatas(datasRegionais).length === 0 && (
                   <p className="text-center text-muted-foreground py-8">
                     Nenhuma data regional encontrada para este mês
@@ -275,10 +319,21 @@ export function DatasComemoriativasDialog({
               </TabsContent>
 
               <TabsContent value="segmentos" className="space-y-3 m-0">
-                {filtrarDatas(datasSegmento).map(renderDataCard)}
+                {filtrarDatas(datasSegmento).map(data => renderDataCard(data, false))}
                 {filtrarDatas(datasSegmento).length === 0 && (
                   <p className="text-center text-muted-foreground py-8">
                     Nenhuma data de segmento encontrada para este mês
+                  </p>
+                )}
+              </TabsContent>
+
+              <TabsContent value="manuais" className="space-y-3 m-0">
+                {filtrarDatas(datasManuais).map(data => renderDataCard(data, true))}
+                {filtrarDatas(datasManuais).length === 0 && (
+                  <p className="text-center text-muted-foreground py-8">
+                    Nenhuma data manual criada ainda.
+                    <br />
+                    <span className="text-xs">Use o botão "Criar Data Manual" para adicionar suas próprias datas comemorativas.</span>
                   </p>
                 )}
               </TabsContent>
@@ -302,6 +357,24 @@ export function DatasComemoriativasDialog({
           </div>
         </div>
       </DialogContent>
+
+      {/* Alert Dialog para confirmar deleção */}
+      <AlertDialog open={!!dataParaDeletar} onOpenChange={() => setDataParaDeletar(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Deletar Data Comemorativa Manual?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta ação não pode ser desfeita. A data comemorativa manual será removida permanentemente.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeletarDataManual} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Deletar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Dialog>
   );
 }

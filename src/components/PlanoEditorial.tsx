@@ -24,6 +24,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { usePostDragDrop } from "@/hooks/usePostDragDrop";
 import { useDatasComemoratias } from "@/hooks/useDatasComemoratias";
 import { DatasComemoriativasDialog } from "@/components/PlanoEditorial/DatasComemoriativasDialog";
+import { AddDataComemoriativaManualDialog } from "@/components/PlanoEditorial/AddDataComemoriativaManualDialog";
 import { CampanhaCard } from "@/components/PlanoEditorial/CampanhaCard";
 import { CampanhaPostsGenerator } from "@/components/PlanoEditorial/CampanhaPostsGenerator";
 
@@ -325,10 +326,11 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
   const [publicoAlvo, setPublicoAlvo] = useState('');
   const [orcamentoSugerido, setOrcamentoSugerido] = useState('');
   const [dialogDatasOpen, setDialogDatasOpen] = useState(false);
+  const [dialogDataManualOpen, setDialogDataManualOpen] = useState(false);
 
   // Hook para datas comemorativas
   const mesReferencia = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-01`;
-  const { datas, campanhas, loading: loadingDatas, adicionarCampanha, removerCampanha } = useDatasComemoratias(planejamento.id, mesReferencia);
+  const { datas, campanhas, loading: loadingDatas, adicionarCampanha, removerCampanha, removerDataManual, refetch } = useDatasComemoratias(planejamento.id, mesReferencia);
 
   // Initialize drag & drop hook
   const {
@@ -2834,10 +2836,16 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
                   <Calendar className="h-5 w-5" />
                   Datas Estratégicas do Planejamento
                 </CardTitle>
-                <Button onClick={() => setDialogDatasOpen(true)} variant="default">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Adicionar Datas
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button onClick={() => setDialogDatasOpen(true)} variant="default">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Adicionar Datas
+                  </Button>
+                  <Button onClick={() => setDialogDataManualOpen(true)} variant="outline">
+                    <Sparkles className="h-4 w-4 mr-2" />
+                    Criar Data Manual
+                  </Button>
+                </div>
               </div>
             </CardHeader>
             <CardContent>
@@ -3081,6 +3089,25 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
             }
           }
           toast.success(`${campanhasSelecionadas.length} campanha(s) adicionada(s) com sucesso!`);
+        }}
+        onRemoverDataManual={async (id) => {
+          const result = await removerDataManual(id);
+          if (!result.error) {
+            toast.success('Data comemorativa manual removida com sucesso');
+            refetch();
+          } else {
+            toast.error('Erro ao remover data comemorativa');
+          }
+        }}
+      />
+
+      {/* Modal de Criar Data Manual */}
+      <AddDataComemoriativaManualDialog
+        open={dialogDataManualOpen}
+        onOpenChange={setDialogDataManualOpen}
+        onDataCriada={() => {
+          toast.success('Data comemorativa manual criada!');
+          refetch();
         }}
       />
     </div>
