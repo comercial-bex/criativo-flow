@@ -9695,6 +9695,7 @@ export type Database = {
           status_post: Database["public"]["Enums"]["post_status_type"] | null
           tarefa_aprovacao_id: string | null
           tarefa_criacao_id: string | null
+          tarefa_vinculada_id: string | null
           tipo_criativo: string
           titulo: string
           updated_at: string
@@ -9727,6 +9728,7 @@ export type Database = {
           status_post?: Database["public"]["Enums"]["post_status_type"] | null
           tarefa_aprovacao_id?: string | null
           tarefa_criacao_id?: string | null
+          tarefa_vinculada_id?: string | null
           tipo_criativo: string
           titulo: string
           updated_at?: string
@@ -9759,6 +9761,7 @@ export type Database = {
           status_post?: Database["public"]["Enums"]["post_status_type"] | null
           tarefa_aprovacao_id?: string | null
           tarefa_criacao_id?: string | null
+          tarefa_vinculada_id?: string | null
           tipo_criativo?: string
           titulo?: string
           updated_at?: string
@@ -9816,6 +9819,27 @@ export type Database = {
           {
             foreignKeyName: "posts_planejamento_tarefa_criacao_id_fkey"
             columns: ["tarefa_criacao_id"]
+            isOneToOne: false
+            referencedRelation: "vw_dashboard_vencimentos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "posts_planejamento_tarefa_vinculada_id_fkey"
+            columns: ["tarefa_vinculada_id"]
+            isOneToOne: false
+            referencedRelation: "tarefa"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "posts_planejamento_tarefa_vinculada_id_fkey"
+            columns: ["tarefa_vinculada_id"]
+            isOneToOne: false
+            referencedRelation: "vw_calendario_completo"
+            referencedColumns: ["tarefa_id"]
+          },
+          {
+            foreignKeyName: "posts_planejamento_tarefa_vinculada_id_fkey"
+            columns: ["tarefa_vinculada_id"]
             isOneToOne: false
             referencedRelation: "vw_dashboard_vencimentos"
             referencedColumns: ["id"]

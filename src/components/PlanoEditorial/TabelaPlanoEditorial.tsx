@@ -17,10 +17,13 @@ import { DndContext, closestCenter, DragEndEvent, PointerSensor, useSensor, useS
 import { SortableContext, verticalListSortingStrategy, arrayMove, useSortable } from '@dnd-kit/sortable';
 import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
 import { CSS } from '@dnd-kit/utilities';
+import { CreateTaskModal } from '@/components/CreateTaskModal';
+import type { TipoTarefa } from '@/types/tarefa';
 
 interface TabelaPlanoEditorialProps {
   planejamentoId: string;
   clienteId: string;
+  projetoId: string;
   posts: any[];
   onPostsChange: (posts: any[]) => void;
   currentDate: Date;
@@ -32,6 +35,7 @@ interface TabelaPlanoEditorialProps {
 export const TabelaPlanoEditorial: React.FC<TabelaPlanoEditorialProps> = ({
   planejamentoId,
   clienteId,
+  projetoId,
   posts,
   onPostsChange,
   currentDate,
@@ -47,6 +51,7 @@ export const TabelaPlanoEditorial: React.FC<TabelaPlanoEditorialProps> = ({
   const [analiseIA, setAnaliseIA] = useState("");
   const [clienteNome, setClienteNome] = useState("");
   const [exportando, setExportando] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
   
   // Estados de filtros
   const [formatosFiltrados, setFormatosFiltrados] = useState<string[]>([]);
@@ -100,24 +105,72 @@ export const TabelaPlanoEditorial: React.FC<TabelaPlanoEditorialProps> = ({
   };
 
   const adicionarNovaLinha = () => {
-    const novoPostData = {
-      id: `temp-${Date.now()}`,
-      planejamento_id: planejamentoId,
-      titulo: `Post ${posts.length + 1}`,
-      data_postagem: format(currentDate, "yyyy-MM-dd"),
-      formato_postagem: "post",
-      objetivo_postagem: "educar",
-      legenda: "",
-      tipo_criativo: "imagem",
-      responsavel_id: "",
-      contexto_estrategico: "",
-      hashtags: [],
-      status: "rascunho",
-      isNew: true,
+    // Abrir modal de criação de tarefa ao invés de adicionar linha inline
+    setShowCreateModal(true);
+  };
+
+  // Mapeamento de campos: Tarefa → Post
+  const mapearTarefaParaPost = (tarefa: any) => {
+    const tipoParaFormato: Record<string, string> = {
+      'reels_instagram': 'reels',
+      'stories_interativo': 'story',
+      'criativo_card': 'card',
+      'criativo_carrossel': 'carrossel',
+      'criativo_vt': 'motion',
+      'feed_post': 'post'
     };
 
-    setNovoPost(novoPostData);
-    setEditingRow(novoPostData.id);
+    const statusParaPost: Record<string, string> = {
+      'backlog': 'a_fazer',
+      'em_producao': 'em_producao',
+      'aprovado': 'pronto',
+      'publicado': 'publicado'
+    };
+
+    return {
+      planejamento_id: planejamentoId,
+      titulo: tarefa.titulo,
+      descricao: tarefa.descricao || '',
+      formato_postagem: tipoParaFormato[tarefa.tipo] || 'post',
+      tipo_criativo: 'imagem',
+      objetivo_postagem: tarefa.kpis?.briefing?.objetivo_postagem || 'educar',
+      data_postagem: tarefa.prazo_executor || new Date().toISOString(),
+      responsavel_id: tarefa.executor_id,
+      copy_caption: tarefa.descricao || '',
+      persona_alvo: tarefa.publico_alvo || '',
+      status_post: (statusParaPost[tarefa.status] || 'a_fazer') as 'a_fazer' | 'em_producao' | 'pronto' | 'publicado' | 'temporario',
+      tarefa_vinculada_id: tarefa.id,
+      arquivo_visual_url: tarefa.kpis?.referencias?.visuais?.[0] || null,
+      hashtags: tarefa.kpis?.briefing?.hashtags || [],
+      call_to_action: tarefa.kpis?.briefing?.call_to_action || ''
+    };
+  };
+
+  const handleTaskCreated = async (tarefa: any) => {
+    try {
+      const postData = mapearTarefaParaPost(tarefa);
+
+      // Criar post vinculado à tarefa
+      const { data: novoPost, error } = await supabase
+        .from('posts_planejamento')
+        .insert([postData])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      // Atualizar lista de posts
+      onPostsChange([...posts, novoPost]);
+      
+      toast.success('Post criado a partir da tarefa!');
+      setShowCreateModal(false);
+
+      return novoPost;
+    } catch (error) {
+      console.error('Erro ao criar post a partir da tarefa:', error);
+      toast.error('Erro ao criar post');
+      throw error;
+    }
   };
 
   const salvarPost = async (post: any) => {
@@ -589,6 +642,36 @@ Seja objetivo e prático.`;
           )}
         </CardContent>
       </Card>
+
+      {/* Modal de criação de tarefa */}
+      <CreateTaskModal
+        open={showCreateModal}
+        onOpenChange={setShowCreateModal}
+        onTaskCreate={async (taskData) => {
+          // Criar tarefa
+          const { data: { user } } = await supabase.auth.getUser();
+          if (!user) throw new Error('Usuário não autenticado');
+
+          const { data: tarefa, error } = await supabase
+            .from('tarefa')
+            .insert({
+              ...taskData,
+              cliente_id: clienteId,
+              projeto_id: projetoId
+            })
+            .select()
+            .single();
+          
+          if (error) throw error;
+          
+          // Criar post vinculado
+          await handleTaskCreated(tarefa);
+          
+          return tarefa;
+        }}
+        projetoId={projetoId}
+        clienteId={clienteId}
+      />
 
       <DialogAnaliseIA
         open={dialogAnaliseOpen}

@@ -2652,6 +2652,7 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
                 <TabelaPlanoEditorial
                   planejamentoId={planejamento.id}
                   clienteId={clienteId}
+                  projetoId={projetoId}
                   posts={[...posts, ...postsGerados]}
                   onPostsChange={(updatedPosts) => {
                     const savedPosts = updatedPosts.filter(p => !p.status_post || p.status_post !== 'temporario');
@@ -2741,6 +2742,7 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
                    <TabelaPlanoEditorial
                      planejamentoId={planejamento.id}
                      clienteId={clienteId}
+                     projetoId={projetoId}
                      posts={[...posts, ...postsGerados]}
                      onPostsChange={(updatedPosts) => {
                        const savedPosts = updatedPosts.filter(p => !p.status || p.status !== 'temporario');
