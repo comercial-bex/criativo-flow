@@ -24,6 +24,24 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/lib/toast-compat';
 
+// Mapeia formato de post para tipo criativo aceito pelo banco
+const mapFormatoToTipoCriativo = (formato: string): 'post' | 'carrossel' | 'stories' => {
+  const mapping: Record<string, 'post' | 'carrossel' | 'stories'> = {
+    'post': 'post',
+    'card': 'post',
+    'imagem': 'post',
+    'video': 'post',
+    'reels': 'post',
+    'motion': 'post',
+    'carrossel': 'carrossel',
+    'carousel': 'carrossel',
+    'stories': 'stories',
+    'story': 'stories',
+  };
+  
+  return mapping[formato.toLowerCase()] || 'post';
+};
+
 interface WizardProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -138,7 +156,7 @@ export function PlanejamentoEditorialWizard({
           legenda: c.legenda,
           objetivo_postagem: c.objetivo,
           formato_postagem: c.tipo,
-          tipo_criativo: c.tipo === 'video' ? 'video' : 'imagem',
+          tipo_criativo: mapFormatoToTipoCriativo(c.tipo),
           componente_hesec: c.componente,
           persona_alvo: c.persona_alvo,
           call_to_action: c.call_to_action,
