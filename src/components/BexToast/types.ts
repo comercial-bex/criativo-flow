@@ -16,6 +16,8 @@ export interface Toast {
     onClick: () => void;
   };
   timestamp: number;
+  count?: number; // Para agrupamento de toasts similares
+  groupKey?: string; // Chave de agrupamento
 }
 
 export interface ToastOptions {

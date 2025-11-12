@@ -91,15 +91,46 @@ export function BexToastProvider({ children }: { children: ReactNode }) {
     const id = Math.random().toString(36).substring(7);
     const priority = options.priority || "normal";
     
+    // Chave de agrupamento: título + variante
+    const groupKey = `${options.title}|${options.variant || "default"}`;
+    
     const toast: Toast = {
       id,
       ...options,
       priority,
       timestamp: Date.now(),
+      count: 1,
+      groupKey,
     };
 
     // Tocar som de notificação
     toastSoundManager.play(options.variant, options.priority);
+
+    // Verificar se já existe toast similar nos visíveis
+    const existingVisibleIndex = visibleToasts.findIndex(t => t.groupKey === groupKey);
+    if (existingVisibleIndex !== -1) {
+      setVisibleToasts((prev) => 
+        prev.map((t, idx) => 
+          idx === existingVisibleIndex 
+            ? { ...t, count: (t.count || 1) + 1, timestamp: Date.now() }
+            : t
+        )
+      );
+      return visibleToasts[existingVisibleIndex].id;
+    }
+
+    // Verificar se já existe toast similar na fila
+    const existingQueuedIndex = queuedToasts.findIndex(t => t.groupKey === groupKey);
+    if (existingQueuedIndex !== -1) {
+      setQueuedToasts((prev) => 
+        prev.map((t, idx) => 
+          idx === existingQueuedIndex 
+            ? { ...t, count: (t.count || 1) + 1, timestamp: Date.now() }
+            : t
+        )
+      );
+      return queuedToasts[existingQueuedIndex].id;
+    }
 
     // Toasts críticos sempre aparecem imediatamente, removendo o toast mais antigo se necessário
     if (priority === "critical") {
@@ -123,7 +154,7 @@ export function BexToastProvider({ children }: { children: ReactNode }) {
     }
 
     return id;
-  }, [visibleToasts.length, maxVisible]);
+  }, [visibleToasts, queuedToasts, maxVisible]);
 
   const closeToast = useCallback((id: string) => {
     setVisibleToasts((prev) => prev.filter((toast) => toast.id !== id));

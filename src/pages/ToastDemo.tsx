@@ -95,6 +95,59 @@ export default function ToastDemoPage() {
       ]
     },
     {
+      category: "Agrupamento de Toasts",
+      items: [
+        {
+          label: "3 Arquivos Enviados",
+          onClick: () => {
+            toast.success("Arquivo enviado", "documento.pdf");
+            setTimeout(() => toast.success("Arquivo enviado", "imagem.jpg"), 200);
+            setTimeout(() => toast.success("Arquivo enviado", "planilha.xlsx"), 400);
+          }
+        },
+        {
+          label: "Múltiplos Erros",
+          onClick: () => {
+            for (let i = 1; i <= 5; i++) {
+              setTimeout(() => {
+                toast.error("Erro ao processar", `Falha no item ${i}`);
+              }, i * 150);
+            }
+          }
+        },
+        {
+          label: "Notificações Repetidas",
+          onClick: () => {
+            for (let i = 1; i <= 7; i++) {
+              setTimeout(() => {
+                toast.info("Nova mensagem recebida");
+              }, i * 200);
+            }
+          }
+        },
+        {
+          label: "Downloads Múltiplos",
+          onClick: () => {
+            for (let i = 1; i <= 4; i++) {
+              setTimeout(() => {
+                toast.success("Download concluído", "Arquivo salvo com sucesso");
+              }, i * 300);
+            }
+          }
+        },
+        {
+          label: "Warnings Agrupados",
+          onClick: () => {
+            for (let i = 1; i <= 6; i++) {
+              setTimeout(() => {
+                toast.warning("Atenção necessária", "Verifique os dados antes de continuar");
+              }, i * 250);
+            }
+          }
+        }
+      ]
+    },
+    {
       category: "Sistema de Prioridades",
       items: [
         {

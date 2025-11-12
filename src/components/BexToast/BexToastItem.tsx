@@ -118,14 +118,33 @@ export function BexToastItem({ toast, onClose }: BexToastItemProps) {
 
             {/* Content */}
             <div className="flex-1 min-w-0">
-              <motion.h3
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.15 }}
-                className="font-semibold text-sm text-foreground leading-tight"
-              >
-                {toast.title}
-              </motion.h3>
+              <div className="flex items-center gap-2">
+                <motion.h3
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.15 }}
+                  className="font-semibold text-sm text-foreground leading-tight"
+                >
+                  {toast.title}
+                </motion.h3>
+                
+                {toast.count && toast.count > 1 && (
+                  <motion.span
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 20 }}
+                    className={cn(
+                      "inline-flex items-center justify-center",
+                      "min-w-[1.25rem] h-5 px-1.5 rounded-full",
+                      "text-xs font-bold",
+                      "bg-foreground/10 text-foreground",
+                      "border border-border/50"
+                    )}
+                  >
+                    {toast.count}
+                  </motion.span>
+                )}
+              </div>
 
               {toast.description && (
                 <motion.p

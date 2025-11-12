@@ -12,6 +12,7 @@ Sistema de notificações toast personalizado com design BEX, gradientes animado
 - **Posições Configuráveis**: 6 posições disponíveis
 - **Sistema de Prioridades**: critical, high, normal, low
 - **Queue Inteligente**: Limite de toasts visíveis com fila automática
+- **Agrupamento Automático**: Toasts similares são agrupados automaticamente
 - **Progress Bar**: Indicador visual de tempo restante
 - **Ações**: Botões de ação opcionais
 - **Auto-dismiss**: Fechamento automático configurável
@@ -553,7 +554,119 @@ showToast({
 // Duração padrão é 5000ms (5 segundos)
 ```
 
+## 🔄 Agrupamento Automático de Toasts
+
+O sistema agrupa automaticamente toasts similares (mesmo título e variante), mostrando um contador ao invés de múltiplos toasts repetidos.
+
+### Como Funciona
+
+Toasts com o mesmo título e variante são automaticamente agrupados:
+
+```typescript
+// Sem agrupamento: apareceriam 3 toasts separados
+// Com agrupamento: aparece 1 toast com contador "3"
+
+toast.success("Arquivo enviado", "documento.pdf");
+toast.success("Arquivo enviado", "imagem.jpg");
+toast.success("Arquivo enviado", "planilha.xlsx");
+
+// Resultado: "Arquivo enviado [3]"
+```
+
+### Chave de Agrupamento
+
+A chave de agrupamento é formada por: `título + variante`
+
+```typescript
+// Mesmos toasts - serão agrupados
+toast.success("Download concluído");
+toast.success("Download concluído");
+toast.success("Download concluído");
+// Resultado: "Download concluído [3]"
+
+// Toasts diferentes - NÃO serão agrupados
+toast.success("Download concluído");  // Success
+toast.error("Download concluído");    // Error (variante diferente)
+toast.success("Upload concluído");    // Título diferente
+```
+
+### Exemplos Práticos
+
+**Upload múltiplo de arquivos:**
+```typescript
+const uploadMultipleFiles = async (files: File[]) => {
+  for (const file of files) {
+    try {
+      await uploadFile(file);
+      toast.success("Arquivo enviado", file.name);
+      // Se enviou 5 arquivos: "Arquivo enviado [5]"
+    } catch (error) {
+      toast.error("Erro ao enviar arquivo", file.name);
+    }
+  }
+};
+```
+
+**Processamento em lote:**
+```typescript
+const processBatch = async (items: Item[]) => {
+  for (const item of items) {
+    const result = await processItem(item);
+    
+    if (result.success) {
+      toast.success("Item processado com sucesso");
+      // Múltiplos sucessos: "Item processado com sucesso [10]"
+    } else {
+      toast.error("Falha ao processar item");
+      // Múltiplas falhas: "Falha ao processar item [3]"
+    }
+  }
+};
+```
+
+**Notificações em tempo real:**
+```typescript
+// WebSocket recebendo mensagens
+socket.on('message', (msg) => {
+  toast.info("Nova mensagem recebida");
+  // Se recebeu 8 mensagens: "Nova mensagem recebida [8]"
+});
+
+// Downloads simultâneos
+downloads.forEach(download => {
+  download.on('complete', () => {
+    toast.success("Download concluído");
+    // Mostra contador de downloads: "Download concluído [4]"
+  });
+});
+```
+
+### Comportamento
+
+- **Contador visual**: Badge animado mostra o número de toasts agrupados
+- **Timestamp atualizado**: Cada novo toast similar atualiza o timestamp
+- **Mesma posição na fila**: Toast agrupado mantém sua posição na queue
+- **Som único**: Cada toast do grupo toca seu próprio som (não agrupa sons)
+
+### Desabilitando Agrupamento
+
+Se você precisa mostrar toasts separados mesmo com conteúdo similar, use descrições diferentes:
+
+```typescript
+// Com descrição diferente, NÃO será agrupado
+toast.success("Arquivo enviado", "documento1.pdf");
+toast.success("Arquivo enviado", "documento2.pdf");
+toast.success("Arquivo enviado", "documento3.pdf");
+// Resultado: 3 toasts separados (descrições diferentes)
+
+// Ou use títulos únicos
+files.forEach((file, i) => {
+  toast.success(`Arquivo ${i + 1} enviado`, file.name);
+});
+```
+
 ## 🎭 Exemplos Práticos
+
 
 ### Salvar Dados (Promise Helper)
 
