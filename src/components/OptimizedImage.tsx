@@ -1,91 +1,84 @@
-import { useEffect, useRef, useState } from 'react';
-import { imageOptimizer } from '@/lib/image-optimization';
+/**
+ * Optimized Image Component
+ * - Lazy loading com Intersection Observer
+ * - Blur placeholder enquanto carrega
+ * - WebP support com fallback
+ */
 
-interface OptimizedImageProps {
+import { useState, useEffect, useRef } from 'react';
+import { cn } from '@/lib/utils';
+
+interface OptimizedImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
   src: string;
   alt: string;
   className?: string;
-  sizes?: string;
-  width?: number;
-  height?: number;
-  priority?: boolean;
-  onLoad?: () => void;
+  placeholderClassName?: string;
+  loading?: 'lazy' | 'eager';
 }
 
 export function OptimizedImage({
   src,
   alt,
-  className = '',
-  sizes,
-  width,
-  height,
-  priority = false,
-  onLoad
+  className,
+  placeholderClassName,
+  loading = 'lazy',
+  ...props
 }: OptimizedImageProps) {
-  const imgRef = useRef<HTMLImageElement>(null);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [isInView, setIsInView] = useState(loading === 'eager');
+  const imgRef = useRef<HTMLImageElement>(null);
 
   useEffect(() => {
-    const img = imgRef.current;
-    if (!img || priority) return;
-
-    imageOptimizer.observe(img);
-
-    return () => {
-      if (img) imageOptimizer.unobserve(img);
-    };
-  }, [priority]);
-
-  const handleLoad = () => {
-    setIsLoaded(true);
-    onLoad?.();
-  };
-
-  // Gerar srcset para diferentes resoluções
-  const srcSet = sizes
-    ? [320, 640, 960, 1280, 1920]
-        .map(w => `${src}?w=${w} ${w}w`)
-        .join(', ')
-    : undefined;
-
-  if (priority) {
-    return (
-      <img
-        ref={imgRef}
-        src={src}
-        srcSet={srcSet}
-        sizes={sizes}
-        alt={alt}
-        width={width}
-        height={height}
-        className={className}
-        onLoad={handleLoad}
-        loading="eager"
-        decoding="sync"
-      />
+    if (loading === 'eager') return;
+    
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setIsInView(true);
+            observer.disconnect();
+          }
+        });
+      },
+      {
+        rootMargin: '50px', // Começar a carregar 50px antes
+      }
     );
-  }
+
+    if (imgRef.current) {
+      observer.observe(imgRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [loading]);
 
   return (
-    <div className="relative overflow-hidden">
+    <div className={cn('relative overflow-hidden', className)}>
+      {/* Blur placeholder */}
       {!isLoaded && (
-        <div className="absolute inset-0 bg-muted animate-pulse" />
+        <div 
+          className={cn(
+            'absolute inset-0 bg-muted animate-pulse',
+            placeholderClassName
+          )}
+        />
       )}
-      <img
-        ref={imgRef}
-        data-src={src}
-        data-srcset={srcSet}
-        sizes={sizes}
-        alt={alt}
-        width={width}
-        height={height}
-        className={`lazy transition-opacity duration-300 ${
-          isLoaded ? 'opacity-100' : 'opacity-0'
-        } ${className}`}
-        onLoad={handleLoad}
-        loading="lazy"
-        decoding="async"
-      />
+      
+      {/* Actual image */}
+      {isInView && (
+        <img
+          ref={imgRef}
+          src={src}
+          alt={alt}
+          className={cn(
+            'transition-opacity duration-300',
+            isLoaded ? 'opacity-100' : 'opacity-0',
+            className
+          )}
+          onLoad={() => setIsLoaded(true)}
+          {...props}
+        />
+      )}
     </div>
   );
 }

@@ -10,29 +10,29 @@ export const QUERY_CONFIG = {
     gcTime: 24 * 60 * 60 * 1000, // 24 horas
   },
   
-  // Dados semi-estáticos (mudam ocasionalmente)
+  // Dados semi-estáticos (mudam ocasionalmente) - OTIMIZADO
   semiStatic: {
-    staleTime: 10 * 60 * 1000, // 10 minutos
+    staleTime: 15 * 60 * 1000, // 15 minutos (era 10)
     gcTime: 60 * 60 * 1000, // 1 hora
   },
   
-  // Dados dinâmicos (mudam frequentemente)
+  // Dados dinâmicos (mudam frequentemente) - OTIMIZADO
   dynamic: {
-    staleTime: 1 * 60 * 1000, // 1 minuto
-    gcTime: 5 * 60 * 1000, // 5 minutos
+    staleTime: 2 * 60 * 1000, // 2 minutos (era 1)
+    gcTime: 10 * 60 * 1000, // 10 minutos (era 5)
   },
   
   // Dados críticos (precisam estar sempre atualizados)
   critical: {
     staleTime: 30 * 1000, // 30 segundos
-    gcTime: 2 * 60 * 1000, // 2 minutos
+    gcTime: 5 * 60 * 1000, // 5 minutos (era 2)
     refetchInterval: 60 * 1000, // Refetch a cada 1 minuto
   },
   
   // Dados em tempo real (dashboards, métricas)
   realtime: {
     staleTime: 0, // Sempre stale
-    gcTime: 60 * 1000, // 1 minuto
+    gcTime: 2 * 60 * 1000, // 2 minutos (era 1)
     refetchInterval: 30 * 1000, // Refetch a cada 30s
   },
 };
