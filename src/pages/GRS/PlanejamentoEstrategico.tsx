@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { Search, Target, TrendingUp, Users, Calendar, Sparkles } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from '@/lib/toast-compat';
 import { PlanejamentoProjeto } from "@/components/PlanejamentoProjeto";
 import { SwotAnalysisIA } from "@/components/SwotAnalysisIA";
 import { ObjetivosAssinatura } from "@/components/ObjetivosAssinatura";

@@ -14,7 +14,7 @@ import { CalendarIcon, Search, TrendingUp, TrendingDown, DollarSign, Clock, Edit
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
-import { toast } from "sonner";
+import { toast } from '@/lib/toast-compat';
 import { supabase } from "@/integrations/supabase/client";
 import { ProdutoSelector } from "@/components/Financeiro/ProdutoSelector";
 import { CadastroProdutoRapido } from "@/components/Financeiro/CadastroProdutoRapido";

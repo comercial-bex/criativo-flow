@@ -7,7 +7,7 @@ import { useOcorrenciasPonto } from '@/hooks/useOcorrenciasPonto';
 import { usePessoas } from '@/hooks/usePessoas';
 import { PontoCard } from '@/components/RH/PontoCard';
 import { Calendar, CheckCircle, XCircle, Clock } from 'lucide-react';
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast-compat';
 import { useTutorial } from '@/hooks/useTutorial';
 import { TutorialButton } from '@/components/TutorialButton';
 

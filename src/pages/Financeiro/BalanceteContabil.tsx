@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { useFolhaPagamento } from '@/hooks/useFolhaPagamento';
 import { formatCurrency } from '@/lib/utils';
 import { Download, FileText, TrendingUp, TrendingDown, DollarSign } from 'lucide-react';
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast-compat';
 import { motion } from 'framer-motion';
 import { useTutorial } from '@/hooks/useTutorial';
 import { TutorialButton } from '@/components/TutorialButton';

@@ -42,7 +42,7 @@ import {
   List
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast-compat';
 import { useProdutosCatalogo } from '@/hooks/useProdutosCatalogo';
 import { useClientes, useCreateCliente, useUpdateCliente, useDeleteCliente, type Cliente, type ClienteInput } from '@/hooks/useClientesOptimized';
 

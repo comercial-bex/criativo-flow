@@ -6,7 +6,7 @@ import { PasswordResetModal } from '@/components/PasswordResetModal';
 import { LoginDiagnostic } from '@/components/Auth/LoginDiagnostic';
 import LoginPage from '@/components/ui/gaming-login';
 import { Bug } from 'lucide-react';
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast-compat';
 const backgroundVideo = '/bex_fundo.mp4';
 
 export default function Auth() {

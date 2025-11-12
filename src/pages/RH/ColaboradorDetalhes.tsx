@@ -10,7 +10,7 @@ import { TimelineColaborador } from '@/components/RH/TimelineColaborador';
 import { formatCurrency } from '@/lib/utils';
 import { ArrowLeft, User, Briefcase, Calendar, TrendingUp, Edit, AlertTriangle } from 'lucide-react';
 import { ColaboradorForm } from '@/components/RH/ColaboradorForm';
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast-compat';
 
 export default function ColaboradorDetalhes() {
   const { id } = useParams<{ id: string }>();

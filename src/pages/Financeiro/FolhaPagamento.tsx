@@ -20,7 +20,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { formatCurrency } from '@/lib/utils';
 import { Download, FileText, Calendar, TrendingUp, DollarSign, Users, Calculator, FileDown, BarChart3, Loader2 } from 'lucide-react';
 import { downloadHolerite } from '@/utils/holeritePdfGenerator';
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast-compat';
 import { PagamentoFolhaModal } from '@/components/Financeiro/PagamentoFolhaModal';
 import { DetalhamentoFiscalModal } from '@/components/Financeiro/DetalhamentoFiscalModal';
 import { RelatoriosFiscaisModal } from '@/components/Financeiro/RelatoriosFiscaisModal';

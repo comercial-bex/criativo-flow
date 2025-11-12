@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { CheckCircle2, XCircle, Eye, FileText, Calendar, DollarSign } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from '@/lib/toast-compat';
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 

@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useClientContext } from '@/hooks/useClientContext';
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast-compat';
 
 type SocialProvider = 'facebook' | 'google' | 'instagram';
 

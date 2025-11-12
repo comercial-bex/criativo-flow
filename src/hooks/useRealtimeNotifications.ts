@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast-compat';
 
 export function useRealtimeNotifications() {
   const { user } = useAuth();
@@ -37,10 +37,7 @@ export function useRealtimeNotifications() {
         filter: `cliente_id=eq.${clienteId}`
       }, (payload: any) => {
         toast.info(`Nova solicitação de aprovação: ${payload.new.titulo}`, {
-          action: {
-            label: 'Ver agora',
-            onClick: () => window.location.href = '/cliente/painel?tab=approvals'
-          }
+          description: 'Clique para ver'
         });
       })
       .on('postgres_changes', {

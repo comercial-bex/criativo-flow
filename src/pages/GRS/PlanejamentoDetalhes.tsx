@@ -14,7 +14,7 @@ import { TarefasKanban } from "@/components/TarefasKanban";
 import PlanoEditorial from "@/components/PlanoEditorial";
 import { InstagramPreview } from "@/components/InstagramPreview";
 import { PlanejamentoEditorialWizard } from "@/components/PlanejamentoEditorialWizard";
-import { toast } from "sonner";
+import { toast } from '@/lib/toast-compat';
 
 
 interface Cliente {
