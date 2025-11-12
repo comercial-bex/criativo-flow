@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
-import { List, Calendar as CalendarIcon } from "lucide-react";
+import { List, Calendar as CalendarIcon, KanbanSquare } from "lucide-react";
 
-type ModoVisualizacao = 'lista' | 'calendario';
+type ModoVisualizacao = 'lista' | 'calendario' | 'kanban';
 
 interface ModosVisualizacaoProps {
   modoAtual: ModoVisualizacao;
@@ -28,6 +28,15 @@ export const ModosVisualizacao = ({ modoAtual, onModoChange }: ModosVisualizacao
       >
         <CalendarIcon className="h-4 w-4" />
         Calendário
+      </Button>
+      <Button
+        variant={modoAtual === 'kanban' ? 'default' : 'ghost'}
+        size="sm"
+        onClick={() => onModoChange('kanban')}
+        className="gap-2"
+      >
+        <KanbanSquare className="h-4 w-4" />
+        Kanban
       </Button>
     </div>
   );

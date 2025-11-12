@@ -21,6 +21,7 @@ import { ListaPostsView } from "@/components/ListaPostsView";
 import { TabelaPlanoEditorial } from "@/components/PlanoEditorial/TabelaPlanoEditorial";
 import { ModosVisualizacao } from "@/components/PlanoEditorial/ModosVisualizacao";
 import { CalendarioEditorial as CalendarioView } from "@/components/PlanoEditorial/CalendarioEditorial";
+import { KanbanPlanoEditorial } from "@/components/PlanoEditorial/KanbanPlanoEditorial";
 import { DndContext, closestCenter, DragEndEvent, DragStartEvent, DragOverlay, useDroppable } from "@dnd-kit/core";
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -335,7 +336,7 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
   const [dialogDatasOpen, setDialogDatasOpen] = useState(false);
   const [dialogDataManualOpen, setDialogDataManualOpen] = useState(false);
   const [dialogTemplatesOpen, setDialogTemplatesOpen] = useState(false);
-  const [modoVisualizacao, setModoVisualizacao] = useState<'lista' | 'calendario'>('lista');
+  const [modoVisualizacao, setModoVisualizacao] = useState<'lista' | 'calendario' | 'kanban'>('lista');
   const [responsaveis, setResponsaveis] = useState<any[]>([]);
 
   // Hook para datas comemorativas
@@ -2672,6 +2673,19 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
                   posts={[...posts, ...postsGerados]}
                   currentDate={currentDate}
                   onDateChange={setCurrentDate}
+                  onPostClick={onPreviewPost}
+                />
+              )}
+
+              {modoVisualizacao === 'kanban' && (
+                <KanbanPlanoEditorial
+                  posts={[...posts, ...postsGerados]}
+                  onPostsChange={(updatedPosts) => {
+                    const savedPosts = updatedPosts.filter(p => !p.status_post || p.status_post !== 'temporario');
+                    const tempPosts = updatedPosts.filter(p => p.status_post === 'temporario');
+                    setPosts(savedPosts as any);
+                    setPostsGerados(tempPosts);
+                  }}
                   onPostClick={onPreviewPost}
                 />
               )}

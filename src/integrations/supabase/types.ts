@@ -9679,6 +9679,7 @@ export type Database = {
           contexto_estrategico: string | null
           created_at: string
           data_postagem: string
+          finalidade_postagem: string | null
           formato_postagem: string
           hashtags: string[] | null
           headline: string | null
@@ -9696,6 +9697,8 @@ export type Database = {
           tarefa_aprovacao_id: string | null
           tarefa_criacao_id: string | null
           tarefa_vinculada_id: string | null
+          texto_estruturado: string | null
+          tipo_conteudo: string | null
           tipo_criativo: string
           titulo: string
           updated_at: string
@@ -9712,6 +9715,7 @@ export type Database = {
           contexto_estrategico?: string | null
           created_at?: string
           data_postagem: string
+          finalidade_postagem?: string | null
           formato_postagem?: string
           hashtags?: string[] | null
           headline?: string | null
@@ -9729,6 +9733,8 @@ export type Database = {
           tarefa_aprovacao_id?: string | null
           tarefa_criacao_id?: string | null
           tarefa_vinculada_id?: string | null
+          texto_estruturado?: string | null
+          tipo_conteudo?: string | null
           tipo_criativo: string
           titulo: string
           updated_at?: string
@@ -9745,6 +9751,7 @@ export type Database = {
           contexto_estrategico?: string | null
           created_at?: string
           data_postagem?: string
+          finalidade_postagem?: string | null
           formato_postagem?: string
           hashtags?: string[] | null
           headline?: string | null
@@ -9762,6 +9769,8 @@ export type Database = {
           tarefa_aprovacao_id?: string | null
           tarefa_criacao_id?: string | null
           tarefa_vinculada_id?: string | null
+          texto_estruturado?: string | null
+          tipo_conteudo?: string | null
           tipo_criativo?: string
           titulo?: string
           updated_at?: string
