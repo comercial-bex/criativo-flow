@@ -8,6 +8,9 @@ interface BexToastContextType {
   showToast: (options: ToastOptions) => string;
   position: "top-right" | "top-left" | "bottom-right" | "bottom-left" | "top-center" | "bottom-center";
   setPosition: (position: BexToastContextType["position"]) => void;
+  maxVisible: number;
+  setMaxVisible: (max: number) => void;
+  queuedCount: number;
   // Helper functions
   success: (title: string, description?: string, options?: Partial<ToastOptions>) => string;
   error: (title: string, description?: string, options?: Partial<ToastOptions>) => string;
@@ -28,23 +31,76 @@ interface BexToastContextType {
 
 const BexToastContext = createContext<BexToastContextType | undefined>(undefined);
 
+// Peso das prioridades para ordenação
+const priorityWeight = {
+  critical: 4,
+  high: 3,
+  normal: 2,
+  low: 1,
+};
+
 export function BexToastProvider({ children }: { children: ReactNode }) {
-  const [toasts, setToasts] = useState<Toast[]>([]);
+  const [visibleToasts, setVisibleToasts] = useState<Toast[]>([]);
+  const [queuedToasts, setQueuedToasts] = useState<Toast[]>([]);
   const [position, setPosition] = useState<BexToastContextType["position"]>("top-right");
+  const [maxVisible, setMaxVisible] = useState(3); // Máximo de toasts visíveis simultaneamente
+
+  // Processar queue quando há espaço
+  useEffect(() => {
+    if (visibleToasts.length < maxVisible && queuedToasts.length > 0) {
+      // Ordenar por prioridade (maior primeiro) e então por timestamp
+      const sorted = [...queuedToasts].sort((a, b) => {
+        const priorityDiff = priorityWeight[b.priority || "normal"] - priorityWeight[a.priority || "normal"];
+        if (priorityDiff !== 0) return priorityDiff;
+        return a.timestamp - b.timestamp; // FIFO para mesma prioridade
+      });
+
+      const toShow = sorted.slice(0, maxVisible - visibleToasts.length);
+      const remaining = sorted.slice(maxVisible - visibleToasts.length);
+
+      setVisibleToasts((prev) => [...prev, ...toShow]);
+      setQueuedToasts(remaining);
+    }
+  }, [visibleToasts.length, queuedToasts.length, maxVisible]);
 
   const showToast = useCallback((options: ToastOptions) => {
     const id = Math.random().toString(36).substring(7);
+    const priority = options.priority || "normal";
+    
     const toast: Toast = {
       id,
       ...options,
+      priority,
+      timestamp: Date.now(),
     };
 
-    setToasts((prev) => [...prev, toast]);
+    // Toasts críticos sempre aparecem imediatamente, removendo o toast mais antigo se necessário
+    if (priority === "critical") {
+      setVisibleToasts((prev) => {
+        const newToasts = [...prev, toast];
+        // Se exceder o limite, remover o toast de menor prioridade (ou mais antigo)
+        if (newToasts.length > maxVisible) {
+          const sorted = newToasts.sort((a, b) => {
+            const priorityDiff = priorityWeight[a.priority || "normal"] - priorityWeight[b.priority || "normal"];
+            if (priorityDiff !== 0) return priorityDiff;
+            return a.timestamp - b.timestamp;
+          });
+          return sorted.slice(1); // Remove o primeiro (menor prioridade/mais antigo)
+        }
+        return newToasts;
+      });
+    } else if (visibleToasts.length < maxVisible) {
+      setVisibleToasts((prev) => [...prev, toast]);
+    } else {
+      setQueuedToasts((prev) => [...prev, toast]);
+    }
+
     return id;
-  }, []);
+  }, [visibleToasts.length, maxVisible]);
 
   const closeToast = useCallback((id: string) => {
-    setToasts((prev) => prev.filter((toast) => toast.id !== id));
+    setVisibleToasts((prev) => prev.filter((toast) => toast.id !== id));
+    setQueuedToasts((prev) => prev.filter((toast) => toast.id !== id));
   }, []);
 
   // Helper: Success toast
@@ -101,10 +157,17 @@ export function BexToastProvider({ children }: { children: ReactNode }) {
 
   // Helper: Update toast existente
   const update = useCallback((id: string, options: ToastOptions) => {
-    setToasts((prev) => 
+    setVisibleToasts((prev) => 
       prev.map((toast) => 
         toast.id === id 
-          ? { ...toast, ...options }
+          ? { ...toast, ...options, timestamp: toast.timestamp } // Manter timestamp original
+          : toast
+      )
+    );
+    setQueuedToasts((prev) => 
+      prev.map((toast) => 
+        toast.id === id 
+          ? { ...toast, ...options, timestamp: toast.timestamp }
           : toast
       )
     );
@@ -158,6 +221,9 @@ export function BexToastProvider({ children }: { children: ReactNode }) {
     showToast, 
     position, 
     setPosition,
+    maxVisible,
+    setMaxVisible,
+    queuedCount: queuedToasts.length,
     success,
     error,
     warning,
@@ -176,7 +242,18 @@ export function BexToastProvider({ children }: { children: ReactNode }) {
   return (
     <BexToastContext.Provider value={contextValue}>
       {children}
-      <BexToastContainer toasts={toasts} position={position} onClose={closeToast} />
+      <BexToastContainer toasts={visibleToasts} position={position} onClose={closeToast} />
+      
+      {/* Indicador de queue (opcional) */}
+      {queuedToasts.length > 0 && (
+        <div className="fixed bottom-4 left-4 z-[101] pointer-events-none">
+          <div className="bg-card/90 backdrop-blur-xl border border-border rounded-lg px-3 py-2 shadow-lg">
+            <p className="text-xs text-muted-foreground">
+              +{queuedToasts.length} notificação{queuedToasts.length > 1 ? "ões" : ""} na fila
+            </p>
+          </div>
+        </div>
+      )}
     </BexToastContext.Provider>
   );
 }

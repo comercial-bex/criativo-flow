@@ -10,9 +10,13 @@ Sistema de notificações toast personalizado com design BEX, gradientes animado
 - **Animações Suaves**: Usando framer-motion para transições fluidas
 - **Ícones Dinâmicos**: Ícones lucide-react por tipo ou customizados
 - **Posições Configuráveis**: 6 posições disponíveis
+- **Sistema de Prioridades**: critical, high, normal, low
+- **Queue Inteligente**: Limite de toasts visíveis com fila automática
 - **Progress Bar**: Indicador visual de tempo restante
 - **Ações**: Botões de ação opcionais
 - **Auto-dismiss**: Fechamento automático configurável
+- **Helpers Simplificados**: API fácil com `toast.success()`, etc.
+- **Promise Support**: Toasts automáticos para operações assíncronas
 - **Responsivo**: Adapta-se a diferentes tamanhos de tela
 
 ## 📋 Tipos de Toast
@@ -139,6 +143,148 @@ function MeuComponente() {
 
   return <button onClick={handleSave}>Salvar</button>;
 }
+```
+
+## 🎯 Sistema de Prioridades
+
+O sistema de queue gerencia automaticamente a exibição de toasts baseado em prioridades.
+
+### Níveis de Prioridade
+
+1. **Critical** 🔴
+   - Aparecem **imediatamente**, mesmo que exceda o limite
+   - Remove toasts de menor prioridade se necessário
+   - Use para: Erros críticos, alertas de segurança, ações irreversíveis
+
+2. **High** 🟡
+   - Prioridade alta na fila
+   - Aparece antes de toasts normais e baixos
+   - Use para: Avisos importantes, confirmações necessárias
+
+3. **Normal** 🟢 (padrão)
+   - Prioridade padrão
+   - Processado por ordem de chegada (FIFO)
+   - Use para: Feedback de ações, informações gerais
+
+4. **Low** 🔵
+   - Menor prioridade
+   - Aguarda outros toasts de maior prioridade
+   - Use para: Dicas, sugestões, informações secundárias
+
+### Configurando Prioridades
+
+```typescript
+// Critical - Aparece imediatamente
+toast.error("Erro crítico no sistema!", "Ação necessária", {
+  priority: "critical",
+  duration: 10000
+});
+
+// High - Alta prioridade
+toast.warning("Dados não salvos", "Salve antes de sair", {
+  priority: "high"
+});
+
+// Normal - Prioridade padrão
+toast.success("Operação concluída!"); // priority: "normal" é o padrão
+
+// Low - Baixa prioridade
+toast.info("Dica: Use atalhos para agilizar", undefined, {
+  priority: "low"
+});
+```
+
+## 📊 Gerenciamento de Queue
+
+### Limite de Toasts Visíveis
+
+Por padrão, **máximo 3 toasts** são exibidos simultaneamente. Toasts excedentes aguardam na fila.
+
+```typescript
+const { setMaxVisible, queuedCount } = useBexToast();
+
+// Configurar limite
+setMaxVisible(5); // Permite até 5 toasts visíveis
+
+// Ver quantos estão na fila
+console.log(queuedCount); // Ex: 7 toasts aguardando
+```
+
+### Funcionamento da Queue
+
+1. **Toasts são criados** com prioridade
+2. **Se há espaço**: Toast aparece imediatamente
+3. **Se não há espaço**:
+   - **Critical**: Remove toast de menor prioridade e aparece
+   - **Outros**: Entra na fila ordenada por prioridade
+
+4. **Quando um toast fecha**: Próximo da fila aparece (maior prioridade primeiro)
+
+### Indicador Visual de Queue
+
+Quando há toasts na fila, um indicador aparece no canto inferior esquerdo:
+
+```
++7 notificações na fila
+```
+
+### Exemplos Práticos de Queue
+
+```typescript
+// Cenário: Sistema de notificações em tempo real
+
+// 1. Configurar limite apropriado
+setMaxVisible(3);
+
+// 2. Toast crítico sempre aparece
+toast.error("Conexão perdida!", "Reconectando...", {
+  priority: "critical"
+});
+
+// 3. Toasts normais aguardam se houver muitos
+for (let i = 0; i < 10; i++) {
+  toast.info(`Nova mensagem ${i}`, undefined, {
+    priority: "normal"
+  });
+}
+
+// 4. Toast de alta prioridade pula na fila
+toast.warning("Pagamento pendente", "Vence em 1 dia", {
+  priority: "high"
+});
+```
+
+### Estratégias de Uso
+
+**Para Aplicações com Muitas Notificações:**
+```typescript
+// Aumentar limite de toasts visíveis
+setMaxVisible(5);
+
+// Usar prioridades apropriadas
+toast.info("Tarefa concluída", undefined, { priority: "low" });
+toast.warning("Prazo próximo", undefined, { priority: "high" });
+```
+
+**Para Aplicações Simples:**
+```typescript
+// Manter padrão (3 toasts)
+// Usar priority apenas quando necessário
+toast.success("Salvo!");
+toast.error("Erro!", undefined, { priority: "critical" });
+```
+
+**Evitar Sobrecarga Visual:**
+```typescript
+// Agrupar notificações similares
+let count = 0;
+const notifyBatch = () => {
+  count++;
+  if (count === 10) {
+    toast.success("10 arquivos processados!");
+    count = 0;
+  }
+};
 ```
 
 ### Método 3: Promise Helper 🚀
@@ -423,6 +569,14 @@ toast.error(title, description?, options?): string
 toast.warning(title, description?, options?): string
 toast.info(title, description?, options?): string
 
+// Options podem incluir:
+{
+  priority?: "critical" | "high" | "normal" | "low",
+  duration?: number,
+  icon?: LucideIcon,
+  action?: { label: string, onClick: () => void }
+}
+
 // Loading toast - não fecha automaticamente
 toast.loading(title, description?, options?): string
 
@@ -440,21 +594,24 @@ toast.promise(promise, messages): Promise<T>
 
 ```typescript
 const {
-  // Básicos
+  // Helpers de toast
   success(title, description?, options?): string,
   error(title, description?, options?): string,
   warning(title, description?, options?): string,
   info(title, description?, options?): string,
-  
-  // Avançados
   loading(title, description?, options?): string,
   update(id, options): void,
   dismiss(id): void,
   promise(promise, messages): Promise<T>,
   
-  // Configurações
+  // Configurações de posição
   position: "top-right" | "top-left" | ...,
   setPosition(position): void,
+  
+  // Configurações de queue
+  maxVisible: number,              // Máximo de toasts visíveis
+  setMaxVisible(max: number): void,
+  queuedCount: number,             // Toasts na fila
   
   // Método base
   showToast(options): string
@@ -465,16 +622,29 @@ const {
 
 ```typescript
 interface ToastOptions {
-  title: string;                    // Obrigatório - Título do toast
-  description?: string;             // Opcional - Descrição detalhada
-  variant?: ToastVariant;           // Opcional - success | error | warning | info | default
-  duration?: number;                // Opcional - Duração em ms (padrão: 5000)
-  icon?: LucideIcon;               // Opcional - Ícone customizado
-  action?: {                       // Opcional - Ação do toast
-    label: string;                 // Texto do botão
-    onClick: () => void;           // Função ao clicar
+  title: string;                           // Obrigatório
+  description?: string;                    // Opcional
+  variant?: "success" | "error" | "warning" | "info" | "default";
+  priority?: "critical" | "high" | "normal" | "low";  // Padrão: "normal"
+  duration?: number;                       // Em ms (padrão: 5000)
+  icon?: LucideIcon;                      // Ícone customizado
+  action?: {
+    label: string;
+    onClick: () => void;
   };
 }
+```
+
+### Prioridades
+
+```typescript
+type ToastPriority = "critical" | "high" | "normal" | "low";
+
+// Peso das prioridades (maior = mais importante)
+critical: 4  // Sempre aparece, remove outros se necessário
+high: 3      // Alta prioridade na fila
+normal: 2    // Prioridade padrão
+low: 1       // Baixa prioridade, aguarda na fila
 ```
 
 ## 🚀 Migração do Sistema Antigo
@@ -523,12 +693,35 @@ Os toasts são totalmente responsivos:
 
 ## 🎯 Boas Práticas
 
-1. **Mensagens Curtas**: Mantenha títulos concisos (máx. 40 caracteres)
-2. **Descrições Claras**: Use descrições para detalhes importantes
-3. **Duração Adequada**: Ajuste baseado na quantidade de texto
-4. **Ações Relevantes**: Adicione ações apenas quando necessário
-5. **Ícones Apropriados**: Use ícones que façam sentido contextual
-6. **Variante Correta**: Use a variante apropriada para cada situação
+1. **Use Prioridades Apropriadas**
+   - Critical: Apenas para erros críticos e ações irreversíveis
+   - High: Avisos importantes que requerem atenção
+   - Normal (padrão): Feedback geral de ações
+   - Low: Informações secundárias, dicas
+
+2. **Mensagens Curtas**: Mantenha títulos concisos (máx. 40 caracteres)
+
+3. **Descrições Claras**: Use descrições para detalhes importantes
+
+4. **Duração Adequada**: Ajuste baseado na quantidade de texto e prioridade
+   - Critical/Error: 7-10 segundos
+   - Normal: 5 segundos
+   - Success rápido: 2-3 segundos
+
+5. **Limite de Toasts**: Configure `maxVisible` baseado no uso
+   - Apps simples: 2-3 toasts
+   - Apps com muitas notificações: 4-6 toasts
+   - Nunca mais que 10 toasts
+
+6. **Ações Relevantes**: Adicione ações apenas quando necessário e útil
+
+7. **Ícones Apropriados**: Use ícones que façam sentido contextual
+
+8. **Variante Correta**: Use a variante apropriada para cada situação
+
+9. **Evite Spam**: Agrupe notificações similares quando possível
+
+10. **Queue Awareness**: Para apps com muitas notificações, monitore `queuedCount`
 
 ## 🐛 Troubleshooting
 

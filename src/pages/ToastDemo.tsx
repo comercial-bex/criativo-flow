@@ -23,12 +23,95 @@ import {
 import { StaggerChildren, StaggerItem } from "@/components/transitions";
 
 export default function ToastDemoPage() {
-  const { setPosition, position, success, error, warning, info, loading, update, dismiss, promise } = useBexToast();
+  const { 
+    setPosition, 
+    position, 
+    success, 
+    error, 
+    warning, 
+    info, 
+    loading, 
+    update, 
+    dismiss, 
+    promise,
+    maxVisible,
+    setMaxVisible,
+    queuedCount 
+  } = useBexToast();
   const [customTitle, setCustomTitle] = useState("Notificação Customizada");
   const [customDescription, setCustomDescription] = useState("Esta é uma mensagem personalizada");
   const [customDuration, setCustomDuration] = useState("5000");
+  const [customMaxVisible, setCustomMaxVisible] = useState(String(maxVisible));
 
   const demos = [
+    {
+      category: "Sistema de Prioridades",
+      items: [
+        {
+          label: "Critical Priority",
+          onClick: () => toast.success("Alerta Crítico!", "Este toast aparece imediatamente, removendo outros se necessário", {
+            priority: "critical",
+            duration: 10000
+          })
+        },
+        {
+          label: "High Priority",
+          onClick: () => toast.warning("Alta Prioridade", "Este toast tem prioridade alta na fila", {
+            priority: "high"
+          })
+        },
+        {
+          label: "Normal Priority",
+          onClick: () => toast.info("Prioridade Normal", "Este é um toast com prioridade padrão", {
+            priority: "normal"
+          })
+        },
+        {
+          label: "Low Priority",
+          onClick: () => toast.info("Baixa Prioridade", "Este toast aguarda na fila se houver muitos", {
+            priority: "low"
+          })
+        }
+      ]
+    },
+    {
+      category: "Teste de Queue",
+      items: [
+        {
+          label: "Criar 10 Toasts",
+          onClick: () => {
+            for (let i = 1; i <= 10; i++) {
+              setTimeout(() => {
+                toast.info(`Toast ${i}`, `Este é o toast número ${i}`, {
+                  priority: i % 2 === 0 ? "high" : "normal"
+                });
+              }, i * 100);
+            }
+          }
+        },
+        {
+          label: "Mix de Prioridades",
+          onClick: () => {
+            toast.info("Baixa 1", "Prioridade baixa", { priority: "low" });
+            toast.info("Normal 1", "Prioridade normal", { priority: "normal" });
+            toast.warning("Alta 1", "Prioridade alta", { priority: "high" });
+            toast.error("Crítica!", "Prioridade crítica - aparece primeiro!", { priority: "critical" });
+            toast.info("Baixa 2", "Prioridade baixa", { priority: "low" });
+            toast.warning("Alta 2", "Prioridade alta", { priority: "high" });
+          }
+        },
+        {
+          label: "Spam de Toasts",
+          onClick: () => {
+            for (let i = 1; i <= 20; i++) {
+              const priorities: any = ["critical", "high", "normal", "low"];
+              const priority = priorities[Math.floor(Math.random() * 4)];
+              toast.info(`Toast ${i}`, `Prioridade: ${priority}`, { priority });
+            }
+          }
+        }
+      ]
+    },
     {
       category: "Helpers Simples (Recomendado)",
       items: [
@@ -284,7 +367,7 @@ export default function ToastDemoPage() {
           </p>
         </div>
 
-        {/* Position Selector */}
+        {/* Position & Queue Settings */}
         <Card className="p-6">
           <div className="space-y-4">
             <div>
@@ -302,6 +385,32 @@ export default function ToastDemoPage() {
                   <SelectItem value="bottom-center">Inferior Centro</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+            
+            <div>
+              <Label htmlFor="maxVisible">
+                Máximo de Toasts Visíveis ({queuedCount} na fila)
+              </Label>
+              <div className="flex gap-2">
+                <Input
+                  id="maxVisible"
+                  type="number"
+                  min="1"
+                  max="10"
+                  value={customMaxVisible}
+                  onChange={(e) => setCustomMaxVisible(e.target.value)}
+                  className="flex-1"
+                />
+                <Button
+                  onClick={() => setMaxVisible(parseInt(customMaxVisible))}
+                  variant="outline"
+                >
+                  Aplicar
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Toasts excedentes aguardam na fila por prioridade
+              </p>
             </div>
           </div>
         </Card>
