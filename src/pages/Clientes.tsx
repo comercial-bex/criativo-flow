@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { SectionHeader } from '@/components/SectionHeader';
@@ -45,6 +45,8 @@ import { useToast } from '@/hooks/use-toast';
 import { toast } from '@/lib/toast-compat';
 import { useProdutosCatalogo } from '@/hooks/useProdutosCatalogo';
 import { useClientes, useCreateCliente, useUpdateCliente, useDeleteCliente, type Cliente, type ClienteInput } from '@/hooks/useClientesOptimized';
+import { VirtualizedList } from '@/components/VirtualizedList';
+import { shouldUseVirtualScroll, getOptimalOverscan, VIRTUAL_SCROLL_CONFIG } from '@/lib/virtual-scroll-config';
 
 // Extended form data interface with additional address fields
 interface FormData extends Partial<Cliente> {
@@ -849,7 +851,7 @@ function Clientes() {
         </DialogContent>
       </Dialog>
 
-      {/* Grid de Clientes ou Lista - Responsive */}
+      {/* Grid de Clientes ou Lista - Responsive com Virtual Scrolling */}
       {viewMode === 'list' ? (
         <ClientTableView
           clientes={filteredClientes}
@@ -863,7 +865,49 @@ function Clientes() {
           getAssinaturaPreco={getAssinaturaPreco}
           clienteTemAssinatura={clienteTemAssinatura}
         />
+      ) : shouldUseVirtualScroll(filteredClientes.length) ? (
+        // Virtual scrolling para listas grandes (50+ items)
+        <VirtualizedList
+          items={filteredClientes}
+          height={VIRTUAL_SCROLL_CONFIG.DEFAULT_LIST_HEIGHT}
+          rowHeight={isMobile ? VIRTUAL_SCROLL_CONFIG.ROW_HEIGHT_COMFORTABLE : VIRTUAL_SCROLL_CONFIG.ROW_HEIGHT_LARGE}
+          renderItem={({ item: cliente, index }) => (
+            <div className={`px-2 ${isMobile ? 'pb-2' : 'pb-4'}`}>
+              {isMobile ? (
+                <MobileClientCard
+                  cliente={cliente}
+                  onEdit={() => navigate(`/clientes/${cliente.id}/editar`)}
+                  onDelete={() => handleDelete(cliente.id)}
+                  onOnboarding={() => handleOnboarding(cliente)}
+                  getStatusColor={getStatusColor}
+                  getStatusText={getStatusText}
+                  getAssinaturaNome={getAssinaturaNome}
+                  getAssinaturaPreco={getAssinaturaPreco}
+                  clienteTemAssinatura={clienteTemAssinatura}
+                />
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <ClientCard
+                    cliente={cliente}
+                    onEdit={() => navigate(`/clientes/${cliente.id}/editar`)}
+                    onDelete={() => handleDelete(cliente.id)}
+                    onView={() => handleViewCliente(cliente)}
+                    onOnboarding={() => handleOnboarding(cliente)}
+                    getStatusColor={getStatusColor}
+                    getStatusText={getStatusText}
+                    getAssinaturaNome={getAssinaturaNome}
+                    getAssinaturaPreco={getAssinaturaPreco}
+                    clienteTemAssinatura={clienteTemAssinatura}
+                  />
+                </div>
+              )}
+            </div>
+          )}
+          emptyMessage="Nenhum cliente encontrado com os filtros aplicados"
+          className="rounded-lg border"
+        />
       ) : (
+        // Grid tradicional para listas pequenas (<50 items)
         <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'}`}>
           {filteredClientes.map((cliente) => (
             isMobile ? (
