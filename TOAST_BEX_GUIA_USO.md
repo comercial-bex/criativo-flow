@@ -17,6 +17,7 @@ Sistema de notificações toast personalizado com design BEX, gradientes animado
 - **Auto-dismiss**: Fechamento automático configurável
 - **Helpers Simplificados**: API fácil com `toast.success()`, etc.
 - **Promise Support**: Toasts automáticos para operações assíncronas
+- **Sons de Notificação**: Feedback sonoro customizado para cada tipo
 - **Responsivo**: Adapta-se a diferentes tamanhos de tela
 
 ## 📋 Tipos de Toast
@@ -286,6 +287,135 @@ const notifyBatch = () => {
   }
 };
 ```
+
+## 🔊 Sistema de Sons
+
+O sistema de toasts inclui feedback sonoro usando Web Audio API para gerar sons sintetizados.
+
+### Sons por Tipo
+
+Cada variante de toast tem seu próprio som característico:
+
+1. **Success** 🎵
+   - Duas notas ascendentes (C5 → E5)
+   - Som alegre e positivo
+   - Duração: ~0.25s
+
+2. **Error** 🎵
+   - Tom descendente dramático (G4 → E4)
+   - Som de alerta/problema
+   - Duração: ~0.35s
+
+3. **Warning** 🎵
+   - Tom médio com vibrato
+   - Som de atenção/cuidado
+   - Duração: ~0.24s
+
+4. **Info** 🎵
+   - Tom suave e curto (D5)
+   - Som neutro e discreto
+   - Duração: ~0.08s
+
+5. **Critical** 🚨
+   - Sequência de 3 beeps rápidos (A5)
+   - Som urgente de alarme
+   - Duração: ~0.28s
+
+### Configurando Sons
+
+```typescript
+const { 
+  soundEnabled, 
+  setSoundEnabled, 
+  soundVolume, 
+  setSoundVolume,
+  testSound 
+} = useBexToast();
+
+// Habilitar/Desabilitar sons
+setSoundEnabled(true);  // Ativa sons
+setSoundEnabled(false); // Desativa sons
+
+// Configurar volume (0 a 1)
+setSoundVolume(0.5);  // 50% de volume
+setSoundVolume(0.3);  // 30% de volume (padrão)
+setSoundVolume(1.0);  // 100% de volume
+
+// Testar sons
+testSound("success"); // Testa som de sucesso
+testSound("error");   // Testa som de erro
+testSound("warning"); // Testa som de warning
+testSound("info");    // Testa som de info
+```
+
+### Persistência de Preferências
+
+As configurações de som são salvas automaticamente no `localStorage`:
+
+```typescript
+// Preferências salvas automaticamente:
+// - bex-toast-sounds-enabled (true/false)
+// - bex-toast-sounds-volume (0 a 1)
+
+// São carregadas automaticamente quando a aplicação inicia
+```
+
+### Sons Automáticos
+
+Os sons tocam automaticamente quando toasts são criados:
+
+```typescript
+// Som de sucesso toca automaticamente
+toast.success("Arquivo salvo!");
+
+// Som de erro toca automaticamente
+toast.error("Falha no upload");
+
+// Som crítico toca automaticamente
+toast.error("Erro crítico!", undefined, { priority: "critical" });
+
+// Desabilitar sons temporariamente
+setSoundEnabled(false);
+toast.success("Sem som"); // Não toca som
+setSoundEnabled(true);
+```
+
+### Casos de Uso
+
+**Para aplicações profissionais:**
+```typescript
+// Volume baixo e discreto
+setSoundVolume(0.2);
+```
+
+**Para aplicações de jogos/entretenimento:**
+```typescript
+// Volume mais alto
+setSoundVolume(0.6);
+```
+
+**Para acessibilidade:**
+```typescript
+// Usuários que preferem feedback visual apenas
+setSoundEnabled(false);
+```
+
+**Para demos/apresentações:**
+```typescript
+// Testar todos os sons
+const sounds = ["success", "error", "warning", "info"];
+sounds.forEach((sound, i) => {
+  setTimeout(() => testSound(sound), i * 1000);
+});
+```
+
+### Tecnologia
+
+- **Web Audio API**: Sons sintetizados em tempo real
+- **Sem arquivos de áudio**: Não requer downloads
+- **Leve e rápido**: Sons gerados instantaneamente
+- **ADSR Envelope**: Envelope natural de ataque, decaimento, sustentação e release
+- **Cross-browser**: Funciona em todos navegadores modernos
 
 ### Método 3: Promise Helper 🚀
 
@@ -613,6 +743,13 @@ const {
   setMaxVisible(max: number): void,
   queuedCount: number,             // Toasts na fila
   
+  // Configurações de som
+  soundEnabled: boolean,           // Sons habilitados?
+  setSoundEnabled(enabled: boolean): void,
+  soundVolume: number,             // Volume (0 a 1)
+  setSoundVolume(volume: number): void,
+  testSound(variant?: ToastVariant): void,  // Testar som
+  
   // Método base
   showToast(options): string
 } = useBexToast();
@@ -722,6 +859,12 @@ Os toasts são totalmente responsivos:
 9. **Evite Spam**: Agrupe notificações similares quando possível
 
 10. **Queue Awareness**: Para apps com muitas notificações, monitore `queuedCount`
+
+11. **Sons Apropriados**: 
+    - Habilite sons para feedback imediato
+    - Use volume baixo (20-30%) em ambientes profissionais
+    - Desabilite se causar distração
+    - Teste sons antes de deploy para garantir qualidade
 
 ## 🐛 Troubleshooting
 

@@ -3,6 +3,7 @@ import { BexToastContainer } from "./BexToastContainer";
 import { Toast, ToastOptions } from "./types";
 import { LucideIcon } from "lucide-react";
 import { setToastInstance } from "./helpers";
+import { toastSoundManager } from "./sounds";
 
 interface BexToastContextType {
   showToast: (options: ToastOptions) => string;
@@ -11,6 +12,12 @@ interface BexToastContextType {
   maxVisible: number;
   setMaxVisible: (max: number) => void;
   queuedCount: number;
+  // Sound controls
+  soundEnabled: boolean;
+  setSoundEnabled: (enabled: boolean) => void;
+  soundVolume: number;
+  setSoundVolume: (volume: number) => void;
+  testSound: (variant?: any) => void;
   // Helper functions
   success: (title: string, description?: string, options?: Partial<ToastOptions>) => string;
   error: (title: string, description?: string, options?: Partial<ToastOptions>) => string;
@@ -44,6 +51,23 @@ export function BexToastProvider({ children }: { children: ReactNode }) {
   const [queuedToasts, setQueuedToasts] = useState<Toast[]>([]);
   const [position, setPosition] = useState<BexToastContextType["position"]>("top-right");
   const [maxVisible, setMaxVisible] = useState(3); // Máximo de toasts visíveis simultaneamente
+  const [soundEnabled, setSoundEnabledState] = useState(toastSoundManager.isEnabled());
+  const [soundVolume, setSoundVolumeState] = useState(toastSoundManager.getVolume());
+
+  // Sincronizar estado com sound manager
+  const setSoundEnabled = useCallback((enabled: boolean) => {
+    toastSoundManager.setEnabled(enabled);
+    setSoundEnabledState(enabled);
+  }, []);
+
+  const setSoundVolume = useCallback((volume: number) => {
+    toastSoundManager.setVolume(volume);
+    setSoundVolumeState(volume);
+  }, []);
+
+  const testSound = useCallback((variant?: any) => {
+    toastSoundManager.testSound(variant);
+  }, []);
 
   // Processar queue quando há espaço
   useEffect(() => {
@@ -73,6 +97,9 @@ export function BexToastProvider({ children }: { children: ReactNode }) {
       priority,
       timestamp: Date.now(),
     };
+
+    // Tocar som de notificação
+    toastSoundManager.play(options.variant, options.priority);
 
     // Toasts críticos sempre aparecem imediatamente, removendo o toast mais antigo se necessário
     if (priority === "critical") {
@@ -224,6 +251,11 @@ export function BexToastProvider({ children }: { children: ReactNode }) {
     maxVisible,
     setMaxVisible,
     queuedCount: queuedToasts.length,
+    soundEnabled,
+    setSoundEnabled,
+    soundVolume,
+    setSoundVolume,
+    testSound,
     success,
     error,
     warning,

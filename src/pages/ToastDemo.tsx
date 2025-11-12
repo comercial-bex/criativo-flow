@@ -5,6 +5,8 @@ import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { Slider } from "@/components/ui/slider";
 import { 
   CheckCircle2, 
   XCircle, 
@@ -18,7 +20,9 @@ import {
   Upload,
   Download,
   Save,
-  Trash2
+  Trash2,
+  Volume2,
+  VolumeX
 } from "lucide-react";
 import { StaggerChildren, StaggerItem } from "@/components/transitions";
 
@@ -36,7 +40,12 @@ export default function ToastDemoPage() {
     promise,
     maxVisible,
     setMaxVisible,
-    queuedCount 
+    queuedCount,
+    soundEnabled,
+    setSoundEnabled,
+    soundVolume,
+    setSoundVolume,
+    testSound
   } = useBexToast();
   const [customTitle, setCustomTitle] = useState("Notificação Customizada");
   const [customDescription, setCustomDescription] = useState("Esta é uma mensagem personalizada");
@@ -44,6 +53,47 @@ export default function ToastDemoPage() {
   const [customMaxVisible, setCustomMaxVisible] = useState(String(maxVisible));
 
   const demos = [
+    {
+      category: "Teste de Sons",
+      items: [
+        {
+          label: "Som Success",
+          onClick: () => {
+            testSound("success");
+            toast.success("Som de sucesso!", "Duas notas ascendentes");
+          }
+        },
+        {
+          label: "Som Error",
+          onClick: () => {
+            testSound("error");
+            toast.error("Som de erro!", "Tom descendente dramático");
+          }
+        },
+        {
+          label: "Som Warning",
+          onClick: () => {
+            testSound("warning");
+            toast.warning("Som de aviso!", "Tom médio com vibrato");
+          }
+        },
+        {
+          label: "Som Info",
+          onClick: () => {
+            testSound("info");
+            toast.info("Som de info!", "Tom suave e curto");
+          }
+        },
+        {
+          label: "Som Critical",
+          onClick: () => {
+            toast.error("Som crítico!", "Sequência de alertas urgentes", {
+              priority: "critical"
+            });
+          }
+        }
+      ]
+    },
     {
       category: "Sistema de Prioridades",
       items: [
@@ -369,7 +419,8 @@ export default function ToastDemoPage() {
 
         {/* Position & Queue Settings */}
         <Card className="p-6">
-          <div className="space-y-4">
+          <h2 className="text-xl font-semibold mb-4">Configurações</h2>
+          <div className="space-y-6">
             <div>
               <Label htmlFor="position">Posição dos Toasts</Label>
               <Select value={position} onValueChange={(value: any) => setPosition(value)}>
@@ -411,6 +462,74 @@ export default function ToastDemoPage() {
               <p className="text-xs text-muted-foreground mt-1">
                 Toasts excedentes aguardam na fila por prioridade
               </p>
+            </div>
+
+            <div className="border-t pt-4">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  {soundEnabled ? (
+                    <Volume2 className="h-5 w-5 text-bex" />
+                  ) : (
+                    <VolumeX className="h-5 w-5 text-muted-foreground" />
+                  )}
+                  <Label htmlFor="sound-toggle">Sons de Notificação</Label>
+                </div>
+                <Switch
+                  id="sound-toggle"
+                  checked={soundEnabled}
+                  onCheckedChange={setSoundEnabled}
+                />
+              </div>
+
+              {soundEnabled && (
+                <div className="space-y-3">
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <Label htmlFor="volume">Volume: {Math.round(soundVolume * 100)}%</Label>
+                    </div>
+                    <Slider
+                      id="volume"
+                      value={[soundVolume * 100]}
+                      onValueChange={(values) => setSoundVolume(values[0] / 100)}
+                      min={0}
+                      max={100}
+                      step={5}
+                      className="w-full"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => testSound("success")}
+                    >
+                      Testar Success
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => testSound("error")}
+                    >
+                      Testar Error
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => testSound("warning")}
+                    >
+                      Testar Warning
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => testSound("info")}
+                    >
+                      Testar Info
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </Card>
