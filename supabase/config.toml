@@ -151,3 +151,9 @@ verify_jwt = false
 
 [functions.generate-campaign-posts]
 verify_jwt = true
+
+[functions.sync-post-tarefa]
+verify_jwt = true
+
+[functions.exportar-plano-pdf]
+verify_jwt = true

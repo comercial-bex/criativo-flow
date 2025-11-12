@@ -2141,12 +2141,15 @@ export type Database = {
           materiais_impressos: string[] | null
           midia_paga: string | null
           midia_tradicional: string[] | null
+          missao: string | null
           nome_empresa: string
+          objetivos_comunicacao: string[] | null
           objetivos_digitais: string | null
           objetivos_offline: string | null
           onde_6_meses: string | null
           oportunidades: string | null
           plano_estrategico_id: string | null
+          posicionamento: string | null
           presenca_digital: string[] | null
           presenca_digital_outros: string | null
           produtos_servicos: string | null
@@ -2204,12 +2207,15 @@ export type Database = {
           materiais_impressos?: string[] | null
           midia_paga?: string | null
           midia_tradicional?: string[] | null
+          missao?: string | null
           nome_empresa: string
+          objetivos_comunicacao?: string[] | null
           objetivos_digitais?: string | null
           objetivos_offline?: string | null
           onde_6_meses?: string | null
           oportunidades?: string | null
           plano_estrategico_id?: string | null
+          posicionamento?: string | null
           presenca_digital?: string[] | null
           presenca_digital_outros?: string | null
           produtos_servicos?: string | null
@@ -2267,12 +2273,15 @@ export type Database = {
           materiais_impressos?: string[] | null
           midia_paga?: string | null
           midia_tradicional?: string[] | null
+          missao?: string | null
           nome_empresa?: string
+          objetivos_comunicacao?: string[] | null
           objetivos_digitais?: string | null
           objetivos_offline?: string | null
           onde_6_meses?: string | null
           oportunidades?: string | null
           plano_estrategico_id?: string | null
+          posicionamento?: string | null
           presenca_digital?: string[] | null
           presenca_digital_outros?: string | null
           produtos_servicos?: string | null
@@ -2675,6 +2684,87 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      clientes_personas: {
+        Row: {
+          ativo: boolean | null
+          caracteristicas: string[] | null
+          cliente_id: string
+          created_at: string | null
+          dores: string[] | null
+          id: string
+          idade_faixa: string | null
+          necessidades: string[] | null
+          nome: string
+          objetivos: string[] | null
+          ocupacao: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          ativo?: boolean | null
+          caracteristicas?: string[] | null
+          cliente_id: string
+          created_at?: string | null
+          dores?: string[] | null
+          id?: string
+          idade_faixa?: string | null
+          necessidades?: string[] | null
+          nome: string
+          objetivos?: string[] | null
+          ocupacao?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          ativo?: boolean | null
+          caracteristicas?: string[] | null
+          cliente_id?: string
+          created_at?: string | null
+          dores?: string[] | null
+          id?: string
+          idade_faixa?: string | null
+          necessidades?: string[] | null
+          nome?: string
+          objetivos?: string[] | null
+          ocupacao?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clientes_personas_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clientes_personas_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "mv_cliente_timeline"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "clientes_personas_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "mv_grs_dashboard_metrics"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "clientes_personas_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "vw_calendario_completo"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "clientes_personas_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "vw_client_metrics"
+            referencedColumns: ["cliente_id"]
+          },
+        ]
       }
       cnpj_consultas: {
         Row: {
@@ -9579,6 +9669,9 @@ export type Database = {
       posts_planejamento: {
         Row: {
           anexo_url: string | null
+          arquivo_visual_nome: string | null
+          arquivo_visual_tipo: string | null
+          arquivo_visual_url: string | null
           call_to_action: string | null
           campanha_id: string | null
           componente_hesec: string | null
@@ -9599,6 +9692,7 @@ export type Database = {
           rede_social: string | null
           responsavel_id: string | null
           status: Database["public"]["Enums"]["post_status_enum"] | null
+          status_post: Database["public"]["Enums"]["post_status_type"] | null
           tarefa_aprovacao_id: string | null
           tarefa_criacao_id: string | null
           tipo_criativo: string
@@ -9607,6 +9701,9 @@ export type Database = {
         }
         Insert: {
           anexo_url?: string | null
+          arquivo_visual_nome?: string | null
+          arquivo_visual_tipo?: string | null
+          arquivo_visual_url?: string | null
           call_to_action?: string | null
           campanha_id?: string | null
           componente_hesec?: string | null
@@ -9627,6 +9724,7 @@ export type Database = {
           rede_social?: string | null
           responsavel_id?: string | null
           status?: Database["public"]["Enums"]["post_status_enum"] | null
+          status_post?: Database["public"]["Enums"]["post_status_type"] | null
           tarefa_aprovacao_id?: string | null
           tarefa_criacao_id?: string | null
           tipo_criativo: string
@@ -9635,6 +9733,9 @@ export type Database = {
         }
         Update: {
           anexo_url?: string | null
+          arquivo_visual_nome?: string | null
+          arquivo_visual_tipo?: string | null
+          arquivo_visual_url?: string | null
           call_to_action?: string | null
           campanha_id?: string | null
           componente_hesec?: string | null
@@ -9655,6 +9756,7 @@ export type Database = {
           rede_social?: string | null
           responsavel_id?: string | null
           status?: Database["public"]["Enums"]["post_status_enum"] | null
+          status_post?: Database["public"]["Enums"]["post_status_type"] | null
           tarefa_aprovacao_id?: string | null
           tarefa_criacao_id?: string | null
           tipo_criativo?: string
@@ -16746,6 +16848,12 @@ export type Database = {
         | "aguardando_publicacao"
         | "publicado"
         | "cancelado"
+      post_status_type:
+        | "a_fazer"
+        | "em_producao"
+        | "pronto"
+        | "publicado"
+        | "temporario"
       prioridade_enum: "baixa" | "media" | "alta" | "critica"
       priority_type: "baixa" | "media" | "alta" | "urgente"
       provedor_ia_roteiro:
@@ -17121,6 +17229,13 @@ export const Constants = {
         "aguardando_publicacao",
         "publicado",
         "cancelado",
+      ],
+      post_status_type: [
+        "a_fazer",
+        "em_producao",
+        "pronto",
+        "publicado",
+        "temporario",
       ],
       prioridade_enum: ["baixa", "media", "alta", "critica"],
       priority_type: ["baixa", "media", "alta", "urgente"],

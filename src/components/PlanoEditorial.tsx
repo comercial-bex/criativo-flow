@@ -19,6 +19,10 @@ import { TableView } from "@/components/TableView";
 import { PostsContentView } from "@/components/PostsContentView";
 import { ListaPostsView } from "@/components/ListaPostsView";
 import { TabelaPlanoEditorial } from "@/components/PlanoEditorial/TabelaPlanoEditorial";
+import { ModosVisualizacao } from "@/components/PlanoEditorial/ModosVisualizacao";
+import { CalendarioEditorial as CalendarioView } from "@/components/PlanoEditorial/CalendarioEditorial";
+import { KanbanEditorial } from "@/components/PlanoEditorial/KanbanEditorial";
+import { PainelControleEditorial } from "@/components/PlanoEditorial/PainelControleEditorial";
 import { DndContext, closestCenter, DragEndEvent, DragStartEvent, DragOverlay, useDroppable } from "@dnd-kit/core";
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -333,6 +337,8 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
   const [dialogDatasOpen, setDialogDatasOpen] = useState(false);
   const [dialogDataManualOpen, setDialogDataManualOpen] = useState(false);
   const [dialogTemplatesOpen, setDialogTemplatesOpen] = useState(false);
+  const [modoVisualizacao, setModoVisualizacao] = useState<'lista' | 'calendario' | 'cartao'>('lista');
+  const [responsaveis, setResponsaveis] = useState<any[]>([]);
 
   // Hook para datas comemorativas
   const mesReferencia = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-01`;
@@ -420,7 +426,21 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
     buscarDadosOnboarding().then(setDadosOnboarding);
     buscarDadosObjetivos().then(setDadosObjetivos);
     carregarPostsTemporarios();
+    fetchResponsaveis();
   }, [planejamento.id]);
+
+  const fetchResponsaveis = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("pessoas")
+        .select("id, nome");
+
+      if (error) throw error;
+      setResponsaveis(data || []);
+    } catch (error) {
+      console.error("Erro ao buscar responsáveis:", error);
+    }
+  };
 
   // Auto-save posts temporários a cada 30 segundos
   useEffect(() => {
@@ -2726,19 +2746,54 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
             </CardHeader>
             
             {visualizacaoTabelaEditorial && (
-              <CardContent>
-                <TabelaPlanoEditorial
-                  planejamentoId={planejamento.id}
-                  clienteId={clienteId}
-                  posts={[...posts, ...postsGerados]}
-                  onPostsChange={(updatedPosts) => {
-                    const savedPosts = updatedPosts.filter(p => !p.status || p.status !== 'temporario');
-                    const tempPosts = updatedPosts.filter(p => p.status === 'temporario');
-                    setPosts(savedPosts);
-                    setPostsGerados(tempPosts);
-                  }}
-                  currentDate={currentDate}
-                />
+              <CardContent className="space-y-4">
+                {/* Seletor de Modo de Visualização */}
+                <div className="flex items-center justify-between">
+                  <ModosVisualizacao 
+                    modoAtual={modoVisualizacao}
+                    onModoChange={setModoVisualizacao}
+                  />
+                  <PainelControleEditorial posts={[...posts, ...postsGerados]} />
+                </div>
+
+                {/* Renderização condicional baseada no modo */}
+                {modoVisualizacao === 'lista' && (
+                  <TabelaPlanoEditorial
+                    planejamentoId={planejamento.id}
+                    clienteId={clienteId}
+                    posts={[...posts, ...postsGerados]}
+                    onPostsChange={(updatedPosts) => {
+                      const savedPosts = updatedPosts.filter(p => !p.status_post || p.status_post !== 'temporario');
+                      const tempPosts = updatedPosts.filter(p => p.status_post === 'temporario');
+                      setPosts(savedPosts as any);
+                      setPostsGerados(tempPosts as any);
+                    }}
+                    currentDate={currentDate}
+                  />
+                )}
+
+                {modoVisualizacao === 'calendario' && (
+                  <CalendarioView
+                    posts={[...posts, ...postsGerados]}
+                    currentDate={currentDate}
+                    onDateChange={setCurrentDate}
+                    onPostClick={onPreviewPost}
+                  />
+                )}
+
+                {modoVisualizacao === 'cartao' && (
+                  <KanbanEditorial
+                    posts={[...posts, ...postsGerados]}
+                    onPostsChange={(updatedPosts) => {
+                      const savedPosts = updatedPosts.filter(p => !p.status_post || p.status_post !== 'temporario');
+                      const tempPosts = updatedPosts.filter(p => p.status_post === 'temporario');
+                      setPosts(savedPosts as any);
+                      setPostsGerados(tempPosts as any);
+                    }}
+                    onPostClick={onPreviewPost}
+                    responsaveis={responsaveis}
+                  />
+                )}
               </CardContent>
             )}
           </Card>
