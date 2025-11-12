@@ -50,6 +50,9 @@ export const LinhaPost: React.FC<LinhaPostProps> = ({
   const [saving, setSaving] = useState(false);
   const [showTemplateSelector, setShowTemplateSelector] = useState(false);
   const [showAgendamento, setShowAgendamento] = useState(false);
+  const [showPrevisao, setShowPrevisao] = useState(false);
+  const [showPublicacao, setShowPublicacao] = useState(false);
+  const [showABTesting, setShowABTesting] = useState(false);
   const { gerarTextoEstruturado, loading: generatingTexto } = useTextGenerator();
 
   const handleGerarTextoEstruturado = async () => {

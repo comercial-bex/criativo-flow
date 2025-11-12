@@ -56,7 +56,7 @@ export const PublicacaoAutomatica = ({ isOpen, onClose, post, clienteId }: Publi
       // Atualizar status do post
       await supabase
         .from('posts_planejamento')
-        .update({ status_post: 'agendado' })
+        .update({ status_post: 'em_producao' })
         .eq('id', post.id);
 
       onClose();

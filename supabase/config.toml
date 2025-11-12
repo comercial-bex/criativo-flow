@@ -161,3 +161,15 @@ verify_jwt = true
 [functions.sugerir-horarios-postagem]
 verify_jwt = true
 
+[functions.prever-performance-post]
+verify_jwt = true
+
+[functions.coletar-metricas-post]
+verify_jwt = true
+
+[functions.processar-fila-publicacoes]
+verify_jwt = false
+
+[functions.gerar-variacoes-ab]
+verify_jwt = true
+
