@@ -1,68 +1,58 @@
-import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/lib/toast-compat';
 
-interface HorarioSugerido {
+interface HorarioInteligente {
+  dia_semana: number;
   hora: number;
-  minuto: number;
-  score: number;
-  justificativa: string;
+  taxa_engajamento_media: number;
+  score_performance: number;
 }
 
-interface SugestaoAgendamento {
-  horarios_sugeridos: HorarioSugerido[];
-  recomendacoes: string[];
-  melhor_horario_geral: string;
-  metadata?: {
-    baseado_em_analytics: boolean;
-    total_posts_historicos: number;
-    dia_semana: string;
-  };
-}
+export function useAgendamentoInteligente(tipoConteudo?: string) {
+  return useQuery({
+    queryKey: ['agendamento-inteligente', tipoConteudo],
+    queryFn: async () => {
+      let query = supabase
+        .from('post_performance_metrics')
+        .select('dia_semana, hora_publicacao, taxa_engajamento, score_performance');
 
-export function useAgendamentoInteligente() {
-  const [loading, setLoading] = useState(false);
-  const [sugestoes, setSugestoes] = useState<SugestaoAgendamento | null>(null);
+      if (tipoConteudo) {
+        query = query.eq('tipo_conteudo', tipoConteudo) as any;
+      }
 
-  const sugerirHorarios = async (params: {
-    clienteId: string;
-    tipo_conteudo: string;
-    data_postagem: string;
-    publico_alvo?: string;
-  }) => {
-    setLoading(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('sugerir-horarios-postagem', {
-        body: params
-      });
-
+      const { data, error } = await query;
       if (error) throw error;
 
-      if (data.success) {
-        setSugestoes(data);
-        return data;
-      } else {
-        throw new Error(data.error || 'Erro ao gerar sugestões');
-      }
-    } catch (error: any) {
-      console.error('Erro ao sugerir horários:', error);
-      toast.error(error.message || 'Erro ao gerar sugestões de horários');
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  };
+      // Agrupar por dia_semana e hora
+      const grouped = ((data || []) as any[]).reduce((acc: any, item: any) => {
+        const key = `${item.dia_semana}-${item.hora_publicacao}`;
+        if (!acc[key]) {
+          acc[key] = {
+            dia_semana: item.dia_semana,
+            hora: item.hora_publicacao,
+            total: 0,
+            somaEngajamento: 0,
+            somaScore: 0
+          };
+        }
+        acc[key].total += 1;
+        acc[key].somaEngajamento += item.taxa_engajamento || 0;
+        acc[key].somaScore += item.score_performance || 0;
+        return acc;
+      }, {});
 
-  const aplicarHorario = (data: string, horario: HorarioSugerido) => {
-    const dataCompleta = new Date(data);
-    dataCompleta.setHours(horario.hora, horario.minuto, 0, 0);
-    return dataCompleta.toISOString();
-  };
+      // Calcular médias e ordenar
+      const horarios: HorarioInteligente[] = Object.values(grouped)
+        .map((g: any) => ({
+          dia_semana: g.dia_semana,
+          hora: g.hora,
+          taxa_engajamento_media: g.somaEngajamento / g.total,
+          score_performance: g.somaScore / g.total
+        }))
+        .sort((a, b) => b.score_performance - a.score_performance);
 
-  return {
-    loading,
-    sugestoes,
-    sugerirHorarios,
-    aplicarHorario
-  };
+      return horarios;
+    },
+    enabled: true
+  });
 }
