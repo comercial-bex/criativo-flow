@@ -9473,6 +9473,7 @@ export type Database = {
         Row: {
           anexo_url: string | null
           call_to_action: string | null
+          campanha_id: string | null
           componente_hesec: string | null
           conteudo_completo: string | null
           contexto_estrategico: string | null
@@ -9484,6 +9485,7 @@ export type Database = {
           id: string
           legenda: string | null
           objetivo_postagem: string
+          periodo_campanha: string | null
           persona_alvo: string | null
           planejamento_id: string
           responsavel_id: string | null
@@ -9494,6 +9496,7 @@ export type Database = {
         Insert: {
           anexo_url?: string | null
           call_to_action?: string | null
+          campanha_id?: string | null
           componente_hesec?: string | null
           conteudo_completo?: string | null
           contexto_estrategico?: string | null
@@ -9505,6 +9508,7 @@ export type Database = {
           id?: string
           legenda?: string | null
           objetivo_postagem: string
+          periodo_campanha?: string | null
           persona_alvo?: string | null
           planejamento_id: string
           responsavel_id?: string | null
@@ -9515,6 +9519,7 @@ export type Database = {
         Update: {
           anexo_url?: string | null
           call_to_action?: string | null
+          campanha_id?: string | null
           componente_hesec?: string | null
           conteudo_completo?: string | null
           contexto_estrategico?: string | null
@@ -9526,6 +9531,7 @@ export type Database = {
           id?: string
           legenda?: string | null
           objetivo_postagem?: string
+          periodo_campanha?: string | null
           persona_alvo?: string | null
           planejamento_id?: string
           responsavel_id?: string | null
@@ -9539,6 +9545,7 @@ export type Database = {
         Row: {
           anexo_url: string | null
           call_to_action: string | null
+          campanha_id: string | null
           componente_hesec: string | null
           conteudo_completo: string | null
           contexto_estrategico: string | null
@@ -9550,6 +9557,7 @@ export type Database = {
           id: string
           legenda: string | null
           objetivo_postagem: string
+          periodo_campanha: string | null
           persona_alvo: string | null
           planejamento_id: string
           rede_social: string | null
@@ -9564,6 +9572,7 @@ export type Database = {
         Insert: {
           anexo_url?: string | null
           call_to_action?: string | null
+          campanha_id?: string | null
           componente_hesec?: string | null
           conteudo_completo?: string | null
           contexto_estrategico?: string | null
@@ -9575,6 +9584,7 @@ export type Database = {
           id?: string
           legenda?: string | null
           objetivo_postagem: string
+          periodo_campanha?: string | null
           persona_alvo?: string | null
           planejamento_id: string
           rede_social?: string | null
@@ -9589,6 +9599,7 @@ export type Database = {
         Update: {
           anexo_url?: string | null
           call_to_action?: string | null
+          campanha_id?: string | null
           componente_hesec?: string | null
           conteudo_completo?: string | null
           contexto_estrategico?: string | null
@@ -9600,6 +9611,7 @@ export type Database = {
           id?: string
           legenda?: string | null
           objetivo_postagem?: string
+          periodo_campanha?: string | null
           persona_alvo?: string | null
           planejamento_id?: string
           rede_social?: string | null
@@ -9612,6 +9624,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "posts_planejamento_campanha_id_fkey"
+            columns: ["campanha_id"]
+            isOneToOne: false
+            referencedRelation: "planejamento_campanhas"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "posts_planejamento_planejamento_id_fkey"
             columns: ["planejamento_id"]

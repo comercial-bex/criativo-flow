@@ -25,6 +25,7 @@ import { usePostDragDrop } from "@/hooks/usePostDragDrop";
 import { useDatasComemoratias } from "@/hooks/useDatasComemoratias";
 import { DatasComemoriativasDialog } from "@/components/PlanoEditorial/DatasComemoriativasDialog";
 import { CampanhaCard } from "@/components/PlanoEditorial/CampanhaCard";
+import { CampanhaPostsGenerator } from "@/components/PlanoEditorial/CampanhaPostsGenerator";
 
 interface PlanoEditorialProps {
   planejamento: {
@@ -2828,89 +2829,102 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
         <TabsContent value="datas-comemorativas" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Calendar className="h-5 w-5" />
-                Datas Comemorativas
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid gap-4">
-                <div>
-                  <Label>Datas Estratégicas para o Segmento</Label>
-                  <p className="text-sm text-muted-foreground mb-3">
-                    Selecione datas comemorativas relevantes para o segmento do cliente
-                  </p>
-                  
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                    {[
-                      { nome: "Dia da Mulher", data: "08/03" },
-                      { nome: "Dia do Trabalhador", data: "01/05" },
-                      { nome: "Dia das Mães", data: "2º dom/mai" },
-                      { nome: "Dia dos Namorados", data: "12/06" },
-                      { nome: "Festa Junina", data: "Jun" },
-                      { nome: "Dia dos Pais", data: "2º dom/ago" },
-                      { nome: "Dia do Cliente", data: "15/09" },
-                      { nome: "Dia das Crianças", data: "12/10" },
-                      { nome: "Black Friday", data: "Nov" },
-                      { nome: "Natal", data: "25/12" },
-                      { nome: "Ano Novo", data: "31/12" },
-                      { nome: "Carnaval", data: "Fev/Mar" }
-                    ].map((data) => (
-                      <div key={data.nome} className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-muted/50">
-                        <input 
-                          type="checkbox" 
-                          id={data.nome} 
-                          className="rounded" 
-                          checked={datasComemorativas.includes(data.nome)}
-                          onChange={() => toggleDataComemorativa(data.nome)}
-                        />
-                        <div className="flex-1">
-                          <label htmlFor={data.nome} className="text-sm font-medium cursor-pointer">
-                            {data.nome}
-                          </label>
-                          <p className="text-xs text-muted-foreground">{data.data}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <Label>Datas Personalizadas</Label>
-                  <p className="text-sm text-muted-foreground mb-3">
-                    Adicione datas específicas importantes para o cliente
-                  </p>
-                  <div className="space-y-2">
-                    <div className="flex gap-2">
-                      <Input placeholder="Nome da data comemorativa" />
-                      <Input type="date" />
-                      <Button variant="outline" size="sm">
-                        Adicionar
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <Button 
-                    className="gap-2"
-                    disabled={gerandoConteudo}
-                    onClick={gerarSugestoesDatasComIA}
-                  >
-                    {gerandoConteudo ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Sparkles className="h-4 w-4" />
-                    )}
-                    Gerar Sugestões com IA
-                  </Button>
-                  <p className="text-xs text-muted-foreground mt-2">
-                    A IA analisará o segmento do cliente e sugerirá datas comemorativas relevantes
-                  </p>
-                </div>
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <Calendar className="h-5 w-5" />
+                  Datas Estratégicas do Planejamento
+                </CardTitle>
+                <Button onClick={() => setDialogDatasOpen(true)} variant="default">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Adicionar Datas
+                </Button>
               </div>
+            </CardHeader>
+            <CardContent>
+              {loadingDatas ? (
+                <div className="text-center py-8">
+                  <Loader2 className="h-8 w-8 animate-spin mx-auto text-muted-foreground" />
+                  <p className="text-sm text-muted-foreground mt-2">Carregando campanhas...</p>
+                </div>
+              ) : campanhas.length === 0 ? (
+                <div className="text-center py-12">
+                  <CalendarX className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-50" />
+                  <h3 className="font-semibold text-lg mb-2">Nenhuma data comemorativa selecionada</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Adicione datas estratégicas para criar campanhas temáticas e aumentar o engajamento
+                  </p>
+                  <Button onClick={() => setDialogDatasOpen(true)}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Selecionar Datas Comemorativas
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {campanhas.map(campanha => (
+                    <CampanhaCard
+                      key={campanha.id}
+                      campanha={campanha}
+                      onRemove={async (id) => {
+                        const result = await removerCampanha(id);
+                        if (!result.error) {
+                          toast.success('Campanha removida com sucesso');
+                        } else {
+                          toast.error('Erro ao remover campanha');
+                        }
+                      }}
+                    />
+                  ))}
+                </div>
+              )}
+
+              {campanhas.length > 0 && (
+                <div className="mt-6 p-4 bg-muted/50 rounded-lg border">
+                  <h4 className="font-semibold text-sm mb-2">💡 Dica de Integração</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Use o gerador abaixo para criar posts automáticos nos períodos das campanhas selecionadas.
+                  </p>
+                </div>
+              )}
             </CardContent>
           </Card>
+
+          {/* Gerador de Posts para Campanhas */}
+          <CampanhaPostsGenerator
+            planejamentoId={planejamento.id}
+            clienteId={planejamento.cliente_id}
+            campanhas={campanhas}
+            onPostsGenerated={() => {
+              supabase
+                .from('posts_gerados_temp')
+                .select('*')
+                .eq('planejamento_id', planejamento.id)
+                .then(({ data }) => {
+                  if (data) {
+                    const postsFormatados = data.map(post => ({
+                      id: post.id,
+                      titulo: post.titulo,
+                      legenda: post.legenda || '',
+                      objetivo_postagem: post.objetivo_postagem,
+                      tipo_criativo: post.tipo_criativo,
+                      formato_postagem: post.formato_postagem,
+                      componente_hesec: post.componente_hesec || '',
+                      persona_alvo: post.persona_alvo || '',
+                      call_to_action: post.call_to_action || '',
+                      hashtags: post.hashtags || [],
+                      contexto_estrategico: post.contexto_estrategico || '',
+                      data_postagem: post.data_postagem,
+                      status: 'temporario' as const,
+                      anexo_url: post.anexo_url,
+                      campanha_id: post.campanha_id,
+                      periodo_campanha: post.periodo_campanha
+                    }));
+                    setPostsGerados(postsFormatados);
+                    setPostsTemporarios(data);
+                    sessionStorage.setItem(`posts_temp_${planejamento.id}`, JSON.stringify(postsFormatados));
+                  }
+                });
+            }}
+          />
         </TabsContent>
 
         <TabsContent value="trafego-pago" className="space-y-4">
