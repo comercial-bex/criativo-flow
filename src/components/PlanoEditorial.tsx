@@ -320,10 +320,7 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
   const [dadosObjetivos, setDadosObjetivos] = useState<any>(null);
   const [atualizandoPost, setAtualizandoPost] = useState<string | null>(null);
   const [draggedPost, setDraggedPost] = useState<any>(null);
-  const [visualizacaoTabela, setVisualizacaoTabela] = useState(false);
-  const [visualizacaoTabelaEditorial, setVisualizacaoTabelaEditorial] = useState(false);
-  const [visualizacaoCalendario, setVisualizacaoCalendario] = useState(false);
-  const [visualizacaoLista, setVisualizacaoLista] = useState(false);
+  // Estados removidos - usando apenas modoVisualizacao
   const [salvandoPostsGerados, setSalvandoPostsGerados] = useState(false);
   const [showPostViewModal, setShowPostViewModal] = useState(false);
   const [selectedPostForView, setSelectedPostForView] = useState<any>(null);
@@ -2692,163 +2689,53 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
             </CardContent>
           </Card>
 
-          {postsGerados.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                  <span>Posts Gerados</span>
-                   <div className="flex gap-2">
-                     <Button
-                       variant={visualizacaoTabelaEditorial ? "default" : "outline"}
-                       size="sm"
-                       onClick={() => {
-                         setVisualizacaoTabelaEditorial(true);
-                         setVisualizacaoTabela(false);
-                         setVisualizacaoCalendario(false);
-                         setVisualizacaoLista(false);
-                       }}
-                     >
-                       <TableIcon className="h-4 w-4 mr-1" />
-                       Tabela Editorial
-                     </Button>
-                     <Button
-                       variant={!visualizacaoTabelaEditorial && !visualizacaoCalendario && !visualizacaoLista ? "default" : "outline"}
-                       size="sm"
-                       onClick={() => {
-                         setVisualizacaoTabelaEditorial(false);
-                         setVisualizacaoTabela(true);
-                         setVisualizacaoCalendario(false);
-                         setVisualizacaoLista(false);
-                       }}
-                     >
-                       Tabela
-                     </Button>
-                     <Button
-                       variant={visualizacaoLista ? "default" : "outline"}
-                       size="sm"
-                       onClick={() => {
-                         setVisualizacaoTabelaEditorial(false);
-                         setVisualizacaoTabela(false);
-                         setVisualizacaoCalendario(false);
-                         setVisualizacaoLista(true);
-                       }}
-                     >
-                       Lista
-                     </Button>
-                     <Button
-                       variant={visualizacaoCalendario ? "default" : "outline"}
-                       size="sm"
-                       onClick={() => {
-                         setVisualizacaoTabelaEditorial(false);
-                         setVisualizacaoTabela(false);
-                         setVisualizacaoCalendario(true);
-                         setVisualizacaoLista(false);
-                       }}
-                     >
-                       <Calendar className="h-4 w-4 mr-1" />
-                       Calendário
-                     </Button>
-                   </div>
+          {/* Visualização Unificada de Posts */}
+          <Card>
+            <CardHeader className="border-b border-primary/20 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-xl font-bold font-['Montserrat'] flex items-center gap-2">
+                  <span>📊 Plano Editorial Completo</span>
+                  <Badge variant="outline" className="ml-2 bg-primary/10 border-primary/30">
+                    {posts.length} posts
+                  </Badge>
                 </CardTitle>
-              </CardHeader>
-              <CardContent>
-                 {visualizacaoTabelaEditorial ? (
-                   <TabelaPlanoEditorial
-                     planejamentoId={planejamento.id}
-                     clienteId={clienteId}
-                     projetoId={projetoId}
-                     posts={[...posts, ...postsGerados]}
-                     onPostsChange={(updatedPosts) => {
-                       const savedPosts = updatedPosts.filter(p => !p.status || p.status !== 'temporario');
-                       const tempPosts = updatedPosts.filter(p => p.status === 'temporario');
-                       setPosts(savedPosts);
-                       setPostsGerados(tempPosts);
-                     }}
-                     currentDate={currentDate}
-                   />
-                 ) : visualizacaoCalendario ? (
-                   <DndContext
-                     collisionDetection={closestCenter}
-                     onDragStart={handleDragStart}
-                     onDragEnd={handleDragEnd}
-                   >
-                     <SortableContext 
-                       items={[...posts, ...postsGerados].map(p => p.id)}
-                     >
-                       <div className="flex items-center justify-between mb-6">
-                         <div className="flex items-center gap-3">
-                           <Button variant="outline" size="sm" onClick={() => navigateMonth('prev')}>
-                             <ChevronLeft className="h-4 w-4" />
-                           </Button>
-                           <span className="text-lg font-semibold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                             {currentDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}
-                           </span>
-                           <Button variant="outline" size="sm" onClick={() => navigateMonth('next')}>
-                             <ChevronRight className="h-4 w-4" />
-                           </Button>
-                         </div>
-                         <Button 
-                           variant="outline" 
-                           size="sm" 
-                           onClick={() => setCalendarioExpanded(true)}
-                           className="bg-primary/5 hover:bg-primary/10 border-primary/20"
-                         >
-                           <Calendar className="h-4 w-4 mr-1" />
-                           Visualizar Completo
-                         </Button>
-                       </div>
-                       
-                       <div className="grid grid-cols-7 gap-1 mb-2 p-2 bg-muted/30 rounded-lg">
-                         {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map(day => (
-                           <div key={day} className="p-2 text-center text-xs font-bold text-muted-foreground uppercase tracking-wide">
-                             {day}
-                           </div>
-                         ))}
-                       </div>
-                       <div className="grid grid-cols-7 gap-1 p-2 bg-background border rounded-xl shadow-sm">
-                         {getDaysInMonth().map((day, index) => {
-                           const dayPosts = day ? getPostsForDay(day) : [];
-                           const dateStr = day ? `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}` : '';
-                           
-                           return (
-                             <DroppableDay
-                               key={index}
-                               day={day}
-                               dateStr={dateStr}
-                               dayPosts={dayPosts}
-                               onPreviewPost={onPreviewPost}
-                               getFormatIcon={getFormatIcon}
-                               atualizandoPost={atualizandoPost}
-                             />
-                           );
-                         })}
-                       </div>
-                     </SortableContext>
-                     <DragOverlay>
-                       {draggedPost ? (
-                         <div className="flex items-center gap-2 p-2 rounded-lg border border-primary bg-primary/10 shadow-lg">
-                           <span className="text-lg flex-shrink-0">{getFormatIcon(draggedPost.formato_postagem)}</span>
-                           <span className="flex-1 truncate text-sm font-medium text-foreground" title={draggedPost.titulo}>
-                             {draggedPost.titulo.length > 20 ? `${draggedPost.titulo.substring(0, 20)}...` : draggedPost.titulo}
-                           </span>
-                         </div>
-                       ) : null}
-                     </DragOverlay>
-                   </DndContext>
-                 ) : visualizacaoLista ? (
-                   <ListaPostsView
-                     posts={[...posts, ...postsGerados]}
-                     onPreviewPost={onPreviewPost}
-                   />
-                 ) : (
-                   <PostsContentView
-                     planejamentoId={planejamento.id}
-                     isTemp={true}
-                   />
-                 )}
-              </CardContent>
-            </Card>
-          )}
+                
+                <ModosVisualizacao 
+                  modoAtual={modoVisualizacao}
+                  onModoChange={setModoVisualizacao}
+                />
+              </div>
+            </CardHeader>
+            <CardContent className="p-6">
+              {modoVisualizacao === 'lista' && (
+                <TabelaPlanoEditorial
+                  planejamentoId={planejamento.id}
+                  clienteId={clienteId}
+                  projetoId={projetoId}
+                  posts={posts}
+                  onPostsChange={setPosts}
+                  currentDate={currentDate}
+                />
+              )}
+              
+              {modoVisualizacao === 'calendario' && (
+                <CalendarioView
+                  posts={posts}
+                  currentDate={currentDate}
+                  onDateChange={setCurrentDate}
+                  onPostClick={onPreviewPost}
+                />
+              )}
+              
+              {modoVisualizacao === 'kanban' && (
+                <KanbanPlanoEditorial
+                  posts={posts}
+                  onPostsChange={setPosts}
+                  onPostClick={onPreviewPost}
+                />
+              )}
+            </CardContent>
+          </Card>
 
             <CalendarioEditorial
             isOpen={calendarioExpanded}

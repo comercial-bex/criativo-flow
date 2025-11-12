@@ -9,7 +9,8 @@ import { Calendar } from "@/components/ui/calendar";
 import { Calendar as CalendarIcon, Save, X, Edit, Sparkles, Loader2, ExternalLink, Link as LinkIcon } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { getCreativeColor, getCreativeIcon, getObjetivoColor, formatarDataPorExtenso } from "@/lib/plano-editorial-helpers";
+import { getCreativeColor, getCreativeIcon, getTipoConteudoColor, getTipoConteudoIcon, getTipoConteudoDescricao, formatarDataPorExtenso } from "@/lib/plano-editorial-helpers";
+import { useTextGenerator } from "@/hooks/useTextGenerator";
 import { UploadArquivoVisual } from "./UploadArquivoVisual";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -39,16 +40,16 @@ export const LinhaPost: React.FC<LinhaPostProps> = ({
   const [editedPost, setEditedPost] = useState(post);
   const [generating, setGenerating] = useState(false);
   const [saving, setSaving] = useState(false);
+  const { gerarTextoEstruturado, loading: generatingTexto } = useTextGenerator();
 
-  const handleGerarLegenda = async () => {
-    setGenerating(true);
+  const handleGerarTextoEstruturado = async () => {
     try {
-      const legenda = await onGerarLegenda(editedPost);
-      setEditedPost({ ...editedPost, legenda });
+      const texto = await gerarTextoEstruturado(editedPost);
+      if (texto) {
+        setEditedPost({ ...editedPost, texto_estruturado: texto });
+      }
     } catch (error) {
-      console.error('Erro ao gerar legenda:', error);
-    } finally {
-      setGenerating(false);
+      console.error('Erro ao gerar texto estruturado:', error);
     }
   };
 
@@ -99,7 +100,7 @@ export const LinhaPost: React.FC<LinhaPostProps> = ({
   };
 
   return (
-    <TableRow className="hover:bg-accent/30 transition-colors">
+    <TableRow className="border-b border-primary/10 hover:bg-primary/5 hover:shadow-sm transition-all duration-200 group">
       {/* DRAG HANDLE */}
       {dragHandle && (
         <TableCell className="w-[40px] p-2">
@@ -108,7 +109,7 @@ export const LinhaPost: React.FC<LinhaPostProps> = ({
       )}
       
       {/* POST # */}
-      <TableCell className="font-mono text-center font-semibold">
+      <TableCell className="font-mono text-center font-semibold font-['Inter']">
         <div className="flex items-center justify-center gap-1.5">
           {String(index + 1).padStart(2, '0')}
           {post.tarefa_vinculada_id && (
@@ -179,63 +180,106 @@ export const LinhaPost: React.FC<LinhaPostProps> = ({
         )}
       </TableCell>
 
-      {/* OBJETIVO */}
-      <TableCell>
+      {/* CONTEÚDO (TIPO DE CONTEÚDO) */}
+      <TableCell className="min-w-[140px]">
         {isEditing ? (
           <Select
-            value={editedPost.objetivo_postagem}
-            onValueChange={(value) => setEditedPost({ ...editedPost, objetivo_postagem: value })}
+            value={editedPost.tipo_conteudo || 'informar'}
+            onValueChange={(value) => setEditedPost({ ...editedPost, tipo_conteudo: value })}
           >
-            <SelectTrigger className="w-full">
-              <SelectValue />
+            <SelectTrigger className="w-full border-primary/30">
+              <SelectValue placeholder="Tipo de conteúdo" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="humanizar">Humanizar</SelectItem>
-              <SelectItem value="educar">Educar</SelectItem>
-              <SelectItem value="resolver">Resolver</SelectItem>
-              <SelectItem value="entreter">Entreter</SelectItem>
-              <SelectItem value="converter">Converter</SelectItem>
-              <SelectItem value="engajamento">Engajamento</SelectItem>
-              <SelectItem value="awareness">Awareness</SelectItem>
-              <SelectItem value="relacionamento">Relacionamento</SelectItem>
+              <SelectItem value="informar">
+                <div className="flex items-center gap-2">
+                  <span>💡</span>
+                  <div className="text-left">
+                    <div className="font-medium">Informar</div>
+                    <div className="text-xs text-muted-foreground">Trazer conhecimento</div>
+                  </div>
+                </div>
+              </SelectItem>
+              <SelectItem value="inspirar">
+                <div className="flex items-center gap-2">
+                  <span>✨</span>
+                  <div>
+                    <div className="font-medium">Inspirar</div>
+                    <div className="text-xs text-muted-foreground">Conexão emocional</div>
+                  </div>
+                </div>
+              </SelectItem>
+              <SelectItem value="entreter">
+                <div className="flex items-center gap-2">
+                  <span>🎭</span>
+                  <div>
+                    <div className="font-medium">Entreter</div>
+                    <div className="text-xs text-muted-foreground">Vínculo leve</div>
+                  </div>
+                </div>
+              </SelectItem>
+              <SelectItem value="vender">
+                <div className="flex items-center gap-2">
+                  <span>💰</span>
+                  <div>
+                    <div className="font-medium">Vender</div>
+                    <div className="text-xs text-muted-foreground">Gerar conversão</div>
+                  </div>
+                </div>
+              </SelectItem>
+              <SelectItem value="posicionar">
+                <div className="flex items-center gap-2">
+                  <span>🎯</span>
+                  <div>
+                    <div className="font-medium">Posicionar</div>
+                    <div className="text-xs text-muted-foreground">Identidade da marca</div>
+                  </div>
+                </div>
+              </SelectItem>
             </SelectContent>
           </Select>
         ) : (
-          <Badge className={getObjetivoColor(post.objetivo_postagem)}>
-            {post.objetivo_postagem}
+          <Badge className={getTipoConteudoColor(post.tipo_conteudo)}>
+            {getTipoConteudoIcon(post.tipo_conteudo)} {post.tipo_conteudo || 'Informar'}
           </Badge>
         )}
       </TableCell>
 
-      {/* LEGENDA */}
-      <TableCell className="max-w-[300px]">
-        {isEditing ? (
-          <div className="relative">
-            <Textarea
-              value={editedPost.legenda || ''}
-              onChange={(e) => setEditedPost({ ...editedPost, legenda: e.target.value })}
-              placeholder="Digite ou gere sua legenda..."
-              className="min-h-[80px] pr-12 text-sm"
-            />
-            <Button
-              size="sm"
-              variant="ghost"
-              className="absolute top-1 right-1"
-              onClick={handleGerarLegenda}
-              disabled={generating}
-            >
-              {generating ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Sparkles className="h-4 w-4 text-primary" />
+      {/* TEXTO ESTRUTURADO */}
+      <TableCell className="min-w-[300px]">
+        <div className="space-y-2">
+          {isEditing ? (
+            <>
+              <Textarea
+                value={editedPost.texto_estruturado || ''}
+                onChange={(e) => setEditedPost({ ...editedPost, texto_estruturado: e.target.value })}
+                placeholder="Estrutura textual: AIDA, CTA ou Storytelling..."
+                rows={4}
+                className="resize-none border-primary/30 font-['Inter'] text-sm"
+              />
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleGerarTextoEstruturado}
+                disabled={generatingTexto}
+                className="w-full gap-2 text-xs border-primary/30 hover:bg-primary/10"
+              >
+                {generatingTexto ? (
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                ) : (
+                  <Sparkles className="h-3 w-3" />
+                )}
+                Gerar Estrutura com IA
+              </Button>
+            </>
+          ) : (
+            <div className="text-sm text-muted-foreground line-clamp-3 font-['Inter']">
+              {post.texto_estruturado || (
+                <span className="italic text-xs">Não definido</span>
               )}
-            </Button>
-          </div>
-        ) : (
-          <div className="text-sm line-clamp-3">
-            {post.legenda || <span className="text-muted-foreground italic">Sem legenda</span>}
-          </div>
-        )}
+            </div>
+          )}
+        </div>
       </TableCell>
 
       {/* ARQUIVO VISUAL */}

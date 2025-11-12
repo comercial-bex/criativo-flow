@@ -153,29 +153,32 @@ export const TabelaPlanoEditorial: React.FC<TabelaPlanoEditorialProps> = ({
       'temporario': 'temporario'
     };
 
-    // Gerar legenda inicial com título + CTA + hashtags
-    const hashtags = tarefa.kpis?.briefing?.hashtags || [];
-    const cta = tarefa.kpis?.briefing?.call_to_action || '';
-    const legenda = `${tarefa.titulo}\n\n${cta ? cta + '\n\n' : ''}${hashtags.map((h: string) => `#${h}`).join(' ')}`;
-
     return {
       planejamento_id: planejamentoId,
       titulo: tarefa.titulo,
       descricao: tarefa.descricao || '',
       formato_postagem: tipoParaFormato[tarefa.tipo] || 'post',
       tipo_criativo: 'imagem',
-      objetivo_postagem: tarefa.kpis?.briefing?.objetivo_postagem || 'educar',
+      
+      // NOVO: Mapear tipo_conteudo do briefing
+      tipo_conteudo: tarefa.kpis?.briefing?.tipo_conteudo || 'informar',
+      
+      // MANTER: objetivo_postagem como meta/finalidade (texto livre)
+      objetivo_postagem: tarefa.kpis?.briefing?.objetivo_postagem || '',
+      
+      // NOVO: texto_estruturado será gerado APÓS criação
+      texto_estruturado: '',
+      
       data_postagem: tarefa.prazo_executor || new Date().toISOString(),
       responsavel_id: tarefa.executor_id,
-      copy_caption: legenda.trim(),
+      copy_caption: '',
       persona_alvo: tarefa.kpis?.briefing?.publico_alvo || '',
       status_post: (statusParaPost[tarefa.status] || 'a_fazer') as 'a_fazer' | 'em_producao' | 'pronto' | 'publicado' | 'temporario',
       tarefa_vinculada_id: tarefa.id,
       arquivo_visual_url: tarefa.kpis?.referencias?.visuais?.[0] || null,
-      hashtags: hashtags,
-      call_to_action: cta,
+      hashtags: tarefa.kpis?.briefing?.hashtags || [],
+      call_to_action: tarefa.kpis?.briefing?.call_to_action || '',
       contexto_estrategico: tarefa.kpis?.briefing?.contexto_estrategico || '',
-      legenda: legenda.trim()
     };
   };
 
@@ -519,44 +522,56 @@ Seja objetivo e prático.`;
 
   return (
     <>
-      <Card>
-        <CardHeader>
+      <Card className="border-primary/20 shadow-xl bg-gradient-to-b from-card to-card/50">
+        <CardHeader className="border-b border-primary/20 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent">
           <div className="flex items-center justify-between flex-wrap gap-4">
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="text-2xl font-bold font-['Montserrat'] flex items-center gap-3 text-foreground">
+              <div className="h-10 w-1.5 bg-gradient-to-b from-primary via-primary to-primary/50 rounded-full shadow-lg shadow-primary/30" />
               📊 Plano Editorial - {format(currentDate, "MMMM yyyy", { locale: ptBR })}
-              <Badge variant="secondary" className="ml-2">
-                {postsFiltrados.length} / {posts.length} posts
-              </Badge>
             </CardTitle>
-            <div className="flex gap-2 flex-wrap">
-              <Button onClick={analisarComIA} variant="outline" size="sm" disabled={analisando || posts.length === 0}>
-                {analisando ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Sparkles className="h-4 w-4 mr-2" />}
-                Analisar com IA
+            <Badge variant="outline" className="text-sm px-4 py-2 bg-primary/10 border-primary/30 shadow-sm font-['Inter']">
+              {postsFiltrados.length} / {posts.length} posts
+            </Badge>
+          </div>
+          <div className="flex gap-3 mt-4 flex-wrap p-4 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent rounded-xl border border-primary/20">
+            <Button 
+              onClick={adicionarNovaLinha} 
+              className="gap-2 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary hover:shadow-lg hover:shadow-primary/20 transition-all duration-300 font-['Inter']"
+            >
+              <Plus className="h-4 w-4" />
+              Adicionar Post
+            </Button>
+            
+            <Button 
+              onClick={analisarComIA} 
+              variant="outline" 
+              disabled={analisando || posts.length === 0}
+              className="gap-2 border-primary/30 hover:bg-primary/10 hover:border-primary/50 transition-all duration-300 font-['Inter']"
+            >
+              {analisando ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+              Analisar com IA
+            </Button>
+            
+            <Button 
+              onClick={exportarPDF} 
+              variant="outline" 
+              disabled={exportando || posts.length === 0}
+              className="gap-2 border-primary/30 hover:bg-primary/10 hover:border-primary/50 transition-all duration-300 font-['Inter']"
+            >
+              {exportando ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileText className="h-4 w-4" />}
+              Exportar PDF
+            </Button>
+            
+            {onGerarConteudoIA && (
+              <Button 
+                onClick={onGerarConteudoIA}
+                disabled={gerando || (hasCompleteAnalysis && !hasCompleteAnalysis())}
+                className="gap-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-['Inter']"
+              >
+                {gerando ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+                Gerar Conteúdo IA
               </Button>
-              <Button onClick={exportarPDF} variant="outline" size="sm" disabled={exportando || posts.length === 0}>
-                {exportando ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <FileText className="h-4 w-4 mr-2" />}
-                Gerar PDF
-              </Button>
-              <Button onClick={adicionarNovaLinha} size="sm" variant="outline">
-                <Plus className="h-4 w-4 mr-2" />
-                Adicionar Post
-              </Button>
-              {onGerarConteudoIA && (
-                <Button 
-                  onClick={onGerarConteudoIA}
-                  disabled={gerando || (hasCompleteAnalysis && !hasCompleteAnalysis())}
-                  size="sm"
-                  className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {gerando ? (
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  ) : (
-                    <Sparkles className="h-4 w-4 mr-2" />
-                  )}
-                  Gerar Conteúdo IA
-                </Button>
-              )}
-            </div>
+            )}
           </div>
           
           {/* Aviso de validação */}
@@ -587,8 +602,8 @@ Seja objetivo e prático.`;
             totalPostsFiltrados={postsFiltrados.length}
           />
 
-          {/* Tabela com Drag & Drop */}
-          <div className="overflow-x-auto">
+          {/* Tabela com Drag & Drop e Visual BEX */}
+          <div className="overflow-x-auto rounded-xl border border-primary/20 shadow-md">
             <DndContext
               sensors={sensors}
               collisionDetection={closestCenter}
@@ -596,18 +611,18 @@ Seja objetivo e prático.`;
               modifiers={[restrictToVerticalAxis]}
             >
               <Table>
-                <TableHeader>
-                  <TableRow className="bg-[#EFF6FF]">
+                <TableHeader className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent backdrop-blur-sm sticky top-0 z-10">
+                  <TableRow className="border-primary/20 hover:bg-primary/5">
                     <TableHead className="w-[40px]"></TableHead>
-                    <TableHead className="w-[60px] font-bold">#</TableHead>
-                    <TableHead className="w-[150px] font-bold">DIA DA SEMANA</TableHead>
-                    <TableHead className="w-[130px] font-bold">CRIATIVO</TableHead>
-                    <TableHead className="w-[130px] font-bold">OBJETIVO</TableHead>
-                    <TableHead className="min-w-[300px] font-bold">LEGENDA</TableHead>
-                    <TableHead className="w-[180px] font-bold">ARQUIVO VISUAL</TableHead>
-                    <TableHead className="w-[150px] font-bold">RESPONSÁVEL</TableHead>
-                    <TableHead className="min-w-[200px] font-bold">OBSERVAÇÕES</TableHead>
-                    <TableHead className="w-[100px]"></TableHead>
+                    <TableHead className="text-center font-bold text-primary w-[60px] font-['Montserrat']">#</TableHead>
+                    <TableHead className="text-center font-bold text-primary min-w-[150px] font-['Montserrat']">DIA DA SEMANA</TableHead>
+                    <TableHead className="text-center font-bold text-primary min-w-[140px] font-['Montserrat']">CRIATIVO</TableHead>
+                    <TableHead className="text-center font-bold text-primary min-w-[140px] font-['Montserrat']">CONTEÚDO</TableHead>
+                    <TableHead className="font-bold text-primary min-w-[300px] font-['Montserrat']">TEXTO ESTRUTURADO</TableHead>
+                    <TableHead className="text-center font-bold text-primary min-w-[120px] font-['Montserrat']">ARQUIVO VISUAL</TableHead>
+                    <TableHead className="font-bold text-primary min-w-[150px] font-['Montserrat']">RESPONSÁVEL</TableHead>
+                    <TableHead className="font-bold text-primary min-w-[200px] font-['Montserrat']">OBSERVAÇÕES</TableHead>
+                    <TableHead className="text-center font-bold text-primary w-[100px] font-['Montserrat']">AÇÕES</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>

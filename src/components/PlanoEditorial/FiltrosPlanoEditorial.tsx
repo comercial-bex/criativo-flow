@@ -27,15 +27,12 @@ const FORMATOS = [
   { value: "outro", label: "Outro", icon: "📢" },
 ];
 
-const OBJETIVOS = [
-  { value: "humanizar", label: "Humanizar", icon: "💙" },
-  { value: "educar", label: "Educar", icon: "📚" },
-  { value: "resolver", label: "Resolver", icon: "💡" },
-  { value: "entreter", label: "Entreter", icon: "🎭" },
-  { value: "converter", label: "Converter", icon: "💰" },
-  { value: "engajamento", label: "Engajamento", icon: "🔥" },
-  { value: "awareness", label: "Awareness", icon: "📢" },
-  { value: "relacionamento", label: "Relacionamento", icon: "🤝" },
+const TIPOS_CONTEUDO = [
+  { value: "informar", label: "Informar", icon: "💡", descricao: "Trazer conhecimento" },
+  { value: "inspirar", label: "Inspirar", icon: "✨", descricao: "Conexão emocional" },
+  { value: "entreter", label: "Entreter", icon: "🎭", descricao: "Vínculo leve" },
+  { value: "vender", label: "Vender", icon: "💰", descricao: "Gerar conversão" },
+  { value: "posicionar", label: "Posicionar", icon: "🎯", descricao: "Identidade da marca" },
 ];
 
 const STATUS = [
@@ -129,11 +126,11 @@ export const FiltrosPlanoEditorial: React.FC<FiltrosPlanoEditorialProps> = ({
           </PopoverContent>
         </Popover>
 
-        {/* Filtro de Objetivo */}
+        {/* Filtro de Conteúdo (Tipo de Conteúdo) */}
         <Popover>
           <PopoverTrigger asChild>
             <Button variant="outline" size="sm" className="gap-2">
-              Objetivo
+              Conteúdo
               {objetivosSelecionados.length > 0 && (
                 <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">
                   {objetivosSelecionados.length}
@@ -142,23 +139,26 @@ export const FiltrosPlanoEditorial: React.FC<FiltrosPlanoEditorialProps> = ({
               <ChevronDown className="h-3 w-3 opacity-50" />
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-64" align="start">
+          <PopoverContent className="w-72" align="start">
             <div className="space-y-3">
-              <div className="font-medium text-sm">Selecione os objetivos</div>
+              <div className="font-medium text-sm">Tipo de Conteúdo</div>
               <div className="space-y-2">
-                {OBJETIVOS.map((objetivo) => (
-                  <div key={objetivo.value} className="flex items-center gap-2">
+                {TIPOS_CONTEUDO.map((tipo) => (
+                  <div key={tipo.value} className="flex items-center gap-2">
                     <Checkbox
-                      id={`objetivo-${objetivo.value}`}
-                      checked={objetivosSelecionados.includes(objetivo.value)}
-                      onCheckedChange={() => handleObjetivoToggle(objetivo.value)}
+                      id={`conteudo-${tipo.value}`}
+                      checked={objetivosSelecionados.includes(tipo.value)}
+                      onCheckedChange={() => handleObjetivoToggle(tipo.value)}
                     />
                     <label
-                      htmlFor={`objetivo-${objetivo.value}`}
+                      htmlFor={`conteudo-${tipo.value}`}
                       className="text-sm flex items-center gap-2 cursor-pointer flex-1"
                     >
-                      <span>{objetivo.icon}</span>
-                      <span>{objetivo.label}</span>
+                      <span>{tipo.icon}</span>
+                      <div className="flex flex-col">
+                        <span className="font-medium">{tipo.label}</span>
+                        <span className="text-xs text-muted-foreground">{tipo.descricao}</span>
+                      </div>
                     </label>
                   </div>
                 ))}
@@ -236,17 +236,17 @@ export const FiltrosPlanoEditorial: React.FC<FiltrosPlanoEditorialProps> = ({
             );
           })}
 
-          {objetivosSelecionados.map((objetivo) => {
-            const objetivoInfo = OBJETIVOS.find((o) => o.value === objetivo);
+          {objetivosSelecionados.map((conteudo) => {
+            const conteudoInfo = TIPOS_CONTEUDO.find((o) => o.value === conteudo);
             return (
-              <Badge key={objetivo} variant="secondary" className="gap-1.5 pr-1">
-                <span>{objetivoInfo?.icon}</span>
-                <span>{objetivoInfo?.label}</span>
+              <Badge key={conteudo} variant="secondary" className="gap-1.5 pr-1">
+                <span>{conteudoInfo?.icon}</span>
+                <span>{conteudoInfo?.label}</span>
                 <Button
                   variant="ghost"
                   size="sm"
                   className="h-4 w-4 p-0 hover:bg-transparent"
-                  onClick={() => handleObjetivoToggle(objetivo)}
+                  onClick={() => handleObjetivoToggle(conteudo)}
                 >
                   <X className="h-3 w-3" />
                 </Button>

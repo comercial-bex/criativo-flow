@@ -39,20 +39,88 @@ export function BriefingForm({ formData, setFormData, tipoTarefa }: BriefingForm
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* Objective */}
+        {/* Tipo de Conteúdo (NOVO CAMPO ESTRATÉGICO) */}
+        <div className="space-y-2">
+          <Label htmlFor="tipo_conteudo" className="flex items-center gap-2">
+            <Target className="h-4 w-4" />
+            Tipo de Conteúdo *
+          </Label>
+          <Select 
+            value={formData.tipo_conteudo || 'informar'} 
+            onValueChange={(value) => setFormData({ ...formData, tipo_conteudo: value })}
+          >
+            <SelectTrigger className="border-primary/30">
+              <SelectValue placeholder="Selecione o tipo de conteúdo" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="informar">
+                <div className="flex items-center gap-3 py-1">
+                  <span className="text-xl">💡</span>
+                  <div className="text-left">
+                    <div className="font-semibold">Informar</div>
+                    <div className="text-xs text-muted-foreground">Trazer conhecimento prático</div>
+                  </div>
+                </div>
+              </SelectItem>
+              <SelectItem value="inspirar">
+                <div className="flex items-center gap-3 py-1">
+                  <span className="text-xl">✨</span>
+                  <div>
+                    <div className="font-semibold">Inspirar</div>
+                    <div className="text-xs text-muted-foreground">Gerar conexão emocional</div>
+                  </div>
+                </div>
+              </SelectItem>
+              <SelectItem value="entreter">
+                <div className="flex items-center gap-3 py-1">
+                  <span className="text-xl">🎭</span>
+                  <div>
+                    <div className="font-semibold">Entreter</div>
+                    <div className="text-xs text-muted-foreground">Criar vínculo leve</div>
+                  </div>
+                </div>
+              </SelectItem>
+              <SelectItem value="vender">
+                <div className="flex items-center gap-3 py-1">
+                  <span className="text-xl">💰</span>
+                  <div>
+                    <div className="font-semibold">Vender</div>
+                    <div className="text-xs text-muted-foreground">Converter ou gerar leads</div>
+                  </div>
+                </div>
+              </SelectItem>
+              <SelectItem value="posicionar">
+                <div className="flex items-center gap-3 py-1">
+                  <span className="text-xl">🎯</span>
+                  <div>
+                    <div className="font-semibold">Posicionar</div>
+                    <div className="text-xs text-muted-foreground">Reforçar identidade da marca</div>
+                  </div>
+                </div>
+              </SelectItem>
+            </SelectContent>
+          </Select>
+          <p className="text-xs text-muted-foreground">
+            Define a intenção estratégica do conteúdo
+          </p>
+        </div>
+
+        {/* Meta/Objetivo Mensurável (RENOMEADO) */}
         <div className="space-y-2">
           <Label htmlFor="objetivo" className="flex items-center gap-2">
             <Target className="h-4 w-4" />
-            Objetivo da Postagem *
+            Meta/Objetivo Mensurável
           </Label>
           <Textarea
             id="objetivo"
             value={formData.objetivo_postagem}
             onChange={(e) => setFormData({ ...formData, objetivo_postagem: e.target.value })}
-            placeholder="Ex: Aumentar engajamento e gerar leads para o produto X"
-            required
+            placeholder="Ex: Aumentar engajamento em 20%, gerar 50 leads, alcançar 10k visualizações"
             rows={2}
           />
+          <p className="text-xs text-muted-foreground">
+            Meta específica ou KPI esperado desta postagem
+          </p>
         </div>
 
         {/* Target Audience */}
