@@ -106,6 +106,7 @@ const ClienteExportacoes = lazy(() => import("./pages/Cliente/Exportacoes"));
 const ClienteProjetoTarefas = lazy(() => import("./pages/Cliente/ProjetoTarefas"));
 const ClienteSocialAnalytics = lazy(() => import("./pages/Cliente/SocialAnalytics"));
 const Preditiva = lazy(() => import("./pages/Inteligencia/Preditiva"));
+const PerformanceTest = lazy(() => import("./pages/PerformanceTest"));
 const AdminDashboard = lazy(() => import("./pages/Administrativo/Dashboard"));
 const Orcamentos = lazy(() => import("./pages/Administrativo/Orcamentos"));
 const Propostas = lazy(() => import("./pages/Administrativo/Propostas"));
