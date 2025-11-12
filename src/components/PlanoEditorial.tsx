@@ -2607,7 +2607,13 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
 
           <Card>
             <CardHeader>
-              <CardTitle>Geração de Conteúdo</CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle>Geração de Conteúdo</CardTitle>
+                <Button onClick={() => setPlanoEditorialOpen(true)} variant="default">
+                  <FileText className="h-4 w-4 mr-2" />
+                  Plano Editorial Mensal
+                </Button>
+              </div>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex gap-2">
@@ -2847,10 +2853,6 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
                   <Button onClick={() => setDialogTemplatesOpen(true)} variant="secondary">
                     <Sparkles className="h-4 w-4 mr-2" />
                     Templates
-                  </Button>
-                  <Button onClick={() => setPlanoEditorialOpen(true)} variant="default">
-                    <FileText className="h-4 w-4 mr-2" />
-                    Plano Editorial Mensal
                   </Button>
                   <Button onClick={() => setDialogDatasOpen(true)} variant="default">
                     <Plus className="h-4 w-4 mr-2" />
