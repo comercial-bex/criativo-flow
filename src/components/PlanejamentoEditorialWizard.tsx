@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { 
   ChevronRight, 
   ChevronLeft, 
@@ -19,10 +20,51 @@ import {
   Calendar,
   Megaphone,
   Loader2,
-  CheckCircle
+  CheckCircle,
+  AlertCircle
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/lib/toast-compat';
+import { z } from 'zod';
+
+// Schemas de validação para cada step
+const missaoSchema = z.object({
+  missao: z.string()
+    .trim()
+    .min(20, 'A missão deve ter pelo menos 20 caracteres')
+    .max(1000, 'A missão deve ter no máximo 1000 caracteres')
+});
+
+const posicionamentoSchema = z.object({
+  posicionamento: z.string()
+    .trim()
+    .min(20, 'O posicionamento deve ter pelo menos 20 caracteres')
+    .max(1000, 'O posicionamento deve ter no máximo 1000 caracteres')
+});
+
+const personasSchema = z.object({
+  personas: z.array(z.object({
+    nome: z.string().min(1),
+    idade: z.string().min(1),
+    ocupacao: z.string().min(1),
+    caracteristicas: z.string().min(1)
+  })).min(1, 'É necessário ter pelo menos 1 persona definida')
+    .max(5, 'Máximo de 5 personas permitidas')
+});
+
+const frameworksSchema = z.object({
+  frameworks: z.array(z.string())
+    .min(1, 'Selecione pelo menos 1 framework')
+});
+
+const conteudosSchema = z.object({
+  conteudos: z.array(z.object({
+    titulo: z.string().min(1),
+    legenda: z.string().min(1),
+    objetivo: z.string().min(1),
+    tipo: z.string().min(1)
+  })).min(1, 'É necessário ter pelo menos 1 conteúdo gerado')
+});
 
 // Mapeia formato de post para tipo criativo aceito pelo banco
 const mapFormatoToTipoCriativo = (formato: string): 'post' | 'carrossel' | 'stories' => {
@@ -71,6 +113,7 @@ export function PlanejamentoEditorialWizard({
 }: WizardProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
   
   const [dadosBEX, setDadosBEX] = useState<any>({
     missao: '',
@@ -124,8 +167,52 @@ export function PlanejamentoEditorialWizard({
     }
   };
 
+  const validateCurrentStep = (): boolean => {
+    setValidationErrors([]);
+    const errors: string[] = [];
+
+    try {
+      switch (currentStep) {
+        case 1:
+          missaoSchema.parse({ missao: dadosBEX.missao });
+          break;
+        case 2:
+          posicionamentoSchema.parse({ posicionamento: dadosBEX.posicionamento });
+          break;
+        case 3:
+          personasSchema.parse({ personas: dadosBEX.personas });
+          break;
+        case 4:
+          frameworksSchema.parse({ frameworks: dadosBEX.frameworks });
+          break;
+        case 5:
+          conteudosSchema.parse({ conteudos: dadosBEX.conteudos });
+          break;
+        // Steps 6 e 7 são opcionais
+        case 6:
+        case 7:
+          return true;
+        default:
+          return true;
+      }
+      return true;
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const messages = error.errors.map(err => err.message);
+        setValidationErrors(messages);
+        toast.error('Erro de validação', { description: messages.join(', ') });
+      }
+      return false;
+    }
+  };
+
   const handleNext = () => {
+    if (!validateCurrentStep()) {
+      return;
+    }
+
     if (currentStep < STEPS.length) {
+      setValidationErrors([]);
       setCurrentStep(currentStep + 1);
     } else {
       handleFinish();
@@ -133,51 +220,83 @@ export function PlanejamentoEditorialWizard({
   };
 
   const handleFinish = async () => {
+    // Validação final antes de salvar
+    const validationResults = {
+      missao: missaoSchema.safeParse({ missao: dadosBEX.missao }),
+      posicionamento: posicionamentoSchema.safeParse({ posicionamento: dadosBEX.posicionamento }),
+      personas: personasSchema.safeParse({ personas: dadosBEX.personas }),
+      frameworks: frameworksSchema.safeParse({ frameworks: dadosBEX.frameworks }),
+      conteudos: conteudosSchema.safeParse({ conteudos: dadosBEX.conteudos }),
+    };
+
+    const allErrors: string[] = [];
+    Object.entries(validationResults).forEach(([field, result]) => {
+      if (!result.success) {
+        const fieldErrors = result.error.errors.map(err => `${field}: ${err.message}`);
+        allErrors.push(...fieldErrors);
+      }
+    });
+
+    if (allErrors.length > 0) {
+      setValidationErrors(allErrors);
+      toast.error('Dados incompletos ou inválidos', { description: allErrors.join('; ') });
+      return;
+    }
+
     setLoading(true);
+    setValidationErrors([]);
+    
     try {
       // Salvar conteúdo editorial
       const { error: conteudoError } = await supabase
         .from('conteudo_editorial')
         .upsert({
           planejamento_id: planejamentoId,
-          missao: dadosBEX.missao,
-          posicionamento: dadosBEX.posicionamento,
+          missao: dadosBEX.missao.trim(),
+          posicionamento: dadosBEX.posicionamento.trim(),
           persona: JSON.stringify(dadosBEX.personas),
           frameworks_selecionados: dadosBEX.frameworks,
         });
 
-      if (conteudoError) throw conteudoError;
+      if (conteudoError) {
+        console.error('Erro ao salvar conteúdo editorial:', conteudoError);
+        throw new Error(`Falha ao salvar conteúdo: ${conteudoError.message}`);
+      }
 
       // Inserir posts gerados
       if (dadosBEX.conteudos.length > 0) {
-        const posts = dadosBEX.conteudos.map((c: any, idx: number) => ({
-          planejamento_id: planejamentoId,
-          titulo: c.titulo,
-          legenda: c.legenda,
-          objetivo_postagem: c.objetivo,
-          formato_postagem: c.tipo,
-          tipo_criativo: mapFormatoToTipoCriativo(c.tipo),
-          componente_hesec: c.componente,
-          persona_alvo: c.persona_alvo,
-          call_to_action: c.call_to_action,
-          hashtags: c.hashtags,
-          contexto_estrategico: c.conceito_visual,
-          data_postagem: new Date(Date.now() + idx * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        }));
+        const posts = dadosBEX.conteudos.map((c: any, idx: number) => {
+          const post = {
+            planejamento_id: planejamentoId,
+            titulo: c.titulo?.trim() || '',
+            legenda: c.legenda?.trim() || '',
+            objetivo_postagem: c.objetivo?.trim() || '',
+            formato_postagem: c.tipo?.trim() || '',
+            tipo_criativo: mapFormatoToTipoCriativo(c.tipo || 'post'),
+            componente_hesec: c.componente?.trim() || null,
+            persona_alvo: c.persona_alvo?.trim() || null,
+            call_to_action: c.call_to_action?.trim() || null,
+            hashtags: c.hashtags?.trim() || null,
+            contexto_estrategico: c.conceito_visual?.trim() || null,
+            data_postagem: new Date(Date.now() + idx * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+          };
 
-        // Validar que todos os posts têm campos obrigatórios
-        const postsValidos = posts.every(p => 
-          p.planejamento_id && 
-          p.titulo && 
-          p.objetivo_postagem && 
-          p.tipo_criativo && 
-          p.formato_postagem &&
-          p.data_postagem
-        );
+          // Validar campos obrigatórios
+          if (!post.titulo || post.titulo.length < 3) {
+            throw new Error(`Post ${idx + 1}: Título inválido ou muito curto`);
+          }
+          if (!post.objetivo_postagem || post.objetivo_postagem.length < 3) {
+            throw new Error(`Post ${idx + 1}: Objetivo inválido`);
+          }
+          if (!post.formato_postagem) {
+            throw new Error(`Post ${idx + 1}: Formato não definido`);
+          }
+          if (!post.tipo_criativo) {
+            throw new Error(`Post ${idx + 1}: Tipo criativo inválido`);
+          }
 
-        if (!postsValidos) {
-          throw new Error('Dados incompletos nos posts gerados');
-        }
+          return post;
+        });
 
         const { error: postsError } = await supabase
           .from('posts_planejamento')
@@ -187,6 +306,8 @@ export function PlanejamentoEditorialWizard({
           console.error('Erro ao inserir posts:', postsError);
           throw new Error(`Falha ao criar posts: ${postsError.message}`);
         }
+        
+        toast.success(`${posts.length} posts criados com sucesso!`);
       }
 
       toast.success('Planejamento BEX criado com sucesso!');
@@ -194,8 +315,10 @@ export function PlanejamentoEditorialWizard({
       onOpenChange(false);
 
     } catch (error: any) {
-      console.error(error);
-      toast.error('Erro ao salvar planejamento');
+      console.error('Erro detalhado:', error);
+      const errorMessage = error.message || 'Erro desconhecido ao salvar planejamento';
+      toast.error('Erro ao salvar', errorMessage);
+      setValidationErrors([errorMessage]);
     } finally {
       setLoading(false);
     }
@@ -215,6 +338,19 @@ export function PlanejamentoEditorialWizard({
           <Progress value={progress} className="mt-2" />
         </DialogHeader>
 
+        {validationErrors.length > 0 && (
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              <ul className="list-disc pl-4 space-y-1">
+                {validationErrors.map((error, idx) => (
+                  <li key={idx} className="text-sm">{error}</li>
+                ))}
+              </ul>
+            </AlertDescription>
+          </Alert>
+        )}
+
         <div className="space-y-6 py-4">
           {/* Step 1: Missão */}
           {currentStep === 1 && (
@@ -232,11 +368,19 @@ export function PlanejamentoEditorialWizard({
                   Gerar com IA
                 </Button>
                 <Textarea
-                  placeholder="A missão da marca..."
+                  placeholder="A missão da marca... (mínimo 20 caracteres)"
                   value={dadosBEX.missao}
-                  onChange={(e) => setDadosBEX(prev => ({ ...prev, missao: e.target.value }))}
+                  onChange={(e) => {
+                    setDadosBEX(prev => ({ ...prev, missao: e.target.value }));
+                    setValidationErrors([]);
+                  }}
                   rows={4}
+                  maxLength={1000}
+                  className={validationErrors.length > 0 ? 'border-destructive' : ''}
                 />
+                <p className="text-xs text-muted-foreground">
+                  {dadosBEX.missao.length}/1000 caracteres
+                </p>
               </CardContent>
             </Card>
           )}
@@ -257,11 +401,19 @@ export function PlanejamentoEditorialWizard({
                   Gerar com IA
                 </Button>
                 <Textarea
-                  placeholder="O posicionamento da marca..."
+                  placeholder="O posicionamento da marca... (mínimo 20 caracteres)"
                   value={dadosBEX.posicionamento}
-                  onChange={(e) => setDadosBEX(prev => ({ ...prev, posicionamento: e.target.value }))}
+                  onChange={(e) => {
+                    setDadosBEX(prev => ({ ...prev, posicionamento: e.target.value }));
+                    setValidationErrors([]);
+                  }}
                   rows={4}
+                  maxLength={1000}
+                  className={validationErrors.length > 0 ? 'border-destructive' : ''}
                 />
+                <p className="text-xs text-muted-foreground">
+                  {dadosBEX.posicionamento.length}/1000 caracteres
+                </p>
               </CardContent>
             </Card>
           )}
