@@ -2701,9 +2701,23 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
                   <span>Posts Gerados</span>
                    <div className="flex gap-2">
                      <Button
-                       variant={!visualizacaoCalendario && !visualizacaoLista ? "default" : "outline"}
+                       variant={visualizacaoTabelaEditorial ? "default" : "outline"}
                        size="sm"
                        onClick={() => {
+                         setVisualizacaoTabelaEditorial(true);
+                         setVisualizacaoTabela(false);
+                         setVisualizacaoCalendario(false);
+                         setVisualizacaoLista(false);
+                       }}
+                     >
+                       <TableIcon className="h-4 w-4 mr-1" />
+                       Tabela Editorial
+                     </Button>
+                     <Button
+                       variant={!visualizacaoTabelaEditorial && !visualizacaoCalendario && !visualizacaoLista ? "default" : "outline"}
+                       size="sm"
+                       onClick={() => {
+                         setVisualizacaoTabelaEditorial(false);
                          setVisualizacaoTabela(true);
                          setVisualizacaoCalendario(false);
                          setVisualizacaoLista(false);
@@ -2715,6 +2729,7 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
                        variant={visualizacaoLista ? "default" : "outline"}
                        size="sm"
                        onClick={() => {
+                         setVisualizacaoTabelaEditorial(false);
                          setVisualizacaoTabela(false);
                          setVisualizacaoCalendario(false);
                          setVisualizacaoLista(true);
@@ -2726,6 +2741,7 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
                        variant={visualizacaoCalendario ? "default" : "outline"}
                        size="sm"
                        onClick={() => {
+                         setVisualizacaoTabelaEditorial(false);
                          setVisualizacaoTabela(false);
                          setVisualizacaoCalendario(true);
                          setVisualizacaoLista(false);
@@ -2738,7 +2754,20 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                 {visualizacaoCalendario ? (
+                 {visualizacaoTabelaEditorial ? (
+                   <TabelaPlanoEditorial
+                     planejamentoId={planejamento.id}
+                     clienteId={clienteId}
+                     posts={[...posts, ...postsGerados]}
+                     onPostsChange={(updatedPosts) => {
+                       const savedPosts = updatedPosts.filter(p => !p.status || p.status !== 'temporario');
+                       const tempPosts = updatedPosts.filter(p => p.status === 'temporario');
+                       setPosts(savedPosts);
+                       setPostsGerados(tempPosts);
+                     }}
+                     currentDate={currentDate}
+                   />
+                 ) : visualizacaoCalendario ? (
                    <DndContext
                      collisionDetection={closestCenter}
                      onDragStart={handleDragStart}
