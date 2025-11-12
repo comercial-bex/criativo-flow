@@ -17,7 +17,8 @@ import {
   Brain,
   BarChart3,
   Gauge,
-  Zap
+  Zap,
+  Shield as ShieldIcon
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -422,6 +423,28 @@ export default function AdminPainel() {
                 >
                   <Zap className="h-4 w-4 mr-2" />
                   Executar Testes
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:border-primary/50 transition-colors">
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <ShieldIcon className="h-5 w-5 mr-2 text-red-500" />
+                  Monitoramento de Segurança
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Auditoria em tempo real, alertas e logs de acesso a dados sensíveis
+                </p>
+                <Button 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={() => navigate('/admin/security-monitoring')}
+                >
+                  <ShieldIcon className="h-4 w-4 mr-2" />
+                  Abrir Dashboard
                 </Button>
               </CardContent>
             </Card>
