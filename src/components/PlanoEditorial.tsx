@@ -2694,6 +2694,55 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
             </CardContent>
           </Card>
 
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <TableIcon className="h-5 w-5" />
+                    Tabela Editorial
+                  </CardTitle>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Visualize, edite e crie posts manualmente
+                  </p>
+                </div>
+                <Button
+                  variant="outline"
+                  onClick={() => setVisualizacaoTabelaEditorial(!visualizacaoTabelaEditorial)}
+                >
+                  {visualizacaoTabelaEditorial ? (
+                    <>
+                      <ChevronRight className="h-4 w-4 mr-2" />
+                      Ocultar Tabela
+                    </>
+                  ) : (
+                    <>
+                      <TableIcon className="h-4 w-4 mr-2" />
+                      Abrir Tabela
+                    </>
+                  )}
+                </Button>
+              </div>
+            </CardHeader>
+            
+            {visualizacaoTabelaEditorial && (
+              <CardContent>
+                <TabelaPlanoEditorial
+                  planejamentoId={planejamento.id}
+                  clienteId={clienteId}
+                  posts={[...posts, ...postsGerados]}
+                  onPostsChange={(updatedPosts) => {
+                    const savedPosts = updatedPosts.filter(p => !p.status || p.status !== 'temporario');
+                    const tempPosts = updatedPosts.filter(p => p.status === 'temporario');
+                    setPosts(savedPosts);
+                    setPostsGerados(tempPosts);
+                  }}
+                  currentDate={currentDate}
+                />
+              </CardContent>
+            )}
+          </Card>
+
           {postsGerados.length > 0 && (
             <Card>
               <CardHeader>
