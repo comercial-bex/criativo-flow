@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { Calendar as CalendarIcon, Save, X, Edit, Sparkles, Loader2 } from "lucide-react";
+import { Calendar as CalendarIcon, Save, X, Edit, Sparkles, Loader2, ExternalLink, Link as LinkIcon } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { getCreativeColor, getCreativeIcon, getObjetivoColor, formatarDataPorExtenso } from "@/lib/plano-editorial-helpers";
@@ -109,7 +109,12 @@ export const LinhaPost: React.FC<LinhaPostProps> = ({
       
       {/* POST # */}
       <TableCell className="font-mono text-center font-semibold">
-        {String(index + 1).padStart(2, '0')}
+        <div className="flex items-center justify-center gap-1.5">
+          {String(index + 1).padStart(2, '0')}
+          {post.tarefa_vinculada_id && (
+            <LinkIcon className="h-3 w-3 text-primary" />
+          )}
+        </div>
       </TableCell>
 
       {/* DIA DA SEMANA */}
@@ -288,6 +293,21 @@ export const LinhaPost: React.FC<LinhaPostProps> = ({
       {/* AÇÕES */}
       <TableCell>
         <div className="flex gap-1">
+          {/* Botão Ver Tarefa */}
+          {post.tarefa_vinculada_id && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                window.open(`/admin/tarefas?id=${post.tarefa_vinculada_id}`, '_blank');
+              }}
+              title="Ver tarefa vinculada"
+              className="text-primary hover:text-primary/80"
+            >
+              <ExternalLink className="h-4 w-4" />
+            </Button>
+          )}
+          
           {isEditing ? (
             <>
               <Button size="sm" onClick={handleSave} disabled={saving}>

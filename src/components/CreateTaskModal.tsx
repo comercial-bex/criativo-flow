@@ -33,6 +33,16 @@ interface CreateTaskModalProps {
   projetoId?: string;
   defaultStatus?: string;
   clienteId?: string;
+  defaultData?: {
+    titulo?: string;
+    descricao?: string;
+    data_prazo?: Date;
+    tipo?: TipoTarefa;
+    objetivo_postagem?: string;
+    publico_alvo?: string;
+    hashtags?: string;
+    call_to_action?: string;
+  };
 }
 
 export function CreateTaskModal({ 
@@ -41,7 +51,8 @@ export function CreateTaskModal({
   onTaskCreate, 
   projetoId,
   defaultStatus = 'backlog',
-  clienteId
+  clienteId,
+  defaultData
 }: CreateTaskModalProps) {
   const { toast } = useToast();
   const dialogDescriptionId = "create-task-description";
@@ -112,6 +123,26 @@ export function CreateTaskModal({
       setIdCartao(gerarIdCartao(tipoTarefaSelecionado, selectedCliente));
     }
   }, [tipoTarefaSelecionado, selectedCliente]);
+
+  // Pré-preencher modal com defaultData
+  useEffect(() => {
+    if (open && defaultData) {
+      setFormData(prev => ({
+        ...prev,
+        titulo: defaultData.titulo || prev.titulo,
+        descricao: defaultData.descricao || prev.descricao,
+        data_prazo: defaultData.data_prazo || prev.data_prazo,
+        objetivo_postagem: defaultData.objetivo_postagem || prev.objetivo_postagem,
+        publico_alvo: defaultData.publico_alvo || prev.publico_alvo,
+        hashtags: defaultData.hashtags || prev.hashtags,
+        call_to_action: defaultData.call_to_action || prev.call_to_action
+      }));
+      
+      if (defaultData.tipo) {
+        setTipoTarefaSelecionado(defaultData.tipo);
+      }
+    }
+  }, [open, defaultData]);
 
   // Filtrar especialistas por tipo de tarefa
   const getEspecialistasDisponiveisPorTipo = (tipoTarefa: TipoTarefa | '') => {

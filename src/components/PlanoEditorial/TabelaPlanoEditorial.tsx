@@ -104,8 +104,31 @@ export const TabelaPlanoEditorial: React.FC<TabelaPlanoEditorialProps> = ({
     }
   };
 
+  // Calcular próxima data disponível
+  const getProximaDataDisponivel = () => {
+    const datasExistentes = posts
+      .map(p => p.data_postagem)
+      .filter(Boolean)
+      .map(d => new Date(d).getDate());
+    
+    const mesAtual = currentDate.getMonth();
+    const anoAtual = currentDate.getFullYear();
+    
+    // Sugerir próximo dia que não tem post
+    for (let dia = 1; dia <= 31; dia++) {
+      if (!datasExistentes.includes(dia)) {
+        const dataProxima = new Date(anoAtual, mesAtual, dia);
+        // Verificar se é data válida (não passa do mês)
+        if (dataProxima.getMonth() === mesAtual) {
+          return dataProxima;
+        }
+      }
+    }
+    
+    return new Date(anoAtual, mesAtual, 1); // Fallback: primeiro dia do mês
+  };
+
   const adicionarNovaLinha = () => {
-    // Abrir modal de criação de tarefa ao invés de adicionar linha inline
     setShowCreateModal(true);
   };
 
@@ -117,15 +140,23 @@ export const TabelaPlanoEditorial: React.FC<TabelaPlanoEditorialProps> = ({
       'criativo_card': 'card',
       'criativo_carrossel': 'carrossel',
       'criativo_vt': 'motion',
-      'feed_post': 'post'
+      'feed_post': 'post',
+      'criativo_cartela': 'post'
     };
 
     const statusParaPost: Record<string, string> = {
       'backlog': 'a_fazer',
       'em_producao': 'em_producao',
+      'aguardando_aprovacao': 'em_producao',
       'aprovado': 'pronto',
-      'publicado': 'publicado'
+      'publicado': 'publicado',
+      'temporario': 'temporario'
     };
+
+    // Gerar legenda inicial com título + CTA + hashtags
+    const hashtags = tarefa.kpis?.briefing?.hashtags || [];
+    const cta = tarefa.kpis?.briefing?.call_to_action || '';
+    const legenda = `${tarefa.titulo}\n\n${cta ? cta + '\n\n' : ''}${hashtags.map((h: string) => `#${h}`).join(' ')}`;
 
     return {
       planejamento_id: planejamentoId,
@@ -136,13 +167,15 @@ export const TabelaPlanoEditorial: React.FC<TabelaPlanoEditorialProps> = ({
       objetivo_postagem: tarefa.kpis?.briefing?.objetivo_postagem || 'educar',
       data_postagem: tarefa.prazo_executor || new Date().toISOString(),
       responsavel_id: tarefa.executor_id,
-      copy_caption: tarefa.descricao || '',
-      persona_alvo: tarefa.publico_alvo || '',
+      copy_caption: legenda.trim(),
+      persona_alvo: tarefa.kpis?.briefing?.publico_alvo || '',
       status_post: (statusParaPost[tarefa.status] || 'a_fazer') as 'a_fazer' | 'em_producao' | 'pronto' | 'publicado' | 'temporario',
       tarefa_vinculada_id: tarefa.id,
       arquivo_visual_url: tarefa.kpis?.referencias?.visuais?.[0] || null,
-      hashtags: tarefa.kpis?.briefing?.hashtags || [],
-      call_to_action: tarefa.kpis?.briefing?.call_to_action || ''
+      hashtags: hashtags,
+      call_to_action: cta,
+      contexto_estrategico: tarefa.kpis?.briefing?.contexto_estrategico || '',
+      legenda: legenda.trim()
     };
   };
 
@@ -647,6 +680,16 @@ Seja objetivo e prático.`;
       <CreateTaskModal
         open={showCreateModal}
         onOpenChange={setShowCreateModal}
+        projetoId={projetoId}
+        clienteId={clienteId}
+        defaultData={{
+          titulo: `Post ${posts.length + 1}`,
+          descricao: 'Descreva o objetivo e contexto deste conteúdo...',
+          data_prazo: getProximaDataDisponivel(),
+          tipo: 'feed_post' as TipoTarefa,
+          objetivo_postagem: 'engajamento',
+          call_to_action: 'Saiba mais'
+        }}
         onTaskCreate={async (taskData) => {
           // Criar tarefa
           const { data: { user } } = await supabase.auth.getUser();
@@ -669,8 +712,6 @@ Seja objetivo e prático.`;
           
           return tarefa;
         }}
-        projetoId={projetoId}
-        clienteId={clienteId}
       />
 
       <DialogAnaliseIA
