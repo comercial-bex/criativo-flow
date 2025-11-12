@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { Calendar as CalendarIcon, Save, X, Edit, Sparkles, Loader2, ExternalLink, Link as LinkIcon, FileText } from "lucide-react";
+import { Calendar as CalendarIcon, Save, X, Edit, Sparkles, Loader2, ExternalLink, Link as LinkIcon, FileText, Rocket, Target, FlaskConical } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { getCreativeColor, getCreativeIcon, getTipoConteudoColor, getTipoConteudoIcon, getTipoConteudoDescricao, formatarDataPorExtenso } from "@/lib/plano-editorial-helpers";
@@ -15,6 +15,10 @@ import { UploadArquivoVisual } from "./UploadArquivoVisual";
 import { supabase } from "@/integrations/supabase/client";
 import { TemplateSelector } from "./TemplateSelector";
 import { AgendamentoInteligente } from "./AgendamentoInteligente";
+import { PrevisaoPerformance } from "./PrevisaoPerformance";
+import { PublicacaoAutomatica } from "./PublicacaoAutomatica";
+import { ABTestingManager } from "./ABTestingManager";
+
 
 interface LinhaPostProps {
   post: any;
@@ -302,17 +306,27 @@ export const LinhaPost: React.FC<LinhaPostProps> = ({
                   ) : (
                     <Sparkles className="h-3 w-3" />
                   )}
-                  IA
-                </Button>
-              </div>
-            </>
-          ) : (
-            <div className="text-sm text-muted-foreground line-clamp-3 font-['Inter']">
-              {post.texto_estruturado || (
-                <span className="italic text-xs">Não definido</span>
-              )}
-            </div>
-          )}
+            IA
+          </Button>
+          
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setShowABTesting(true)}
+            className="flex-1 gap-2 text-xs border-primary/30 hover:bg-primary/10"
+          >
+            <FlaskConical className="h-3 w-3" />
+            A/B Test
+          </Button>
+        </div>
+      </>
+    ) : (
+      <div className="text-sm text-muted-foreground line-clamp-3 font-['Inter']">
+        {post.texto_estruturado || (
+          <span className="italic text-xs">Não definido</span>
+        )}
+      </div>
+    )}
         </div>
       </TableCell>
 

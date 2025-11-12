@@ -9594,6 +9594,230 @@ export type Database = {
           },
         ]
       }
+      post_ab_variations: {
+        Row: {
+          abordagem: string | null
+          cliente_id: string
+          conversoes: number | null
+          created_at: string | null
+          engajamentos: number | null
+          framework_usado: string | null
+          id: string
+          impressoes: number | null
+          is_ativa: boolean | null
+          is_vencedora: boolean | null
+          post_id: string
+          taxa_conversao: number | null
+          teste_nome: string
+          texto_estruturado: string
+          updated_at: string | null
+          variacao_letra: string
+        }
+        Insert: {
+          abordagem?: string | null
+          cliente_id: string
+          conversoes?: number | null
+          created_at?: string | null
+          engajamentos?: number | null
+          framework_usado?: string | null
+          id?: string
+          impressoes?: number | null
+          is_ativa?: boolean | null
+          is_vencedora?: boolean | null
+          post_id: string
+          taxa_conversao?: number | null
+          teste_nome: string
+          texto_estruturado: string
+          updated_at?: string | null
+          variacao_letra: string
+        }
+        Update: {
+          abordagem?: string | null
+          cliente_id?: string
+          conversoes?: number | null
+          created_at?: string | null
+          engajamentos?: number | null
+          framework_usado?: string | null
+          id?: string
+          impressoes?: number | null
+          is_ativa?: boolean | null
+          is_vencedora?: boolean | null
+          post_id?: string
+          taxa_conversao?: number | null
+          teste_nome?: string
+          texto_estruturado?: string
+          updated_at?: string | null
+          variacao_letra?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_ab_variations_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_ab_variations_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "mv_cliente_timeline"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "post_ab_variations_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "mv_grs_dashboard_metrics"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "post_ab_variations_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "vw_calendario_completo"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "post_ab_variations_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "vw_client_metrics"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "post_ab_variations_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts_planejamento"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      post_performance_metrics: {
+        Row: {
+          alcance: number | null
+          cliente_id: string
+          cliques_link: number | null
+          comentarios: number | null
+          compartilhamentos: number | null
+          created_at: string | null
+          curtidas: number | null
+          data_publicacao: string
+          dia_semana: number
+          formato_postagem: string | null
+          hora_publicacao: number
+          id: string
+          impressoes: number | null
+          plataforma: string | null
+          post_id: string | null
+          salvamentos: number | null
+          score_performance: number | null
+          taxa_cliques: number | null
+          taxa_engajamento: number | null
+          texto_estruturado: string | null
+          tinha_cta: boolean | null
+          tinha_hashtags: boolean | null
+          tipo_conteudo: string
+          updated_at: string | null
+        }
+        Insert: {
+          alcance?: number | null
+          cliente_id: string
+          cliques_link?: number | null
+          comentarios?: number | null
+          compartilhamentos?: number | null
+          created_at?: string | null
+          curtidas?: number | null
+          data_publicacao: string
+          dia_semana: number
+          formato_postagem?: string | null
+          hora_publicacao: number
+          id?: string
+          impressoes?: number | null
+          plataforma?: string | null
+          post_id?: string | null
+          salvamentos?: number | null
+          score_performance?: number | null
+          taxa_cliques?: number | null
+          taxa_engajamento?: number | null
+          texto_estruturado?: string | null
+          tinha_cta?: boolean | null
+          tinha_hashtags?: boolean | null
+          tipo_conteudo: string
+          updated_at?: string | null
+        }
+        Update: {
+          alcance?: number | null
+          cliente_id?: string
+          cliques_link?: number | null
+          comentarios?: number | null
+          compartilhamentos?: number | null
+          created_at?: string | null
+          curtidas?: number | null
+          data_publicacao?: string
+          dia_semana?: number
+          formato_postagem?: string | null
+          hora_publicacao?: number
+          id?: string
+          impressoes?: number | null
+          plataforma?: string | null
+          post_id?: string | null
+          salvamentos?: number | null
+          score_performance?: number | null
+          taxa_cliques?: number | null
+          taxa_engajamento?: number | null
+          texto_estruturado?: string | null
+          tinha_cta?: boolean | null
+          tinha_hashtags?: boolean | null
+          tipo_conteudo?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_performance_metrics_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_performance_metrics_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "mv_cliente_timeline"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "post_performance_metrics_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "mv_grs_dashboard_metrics"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "post_performance_metrics_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "vw_calendario_completo"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "post_performance_metrics_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "vw_client_metrics"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "post_performance_metrics_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts_planejamento"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       posts_gerados_temp: {
         Row: {
           anexo_url: string | null
@@ -11128,6 +11352,106 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "vw_client_metrics"
             referencedColumns: ["responsavel_id"]
+          },
+        ]
+      }
+      publicacao_queue: {
+        Row: {
+          cliente_id: string
+          created_at: string | null
+          data_agendamento: string
+          erro_mensagem: string | null
+          id: string
+          imagem_url: string | null
+          max_tentativas: number | null
+          plataformas: Json
+          post_id: string
+          publicado_at: string | null
+          resultado: Json | null
+          status: string | null
+          tentativas: number | null
+          texto_publicacao: string | null
+          updated_at: string | null
+          video_url: string | null
+        }
+        Insert: {
+          cliente_id: string
+          created_at?: string | null
+          data_agendamento: string
+          erro_mensagem?: string | null
+          id?: string
+          imagem_url?: string | null
+          max_tentativas?: number | null
+          plataformas: Json
+          post_id: string
+          publicado_at?: string | null
+          resultado?: Json | null
+          status?: string | null
+          tentativas?: number | null
+          texto_publicacao?: string | null
+          updated_at?: string | null
+          video_url?: string | null
+        }
+        Update: {
+          cliente_id?: string
+          created_at?: string | null
+          data_agendamento?: string
+          erro_mensagem?: string | null
+          id?: string
+          imagem_url?: string | null
+          max_tentativas?: number | null
+          plataformas?: Json
+          post_id?: string
+          publicado_at?: string | null
+          resultado?: Json | null
+          status?: string | null
+          tentativas?: number | null
+          texto_publicacao?: string | null
+          updated_at?: string | null
+          video_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "publicacao_queue_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "publicacao_queue_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "mv_cliente_timeline"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "publicacao_queue_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "mv_grs_dashboard_metrics"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "publicacao_queue_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "vw_calendario_completo"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "publicacao_queue_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "vw_client_metrics"
+            referencedColumns: ["cliente_id"]
+          },
+          {
+            foreignKeyName: "publicacao_queue_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts_planejamento"
+            referencedColumns: ["id"]
           },
         ]
       }
