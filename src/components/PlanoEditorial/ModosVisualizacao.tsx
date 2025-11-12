@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
-import { List, Calendar as CalendarIcon, KanbanSquare } from "lucide-react";
+import { LayoutGrid, Table, Calendar as CalendarIcon } from "lucide-react";
 
-type ModoVisualizacao = 'lista' | 'calendario' | 'kanban';
+type ModoVisualizacao = 'cartao' | 'tabela' | 'calendario';
 
 interface ModosVisualizacaoProps {
   modoAtual: ModoVisualizacao;
@@ -12,13 +12,22 @@ export const ModosVisualizacao = ({ modoAtual, onModoChange }: ModosVisualizacao
   return (
     <div className="flex gap-2 bg-muted/30 p-1 rounded-lg">
       <Button
-        variant={modoAtual === 'lista' ? 'default' : 'ghost'}
+        variant={modoAtual === 'cartao' ? 'default' : 'ghost'}
         size="sm"
-        onClick={() => onModoChange('lista')}
+        onClick={() => onModoChange('cartao')}
         className="gap-2"
       >
-        <List className="h-4 w-4" />
-        Lista
+        <LayoutGrid className="h-4 w-4" />
+        Cartão
+      </Button>
+      <Button
+        variant={modoAtual === 'tabela' ? 'default' : 'ghost'}
+        size="sm"
+        onClick={() => onModoChange('tabela')}
+        className="gap-2"
+      >
+        <Table className="h-4 w-4" />
+        Tabela
       </Button>
       <Button
         variant={modoAtual === 'calendario' ? 'default' : 'ghost'}
@@ -28,15 +37,6 @@ export const ModosVisualizacao = ({ modoAtual, onModoChange }: ModosVisualizacao
       >
         <CalendarIcon className="h-4 w-4" />
         Calendário
-      </Button>
-      <Button
-        variant={modoAtual === 'kanban' ? 'default' : 'ghost'}
-        size="sm"
-        onClick={() => onModoChange('kanban')}
-        className="gap-2"
-      >
-        <KanbanSquare className="h-4 w-4" />
-        Kanban
       </Button>
     </div>
   );

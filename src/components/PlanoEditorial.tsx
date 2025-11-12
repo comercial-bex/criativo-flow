@@ -21,7 +21,8 @@ import { ListaPostsView } from "@/components/ListaPostsView";
 import { TabelaPlanoEditorial } from "@/components/PlanoEditorial/TabelaPlanoEditorial";
 import { ModosVisualizacao } from "@/components/PlanoEditorial/ModosVisualizacao";
 import { CalendarioEditorial as CalendarioView } from "@/components/PlanoEditorial/CalendarioEditorial";
-import { KanbanPlanoEditorial } from "@/components/PlanoEditorial/KanbanPlanoEditorial";
+import { CartaoPlanoEditorial } from "@/components/PlanoEditorial/CartaoPlanoEditorial";
+import { AnalyticsTipoConteudo } from "@/components/PlanoEditorial/AnalyticsTipoConteudo";
 import { DndContext, closestCenter, DragEndEvent, DragStartEvent, DragOverlay, useDroppable } from "@dnd-kit/core";
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -333,7 +334,8 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
   const [dialogDatasOpen, setDialogDatasOpen] = useState(false);
   const [dialogDataManualOpen, setDialogDataManualOpen] = useState(false);
   const [dialogTemplatesOpen, setDialogTemplatesOpen] = useState(false);
-  const [modoVisualizacao, setModoVisualizacao] = useState<'lista' | 'calendario' | 'kanban'>('lista');
+  const [modoVisualizacao, setModoVisualizacao] = useState<'cartao' | 'tabela' | 'calendario'>('cartao');
+  const [showAnalytics, setShowAnalytics] = useState(false);
   const [responsaveis, setResponsaveis] = useState<any[]>([]);
 
   // Hook para datas comemorativas
@@ -2620,41 +2622,76 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
             </Card>
           )}
 
-          {/* Tabela Editorial Simplificada */}
-          <Card>
-            <CardHeader>
+
+          {/* Plano Editorial Unificado */}
+          <Card className="border-primary/20">
+            <CardHeader className="border-b border-primary/20 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent">
               <div className="flex items-center justify-between flex-wrap gap-4">
                 <div>
-                  <CardTitle className="flex items-center gap-2">
+                  <CardTitle className="text-xl font-bold font-['Montserrat'] flex items-center gap-2">
                     <TableIcon className="h-5 w-5" />
                     Plano Editorial
+                    <Badge variant="outline" className="ml-2 bg-primary/10 border-primary/30">
+                      {[...posts, ...postsGerados].length} posts
+                    </Badge>
                   </CardTitle>
                   <p className="text-sm text-muted-foreground mt-1">
-                    Visualize, edite e crie posts manualmente
+                    Visualize, edite e gerencie todos os seus posts
                   </p>
                 </div>
                 
-                <div className="flex items-center gap-3">
-                  {/* Modos de Visualização */}
-                  <ModosVisualizacao 
-                    modoAtual={modoVisualizacao}
-                    onModoChange={setModoVisualizacao}
-                  />
-                </div>
+                {/* Modos de Visualização */}
+                <ModosVisualizacao 
+                  modoAtual={modoVisualizacao}
+                  onModoChange={setModoVisualizacao}
+                />
               </div>
             </CardHeader>
             
-            <CardContent className="space-y-4">
+            <CardContent className="p-6 space-y-6">
+              {/* Analytics (opcional) */}
+              {modoVisualizacao === 'cartao' && (
+                <div className="flex items-center justify-end mb-4">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowAnalytics(!showAnalytics)}
+                    className="gap-2"
+                  >
+                    <Sparkles className="h-4 w-4" />
+                    {showAnalytics ? 'Ocultar' : 'Mostrar'} Analytics
+                  </Button>
+                </div>
+              )}
+              
+              {showAnalytics && modoVisualizacao === 'cartao' && (
+                <AnalyticsTipoConteudo planejamentoId={planejamento.id} />
+              )}
+              
               {/* Renderização condicional baseada no modo */}
-              {modoVisualizacao === 'lista' && (
+              {modoVisualizacao === 'cartao' && (
+                <CartaoPlanoEditorial
+                  posts={[...posts, ...postsGerados]}
+                  onPostsChange={(updatedPosts) => {
+                    const savedPosts = updatedPosts.filter(p => p.id);
+                    const tempPosts = updatedPosts.filter(p => !p.id);
+                    setPosts(savedPosts);
+                    setPostsGerados(tempPosts);
+                  }}
+                  onPostClick={onPreviewPost}
+                  onEditPost={onPreviewPost}
+                />
+              )}
+              
+              {modoVisualizacao === 'tabela' && (
                 <TabelaPlanoEditorial
                   planejamentoId={planejamento.id}
                   clienteId={clienteId}
                   projetoId={projetoId}
                   posts={[...posts, ...postsGerados]}
                   onPostsChange={(updatedPosts) => {
-                    const savedPosts = updatedPosts.filter(p => !p.status_post || p.status_post !== 'temporario');
-                    const tempPosts = updatedPosts.filter(p => p.status_post === 'temporario');
+                    const savedPosts = updatedPosts.filter(p => p.id);
+                    const tempPosts = updatedPosts.filter(p => !p.id);
                     setPosts(savedPosts as any);
                     setPostsGerados(tempPosts as any);
                   }}
@@ -2670,67 +2707,6 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
                   posts={[...posts, ...postsGerados]}
                   currentDate={currentDate}
                   onDateChange={setCurrentDate}
-                  onPostClick={onPreviewPost}
-                />
-              )}
-
-              {modoVisualizacao === 'kanban' && (
-                <KanbanPlanoEditorial
-                  posts={[...posts, ...postsGerados]}
-                  onPostsChange={(updatedPosts) => {
-                    const savedPosts = updatedPosts.filter(p => !p.status_post || p.status_post !== 'temporario');
-                    const tempPosts = updatedPosts.filter(p => p.status_post === 'temporario');
-                    setPosts(savedPosts as any);
-                    setPostsGerados(tempPosts);
-                  }}
-                  onPostClick={onPreviewPost}
-                />
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Visualização Unificada de Posts */}
-          <Card>
-            <CardHeader className="border-b border-primary/20 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-xl font-bold font-['Montserrat'] flex items-center gap-2">
-                  <span>📊 Plano Editorial Completo</span>
-                  <Badge variant="outline" className="ml-2 bg-primary/10 border-primary/30">
-                    {posts.length} posts
-                  </Badge>
-                </CardTitle>
-                
-                <ModosVisualizacao 
-                  modoAtual={modoVisualizacao}
-                  onModoChange={setModoVisualizacao}
-                />
-              </div>
-            </CardHeader>
-            <CardContent className="p-6">
-              {modoVisualizacao === 'lista' && (
-                <TabelaPlanoEditorial
-                  planejamentoId={planejamento.id}
-                  clienteId={clienteId}
-                  projetoId={projetoId}
-                  posts={posts}
-                  onPostsChange={setPosts}
-                  currentDate={currentDate}
-                />
-              )}
-              
-              {modoVisualizacao === 'calendario' && (
-                <CalendarioView
-                  posts={posts}
-                  currentDate={currentDate}
-                  onDateChange={setCurrentDate}
-                  onPostClick={onPreviewPost}
-                />
-              )}
-              
-              {modoVisualizacao === 'kanban' && (
-                <KanbanPlanoEditorial
-                  posts={posts}
-                  onPostsChange={setPosts}
                   onPostClick={onPreviewPost}
                 />
               )}
