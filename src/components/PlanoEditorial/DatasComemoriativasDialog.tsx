@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Calendar, Search, TrendingUp, Sparkles, Plus, Trash2, Edit2 } from 'lucide-react';
 import { DataComemorativa } from '@/hooks/useDatasComemoratias';
 import { toast } from '@/lib/toast-compat';
+import { EditDataComemoriativaManualDialog } from './EditDataComemoriativaManualDialog';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -28,6 +29,7 @@ interface DatasComemoriativasDialogProps {
   mesReferencia: string;
   onSalvar: (campanhasSelecionadas: CampanhaSelecionada[]) => void;
   onRemoverDataManual?: (id: string) => void;
+  onRefetch?: () => void;
 }
 
 interface CampanhaSelecionada {
@@ -48,12 +50,14 @@ export function DatasComemoriativasDialog({
   datas,
   mesReferencia,
   onSalvar,
-  onRemoverDataManual
+  onRemoverDataManual,
+  onRefetch
 }: DatasComemoriativasDialogProps) {
   const [busca, setBusca] = useState('');
   const [filtroEngajamento, setFiltroEngajamento] = useState<string>('todos');
   const [campanhasSelecionadas, setCampanhasSelecionadas] = useState<Map<string, CampanhaSelecionada>>(new Map());
   const [dataParaDeletar, setDataParaDeletar] = useState<string | null>(null);
+  const [dataParaEditar, setDataParaEditar] = useState<DataComemorativa | null>(null);
 
   const mes = new Date(mesReferencia).getMonth() + 1;
   const ano = new Date(mesReferencia).getFullYear();
@@ -149,6 +153,12 @@ export function DatasComemoriativasDialog({
 
     const campanhasArray = Array.from(campanhasSelecionadas.values());
     onSalvar(campanhasArray);
+    
+    // Refetch após salvar para atualizar lista
+    if (onRefetch) {
+      onRefetch();
+    }
+    
     onOpenChange(false);
     setCampanhasSelecionadas(new Map());
   };
@@ -205,8 +215,18 @@ export function DatasComemoriativasDialog({
                 <Button
                   variant="ghost"
                   size="sm"
+                  onClick={() => setDataParaEditar(data)}
+                  className="h-8 w-8 p-0"
+                  title="Editar"
+                >
+                  <Edit2 className="h-4 w-4 text-primary" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={() => setDataParaDeletar(data.id)}
                   className="h-8 w-8 p-0"
+                  title="Deletar"
                 >
                   <Trash2 className="h-4 w-4 text-destructive" />
                 </Button>
@@ -375,6 +395,20 @@ export function DatasComemoriativasDialog({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Dialog de edição de data manual */}
+      <EditDataComemoriativaManualDialog
+        open={!!dataParaEditar}
+        onOpenChange={(open) => !open && setDataParaEditar(null)}
+        data={dataParaEditar}
+        onDataEditada={() => {
+          toast.success('Data comemorativa atualizada com sucesso!');
+          if (onRefetch) {
+            onRefetch();
+          }
+          setDataParaEditar(null);
+        }}
+      />
     </Dialog>
   );
 }

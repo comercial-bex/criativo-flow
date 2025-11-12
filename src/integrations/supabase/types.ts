@@ -9110,6 +9110,7 @@ export type Database = {
           data_comemorativa_id: string | null
           data_fim: string
           data_inicio: string
+          estrutura_posts_sugerida: Json | null
           id: string
           nome_campanha: string
           objetivos: Json | null
@@ -9118,12 +9119,14 @@ export type Database = {
           periodo_pre_campanha: number | null
           planejamento_id: string | null
           status: string | null
+          template_id: string | null
         }
         Insert: {
           created_at?: string | null
           data_comemorativa_id?: string | null
           data_fim: string
           data_inicio: string
+          estrutura_posts_sugerida?: Json | null
           id?: string
           nome_campanha: string
           objetivos?: Json | null
@@ -9132,12 +9135,14 @@ export type Database = {
           periodo_pre_campanha?: number | null
           planejamento_id?: string | null
           status?: string | null
+          template_id?: string | null
         }
         Update: {
           created_at?: string | null
           data_comemorativa_id?: string | null
           data_fim?: string
           data_inicio?: string
+          estrutura_posts_sugerida?: Json | null
           id?: string
           nome_campanha?: string
           objetivos?: Json | null
@@ -9146,6 +9151,7 @@ export type Database = {
           periodo_pre_campanha?: number | null
           planejamento_id?: string | null
           status?: string | null
+          template_id?: string | null
         }
         Relationships: [
           {

@@ -25,8 +25,11 @@ import { usePostDragDrop } from "@/hooks/usePostDragDrop";
 import { useDatasComemoratias } from "@/hooks/useDatasComemoratias";
 import { DatasComemoriativasDialog } from "@/components/PlanoEditorial/DatasComemoriativasDialog";
 import { AddDataComemoriativaManualDialog } from "@/components/PlanoEditorial/AddDataComemoriativaManualDialog";
+import { TemplatesCampanhasDialog } from "@/components/PlanoEditorial/TemplatesCampanhasDialog";
+import { TimelineCampanhas } from "@/components/PlanoEditorial/TimelineCampanhas";
 import { CampanhaCard } from "@/components/PlanoEditorial/CampanhaCard";
 import { CampanhaPostsGenerator } from "@/components/PlanoEditorial/CampanhaPostsGenerator";
+import { TemplateCampanha } from "@/lib/templates-campanhas";
 
 interface PlanoEditorialProps {
   planejamento: {
@@ -327,6 +330,7 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
   const [orcamentoSugerido, setOrcamentoSugerido] = useState('');
   const [dialogDatasOpen, setDialogDatasOpen] = useState(false);
   const [dialogDataManualOpen, setDialogDataManualOpen] = useState(false);
+  const [dialogTemplatesOpen, setDialogTemplatesOpen] = useState(false);
 
   // Hook para datas comemorativas
   const mesReferencia = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-01`;
@@ -2837,6 +2841,10 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
                   Datas Estratégicas do Planejamento
                 </CardTitle>
                 <div className="flex items-center gap-2">
+                  <Button onClick={() => setDialogTemplatesOpen(true)} variant="secondary">
+                    <Sparkles className="h-4 w-4 mr-2" />
+                    Templates
+                  </Button>
                   <Button onClick={() => setDialogDatasOpen(true)} variant="default">
                     <Plus className="h-4 w-4 mr-2" />
                     Adicionar Datas
@@ -2867,21 +2875,27 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
                   </Button>
                 </div>
               ) : (
-                <div className="space-y-3">
-                  {campanhas.map(campanha => (
-                    <CampanhaCard
-                      key={campanha.id}
-                      campanha={campanha}
-                      onRemove={async (id) => {
-                        const result = await removerCampanha(id);
-                        if (!result.error) {
-                          toast.success('Campanha removida com sucesso');
-                        } else {
-                          toast.error('Erro ao remover campanha');
-                        }
-                      }}
-                    />
-                  ))}
+                <div className="space-y-6">
+                  {/* Timeline de Campanhas */}
+                  <TimelineCampanhas campanhas={campanhas} />
+                  
+                  {/* Cards de Campanhas */}
+                  <div className="space-y-3">
+                    {campanhas.map(campanha => (
+                      <CampanhaCard
+                        key={campanha.id}
+                        campanha={campanha}
+                        onRemove={async (id) => {
+                          const result = await removerCampanha(id);
+                          if (!result.error) {
+                            toast.success('Campanha removida com sucesso');
+                          } else {
+                            toast.error('Erro ao remover campanha');
+                          }
+                        }}
+                      />
+                    ))}
+                  </div>
                 </div>
               )}
 
@@ -3080,15 +3094,22 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
         onOpenChange={setDialogDatasOpen}
         datas={datas}
         mesReferencia={mesReferencia}
+        onRefetch={refetch}
         onSalvar={async (campanhasSelecionadas) => {
+          console.log('🔵 Salvando campanhas:', campanhasSelecionadas.length);
+          
           for (const campanha of campanhasSelecionadas) {
             const result = await adicionarCampanha(campanha);
             if (result.error) {
+              console.error('❌ Erro ao adicionar campanha:', result.error);
               toast.error('Erro ao adicionar campanha');
               return;
             }
+            console.log('✅ Campanha salva:', result.data?.id);
           }
+          
           toast.success(`${campanhasSelecionadas.length} campanha(s) adicionada(s) com sucesso!`);
+          refetch();
         }}
         onRemoverDataManual={async (id) => {
           const result = await removerDataManual(id);
@@ -3107,6 +3128,67 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
         onOpenChange={setDialogDataManualOpen}
         onDataCriada={() => {
           toast.success('Data comemorativa manual criada!');
+          refetch();
+        }}
+      />
+
+      {/* Modal de Templates de Campanhas */}
+      <TemplatesCampanhasDialog
+        open={dialogTemplatesOpen}
+        onOpenChange={setDialogTemplatesOpen}
+        mesReferencia={mesReferencia}
+        onAplicarTemplate={async (template: TemplateCampanha) => {
+          console.log('🎨 Aplicando template:', template.nome);
+          
+          // Calcular datas com base no template
+          const ano = new Date(mesReferencia).getFullYear();
+          const mes = template.mesReferencia;
+          
+          let dataInicio: string;
+          let dataFim: string;
+          
+          if (template.dataFixa) {
+            const [dia] = template.dataFixa.split('/').map(Number);
+            const dataEvento = new Date(ano, mes - 1, dia);
+            
+            const dataInicioCalc = new Date(dataEvento);
+            dataInicioCalc.setDate(dataInicioCalc.getDate() - template.diasPreCampanha);
+            dataInicio = dataInicioCalc.toISOString().split('T')[0];
+            
+            const dataFimCalc = new Date(dataEvento);
+            dataFimCalc.setDate(dataFimCalc.getDate() + template.diasPosCampanha);
+            dataFim = dataFimCalc.toISOString().split('T')[0];
+          } else {
+            // Para datas móveis, usar primeiro dia do mês
+            const dataInicioCalc = new Date(ano, mes - 1, 1);
+            dataInicio = dataInicioCalc.toISOString().split('T')[0];
+            
+            const dataFimCalc = new Date(ano, mes - 1, 15);
+            dataFim = dataFimCalc.toISOString().split('T')[0];
+          }
+          
+          const result = await adicionarCampanha({
+            data_comemorativa_id: `template_${template.id}`,
+            nome_campanha: template.nome,
+            data_inicio: dataInicio,
+            data_fim: dataFim,
+            periodo_pre_campanha: template.diasPreCampanha,
+            periodo_pos_campanha: template.diasPosCampanha,
+            objetivos: template.objetivosSugeridos,
+            status: 'planejada',
+            orcamento_sugerido: template.orcamentoSugerido,
+            template_id: template.id,
+            estrutura_posts_sugerida: template.estruturaPosts
+          } as any);
+          
+          if (result.error) {
+            console.error('❌ Erro ao aplicar template:', result.error);
+            toast.error('Erro ao aplicar template');
+            return;
+          }
+          
+          console.log('✅ Template aplicado:', result.data?.id);
+          toast.success(`Template "${template.nome}" aplicado com sucesso!`);
           refetch();
         }}
       />
