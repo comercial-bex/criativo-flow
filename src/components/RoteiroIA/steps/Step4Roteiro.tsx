@@ -10,6 +10,7 @@ import LogoUploader from "../LogoUploader";
 import { marked } from "marked";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger, TooltipPortal } from "@/components/ui/tooltip";
 import { estimateTokens, estimateCost, buildPromptForEstimation } from "@/utils/tokenEstimator";
+import DOMPurify from 'dompurify';
 
 interface Step4RoteiroProps {
   formData: any;
@@ -175,13 +176,19 @@ export default function Step4Roteiro({
               <div 
                 className="prose prose-sm max-w-none text-black"
                 dangerouslySetInnerHTML={{ 
-                  __html: String(marked.parse(formData.roteiro_markdown, { async: false }))
-                    .replace(/📸 \*\*IMAGEM DE APOIO:\*\*/g, '<div class="bg-green-100 p-3 rounded my-2 text-black"><strong>📸 IMAGEM DE APOIO:</strong>')
-                    .replace(/🎤 \*\*FALA \(ON\):\*\*/g, '</div><div class="bg-blue-100 p-3 rounded my-2 text-black"><strong>🎤 FALA (ON):</strong>')
-                    .replace(/📢 \*\*NARRAÇÃO \(OFF\):\*\*/g, '</div><div class="bg-yellow-100 p-3 rounded my-2 text-black"><strong>📢 NARRAÇÃO (OFF):</strong>')
-                    .replace(/🎬 \*\*EFEITOS VISUAIS\/ÁUDIO:\*\*/g, '</div><div class="bg-orange-100 p-3 rounded my-2 text-black"><strong>🎬 EFEITOS VISUAIS/ÁUDIO:</strong>')
-                    .replace(/🎥 \*\*SUGESTÃO TÉCNICA:\*\*/g, '</div><div class="bg-gray-100 p-3 rounded my-2 text-black"><strong>🎥 SUGESTÃO TÉCNICA:</strong>')
-                    .replace(/⏱️ \*\*DURAÇÃO ESTIMADA:\*\*/g, '</div><div class="bg-purple-100 p-2 rounded my-2 text-black"><strong>⏱️ DURAÇÃO:</strong>') + '</div>'
+                  __html: DOMPurify.sanitize(
+                    String(marked.parse(formData.roteiro_markdown, { async: false }))
+                      .replace(/📸 \*\*IMAGEM DE APOIO:\*\*/g, '<div class="bg-green-100 p-3 rounded my-2 text-black"><strong>📸 IMAGEM DE APOIO:</strong>')
+                      .replace(/🎤 \*\*FALA \(ON\):\*\*/g, '</div><div class="bg-blue-100 p-3 rounded my-2 text-black"><strong>🎤 FALA (ON):</strong>')
+                      .replace(/📢 \*\*NARRAÇÃO \(OFF\):\*\*/g, '</div><div class="bg-yellow-100 p-3 rounded my-2 text-black"><strong>📢 NARRAÇÃO (OFF):</strong>')
+                      .replace(/🎬 \*\*EFEITOS VISUAIS\/ÁUDIO:\*\*/g, '</div><div class="bg-orange-100 p-3 rounded my-2 text-black"><strong>🎬 EFEITOS VISUAIS/ÁUDIO:</strong>')
+                      .replace(/🎥 \*\*SUGESTÃO TÉCNICA:\*\*/g, '</div><div class="bg-gray-100 p-3 rounded my-2 text-black"><strong>🎥 SUGESTÃO TÉCNICA:</strong>')
+                      .replace(/⏱️ \*\*DURAÇÃO ESTIMADA:\*\*/g, '</div><div class="bg-purple-100 p-2 rounded my-2 text-black"><strong>⏱️ DURAÇÃO:</strong>') + '</div>',
+                    {
+                      ALLOWED_TAGS: ['div', 'h1', 'h2', 'h3', 'h4', 'p', 'br', 'strong', 'em', 'ul', 'ol', 'li', 'span'],
+                      ALLOWED_ATTR: ['class']
+                    }
+                  )
                 }} 
               />
             ) : (

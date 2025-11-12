@@ -5,6 +5,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { FileText, Download, Mail, CheckCircle, Target, Calendar } from 'lucide-react';
 import { marked } from 'marked';
 import { useToast } from '@/hooks/use-toast';
+import DOMPurify from 'dompurify';
 
 interface RelatorioPreviewProps {
   open: boolean;
@@ -43,7 +44,13 @@ export function RelatorioPreview({
 
   const getRelatorioHTML = async () => {
     const result = await marked(relatorio || '# Relatório sendo gerado...');
-    return typeof result === 'string' ? result : '# Relatório sendo gerado...';
+    const htmlString = typeof result === 'string' ? result : '# Relatório sendo gerado...';
+    
+    // Sanitize HTML to prevent XSS attacks
+    return DOMPurify.sanitize(htmlString, {
+      ALLOWED_TAGS: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'br', 'strong', 'em', 'ul', 'ol', 'li', 'a', 'blockquote', 'code', 'pre', 'table', 'thead', 'tbody', 'tr', 'th', 'td'],
+      ALLOWED_ATTR: ['class', 'href', 'target', 'rel']
+    });
   };
 
   const [relatorioHTML, setRelatorioHTML] = React.useState<string>('');
