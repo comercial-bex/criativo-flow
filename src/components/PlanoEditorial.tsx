@@ -5,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, ChevronLeft, ChevronRight, Loader2, Users, Target, BookOpen, Sparkles, Save, Eye, Undo2, AlertTriangle, X, CheckCircle, Plus, CalendarX, FileText } from "lucide-react";
+import { Calendar, ChevronLeft, ChevronRight, Loader2, Users, Target, BookOpen, Sparkles, Save, Eye, Undo2, AlertTriangle, X, CheckCircle, Plus, CalendarX } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from '@/lib/toast-compat';
@@ -30,8 +30,6 @@ import { TimelineCampanhas } from "@/components/PlanoEditorial/TimelineCampanhas
 import { CampanhaCard } from "@/components/PlanoEditorial/CampanhaCard";
 import { CampanhaPostsGenerator } from "@/components/PlanoEditorial/CampanhaPostsGenerator";
 import { TemplateCampanha } from "@/lib/templates-campanhas";
-import { PlanoEditorialModal } from "@/components/PlanoEditorial/PlanoEditorialModal";
-import { PlanejamentoEditorialWizard } from "@/components/PlanejamentoEditorialWizard";
 
 interface PlanoEditorialProps {
   planejamento: {
@@ -333,7 +331,6 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
   const [dialogDatasOpen, setDialogDatasOpen] = useState(false);
   const [dialogDataManualOpen, setDialogDataManualOpen] = useState(false);
   const [dialogTemplatesOpen, setDialogTemplatesOpen] = useState(false);
-  const [planoEditorialOpen, setPlanoEditorialOpen] = useState(false);
 
   // Hook para datas comemorativas
   const mesReferencia = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-01`;
@@ -2607,13 +2604,7 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
 
           <Card>
             <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle>Geração de Conteúdo</CardTitle>
-                <Button onClick={() => setPlanoEditorialOpen(true)} variant="default">
-                  <FileText className="h-4 w-4 mr-2" />
-                  Plano Editorial Mensal
-                </Button>
-              </div>
+              <CardTitle>Geração de Conteúdo</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex gap-2">
@@ -3200,14 +3191,6 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
           toast.success(`Template "${template.nome}" aplicado com sucesso!`);
           refetch();
         }}
-      />
-
-      {/* Plano Editorial Mensal Modal */}
-      <PlanoEditorialModal
-        open={planoEditorialOpen}
-        onOpenChange={setPlanoEditorialOpen}
-        planejamentoId={planejamento.id}
-        onRefresh={() => setPosts([])}
       />
     </div>
   );
