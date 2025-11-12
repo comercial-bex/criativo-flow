@@ -6,13 +6,15 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { Calendar as CalendarIcon, Save, X, Edit, Sparkles, Loader2, ExternalLink, Link as LinkIcon } from "lucide-react";
+import { Calendar as CalendarIcon, Save, X, Edit, Sparkles, Loader2, ExternalLink, Link as LinkIcon, FileText } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { getCreativeColor, getCreativeIcon, getTipoConteudoColor, getTipoConteudoIcon, getTipoConteudoDescricao, formatarDataPorExtenso } from "@/lib/plano-editorial-helpers";
 import { useTextGenerator } from "@/hooks/useTextGenerator";
 import { UploadArquivoVisual } from "./UploadArquivoVisual";
 import { supabase } from "@/integrations/supabase/client";
+import { TemplateSelector } from "./TemplateSelector";
+import { AgendamentoInteligente } from "./AgendamentoInteligente";
 
 interface LinhaPostProps {
   post: any;
@@ -24,6 +26,7 @@ interface LinhaPostProps {
   isEditing: boolean;
   setIsEditing: (editing: boolean) => void;
   dragHandle?: React.ReactNode;
+  clienteId?: string;
 }
 
 export const LinhaPost: React.FC<LinhaPostProps> = ({
@@ -36,10 +39,13 @@ export const LinhaPost: React.FC<LinhaPostProps> = ({
   isEditing,
   setIsEditing,
   dragHandle,
+  clienteId,
 }) => {
   const [editedPost, setEditedPost] = useState(post);
   const [generating, setGenerating] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [showTemplateSelector, setShowTemplateSelector] = useState(false);
+  const [showAgendamento, setShowAgendamento] = useState(false);
   const { gerarTextoEstruturado, loading: generatingTexto } = useTextGenerator();
 
   const handleGerarTextoEstruturado = async () => {
@@ -121,31 +127,45 @@ export const LinhaPost: React.FC<LinhaPostProps> = ({
       {/* DIA DA SEMANA */}
       <TableCell>
         {isEditing ? (
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" className="w-full justify-start text-left text-sm">
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {editedPost.data_postagem
-                  ? formatarDataPorExtenso(editedPost.data_postagem)
-                  : "Selecione..."}
+          <div className="space-y-2">
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="w-full justify-start text-left text-sm">
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {editedPost.data_postagem
+                    ? formatarDataPorExtenso(editedPost.data_postagem)
+                    : "Selecione..."}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={editedPost.data_postagem ? new Date(editedPost.data_postagem + 'T00:00:00') : undefined}
+                  onSelect={(date) => {
+                    if (date) {
+                      const year = date.getFullYear();
+                      const month = String(date.getMonth() + 1).padStart(2, '0');
+                      const day = String(date.getDate()).padStart(2, '0');
+                      setEditedPost({ ...editedPost, data_postagem: `${year}-${month}-${day}` });
+                    }
+                  }}
+                  locale={ptBR}
+                />
+              </PopoverContent>
+            </Popover>
+            
+            {clienteId && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setShowAgendamento(true)}
+                className="w-full gap-2 text-xs"
+              >
+                <Sparkles className="h-3 w-3" />
+                Sugerir Horário
               </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <Calendar
-                mode="single"
-                selected={editedPost.data_postagem ? new Date(editedPost.data_postagem + 'T00:00:00') : undefined}
-                onSelect={(date) => {
-                  if (date) {
-                    const year = date.getFullYear();
-                    const month = String(date.getMonth() + 1).padStart(2, '0');
-                    const day = String(date.getDate()).padStart(2, '0');
-                    setEditedPost({ ...editedPost, data_postagem: `${year}-${month}-${day}` });
-                  }
-                }}
-                locale={ptBR}
-              />
-            </PopoverContent>
-          </Popover>
+            )}
+          </div>
         ) : (
           <div className="text-sm">
             {post.data_postagem ? formatarDataPorExtenso(post.data_postagem) : '-'}
@@ -257,20 +277,34 @@ export const LinhaPost: React.FC<LinhaPostProps> = ({
                 rows={4}
                 className="resize-none border-primary/30 font-['Inter'] text-sm"
               />
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={handleGerarTextoEstruturado}
-                disabled={generatingTexto}
-                className="w-full gap-2 text-xs border-primary/30 hover:bg-primary/10"
-              >
-                {generatingTexto ? (
-                  <Loader2 className="h-3 w-3 animate-spin" />
-                ) : (
-                  <Sparkles className="h-3 w-3" />
-                )}
-                Gerar Estrutura com IA
-              </Button>
+              
+              {/* NOVOS BOTÕES: Templates + IA lado a lado */}
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setShowTemplateSelector(true)}
+                  className="flex-1 gap-2 text-xs border-primary/30 hover:bg-primary/10"
+                >
+                  <FileText className="h-3 w-3" />
+                  Templates
+                </Button>
+                
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handleGerarTextoEstruturado}
+                  disabled={generatingTexto}
+                  className="flex-1 gap-2 text-xs border-primary/30 hover:bg-primary/10"
+                >
+                  {generatingTexto ? (
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                  ) : (
+                    <Sparkles className="h-3 w-3" />
+                  )}
+                  IA
+                </Button>
+              </div>
             </>
           ) : (
             <div className="text-sm text-muted-foreground line-clamp-3 font-['Inter']">
@@ -368,6 +402,34 @@ export const LinhaPost: React.FC<LinhaPostProps> = ({
           )}
         </div>
       </TableCell>
+      
+      {/* Modais */}
+      {isEditing && (
+        <>
+          <TemplateSelector
+            isOpen={showTemplateSelector}
+            onClose={() => setShowTemplateSelector(false)}
+            tipo_conteudo={editedPost.tipo_conteudo || 'informar'}
+            tipo_criativo={editedPost.formato_postagem}
+            onSelectTemplate={(texto) => {
+              setEditedPost({ ...editedPost, texto_estruturado: texto });
+              setShowTemplateSelector(false);
+            }}
+          />
+          
+          {clienteId && (
+            <AgendamentoInteligente
+              isOpen={showAgendamento}
+              onClose={() => setShowAgendamento(false)}
+              post={editedPost}
+              clienteId={clienteId}
+              onAplicarHorario={(novaData) => {
+                setEditedPost({ ...editedPost, data_postagem: novaData });
+              }}
+            />
+          )}
+        </>
+      )}
     </TableRow>
   );
 };
