@@ -4,6 +4,7 @@ import { Toast, ToastOptions } from "./types";
 import { LucideIcon } from "lucide-react";
 import { setToastInstance } from "./helpers";
 import { toastSoundManager } from "./sounds";
+import { toast as toastCompat } from "@/lib/toast-compat";
 
 interface BexToastContextType {
   showToast: (options: ToastOptions) => string;
@@ -300,7 +301,31 @@ export function BexToastProvider({ children }: { children: ReactNode }) {
   // Configurar instância global para helpers standalone
   useEffect(() => {
     setToastInstance(contextValue);
-  }, [contextValue]);
+    
+    // Escutar eventos do toast-compat (migração de sonner)
+    const unsubscribe = toastCompat.subscribe((event) => {
+      const variantMap: Record<string, Toast['variant']> = {
+        success: 'success',
+        error: 'error',
+        warning: 'warning',
+        info: 'info',
+        critical: 'error', // critical -> error
+      };
+      
+      const variant = variantMap[event.type] || 'info';
+      
+      showToast({
+        title: event.message,
+        description: event.description,
+        variant,
+        duration: event.duration,
+      });
+    });
+    
+    return () => {
+      unsubscribe();
+    };
+  }, [contextValue, showToast]);
 
   return (
     <BexToastContext.Provider value={contextValue}>
