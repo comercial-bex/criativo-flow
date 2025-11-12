@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Sparkles, FileText, Loader2, GripVertical } from "lucide-react";
+import { Plus, Sparkles, FileText, Loader2, GripVertical, AlertCircle } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
@@ -24,6 +24,9 @@ interface TabelaPlanoEditorialProps {
   posts: any[];
   onPostsChange: (posts: any[]) => void;
   currentDate: Date;
+  onGerarConteudoIA?: () => void;
+  hasCompleteAnalysis?: () => boolean;
+  gerando?: boolean;
 }
 
 export const TabelaPlanoEditorial: React.FC<TabelaPlanoEditorialProps> = ({
@@ -32,6 +35,9 @@ export const TabelaPlanoEditorial: React.FC<TabelaPlanoEditorialProps> = ({
   posts,
   onPostsChange,
   currentDate,
+  onGerarConteudoIA,
+  hasCompleteAnalysis,
+  gerando = false,
 }) => {
   const [editingRow, setEditingRow] = useState<string | null>(null);
   const [novoPost, setNovoPost] = useState<any>(null);
@@ -445,12 +451,37 @@ Seja objetivo e prático.`;
                 {exportando ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <FileText className="h-4 w-4 mr-2" />}
                 Gerar PDF
               </Button>
-              <Button onClick={adicionarNovaLinha} size="sm">
+              <Button onClick={adicionarNovaLinha} size="sm" variant="outline">
                 <Plus className="h-4 w-4 mr-2" />
                 Adicionar Post
               </Button>
+              {onGerarConteudoIA && (
+                <Button 
+                  onClick={onGerarConteudoIA}
+                  disabled={gerando || (hasCompleteAnalysis && !hasCompleteAnalysis())}
+                  size="sm"
+                  className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {gerando ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <Sparkles className="h-4 w-4 mr-2" />
+                  )}
+                  Gerar Conteúdo IA
+                </Button>
+              )}
             </div>
           </div>
+          
+          {/* Aviso de validação */}
+          {onGerarConteudoIA && hasCompleteAnalysis && !hasCompleteAnalysis() && (
+            <div className="mt-3 flex items-start gap-2 p-3 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+              <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-500 mt-0.5 flex-shrink-0" />
+              <p className="text-sm text-amber-900 dark:text-amber-100">
+                <strong>Complete a missão, posicionamento e seleções para gerar conteúdo.</strong>
+              </p>
+            </div>
+          )}
         </CardHeader>
         <CardContent>
           {/* Filtros Visuais */}

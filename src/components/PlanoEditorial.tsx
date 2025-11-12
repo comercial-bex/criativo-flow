@@ -2660,6 +2660,9 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
                     setPostsGerados(tempPosts as any);
                   }}
                   currentDate={currentDate}
+                  onGerarConteudoIA={gerarConteudoEditorial}
+                  hasCompleteAnalysis={hasCompleteAnalysis}
+                  gerando={gerando}
                 />
               )}
 
