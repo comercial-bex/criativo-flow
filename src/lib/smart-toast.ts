@@ -1,24 +1,20 @@
-import { toast } from 'sonner';
+import { toast as BexToast } from '@/components/BexToast';
 
 export const smartToast = {
   success: (message: string, description?: string, duration?: number) => 
-    toast.success(`✅ ${message}`, { description, duration }),
+    BexToast.success(`✅ ${message}`, description, { duration }),
   
   error: (message: string, description?: string, duration?: number) => 
-    toast.error(`❌ ${message}`, { description, duration }),
+    BexToast.error(`❌ ${message}`, description, { duration }),
   
   loading: (message: string, duration?: number) => 
-    toast.loading(`⏳ ${message}`, { duration }),
+    BexToast.loading(`⏳ ${message}`, undefined, { duration }),
   
   info: (message: string, description?: string, duration?: number) => 
-    toast.info(`ℹ️ ${message}`, { description, duration }),
+    BexToast.info(`ℹ️ ${message}`, description, { duration }),
   
   dismiss: (toastId?: string | number) => {
-    if (toastId) {
-      toast.dismiss(toastId);
-    } else {
-      toast.dismiss();
-    }
+    BexToast.dismiss(String(toastId || ''));
   },
   
   promise: <T,>(
@@ -33,10 +29,18 @@ export const smartToast = {
       error: string | ((error: any) => string);
     }
   ) => {
-    return toast.promise(promise, {
-      loading: `⏳ ${loading}`,
-      success: (data) => `✅ ${typeof success === 'function' ? success(data) : success}`,
-      error: (err) => `❌ ${typeof error === 'function' ? error(err) : error}`,
-    });
+    const toastId = BexToast.loading(`⏳ ${loading}`);
+    
+    promise
+      .then((data) => {
+        BexToast.dismiss(toastId);
+        BexToast.success(`✅ ${typeof success === 'function' ? success(data) : success}`);
+      })
+      .catch((err) => {
+        BexToast.dismiss(toastId);
+        BexToast.error(`❌ ${typeof error === 'function' ? error(err) : error}`);
+      });
+    
+    return promise;
   }
 };
