@@ -9180,10 +9180,13 @@ export type Database = {
           id: string
           mes_referencia: string
           observacoes_cliente: string | null
+          observacoes_estrategista: string | null
           projeto_id: string | null
           responsavel_grs_id: string | null
+          responsavel_id: string | null
           status: Database["public"]["Enums"]["status_padrao"] | null
           status_aprovacao: string | null
+          status_plano: string | null
           titulo: string
           updated_at: string
         }
@@ -9196,10 +9199,13 @@ export type Database = {
           id?: string
           mes_referencia: string
           observacoes_cliente?: string | null
+          observacoes_estrategista?: string | null
           projeto_id?: string | null
           responsavel_grs_id?: string | null
+          responsavel_id?: string | null
           status?: Database["public"]["Enums"]["status_padrao"] | null
           status_aprovacao?: string | null
+          status_plano?: string | null
           titulo: string
           updated_at?: string
         }
@@ -9212,10 +9218,13 @@ export type Database = {
           id?: string
           mes_referencia?: string
           observacoes_cliente?: string | null
+          observacoes_estrategista?: string | null
           projeto_id?: string | null
           responsavel_grs_id?: string | null
+          responsavel_id?: string | null
           status?: Database["public"]["Enums"]["status_padrao"] | null
           status_aprovacao?: string | null
+          status_plano?: string | null
           titulo?: string
           updated_at?: string
         }
@@ -9303,6 +9312,20 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "vw_client_metrics"
             referencedColumns: ["responsavel_id"]
+          },
+          {
+            foreignKeyName: "planejamentos_responsavel_id_fkey"
+            columns: ["responsavel_id"]
+            isOneToOne: false
+            referencedRelation: "pessoas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "planejamentos_responsavel_id_fkey"
+            columns: ["responsavel_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
           },
         ]
       }
