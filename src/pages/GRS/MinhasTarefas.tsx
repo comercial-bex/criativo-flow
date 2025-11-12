@@ -1,8 +1,7 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useDebounce } from '@/hooks/useDebounce';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { TaskKanbanBoard } from '@/components/TaskKanbanBoard';
@@ -16,7 +15,9 @@ import {
   Search,
   Filter,
   Calendar,
-  User
+  User,
+  Grid3X3,
+  List
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -24,6 +25,11 @@ import { TaskWithDeadline } from '@/utils/statusUtils';
 import { useTutorial } from '@/hooks/useTutorial';
 import { TutorialButton } from '@/components/TutorialButton';
 import { useMinhasTarefas, useTarefasStats, useUpdateTarefa } from '@/hooks/useTarefasOptimized';
+import { VirtualizedTable } from '@/components/VirtualizedTable';
+import { shouldUseVirtualScroll, VIRTUAL_SCROLL_CONFIG } from '@/lib/virtual-scroll-config';
+import { Badge } from '@/components/ui/badge';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 interface MyTask extends TaskWithDeadline {
   descricao?: string;
@@ -61,6 +67,9 @@ export default function MinhasTarefas() {
   
   const [selectedTask, setSelectedTask] = useState<any | null>(null);
   const [showTaskDetails, setShowTaskDetails] = useState(false);
+  const [viewMode, setViewMode] = useState<'kanban' | 'table'>(() => {
+    return (localStorage.getItem('tarefasViewMode') as 'kanban' | 'table') || 'kanban';
+  });
   
   // Consolidação de filtros em um único estado
   const [filters, setFilters] = useState({
@@ -99,6 +108,12 @@ export default function MinhasTarefas() {
   const handleTaskClick = (task: any) => {
     setSelectedTask(task);
     setShowTaskDetails(true);
+  };
+
+  const toggleViewMode = () => {
+    const newMode = viewMode === 'kanban' ? 'table' : 'kanban';
+    setViewMode(newMode);
+    localStorage.setItem('tarefasViewMode', newMode);
   };
 
   // Debounce do searchTerm para evitar re-renders excessivos
@@ -160,6 +175,22 @@ export default function MinhasTarefas() {
             Minhas Tarefas
           </h1>
           <p className="text-muted-foreground">Dashboard personalizado com suas atribuições</p>
+        </div>
+        <div className="flex gap-2 items-center">
+          <Button variant="outline" onClick={toggleViewMode}>
+            {viewMode === 'kanban' ? (
+              <>
+                <List className="h-4 w-4 mr-2" />
+                Tabela
+              </>
+            ) : (
+              <>
+                <Grid3X3 className="h-4 w-4 mr-2" />
+                Kanban
+              </>
+            )}
+          </Button>
+          <TutorialButton onStart={startTutorial} hasSeenTutorial={hasSeenTutorial} />
         </div>
       </div>
 
@@ -229,10 +260,10 @@ export default function MinhasTarefas() {
         </CardContent>
       </Card>
 
-      {/* Tasks Kanban */}
+      {/* Tasks View - Kanban or Table */}
       {isLoading ? (
         <div className="text-center py-8">Carregando suas tarefas...</div>
-      ) : (
+      ) : viewMode === 'kanban' ? (
         <TaskKanbanBoard
           tasks={filteredTasks}
           onTaskMove={handleTaskMove}
@@ -240,6 +271,140 @@ export default function MinhasTarefas() {
           onTaskClick={handleTaskClick}
           projetoId="" // Not applicable for personal view
         />
+      ) : shouldUseVirtualScroll(filteredTasks.length) ? (
+        <VirtualizedTable
+          data={filteredTasks}
+          height={700}
+          rowHeight={VIRTUAL_SCROLL_CONFIG.ROW_HEIGHT_COMFORTABLE}
+          columns={[
+            {
+              header: 'Tarefa',
+              width: 300,
+              render: (task) => (
+                <div className="flex flex-col">
+                  <span className="font-medium">{task.titulo}</span>
+                  {task.projetos?.titulo && (
+                    <span className="text-xs text-muted-foreground">
+                      {task.projetos.titulo}
+                    </span>
+                  )}
+                </div>
+              )
+            },
+            {
+              header: 'Cliente',
+              width: 200,
+              render: (task: any) => (
+                <span className="text-sm">
+                  {task.clientes?.nome || task.cliente_nome || '-'}
+                </span>
+              )
+            },
+            {
+              header: 'Status',
+              width: 150,
+              align: 'center',
+              render: (task) => <SmartStatusBadge task={task} />
+            },
+            {
+              header: 'Prioridade',
+              width: 120,
+              align: 'center',
+              render: (task) => {
+                const priorityColors = {
+                  alta: 'bg-red-100 text-red-800',
+                  media: 'bg-yellow-100 text-yellow-800',
+                  baixa: 'bg-green-100 text-green-800'
+                };
+                return (
+                  <Badge className={priorityColors[task.prioridade] || ''}>
+                    {task.prioridade}
+                  </Badge>
+                );
+              }
+            },
+            {
+              header: 'Prazo',
+              width: 130,
+              align: 'center',
+              render: (task) => task.data_prazo ? (
+                <span className="text-sm">
+                  {format(new Date(task.data_prazo), 'dd/MM/yyyy', { locale: ptBR })}
+                </span>
+              ) : (
+                <span className="text-sm text-muted-foreground">-</span>
+              )
+            },
+            {
+              header: 'Horas',
+              width: 100,
+              align: 'center',
+              render: (task) => (
+                <span className="text-sm font-medium">
+                  {task.horas_trabalhadas || 0}h
+                </span>
+              )
+            }
+          ]}
+          onRowClick={(task) => handleTaskClick(task)}
+          emptyMessage="Nenhuma tarefa encontrada com os filtros aplicados"
+        />
+      ) : (
+        <div className="border rounded-lg overflow-hidden">
+          <table className="w-full">
+            <thead className="bg-muted/50 border-b">
+              <tr>
+                <th className="px-4 py-3 text-left text-sm font-semibold">Tarefa</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold">Cliente</th>
+                <th className="px-4 py-3 text-center text-sm font-semibold">Status</th>
+                <th className="px-4 py-3 text-center text-sm font-semibold">Prioridade</th>
+                <th className="px-4 py-3 text-center text-sm font-semibold">Prazo</th>
+                <th className="px-4 py-3 text-center text-sm font-semibold">Horas</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredTasks.map((task) => (
+                <tr 
+                  key={task.id}
+                  onClick={() => handleTaskClick(task)}
+                  className="border-b hover:bg-muted/50 cursor-pointer transition-colors"
+                >
+                  <td className="px-4 py-3">
+                    <div className="flex flex-col">
+                      <span className="font-medium">{task.titulo}</span>
+                      {task.projetos?.titulo && (
+                        <span className="text-xs text-muted-foreground">
+                          {task.projetos.titulo}
+                        </span>
+                      )}
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 text-sm">
+                    {task.clientes?.nome || task.cliente_nome || '-'}
+                  </td>
+                  <td className="px-4 py-3 text-center">
+                    <SmartStatusBadge task={task} />
+                  </td>
+                  <td className="px-4 py-3 text-center">
+                    <Badge className={
+                      task.prioridade === 'alta' ? 'bg-red-100 text-red-800' :
+                      task.prioridade === 'media' ? 'bg-yellow-100 text-yellow-800' :
+                      'bg-green-100 text-green-800'
+                    }>
+                      {task.prioridade}
+                    </Badge>
+                  </td>
+                  <td className="px-4 py-3 text-center text-sm">
+                    {task.data_prazo ? format(new Date(task.data_prazo), 'dd/MM/yyyy', { locale: ptBR }) : '-'}
+                  </td>
+                  <td className="px-4 py-3 text-center text-sm font-medium">
+                    {task.horas_trabalhadas || 0}h
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
 
       {/* Task Details Modal */}
