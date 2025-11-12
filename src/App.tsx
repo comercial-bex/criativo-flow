@@ -963,6 +963,10 @@ function App() {
                     <Layout><SystemHealth /></Layout>
                   </ProtectedRoute>} />
                 
+                <Route path="/admin/performance-test" element={<ProtectedRoute requiredRole="admin">
+                    <Layout><PerformanceTest /></Layout>
+                  </ProtectedRoute>} />
+                
                 <Route path="/usuarios" element={<Navigate to="/admin/usuarios" replace />} />
                 
                 <Route path="/admin/usuarios" element={<ProtectedRoute module="configuracoes" action="canEdit" requiredRole="admin">

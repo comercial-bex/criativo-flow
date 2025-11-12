@@ -130,6 +130,7 @@ const routeConfig: Record<string, { label: string; icon?: string }> = {
   "/admin/contratos": { label: "Contratos", icon: "FileSignature" },
   "/admin/contratos/novo": { label: "Novo Contrato", icon: "FilePlus" },
   "/admin/produtos": { label: "Produtos", icon: "Package" },
+  "/admin/performance-test": { label: "Testes de Performance", icon: "Gauge" },
   "/admin/produtos/novo": { label: "Novo Produto", icon: "PackagePlus" },
   "/admin/tarefas": { label: "Tarefas", icon: "ClipboardCheck" },
   "/admin/onboarding": { label: "Onboarding", icon: "ClipboardCheck" },

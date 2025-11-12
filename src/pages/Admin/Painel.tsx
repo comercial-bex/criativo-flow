@@ -15,8 +15,11 @@ import {
   Download,
   AlertTriangle,
   Brain,
-  BarChart3
+  BarChart3,
+  Gauge,
+  Zap
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from '@/lib/toast-compat';
 import {
@@ -50,6 +53,7 @@ interface UserStats {
 }
 
 export default function AdminPainel() {
+  const navigate = useNavigate();
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<AdminUser[]>([]);
   const { startTutorial, hasSeenTutorial } = useTutorial('admin-painel');
@@ -377,27 +381,95 @@ export default function AdminPainel() {
         </TabsContent>
 
         <TabsContent value="system">
-          <Card>
-            <CardHeader>
-              <CardTitle>Ferramentas do Sistema</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Button variant="outline" className="h-20 flex flex-col">
-                  <BarChart3 className="h-6 w-6 mb-2" />
-                  Relatórios
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Card className="hover:border-primary/50 transition-colors">
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Activity className="h-5 w-5 mr-2 text-blue-500" />
+                  Monitoramento de Sistema
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Visualize métricas em tempo real, logs e status do sistema
+                </p>
+                <Button 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={() => navigate('/admin/system-health')}
+                >
+                  <Activity className="h-4 w-4 mr-2" />
+                  Abrir Monitoramento
                 </Button>
-                <Button variant="outline" className="h-20 flex flex-col">
-                  <Download className="h-6 w-6 mb-2" />
-                  Backup
+              </CardContent>
+            </Card>
+
+            <Card className="hover:border-primary/50 transition-colors">
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Gauge className="h-5 w-5 mr-2 text-orange-500" />
+                  Testes de Performance
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Execute testes de carga com virtual scrolling em listas de 1000+ items
+                </p>
+                <Button 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={() => navigate('/admin/performance-test')}
+                >
+                  <Zap className="h-4 w-4 mr-2" />
+                  Executar Testes
                 </Button>
-                <Button variant="outline" className="h-20 flex flex-col">
-                  <Activity className="h-6 w-6 mb-2" />
-                  Logs
+              </CardContent>
+            </Card>
+
+            <Card className="hover:border-primary/50 transition-colors">
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <BarChart3 className="h-5 w-5 mr-2 text-green-500" />
+                  Logs e Métricas
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Acesse logs de aplicação, erros e eventos do sistema
+                </p>
+                <Button 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={() => navigate('/admin/logs')}
+                >
+                  <BarChart3 className="h-4 w-4 mr-2" />
+                  Ver Logs
                 </Button>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:border-primary/50 transition-colors">
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Settings className="h-5 w-5 mr-2 text-purple-500" />
+                  Configurações Gerais
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Gerencie configurações gerais da aplicação e preferências
+                </p>
+                <Button 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={() => navigate('/configuracoes')}
+                >
+                  <Settings className="h-4 w-4 mr-2" />
+                  Abrir Configurações
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
       </Tabs>
     </div>
