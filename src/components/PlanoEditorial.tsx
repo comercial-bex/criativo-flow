@@ -5,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, ChevronLeft, ChevronRight, Loader2, Users, Target, BookOpen, Sparkles, Save, Eye, Undo2, AlertTriangle, X, CheckCircle } from "lucide-react";
+import { Calendar, ChevronLeft, ChevronRight, Loader2, Users, Target, BookOpen, Sparkles, Save, Eye, Undo2, AlertTriangle, X, CheckCircle, Plus, CalendarX } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from '@/lib/toast-compat';
@@ -22,6 +22,9 @@ import { DndContext, closestCenter, DragEndEvent, DragStartEvent, DragOverlay, u
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { usePostDragDrop } from "@/hooks/usePostDragDrop";
+import { useDatasComemoratias } from "@/hooks/useDatasComemoratias";
+import { DatasComemoriativasDialog } from "@/components/PlanoEditorial/DatasComemoriativasDialog";
+import { CampanhaCard } from "@/components/PlanoEditorial/CampanhaCard";
 
 interface PlanoEditorialProps {
   planejamento: {
@@ -320,6 +323,11 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
   const [objetivosTrafego, setObjetivosTrafego] = useState<string[]>([]);
   const [publicoAlvo, setPublicoAlvo] = useState('');
   const [orcamentoSugerido, setOrcamentoSugerido] = useState('');
+  const [dialogDatasOpen, setDialogDatasOpen] = useState(false);
+
+  // Hook para datas comemorativas
+  const mesReferencia = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-01`;
+  const { datas, campanhas, loading: loadingDatas, adicionarCampanha, removerCampanha } = useDatasComemoratias(planejamento.id, mesReferencia);
 
   // Initialize drag & drop hook
   const {
@@ -3042,6 +3050,24 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
         post={selectedPostForView}
         onApprove={selectedPostForView?.status === 'temporario' ? (post) => handleApproveIndividualPost(post, 0) : undefined}
         isApproving={aprovandoPost === selectedPostForView?.id}
+      />
+
+      {/* Modal de Datas Comemorativas */}
+      <DatasComemoriativasDialog
+        open={dialogDatasOpen}
+        onOpenChange={setDialogDatasOpen}
+        datas={datas}
+        mesReferencia={mesReferencia}
+        onSalvar={async (campanhasSelecionadas) => {
+          for (const campanha of campanhasSelecionadas) {
+            const result = await adicionarCampanha(campanha);
+            if (result.error) {
+              toast.error('Erro ao adicionar campanha');
+              return;
+            }
+          }
+          toast.success(`${campanhasSelecionadas.length} campanha(s) adicionada(s) com sucesso!`);
+        }}
       />
     </div>
   );

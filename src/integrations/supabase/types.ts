@@ -3786,6 +3786,48 @@ export type Database = {
         }
         Relationships: []
       }
+      datas_comemorativas: {
+        Row: {
+          created_at: string | null
+          data_fixa: string | null
+          descricao: string | null
+          id: string
+          mes_referencia: number | null
+          nome: string
+          potencial_engajamento: string | null
+          regiao: string | null
+          segmentos: Json | null
+          sugestao_campanha: string | null
+          tipo: string
+        }
+        Insert: {
+          created_at?: string | null
+          data_fixa?: string | null
+          descricao?: string | null
+          id?: string
+          mes_referencia?: number | null
+          nome: string
+          potencial_engajamento?: string | null
+          regiao?: string | null
+          segmentos?: Json | null
+          sugestao_campanha?: string | null
+          tipo: string
+        }
+        Update: {
+          created_at?: string | null
+          data_fixa?: string | null
+          descricao?: string | null
+          id?: string
+          mes_referencia?: number | null
+          nome?: string
+          potencial_engajamento?: string | null
+          regiao?: string | null
+          segmentos?: Json | null
+          sugestao_campanha?: string | null
+          tipo?: string
+        }
+        Relationships: []
+      }
       dividas: {
         Row: {
           centro_custo_id: string | null
@@ -9052,6 +9094,66 @@ export type Database = {
             columns: ["veiculo_id"]
             isOneToOne: false
             referencedRelation: "inventario_itens"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      planejamento_campanhas: {
+        Row: {
+          created_at: string | null
+          data_comemorativa_id: string | null
+          data_fim: string
+          data_inicio: string
+          id: string
+          nome_campanha: string
+          objetivos: Json | null
+          orcamento_sugerido: number | null
+          periodo_pos_campanha: number | null
+          periodo_pre_campanha: number | null
+          planejamento_id: string | null
+          status: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          data_comemorativa_id?: string | null
+          data_fim: string
+          data_inicio: string
+          id?: string
+          nome_campanha: string
+          objetivos?: Json | null
+          orcamento_sugerido?: number | null
+          periodo_pos_campanha?: number | null
+          periodo_pre_campanha?: number | null
+          planejamento_id?: string | null
+          status?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          data_comemorativa_id?: string | null
+          data_fim?: string
+          data_inicio?: string
+          id?: string
+          nome_campanha?: string
+          objetivos?: Json | null
+          orcamento_sugerido?: number | null
+          periodo_pos_campanha?: number | null
+          periodo_pre_campanha?: number | null
+          planejamento_id?: string | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "planejamento_campanhas_data_comemorativa_id_fkey"
+            columns: ["data_comemorativa_id"]
+            isOneToOne: false
+            referencedRelation: "datas_comemorativas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "planejamento_campanhas_planejamento_id_fkey"
+            columns: ["planejamento_id"]
+            isOneToOne: false
+            referencedRelation: "planejamentos"
             referencedColumns: ["id"]
           },
         ]
