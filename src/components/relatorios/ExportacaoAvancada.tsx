@@ -11,7 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast-compat';
 
 interface ExportacaoAvancadaProps {
   relatorioTitulo: string;

@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast-compat';
 import { supabase } from '@/integrations/supabase/client';
 
 interface PasswordResetModalProps {

@@ -2,7 +2,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Copy, Check, Sparkles } from 'lucide-react';
 import { useState } from 'react';
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast-compat';
 import ReactMarkdown from 'react-markdown';
 
 interface AIAssistantMessageProps {

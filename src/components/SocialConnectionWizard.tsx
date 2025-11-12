@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 import { useSocialAuth } from '@/hooks/useSocialAuth';
 import { cn } from '@/lib/utils';
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast-compat';
 
 type WizardStep = 'prerequisites' | 'provider' | 'oauth' | 'accounts' | 'success';
 type SocialProvider = 'facebook' | 'instagram' | 'google';

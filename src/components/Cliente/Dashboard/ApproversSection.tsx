@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useClientApprovals } from "@/hooks/useClientApprovals";
 import { CheckCircle } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from '@/lib/toast-compat';
 import { ApprovalPreview } from "./ApprovalPreview";
 
 interface ApproversSectionProps {

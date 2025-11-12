@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Sparkles, Calendar, Target, Eye, Loader2, CheckCircle2, Zap, Megaphone, ArrowRight, ArrowLeft } from 'lucide-react';
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast-compat';
 import { useStrategicPlans } from '@/hooks/useStrategicPlans';
 import { supabase } from '@/integrations/supabase/client';
 import { EspecialistasSelector } from '@/components/EspecialistasSelector';

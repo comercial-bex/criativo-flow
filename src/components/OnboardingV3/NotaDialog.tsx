@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Sparkles, Loader2, FileText, TrendingUp, Target, Lightbulb, Link as LinkIcon } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from '@/lib/toast-compat';
 import { supabase } from "@/integrations/supabase/client";
 import { NotaOnboarding } from "./NotasOnboardingStep";
 import { FileUploader } from "./FileUploader";

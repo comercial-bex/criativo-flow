@@ -5,7 +5,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Loader2, Sparkles } from 'lucide-react';
 import { useAIBriefingGenerator } from '@/hooks/useAIBriefingGenerator';
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast-compat';
 
 interface AIBriefingDialogProps {
   onBriefingGenerated?: (briefing: any) => void;

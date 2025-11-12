@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertTriangle, Code, Database } from 'lucide-react';
 import { DependenciaFK } from '@/hooks/useHomologacao';
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast-compat';
 
 interface DependenciasFKProps {
   dependencias: DependenciaFK[];

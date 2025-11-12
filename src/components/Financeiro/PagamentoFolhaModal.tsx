@@ -10,7 +10,7 @@ import { Separator } from '@/components/ui/separator';
 import { Upload, DollarSign, Calendar, FileText, CheckCircle2 } from 'lucide-react';
 import { FolhaItem } from '@/hooks/useFolhaPagamento';
 import { formatCurrency } from '@/lib/utils';
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast-compat';
 import { supabase } from '@/integrations/supabase/client';
 
 interface PagamentoFolhaModalProps {

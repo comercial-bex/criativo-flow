@@ -3,7 +3,7 @@ import { useDropzone } from "react-dropzone";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Upload, File, X, Loader2 } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from '@/lib/toast-compat';
 import { supabase } from "@/integrations/supabase/client";
 
 interface FileUploaderProps {

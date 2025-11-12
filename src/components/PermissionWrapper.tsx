@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
 import { usePermissions } from '@/hooks/usePermissions';
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast-compat';
 
 interface PermissionWrapperProps {
   children: ReactNode;

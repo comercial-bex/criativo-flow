@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { BarChart, TrendingUp, Users, Heart, MessageCircle, Share2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import { toast } from '@/lib/toast-compat';
 import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";

@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2, Trash2, Sparkles, Check } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import { toast } from '@/lib/toast-compat';
 import { bexThemeV3 } from "@/styles/bex-theme";
 
 interface ConcorrenteData {

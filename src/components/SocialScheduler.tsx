@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Calendar, Clock, Send, Image, Facebook, Instagram, Linkedin } from "lucide-react";
 import { useSocialIntegrations } from "@/hooks/useSocialIntegrations";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import { toast } from '@/lib/toast-compat';
 
 interface SocialSchedulerProps {
   onSchedule?: (postData: any) => void;

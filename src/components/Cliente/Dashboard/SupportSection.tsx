@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { MessageSquare, Plus } from "lucide-react";
 import { useState } from 'react';
 import { useClientTickets, ClienteTicket } from "@/hooks/useClientTickets";
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast-compat';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 

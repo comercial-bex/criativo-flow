@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { ChevronLeft, ChevronRight, Check, X } from 'lucide-react';
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast-compat';
 import { supabase } from '@/integrations/supabase/client';
 import { StepEmpresa } from './steps/StepEmpresa';
 import { StepPublico } from './steps/StepPublico';

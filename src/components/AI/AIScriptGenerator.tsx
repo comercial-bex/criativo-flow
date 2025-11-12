@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2, Sparkles } from 'lucide-react';
 import { useAIScriptGenerator } from '@/hooks/useAIScriptGenerator';
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast-compat';
 
 interface AIScriptGeneratorProps {
   clienteId: string;

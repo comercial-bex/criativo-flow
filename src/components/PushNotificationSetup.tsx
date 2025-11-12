@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Bell, BellOff, CheckCircle2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast-compat';
 
 // VAPID public key - Em produção, isso virá de variável de ambiente
 const VAPID_PUBLIC_KEY = 'BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SxRvG6-YkJx8Gg9zLGS9E0Y8pXOB-XE5PDOsPzCJp_1YdKRzL3xCPX0';

@@ -10,7 +10,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Save, X, Download, ChevronLeft, ChevronRight } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from '@/lib/toast-compat';
 import { supabase } from "@/integrations/supabase/client";
 import { SwotAnalysisIA } from "@/components/SwotAnalysisIA";
 import { ObjetivosAssinatura } from "@/components/ObjetivosAssinatura";

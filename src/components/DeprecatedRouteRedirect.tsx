@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast-compat';
 
 /**
  * DeprecatedRouteRedirect - Redireciona rotas legadas para novas rotas

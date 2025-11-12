@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Copy, Eye, EyeOff, MessageCircle } from 'lucide-react';
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast-compat';
 import { useTutorial } from '@/hooks/useTutorial';
 import { TutorialButton } from '@/components/TutorialButton';
 

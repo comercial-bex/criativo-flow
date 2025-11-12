@@ -25,7 +25,7 @@ import {
   Moon,
   UserX,
 } from 'lucide-react';
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast-compat';
 import { motion } from 'framer-motion';
 
 interface PontoCardProps {

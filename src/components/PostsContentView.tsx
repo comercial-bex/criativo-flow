@@ -9,7 +9,7 @@ import { Separator } from '@/components/ui/separator';
 import { InstagramPreview } from './InstagramPreview';
 import { PostPreviewModal } from './PostPreviewModal';
 import { PostViewModal } from './PostViewModal';
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast-compat';
 import { 
   Calendar, 
   Hash, 

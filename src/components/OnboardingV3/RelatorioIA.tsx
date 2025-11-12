@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import { toast } from '@/lib/toast-compat';
 import { Loader2, FileText, Download } from "lucide-react";
 import { bexThemeV3 } from "@/styles/bex-theme";
 import ReactMarkdown from "react-markdown";

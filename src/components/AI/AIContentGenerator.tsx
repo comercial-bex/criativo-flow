@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2, Sparkles, Copy, Check } from 'lucide-react';
 import { useAIContentGenerator } from '@/hooks/useAIContentGenerator';
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast-compat';
 
 type ContentType = 'post' | 'legenda' | 'hashtags' | 'swot' | 'calendario';
 

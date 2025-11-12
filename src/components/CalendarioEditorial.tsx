@@ -8,7 +8,7 @@ import { CalendarDays, Instagram, Eye, ChevronLeft, ChevronRight } from "lucide-
 import { format, isSameDay, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { usePostDragDrop } from "@/hooks/usePostDragDrop";
-import { toast } from "sonner";
+import { toast } from '@/lib/toast-compat';
 
 interface Post {
   id: string;

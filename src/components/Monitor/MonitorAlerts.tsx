@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { AlertTriangle, CheckCircle, XCircle, RefreshCw, Activity, Database, Shield, HardDrive } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from '@/lib/toast-compat';
 
 interface HealthStatus {
   status: 'healthy' | 'degraded' | 'unhealthy' | 'unknown';

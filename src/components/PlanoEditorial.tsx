@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Calendar, ChevronLeft, ChevronRight, Loader2, Users, Target, BookOpen, Sparkles, Save, Eye, Undo2, AlertTriangle, X, CheckCircle } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import { toast } from '@/lib/toast-compat';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { CalendarioEditorial } from "@/components/CalendarioEditorial";
@@ -1605,7 +1605,7 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
       // Validação informativa de quantidade de posts
       if (clienteAssinatura?.posts_mensais && novosPost.length !== clienteAssinatura.posts_mensais) {
         console.warn(`⚠️ Quantidade divergente: ${novosPost.length} posts gerados, esperado ${clienteAssinatura.posts_mensais}`);
-        toast(`Sistema gerou ${novosPost.length} posts. Seu plano permite ${clienteAssinatura.posts_mensais} posts mensais.`);
+        toast.warning(`Sistema gerou ${novosPost.length} posts. Seu plano permite ${clienteAssinatura.posts_mensais} posts mensais.`);
       }
       
       // Deletar posts existentes do mês atual
