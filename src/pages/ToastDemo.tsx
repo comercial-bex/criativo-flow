@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useBexToast } from "@/components/BexToast";
+import { useBexToast, toast } from "@/components/BexToast";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -23,53 +23,174 @@ import {
 import { StaggerChildren, StaggerItem } from "@/components/transitions";
 
 export default function ToastDemoPage() {
-  const { showToast, setPosition, position } = useBexToast();
+  const { setPosition, position, success, error, warning, info, loading, update, dismiss, promise } = useBexToast();
   const [customTitle, setCustomTitle] = useState("Notificação Customizada");
   const [customDescription, setCustomDescription] = useState("Esta é uma mensagem personalizada");
   const [customDuration, setCustomDuration] = useState("5000");
 
   const demos = [
     {
+      category: "Helpers Simples (Recomendado)",
+      items: [
+        {
+          label: "toast.success()",
+          onClick: () => toast.success("Operação concluída!", "Seus dados foram salvos")
+        },
+        {
+          label: "toast.error()",
+          onClick: () => toast.error("Erro ao processar", "Tente novamente mais tarde")
+        },
+        {
+          label: "toast.warning()",
+          onClick: () => toast.warning("Atenção!", "Verifique os dados antes de continuar")
+        },
+        {
+          label: "toast.info()",
+          onClick: () => toast.info("Nova atualização", "Versão 2.0 disponível")
+        }
+      ]
+    },
+    {
+      category: "Helpers do Hook",
+      items: [
+        {
+          label: "success()",
+          onClick: () => success("Dados salvos!", "Operação realizada com sucesso")
+        },
+        {
+          label: "error()",
+          onClick: () => error("Falha na operação", "Não foi possível completar")
+        },
+        {
+          label: "warning()",
+          onClick: () => warning("Verifique os dados", "Alguns campos estão vazios")
+        },
+        {
+          label: "info()",
+          onClick: () => info("Informação", "Sistema será atualizado em breve")
+        }
+      ]
+    },
+    {
+      category: "Loading & Update",
+      items: [
+        {
+          label: "Loading Toast",
+          onClick: () => {
+            const id = toast.loading("Processando...", "Aguarde um momento");
+            setTimeout(() => {
+              toast.update(id, {
+                title: "Concluído!",
+                description: "Processamento finalizado",
+                variant: "success",
+                duration: 5000
+              });
+            }, 3000);
+          }
+        },
+        {
+          label: "Multi-Step Loading",
+          onClick: () => {
+            const id = loading("Etapa 1/3", "Validando dados...");
+            setTimeout(() => {
+              update(id, { title: "Etapa 2/3", description: "Salvando no servidor..." });
+            }, 1500);
+            setTimeout(() => {
+              update(id, { title: "Etapa 3/3", description: "Finalizando..." });
+            }, 3000);
+            setTimeout(() => {
+              update(id, { 
+                title: "Processo completo!", 
+                description: "Todas as etapas foram concluídas",
+                variant: "success",
+                duration: 5000
+              });
+            }, 4500);
+          }
+        },
+        {
+          label: "Manual Dismiss",
+          onClick: () => {
+            const id = toast.info("Toast manual", "Clique no próximo botão para fechar", {
+              duration: 999999
+            });
+            setTimeout(() => {
+              toast.dismiss(id);
+            }, 5000);
+          }
+        }
+      ]
+    },
+    {
+      category: "Promise Helper",
+      items: [
+        {
+          label: "Success Promise",
+          onClick: async () => {
+            await toast.promise(
+              new Promise(resolve => setTimeout(() => resolve({ id: 123 }), 2000)),
+              {
+                loading: "Salvando dados...",
+                success: "Dados salvos com sucesso!",
+                error: "Erro ao salvar dados"
+              }
+            );
+          }
+        },
+        {
+          label: "Error Promise",
+          onClick: async () => {
+            try {
+              await toast.promise(
+                new Promise((_, reject) => setTimeout(() => reject(new Error("Falha")), 2000)),
+                {
+                  loading: "Processando...",
+                  success: "Concluído!",
+                  error: "Erro ao processar"
+                }
+              );
+            } catch (e) {
+              // Promise rejeitada
+            }
+          }
+        },
+        {
+          label: "Dynamic Messages",
+          onClick: async () => {
+            await promise(
+              new Promise(resolve => setTimeout(() => resolve({ count: 42 }), 2000)),
+              {
+                loading: "Carregando dados...",
+                success: (data: any) => `${data.count} itens carregados!`,
+                error: (err: any) => `Erro: ${err.message}`
+              }
+            );
+          }
+        }
+      ]
+    },
+    {
       category: "Variantes Básicas",
       items: [
         {
           label: "Success",
-          onClick: () => showToast({
-            title: "Operação bem-sucedida!",
-            description: "Seus dados foram salvos com sucesso no sistema",
-            variant: "success"
-          })
+          onClick: () => success("Operação bem-sucedida!", "Seus dados foram salvos com sucesso no sistema")
         },
         {
           label: "Error",
-          onClick: () => showToast({
-            title: "Erro ao processar",
-            description: "Não foi possível completar a operação. Tente novamente.",
-            variant: "error"
-          })
+          onClick: () => error("Erro ao processar", "Não foi possível completar a operação. Tente novamente.")
         },
         {
           label: "Warning",
-          onClick: () => showToast({
-            title: "Atenção necessária",
-            description: "Verifique os dados antes de continuar com esta ação",
-            variant: "warning"
-          })
+          onClick: () => warning("Atenção necessária", "Verifique os dados antes de continuar com esta ação")
         },
         {
           label: "Info",
-          onClick: () => showToast({
-            title: "Nova atualização disponível",
-            description: "Uma nova versão do sistema está disponível para instalação",
-            variant: "info"
-          })
+          onClick: () => info("Nova atualização disponível", "Uma nova versão do sistema está disponível para instalação")
         },
         {
           label: "Default",
-          onClick: () => showToast({
-            title: "Notificação do sistema",
-            description: "Esta é uma mensagem informativa geral"
-          })
+          onClick: () => toast.info("Notificação do sistema", "Esta é uma mensagem informativa geral")
         }
       ]
     },
@@ -78,39 +199,19 @@ export default function ToastDemoPage() {
       items: [
         {
           label: "Rocket",
-          onClick: () => showToast({
-            title: "Lançamento realizado!",
-            description: "Nova funcionalidade publicada com sucesso",
-            variant: "success",
-            icon: Rocket
-          })
+          onClick: () => toast.success("Lançamento realizado!", "Nova funcionalidade publicada com sucesso", { icon: Rocket })
         },
         {
           label: "Heart",
-          onClick: () => showToast({
-            title: "Obrigado pelo feedback!",
-            description: "Sua avaliação é muito importante para nós",
-            variant: "info",
-            icon: Heart
-          })
+          onClick: () => toast.info("Obrigado pelo feedback!", "Sua avaliação é muito importante para nós", { icon: Heart })
         },
         {
           label: "Star",
-          onClick: () => showToast({
-            title: "Parabéns!",
-            description: "Você conquistou uma nova conquista",
-            variant: "success",
-            icon: Star
-          })
+          onClick: () => toast.success("Parabéns!", "Você conquistou uma nova conquista", { icon: Star })
         },
         {
           label: "Zap",
-          onClick: () => showToast({
-            title: "Ação rápida!",
-            description: "Processamento em alta velocidade",
-            variant: "warning",
-            icon: Zap
-          })
+          onClick: () => toast.warning("Ação rápida!", "Processamento em alta velocidade", { icon: Zap })
         }
       ]
     },
@@ -119,10 +220,7 @@ export default function ToastDemoPage() {
       items: [
         {
           label: "Com Botão",
-          onClick: () => showToast({
-            title: "Relatório gerado",
-            description: "Seu relatório está pronto para download",
-            variant: "success",
+          onClick: () => toast.success("Relatório gerado", "Seu relatório está pronto para download", {
             icon: Download,
             action: {
               label: "Baixar",
@@ -132,26 +230,17 @@ export default function ToastDemoPage() {
         },
         {
           label: "Confirmação",
-          onClick: () => showToast({
-            title: "Item excluído",
-            description: "O item foi removido permanentemente",
-            variant: "error",
+          onClick: () => toast.error("Item excluído", "O item foi removido permanentemente", {
             icon: Trash2,
             action: {
               label: "Desfazer",
-              onClick: () => showToast({
-                title: "Ação desfeita!",
-                variant: "success"
-              })
+              onClick: () => toast.success("Ação desfeita!")
             }
           })
         },
         {
           label: "Upload",
-          onClick: () => showToast({
-            title: "Arquivo enviado",
-            description: "Upload concluído com sucesso",
-            variant: "success",
+          onClick: () => toast.success("Arquivo enviado", "Upload concluído com sucesso", {
             icon: Upload,
             action: {
               label: "Ver Arquivo",
@@ -166,27 +255,15 @@ export default function ToastDemoPage() {
       items: [
         {
           label: "Rápido (2s)",
-          onClick: () => showToast({
-            title: "Copiado!",
-            variant: "success",
-            duration: 2000
-          })
+          onClick: () => toast.success("Copiado!", undefined, { duration: 2000 })
         },
         {
           label: "Normal (5s)",
-          onClick: () => showToast({
-            title: "Notificação padrão",
-            description: "Duração de 5 segundos",
-            variant: "info",
-            duration: 5000
-          })
+          onClick: () => toast.info("Notificação padrão", "Duração de 5 segundos", { duration: 5000 })
         },
         {
           label: "Longo (10s)",
-          onClick: () => showToast({
-            title: "Mensagem importante",
-            description: "Esta mensagem fica visível por mais tempo para leitura completa",
-            variant: "warning",
+          onClick: () => toast.warning("Mensagem importante", "Esta mensagem fica visível por mais tempo para leitura completa", {
             duration: 10000
           })
         }
@@ -263,10 +340,7 @@ export default function ToastDemoPage() {
             </div>
             <div className="flex gap-2">
               <Button
-                onClick={() => showToast({
-                  title: customTitle,
-                  description: customDescription,
-                  variant: "success",
+                onClick={() => success(customTitle, customDescription, {
                   duration: parseInt(customDuration)
                 })}
               >
@@ -305,9 +379,9 @@ export default function ToastDemoPage() {
           <div className="flex gap-3">
             <Button
               onClick={() => {
-                showToast({ title: "Toast 1", variant: "success" });
-                setTimeout(() => showToast({ title: "Toast 2", variant: "info" }), 500);
-                setTimeout(() => showToast({ title: "Toast 3", variant: "warning" }), 1000);
+                toast.success("Toast 1");
+                setTimeout(() => toast.info("Toast 2"), 500);
+                setTimeout(() => toast.warning("Toast 3"), 1000);
               }}
               variant="outline"
             >
@@ -317,11 +391,16 @@ export default function ToastDemoPage() {
               onClick={() => {
                 for (let i = 1; i <= 5; i++) {
                   setTimeout(() => {
-                    showToast({
-                      title: `Notificação ${i}`,
-                      description: `Esta é a notificação número ${i}`,
-                      variant: ["success", "error", "warning", "info", "default"][i % 5] as any
-                    });
+                    const variants: any = ["success", "error", "warning", "info", "default"];
+                    const methods: any = { 
+                      success: toast.success, 
+                      error: toast.error, 
+                      warning: toast.warning, 
+                      info: toast.info,
+                      default: toast.info
+                    };
+                    const variant = variants[i % 5];
+                    methods[variant](`Notificação ${i}`, `Esta é a notificação número ${i}`);
                   }, i * 300);
                 }
               }}

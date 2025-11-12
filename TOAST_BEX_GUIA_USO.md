@@ -80,29 +80,93 @@ showToast({
 
 ## 🎯 Como Usar
 
-### 1. Importar o Hook
+### Método 1: Helpers Standalone (Recomendado) ⭐
+
+A forma mais simples de usar toasts em qualquer lugar do código:
+
+```typescript
+import { toast } from "@/components/BexToast";
+
+// Uso super simples!
+toast.success("Salvo com sucesso!");
+toast.error("Erro ao salvar");
+toast.warning("Atenção!");
+toast.info("Nova atualização disponível");
+
+// Com descrição
+toast.success("Dados salvos!", "Suas alterações foram salvas no servidor");
+toast.error("Falha no upload", "Verifique sua conexão e tente novamente");
+
+// Com opções extras
+toast.success("Arquivo enviado!", "Upload concluído", {
+  duration: 3000,
+  icon: Upload,
+  action: {
+    label: "Ver Arquivo",
+    onClick: () => window.open("/arquivos")
+  }
+});
+```
+
+### Método 2: Hook useBexToast
+
+Para uso em componentes React com mais controle:
 
 ```typescript
 import { useBexToast } from "@/components/BexToast";
-```
 
-### 2. Usar no Componente
-
-```typescript
 function MeuComponente() {
-  const { showToast } = useBexToast();
+  const { success, error, loading, update, dismiss } = useBexToast();
 
-  const handleClick = () => {
-    showToast({
-      title: "Tarefa criada!",
-      description: "Sua tarefa foi adicionada com sucesso",
-      variant: "success",
-      duration: 5000
-    });
+  const handleSave = async () => {
+    const loadingId = loading("Salvando dados...");
+    
+    try {
+      await saveData();
+      update(loadingId, {
+        title: "Salvo com sucesso!",
+        variant: "success",
+        duration: 5000
+      });
+    } catch (err) {
+      update(loadingId, {
+        title: "Erro ao salvar",
+        variant: "error",
+        duration: 7000
+      });
+    }
   };
 
-  return <button onClick={handleClick}>Criar Tarefa</button>;
+  return <button onClick={handleSave}>Salvar</button>;
 }
+```
+
+### Método 3: Promise Helper 🚀
+
+Para operações assíncronas com loading automático:
+
+```typescript
+import { toast } from "@/components/BexToast";
+
+// Modo simples
+await toast.promise(
+  saveData(),
+  {
+    loading: "Salvando dados...",
+    success: "Dados salvos com sucesso!",
+    error: "Erro ao salvar dados"
+  }
+);
+
+// Com mensagens dinâmicas
+await toast.promise(
+  fetchUsers(),
+  {
+    loading: "Buscando usuários...",
+    success: (users) => `${users.length} usuários carregados!`,
+    error: (err) => `Erro: ${err.message}`
+  }
+);
 ```
 
 ## 📍 Posições Disponíveis
@@ -215,51 +279,52 @@ showToast({
 
 ## 🎭 Exemplos Práticos
 
-### Salvar Dados
+### Salvar Dados (Promise Helper)
 
 ```typescript
 const handleSave = async () => {
   try {
-    await saveData();
-    
-    showToast({
-      title: "Dados salvos!",
-      description: "Suas alterações foram salvas com sucesso",
-      variant: "success"
-    });
+    await toast.promise(
+      supabase.from("tarefas").insert({ titulo, descricao }),
+      {
+        loading: "Salvando tarefa...",
+        success: "Tarefa criada com sucesso!",
+        error: "Erro ao criar tarefa"
+      }
+    );
+    navigate("/tarefas");
   } catch (error) {
-    showToast({
-      title: "Erro ao salvar",
-      description: error.message,
-      variant: "error",
-      duration: 7000
-    });
+    // Erro já foi mostrado pelo toast
   }
 };
 ```
 
-### Upload de Arquivo
+### Upload de Arquivo com Progress
 
 ```typescript
 const handleUpload = async (file: File) => {
-  showToast({
-    title: "Enviando arquivo...",
-    description: `Uploading ${file.name}`,
-    variant: "info",
-    icon: Upload
-  });
+  const loadingId = toast.loading("Enviando arquivo...", file.name);
 
   try {
+    // Simular progresso
+    const interval = setInterval(() => {
+      toast.update(loadingId, {
+        title: "Enviando arquivo...",
+        description: `${Math.random() * 100}% concluído`
+      });
+    }, 500);
+
     await uploadFile(file);
+    clearInterval(interval);
     
-    showToast({
+    toast.update(loadingId, {
       title: "Upload concluído!",
       description: "Arquivo enviado com sucesso",
       variant: "success",
-      icon: CheckCircle2
+      duration: 5000
     });
   } catch (error) {
-    showToast({
+    toast.update(loadingId, {
       title: "Erro no upload",
       description: "Tente novamente",
       variant: "error",
@@ -279,42 +344,54 @@ const handleDelete = async (id: string) => {
   try {
     await deleteItem(id);
     
-    showToast({
-      title: "Item excluído",
-      variant: "success",
+    toast.success("Item excluído", undefined, {
       action: {
         label: "Desfazer",
-        onClick: () => restoreItem(id)
+        onClick: async () => {
+          await toast.promise(
+            restoreItem(id),
+            {
+              loading: "Restaurando...",
+              success: "Item restaurado!",
+              error: "Erro ao restaurar"
+            }
+          );
+        }
       }
     });
   } catch (error) {
-    showToast({
-      title: "Erro ao excluir",
-      variant: "error"
-    });
+    toast.error("Erro ao excluir");
   }
 };
 ```
 
-### Notificação de Sistema
+### Operações em Lote
 
 ```typescript
-const checkUpdates = async () => {
-  const hasUpdate = await checkForUpdates();
-  
-  if (hasUpdate) {
-    showToast({
-      title: "Atualização disponível!",
-      description: "Nova versão do sistema disponível",
-      variant: "info",
-      icon: Download,
-      duration: 10000,
-      action: {
-        label: "Atualizar Agora",
-        onClick: () => window.location.reload()
-      }
-    });
+const handleBulkOperation = async (items: string[]) => {
+  const loadingId = toast.loading("Processando itens...", `0/${items.length} completos`);
+  let completed = 0;
+
+  for (const item of items) {
+    try {
+      await processItem(item);
+      completed++;
+      
+      toast.update(loadingId, {
+        title: "Processando itens...",
+        description: `${completed}/${items.length} completos`
+      });
+    } catch (error) {
+      toast.error(`Erro no item ${item}`);
+    }
   }
+
+  toast.update(loadingId, {
+    title: "Processamento concluído!",
+    description: `${completed} de ${items.length} itens processados`,
+    variant: completed === items.length ? "success" : "warning",
+    duration: 5000
+  });
 };
 ```
 
@@ -335,13 +412,62 @@ const checkUpdates = async () => {
 - **Shadow**: Sombra 2xl para profundidade
 - **Progress Bar**: Indicador animado de tempo
 
-## 🔧 Props Completas
+## 🚀 API Completa
+
+### Helper Functions (toast.*)
+
+```typescript
+// Toasts básicos - retornam o ID do toast
+toast.success(title, description?, options?): string
+toast.error(title, description?, options?): string
+toast.warning(title, description?, options?): string
+toast.info(title, description?, options?): string
+
+// Loading toast - não fecha automaticamente
+toast.loading(title, description?, options?): string
+
+// Atualizar toast existente
+toast.update(id, options): void
+
+// Fechar toast manualmente
+toast.dismiss(id): void
+
+// Promise helper - loading automático
+toast.promise(promise, messages): Promise<T>
+```
+
+### Hook Functions (useBexToast)
+
+```typescript
+const {
+  // Básicos
+  success(title, description?, options?): string,
+  error(title, description?, options?): string,
+  warning(title, description?, options?): string,
+  info(title, description?, options?): string,
+  
+  // Avançados
+  loading(title, description?, options?): string,
+  update(id, options): void,
+  dismiss(id): void,
+  promise(promise, messages): Promise<T>,
+  
+  // Configurações
+  position: "top-right" | "top-left" | ...,
+  setPosition(position): void,
+  
+  // Método base
+  showToast(options): string
+} = useBexToast();
+```
+
+### ToastOptions Interface
 
 ```typescript
 interface ToastOptions {
   title: string;                    // Obrigatório - Título do toast
   description?: string;             // Opcional - Descrição detalhada
-  variant?: ToastVariant;           // Opcional - Tipo (success, error, etc)
+  variant?: ToastVariant;           // Opcional - success | error | warning | info | default
   duration?: number;                // Opcional - Duração em ms (padrão: 5000)
   icon?: LucideIcon;               // Opcional - Ícone customizado
   action?: {                       // Opcional - Ação do toast
