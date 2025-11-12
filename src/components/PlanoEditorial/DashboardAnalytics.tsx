@@ -17,7 +17,7 @@ export function DashboardAnalytics() {
     queryFn: async () => {
       const dias = periodo === '7d' ? 7 : periodo === '30d' ? 30 : 90;
       const { data, error } = await supabase
-        .from('post_performance_metrics')
+        .from('post_performance_metrics' as any)
         .select('*')
         .gte('created_at', new Date(Date.now() - dias * 24 * 60 * 60 * 1000).toISOString())
         .order('created_at', { ascending: true });
@@ -60,7 +60,7 @@ export function DashboardAnalytics() {
     queryKey: ['analytics-tipo-conteudo'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('post_performance_metrics')
+        .from('post_performance_metrics' as any)
         .select('tipo_conteudo, taxa_engajamento, taxa_cliques')
         .order('created_at', { ascending: false });
 

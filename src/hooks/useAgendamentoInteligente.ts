@@ -13,7 +13,7 @@ export function useAgendamentoInteligente(tipoConteudo?: string) {
     queryKey: ['agendamento-inteligente', tipoConteudo],
     queryFn: async () => {
       let query = supabase
-        .from('post_performance_metrics')
+        .from('post_performance_metrics' as any)
         .select('dia_semana, hora_publicacao, taxa_engajamento, score_performance');
 
       if (tipoConteudo) {
@@ -23,7 +23,6 @@ export function useAgendamentoInteligente(tipoConteudo?: string) {
       const { data, error } = await query;
       if (error) throw error;
 
-      // Agrupar por dia_semana e hora
       const grouped = ((data || []) as any[]).reduce((acc: any, item: any) => {
         const key = `${item.dia_semana}-${item.hora_publicacao}`;
         if (!acc[key]) {
@@ -41,7 +40,6 @@ export function useAgendamentoInteligente(tipoConteudo?: string) {
         return acc;
       }, {});
 
-      // Calcular médias e ordenar
       const horarios: HorarioInteligente[] = Object.values(grouped)
         .map((g: any) => ({
           dia_semana: g.dia_semana,

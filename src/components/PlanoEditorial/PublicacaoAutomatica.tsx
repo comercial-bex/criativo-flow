@@ -36,7 +36,7 @@ export const PublicacaoAutomatica = ({ isOpen, onClose, post, clienteId }: Publi
     setLoading(true);
     try {
       const { data, error } = await supabase
-        .from('publicacao_queue')
+        .from('publicacao_queue' as any)
         .insert({
           post_id: post.id,
           cliente_id: clienteId,
@@ -45,7 +45,7 @@ export const PublicacaoAutomatica = ({ isOpen, onClose, post, clienteId }: Publi
           texto_publicacao: post.texto_estruturado || post.texto_ia,
           imagem_url: post.arquivo_visual_url,
           status: 'pendente'
-        })
+        } as any)
         .select()
         .single();
 

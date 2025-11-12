@@ -55,14 +55,14 @@ export function useABTesting() {
     setLoading(true);
     try {
       const { data, error } = await supabase
-        .from('post_ab_variations')
+        .from('post_ab_variations' as any)
         .select('*')
         .eq('post_id', post_id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
 
-      setVariacoes(data || []);
+      setVariacoes(data as any || []);
       return data;
     } catch (error: any) {
       console.error('Erro ao buscar variações:', error);
@@ -77,14 +77,14 @@ export function useABTesting() {
     try {
       // Desmarcar outras como vencedoras
       await supabase
-        .from('post_ab_variations')
-        .update({ is_vencedora: false })
+        .from('post_ab_variations' as any)
+        .update({ is_vencedora: false } as any)
         .eq('post_id', post_id);
 
       // Marcar esta como vencedora
       const { error } = await supabase
-        .from('post_ab_variations')
-        .update({ is_vencedora: true })
+        .from('post_ab_variations' as any)
+        .update({ is_vencedora: true } as any)
         .eq('id', variacao_id);
 
       if (error) throw error;
@@ -108,12 +108,12 @@ export function useABTesting() {
         : 0;
 
       const { error } = await supabase
-        .from('post_ab_variations')
+        .from('post_ab_variations' as any)
         .update({
           ...metricas,
           taxa_conversao,
           updated_at: new Date().toISOString()
-        })
+        } as any)
         .eq('id', variacao_id);
 
       if (error) throw error;
