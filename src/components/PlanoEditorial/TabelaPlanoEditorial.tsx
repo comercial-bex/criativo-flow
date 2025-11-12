@@ -1,16 +1,22 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Sparkles, FileText, Loader2 } from "lucide-react";
+import { Plus, Sparkles, FileText, Loader2, GripVertical } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/lib/toast-compat";
 import { LinhaPost } from "./LinhaPost";
 import { DialogAnaliseIA } from "./DialogAnaliseIA";
+import { FiltrosPlanoEditorial } from "./FiltrosPlanoEditorial";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { DndContext, closestCenter, DragEndEvent, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { SortableContext, verticalListSortingStrategy, arrayMove, useSortable } from '@dnd-kit/sortable';
+import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
+import { CSS } from '@dnd-kit/utilities';
 
 interface TabelaPlanoEditorialProps {
   planejamentoId: string;
@@ -35,6 +41,22 @@ export const TabelaPlanoEditorial: React.FC<TabelaPlanoEditorialProps> = ({
   const [analiseIA, setAnaliseIA] = useState("");
   const [clienteNome, setClienteNome] = useState("");
   const [exportando, setExportando] = useState(false);
+  
+  // Estados de filtros
+  const [formatosFiltrados, setFormatosFiltrados] = useState<string[]>([]);
+  const [objetivosFiltrados, setObjetivosFiltrados] = useState<string[]>([]);
+  const [statusFiltrados, setStatusFiltrados] = useState<string[]>([]);
+
+  // Configurar sensores para drag-and-drop
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+        delay: 200,
+        tolerance: 5,
+      },
+    })
+  );
 
   useEffect(() => {
     if (clienteId) {
@@ -332,6 +354,67 @@ Seja objetivo e prático.`;
     }
   };
 
+  // Função de filtragem com useMemo para performance
+  const postsFiltrados = useMemo(() => {
+    return posts
+      .filter(post => {
+        const passaFormato = formatosFiltrados.length === 0 || 
+                           formatosFiltrados.includes(post.formato_postagem);
+        
+        const passaObjetivo = objetivosFiltrados.length === 0 || 
+                            objetivosFiltrados.includes(post.objetivo_postagem);
+        
+        const passaStatus = statusFiltrados.length === 0 || 
+                          statusFiltrados.includes(post.status || 'rascunho');
+        
+        return passaFormato && passaObjetivo && passaStatus;
+      })
+      .sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
+  }, [posts, formatosFiltrados, objetivosFiltrados, statusFiltrados]);
+
+  // Função para lidar com drag-and-drop
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (!over || active.id === over.id) return;
+
+    const oldIndex = postsFiltrados.findIndex((p) => p.id === active.id);
+    const newIndex = postsFiltrados.findIndex((p) => p.id === over.id);
+
+    if (oldIndex === -1 || newIndex === -1) return;
+
+    const reordered = arrayMove(postsFiltrados, oldIndex, newIndex);
+    
+    // Atualizar estado local imediatamente para feedback visual
+    const updatedPosts = posts.map(post => {
+      const index = reordered.findIndex(p => p.id === post.id);
+      if (index !== -1) {
+        return { ...post, ordem: index };
+      }
+      return post;
+    });
+    onPostsChange(updatedPosts);
+
+    // Salvar novas ordens no banco
+    try {
+      const updates = reordered.map((post, idx) => 
+        supabase
+          .from('posts_planejamento')
+          .update({ ordem: idx })
+          .eq('id', post.id)
+      );
+
+      await Promise.all(updates);
+
+      toast.success('Ordem atualizada!');
+    } catch (error) {
+      console.error('Erro ao salvar ordem:', error);
+      toast.error('Erro ao salvar ordem');
+      // Reverter mudança local em caso de erro
+      onPostsChange(posts);
+    }
+  };
+
   const distribuicaoObjetivos = posts.reduce((acc: Record<string, number>, post) => {
     acc[post.objetivo_postagem] = (acc[post.objetivo_postagem] || 0) + 1;
     return acc;
@@ -349,6 +432,9 @@ Seja objetivo e prático.`;
           <div className="flex items-center justify-between flex-wrap gap-4">
             <CardTitle className="flex items-center gap-2">
               📊 Plano Editorial - {format(currentDate, "MMMM yyyy", { locale: ptBR })}
+              <Badge variant="secondary" className="ml-2">
+                {postsFiltrados.length} / {posts.length} posts
+              </Badge>
             </CardTitle>
             <div className="flex gap-2 flex-wrap">
               <Button onClick={analisarComIA} variant="outline" size="sm" disabled={analisando || posts.length === 0}>
@@ -367,48 +453,97 @@ Seja objetivo e prático.`;
           </div>
         </CardHeader>
         <CardContent>
+          {/* Filtros Visuais */}
+          <FiltrosPlanoEditorial
+            formatosSelecionados={formatosFiltrados}
+            objetivosSelecionados={objetivosFiltrados}
+            statusSelecionados={statusFiltrados}
+            onFormatoChange={setFormatosFiltrados}
+            onObjetivoChange={setObjetivosFiltrados}
+            onStatusChange={setStatusFiltrados}
+            onLimparTodos={() => {
+              setFormatosFiltrados([]);
+              setObjetivosFiltrados([]);
+              setStatusFiltrados([]);
+            }}
+            totalPosts={posts.length}
+            totalPostsFiltrados={postsFiltrados.length}
+          />
+
+          {/* Tabela com Drag & Drop */}
           <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow className="bg-[#EFF6FF]">
-                  <TableHead className="w-[60px] font-bold">#</TableHead>
-                  <TableHead className="w-[150px] font-bold">DIA DA SEMANA</TableHead>
-                  <TableHead className="w-[130px] font-bold">CRIATIVO</TableHead>
-                  <TableHead className="w-[130px] font-bold">OBJETIVO</TableHead>
-                  <TableHead className="min-w-[300px] font-bold">LEGENDA</TableHead>
-                  <TableHead className="w-[150px] font-bold">RESPONSÁVEL</TableHead>
-                  <TableHead className="min-w-[200px] font-bold">OBSERVAÇÕES</TableHead>
-                  <TableHead className="w-[100px]"></TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {posts.map((post, index) => (
-                  <LinhaPost
-                    key={post.id}
-                    post={post}
-                    index={index}
-                    responsaveis={responsaveis}
-                    onSave={salvarPost}
-                    onGerarLegenda={gerarLegendaComIA}
-                    isEditing={editingRow === post.id}
-                    setIsEditing={(editing) => setEditingRow(editing ? post.id : null)}
-                  />
-                ))}
-                {novoPost && (
-                  <LinhaPost
-                    post={novoPost}
-                    index={posts.length}
-                    responsaveis={responsaveis}
-                    onSave={salvarPost}
-                    onGerarLegenda={gerarLegendaComIA}
-                    isEditing={true}
-                    setIsEditing={(editing) => {
-                      if (!editing) setNovoPost(null);
-                    }}
-                  />
-                )}
-              </TableBody>
-            </Table>
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+              modifiers={[restrictToVerticalAxis]}
+            >
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-[#EFF6FF]">
+                    <TableHead className="w-[40px]"></TableHead>
+                    <TableHead className="w-[60px] font-bold">#</TableHead>
+                    <TableHead className="w-[150px] font-bold">DIA DA SEMANA</TableHead>
+                    <TableHead className="w-[130px] font-bold">CRIATIVO</TableHead>
+                    <TableHead className="w-[130px] font-bold">OBJETIVO</TableHead>
+                    <TableHead className="min-w-[300px] font-bold">LEGENDA</TableHead>
+                    <TableHead className="w-[150px] font-bold">RESPONSÁVEL</TableHead>
+                    <TableHead className="min-w-[200px] font-bold">OBSERVAÇÕES</TableHead>
+                    <TableHead className="w-[100px]"></TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  <SortableContext
+                    items={postsFiltrados.map(p => p.id)}
+                    strategy={verticalListSortingStrategy}
+                  >
+                    {postsFiltrados.map((post, index) => {
+                      const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ 
+                        id: post.id 
+                      });
+
+                      const style = {
+                        transform: CSS.Transform.toString(transform),
+                        transition,
+                        opacity: isDragging ? 0.5 : 1,
+                      };
+
+                      return (
+                        <tbody key={post.id} ref={setNodeRef} style={style}>
+                          <LinhaPost
+                            post={post}
+                            index={index}
+                            responsaveis={responsaveis}
+                            onSave={salvarPost}
+                            onGerarLegenda={gerarLegendaComIA}
+                            isEditing={editingRow === post.id}
+                            setIsEditing={(editing) => setEditingRow(editing ? post.id : null)}
+                            dragHandle={
+                              <div {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing">
+                                <GripVertical className="h-5 w-5 text-muted-foreground hover:text-primary transition-colors" />
+                              </div>
+                            }
+                          />
+                        </tbody>
+                      );
+                    })}
+                  </SortableContext>
+                  {novoPost && (
+                    <LinhaPost
+                      post={novoPost}
+                      index={posts.length}
+                      responsaveis={responsaveis}
+                      onSave={salvarPost}
+                      onGerarLegenda={gerarLegendaComIA}
+                      isEditing={true}
+                      setIsEditing={(editing) => {
+                        if (!editing) setNovoPost(null);
+                      }}
+                    />
+                  )}
+                </TableBody>
+              </Table>
+            </DndContext>
           </div>
 
           {posts.length === 0 && !novoPost && (

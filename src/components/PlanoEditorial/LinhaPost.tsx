@@ -20,6 +20,7 @@ interface LinhaPostProps {
   onDelete?: (postId: string) => Promise<void>;
   isEditing: boolean;
   setIsEditing: (editing: boolean) => void;
+  dragHandle?: React.ReactNode;
 }
 
 export const LinhaPost: React.FC<LinhaPostProps> = ({
@@ -31,6 +32,7 @@ export const LinhaPost: React.FC<LinhaPostProps> = ({
   onDelete,
   isEditing,
   setIsEditing,
+  dragHandle,
 }) => {
   const [editedPost, setEditedPost] = useState(post);
   const [generating, setGenerating] = useState(false);
@@ -67,6 +69,13 @@ export const LinhaPost: React.FC<LinhaPostProps> = ({
 
   return (
     <TableRow className="hover:bg-accent/30 transition-colors">
+      {/* DRAG HANDLE */}
+      {dragHandle && (
+        <TableCell className="w-[40px] p-2">
+          {dragHandle}
+        </TableCell>
+      )}
+      
       {/* POST # */}
       <TableCell className="font-mono text-center font-semibold">
         {String(index + 1).padStart(2, '0')}
