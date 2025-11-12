@@ -10,6 +10,8 @@ import { Calendar as CalendarIcon, Save, X, Edit, Sparkles, Loader2 } from "luci
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { getCreativeColor, getCreativeIcon, getObjetivoColor, formatarDataPorExtenso } from "@/lib/plano-editorial-helpers";
+import { UploadArquivoVisual } from "./UploadArquivoVisual";
+import { supabase } from "@/integrations/supabase/client";
 
 interface LinhaPostProps {
   post: any;
@@ -59,6 +61,35 @@ export const LinhaPost: React.FC<LinhaPostProps> = ({
       console.error('Erro ao salvar post:', error);
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleUploadComplete = async (url: string, tipo: string, nome: string) => {
+    // Atualizar estado local
+    const updatedPost = {
+      ...editedPost,
+      arquivo_visual_url: url,
+      arquivo_visual_tipo: tipo,
+      arquivo_visual_nome: nome
+    };
+    setEditedPost(updatedPost);
+
+    // Se não estiver em modo de edição, salvar automaticamente
+    if (!isEditing && post.id && !post.id.startsWith('temp-')) {
+      try {
+        const { error } = await supabase
+          .from('posts_planejamento')
+          .update({
+            arquivo_visual_url: url,
+            arquivo_visual_tipo: tipo,
+            arquivo_visual_nome: nome
+          })
+          .eq('id', post.id);
+
+        if (error) throw error;
+      } catch (error) {
+        console.error('Erro ao atualizar arquivo visual:', error);
+      }
     }
   };
 
@@ -200,6 +231,17 @@ export const LinhaPost: React.FC<LinhaPostProps> = ({
             {post.legenda || <span className="text-muted-foreground italic">Sem legenda</span>}
           </div>
         )}
+      </TableCell>
+
+      {/* ARQUIVO VISUAL */}
+      <TableCell>
+        <UploadArquivoVisual
+          postId={post.id || `temp-${Date.now()}`}
+          arquivoAtual={editedPost.arquivo_visual_url}
+          arquivoTipo={editedPost.arquivo_visual_tipo}
+          onUploadComplete={handleUploadComplete}
+          disabled={saving}
+        />
       </TableCell>
 
       {/* RESPONSÁVEL */}

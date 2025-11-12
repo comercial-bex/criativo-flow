@@ -518,6 +518,7 @@ Seja objetivo e prático.`;
                     <TableHead className="w-[130px] font-bold">CRIATIVO</TableHead>
                     <TableHead className="w-[130px] font-bold">OBJETIVO</TableHead>
                     <TableHead className="min-w-[300px] font-bold">LEGENDA</TableHead>
+                    <TableHead className="w-[180px] font-bold">ARQUIVO VISUAL</TableHead>
                     <TableHead className="w-[150px] font-bold">RESPONSÁVEL</TableHead>
                     <TableHead className="min-w-[200px] font-bold">OBSERVAÇÕES</TableHead>
                     <TableHead className="w-[100px]"></TableHead>
