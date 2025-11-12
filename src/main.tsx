@@ -17,6 +17,39 @@ setupSessionRefresh();
 (window as any).__reactStarted = true;
 console.log('🚀 React starting...');
 
+// 🧹 Filtrar erros de telemetria bloqueados por adblocker (DEV apenas)
+if (import.meta.env.DEV) {
+  const originalError = console.error;
+  const originalWarn = console.warn;
+  
+  console.error = (...args: any[]) => {
+    const message = args[0]?.toString() || '';
+    
+    // Ignorar erros de rede bloqueados por adblocker
+    if (
+      message.includes('net::ERR_BLOCKED_BY_CLIENT') ||
+      message.includes('lovable.dev/ingest')
+    ) {
+      return; // Silenciar
+    }
+    
+    originalError.apply(console, args);
+  };
+  
+  console.warn = (...args: any[]) => {
+    const message = args[0]?.toString() || '';
+    
+    // Ignorar warnings relacionados a telemetria
+    if (message.includes('lovable.dev/ingest')) {
+      return;
+    }
+    
+    originalWarn.apply(console, args);
+  };
+  
+  console.log('🧹 Filtro de logs de telemetria ativado (dev mode)');
+}
+
 // 🛡️ Global error handlers (captura erros antes do React montar)
 window.onerror = (msg, src, line, col, err) => {
   console.error('[GLOBAL ERROR]', { msg, src, line, col, err });

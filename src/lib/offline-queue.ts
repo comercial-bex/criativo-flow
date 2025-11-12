@@ -24,14 +24,39 @@ class OfflineQueue {
   private dbName = DB_NAME; // ✅ Usar constante centralizada
   private storeName = 'offline-queue';
   private db: IDBDatabase | null = null;
+  private initPromise: Promise<void> | null = null;
+  private isInitialized = false;
 
   async init(): Promise<void> {
+    // ✅ Se já inicializou, retornar imediatamente
+    if (this.isInitialized && this.db) {
+      return Promise.resolve();
+    }
+
+    // ✅ Se está inicializando, retornar a promise existente
+    if (this.initPromise) {
+      return this.initPromise;
+    }
+
+    // ✅ Criar nova promise de inicialização
+    this.initPromise = this._performInit();
+
+    try {
+      await this.initPromise;
+      this.isInitialized = true;
+    } finally {
+      this.initPromise = null;
+    }
+  }
+
+  private async _performInit(): Promise<void> {
     try {
       // ✅ Usar função centralizada que já usa DB_VERSION = 2
       this.db = await openDatabase();
       console.log('✅ OfflineQueue: IndexedDB inicializado (v' + DB_VERSION + ')');
     } catch (error) {
       console.error('❌ Erro ao abrir IndexedDB (OfflineQueue):', error);
+      this.isInitialized = false;
       throw error;
     }
   }
@@ -212,6 +237,13 @@ class OfflineQueue {
       pending: items.filter(i => i.retries === 0).length,
       failed: items.filter(i => i.retries >= 3).length
     };
+  }
+
+  async reset(): Promise<void> {
+    this.db = null;
+    this.isInitialized = false;
+    this.initPromise = null;
+    await this.init();
   }
 }
 
