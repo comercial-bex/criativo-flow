@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
-import { List, Calendar as CalendarIcon, LayoutGrid } from "lucide-react";
+import { List, Calendar as CalendarIcon } from "lucide-react";
 
-type ModoVisualizacao = 'lista' | 'calendario' | 'cartao';
+type ModoVisualizacao = 'lista' | 'calendario';
 
 interface ModosVisualizacaoProps {
   modoAtual: ModoVisualizacao;
@@ -28,15 +28,6 @@ export const ModosVisualizacao = ({ modoAtual, onModoChange }: ModosVisualizacao
       >
         <CalendarIcon className="h-4 w-4" />
         Calendário
-      </Button>
-      <Button
-        variant={modoAtual === 'cartao' ? 'default' : 'ghost'}
-        size="sm"
-        onClick={() => onModoChange('cartao')}
-        className="gap-2"
-      >
-        <LayoutGrid className="h-4 w-4" />
-        Cartões
       </Button>
     </div>
   );

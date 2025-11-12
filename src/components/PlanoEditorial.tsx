@@ -21,8 +21,6 @@ import { ListaPostsView } from "@/components/ListaPostsView";
 import { TabelaPlanoEditorial } from "@/components/PlanoEditorial/TabelaPlanoEditorial";
 import { ModosVisualizacao } from "@/components/PlanoEditorial/ModosVisualizacao";
 import { CalendarioEditorial as CalendarioView } from "@/components/PlanoEditorial/CalendarioEditorial";
-import { KanbanEditorial } from "@/components/PlanoEditorial/KanbanEditorial";
-import { PainelControleEditorial } from "@/components/PlanoEditorial/PainelControleEditorial";
 import { DndContext, closestCenter, DragEndEvent, DragStartEvent, DragOverlay, useDroppable } from "@dnd-kit/core";
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -337,7 +335,7 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
   const [dialogDatasOpen, setDialogDatasOpen] = useState(false);
   const [dialogDataManualOpen, setDialogDataManualOpen] = useState(false);
   const [dialogTemplatesOpen, setDialogTemplatesOpen] = useState(false);
-  const [modoVisualizacao, setModoVisualizacao] = useState<'lista' | 'calendario' | 'cartao'>('lista');
+  const [modoVisualizacao, setModoVisualizacao] = useState<'lista' | 'calendario'>('lista');
   const [responsaveis, setResponsaveis] = useState<any[]>([]);
 
   // Hook para datas comemorativas
@@ -2624,178 +2622,56 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
             </Card>
           )}
 
+          {/* Tabela Editorial Simplificada */}
           <Card>
             <CardHeader>
-              <CardTitle>Geração de Conteúdo</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex gap-2">
-                <Button 
-                  onClick={gerarConteudoEditorial}
-                  disabled={gerando || !hasCompleteAnalysis()}
-                  className="flex-1"
-                >
-                  {gerando ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                  Gerar Conteúdo Editorial Completo
-                </Button>
-                
-              </div>
-                
-                {postsGerados.length > 0 && (
-                  <div className="flex flex-col items-end gap-3 p-4 bg-muted/50 rounded-lg border border-border">
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Calendar className="w-4 h-4" />
-                      <span>
-                        {postsGerados.filter(p => p.status === 'temporario').length} temporários, {postsGerados.filter(p => p.status === 'aprovado').length} aprovados
-                      </span>
-                    </div>
-                    
-                    <div className="flex gap-2">
-                      <Button 
-                        variant="outline"
-                        onClick={() => setPostsGerados([])}
-                        disabled={salvandoPostsGerados}
-                        className="border-destructive/20 text-destructive hover:bg-destructive/10"
-                      >
-                        <X className="w-4 h-4 mr-2" />
-                        Limpar Tudo
-                      </Button>
-                      
-                      {postsGerados.filter(p => p.status === 'temporario').length > 0 && (
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button 
-                              disabled={salvandoPostsGerados}
-                              className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg"
-                            >
-                              {salvandoPostsGerados ? (
-                                <>
-                                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                  Salvando...
-                                </>
-                              ) : (
-                                <>
-                                  <Save className="w-4 h-4 mr-2" />
-                                  Salvar Posts no Calendário Editorial
-                                </>
-                              )}
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Confirmar salvamento</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                Você está prestes a salvar {postsGerados.filter(p => p.status === 'temporario').length} posts temporários no planejamento editorial. 
-                                Os posts salvos permanecerão visíveis para acompanhamento do desenvolvimento.
-                                Tem certeza que deseja continuar?
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                              <AlertDialogAction 
-                                onClick={salvarPostsGerados}
-                                className="bg-emerald-600 hover:bg-emerald-700"
-                              >
-                                Sim, salvar posts pendentes
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                      )}
-                    </div>
-                  </div>
-                )}
-              
-              {!hasCompleteAnalysis() && (
-                <p className="text-sm text-muted-foreground">
-                  Complete a missão, posicionamento e seleções para gerar conteúdo.
-                </p>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between flex-wrap gap-4">
                 <div>
                   <CardTitle className="flex items-center gap-2">
                     <TableIcon className="h-5 w-5" />
-                    Tabela Editorial
+                    Plano Editorial
                   </CardTitle>
                   <p className="text-sm text-muted-foreground mt-1">
                     Visualize, edite e crie posts manualmente
                   </p>
                 </div>
-                <Button
-                  variant="outline"
-                  onClick={() => setVisualizacaoTabelaEditorial(!visualizacaoTabelaEditorial)}
-                >
-                  {visualizacaoTabelaEditorial ? (
-                    <>
-                      <ChevronRight className="h-4 w-4 mr-2" />
-                      Ocultar Tabela
-                    </>
-                  ) : (
-                    <>
-                      <TableIcon className="h-4 w-4 mr-2" />
-                      Abrir Tabela
-                    </>
-                  )}
-                </Button>
-              </div>
-            </CardHeader>
-            
-            {visualizacaoTabelaEditorial && (
-              <CardContent className="space-y-4">
-                {/* Seletor de Modo de Visualização */}
-                <div className="flex items-center justify-between">
+                
+                <div className="flex items-center gap-3">
+                  {/* Modos de Visualização */}
                   <ModosVisualizacao 
                     modoAtual={modoVisualizacao}
                     onModoChange={setModoVisualizacao}
                   />
-                  <PainelControleEditorial posts={[...posts, ...postsGerados]} />
                 </div>
+              </div>
+            </CardHeader>
+            
+            <CardContent className="space-y-4">
+              {/* Renderização condicional baseada no modo */}
+              {modoVisualizacao === 'lista' && (
+                <TabelaPlanoEditorial
+                  planejamentoId={planejamento.id}
+                  clienteId={clienteId}
+                  posts={[...posts, ...postsGerados]}
+                  onPostsChange={(updatedPosts) => {
+                    const savedPosts = updatedPosts.filter(p => !p.status_post || p.status_post !== 'temporario');
+                    const tempPosts = updatedPosts.filter(p => p.status_post === 'temporario');
+                    setPosts(savedPosts as any);
+                    setPostsGerados(tempPosts as any);
+                  }}
+                  currentDate={currentDate}
+                />
+              )}
 
-                {/* Renderização condicional baseada no modo */}
-                {modoVisualizacao === 'lista' && (
-                  <TabelaPlanoEditorial
-                    planejamentoId={planejamento.id}
-                    clienteId={clienteId}
-                    posts={[...posts, ...postsGerados]}
-                    onPostsChange={(updatedPosts) => {
-                      const savedPosts = updatedPosts.filter(p => !p.status_post || p.status_post !== 'temporario');
-                      const tempPosts = updatedPosts.filter(p => p.status_post === 'temporario');
-                      setPosts(savedPosts as any);
-                      setPostsGerados(tempPosts as any);
-                    }}
-                    currentDate={currentDate}
-                  />
-                )}
-
-                {modoVisualizacao === 'calendario' && (
-                  <CalendarioView
-                    posts={[...posts, ...postsGerados]}
-                    currentDate={currentDate}
-                    onDateChange={setCurrentDate}
-                    onPostClick={onPreviewPost}
-                  />
-                )}
-
-                {modoVisualizacao === 'cartao' && (
-                  <KanbanEditorial
-                    posts={[...posts, ...postsGerados]}
-                    onPostsChange={(updatedPosts) => {
-                      const savedPosts = updatedPosts.filter(p => !p.status_post || p.status_post !== 'temporario');
-                      const tempPosts = updatedPosts.filter(p => p.status_post === 'temporario');
-                      setPosts(savedPosts as any);
-                      setPostsGerados(tempPosts as any);
-                    }}
-                    onPostClick={onPreviewPost}
-                    responsaveis={responsaveis}
-                  />
-                )}
-              </CardContent>
-            )}
+              {modoVisualizacao === 'calendario' && (
+                <CalendarioView
+                  posts={[...posts, ...postsGerados]}
+                  currentDate={currentDate}
+                  onDateChange={setCurrentDate}
+                  onPostClick={onPreviewPost}
+                />
+              )}
+            </CardContent>
           </Card>
 
           {postsGerados.length > 0 && (
