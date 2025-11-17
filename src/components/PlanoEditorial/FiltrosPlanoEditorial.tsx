@@ -40,6 +40,7 @@ const STATUS = [
   { value: "aprovado", label: "Aprovado", icon: "✅" },
   { value: "publicado", label: "Publicado", icon: "🚀" },
   { value: "temporario", label: "Temporário", icon: "⏳" },
+  { value: "pendente_aprovacao", label: "Aguardando Aprovação Cliente", icon: "⏳" },
 ];
 
 export const FiltrosPlanoEditorial: React.FC<FiltrosPlanoEditorialProps> = ({
