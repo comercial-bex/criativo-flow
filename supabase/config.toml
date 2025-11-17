@@ -173,3 +173,6 @@ verify_jwt = false
 [functions.gerar-variacoes-ab]
 verify_jwt = true
 
+[functions.gerar-hashtags-inteligentes]
+verify_jwt = true
+
