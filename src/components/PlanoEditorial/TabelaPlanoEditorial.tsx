@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Sparkles, FileText, Loader2, AlertCircle, GripVertical } from "lucide-react";
+import { Plus, Sparkles, FileText, Loader2, AlertCircle, GripVertical, ChevronLeft, ChevronRight } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
@@ -57,6 +57,10 @@ export const TabelaPlanoEditorial: React.FC<TabelaPlanoEditorialProps> = ({
   const [formatosFiltrados, setFormatosFiltrados] = useState<string[]>([]);
   const [objetivosFiltrados, setObjetivosFiltrados] = useState<string[]>([]);
   const [statusFiltrados, setStatusFiltrados] = useState<string[]>([]);
+  
+  // Paginação
+  const [paginaAtual, setPaginaAtual] = useState(1);
+  const POSTS_POR_PAGINA = 20;
 
   // Usar hook customizado para drag-and-drop
   const { sensors, handleDragEnd } = usePlanoEditorialDragDrop(posts, onPostsChange);
@@ -422,6 +426,18 @@ Seja objetivo e prático.`;
       .sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
   }, [posts, formatosFiltrados, objetivosFiltrados, statusFiltrados]);
 
+  // Paginação dos posts filtrados
+  const totalPaginas = Math.ceil(postsFiltrados.length / POSTS_POR_PAGINA);
+  const postsPaginados = useMemo(() => {
+    const inicio = (paginaAtual - 1) * POSTS_POR_PAGINA;
+    const fim = inicio + POSTS_POR_PAGINA;
+    return postsFiltrados.slice(inicio, fim);
+  }, [postsFiltrados, paginaAtual]);
+
+  // Reset página ao mudar filtros
+  useEffect(() => {
+    setPaginaAtual(1);
+  }, [formatosFiltrados, objetivosFiltrados, statusFiltrados]);
 
   const distribuicaoObjetivos = posts.reduce((acc: Record<string, number>, post) => {
     acc[post.objetivo_postagem] = (acc[post.objetivo_postagem] || 0) + 1;
@@ -540,10 +556,10 @@ Seja objetivo e prático.`;
                 </TableHeader>
                 <TableBody>
                   <SortableContext
-                    items={postsFiltrados.map(p => p.id)}
+                    items={postsPaginados.map(p => p.id)}
                     strategy={verticalListSortingStrategy}
                   >
-                    {postsFiltrados.map((post, index) => {
+                    {postsPaginados.map((post, index) => {
                       const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ 
                         id: post.id 
                       });
@@ -591,6 +607,56 @@ Seja objetivo e prático.`;
                 </TableBody>
               </Table>
             </DndContext>
+            
+            {/* Paginação */}
+            {totalPaginas > 1 && (
+              <div className="flex items-center justify-between px-4 py-3 border-t border-primary/20 bg-muted/30">
+                <div className="text-sm text-muted-foreground">
+                  Mostrando {((paginaAtual - 1) * POSTS_POR_PAGINA) + 1} - {Math.min(paginaAtual * POSTS_POR_PAGINA, postsFiltrados.length)} de {postsFiltrados.length} posts
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPaginaAtual(p => Math.max(1, p - 1))}
+                    disabled={paginaAtual === 1}
+                    className="gap-2"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                    Anterior
+                  </Button>
+                  <div className="flex items-center gap-1">
+                    {Array.from({ length: totalPaginas }, (_, i) => i + 1)
+                      .filter(p => p === 1 || p === totalPaginas || Math.abs(p - paginaAtual) <= 1)
+                      .map((p, i, arr) => (
+                        <React.Fragment key={p}>
+                          {i > 0 && arr[i - 1] !== p - 1 && (
+                            <span className="px-2 text-muted-foreground">...</span>
+                          )}
+                          <Button
+                            variant={p === paginaAtual ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => setPaginaAtual(p)}
+                            className="w-10"
+                          >
+                            {p}
+                          </Button>
+                        </React.Fragment>
+                      ))}
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPaginaAtual(p => Math.min(totalPaginas, p + 1))}
+                    disabled={paginaAtual === totalPaginas}
+                    className="gap-2"
+                  >
+                    Próxima
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
 
           {posts.length === 0 && !novoPost && (
