@@ -31,6 +31,9 @@ import { useRegistrarPagamento } from "@/hooks/useTitulosFinanceiros";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+import { useComprovanteUpload } from "@/hooks/useComprovanteUpload";
+import { ComprovanteUploader } from "@/components/Financeiro/ComprovanteUploader";
+import { ComprovanteGallery } from "@/components/Financeiro/ComprovanteGallery";
 
 // Schema de validação
 const pagamentoSchema = z.object({
@@ -65,6 +68,14 @@ export function RegistrarPagamentoDialog({
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const registrarPagamento = useRegistrarPagamento();
+  const {
+    arquivos,
+    adicionarArquivos,
+    removerArquivo,
+    uploadTodos,
+    limpar,
+    uploading
+  } = useComprovanteUpload();
 
   const handleSubmit = async () => {
     // Limpar erros anteriores
@@ -95,18 +106,24 @@ export function RegistrarPagamentoDialog({
     }
 
     try {
+      // Upload de comprovantes
+      const comprovanteUrls = await uploadTodos();
+      const comprovanteUrl = comprovanteUrls.length > 0 ? comprovanteUrls[0] : undefined;
+
       await registrarPagamento.mutateAsync({
         titulo_id: tituloId,
         data_pagamento: format(dataPagamento, 'yyyy-MM-dd'),
         valor_pago: validation.data.valorPago,
         forma_pagamento: validation.data.formaPagamento,
         observacoes: validation.data.observacoes,
+        comprovante_url: comprovanteUrl,
       });
 
       // Limpar formulário
       setValorPago("");
       setFormaPagamento("");
       setObservacoes("");
+      limpar();
       onOpenChange(false);
     } catch (error) {
       toast({
@@ -211,6 +228,27 @@ export function RegistrarPagamentoDialog({
               {observacoes.length}/500 caracteres
             </p>
           </div>
+
+          <div className="space-y-2">
+            <Label>Comprovantes</Label>
+            <ComprovanteUploader
+              onFilesChange={adicionarArquivos}
+            />
+            {arquivos.length > 0 && (
+              <ComprovanteGallery
+                files={arquivos.map(f => ({
+                  url: f.url || f.preview || '',
+                  nome: f.file?.name,
+                  tipo: f.file?.type,
+                  tamanho: f.file?.size
+                }))}
+                onRemove={(url) => {
+                  const arq = arquivos.find(a => a.url === url || a.preview === url);
+                  if (arq) removerArquivo(arq.id);
+                }}
+              />
+            )}
+          </div>
         </div>
 
         <DialogFooter>
@@ -219,9 +257,9 @@ export function RegistrarPagamentoDialog({
           </Button>
           <Button
             onClick={handleSubmit}
-            disabled={!valorPago || !formaPagamento || registrarPagamento.isPending}
+            disabled={!valorPago || !formaPagamento || registrarPagamento.isPending || uploading}
           >
-            {registrarPagamento.isPending ? "Salvando..." : `Registrar ${actionLabel}`}
+            {(registrarPagamento.isPending || uploading) ? "Salvando..." : `Registrar ${actionLabel}`}
           </Button>
         </DialogFooter>
       </DialogContent>

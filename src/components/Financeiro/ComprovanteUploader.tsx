@@ -10,6 +10,7 @@ import { ComprovanteCropModal } from "./ComprovanteCropModal";
 
 interface ComprovanteUploaderProps {
   onUploadComplete?: (urls: string[]) => void;
+  onFilesChange?: (files: File[]) => void;
   maxFiles?: number;
   acceptedTypes?: string[];
   disabled?: boolean;
@@ -17,6 +18,7 @@ interface ComprovanteUploaderProps {
 
 export function ComprovanteUploader({
   onUploadComplete,
+  onFilesChange,
   maxFiles = 5,
   acceptedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'],
   disabled = false,
@@ -27,7 +29,8 @@ export function ComprovanteUploader({
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     adicionarArquivos(acceptedFiles);
-  }, [adicionarArquivos]);
+    onFilesChange?.(acceptedFiles);
+  }, [adicionarArquivos, onFilesChange]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
