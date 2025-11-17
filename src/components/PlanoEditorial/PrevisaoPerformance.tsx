@@ -1,4 +1,3 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
@@ -6,6 +5,7 @@ import { Progress } from '@/components/ui/progress';
 import { TrendingUp, TrendingDown, Sparkles, Loader2, Clock, Target, AlertTriangle } from 'lucide-react';
 import { usePrevisaoPerformance } from '@/hooks/usePrevisaoPerformance';
 import { useState } from 'react';
+import { DialogWrapper } from './DialogWrapper';
 
 interface PrevisaoPerformanceProps {
   isOpen: boolean;
@@ -39,18 +39,14 @@ export const PrevisaoPerformance = ({ isOpen, onClose, post, clienteId }: Previs
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Target className="h-5 w-5 text-primary" />
-            Previsão de Performance - ML
-          </DialogTitle>
-          <p className="text-sm text-muted-foreground">
-            Análise preditiva baseada em machine learning e histórico de posts
-          </p>
-        </DialogHeader>
-
+    <DialogWrapper
+      open={isOpen}
+      onOpenChange={onClose}
+      title="Previsão de Performance - ML"
+      description="Análise preditiva baseada em machine learning e histórico de posts"
+      size="lg"
+    >
+      <div className="space-y-6">
         {!previsao ? (
           <div className="text-center py-12">
             <Sparkles className="h-12 w-12 mx-auto mb-4 text-primary/50" />
@@ -239,7 +235,7 @@ export const PrevisaoPerformance = ({ isOpen, onClose, post, clienteId }: Previs
             </Button>
           </div>
         )}
-      </DialogContent>
-    </Dialog>
+      </div>
+    </DialogWrapper>
   );
 };
