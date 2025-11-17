@@ -1,9 +1,12 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState } from 'react';
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
 import { useClientApprovals } from "@/hooks/useClientApprovals";
-import { CheckCircle } from "lucide-react";
+import { useApprovalNavigation } from "@/hooks/useApprovalNavigation";
+import { CheckCircle, LayoutGrid, List } from "lucide-react";
 import { toast } from '@/lib/toast-compat';
+import { JobApprovalCard } from "./JobApprovalCard";
 import { ApprovalPreview } from "./ApprovalPreview";
 
 interface ApproversSectionProps {
@@ -12,109 +15,140 @@ interface ApproversSectionProps {
 
 export function ApproversSection({ clienteId }: ApproversSectionProps) {
   const { approvals, updateApprovalStatus } = useClientApprovals(clienteId);
-
-  const handleApprove = async (approvalId: string) => {
-    const result = await updateApprovalStatus(approvalId, 'aprovado');
-    if (result.success) {
-      toast.success('Item aprovado com sucesso!');
-    } else {
-      toast.error("Erro ao processar aprovação");
-    }
-  };
-
-  const handleReject = async (approvalId: string, motivo: string) => {
-    const result = await updateApprovalStatus(approvalId, 'reprovado', motivo);
-    if (result.success) {
-      toast.success('Item reprovado com sucesso!');
-    } else {
-      toast.error("Erro ao processar aprovação");
-    }
-  };
+  const [viewMode, setViewMode] = useState<'card' | 'list'>('card');
+  const [filter, setFilter] = useState<'pendente' | 'aprovado' | 'reprovado'>('pendente');
 
   const pendentes = approvals.filter(a => a.status === 'pendente');
   const aprovados = approvals.filter(a => a.status === 'aprovado');
   const reprovados = approvals.filter(a => a.status === 'reprovado');
 
+  const filteredApprovals = filter === 'pendente' ? pendentes : filter === 'aprovado' ? aprovados : reprovados;
+
+  const navigation = useApprovalNavigation(filteredApprovals);
+
+  const handleApprove = async () => {
+    if (!navigation.currentApproval) return;
+    const result = await updateApprovalStatus(navigation.currentApproval.id, 'aprovado');
+    if (result.success) {
+      toast.success('Item aprovado com sucesso!');
+      if (navigation.hasNext) {
+        navigation.nextApproval();
+      }
+    } else {
+      toast.error("Erro ao processar aprovação");
+    }
+  };
+
+  const handleReject = async (motivo: string) => {
+    if (!navigation.currentApproval) return;
+    const result = await updateApprovalStatus(navigation.currentApproval.id, 'reprovado', motivo);
+    if (result.success) {
+      toast.success('Item reprovado com sucesso!');
+      if (navigation.hasNext) {
+        navigation.nextApproval();
+      }
+    } else {
+      toast.error("Erro ao processar aprovação");
+    }
+  };
+
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Central de Aprovações</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Tabs defaultValue="pendente">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="pendente">
-                Pendentes ({pendentes.length})
-              </TabsTrigger>
-              <TabsTrigger value="aprovado">
-                Aprovados ({aprovados.length})
-              </TabsTrigger>
-              <TabsTrigger value="reprovado">
-                Reprovados ({reprovados.length})
-              </TabsTrigger>
-            </TabsList>
+      {/* Toolbar */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-card p-4 rounded-lg border">
+        <div className="flex flex-wrap gap-2">
+          <Badge 
+            variant={filter === 'pendente' ? 'default' : 'outline'}
+            className="cursor-pointer px-4 py-2"
+            onClick={() => setFilter('pendente')}
+          >
+            Pendentes ({pendentes.length})
+          </Badge>
+          <Badge 
+            variant={filter === 'aprovado' ? 'default' : 'outline'}
+            className="cursor-pointer px-4 py-2"
+            onClick={() => setFilter('aprovado')}
+          >
+            Aprovados ({aprovados.length})
+          </Badge>
+          <Badge 
+            variant={filter === 'reprovado' ? 'default' : 'outline'}
+            className="cursor-pointer px-4 py-2"
+            onClick={() => setFilter('reprovado')}
+          >
+            Reprovados ({reprovados.length})
+          </Badge>
+        </div>
+        
+        <div className="flex gap-2">
+          <Button 
+            variant={viewMode === 'card' ? 'default' : 'ghost'}
+            size="sm"
+            onClick={() => setViewMode('card')}
+          >
+            <LayoutGrid className="mr-2 h-4 w-4" />
+            Card
+          </Button>
+          <Button 
+            variant={viewMode === 'list' ? 'default' : 'ghost'}
+            size="sm"
+            onClick={() => setViewMode('list')}
+          >
+            <List className="mr-2 h-4 w-4" />
+            Lista
+          </Button>
+        </div>
+      </div>
 
-            <TabsContent value="pendente" className="space-y-4 mt-4">
-              {pendentes.map((approval) => (
-                <ApprovalPreview
-                  key={approval.id}
-                  approval={approval as any}
-                  onApprove={() => handleApprove(approval.id)}
-                  onReject={(motivo) => handleReject(approval.id, motivo)}
-                />
-              ))}
-
-              {pendentes.length === 0 && (
-                <div className="text-center py-12 text-muted-foreground">
-                  <CheckCircle className="h-16 w-16 mx-auto mb-4 text-green-500" />
-                  <p className="text-lg font-semibold">Tudo em dia!</p>
-                  <p className="text-sm">Não há itens pendentes de aprovação</p>
-                </div>
-              )}
-            </TabsContent>
-
-            <TabsContent value="aprovado" className="space-y-4 mt-4">
-              {aprovados.map((approval) => (
-                <Card key={approval.id} className="border-green-200">
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-2">
-                      <Badge variant="outline" className="bg-green-50 text-green-700">
-                        {approval.tipo}
-                      </Badge>
-                      <span className="font-medium">{approval.titulo}</span>
-                      <Badge className="ml-auto bg-green-600">Aprovado</Badge>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </TabsContent>
-
-            <TabsContent value="reprovado" className="space-y-4 mt-4">
-              {reprovados.map((approval) => (
-                <Card key={approval.id} className="border-red-200">
-                  <CardContent className="p-4">
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <Badge variant="outline" className="bg-red-50 text-red-700">
-                          {approval.tipo}
-                        </Badge>
-                        <span className="font-medium">{approval.titulo}</span>
-                        <Badge className="ml-auto bg-red-600">Reprovado</Badge>
-                      </div>
-                      {approval.motivo_reprovacao && (
-                        <p className="text-sm text-red-600 bg-red-50 p-2 rounded">
-                          <strong>Motivo:</strong> {approval.motivo_reprovacao}
-                        </p>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-      </Card>
+      {/* Conteúdo */}
+      {filteredApprovals.length === 0 ? (
+        <Card>
+          <CardContent className="py-12">
+            <div className="text-center text-muted-foreground">
+              <CheckCircle className="h-16 w-16 mx-auto mb-4 text-green-500" />
+              <p className="text-lg font-semibold">
+                {filter === 'pendente' ? 'Tudo em dia!' : `Nenhum item ${filter}`}
+              </p>
+              <p className="text-sm">
+                {filter === 'pendente' 
+                  ? 'Não há itens pendentes de aprovação' 
+                  : `Não há itens ${filter}s no momento`}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      ) : viewMode === 'card' ? (
+        navigation.currentApproval && (
+          <JobApprovalCard
+            approval={navigation.currentApproval}
+            currentIndex={navigation.currentIndex}
+            total={navigation.total}
+            onNext={navigation.nextApproval}
+            onPrevious={navigation.previousApproval}
+            onApprove={handleApprove}
+            onReject={handleReject}
+            hasNext={navigation.hasNext}
+            hasPrevious={navigation.hasPrevious}
+          />
+        )
+      ) : (
+        <div className="space-y-4">
+          {filteredApprovals.map((approval, index) => (
+            <ApprovalPreview
+              key={approval.id}
+              approval={approval as any}
+              onApprove={async () => {
+                navigation.goToApproval(index);
+                await handleApprove();
+              }}
+              onReject={async (motivo) => {
+                navigation.goToApproval(index);
+                await handleReject(motivo);
+              }}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

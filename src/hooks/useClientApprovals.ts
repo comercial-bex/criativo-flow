@@ -18,11 +18,43 @@ export interface ClientApproval {
   solicitado_por: string;
   created_at: string;
   updated_at: string;
+  legenda?: string | null;
+  objetivo_postagem?: string | null;
+  formato_postagem?: string | null;
+  hashtags?: string[] | null;
+  rede_social?: string | null;
+  anexos_array?: string[] | null;
+}
+
+export interface ClientApprovalWithDetails extends ClientApproval {
+  projeto?: {
+    id: string;
+    titulo: string;
+    prioridade: string;
+    cliente: {
+      nome: string;
+      logo_url: string;
+    };
+  };
+  tarefa?: {
+    id: string;
+    titulo: string;
+    tipo: string;
+    data_prazo: string;
+    responsavel: {
+      nome: string;
+      avatar_url: string;
+    };
+  };
+  solicitante?: {
+    nome: string;
+    avatar_url: string;
+  };
 }
 
 export function useClientApprovals(clienteId?: string) {
   const { user } = useAuth();
-  const [approvals, setApprovals] = useState<ClientApproval[]>([]);
+  const [approvals, setApprovals] = useState<ClientApprovalWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchApprovals = async () => {
@@ -31,12 +63,31 @@ export function useClientApprovals(clienteId?: string) {
     try {
       const { data, error } = await supabase
         .from('aprovacoes_cliente')
-        .select('*')
+        .select(`
+          *,
+          projeto:projeto_id(
+            id,
+            titulo,
+            prioridade,
+            cliente:cliente_id(nome, logo_url)
+          ),
+          tarefa:tarefa_id(
+            id,
+            titulo,
+            tipo,
+            data_prazo,
+            responsavel:responsavel_id(nome, avatar_url)
+          ),
+          solicitante:solicitado_por(
+            nome,
+            avatar_url
+          )
+        `)
         .eq('cliente_id', clienteId)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setApprovals((data || []) as ClientApproval[]);
+      setApprovals((data || []) as any);
     } catch (error) {
       console.error('Erro ao carregar aprovações:', error);
     } finally {
