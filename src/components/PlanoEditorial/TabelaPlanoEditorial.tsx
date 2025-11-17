@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Sparkles, FileText, Loader2, AlertCircle } from "lucide-react";
+import { Plus, Sparkles, FileText, Loader2, AlertCircle, GripVertical } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,8 +13,9 @@ import { DialogAnaliseIA } from "./DialogAnaliseIA";
 import { FiltrosPlanoEditorial } from "./FiltrosPlanoEditorial";
 import { exportarParaPDF } from "@/lib/plano-editorial-export";
 import { DndContext, closestCenter } from '@dnd-kit/core';
-import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
+import { CSS as DndCSS } from '@dnd-kit/utilities';
 import { usePlanoEditorialDragDrop } from '@/hooks/usePlanoEditorialDragDrop';
 import { CreateTaskModal } from '@/components/CreateTaskModal';
 import type { TipoTarefa } from '@/types/tarefa';
@@ -391,50 +392,13 @@ Seja objetivo e prático.`;
   };
 
   const exportarPDF = async () => {
+    setExportando(true);
     try {
-      setExportando(true);
-
-      const doc = new jsPDF();
-
-      doc.setFontSize(20);
-      doc.setTextColor(0, 107, 255);
-      doc.text("PLANO EDITORIAL MENSAL", 105, 20, { align: "center" });
-
-      doc.setFontSize(12);
-      doc.setTextColor(0, 0, 0);
-      doc.text(`Cliente: ${clienteNome}`, 20, 35);
-      doc.text(`Período: ${format(currentDate, "MMMM yyyy", { locale: ptBR })}`, 20, 42);
-      doc.text(`Total de Posts: ${posts.length}`, 20, 49);
-
-      autoTable(doc, {
-        startY: 60,
-        head: [["#", "Data", "Criativo", "Objetivo", "Legenda", "Responsável"]],
-        body: posts.map((post, index) => [
-          String(index + 1).padStart(2, "0"),
-          format(new Date(post.data_postagem), "dd/MM", { locale: ptBR }),
-          post.formato_postagem,
-          post.objetivo_postagem,
-          post.legenda?.substring(0, 50) + "..." || "-",
-          responsaveis.find((p) => p.id === post.responsavel_id)?.nome || "-",
-        ]),
-        headStyles: { fillColor: [0, 107, 255] },
-        alternateRowStyles: { fillColor: [250, 250, 250] },
-      });
-
-      const pageCount = doc.getNumberOfPages();
-      for (let i = 1; i <= pageCount; i++) {
-        doc.setPage(i);
-        doc.setFontSize(8);
-        doc.setTextColor(150);
-        doc.text("Agência BEX - Criatividade sem limites", 105, 285, { align: "center" });
-        doc.text(`Página ${i} de ${pageCount}`, 105, 290, { align: "center" });
-      }
-
-      doc.save(`PlanoEditorial_${clienteNome}_${format(currentDate, "yyyy-MM")}.pdf`);
-      toast.success("PDF gerado com sucesso!");
+      await exportarParaPDF(postsFiltrados, clienteNome, currentDate);
+      toast.success("PDF exportado com sucesso!");
     } catch (error) {
-      console.error("Erro ao gerar PDF:", error);
-      toast.error("Erro ao gerar PDF");
+      console.error("Erro ao exportar PDF:", error);
+      toast.error("Erro ao exportar PDF");
     } finally {
       setExportando(false);
     }
@@ -458,48 +422,6 @@ Seja objetivo e prático.`;
       .sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
   }, [posts, formatosFiltrados, objetivosFiltrados, statusFiltrados]);
 
-  // Função para lidar com drag-and-drop
-  const handleDragEnd = async (event: DragEndEvent) => {
-    const { active, over } = event;
-
-    if (!over || active.id === over.id) return;
-
-    const oldIndex = postsFiltrados.findIndex((p) => p.id === active.id);
-    const newIndex = postsFiltrados.findIndex((p) => p.id === over.id);
-
-    if (oldIndex === -1 || newIndex === -1) return;
-
-    const reordered = arrayMove(postsFiltrados, oldIndex, newIndex);
-    
-    // Atualizar estado local imediatamente para feedback visual
-    const updatedPosts = posts.map(post => {
-      const index = reordered.findIndex(p => p.id === post.id);
-      if (index !== -1) {
-        return { ...post, ordem: index };
-      }
-      return post;
-    });
-    onPostsChange(updatedPosts);
-
-    // Salvar novas ordens no banco
-    try {
-      const updates = reordered.map((post, idx) => 
-        supabase
-          .from('posts_planejamento')
-          .update({ ordem: idx })
-          .eq('id', post.id)
-      );
-
-      await Promise.all(updates);
-
-      toast.success('Ordem atualizada!');
-    } catch (error) {
-      console.error('Erro ao salvar ordem:', error);
-      toast.error('Erro ao salvar ordem');
-      // Reverter mudança local em caso de erro
-      onPostsChange(posts);
-    }
-  };
 
   const distribuicaoObjetivos = posts.reduce((acc: Record<string, number>, post) => {
     acc[post.objetivo_postagem] = (acc[post.objetivo_postagem] || 0) + 1;
@@ -632,7 +554,7 @@ Seja objetivo e prático.`;
                       });
 
                       const style = {
-                        transform: CSS.Transform.toString(transform),
+                        transform: DndCSS.Transform.toString(transform),
                         transition,
                         opacity: isDragging ? 0.5 : 1,
                       };
