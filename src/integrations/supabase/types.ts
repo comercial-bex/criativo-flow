@@ -16489,6 +16489,7 @@ export type Database = {
           tamanho_depois_mb: number
         }[]
       }
+      cleanup_temp_posts: { Args: never; Returns: undefined }
       create_admin_user: { Args: never; Returns: Json }
       create_client_user_direct: {
         Args: {

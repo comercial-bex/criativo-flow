@@ -24,7 +24,10 @@ export function DashboardAnalytics() {
 
       if (error) throw error;
       return data as any[] || [];
-    }
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutos
+    gcTime: 10 * 60 * 1000, // 10 minutos  
+    refetchOnWindowFocus: false,
   });
 
   // Buscar variações vencedoras de A/B testing
@@ -52,7 +55,10 @@ export function DashboardAnalytics() {
 
       if (error) throw error;
       return data as any[] || [];
-    }
+    },
+    staleTime: 10 * 60 * 1000, // 10 minutos
+    gcTime: 30 * 60 * 1000,
+    refetchOnWindowFocus: false,
   });
 
   // Buscar métricas por tipo de conteúdo

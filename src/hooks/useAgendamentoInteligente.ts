@@ -49,8 +49,11 @@ export function useAgendamentoInteligente(tipoConteudo?: string) {
         }))
         .sort((a, b) => b.score_performance - a.score_performance);
 
-      return horarios;
+      return horarios.slice(0, 10);
     },
+    staleTime: 10 * 60 * 1000, // 10 minutos - dados mudam pouco
+    gcTime: 30 * 60 * 1000,
+    refetchOnWindowFocus: false,
     enabled: true
   });
 }
