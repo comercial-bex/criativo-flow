@@ -6,18 +6,16 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { Calendar as CalendarIcon, Save, X, Edit, Sparkles, Loader2, ExternalLink, Link as LinkIcon, FileText, Rocket, Target, FlaskConical } from "lucide-react";
+import { Calendar as CalendarIcon, Save, X, Edit, Clock, Target, Rocket, ExternalLink, Loader2, Sparkles, Link as LinkIcon } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { getCreativeColor, getCreativeIcon, getTipoConteudoColor, getTipoConteudoIcon, getTipoConteudoDescricao, formatarDataPorExtenso } from "@/lib/plano-editorial-helpers";
-import { useTextGenerator } from "@/hooks/useTextGenerator";
+import { getCreativeColor, getCreativeIcon, getTipoConteudoColor, getTipoConteudoIcon, formatarDataPorExtenso } from "@/lib/plano-editorial-helpers";
 import { UploadArquivoVisual } from "./UploadArquivoVisual";
 import { supabase } from "@/integrations/supabase/client";
-import { TemplateSelector } from "./TemplateSelector";
 import { AgendamentoInteligente } from "./AgendamentoInteligente";
 import { PrevisaoPerformance } from "./PrevisaoPerformance";
 import { PublicacaoAutomatica } from "./PublicacaoAutomatica";
-import { ABTestingManager } from "./ABTestingManager";
+import { TextoEstruturadoEditor } from "./TextoEstruturadoEditor";
 
 
 interface LinhaPostProps {
@@ -46,24 +44,16 @@ export const LinhaPost: React.FC<LinhaPostProps> = ({
   clienteId,
 }) => {
   const [editedPost, setEditedPost] = useState(post);
-  const [generating, setGenerating] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [showTemplateSelector, setShowTemplateSelector] = useState(false);
+  const [showTextoEditor, setShowTextoEditor] = useState(false);
   const [showAgendamento, setShowAgendamento] = useState(false);
   const [showPrevisao, setShowPrevisao] = useState(false);
   const [showPublicacao, setShowPublicacao] = useState(false);
-  const [showABTesting, setShowABTesting] = useState(false);
-  const { gerarTextoEstruturado, loading: generatingTexto } = useTextGenerator();
 
-  const handleGerarTextoEstruturado = async () => {
-    try {
-      const texto = await gerarTextoEstruturado(editedPost);
-      if (texto) {
-        setEditedPost({ ...editedPost, texto_estruturado: texto });
-      }
-    } catch (error) {
-      console.error('Erro ao gerar texto estruturado:', error);
-    }
+  const handleSaveTexto = async (texto: string) => {
+    const updatedPost = { ...editedPost, texto_estruturado: texto };
+    setEditedPost(updatedPost);
+    await onSave(updatedPost);
   };
 
   const handleSave = async () => {
@@ -273,64 +263,25 @@ export const LinhaPost: React.FC<LinhaPostProps> = ({
       </TableCell>
 
       {/* TEXTO ESTRUTURADO */}
-      <TableCell className="min-w-[300px]">
-        <div className="space-y-2">
-          {isEditing ? (
-            <>
-              <Textarea
-                value={editedPost.texto_estruturado || ''}
-                onChange={(e) => setEditedPost({ ...editedPost, texto_estruturado: e.target.value })}
-                placeholder="Estrutura textual: AIDA, CTA ou Storytelling..."
-                rows={4}
-                className="resize-none border-primary/30 font-['Inter'] text-sm"
-              />
-              
-              {/* NOVOS BOTÕES: Templates + IA lado a lado */}
-              <div className="flex gap-2">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setShowTemplateSelector(true)}
-                  className="flex-1 gap-2 text-xs border-primary/30 hover:bg-primary/10"
-                >
-                  <FileText className="h-3 w-3" />
-                  Templates
-                </Button>
-                
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={handleGerarTextoEstruturado}
-                  disabled={generatingTexto}
-                  className="flex-1 gap-2 text-xs border-primary/30 hover:bg-primary/10"
-                >
-                  {generatingTexto ? (
-                    <Loader2 className="h-3 w-3 animate-spin" />
-                  ) : (
-                    <Sparkles className="h-3 w-3" />
-                  )}
-            IA
-          </Button>
-          
+      <TableCell className="max-w-[200px]">
+        {isEditing ? (
           <Button
-            size="sm"
             variant="outline"
-            onClick={() => setShowABTesting(true)}
-            className="flex-1 gap-2 text-xs border-primary/30 hover:bg-primary/10"
+            onClick={() => setShowTextoEditor(true)}
+            className="w-full justify-start text-left h-auto min-h-[40px]"
           >
-            <FlaskConical className="h-3 w-3" />
-            A/B Test
+            <Edit className="h-4 w-4 mr-2 flex-shrink-0" />
+            <span className="truncate">
+              {editedPost.texto_estruturado 
+                ? editedPost.texto_estruturado.substring(0, 30) + '...'
+                : 'Clique para editar...'}
+            </span>
           </Button>
-        </div>
-      </>
-    ) : (
-      <div className="text-sm text-muted-foreground line-clamp-3 font-['Inter']">
-        {post.texto_estruturado || (
-          <span className="italic text-xs">Não definido</span>
+        ) : (
+          <div className="text-sm line-clamp-2">
+            {post.texto_estruturado || '-'}
+          </div>
         )}
-      </div>
-    )}
-        </div>
       </TableCell>
 
       {/* ARQUIVO VISUAL */}
@@ -421,30 +372,39 @@ export const LinhaPost: React.FC<LinhaPostProps> = ({
       </TableCell>
       
       {/* Modais */}
-      {isEditing && (
+      {isEditing && clienteId && (
         <>
-          <TemplateSelector
-            isOpen={showTemplateSelector}
-            onClose={() => setShowTemplateSelector(false)}
-            tipo_conteudo={editedPost.tipo_conteudo || 'informar'}
-            tipo_criativo={editedPost.formato_postagem}
-            onSelectTemplate={(texto) => {
-              setEditedPost({ ...editedPost, texto_estruturado: texto });
-              setShowTemplateSelector(false);
-            }}
+          <TextoEstruturadoEditor
+            open={showTextoEditor}
+            onOpenChange={setShowTextoEditor}
+            post={editedPost}
+            onSave={handleSaveTexto}
+            clienteId={clienteId}
           />
           
-          {clienteId && (
-            <AgendamentoInteligente
-              isOpen={showAgendamento}
-              onClose={() => setShowAgendamento(false)}
-              post={editedPost}
-              clienteId={clienteId}
-              onAplicarHorario={(novaData) => {
-                setEditedPost({ ...editedPost, data_postagem: novaData });
-              }}
-            />
-          )}
+          <AgendamentoInteligente
+            isOpen={showAgendamento}
+            onClose={() => setShowAgendamento(false)}
+            post={editedPost}
+            clienteId={clienteId}
+            onAplicarHorario={(novaData) => {
+              setEditedPost({ ...editedPost, data_postagem: novaData });
+            }}
+          />
+
+          <PrevisaoPerformance
+            isOpen={showPrevisao}
+            onClose={() => setShowPrevisao(false)}
+            post={editedPost}
+            clienteId={clienteId}
+          />
+
+          <PublicacaoAutomatica
+            isOpen={showPublicacao}
+            onClose={() => setShowPublicacao(false)}
+            post={editedPost}
+            clienteId={clienteId}
+          />
         </>
       )}
     </TableRow>
