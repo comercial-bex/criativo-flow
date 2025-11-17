@@ -64,18 +64,103 @@ export function PropostaModal({ isOpen, onClose, orcamento }: PropostaModalProps
     }
   };
 
-  const handleGerarPDF = () => {
-    toast({
-      title: "Funcionalidade em desenvolvimento",
-      description: "A geração de PDF será implementada em breve.",
-    });
+  const handleGerarPDF = async () => {
+    if (!propostaId) {
+      toast({
+        title: "Erro",
+        description: "Crie a proposta primeiro antes de gerar o PDF.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      // Buscar dados completos da proposta
+      const { data: propostaCompleta, error: propostaError } = await supabase
+        .from("propostas")
+        .select(`
+          *,
+          clientes (id, nome, email, telefone, cnpj_cpf, endereco),
+          proposta_itens (*)
+        `)
+        .eq("id", propostaId)
+        .single();
+
+      if (propostaError) throw propostaError;
+
+      // Buscar dados da empresa
+      const { data: empresa } = await supabase
+        .from("configuracoes_empresa")
+        .select("*")
+        .single();
+
+      // Importação dinâmica para reduzir bundle
+      const { downloadPropostaPDF } = await import("@/utils/propostaPdfGenerator");
+      
+      await downloadPropostaPDF({
+        proposta: propostaCompleta,
+        itens: propostaCompleta.proposta_itens || [],
+        empresa: empresa || undefined,
+        cliente: propostaCompleta.clientes || undefined,
+      });
+
+      toast({
+        title: "PDF gerado com sucesso!",
+        description: "O arquivo foi baixado automaticamente.",
+      });
+    } catch (error: any) {
+      console.error("Erro ao gerar PDF:", error);
+      toast({
+        title: "Erro ao gerar PDF",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleEnviarAssinatura = () => {
-    toast({
-      title: "Funcionalidade em desenvolvimento",
-      description: "Integração com GOV.br será implementada em breve.",
-    });
+  const handleEnviarAssinatura = async () => {
+    if (!propostaId) {
+      toast({
+        title: "Erro",
+        description: "Crie a proposta primeiro.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      // Chamar edge function para iniciar processo de assinatura GOV.br
+      const { data, error } = await supabase.functions.invoke("iniciar-assinatura-govbr", {
+        body: { propostaId },
+      });
+
+      if (error) throw error;
+
+      if (data?.authUrl) {
+        // Abrir URL de autenticação GOV.br em nova aba
+        window.open(data.authUrl, "_blank");
+        
+        toast({
+          title: "Redirecionando para GOV.br",
+          description: "Complete a autenticação para assinar digitalmente.",
+        });
+
+        setAssinaturaStatus("processando");
+      }
+    } catch (error: any) {
+      console.error("Erro ao enviar para assinatura:", error);
+      toast({
+        title: "Erro ao enviar para assinatura",
+        description: "Funcionalidade em implementação. Por enquanto, use o PDF gerado.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleCompartilhar = () => {
