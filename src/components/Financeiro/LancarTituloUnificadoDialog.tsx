@@ -18,6 +18,9 @@ import { smartToast } from "@/lib/smart-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useEntidades } from "@/hooks/useEntidades";
 import { cn } from "@/lib/utils";
+import { useComprovanteUpload } from "@/hooks/useComprovanteUpload";
+import { ComprovanteUploader } from "@/components/Financeiro/ComprovanteUploader";
+import { ComprovanteGallery } from "@/components/Financeiro/ComprovanteGallery";
 
 const tituloSchema = z.object({
   tipo: z.enum(['pagar', 'receber']),
@@ -97,9 +100,15 @@ async function uploadComprovante(file: File): Promise<string> {
 
 export function LancarTituloUnificadoDialog({ trigger }: LancarTituloUnificadoDialogProps) {
   const [open, setOpen] = useState(false);
-  const [uploading, setUploading] = useState(false);
-  const [comprovanteUrl, setComprovanteUrl] = useState<string | null>(null);
   const criarTitulo = useCriarTitulo();
+  const {
+    arquivos,
+    adicionarArquivos,
+    removerArquivo,
+    uploadTodos,
+    limpar,
+    uploading
+  } = useComprovanteUpload();
   
   const form = useForm<TituloFormData>({
     resolver: zodResolver(tituloSchema),
@@ -122,23 +131,12 @@ export function LancarTituloUnificadoDialog({ trigger }: LancarTituloUnificadoDi
   // Buscar clientes ou fornecedores usando hook separado
   const { data: entidades = [], error: entidadesError } = useEntidades(tipoSelecionado);
   
-  const handleFileUpload = async (file: File | undefined) => {
-    if (!file) return;
-    
-    try {
-      setUploading(true);
-      const url = await uploadComprovante(file);
-      setComprovanteUrl(url);
-      smartToast.success("Comprovante anexado com sucesso");
-    } catch (error) {
-      smartToast.error("Erro ao fazer upload do comprovante", error instanceof Error ? error.message : 'Erro desconhecido');
-    } finally {
-      setUploading(false);
-    }
-  };
-  
   const handleSubmit = async (data: TituloFormData) => {
     try {
+      // Upload de comprovantes
+      const comprovanteUrls = await uploadTodos();
+      const comprovanteUrl = comprovanteUrls.length > 0 ? comprovanteUrls[0] : null;
+      
       // valor_original já vem transformado pelo schema (número)
       const valorNumerico = data.valor_original as unknown as number;
       
@@ -175,7 +173,7 @@ export function LancarTituloUnificadoDialog({ trigger }: LancarTituloUnificadoDi
       smartToast.success(`${data.tipo === 'receber' ? 'Receita' : 'Despesa'} lançada com sucesso`);
       setOpen(false);
       form.reset();
-      setComprovanteUrl(null);
+      limpar();
     } catch (error: any) {
       console.error('❌ Erro ao criar título:', error);
       
