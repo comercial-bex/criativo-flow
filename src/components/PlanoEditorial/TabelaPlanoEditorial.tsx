@@ -536,11 +536,6 @@ Seja objetivo e prático.`;
                     <TableHead className="text-center font-bold text-primary w-[150px] font-['Montserrat']">RESPONSÁVEL</TableHead>
                     <TableHead className="text-center font-bold text-primary w-[180px] font-['Montserrat']">OBSERVAÇÕES</TableHead>
                     <TableHead className="text-center font-bold text-primary w-[100px] font-['Montserrat']">AÇÕES</TableHead>
-                    <TableHead className="font-bold text-primary min-w-[300px] font-['Montserrat']">TEXTO ESTRUTURADO</TableHead>
-                    <TableHead className="text-center font-bold text-primary min-w-[120px] font-['Montserrat']">ARQUIVO VISUAL</TableHead>
-                    <TableHead className="font-bold text-primary min-w-[150px] font-['Montserrat']">RESPONSÁVEL</TableHead>
-                    <TableHead className="font-bold text-primary min-w-[200px] font-['Montserrat']">OBSERVAÇÕES</TableHead>
-                    <TableHead className="text-center font-bold text-primary w-[100px] font-['Montserrat']">AÇÕES</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
