@@ -4157,6 +4157,60 @@ export type Database = {
           },
         ]
       }
+      emails_agendados: {
+        Row: {
+          agendar_para: string
+          anexo_url: string | null
+          assunto: string
+          criado_em: string | null
+          criado_por: string | null
+          destinatarios: Json
+          entidade_id: string
+          enviado_em: string | null
+          erro_mensagem: string | null
+          id: string
+          mensagem: string
+          status: string | null
+          template_html: string | null
+          tipo: string
+          updated_at: string | null
+        }
+        Insert: {
+          agendar_para: string
+          anexo_url?: string | null
+          assunto: string
+          criado_em?: string | null
+          criado_por?: string | null
+          destinatarios: Json
+          entidade_id: string
+          enviado_em?: string | null
+          erro_mensagem?: string | null
+          id?: string
+          mensagem: string
+          status?: string | null
+          template_html?: string | null
+          tipo: string
+          updated_at?: string | null
+        }
+        Update: {
+          agendar_para?: string
+          anexo_url?: string | null
+          assunto?: string
+          criado_em?: string | null
+          criado_por?: string | null
+          destinatarios?: Json
+          entidade_id?: string
+          enviado_em?: string | null
+          erro_mensagem?: string | null
+          id?: string
+          mensagem?: string
+          status?: string | null
+          template_html?: string | null
+          tipo?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       equipamentos: {
         Row: {
           created_at: string
