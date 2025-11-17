@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { Calendar as CalendarIcon, Save, X, Edit, Clock, Target, Rocket, ExternalLink, Loader2, Sparkles, Link as LinkIcon } from "lucide-react";
+import { Calendar as CalendarIcon, Save, X, Edit, Clock, Target, Rocket, ExternalLink, Loader2, Sparkles, Link as LinkIcon, Hash } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { getCreativeColor, getCreativeIcon, getTipoConteudoColor, getTipoConteudoIcon, formatarDataPorExtenso } from "@/lib/plano-editorial-helpers";
@@ -16,6 +16,7 @@ import { AgendamentoInteligente } from "./AgendamentoInteligente";
 import { PrevisaoPerformance } from "./PrevisaoPerformance";
 import { PublicacaoAutomatica } from "./PublicacaoAutomatica";
 import { TextoEstruturadoEditor } from "./TextoEstruturadoEditor";
+import { HashtagGenerator } from "./HashtagGenerator";
 
 
 interface LinhaPostProps {
@@ -49,6 +50,7 @@ export const LinhaPost: React.FC<LinhaPostProps> = ({
   const [showAgendamento, setShowAgendamento] = useState(false);
   const [showPrevisao, setShowPrevisao] = useState(false);
   const [showPublicacao, setShowPublicacao] = useState(false);
+  const [showHashtagGen, setShowHashtagGen] = useState(false);
 
   const handleSaveTexto = async (texto: string) => {
     const updatedPost = { ...editedPost, texto_estruturado: texto };
@@ -338,35 +340,52 @@ export const LinhaPost: React.FC<LinhaPostProps> = ({
 
       {/* AÇÕES */}
       <TableCell>
-        <div className="flex gap-1">
-          {/* Botão Ver Tarefa */}
-          {post.tarefa_vinculada_id && (
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => {
-                window.open(`/admin/tarefas?id=${post.tarefa_vinculada_id}`, '_blank');
-              }}
-              title="Ver tarefa vinculada"
-              className="text-primary hover:text-primary/80"
-            >
-              <ExternalLink className="h-4 w-4" />
-            </Button>
-          )}
+        <div className="flex flex-col gap-2">
+          <div className="flex gap-1">
+            {/* Botão Ver Tarefa */}
+            {post.tarefa_vinculada_id && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  window.open(`/admin/tarefas?id=${post.tarefa_vinculada_id}`, '_blank');
+                }}
+                title="Ver tarefa vinculada"
+                className="text-primary hover:text-primary/80"
+              >
+                <ExternalLink className="h-4 w-4" />
+              </Button>
+            )}
+            
+            {isEditing ? (
+              <>
+                <Button size="sm" onClick={handleSave} disabled={saving}>
+                  {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                </Button>
+                <Button size="sm" variant="ghost" onClick={handleCancel} disabled={saving}>
+                  <X className="h-4 w-4" />
+                </Button>
+              </>
+            ) : (
+              <Button size="sm" variant="ghost" onClick={() => setIsEditing(true)}>
+                <Edit className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
           
-          {isEditing ? (
-            <>
-              <Button size="sm" onClick={handleSave} disabled={saving}>
-                {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+          {/* Ações Avançadas */}
+          {isEditing && (
+            <div className="flex flex-wrap gap-1">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setShowHashtagGen(true)}
+                className="gap-1 text-xs px-2"
+                title="Gerar hashtags com IA"
+              >
+                <Hash className="h-3 w-3" />
               </Button>
-              <Button size="sm" variant="ghost" onClick={handleCancel} disabled={saving}>
-                <X className="h-4 w-4" />
-              </Button>
-            </>
-          ) : (
-            <Button size="sm" variant="ghost" onClick={() => setIsEditing(true)}>
-              <Edit className="h-4 w-4" />
-            </Button>
+            </div>
           )}
         </div>
       </TableCell>
@@ -404,6 +423,16 @@ export const LinhaPost: React.FC<LinhaPostProps> = ({
             onClose={() => setShowPublicacao(false)}
             post={editedPost}
             clienteId={clienteId}
+          />
+          
+          <HashtagGenerator
+            open={showHashtagGen}
+            onOpenChange={setShowHashtagGen}
+            post={editedPost}
+            onHashtagsGenerated={(hashtags) => {
+              setEditedPost({ ...editedPost, hashtags });
+              setShowHashtagGen(false);
+            }}
           />
         </>
       )}
