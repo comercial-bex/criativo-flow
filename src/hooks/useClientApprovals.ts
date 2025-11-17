@@ -126,15 +126,56 @@ export function useClientApprovals(clienteId?: string) {
     motivo?: string
   ) => {
     try {
+      // Buscar usuário atual
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      // 1. Atualizar aprovação
       const { error } = await supabase
         .from('aprovacoes_cliente')
         .update({
           status,
-          motivo_reprovacao: status === 'reprovado' ? motivo : null
+          motivo_reprovacao: status === 'reprovado' ? motivo : null,
+          decidido_por: user?.id || null,
+          decided_at: new Date().toISOString()
         })
         .eq('id', approvalId);
 
       if (error) throw error;
+
+      // 2. Buscar approval para pegar trace_id e tarefa_id
+      const { data: approval } = await supabase
+        .from('aprovacoes_cliente')
+        .select('trace_id, tarefa_id')
+        .eq('id', approvalId)
+        .single();
+
+      // 3. Se houver trace_id (post vinculado), atualizar status do post
+      if (approval?.trace_id) {
+        await supabase
+          .from('posts_planejamento')
+          .update({ status_aprovacao_cliente: status })
+          .eq('id', approval.trace_id);
+      }
+
+      // 4. Se reprovado, criar notificação para o responsável (comentado - tabela notifications não existe)
+      if (status === 'reprovado' && approval?.tarefa_id) {
+        const { data: tarefa } = await supabase
+          .from('tarefa')
+          .select('responsavel_id')
+          .eq('id', approval.tarefa_id)
+          .single();
+
+        // TODO: Implementar sistema de notificações
+        // Por enquanto, apenas log
+        if (tarefa?.responsavel_id) {
+          console.log('Notificação: Cliente reprovou conteúdo', {
+            responsavel_id: tarefa.responsavel_id,
+            motivo,
+            approval_id: approvalId
+          });
+        }
+      }
+
       await fetchApprovals();
       return { success: true };
     } catch (error) {

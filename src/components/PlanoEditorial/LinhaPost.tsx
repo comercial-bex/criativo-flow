@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { Calendar as CalendarIcon, Save, X, Edit, Clock, Target, Rocket, ExternalLink, Loader2, Sparkles, Link as LinkIcon, Hash } from "lucide-react";
+import { Calendar as CalendarIcon, Save, X, Edit, Clock, Target, Rocket, ExternalLink, Loader2, Sparkles, Link as LinkIcon, Hash, CheckCircle } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { getCreativeColor, getCreativeIcon, getTipoConteudoColor, getTipoConteudoIcon, formatarDataPorExtenso } from "@/lib/plano-editorial-helpers";
@@ -17,6 +17,7 @@ import { PrevisaoPerformance } from "./PrevisaoPerformance";
 import { PublicacaoAutomatica } from "./PublicacaoAutomatica";
 import { TextoEstruturadoEditor } from "./TextoEstruturadoEditor";
 import { HashtagGenerator } from "./HashtagGenerator";
+import { SolicitarAprovacaoModal } from "./SolicitarAprovacaoModal";
 
 
 interface LinhaPostProps {
@@ -51,6 +52,7 @@ export const LinhaPost: React.FC<LinhaPostProps> = ({
   const [showPrevisao, setShowPrevisao] = useState(false);
   const [showPublicacao, setShowPublicacao] = useState(false);
   const [showHashtagGen, setShowHashtagGen] = useState(false);
+  const [showSolicitarAprovacao, setShowSolicitarAprovacao] = useState(false);
 
   const handleSaveTexto = async (texto: string) => {
     const updatedPost = { ...editedPost, texto_estruturado: texto };
@@ -115,10 +117,28 @@ export const LinhaPost: React.FC<LinhaPostProps> = ({
       
       {/* POST # */}
       <TableCell className="font-mono text-center font-semibold font-['Inter']">
-        <div className="flex items-center justify-center gap-1.5">
-          {String(index + 1).padStart(2, '0')}
-          {post.tarefa_vinculada_id && (
-            <LinkIcon className="h-3 w-3 text-primary" />
+        <div className="flex flex-col items-center justify-center gap-1">
+          <div className="flex items-center gap-1.5">
+            {String(index + 1).padStart(2, '0')}
+            {post.tarefa_vinculada_id && (
+              <LinkIcon className="h-3 w-3 text-primary" />
+            )}
+          </div>
+          {/* Badge de Status de Aprovação */}
+          {post.status_aprovacao_cliente && (
+            <Badge 
+              variant={
+                post.status_aprovacao_cliente === 'aprovado' ? 'default' :
+                post.status_aprovacao_cliente === 'reprovado' ? 'destructive' :
+                'secondary'
+              }
+              className="text-[10px] px-1.5 py-0"
+            >
+              {post.status_aprovacao_cliente === 'pendente' && '⏳'}
+              {post.status_aprovacao_cliente === 'aprovado' && '✅'}
+              {post.status_aprovacao_cliente === 'reprovado' && '❌'}
+              {post.status_aprovacao_cliente === 'revisao' && '🔄'}
+            </Badge>
           )}
         </div>
       </TableCell>
@@ -379,6 +399,16 @@ export const LinhaPost: React.FC<LinhaPostProps> = ({
               <Button
                 size="sm"
                 variant="outline"
+                onClick={() => setShowSolicitarAprovacao(true)}
+                className="gap-1 text-xs px-2 bg-green-50 hover:bg-green-100 border-green-200 text-green-700"
+                title="Solicitar aprovação do cliente"
+              >
+                <CheckCircle className="h-3 w-3" />
+                Aprovar
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
                 onClick={() => setShowHashtagGen(true)}
                 className="gap-1 text-xs px-2"
                 title="Gerar hashtags com IA"
@@ -432,6 +462,17 @@ export const LinhaPost: React.FC<LinhaPostProps> = ({
             onHashtagsGenerated={(hashtags) => {
               setEditedPost({ ...editedPost, hashtags });
               setShowHashtagGen(false);
+            }}
+          />
+          
+          <SolicitarAprovacaoModal
+            open={showSolicitarAprovacao}
+            onOpenChange={setShowSolicitarAprovacao}
+            post={editedPost}
+            clienteId={clienteId}
+            projetoId={post.projeto_id}
+            onSuccess={() => {
+              // Recarregar posts se necessário
             }}
           />
         </>

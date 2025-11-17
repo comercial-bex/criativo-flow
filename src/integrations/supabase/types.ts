@@ -9917,6 +9917,7 @@ export type Database = {
           rede_social: string | null
           responsavel_id: string | null
           status: Database["public"]["Enums"]["post_status_enum"] | null
+          status_aprovacao_cliente: string | null
           status_post: Database["public"]["Enums"]["post_status_type"] | null
           tarefa_aprovacao_id: string | null
           tarefa_criacao_id: string | null
@@ -9953,6 +9954,7 @@ export type Database = {
           rede_social?: string | null
           responsavel_id?: string | null
           status?: Database["public"]["Enums"]["post_status_enum"] | null
+          status_aprovacao_cliente?: string | null
           status_post?: Database["public"]["Enums"]["post_status_type"] | null
           tarefa_aprovacao_id?: string | null
           tarefa_criacao_id?: string | null
@@ -9989,6 +9991,7 @@ export type Database = {
           rede_social?: string | null
           responsavel_id?: string | null
           status?: Database["public"]["Enums"]["post_status_enum"] | null
+          status_aprovacao_cliente?: string | null
           status_post?: Database["public"]["Enums"]["post_status_type"] | null
           tarefa_aprovacao_id?: string | null
           tarefa_criacao_id?: string | null
