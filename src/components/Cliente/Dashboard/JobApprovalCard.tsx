@@ -19,7 +19,7 @@ import {
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -79,6 +79,52 @@ export function JobApprovalCard({
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [motivoSelecionado, setMotivoSelecionado] = useState('');
   const [detalhesReprovacao, setDetalhesReprovacao] = useState('');
+
+  // Atalhos de teclado
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      // Ignorar se estiver em input/textarea
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+        return;
+      }
+
+      switch(e.key.toLowerCase()) {
+        case 'a':
+          // A = Aprovar
+          if (!showRejectModal) {
+            onApprove();
+          }
+          break;
+        case 'r':
+          // R = Reprovar
+          if (!showRejectModal) {
+            setShowRejectModal(true);
+          }
+          break;
+        case 'arrowright':
+          // Seta Direita = Próximo
+          if (hasNext && !showRejectModal) {
+            onNext();
+          }
+          break;
+        case 'arrowleft':
+          // Seta Esquerda = Anterior
+          if (hasPrevious && !showRejectModal) {
+            onPrevious();
+          }
+          break;
+        case 'escape':
+          // ESC = Fechar modal
+          if (showRejectModal) {
+            setShowRejectModal(false);
+          }
+          break;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [onApprove, onNext, onPrevious, hasNext, hasPrevious, showRejectModal]);
 
   const handleReject = () => {
     const motivo = motivoSelecionado === 'outro' 
@@ -252,25 +298,37 @@ export function JobApprovalCard({
                 />
               </div>
 
+              {/* Atalhos de Teclado */}
+              <div className="mb-4 p-2 bg-muted/50 rounded-lg border border-border/50">
+                <p className="text-xs text-muted-foreground text-center">
+                  ⌨️ Atalhos: <kbd className="px-1.5 py-0.5 bg-background border rounded text-xs mx-1">A</kbd> Aprovar · 
+                  <kbd className="px-1.5 py-0.5 bg-background border rounded text-xs mx-1">R</kbd> Reprovar · 
+                  <kbd className="px-1.5 py-0.5 bg-background border rounded text-xs mx-1">←</kbd> 
+                  <kbd className="px-1.5 py-0.5 bg-background border rounded text-xs mx-1">→</kbd> Navegar
+                </p>
+              </div>
+
               {/* Botões de Ação */}
-              <div className="mt-6 flex gap-3">
+              <div className="flex gap-3">
                 <Button
                   variant="destructive"
                   size="lg"
-                  className="flex-1"
+                  className="flex-1 gap-2"
                   onClick={() => setShowRejectModal(true)}
                 >
-                  <XCircle className="mr-2 h-5 w-5" />
+                  <XCircle className="h-5 w-5" />
                   Reprovar
+                  <kbd className="ml-auto px-1.5 py-0.5 bg-red-800/30 rounded text-xs">R</kbd>
                 </Button>
                 <Button
                   variant="default"
                   size="lg"
-                  className="flex-1 bg-green-600 hover:bg-green-700"
+                  className="flex-1 gap-2 bg-green-600 hover:bg-green-700"
                   onClick={onApprove}
                 >
-                  <CheckCircle className="mr-2 h-5 w-5" />
+                  <CheckCircle className="h-5 w-5" />
                   Aprovar
+                  <kbd className="ml-auto px-1.5 py-0.5 bg-green-800/30 rounded text-xs">A</kbd>
                 </Button>
               </div>
 
