@@ -515,41 +515,20 @@ export function LancarTituloUnificadoDialog({ trigger }: LancarTituloUnificadoDi
             />
             
             {/* Upload de Comprovante */}
-            <FormField
-              control={form.control}
-              name="comprovante"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="flex items-center gap-2">
-                    <Paperclip className="h-4 w-4" />
-                    📎 Comprovante de Pagamento
-                  </FormLabel>
-                  <FormControl>
-                    <div className="flex items-center gap-2">
-                      <Input 
-                        type="file" 
-                        accept="image/*,application/pdf"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          field.onChange(file);
-                          handleFileUpload(file);
-                        }}
-                        disabled={uploading}
-                        className="cursor-pointer"
-                      />
-                      {uploading && <Upload className="h-4 w-4 animate-pulse text-primary" />}
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                  {comprovanteUrl && (
-                    <div className="flex items-center gap-2 mt-2 p-2 bg-success/10 rounded-md">
-                      <Paperclip className="h-4 w-4 text-success" />
-                      <span className="text-sm text-success font-medium">✓ Comprovante anexado</span>
-                    </div>
-                  )}
-                </FormItem>
-              )}
-            />
+            <div className="space-y-4">
+              <FormLabel className="flex items-center gap-2">
+                <Paperclip className="h-4 w-4" />
+                📎 Comprovantes de Pagamento
+              </FormLabel>
+              <ComprovanteUploader 
+                onUploadComplete={(urls) => {
+                  console.log('Comprovantes uploaded:', urls);
+                }}
+                onFilesChange={(files) => {
+                  console.log('Files changed:', files);
+                }}
+              />
+            </div>
             
             {/* Observações / Anotações */}
             <FormField
