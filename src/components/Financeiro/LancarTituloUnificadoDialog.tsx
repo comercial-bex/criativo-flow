@@ -525,9 +525,19 @@ export function LancarTituloUnificadoDialog({ trigger }: LancarTituloUnificadoDi
                   console.log('✅ Comprovantes salvos:', urls);
                 }}
                 onFilesChange={(files) => {
-                  console.log('📁 Arquivos alterados:', files.length);
+                  adicionarArquivos(files);
                 }}
               />
+              
+              {arquivos.length > 0 && (
+                <ComprovanteGallery
+                  files={arquivos}
+                  onRemove={removerArquivo}
+                  onView={(url) => {
+                    window.open(url, '_blank');
+                  }}
+                />
+              )}
             </div>
             
             {/* Observações / Anotações */}

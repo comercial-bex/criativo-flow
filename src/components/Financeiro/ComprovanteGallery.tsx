@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
 interface ComprovanteGalleryProps {
-  files: { url: string; nome?: string; tipo?: string; tamanho?: number }[];
+  files: { url?: string; nome?: string; tipo?: string; tamanho?: number; file?: File }[];
   onRemove?: (url: string) => void;
   onView?: (url: string) => void;
 }
@@ -24,18 +24,20 @@ export function ComprovanteGallery({ files, onRemove, onView }: ComprovanteGalle
               <div className="w-full h-full flex items-center justify-center bg-destructive/10">
                 <FileText className="w-12 h-12 text-destructive" />
               </div>
-            ) : (
+            ) : file.url ? (
               <img src={file.url} alt={file.nome} className="w-full h-full object-cover" />
-            )}
+            ) : file.file ? (
+              <img src={URL.createObjectURL(file.file)} alt={file.nome} className="w-full h-full object-cover" />
+            ) : null}
           </div>
           
           {file.nome && <p className="text-xs truncate">{file.nome}</p>}
           {file.tamanho && <Badge variant="outline" className="text-xs">{formatSize(file.tamanho)}</Badge>}
           
           <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-            {onView && <Button size="sm" variant="secondary" onClick={() => onView(file.url)}><Eye className="w-4 h-4" /></Button>}
-            <Button size="sm" variant="secondary" asChild><a href={file.url} download><Download className="w-4 h-4" /></a></Button>
-            {onRemove && <Button size="sm" variant="destructive" onClick={() => onRemove(file.url)}><Trash2 className="w-4 h-4" /></Button>}
+            {onView && file.url && <Button size="sm" variant="secondary" onClick={() => onView(file.url!)}><Eye className="w-4 h-4" /></Button>}
+            {file.url && <Button size="sm" variant="secondary" asChild><a href={file.url} download><Download className="w-4 h-4" /></a></Button>}
+            {onRemove && file.url && <Button size="sm" variant="destructive" onClick={() => onRemove(file.url!)}><Trash2 className="w-4 h-4" /></Button>}
           </div>
         </Card>
       ))}
