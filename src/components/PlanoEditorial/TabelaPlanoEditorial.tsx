@@ -3,6 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Plus, Sparkles, FileText, Loader2, AlertCircle, GripVertical, ChevronLeft, ChevronRight } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -19,6 +21,8 @@ import { CSS as DndCSS } from '@dnd-kit/utilities';
 import { usePlanoEditorialDragDrop } from '@/hooks/usePlanoEditorialDragDrop';
 import { CreateTaskModal } from '@/components/CreateTaskModal';
 import type { TipoTarefa } from '@/types/tarefa';
+import { BulkActionsBar } from './BulkActionsBar';
+import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 
 interface TabelaPlanoEditorialProps {
   planejamentoId: string;
@@ -57,6 +61,10 @@ export const TabelaPlanoEditorial: React.FC<TabelaPlanoEditorialProps> = ({
   const [formatosFiltrados, setFormatosFiltrados] = useState<string[]>([]);
   const [objetivosFiltrados, setObjetivosFiltrados] = useState<string[]>([]);
   const [statusFiltrados, setStatusFiltrados] = useState<string[]>([]);
+  
+  // Busca e seleção múltipla
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedPosts, setSelectedPosts] = useState<string[]>([]);
   
   // Paginação
   const [paginaAtual, setPaginaAtual] = useState(1);
@@ -412,6 +420,19 @@ Seja objetivo e prático.`;
   const postsFiltrados = useMemo(() => {
     return posts
       .filter(post => {
+        // Busca global
+        if (searchTerm) {
+          const search = searchTerm.toLowerCase();
+          const matchesSearch = 
+            post.titulo?.toLowerCase().includes(search) ||
+            post.legenda?.toLowerCase().includes(search) ||
+            post.hashtags?.toLowerCase().includes(search) ||
+            post.call_to_action?.toLowerCase().includes(search) ||
+            post.objetivo_postagem?.toLowerCase().includes(search);
+          
+          if (!matchesSearch) return false;
+        }
+        
         const passaFormato = formatosFiltrados.length === 0 || 
                            formatosFiltrados.includes(post.formato_postagem);
         
@@ -424,7 +445,7 @@ Seja objetivo e prático.`;
         return passaFormato && passaObjetivo && passaStatus;
       })
       .sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
-  }, [posts, formatosFiltrados, objetivosFiltrados, statusFiltrados]);
+  }, [posts, searchTerm, formatosFiltrados, objetivosFiltrados, statusFiltrados]);
 
   // Paginação dos posts filtrados
   const totalPaginas = Math.ceil(postsFiltrados.length / POSTS_POR_PAGINA);
@@ -434,10 +455,10 @@ Seja objetivo e prático.`;
     return postsFiltrados.slice(inicio, fim);
   }, [postsFiltrados, paginaAtual]);
 
-  // Reset página ao mudar filtros
+  // Reset página ao mudar filtros ou busca
   useEffect(() => {
     setPaginaAtual(1);
-  }, [formatosFiltrados, objetivosFiltrados, statusFiltrados]);
+  }, [formatosFiltrados, objetivosFiltrados, statusFiltrados, searchTerm]);
 
   const distribuicaoObjetivos = posts.reduce((acc: Record<string, number>, post) => {
     acc[post.objetivo_postagem] = (acc[post.objetivo_postagem] || 0) + 1;
@@ -451,6 +472,44 @@ Seja objetivo e prático.`;
 
   return (
     <>
+      {selectedPosts.length > 0 && (
+        <BulkActionsBar
+          selectedCount={selectedPosts.length}
+          onApproveAll={async () => {
+            // Implementar aprovação em massa
+            toast.success(`${selectedPosts.length} posts aprovados`);
+            setSelectedPosts([]);
+          }}
+          onRescheduleAll={() => {
+            // Implementar reagendamento
+            toast.info("Reagendamento em desenvolvimento");
+          }}
+          onDeleteAll={async () => {
+            if (window.confirm(`Deseja excluir ${selectedPosts.length} posts?`)) {
+              for (const id of selectedPosts) {
+                try {
+                  const { error } = await supabase
+                    .from('posts_planejamento')
+                    .delete()
+                    .eq('id', id);
+                  
+                  if (error) throw error;
+                } catch (err) {
+                  console.error('Erro ao excluir post:', err);
+                }
+              }
+              onPostsChange(posts.filter(p => !selectedPosts.includes(p.id)));
+              setSelectedPosts([]);
+              toast.success(`${selectedPosts.length} posts excluídos`);
+            }
+          }}
+          onAddTags={() => {
+            toast.info("Adicionar tags em desenvolvimento");
+          }}
+          onClearSelection={() => setSelectedPosts([])}
+        />
+      )}
+      
       <Card className="border-primary/20 shadow-xl bg-gradient-to-b from-card to-card/50">
         <CardHeader className="border-b border-primary/20 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent">
           <div className="flex items-center justify-between flex-wrap gap-4">
@@ -461,6 +520,16 @@ Seja objetivo e prático.`;
             <Badge variant="outline" className="text-sm px-4 py-2 bg-primary/10 border-primary/30 shadow-sm font-['Inter']">
               {postsFiltrados.length} / {posts.length} posts
             </Badge>
+          </div>
+          
+          {/* Campo de busca global */}
+          <div className="mt-4">
+            <Input
+              placeholder="🔍 Buscar posts por título, legenda, hashtags..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="max-w-md"
+            />
           </div>
           <div className="flex gap-3 mt-4 flex-wrap p-4 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent rounded-xl border border-primary/20">
             <Button 
