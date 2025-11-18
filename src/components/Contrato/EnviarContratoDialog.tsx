@@ -1,19 +1,20 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { smartToast } from "@/lib/smart-toast";
-import { Loader2, Mail } from "lucide-react";
+import { Mail } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { EmailPreviewTab } from "@/components/Email/EmailPreviewTab";
+import { EmailScheduler } from "@/components/Email/EmailScheduler";
+import { EmailRecipientsInput } from "@/components/Email/EmailRecipientsInput";
+import { generateContratoEmailHTML } from "@/utils/emailTemplates";
 
 interface EnviarContratoDialogProps {
   open: boolean;
@@ -27,51 +28,98 @@ export function EnviarContratoDialog({
   contrato,
 }: EnviarContratoDialogProps) {
   const [loading, setLoading] = useState(false);
+  const [destinatarios, setDestinatarios] = useState<string[]>([]);
+  const [cc, setCc] = useState<string[]>([]);
+  const [bcc, setBcc] = useState<string[]>([]);
+  const [agendarPara, setAgendarPara] = useState<Date | null>(null);
+  const [empresaData, setEmpresaData] = useState<any>(null);
   const [formData, setFormData] = useState({
-    destinatario: contrato?.clientes?.email || "",
     assunto: `Contrato de Prestação de Serviços - ${contrato?.titulo || ""}`,
     mensagem: `Prezado(a) ${contrato?.clientes?.nome || "Cliente"},\n\nSegue em anexo o contrato de prestação de serviços.\n\nPor favor, revise e proceda com a assinatura.\n\nFicamos à disposição para esclarecimentos.\n\nAtenciosamente,`,
   });
 
+  useEffect(() => {
+    if (open && contrato) {
+      setDestinatarios([contrato?.clientes?.email].filter(Boolean));
+      setFormData({
+        assunto: `Contrato de Prestação de Serviços - ${contrato?.titulo || ""}`,
+        mensagem: `Prezado(a) ${contrato?.clientes?.nome || "Cliente"},\n\nSegue em anexo o contrato de prestação de serviços.\n\nPor favor, revise e proceda com a assinatura.\n\nFicamos à disposição para esclarecimentos.\n\nAtenciosamente,`
+      });
+    }
+  }, [open, contrato]);
+
   const handleEnviar = async () => {
-    if (!formData.destinatario) {
-      smartToast.error("Por favor, informe o e-mail do destinatário");
+    if (destinatarios.length === 0) {
+      smartToast.error("Por favor, informe pelo menos um destinatário");
       return;
     }
 
     setLoading(true);
     try {
-      const { error } = await supabase.functions.invoke("enviar-contrato-email", {
-        body: {
-          contrato,
-          destinatario: formData.destinatario,
+      if (agendarPara) {
+        // Agendar email
+        const { error } = await supabase.from('emails_agendados').insert({
+          para: destinatarios,
+          cc: cc.length > 0 ? cc : null,
+          cco: bcc.length > 0 ? bcc : null,
           assunto: formData.assunto,
-          mensagem: formData.mensagem,
-        },
-      });
+          corpo_html: generateContratoEmailHTML({
+            contrato,
+            mensagem: formData.mensagem,
+            empresaData
+          }),
+          agendado_para: agendarPara.toISOString(),
+          status: 'pendente',
+          tipo_documento: 'contrato',
+          documento_id: contrato.id
+        });
 
-      if (error) throw error;
+        if (error) throw error;
 
-      smartToast.success("Contrato enviado por e-mail com sucesso!");
+        smartToast.success(`Contrato agendado para ${agendarPara.toLocaleString('pt-BR')}`);
+      } else {
+        // Enviar imediatamente
+        const { error } = await supabase.functions.invoke("enviar-contrato-email", {
+          body: {
+            contrato,
+            destinatarios,
+            cc: cc.length > 0 ? cc : undefined,
+            bcc: bcc.length > 0 ? bcc : undefined,
+            assunto: formData.assunto,
+            mensagem: formData.mensagem,
+          },
+        });
+
+        if (error) throw error;
+
+        smartToast.success("Contrato enviado por e-mail com sucesso!");
+
+        // Log de atividade
+        await supabase.rpc("criar_log_atividade", {
+          p_cliente_id: contrato.cliente_id,
+          p_usuario_id: (await supabase.auth.getUser()).data.user?.id,
+          p_acao: "enviar_email",
+          p_entidade_tipo: "contrato",
+          p_entidade_id: contrato.id,
+          p_descricao: `Contrato enviado para ${destinatarios.join(', ')}`,
+          p_metadata: { destinatarios },
+        });
+      }
+
       onOpenChange(false);
-
-      // Log de atividade
-      await supabase.rpc("criar_log_atividade", {
-        p_cliente_id: contrato.cliente_id,
-        p_usuario_id: (await supabase.auth.getUser()).data.user?.id,
-        p_acao: "enviar_email",
-        p_entidade_tipo: "contrato",
-        p_entidade_id: contrato.id,
-        p_descricao: `Contrato enviado para ${formData.destinatario}`,
-        p_metadata: { destinatario: formData.destinatario },
-      });
     } catch (error: any) {
-      console.error("Erro ao enviar e-mail:", error);
-      smartToast.error("Erro ao enviar e-mail", error.message);
+      console.error("Erro ao enviar/agendar e-mail:", error);
+      smartToast.error(agendarPara ? "Erro ao agendar e-mail" : "Erro ao enviar e-mail", error.message);
     } finally {
       setLoading(false);
     }
   };
+
+  const htmlContent = generateContratoEmailHTML({
+    contrato,
+    mensagem: formData.mensagem,
+    empresaData
+  });
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

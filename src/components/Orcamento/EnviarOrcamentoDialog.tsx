@@ -1,12 +1,14 @@
-import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { useState, useEffect } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Mail, Loader2 } from "lucide-react";
+import { Mail } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { EmailPreviewTab } from "@/components/Email/EmailPreviewTab";
+import { EmailScheduler } from "@/components/Email/EmailScheduler";
+import { EmailRecipientsInput } from "@/components/Email/EmailRecipientsInput";
+import { generateOrcamentoEmailHTML } from "@/utils/emailTemplates";
+import { Button } from "@/components/ui/button";
 
 interface EnviarOrcamentoDialogProps {
   open: boolean;
@@ -23,17 +25,31 @@ export const EnviarOrcamentoDialog = ({
 }: EnviarOrcamentoDialogProps) => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [destinatarios, setDestinatarios] = useState<string[]>([orcamento?.contato_email].filter(Boolean));
+  const [cc, setCc] = useState<string[]>([]);
+  const [bcc, setBcc] = useState<string[]>([]);
+  const [agendarPara, setAgendarPara] = useState<Date | null>(null);
+  const [empresaData, setEmpresaData] = useState<any>(null);
   const [formData, setFormData] = useState({
-    destinatario: orcamento?.contato_email || '',
     assunto: `Orçamento #${orcamento?.numero} - ${orcamento?.clientes?.nome || 'Cliente'}`,
     mensagem: `Prezado(a) ${orcamento?.clientes?.nome || 'Cliente'},\n\nSegue em anexo o orçamento solicitado.\n\nFicamos à disposição para quaisquer esclarecimentos.\n\nAtenciosamente,\nBEX Communication`
   });
 
+  useEffect(() => {
+    if (open && orcamento) {
+      setDestinatarios([orcamento?.contato_email].filter(Boolean));
+      setFormData({
+        assunto: `Orçamento #${orcamento?.numero} - ${orcamento?.clientes?.nome || 'Cliente'}`,
+        mensagem: `Prezado(a) ${orcamento?.clientes?.nome || 'Cliente'},\n\nSegue em anexo o orçamento solicitado.\n\nFicamos à disposição para quaisquer esclarecimentos.\n\nAtenciosamente,\nBEX Communication`
+      });
+    }
+  }, [open, orcamento]);
+
   const handleSend = async () => {
-    if (!formData.destinatario) {
+    if (destinatarios.length === 0) {
       toast({
         title: "Email obrigatório",
-        description: "Por favor, informe o email do destinatário.",
+        description: "Por favor, informe pelo menos um destinatário.",
         variant: "destructive",
       });
       return;
@@ -41,35 +57,72 @@ export const EnviarOrcamentoDialog = ({
 
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('enviar-orcamento-email', {
-        body: {
-          orcamento,
-          itens,
-          destinatario: formData.destinatario,
+      if (agendarPara) {
+        // Agendar email
+        const { error } = await supabase.from('emails_agendados').insert({
+          para: destinatarios,
+          cc: cc.length > 0 ? cc : null,
+          cco: bcc.length > 0 ? bcc : null,
           assunto: formData.assunto,
-          mensagem: formData.mensagem
-        }
-      });
+          corpo_html: generateOrcamentoEmailHTML({
+            orcamento,
+            itens,
+            mensagem: formData.mensagem,
+            empresaData
+          }),
+          agendado_para: agendarPara.toISOString(),
+          status: 'pendente',
+          tipo_documento: 'orcamento',
+          documento_id: orcamento.id
+        });
 
-      if (error) throw error;
+        if (error) throw error;
 
-      toast({
-        title: "Email enviado com sucesso!",
-        description: `O orçamento foi enviado para ${formData.destinatario}`,
-      });
+        toast({
+          title: "Email agendado!",
+          description: `O orçamento será enviado em ${agendarPara.toLocaleString('pt-BR')}`,
+        });
+      } else {
+        // Enviar imediatamente
+        const { error } = await supabase.functions.invoke('enviar-orcamento-email', {
+          body: {
+            orcamento,
+            itens,
+            destinatarios,
+            cc: cc.length > 0 ? cc : undefined,
+            bcc: bcc.length > 0 ? bcc : undefined,
+            assunto: formData.assunto,
+            mensagem: formData.mensagem
+          }
+        });
+
+        if (error) throw error;
+
+        toast({
+          title: "Email enviado com sucesso!",
+          description: `O orçamento foi enviado para ${destinatarios.join(', ')}`,
+        });
+      }
 
       onOpenChange(false);
     } catch (error: any) {
-      console.error('Erro ao enviar email:', error);
+      console.error('Erro ao enviar/agendar email:', error);
       toast({
-        title: "Erro ao enviar email",
-        description: error.message || "Não foi possível enviar o email. Tente novamente.",
+        title: agendarPara ? "Erro ao agendar email" : "Erro ao enviar email",
+        description: error.message || "Não foi possível processar o email. Tente novamente.",
         variant: "destructive",
       });
     } finally {
       setLoading(false);
     }
   };
+
+  const htmlContent = generateOrcamentoEmailHTML({
+    orcamento,
+    itens,
+    mensagem: formData.mensagem,
+    empresaData
+  });
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

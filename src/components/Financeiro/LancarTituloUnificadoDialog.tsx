@@ -522,10 +522,10 @@ export function LancarTituloUnificadoDialog({ trigger }: LancarTituloUnificadoDi
               </FormLabel>
               <ComprovanteUploader 
                 onUploadComplete={(urls) => {
-                  console.log('Comprovantes uploaded:', urls);
+                  console.log('✅ Comprovantes salvos:', urls);
                 }}
                 onFilesChange={(files) => {
-                  console.log('Files changed:', files);
+                  console.log('📁 Arquivos alterados:', files.length);
                 }}
               />
             </div>
