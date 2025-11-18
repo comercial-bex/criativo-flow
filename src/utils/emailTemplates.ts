@@ -3,6 +3,83 @@
  * Suporta orçamentos, contratos e propostas com branding da empresa
  */
 
+export const generateOrcamentoEmailHTML = (params: {
+  orcamento: any;
+  itens: any[];
+  mensagem: string;
+  empresaData?: any;
+}): string => {
+  const { orcamento, itens, mensagem, empresaData } = params;
+  
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+    .header { background: #f8f9fa; padding: 20px; text-align: center; }
+    .content { padding: 20px; }
+    .footer { background: #f8f9fa; padding: 15px; text-align: center; font-size: 12px; color: #666; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h2>Orçamento #${orcamento?.numero || ''}</h2>
+    </div>
+    <div class="content">
+      <p>${mensagem?.replace(/\n/g, '<br>')}</p>
+      <p><strong>Cliente:</strong> ${orcamento?.clientes?.nome || ''}</p>
+      <p><strong>Validade:</strong> ${orcamento?.validade ? new Date(orcamento.validade).toLocaleDateString('pt-BR') : ''}</p>
+    </div>
+    <div class="footer">
+      <p>${empresaData?.nome || 'BEX Communication'}</p>
+    </div>
+  </div>
+</body>
+</html>
+  `;
+};
+
+export const generateContratoEmailHTML = (params: {
+  contrato: any;
+  mensagem: string;
+  empresaData?: any;
+}): string => {
+  const { contrato, mensagem, empresaData } = params;
+  
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+    .header { background: #f8f9fa; padding: 20px; text-align: center; }
+    .content { padding: 20px; }
+    .footer { background: #f8f9fa; padding: 15px; text-align: center; font-size: 12px; color: #666; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h2>Contrato - ${contrato?.titulo || ''}</h2>
+    </div>
+    <div class="content">
+      <p>${mensagem?.replace(/\n/g, '<br>')}</p>
+      <p><strong>Cliente:</strong> ${contrato?.clientes?.nome || ''}</p>
+    </div>
+    <div class="footer">
+      <p>${empresaData?.nome || 'BEX Communication'}</p>
+    </div>
+  </div>
+</body>
+</html>
+  `;
+};
 interface EmpresaConfig {
   nome?: string;
   logo_url?: string;

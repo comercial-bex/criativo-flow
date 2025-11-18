@@ -3,10 +3,15 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { smartToast } from "@/lib/smart-toast";
 import { Mail } from "lucide-react";
@@ -59,19 +64,18 @@ export function EnviarContratoDialog({
       if (agendarPara) {
         // Agendar email
         const { error } = await supabase.from('emails_agendados').insert({
-          para: destinatarios,
-          cc: cc.length > 0 ? cc : null,
-          cco: bcc.length > 0 ? bcc : null,
+          destinatarios: destinatarios,
           assunto: formData.assunto,
-          corpo_html: generateContratoEmailHTML({
+          mensagem: formData.mensagem,
+          template_html: generateContratoEmailHTML({
             contrato,
             mensagem: formData.mensagem,
             empresaData
           }),
-          agendado_para: agendarPara.toISOString(),
+          agendar_para: agendarPara.toISOString(),
           status: 'pendente',
-          tipo_documento: 'contrato',
-          documento_id: contrato.id
+          tipo: 'contrato',
+          entidade_id: contrato.id
         });
 
         if (error) throw error;
@@ -134,44 +138,63 @@ export function EnviarContratoDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
-          <div className="space-y-2">
-            <Label htmlFor="destinatario">E-mail do Destinatário *</Label>
-            <Input
-              id="destinatario"
-              type="email"
-              value={formData.destinatario}
-              onChange={(e) =>
-                setFormData({ ...formData, destinatario: e.target.value })
-              }
-              placeholder="cliente@exemplo.com"
-            />
-          </div>
+        <Tabs defaultValue="compose" className="w-full">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="compose">Compor</TabsTrigger>
+            <TabsTrigger value="preview">Pré-visualizar</TabsTrigger>
+            <TabsTrigger value="schedule">Agendar</TabsTrigger>
+          </TabsList>
 
-          <div className="space-y-2">
-            <Label htmlFor="assunto">Assunto</Label>
-            <Input
-              id="assunto"
-              value={formData.assunto}
-              onChange={(e) =>
-                setFormData({ ...formData, assunto: e.target.value })
-              }
+          <TabsContent value="compose" className="space-y-4">
+            <EmailRecipientsInput
+              to={destinatarios}
+              cc={cc}
+              bcc={bcc}
+              onToChange={setDestinatarios}
+              onCcChange={setCc}
+              onBccChange={setBcc}
+              maxRecipients={50}
             />
-          </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="mensagem">Mensagem</Label>
-            <Textarea
-              id="mensagem"
-              value={formData.mensagem}
-              onChange={(e) =>
-                setFormData({ ...formData, mensagem: e.target.value })
-              }
-              rows={6}
-              placeholder="Digite sua mensagem..."
+            <div className="space-y-2">
+              <Label htmlFor="assunto">Assunto</Label>
+              <Input
+                id="assunto"
+                value={formData.assunto}
+                onChange={(e) => setFormData({ ...formData, assunto: e.target.value })}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="mensagem">Mensagem</Label>
+              <Textarea
+                id="mensagem"
+                value={formData.mensagem}
+                onChange={(e) => setFormData({ ...formData, mensagem: e.target.value })}
+                rows={8}
+              />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="preview">
+            <EmailPreviewTab
+              to={destinatarios}
+              cc={cc}
+              bcc={bcc}
+              subject={formData.assunto}
+              htmlContent={htmlContent}
+              attachmentName={`Contrato_${contrato?.titulo || 'documento'}.pdf`}
+              scheduledDate={agendarPara}
             />
-          </div>
-        </div>
+          </TabsContent>
+
+          <TabsContent value="schedule">
+            <EmailScheduler
+              onScheduleChange={setAgendarPara}
+              initialDate={agendarPara || undefined}
+            />
+          </TabsContent>
+        </Tabs>
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
