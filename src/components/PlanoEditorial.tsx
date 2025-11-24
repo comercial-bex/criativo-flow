@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, ChevronLeft, ChevronRight, Loader2, Users, Target, BookOpen, Sparkles, Save, Eye, Undo2, AlertTriangle, X, CheckCircle, Plus, CalendarX, Table as TableIcon, FolderKanban } from "lucide-react";
+import { Calendar, ChevronLeft, ChevronRight, Loader2, Users, Target, BookOpen, Sparkles, Save, Eye, Undo2, AlertTriangle, X, CheckCircle, Plus, CalendarX, Table as TableIcon, FolderKanban, RefreshCw } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -13,6 +13,7 @@ import { useProjetosOptimized } from "@/hooks/useProjetosOptimized";
 import { toast } from '@/lib/toast-compat';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { FieldTooltip } from "@/components/PlanoEditorial/FieldTooltip";
 import { PostPreviewModal } from "@/components/PostPreviewModal";
 import { PostViewModal } from "@/components/PostViewModal";
 import { DataTable } from "@/components/DataTable";
@@ -344,6 +345,8 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
   const [responsaveis, setResponsaveis] = useState<any[]>([]);
   const [projetoSelecionado, setProjetoSelecionado] = useState<string>(projetoId || '');
   const [postsPendentes, setPostsPendentes] = useState(0);
+  const [lastSavedPosts, setLastSavedPosts] = useState<string>('');
+  const [isSavingPosts, setIsSavingPosts] = useState(false);
 
   // Hook para buscar projetos do cliente
   const { data: projetosData } = useProjetosOptimized({ 
@@ -504,16 +507,27 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
   };
 
 
-  // Auto-save posts temporários a cada 30 segundos
+  // ✅ FASE 5: Detectar mudanças reais nos posts
+  const hasChanges = useMemo(() => {
+    const currentPosts = JSON.stringify(postsGerados);
+    return currentPosts !== lastSavedPosts && postsGerados.length > 0;
+  }, [postsGerados, lastSavedPosts]);
+
+  // ✅ FASE 5: Auto-save inteligente com debounce - salva apenas se houver mudanças
   useEffect(() => {
-    if (postsGerados.length === 0) return;
+    if (!hasChanges || isSavingPosts) return;
     
     const interval = setInterval(async () => {
-      await salvarPostsTemporarios();
+      if (hasChanges && !isSavingPosts) {
+        setIsSavingPosts(true);
+        await salvarPostsTemporarios();
+        setLastSavedPosts(JSON.stringify(postsGerados));
+        setIsSavingPosts(false);
+      }
     }, 30000); // 30 segundos
 
     return () => clearInterval(interval);
-  }, [postsGerados]);
+  }, [hasChanges, isSavingPosts, postsGerados]);
 
   // Auto-save para conteúdo editorial com debounce
   useEffect(() => {
@@ -1879,25 +1893,33 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
       
       console.log(`📦 Encontrados ${postsTemp.length} posts para migrar`);
       
-      // Mapear posts temporários para formato definitivo
-      // ✅ CORREÇÃO: Remover campos incompatíveis (cliente_id, projeto_id)
-      const postsMigrados = postsTemp.map((post: any) => ({
-        planejamento_id: planejamento.id,
-        titulo: post.titulo,
-        data_postagem: post.data_postagem,
-        formato_postagem: post.formato_postagem || post.tipo_criativo || 'post',
-        tipo_criativo: post.tipo_criativo || 'imagem',
-        tipo_conteudo: post.tipo_conteudo || 'informar',
-        texto_estruturado: post.legenda || post.conteudo_completo || post.texto_estruturado || '',
-        objetivo_postagem: post.objetivo_postagem || '',
-        hashtags: Array.isArray(post.hashtags) ? post.hashtags : [],
-        call_to_action: post.call_to_action || '',
-        arquivo_visual_url: post.anexo_url || post.arquivo_visual_url,
-        responsavel_id: post.responsavel_id,
-        contexto_estrategico: post.contexto_estrategico || '',
-        rede_social: post.rede_social || 'instagram',
-        status_post: 'a_fazer' as const
-      }));
+      // ✅ FASE 1: Validar e mapear posts temporários para formato definitivo
+      const postsMigrados = postsTemp
+        .filter((post: any) => {
+          // Validação de campos obrigatórios
+          if (!post.titulo || !post.data_postagem) {
+            console.warn('⚠️ Post inválido (faltam campos obrigatórios):', post);
+            return false;
+          }
+          return true;
+        })
+        .map((post: any) => ({
+          planejamento_id: planejamento.id,
+          titulo: post.titulo,
+          data_postagem: post.data_postagem,
+          formato_postagem: post.formato_postagem || post.tipo_criativo || 'post',
+          tipo_criativo: post.tipo_criativo || 'imagem',
+          tipo_conteudo: post.tipo_conteudo || 'informar',
+          legenda: post.legenda || post.conteudo_completo || post.texto_estruturado || '',
+          objetivo_postagem: post.objetivo_postagem || '',
+          hashtags: Array.isArray(post.hashtags) ? post.hashtags : [],
+          call_to_action: post.call_to_action || '',
+          arquivo_visual_url: post.anexo_url || post.arquivo_visual_url,
+          responsavel_id: post.responsavel_id,
+          contexto_estrategico: post.contexto_estrategico || '',
+          rede_social: post.rede_social || 'instagram',
+          status_post: 'a_fazer' as const
+        }));
       
       // Inserir em posts_planejamento
       const { data: postsInseridos, error: insertError } = await supabase
@@ -1907,7 +1929,7 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
       
       if (insertError) throw insertError;
       
-      // Deletar posts temporários
+      // ✅ FASE 5: Limpar posts temporários após migração bem-sucedida
       const { error: deleteError } = await supabase
         .from('posts_gerados_temp')
         .delete()
@@ -1917,10 +1939,14 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
       
       // Limpar sessionStorage
       sessionStorage.removeItem(`posts_temp_${planejamento.id}`);
+      sessionStorage.removeItem(`posts_gerados_${planejamento.id}`);
       setPostsGerados([]);
       
       // Atualizar posts definitivos
       setPosts(postsInseridos || []);
+      
+      // ✅ FASE 4: Disparar evento de atualização
+      window.dispatchEvent(new CustomEvent('posts-updated'));
       
       toast.success(`✅ ${postsInseridos?.length || 0} posts migrados e organizados na tabela!`);
       console.log('✅ Migração concluída com sucesso');
@@ -1947,8 +1973,12 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
     try {
       setAprovandoPost(postId);
       
-      // ✅ CORREÇÃO: Mapear campos corretamente para posts_planejamento
-      // ✅ CORREÇÃO: Remover campos incompatíveis (cliente_id, projeto_id)
+      // ✅ FASE 1: Validar e mapear campos corretamente para posts_planejamento
+      if (!post.titulo || !post.data_postagem) {
+        toast.error('⚠️ Post inválido: campos obrigatórios faltando');
+        return;
+      }
+
       const postParaSalvar = {
         planejamento_id: planejamento.id,
         titulo: post.titulo,
@@ -1956,13 +1986,13 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
         formato_postagem: post.formato_postagem || post.tipo_criativo || 'post',
         tipo_criativo: post.tipo_criativo || 'imagem',
         tipo_conteudo: post.tipo_conteudo || 'informar',
-        texto_estruturado: post.legenda || post.conteudo_completo || '',
-        objetivo_postagem: post.objetivo_postagem,
+        legenda: post.legenda || post.conteudo_completo || post.texto_estruturado || '',
+        objetivo_postagem: post.objetivo_postagem || '',
         hashtags: Array.isArray(post.hashtags) ? post.hashtags : [],
-        call_to_action: post.call_to_action,
-        arquivo_visual_url: post.anexo_url,
+        call_to_action: post.call_to_action || '',
+        arquivo_visual_url: post.anexo_url || post.arquivo_visual_url,
         responsavel_id: post.responsavel_id,
-        contexto_estrategico: post.contexto_estrategico,
+        contexto_estrategico: post.contexto_estrategico || '',
         rede_social: 'instagram',
         status_post: 'a_fazer' as const
       };
@@ -1975,7 +2005,7 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
 
       if (error) throw error;
 
-      // Remover da tabela temporária
+      // ✅ FASE 5: Limpar post temporário após aprovação
       const { error: deleteError } = await supabase
         .from('posts_gerados_temp')
         .delete()
@@ -1989,6 +2019,9 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
       // Atualizar sessionStorage
       const updatedTempPosts = postsGerados.filter(p => p.id !== postId);
       sessionStorage.setItem(`posts_temp_${planejamento.id}`, JSON.stringify(updatedTempPosts));
+      
+      // ✅ FASE 4: Disparar evento de atualização
+      window.dispatchEvent(new CustomEvent('posts-updated'));
       
       // Recarregar posts da tabela definitiva
       const { data: postsAtualizados } = await supabase
@@ -2800,7 +2833,25 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
                     </Badge>
                   )}
                   
-                  {/* ✅ FASE 1: Botão de Sincronização de Posts Pendentes */}
+                  {/* ✅ FASE 7: Indicadores de Estado de Salvamento */}
+                  {isSavingPosts && (
+                    <Badge variant="secondary" className="gap-1 animate-pulse">
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                      Salvando...
+                    </Badge>
+                  )}
+                  {!isSavingPosts && hasChanges && postsGerados.length > 0 && (
+                    <Badge variant="outline" className="gap-1 border-yellow-500 text-yellow-700">
+                      ⚠️ Não salvo
+                    </Badge>
+                  )}
+                  {!isSavingPosts && !hasChanges && postsGerados.length > 0 && (
+                    <Badge variant="outline" className="gap-1 border-green-500 text-green-700">
+                      ✅ Salvo
+                    </Badge>
+                  )}
+                  
+                  {/* ✅ FASE 3: Botão Condicional de Sincronização */}
                   {postsPendentes > 0 && (
                     <Button
                       onClick={async () => {
@@ -2811,8 +2862,8 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
                       size="sm"
                       className="gap-2 whitespace-nowrap bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-700"
                     >
-                      <CalendarX className="h-4 w-4" />
-                      Sincronizar ({postsPendentes})
+                      <RefreshCw className="h-4 w-4" />
+                      Sincronizar Posts ({postsPendentes})
                     </Button>
                   )}
                 </div>
