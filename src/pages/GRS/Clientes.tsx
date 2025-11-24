@@ -108,7 +108,7 @@ export default function GRSClientes() {
             <Card 
               key={cliente.id} 
               className="hover:shadow-lg transition-shadow cursor-pointer group"
-              onClick={() => navigate(`/grs/cliente/${cliente.id}/projetos`)}
+              onClick={() => navigate(`/grs/cliente/${cliente.id}/detalhes`)}
             >
               <CardHeader>
                 <div className="flex items-start justify-between">
@@ -177,7 +177,7 @@ export default function GRSClientes() {
                     className="w-full gap-2 group-hover:bg-bex-green group-hover:text-white transition-colors"
                     onClick={(e) => {
                       e.stopPropagation();
-                      navigate(`/grs/cliente/${cliente.id}/projetos`);
+                      navigate(`/grs/cliente/${cliente.id}/detalhes`);
                     }}
                   >
                     Ver Detalhes

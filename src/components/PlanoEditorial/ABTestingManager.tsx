@@ -59,7 +59,7 @@ export const ABTestingManager = ({ isOpen, onClose, post, onSelectVariacao }: AB
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-5xl max-h-[90vh] flex flex-col overflow-hidden">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <FlaskConical className="h-5 w-5 text-primary" />
@@ -69,6 +69,8 @@ export const ABTestingManager = ({ isOpen, onClose, post, onSelectVariacao }: AB
             Gere e teste diferentes abordagens de texto para maximizar o engajamento
           </p>
         </DialogHeader>
+
+        <div className="flex-1 overflow-y-auto px-6 py-4">
 
         {variacoes.length === 0 ? (
           <div className="text-center py-12">
@@ -210,6 +212,7 @@ export const ABTestingManager = ({ isOpen, onClose, post, onSelectVariacao }: AB
             </Button>
           </div>
         )}
+        </div>
       </DialogContent>
     </Dialog>
   );

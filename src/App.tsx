@@ -102,6 +102,7 @@ const ClientePlanejamentoVisual = lazy(() => import("./pages/Cliente/Planejament
 const ClienteEditar = lazy(() => import("./pages/Cliente/Editar"));
 const ClientePerfil = lazy(() => import("./pages/Cliente/Perfil"));
 const ClienteAprovacoes = lazy(() => import("./pages/Cliente/Aprovacoes"));
+const GRSClienteDetalhes = lazy(() => import("./pages/GRS/ClienteDetalhes"));
 const ClientePlanos = lazy(() => import("./pages/Cliente/Planos"));
 const ClienteExportacoes = lazy(() => import("./pages/Cliente/Exportacoes"));
 const ClienteProjetoTarefas = lazy(() => import("./pages/Cliente/ProjetoTarefas"));
@@ -435,6 +436,10 @@ function App() {
                 
                 <Route path="/grs/cliente/:clienteId/planejamentos" element={<ProtectedRoute requiredRole="grs">
                     <Layout><GRSPlanejamentos /></Layout>
+                  </ProtectedRoute>} />
+                
+                <Route path="/grs/cliente/:clienteId/detalhes" element={<ProtectedRoute requiredRole="grs">
+                    <Layout><GRSClienteDetalhes /></Layout>
                   </ProtectedRoute>} />
                 
                 <Route path="/grs/cliente/:clienteId/projetos" element={<ProtectedRoute requiredRole="grs">
