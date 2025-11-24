@@ -106,11 +106,11 @@ export const CartaoPlanoEditorial = ({
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
       {posts.map((post) => (
         <Card 
           key={post.id || post.temp_id} 
-          className="overflow-hidden border-primary/20 shadow-lg hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 group"
+          className="relative overflow-hidden border-primary/20 shadow-lg hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 group"
         >
           {/* Badge de Status (Salvo/Rascunho) */}
           <div className="absolute top-3 right-3 z-10">
@@ -120,17 +120,17 @@ export const CartaoPlanoEditorial = ({
           </div>
 
           {/* Preview Visual (Instagram Mock) */}
-          <div className="w-full h-72 bg-gradient-to-br from-primary/5 to-accent/5 flex items-center justify-center p-4">
-            <div className="w-full h-full">
+          <div className="w-full h-72 bg-gradient-to-br from-primary/5 to-accent/5 flex items-center justify-center p-4 relative overflow-hidden">
+            <div className="w-full h-full max-w-[280px] mx-auto">
               <InstagramPreview post={post} />
             </div>
           </div>
 
           {/* Conteúdo */}
-          <CardContent className="p-5 space-y-4">
+          <CardContent className="p-5 space-y-4 min-h-[280px] flex flex-col justify-between">
             {/* Título e Data */}
             <div className="space-y-2">
-              <h3 className="font-bold text-lg line-clamp-2 min-h-[3.5rem]">{post.titulo}</h3>
+              <h3 className="font-bold text-lg line-clamp-2 min-h-[3.5rem] max-h-[4rem] overflow-hidden">{post.titulo}</h3>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Calendar className="h-4 w-4" />
                 {format(new Date(post.data_postagem + 'T00:00:00'), "dd 'de' MMMM, yyyy", { locale: ptBR })}
@@ -154,9 +154,9 @@ export const CartaoPlanoEditorial = ({
 
             {/* Texto Estruturado */}
             {post.texto_estruturado && (
-              <div className="bg-muted/50 p-3 rounded-lg border">
+              <div className="bg-muted/50 p-3 rounded-lg border max-h-[5rem] overflow-hidden">
                 <p className="text-xs font-medium text-muted-foreground mb-1">Estrutura Textual</p>
-                <p className="text-sm line-clamp-3 leading-relaxed">{post.texto_estruturado}</p>
+                <p className="text-sm line-clamp-3 leading-relaxed overflow-hidden text-ellipsis">{post.texto_estruturado}</p>
               </div>
             )}
 
@@ -171,7 +171,7 @@ export const CartaoPlanoEditorial = ({
             )}
 
             {/* Botões de Ação */}
-            <div className="grid grid-cols-2 gap-2 pt-2 border-t">
+            <div className="grid grid-cols-2 gap-2 pt-4 border-t mt-4">
               <Button
                 size="sm"
                 variant="outline"
