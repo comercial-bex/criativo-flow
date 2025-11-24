@@ -30,7 +30,7 @@ export async function registerServiceWorker(): Promise<ServiceWorkerRegistration
     console.log('✅ Service Worker registrado com sucesso');
     console.log('📍 Scope:', registration.scope);
 
-    // Verificar se há uma atualização disponível
+    // FASE 1: Verificar atualização disponível e disparar evento
     registration.addEventListener('updatefound', () => {
       const newWorker = registration.installing;
       console.log('🔄 Nova versão do Service Worker encontrada');
@@ -39,27 +39,15 @@ export async function registerServiceWorker(): Promise<ServiceWorkerRegistration
         newWorker.addEventListener('statechange', () => {
           console.log('📊 Estado do novo SW:', newWorker.state);
 
-          if (newWorker.state === 'installed') {
-            // 🆕 FASE 3: Limpar TODOS os caches antes de atualizar
-            console.log('🆕 Nova versão do app disponível! Limpando cache...');
-            
-            caches.keys().then(cacheNames => {
-              return Promise.all(
-                cacheNames.map(name => {
-                  console.log('[SW] Deletando cache antigo:', name);
-                  return caches.delete(name);
-                })
-              );
-            }).then(() => {
-              // Pedir ao novo SW para pular a espera
-              newWorker.postMessage({ type: 'SKIP_WAITING' });
-              
-              // Recarregar após limpar cache (usar 'once' para evitar loops)
-              navigator.serviceWorker.addEventListener('controllerchange', () => {
-                console.log('🔄 Cache limpo, recarregando...');
-                window.location.reload();
-              }, { once: true });
-            });
+          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+            // Nova versão disponível - disparar evento para o componente
+            console.log('🔔 Disparando evento de atualização disponível');
+            window.dispatchEvent(new CustomEvent('sw-update-available', {
+              detail: { registration, newWorker }
+            }));
+          } else if (newWorker.state === 'installed') {
+            // Primeira instalação (sem controller ativo)
+            console.log('✅ Service Worker instalado pela primeira vez');
           }
         });
       }

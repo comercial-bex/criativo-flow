@@ -1,7 +1,7 @@
 // BEX 4.0 - Advanced Service Worker
-// Version: 4.0.7
+// Version: 4.0.8 - FASE 2: Cache Strategy Fix
 
-const CACHE_VERSION = 'bex-v4.0.7';
+const CACHE_VERSION = 'bex-v4.0.8';
 const STATIC_CACHE = 'bex-static-v3';
 const API_CACHE = 'bex-api-v3';
 const PAGES_CACHE = 'bex-pages-v3';
@@ -214,8 +214,15 @@ async function networkFirst(request, cacheName, timeout = 3000) {
     // Tentar buscar da rede com timeout
     const response = await fetchWithTimeout(request, timeout);
     
-    // 🛡️ Cachear apenas GET com respostas válidas (não cachear 404/500)
-    if (request.method === 'GET' && response.ok && response.status === 200) {
+    // FASE 2: Respeitar Cache-Control e não cachear chunks com hash
+    const cacheControl = response.headers.get('Cache-Control');
+    const shouldCache = request.method === 'GET' && 
+                        response.ok && 
+                        response.status === 200 &&
+                        !request.url.match(/\/assets\/.*-[a-f0-9]{8,}\.js$/) &&
+                        (!cacheControl || !cacheControl.includes('no-cache'));
+
+    if (shouldCache) {
       cache.put(request, response.clone());
     } else if (response.status === 404) {
       console.warn('[SW] Chunk não encontrado (404):', request.url);
@@ -227,10 +234,10 @@ async function networkFirst(request, cacheName, timeout = 3000) {
   } catch (error) {
     console.log('[SW] Network failed, trying cache:', request.url);
     
-    // Para chunks JS dinâmicos, NÃO usar cache desatualizado
-    if (request.url.match(/\/assets\/js\/[A-Z][a-z]+-[A-Za-z0-9]+\.js$/)) {
+    // FASE 2: Para chunks dinâmicos com hash, NUNCA usar cache desatualizado
+    if (request.url.match(/\/assets\/.*-[a-f0-9]{8,}\.js$/)) {
       console.error('[SW] Dynamic chunk failed, not using stale cache');
-      throw error; // Deixar React Suspense lidar com erro
+      throw error; // Deixar ErrorBoundary lidar com erro
     }
     
     // Fallback para cache

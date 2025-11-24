@@ -15,6 +15,7 @@ import { BexToastProvider } from "@/components/BexToast";
 import { Suspense, lazy, useEffect } from "react";
 import { FullScreenLoader } from "@/components/FullScreenLoader";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { UpdateNotification } from "@/components/UpdateNotification";
 import { logWebVitals } from "@/lib/web-vitals";
 import { analytics } from "@/lib/analytics";
 import { TeamChatWidget } from "@/components/TeamChat/TeamChatWidget";
@@ -274,7 +275,8 @@ function App() {
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false} forcedTheme="dark" disableTransitionOnChange>
           <BexThemeProvider>
             <TooltipProvider>
-              
+              {/* FASE 3: Update Notification Banner */}
+              <UpdateNotification />
               <OfflineIndicator />
               <MetricsDevTools />
               
