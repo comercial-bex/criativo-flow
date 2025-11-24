@@ -7,6 +7,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { getCreativeIcon, getCreativeColor } from "@/lib/plano-editorial-helpers";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { normalizarPost } from "@/utils/normalizarPost";
 
 interface Post {
   id: string;
@@ -42,13 +43,16 @@ export const CalendarioEditorial = ({
   const getPostsForDay = (day: Date) => {
     return posts.filter(post => {
       try {
-        // Validar se data_postagem existe e é válida
-        if (!post.data_postagem) return false;
+        // ✅ FASE 2: Normalizar post antes de validar
+        const postNorm = normalizarPost(post);
         
-        const postDate = parseISO(post.data_postagem);
+        // Validar se data_postagem existe e é válida
+        if (!postNorm.data_postagem) return false;
+        
+        const postDate = parseISO(postNorm.data_postagem);
         return isSameDay(postDate, day);
       } catch (error) {
-        console.warn('Erro ao parsear data do post:', post.id, post.data_postagem);
+        console.warn('⚠️ Erro ao parsear data do post:', post.id, post.data_postagem, error);
         return false;
       }
     });

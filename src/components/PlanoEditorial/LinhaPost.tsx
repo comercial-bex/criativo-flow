@@ -11,6 +11,7 @@ import { Calendar as CalendarIcon, Save, X, Edit, Clock, Target, Rocket, Externa
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { getCreativeColor, getCreativeIcon, getTipoConteudoColor, getTipoConteudoIcon, formatarDataPorExtenso } from "@/lib/plano-editorial-helpers";
+import { normalizarPost } from "@/utils/normalizarPost";
 import { UploadArquivoVisual } from "./UploadArquivoVisual";
 import { supabase } from "@/integrations/supabase/client";
 import { AgendamentoInteligente } from "./AgendamentoInteligente";
@@ -46,7 +47,9 @@ export const LinhaPost: React.FC<LinhaPostProps> = ({
   dragHandle,
   clienteId,
 }) => {
-  const [editedPost, setEditedPost] = useState(post);
+  // ✅ FASE 2: Normalizar post antes de usar
+  const postNormalizado = normalizarPost(post);
+  const [editedPost, setEditedPost] = useState(postNormalizado);
   const [saving, setSaving] = useState(false);
   const [showTextoEditor, setShowTextoEditor] = useState(false);
   const [showAgendamento, setShowAgendamento] = useState(false);
@@ -472,7 +475,11 @@ export const LinhaPost: React.FC<LinhaPostProps> = ({
             onOpenChange={setShowHashtagGen}
             post={editedPost}
             onHashtagsGenerated={(hashtags) => {
-              setEditedPost({ ...editedPost, hashtags });
+              // ✅ Converter string para array
+              const hashtagsArray = typeof hashtags === 'string' 
+                ? hashtags.split(/\s+/).filter(h => h.trim())
+                : hashtags;
+              setEditedPost({ ...editedPost, hashtags: hashtagsArray });
               setShowHashtagGen(false);
             }}
           />

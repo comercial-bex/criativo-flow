@@ -66,37 +66,41 @@ export async function gerarPostsAutomaticos(
     // 5. Distribuir posts por objetivos (round-robin)
     const distribuicao = distribuirPostsPorObjetivos(objetivos, quantidadePosts);
 
-    // 6. Gerar estrutura de posts
+    // 6. Gerar estrutura de posts com campos CORRETOS
     const posts = [];
-    const tiposCreativos = ['post', 'carrossel', 'video', 'stories'];
+    const tiposFormatacao = ['post', 'carrossel', 'reels', 'story'];
 
     for (let i = 0; i < quantidadePosts; i++) {
       const objetivo = distribuicao[i];
-      const tipoCreativo = tiposCreativos[i % tiposCreativos.length];
+      const objetivoId = objetivo?.id || null;
       
-      // Criar post com dados básicos
-      // A geração de conteúdo com IA será feita depois (opcional)
-      posts.push({
-        planejamento_id: planejamentoId,
-        data_postagem: cronograma[i],
+      // ✅ FASE 1: Usar campos CORRETOS alinhados com posts_planejamento
+      const post = {
         titulo: objetivo 
-          ? `Post sobre: ${objetivo.titulo}` 
-          : `Post ${i + 1} - ${format(cronograma[i], 'dd/MM')}`,
+          ? `${objetivo.titulo} - Post ${i + 1}` 
+          : `Post ${i + 1} - ${format(new Date(cronograma[i]), 'dd/MM')}`,
+        data_postagem: format(new Date(cronograma[i]), 'yyyy-MM-dd'), // ✅ Formato correto
+        formato_postagem: tiposFormatacao[i % tiposFormatacao.length], // ✅ Correto
+        tipo_conteudo: 'informar', // ✅ Correto (informar, inspirar, entreter, vender, posicionar)
+        texto_estruturado: objetivo?.descricao || `Conteúdo alinhado ao objetivo: ${objetivo?.titulo || 'Engajamento'}`, // ✅ Correto
         objetivo_postagem: objetivo?.titulo || 'Engajamento geral',
-        legenda: '', // Será preenchido manualmente ou via IA depois
         hashtags: onboarding?.publico_alvo || [],
-        tipo_criativo: tipoCreativo,
-        formato_postagem: tipoCreativo === 'stories' ? 'stories' : 'post',
+        status_post: 'rascunho', // ✅ Correto
         rede_social: 'instagram',
+        planejamento_id: planejamentoId,
+        objetivo_vinculado_id: objetivoId,
+        cliente_id: clienteFinal,
         contexto_estrategico: JSON.stringify({
-          objetivo_id: objetivo?.id || null,
+          objetivo_id: objetivoId,
           valor_alinhado: planoEstrategico?.valores?.[i % (planoEstrategico?.valores?.length || 5)],
           missao_referencia: planoEstrategico?.missao,
           gerado_automaticamente: true,
           data_geracao: new Date().toISOString()
-        }),
-        status: 'rascunho' // ✅ Agora existe na tabela
-      });
+        })
+      };
+      
+      console.log(`✅ Post ${i + 1} gerado com campos corretos:`, post);
+      posts.push(post);
     }
 
     // 7. Inserir posts no banco
