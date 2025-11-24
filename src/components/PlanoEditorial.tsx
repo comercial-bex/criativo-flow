@@ -1880,6 +1880,7 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
       console.log(`📦 Encontrados ${postsTemp.length} posts para migrar`);
       
       // Mapear posts temporários para formato definitivo
+      // ✅ CORREÇÃO: Remover campos incompatíveis (cliente_id, projeto_id)
       const postsMigrados = postsTemp.map((post: any) => ({
         planejamento_id: planejamento.id,
         titulo: post.titulo,
@@ -1895,8 +1896,7 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
         responsavel_id: post.responsavel_id,
         contexto_estrategico: post.contexto_estrategico || '',
         rede_social: post.rede_social || 'instagram',
-        status_post: 'a_fazer' as const,
-        cliente_id: clienteId
+        status_post: 'a_fazer' as const
       }));
       
       // Inserir em posts_planejamento
@@ -1948,6 +1948,7 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
       setAprovandoPost(postId);
       
       // ✅ CORREÇÃO: Mapear campos corretamente para posts_planejamento
+      // ✅ CORREÇÃO: Remover campos incompatíveis (cliente_id, projeto_id)
       const postParaSalvar = {
         planejamento_id: planejamento.id,
         titulo: post.titulo,
@@ -1963,9 +1964,7 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
         responsavel_id: post.responsavel_id,
         contexto_estrategico: post.contexto_estrategico,
         rede_social: 'instagram',
-        status_post: 'a_fazer' as const,
-        cliente_id: clienteId,
-        projeto_id: projetoSelecionado // ✅ Adicionar projeto_id
+        status_post: 'a_fazer' as const
       };
       
       console.log('💾 Salvando post individual:', postParaSalvar);
