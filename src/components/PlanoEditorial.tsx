@@ -297,6 +297,7 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
     legenda: string;
     objetivo_postagem: string;
     tipo_criativo: string;
+    tipo_conteudo?: string; // ✅ Adicionar campo
     formato_postagem: string;
     componente_hesec: string;
     persona_alvo: string;
@@ -307,9 +308,12 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
     status: 'temporario' | 'aprovado';
     data_salvamento?: string;
     anexo_url?: string;
+    arquivo_visual_url?: string; // ✅ Adicionar campo
     responsavel_id?: string;
     headline?: string;
     conteudo_completo?: string;
+    texto_estruturado?: string; // ✅ Adicionar campo
+    rede_social?: string; // ✅ Adicionar campo
   }>>([]);
   const [postsTemporarios, setPostsTemporarios] = useState<any[]>([]);
   const [postsAprovadosCounter, setPostsAprovadosCounter] = useState(0);
@@ -1786,6 +1790,78 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
   // Estado para controlar se está aprovando/salvando post
   const [aprovandoPost, setAprovandoPost] = useState<string | null>(null);
 
+  // ✅ FASE 1: Migração Imediata de Posts Temporários
+  const migrarPostsTemporariosParaDefinitivo = async () => {
+    try {
+      console.log('🔄 Iniciando migração de posts temporários...');
+      
+      // Buscar posts temporários do banco
+      const { data: postsTemp, error: fetchError } = await supabase
+        .from('posts_gerados_temp')
+        .select('*')
+        .eq('planejamento_id', planejamento.id);
+      
+      if (fetchError) throw fetchError;
+      
+      if (!postsTemp || postsTemp.length === 0) {
+        toast.info('Nenhum post pendente para migrar');
+        return;
+      }
+      
+      console.log(`📦 Encontrados ${postsTemp.length} posts para migrar`);
+      
+      // Mapear posts temporários para formato definitivo
+      const postsMigrados = postsTemp.map((post: any) => ({
+        planejamento_id: planejamento.id,
+        titulo: post.titulo,
+        data_postagem: post.data_postagem,
+        formato_postagem: post.formato_postagem || post.tipo_criativo || 'post',
+        tipo_criativo: post.tipo_criativo || 'imagem',
+        tipo_conteudo: post.tipo_conteudo || 'informar',
+        texto_estruturado: post.legenda || post.conteudo_completo || post.texto_estruturado || '',
+        objetivo_postagem: post.objetivo_postagem || '',
+        hashtags: Array.isArray(post.hashtags) ? post.hashtags : [],
+        call_to_action: post.call_to_action || '',
+        arquivo_visual_url: post.anexo_url || post.arquivo_visual_url,
+        responsavel_id: post.responsavel_id,
+        contexto_estrategico: post.contexto_estrategico || '',
+        rede_social: post.rede_social || 'instagram',
+        status_post: 'a_fazer' as const,
+        cliente_id: clienteId
+      }));
+      
+      // Inserir em posts_planejamento
+      const { data: postsInseridos, error: insertError } = await supabase
+        .from('posts_planejamento')
+        .insert(postsMigrados)
+        .select();
+      
+      if (insertError) throw insertError;
+      
+      // Deletar posts temporários
+      const { error: deleteError } = await supabase
+        .from('posts_gerados_temp')
+        .delete()
+        .eq('planejamento_id', planejamento.id);
+      
+      if (deleteError) console.warn('Aviso ao deletar posts temporários:', deleteError);
+      
+      // Limpar sessionStorage
+      sessionStorage.removeItem(`posts_temp_${planejamento.id}`);
+      setPostsGerados([]);
+      
+      // Atualizar posts definitivos
+      setPosts(postsInseridos || []);
+      
+      toast.success(`✅ ${postsInseridos?.length || 0} posts migrados e organizados na tabela!`);
+      console.log('✅ Migração concluída com sucesso');
+      
+    } catch (error) {
+      console.error('❌ Erro ao migrar posts:', error);
+      toast.error('Erro ao migrar posts temporários');
+    }
+  };
+
   // Função para aprovar um post individual e salvar automaticamente
   const aprovarPost = async (postId: string) => {
     const post = postsGerados.find(p => p.id === postId);
@@ -1799,18 +1875,18 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
         planejamento_id: planejamento.id,
         titulo: post.titulo,
         data_postagem: post.data_postagem,
-        formato_postagem: post.formato_postagem || post.tipo_criativo || 'post', // ✅ Correto
-        tipo_criativo: post.tipo_criativo || 'imagem', // ✅ Adicionar campo obrigatório
-        tipo_conteudo: 'informar', // ✅ Campo obrigatório
-        texto_estruturado: post.legenda || post.conteudo_completo || '', // ✅ Mapear para campo correto
+        formato_postagem: post.formato_postagem || post.tipo_criativo || 'post',
+        tipo_criativo: post.tipo_criativo || 'imagem',
+        tipo_conteudo: post.tipo_conteudo || 'informar',
+        texto_estruturado: post.legenda || post.conteudo_completo || '',
         objetivo_postagem: post.objetivo_postagem,
-        hashtags: post.hashtags || [],
+        hashtags: Array.isArray(post.hashtags) ? post.hashtags : [],
         call_to_action: post.call_to_action,
         arquivo_visual_url: post.anexo_url,
         responsavel_id: post.responsavel_id,
         contexto_estrategico: post.contexto_estrategico,
         rede_social: 'instagram',
-        status_post: 'a_fazer' as const, // ✅ Tipo correto
+        status_post: 'a_fazer' as const,
         cliente_id: clienteId
       };
       
@@ -1823,12 +1899,12 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
       if (error) throw error;
 
       // Remover da tabela temporária
-      if (post.id) {
-        await supabase
-          .from('posts_gerados_temp')
-          .delete()
-          .eq('id', post.id);
-      }
+      const { error: deleteError } = await supabase
+        .from('posts_gerados_temp')
+        .delete()
+        .eq('id', postId);
+
+      if (deleteError) console.warn('Aviso ao deletar post temporário:', deleteError);
 
       // Atualizar estado local
       setPostsGerados(prev => prev.filter(p => p.id !== postId));
