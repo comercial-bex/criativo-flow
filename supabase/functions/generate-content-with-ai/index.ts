@@ -7,246 +7,200 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { prompt, type = 'text', model = 'gemini' } = await req.json();
-    
+    const { prompt, type = 'post', model = 'google/gemini-2.5-flash' } = await req.json();
+
     if (!prompt) {
-      throw new Error('Prompt is required');
+      return new Response(
+        JSON.stringify({ error: 'Prompt é obrigatório' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
-    console.log('🤖 AI Content Generation Request:', { prompt, type });
+    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+    if (!LOVABLE_API_KEY) {
+      console.error('LOVABLE_API_KEY não configurada');
+      return new Response(
+        JSON.stringify({ error: 'Configuração do servidor incorreta' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
-    // Determine if we need structured JSON output
-    const shouldReturnJSON = type === 'json' || type === 'hashtags' || prompt.toLowerCase().includes('calendario editorial') || prompt.toLowerCase().includes('posts');
-
-    // Build system message based on content type
-    let systemMessage = 'Você é um especialista em marketing digital e criação de conteúdo para redes sociais.';
+    // Definir system message baseado no tipo
+    let systemMessage = 'Você é um especialista em marketing digital e criação de conteúdo.';
     
-    switch (type) {
-      case 'post':
-        systemMessage += ' Crie posts criativos e envolventes para redes sociais, sempre com call-to-action.';
-        break;
-      case 'legenda':
-        systemMessage += ' Crie legendas cativantes para fotos e vídeos, com emojis apropriados e hashtags relevantes.';
-        break;
-      case 'hashtags':
-        systemMessage += ' Gere hashtags relevantes e populares. Retorne uma lista de hashtags separadas por espaço.';
-        break;
-      case 'swot':
-        systemMessage += ' Realize análises SWOT profissionais e detalhadas em formato estruturado.';
-        break;
-      default:
-      systemMessage += ' Crie conteúdo profissional e relevante para marketing digital.';
-    }
-    
-    // Configure API based on model selection
-    let apiUrl: string;
-    let apiKey: string | undefined;
-    let modelName: string;
-
-    if (model === 'gpt4') {
-      apiUrl = "https://api.openai.com/v1/chat/completions";
-      apiKey = Deno.env.get('OPENAI_API_KEY');
-      modelName = "gpt-4.1-2025-04-14";
-      
-      if (!apiKey) {
-        console.warn('⚠️ OPENAI_API_KEY not configured, falling back to Lovable AI');
-        // Auto-fallback to Lovable AI
-        apiUrl = "https://ai.gateway.lovable.dev/v1/chat/completions";
-        apiKey = Deno.env.get('LOVABLE_API_KEY');
-        modelName = "google/gemini-2.5-flash";
-      }
-    } else {
-      // Default to Lovable AI (Gemini)
-      apiUrl = "https://ai.gateway.lovable.dev/v1/chat/completions";
-      apiKey = Deno.env.get('LOVABLE_API_KEY');
-      modelName = "google/gemini-2.5-flash";
+    if (type === 'personas') {
+      systemMessage = `Você é um especialista em marketing digital e criação de personas estratégicas.
+Sua tarefa é gerar 3 personas detalhadas e realistas baseadas nas informações fornecidas.
+IMPORTANTE: Retorne APENAS um objeto JSON válido, sem texto adicional antes ou depois.`;
+    } else if (type === 'post') {
+      systemMessage = 'Você é um redator especialista em redes sociais. Crie conteúdo envolvente e otimizado.';
+    } else if (type === 'legenda') {
+      systemMessage = 'Você é um copywriter especialista em legendas para redes sociais.';
+    } else if (type === 'hashtags') {
+      systemMessage = 'Você é um especialista em hashtags e SEO para redes sociais.';
+    } else if (type === 'swot') {
+      systemMessage = 'Você é um consultor estratégico especialista em análise SWOT.';
     }
 
-    if (!apiKey) {
-      throw new Error('No AI API key configured');
-    }
-    
-    if (shouldReturnJSON) {
-      systemMessage = `Você é um especialista em marketing digital. Sempre responda APENAS com JSON válido seguindo esta estrutura exata para calendário editorial:
+    console.log(`🤖 Gerando conteúdo do tipo: ${type} com modelo: ${model}`);
 
-{
-  "posts": [
-    {
-      "titulo": "Título do post",
-      "objetivo_postagem": "Objetivo específico",
-      "tipo_criativo": "Imagem/Vídeo/Carrossel",
-      "formato_postagem": "Post/Stories/Reels",
-      "data_postagem": "YYYY-MM-DD",
-      "legenda": "Caption elaborada do post",
-      "headline": "Manchete/Título chamativo",
-      "conteudo_completo": "Para vídeo: roteiro técnico detalhado. Para post/carrossel: conteúdo elaborado",
-      "hashtags": ["#tag1", "#tag2"],
-      "call_to_action": "CTA específico",
-      "persona_alvo": "Persona específica",
-      "componente_hesec": "Hook/Engajamento/Social Proof/Call to Action"
-    }
-  ]
-}
-
-IMPORTANTE: 
-- Para VÍDEOS/REELS: "conteudo_completo" deve ser um roteiro técnico detalhado
-- Para POSTS/CARROSSEL: "conteudo_completo" deve ser o conteúdo elaborado da postagem
-- Sempre inclua todos os campos obrigatórios
-- Use datas sequenciais começando pela data fornecida
-- NÃO adicione comentários ou texto fora do JSON`;
-    }
-
-    console.log(`🤖 Using AI model: ${modelName}`);
-
-    const requestBody: any = {
-      model: modelName,
+    // Preparar payload para Lovable AI Gateway
+    const aiPayload: any = {
+      model,
       messages: [
         { role: 'system', content: systemMessage },
         { role: 'user', content: prompt }
       ],
-      max_completion_tokens: shouldReturnJSON ? 4000 : 2000
     };
 
-    const response = await fetch(apiUrl, {
+    // Para personas, usar tool calling para garantir JSON estruturado
+    if (type === 'personas') {
+      aiPayload.tools = [
+        {
+          type: 'function',
+          function: {
+            name: 'gerar_personas',
+            description: 'Gera 3 personas estratégicas detalhadas',
+            parameters: {
+              type: 'object',
+              properties: {
+                personas: {
+                  type: 'array',
+                  minItems: 3,
+                  maxItems: 3,
+                  items: {
+                    type: 'object',
+                    properties: {
+                      nome: { type: 'string', description: 'Nome completo da persona' },
+                      idade: { type: 'string', description: 'Faixa etária (ex: 25-35 anos)' },
+                      profissao: { type: 'string', description: 'Profissão ou ocupação' },
+                      resumo: { type: 'string', description: 'Resumo descritivo da persona em 1-2 frases' },
+                      dores: { 
+                        type: 'array', 
+                        items: { type: 'string' },
+                        description: 'Lista de 3-5 dores/problemas principais'
+                      },
+                      motivacoes: { 
+                        type: 'array', 
+                        items: { type: 'string' },
+                        description: 'Lista de 3-5 motivações principais'
+                      },
+                      canais_preferidos: { 
+                        type: 'array', 
+                        items: { type: 'string' },
+                        description: 'Canais de comunicação preferidos'
+                      },
+                      comportamento_compra: { 
+                        type: 'string', 
+                        description: 'Descrição do comportamento de compra'
+                      },
+                      objecoes: { 
+                        type: 'array', 
+                        items: { type: 'string' },
+                        description: 'Principais objeções de compra'
+                      },
+                      como_ajudar: { 
+                        type: 'string', 
+                        description: 'Como sua empresa pode ajudar essa persona'
+                      }
+                    },
+                    required: ['nome', 'idade', 'profissao', 'resumo', 'dores', 'motivacoes', 'canais_preferidos', 'comportamento_compra', 'objecoes', 'como_ajudar'],
+                    additionalProperties: false
+                  }
+                }
+              },
+              required: ['personas'],
+              additionalProperties: false
+            }
+          }
+        }
+      ];
+      aiPayload.tool_choice = { type: 'function', function: { name: 'gerar_personas' } };
+    }
+
+    // Chamar Lovable AI Gateway
+    const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${apiKey}`,
+        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(requestBody),
+      body: JSON.stringify(aiPayload),
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`AI API error (${modelName}):`, errorText);
-      
-      // Handle rate limits and payment errors
-      if (response.status === 429) {
-        throw new Error('Rate limit exceeded. Please try again in a few moments.');
+    if (!aiResponse.ok) {
+      const errorText = await aiResponse.text();
+      console.error('❌ Erro da API de IA:', aiResponse.status, errorText);
+
+      if (aiResponse.status === 429) {
+        return new Response(
+          JSON.stringify({ error: 'Limite de requisições excedido. Tente novamente em instantes.' }),
+          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
       }
-      if (response.status === 402) {
-        throw new Error('Insufficient credits. Please add credits to your Lovable AI workspace.');
+
+      if (aiResponse.status === 402) {
+        return new Response(
+          JSON.stringify({ error: 'Créditos insuficientes. Por favor, adicione fundos ao workspace Lovable AI.' }),
+          { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
       }
-      if (response.status === 401) {
-        throw new Error('Invalid API key. Please check your configuration.');
-      }
-      
-      throw new Error(`AI API error: ${response.status} - ${errorText}`);
+
+      return new Response(
+        JSON.stringify({ error: 'Erro ao gerar conteúdo com IA' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
-    const data = await response.json();
-    let generatedText = data.choices[0]?.message?.content;
+    const aiData = await aiResponse.json();
+    console.log('✅ Resposta da IA recebida');
 
-    if (!generatedText) {
-      throw new Error('No content generated from OpenAI');
-    }
+    let content: any;
 
-    console.log('✅ Content generated successfully, length:', generatedText.length);
-
-    if (shouldReturnJSON) {
-      try {
-        // Limpar possível markdown do JSON
-        let cleanJson = generatedText.trim();
-        if (cleanJson.startsWith('```json')) {
-          cleanJson = cleanJson.replace(/^```json\s*/, '').replace(/\s*```$/, '');
-        } else if (cleanJson.startsWith('```')) {
-          cleanJson = cleanJson.replace(/^```\s*/, '').replace(/\s*```$/, '');
+    // Extrair conteúdo
+    if (type === 'personas') {
+      // Para tool calling, o conteúdo vem em tool_calls
+      const toolCall = aiData.choices?.[0]?.message?.tool_calls?.[0];
+      if (toolCall?.function?.arguments) {
+        try {
+          content = JSON.parse(toolCall.function.arguments);
+        } catch (e) {
+          console.error('❌ Erro ao fazer parse do JSON das personas:', e);
+          return new Response(
+            JSON.stringify({ error: 'Formato de resposta inválido da IA' }),
+            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
         }
-
-        // Tentar parsear o JSON
-        const parsedContent = JSON.parse(cleanJson);
-        
-        // Validar estrutura
-        if (!parsedContent.posts || !Array.isArray(parsedContent.posts)) {
-          throw new Error('Invalid JSON structure: missing posts array');
-        }
-
-        console.log('Successfully parsed JSON with', parsedContent.posts.length, 'posts');
-
-        return new Response(JSON.stringify({ 
-          generatedText: JSON.stringify(parsedContent),
-          type: 'json',
-          success: true
-        }), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-
-      } catch (parseError) {
-        console.error('JSON parsing error:', parseError);
-        console.log('Raw response:', generatedText);
-        
-        // Fallback: tentar recuperar ou retornar estrutura padrão
-        const fallbackContent = {
-          posts: [
-            {
-              titulo: "Post de exemplo",
-              objetivo_postagem: "Engajar audiência",
-              tipo_criativo: "Imagem",
-              formato_postagem: "Post",
-              data_postagem: new Date().toISOString().split('T')[0],
-              legenda: "Conteúdo gerado automaticamente",
-              headline: "Título chamativo",
-              conteudo_completo: "Conteúdo elaborado da postagem",
-              hashtags: ["#marketing", "#digital"],
-              call_to_action: "Saiba mais",
-              persona_alvo: "Público geral",
-              componente_hesec: "Engajamento"
-            }
-          ]
-        };
-
-        return new Response(JSON.stringify({ 
-          generatedText: JSON.stringify(fallbackContent),
-          type: 'json',
-          success: true,
-          warning: 'Used fallback content due to parsing error'
-        }), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
+      } else {
+        console.error('❌ Tool call não encontrado na resposta');
+        return new Response(
+          JSON.stringify({ error: 'Resposta da IA incompleta' }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
       }
+    } else {
+      // Para outros tipos, texto simples
+      content = aiData.choices?.[0]?.message?.content || '';
     }
 
-    // Return for simple text or hashtags
-    if (type === 'hashtags') {
-      // Clean hashtag formatting
-      const hashtags = generatedText
-        .split(/[\s,\n]+/)
-        .filter((tag: string) => tag.trim().startsWith('#'))
-        .join(' ');
-      
-      return new Response(JSON.stringify({ 
-        content: hashtags || generatedText,
-        type,
-        success: true
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    // Return for simple text
-    return new Response(JSON.stringify({ 
-      generatedText: generatedText,  // Padronizado para frontend
-      content: generatedText,         // Mantido para retrocompatibilidade
-      type,
-      success: true
-    }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    return new Response(
+      JSON.stringify({ content, type }),
+      { 
+        status: 200, 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      }
+    );
 
   } catch (error) {
-    console.error('Error in generate-content-with-ai function:', error);
-    return new Response(JSON.stringify({ 
-      error: error instanceof Error ? error.message : 'Unknown error occurred',
-      success: false
-    }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    console.error('❌ Erro no edge function:', error);
+    return new Response(
+      JSON.stringify({ error: error instanceof Error ? error.message : 'Erro desconhecido' }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
   }
 });

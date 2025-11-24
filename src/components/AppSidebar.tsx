@@ -114,7 +114,7 @@ export function AppSidebar() {
           { title: "🎬 Roteiro IA", url: "/grs/roteiro-ia", icon: Icons.Film },
           { title: "Calendário Unificado", url: "/calendario", icon: Icons.CalendarClock },
           { title: "Relatórios", url: "/grs/relatorios", icon: Icons.FileText },
-          { title: "Cliente (Detalhes)", url: "/grs/cliente", icon: Icons.User },
+          { title: "Clientes (Lista)", url: "/grs/clientes", icon: Icons.Users },
         ],
         permissions: ["grs", "projetos"]
       },

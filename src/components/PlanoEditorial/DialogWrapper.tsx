@@ -29,7 +29,7 @@ export function DialogWrapper({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className={`${sizeClasses[size]} max-h-[90vh] overflow-hidden flex flex-col`}>
+      <DialogContent className={`${sizeClasses[size]} max-h-[90vh] flex flex-col overflow-hidden`}>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           {description && (
@@ -37,7 +37,7 @@ export function DialogWrapper({
           )}
         </DialogHeader>
         <ScrollArea className="flex-1 px-1">
-          <div className="pr-4">
+          <div className="pr-4 py-2">
             {children}
           </div>
         </ScrollArea>

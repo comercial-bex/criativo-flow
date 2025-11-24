@@ -1017,42 +1017,49 @@ Formate a resposta em JSON válido com esta estrutura EXATA:
 }
 
 IMPORTANTE: Retorne APENAS o JSON válido, sem texto adicional.
-`;
+  const gerarPersonasComIA = async () => {
+    if (!planejamento?.cliente_id) {
+      toast.error("Cliente não identificado");
+      return;
+    }
+    
+    const loadingToast = toast.loading("Gerando personas com IA...");
+    setLoadingPersonas(true);
 
-      const { data: response, error } = await supabase.functions.invoke('generate-content-with-ai', {
-        body: { prompt }
+    try {
+      const { data: onboarding } = await supabase
+        .from('cliente_onboarding')
+        .select('*')
+        .eq('cliente_id', planejamento.cliente_id)
+        .maybeSingle();
+
+      if (!onboarding) {
+        toast.dismiss(loadingToast);
+        toast.error("Complete o onboarding do cliente antes de gerar personas");
+        return;
+      }
+
+      const prompt = `Com base nas informações: Segmento: ${onboarding.segmento_atuacao}, Produtos: ${onboarding.produtos_servicos}, Público: ${onboarding.publico_alvo?.join(', ')}, Dores: ${onboarding.dores_problemas}. Gere 3 personas estratégicas.`;
+
+      const { data, error } = await supabase.functions.invoke('generate-content-with-ai', {
+        body: { prompt, type: 'personas', model: 'google/gemini-2.5-flash' }
       });
 
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
+      if (!data?.content?.personas) throw new Error('Formato inválido');
 
-      let personasGeradas;
-      try {
-        personasGeradas = typeof response === 'string' ? JSON.parse(response) : response;
-      } catch (parseError) {
-        console.error('Erro ao parsear resposta da IA:', parseError);
-        throw new Error('Resposta da IA não está em formato JSON válido');
-      }
+      await supabase.from('planejamentos').update({ 
+        conteudo: { ...planejamento.conteudo, personas: data.content.personas } 
+      }).eq('id', planejamento.id);
 
-      // Validar estrutura das personas
-      if (!personasGeradas.personas || !Array.isArray(personasGeradas.personas) || personasGeradas.personas.length !== 3) {
-        throw new Error('IA não gerou 3 personas válidas');
-      }
-
-      // Auto-save será ativado automaticamente pelo useEffect
-      
-      setConteudo(prev => ({
-        ...prev,
-        persona: JSON.stringify(personasGeradas)
-      }));
-
-      toast.success('3 Personas geradas e salvas com sucesso!');
-    } catch (error) {
-      console.error('Erro ao gerar personas:', error);
-      toast.error('Erro ao gerar personas. Tente novamente.');
+      toast.dismiss(loadingToast);
+      toast.success("Personas geradas com sucesso!");
+      await fetchPlanejamento();
+    } catch (error: any) {
+      toast.dismiss(loadingToast);
+      toast.error(error.message || "Erro ao gerar personas");
     } finally {
-      setGerandoPersonas(false);
+      setLoadingPersonas(false);
     }
   };
 
