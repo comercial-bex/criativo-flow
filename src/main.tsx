@@ -145,22 +145,34 @@ try {
   }
 }
 
-// Detecção de versão antiga e limpeza automática
+// FASE 5: Detecção de versão antiga e limpeza agressiva de cache
 if (import.meta.env.PROD) {
-  const APP_VERSION = '4.0.4';
+  const APP_VERSION = '4.0.8';
   const storedVersion = localStorage.getItem('app-version');
   
+  // Limpar contador de falhas de chunk ao iniciar nova versão
+  if (storedVersion !== APP_VERSION) {
+    sessionStorage.removeItem('chunk-fail-count');
+  }
+  
   if (storedVersion && storedVersion !== APP_VERSION) {
-    console.log(`🔄 Nova versão detectada (${storedVersion} → ${APP_VERSION}), limpando cache antigo...`);
-    caches.keys().then(keys => 
-      Promise.all(keys.map(k => {
-        if (k.includes('bex-v3') || k.includes('bex-v2') || k.includes('bex-v4.0.2') || k.includes('bex-v4.0.3')) {
+    console.log(`🔄 Nova versão detectada (${storedVersion} → ${APP_VERSION}), limpando TODOS os caches...`);
+    
+    // FASE 5: Limpeza agressiva - deletar QUALQUER cache antigo
+    caches.keys().then(keys => {
+      const currentCaches = [`bex-v${APP_VERSION}`, `bex-static-v3`, `bex-api-v3`, `bex-pages-v3`, `bex-images-v3`];
+      
+      return Promise.all(keys.map(k => {
+        // Deletar qualquer cache que não seja da lista atual
+        if (!currentCaches.includes(k)) {
           console.log(`🧹 Removendo cache antigo: ${k}`);
           return caches.delete(k);
         }
         return Promise.resolve();
-      }))
-    );
+      }));
+    }).then(() => {
+      console.log('✅ Limpeza de cache concluída');
+    });
   }
   
   localStorage.setItem('app-version', APP_VERSION);
