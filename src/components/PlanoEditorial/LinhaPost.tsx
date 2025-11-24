@@ -301,9 +301,20 @@ export const LinhaPost: React.FC<LinhaPostProps> = ({
             </span>
           </Button>
         ) : (
-          <div className="text-sm line-clamp-2">
-            {post.texto_estruturado || '-'}
-          </div>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="text-sm line-clamp-2 cursor-help">
+                  {post.texto_estruturado || '-'}
+                </div>
+              </TooltipTrigger>
+              {post.texto_estruturado && (
+                <TooltipContent className="max-w-md p-3">
+                  <p className="text-sm whitespace-pre-wrap">{post.texto_estruturado}</p>
+                </TooltipContent>
+              )}
+            </Tooltip>
+          </TooltipProvider>
         )}
       </TableCell>
 
