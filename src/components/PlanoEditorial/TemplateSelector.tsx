@@ -102,6 +102,8 @@ export const TemplateSelector = ({
                     className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-colors"
                     onClick={() => {
                       onSelectTemplate(template.template);
+                      // ✅ FASE 4: Disparar evento para sincronizar tabela
+                      window.dispatchEvent(new CustomEvent('posts-updated'));
                       onClose();
                     }}
                   >

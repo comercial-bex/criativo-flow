@@ -84,9 +84,11 @@ export function SolicitarAprovacaoModal({
       onOpenChange(false);
       setMensagemAdicional("");
       
-      // ✅ FASE 2: Disparar evento global
+      // ✅ FASE 4: Disparar evento global para sincronizar
       window.dispatchEvent(new CustomEvent('posts-updated'));
       console.log('✅ Aprovação solicitada e evento disparado');
+      
+      toast.success('✅ Solicitação enviada com sucesso!');
       
       if (onSuccess) {
         onSuccess();
