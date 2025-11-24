@@ -1012,11 +1012,6 @@ Formate a resposta em JSON válido com esta estrutura EXATA:
       "comportamento_compra": "Como toma decisões de compra",
       "objecoes": ["objeção 1", "objeção 2"],
       "como_ajudar": "Como a empresa pode ajudar esta persona"
-    }
-  ]
-}
-
-IMPORTANTE: Retorne APENAS o JSON válido, sem texto adicional.
   const gerarPersonasComIA = async () => {
     if (!planejamento?.cliente_id) {
       toast.error("Cliente não identificado");
@@ -1024,7 +1019,7 @@ IMPORTANTE: Retorne APENAS o JSON válido, sem texto adicional.
     }
     
     const loadingToast = toast.loading("Gerando personas com IA...");
-    setLoadingPersonas(true);
+    setGerandoPersonas(true);
 
     try {
       const { data: onboarding } = await supabase
@@ -1039,7 +1034,7 @@ IMPORTANTE: Retorne APENAS o JSON válido, sem texto adicional.
         return;
       }
 
-      const prompt = `Com base nas informações: Segmento: ${onboarding.segmento_atuacao}, Produtos: ${onboarding.produtos_servicos}, Público: ${onboarding.publico_alvo?.join(', ')}, Dores: ${onboarding.dores_problemas}. Gere 3 personas estratégicas.`;
+      const prompt = `Com base nas informações: Segmento: ${onboarding.segmento_atuacao || 'N/A'}, Produtos: ${onboarding.produtos_servicos || 'N/A'}, Público: ${onboarding.publico_alvo?.join(', ') || 'N/A'}, Dores: ${onboarding.dores_problemas || 'N/A'}. Gere 3 personas estratégicas.`;
 
       const { data, error } = await supabase.functions.invoke('generate-content-with-ai', {
         body: { prompt, type: 'personas', model: 'google/gemini-2.5-flash' }
@@ -1048,18 +1043,19 @@ IMPORTANTE: Retorne APENAS o JSON válido, sem texto adicional.
       if (error) throw error;
       if (!data?.content?.personas) throw new Error('Formato inválido');
 
-      await supabase.from('planejamentos').update({ 
-        conteudo: { ...planejamento.conteudo, personas: data.content.personas } 
-      }).eq('id', planejamento.id);
+      // Salvar personas no conteúdo do planejamento
+      setConteudo(prev => ({
+        ...prev,
+        persona: JSON.stringify({ personas: data.content.personas })
+      }));
 
       toast.dismiss(loadingToast);
       toast.success("Personas geradas com sucesso!");
-      await fetchPlanejamento();
     } catch (error: any) {
       toast.dismiss(loadingToast);
       toast.error(error.message || "Erro ao gerar personas");
     } finally {
-      setLoadingPersonas(false);
+      setGerandoPersonas(false);
     }
   };
 
