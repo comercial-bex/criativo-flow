@@ -343,12 +343,14 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [responsaveis, setResponsaveis] = useState<any[]>([]);
   const [projetoSelecionado, setProjetoSelecionado] = useState<string>(projetoId || '');
+  const [postsPendentes, setPostsPendentes] = useState(0);
 
   // Hook para buscar projetos do cliente
   const { data: projetosData } = useProjetosOptimized({ 
     clienteId: planejamento.cliente_id,
     pageSize: 100 
   });
+
   const projetosDisponiveis = projetosData?.projetos || [];
 
   // Hook para datas comemorativas
@@ -438,6 +440,28 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
     buscarDadosObjetivos().then(setDadosObjetivos);
     carregarPostsTemporarios();
     fetchResponsaveis();
+    verificarPostsPendentes(); // ✅ FASE 1
+  }, [planejamento.id]);
+
+  // ✅ FASE 2: Listener global para recarregar posts quando modais salvarem
+  useEffect(() => {
+    const handlePostsUpdated = async () => {
+      console.log('🔄 Posts atualizados - recarregando...');
+      // Recarregar posts do banco
+      const { data } = await supabase
+        .from('posts_planejamento')
+        .select('*')
+        .eq('planejamento_id', planejamento.id)
+        .order('data_postagem', { ascending: true });
+      
+      if (data) {
+        setPosts(data);
+        console.log('✅ Posts recarregados:', data.length);
+      }
+    };
+    
+    window.addEventListener('posts-updated', handlePostsUpdated);
+    return () => window.removeEventListener('posts-updated', handlePostsUpdated);
   }, [planejamento.id]);
 
   const fetchResponsaveis = async () => {
@@ -452,6 +476,33 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
       console.error("Erro ao buscar responsáveis:", error);
     }
   };
+
+  // ✅ FASE 1: Verificar posts pendentes de migração
+  const verificarPostsPendentes = async () => {
+    try {
+      const { count, error } = await supabase
+        .from('posts_gerados_temp')
+        .select('*', { count: 'exact', head: true })
+        .eq('planejamento_id', planejamento.id);
+      
+      if (error) throw error;
+      
+      const countStorage = sessionStorage.getItem(`posts_gerados_${planejamento.id}`);
+      const postsStorage = countStorage ? JSON.parse(countStorage).length : 0;
+      
+      const total = (count || 0) + postsStorage;
+      setPostsPendentes(total);
+      
+      if (total > 0) {
+        toast.info(`📦 ${total} posts pendentes de migração`, {
+          description: 'Clique em "Sincronizar" para movê-los para o plano'
+        });
+      }
+    } catch (error) {
+      console.error('Erro ao verificar posts pendentes:', error);
+    }
+  };
+
 
   // Auto-save posts temporários a cada 30 segundos
   useEffect(() => {
@@ -2748,6 +2799,22 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
                     <Badge variant="default" className="whitespace-nowrap flex-shrink-0">
                       ✓ Vinculado
                     </Badge>
+                  )}
+                  
+                  {/* ✅ FASE 1: Botão de Sincronização de Posts Pendentes */}
+                  {postsPendentes > 0 && (
+                    <Button
+                      onClick={async () => {
+                        await migrarPostsTemporariosParaDefinitivo();
+                        await verificarPostsPendentes();
+                      }}
+                      variant="outline"
+                      size="sm"
+                      className="gap-2 whitespace-nowrap bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-700"
+                    >
+                      <CalendarX className="h-4 w-4" />
+                      Sincronizar ({postsPendentes})
+                    </Button>
                   )}
                 </div>
               </div>

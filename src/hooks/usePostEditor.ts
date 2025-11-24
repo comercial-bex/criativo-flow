@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/lib/toast-compat';
+import { normalizarPost } from '@/utils/normalizarPost'; // ✅ FASE 3
 
 interface UsePostEditorProps {
   post: any;
@@ -41,18 +42,22 @@ export function usePostEditor({ post, onSave, autoSave = true }: UsePostEditorPr
   const handleSave = async () => {
     setIsSaving(true);
     try {
+      // ✅ FASE 3: Normalizar post antes de salvar
+      const postNormalizado: any = normalizarPost(editedPost);
+      console.log('💾 Salvando post normalizado:', postNormalizado);
+      
       // Salvar post
       if (editedPost.id && !editedPost.id.startsWith('temp-')) {
         const { error: postError } = await supabase
           .from('posts_planejamento')
-          .update(editedPost)
+          .update(postNormalizado)
           .eq('id', editedPost.id);
 
         if (postError) throw postError;
 
         // Sincronizar com tarefa vinculada se existir
         if (editedPost.tarefa_vinculada_id) {
-          await sincronizarComTarefa(editedPost);
+          await sincronizarComTarefa(postNormalizado);
         }
       }
 
