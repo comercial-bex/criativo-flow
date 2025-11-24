@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { InstagramPreview } from '@/components/InstagramPreview';
+import { InstagramPreview } from './InstagramPreview';
+import { EditarPostModal } from './EditarPostModal';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/lib/toast-compat';
 import { getTipoConteudoIcon, getTipoConteudoColor, getCreativeIcon, getCreativeColor } from '@/lib/plano-editorial-helpers';
@@ -15,15 +16,23 @@ interface CartaoPlanoEditorialProps {
   onPostsChange: (posts: any[]) => void;
   onPostClick?: (post: any) => void;
   onEditPost?: (post: any) => void;
+  clienteId: string;
+  projetoId?: string;
+  responsaveisData?: any[];
 }
 
 export const CartaoPlanoEditorial = ({ 
   posts, 
   onPostsChange, 
   onPostClick,
-  onEditPost 
+  onEditPost,
+  clienteId,
+  projetoId,
+  responsaveisData = []
 }: CartaoPlanoEditorialProps) => {
   const [responsaveis, setResponsaveis] = useState<Record<string, any>>({});
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [selectedPost, setSelectedPost] = useState<any>(null);
 
   // Carregar responsáveis
   const loadResponsaveis = async () => {
@@ -184,7 +193,10 @@ export const CartaoPlanoEditorial = ({
               <Button
                 size="sm"
                 variant="outline"
-                onClick={() => onEditPost?.(post)}
+                onClick={() => {
+                  setSelectedPost(post);
+                  setShowEditModal(true);
+                }}
                 className="gap-2"
               >
                 <Edit className="h-4 w-4" />
@@ -212,6 +224,28 @@ export const CartaoPlanoEditorial = ({
           </CardContent>
         </Card>
       ))}
+
+      {/* Modal de Edição */}
+      {selectedPost && (
+        <EditarPostModal
+          open={showEditModal}
+          onOpenChange={setShowEditModal}
+          post={selectedPost}
+          clienteId={clienteId}
+          projetoId={projetoId}
+          responsaveis={responsaveisData}
+          onSave={(updatedPost) => {
+            const updatedPosts = posts.map(p => 
+              p.id === updatedPost.id ? updatedPost : p
+            );
+            onPostsChange(updatedPosts);
+            setShowEditModal(false);
+          }}
+          onRefresh={() => {
+            // Reload posts if needed
+          }}
+        />
+      )}
     </div>
   );
 };

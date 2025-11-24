@@ -2622,6 +2622,9 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
                   }}
                   onPostClick={onPreviewPost}
                   onEditPost={onPreviewPost}
+                  clienteId={clienteId}
+                  projetoId={projetoId}
+                  responsaveisData={responsaveis}
                 />
               )}
               
