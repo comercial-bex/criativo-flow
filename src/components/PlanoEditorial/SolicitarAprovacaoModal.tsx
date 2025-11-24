@@ -44,13 +44,13 @@ export function SolicitarAprovacaoModal({
         cliente_id: clienteId,
         projeto_id: projetoId || null,
         tarefa_id: post.tarefa_vinculada_id || null,
-        tipo: post.formato_criativo || 'post',
+        tipo: post.formato_postagem || 'post', // ✅ FASE 3: Usar formato_postagem
         titulo: post.titulo || `Post de ${format(new Date(post.data_postagem), 'dd/MM/yyyy', { locale: ptBR })}`,
         descricao: mensagemAdicional || post.contexto_estrategico || null,
         anexo_url: post.arquivo_visual_url || null,
         legenda: post.texto_estruturado || null,
-        objetivo_postagem: post.tipo_conteudo || null,
-        formato_postagem: post.formato_criativo || 'post',
+        objetivo_postagem: post.tipo_conteudo || post.objetivo_postagem || 'informar', // ✅ FASE 3: Usar tipo_conteudo
+        formato_postagem: post.formato_postagem || 'post', // ✅ FASE 3: Corrigido
         hashtags: post.hashtags || null,
         rede_social: post.rede_social || 'instagram',
         status: 'pendente',
@@ -83,6 +83,10 @@ export function SolicitarAprovacaoModal({
 
       onOpenChange(false);
       setMensagemAdicional("");
+      
+      // ✅ FASE 2: Disparar evento global
+      window.dispatchEvent(new CustomEvent('posts-updated'));
+      console.log('✅ Aprovação solicitada e evento disparado');
       
       if (onSuccess) {
         onSuccess();

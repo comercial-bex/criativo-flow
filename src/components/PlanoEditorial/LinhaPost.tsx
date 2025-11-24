@@ -62,6 +62,9 @@ export const LinhaPost: React.FC<LinhaPostProps> = ({
     const updatedPost = { ...editedPost, texto_estruturado: texto };
     setEditedPost(updatedPost);
     await onSave(updatedPost);
+    
+    // ✅ FASE 2: Disparar evento global
+    window.dispatchEvent(new CustomEvent('posts-updated'));
   };
 
   const handleSave = async () => {
@@ -69,6 +72,10 @@ export const LinhaPost: React.FC<LinhaPostProps> = ({
     try {
       await onSave(editedPost);
       setIsEditing(false);
+      
+      // ✅ FASE 2: Disparar evento global de atualização
+      window.dispatchEvent(new CustomEvent('posts-updated'));
+      console.log('✅ Post salvo e evento disparado:', editedPost.id);
     } catch (error) {
       console.error('Erro ao salvar post:', error);
     } finally {
