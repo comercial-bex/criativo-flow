@@ -5,9 +5,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, ChevronLeft, ChevronRight, Loader2, Users, Target, BookOpen, Sparkles, Save, Eye, Undo2, AlertTriangle, X, CheckCircle, Plus, CalendarX, Table as TableIcon } from "lucide-react";
+import { Calendar, ChevronLeft, ChevronRight, Loader2, Users, Target, BookOpen, Sparkles, Save, Eye, Undo2, AlertTriangle, X, CheckCircle, Plus, CalendarX, Table as TableIcon, FolderKanban } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useProjetosOptimized } from "@/hooks/useProjetosOptimized";
 import { toast } from '@/lib/toast-compat';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -340,6 +342,14 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
   const [modoVisualizacao, setModoVisualizacao] = useState<'cartao' | 'tabela' | 'calendario'>('cartao');
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [responsaveis, setResponsaveis] = useState<any[]>([]);
+  const [projetoSelecionado, setProjetoSelecionado] = useState<string>(projetoId || '');
+
+  // Hook para buscar projetos do cliente
+  const { data: projetosData } = useProjetosOptimized({ 
+    clienteId: planejamento.cliente_id,
+    pageSize: 100 
+  });
+  const projetosDisponiveis = projetosData?.projetos || [];
 
   // Hook para datas comemorativas
   const mesReferencia = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-01`;
@@ -1265,6 +1275,14 @@ Responda com um texto corrido, bem estruturado e com no máximo 700 palavras.
   // Função removida - geração de conteúdo agora é feita diretamente no gerarConteudoEditorial
 
   const gerarConteudoEditorial = async () => {
+    // ⚠️ Validação: Verificar se há projeto selecionado
+    if (!projetoSelecionado) {
+      toast.error('⚠️ Selecione um projeto antes de gerar posts', {
+        description: 'O projeto é obrigatório para criar tarefas automáticas'
+      });
+      return;
+    }
+
     if (!clienteAssinatura) {
       toast.error('Dados da assinatura não encontrados');
       return;
@@ -1867,6 +1885,14 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
     const post = postsGerados.find(p => p.id === postId);
     if (!post) return;
 
+    // ⚠️ Validação: Verificar se há projeto selecionado
+    if (!projetoSelecionado) {
+      toast.error('⚠️ Selecione um projeto antes de aprovar posts', {
+        description: 'O projeto é obrigatório para salvar o post'
+      });
+      return;
+    }
+
     try {
       setAprovandoPost(postId);
       
@@ -1887,7 +1913,8 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
         contexto_estrategico: post.contexto_estrategico,
         rede_social: 'instagram',
         status_post: 'a_fazer' as const,
-        cliente_id: clienteId
+        cliente_id: clienteId,
+        projeto_id: projetoSelecionado // ✅ Adicionar projeto_id
       };
       
       console.log('💾 Salvando post individual:', postParaSalvar);
@@ -2653,25 +2680,76 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
           {/* Plano Editorial Unificado */}
           <Card className="border-primary/20">
             <CardHeader className="border-b border-primary/20 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent">
-              <div className="flex items-center justify-between flex-wrap gap-4">
-                <div>
-                  <CardTitle className="text-xl font-bold font-['Montserrat'] flex items-center gap-2">
-                    <TableIcon className="h-5 w-5" />
-                    Plano Editorial
-                    <Badge variant="outline" className="ml-2 bg-primary/10 border-primary/30">
-                      {[...posts, ...postsGerados].length} posts
-                    </Badge>
-                  </CardTitle>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Visualize, edite e gerencie todos os seus posts
-                  </p>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between flex-wrap gap-4">
+                  <div>
+                    <CardTitle className="text-xl font-bold font-['Montserrat'] flex items-center gap-2">
+                      <TableIcon className="h-5 w-5" />
+                      Plano Editorial
+                      <Badge variant="outline" className="ml-2 bg-primary/10 border-primary/30">
+                        {[...posts, ...postsGerados].length} posts
+                      </Badge>
+                    </CardTitle>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Visualize, edite e gerencie todos os seus posts
+                    </p>
+                  </div>
+                  
+                  {/* Modos de Visualização */}
+                  <ModosVisualizacao 
+                    modoAtual={modoVisualizacao}
+                    onModoChange={setModoVisualizacao}
+                  />
                 </div>
-                
-                {/* Modos de Visualização */}
-                <ModosVisualizacao 
-                  modoAtual={modoVisualizacao}
-                  onModoChange={setModoVisualizacao}
-                />
+
+                {/* Seletor de Projeto */}
+                <div className="flex items-center gap-4 p-4 bg-background/50 rounded-lg border border-border">
+                  <FolderKanban className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <Label htmlFor="projeto-selector" className="text-sm font-medium">
+                      Projeto Vinculado
+                    </Label>
+                    <p className="text-xs text-muted-foreground">
+                      Obrigatório para criar tarefas automáticas ao gerar posts
+                    </p>
+                  </div>
+                  <Select 
+                    value={projetoSelecionado} 
+                    onValueChange={setProjetoSelecionado}
+                  >
+                    <SelectTrigger id="projeto-selector" className="w-[280px]">
+                      <SelectValue placeholder="Selecione um projeto..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {projetosDisponiveis.length === 0 ? (
+                        <SelectItem value="nenhum" disabled>
+                          Nenhum projeto disponível
+                        </SelectItem>
+                      ) : (
+                        projetosDisponiveis.map((projeto: any) => (
+                          <SelectItem key={projeto.id} value={projeto.id}>
+                            <div className="flex items-center gap-2">
+                              <span className="truncate">{projeto.titulo}</span>
+                              <Badge variant="outline" className="text-xs flex-shrink-0">
+                                {projeto.tipo_projeto}
+                              </Badge>
+                            </div>
+                          </SelectItem>
+                        ))
+                      )}
+                    </SelectContent>
+                  </Select>
+                  {!projetoSelecionado && (
+                    <Badge variant="destructive" className="whitespace-nowrap flex-shrink-0">
+                      Obrigatório
+                    </Badge>
+                  )}
+                  {projetoSelecionado && (
+                    <Badge variant="default" className="whitespace-nowrap flex-shrink-0">
+                      ✓ Vinculado
+                    </Badge>
+                  )}
+                </div>
               </div>
             </CardHeader>
             

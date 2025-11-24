@@ -22,7 +22,8 @@ export async function gerarPostsAutomaticos(
   planejamentoId: string,
   quantidadePosts: number,
   planoEstrategico?: PlanoEstrategico,
-  clienteId?: string
+  clienteId?: string,
+  projetoId?: string // ✅ Adicionar parâmetro opcional
 ) {
   try {
     console.log('📅 Gerando', quantidadePosts, 'posts automáticos para planejamento', planejamentoId);
@@ -88,6 +89,7 @@ export async function gerarPostsAutomaticos(
         status_post: 'rascunho', // ✅ Correto
         rede_social: 'instagram',
         planejamento_id: planejamentoId,
+        projeto_id: projetoId || null, // ✅ Adicionar projeto_id
         objetivo_vinculado_id: objetivoId,
         cliente_id: clienteFinal,
         contexto_estrategico: JSON.stringify({
