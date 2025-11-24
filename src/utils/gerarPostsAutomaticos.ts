@@ -103,18 +103,20 @@ export async function gerarPostsAutomaticos(
       posts.push(post);
     }
 
-    // 7. Inserir posts no banco
+    // 7. ✅ Inserir posts diretamente em posts_planejamento (NÃO em posts_gerados_temp)
+    console.log('💾 Salvando', posts.length, 'posts em posts_planejamento...');
+    
     const { data: postsInseridos, error } = await supabase
       .from('posts_planejamento')
       .insert(posts)
       .select();
 
     if (error) {
-      console.error('Erro ao inserir posts:', error);
+      console.error('❌ Erro ao inserir posts:', error);
       throw error;
     }
 
-    console.log('✅', postsInseridos?.length, 'posts gerados automaticamente');
+    console.log('✅', postsInseridos?.length, 'posts gerados e salvos automaticamente');
 
     return {
       success: true,

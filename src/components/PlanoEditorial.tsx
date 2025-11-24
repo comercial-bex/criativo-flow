@@ -1794,28 +1794,31 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
     try {
       setAprovandoPost(postId);
       
-      // Mover post para tabela principal
+      // ✅ CORREÇÃO: Mapear campos corretamente para posts_planejamento
+      const postParaSalvar = {
+        planejamento_id: planejamento.id,
+        titulo: post.titulo,
+        data_postagem: post.data_postagem,
+        formato_postagem: post.formato_postagem || post.tipo_criativo || 'post', // ✅ Correto
+        tipo_criativo: post.tipo_criativo || 'imagem', // ✅ Adicionar campo obrigatório
+        tipo_conteudo: 'informar', // ✅ Campo obrigatório
+        texto_estruturado: post.legenda || post.conteudo_completo || '', // ✅ Mapear para campo correto
+        objetivo_postagem: post.objetivo_postagem,
+        hashtags: post.hashtags || [],
+        call_to_action: post.call_to_action,
+        arquivo_visual_url: post.anexo_url,
+        responsavel_id: post.responsavel_id,
+        contexto_estrategico: post.contexto_estrategico,
+        rede_social: 'instagram',
+        status_post: 'a_fazer' as const, // ✅ Tipo correto
+        cliente_id: clienteId
+      };
+      
+      console.log('💾 Salvando post individual:', postParaSalvar);
+      
       const { error } = await supabase
         .from('posts_planejamento')
-        .insert({
-          planejamento_id: planejamento.id,
-          titulo: post.titulo,
-          legenda: post.legenda,
-          objetivo_postagem: post.objetivo_postagem,
-          tipo_criativo: post.tipo_criativo,
-          formato_postagem: post.formato_postagem,
-          componente_hesec: post.componente_hesec,
-          persona_alvo: post.persona_alvo,
-          call_to_action: post.call_to_action,
-          hashtags: post.hashtags,
-          contexto_estrategico: post.contexto_estrategico,
-          data_postagem: post.data_postagem,
-          anexo_url: post.anexo_url,
-          responsavel_id: post.responsavel_id,
-          // Novos campos para conteúdo diferenciado
-          headline: post.headline,
-          conteudo_completo: post.conteudo_completo
-        });
+        .insert([postParaSalvar]);
 
       if (error) throw error;
 
@@ -1830,17 +1833,24 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
       // Atualizar estado local
       setPostsGerados(prev => prev.filter(p => p.id !== postId));
       
-      // 🔒 SECURITY FIX: Atualizar sessionStorage
+      // Atualizar sessionStorage
       const updatedTempPosts = postsGerados.filter(p => p.id !== postId);
       sessionStorage.setItem(`posts_temp_${planejamento.id}`, JSON.stringify(updatedTempPosts));
       
-      // Recarregar posts salvos usando setPosts (sem verificações aqui pois já foi salvo no DB)
-      // setPosts será atualizado automaticamente quando o componente pai recarregar
-      // Posts serão recarregados pelo componente pai quando necessário
+      // Recarregar posts da tabela definitiva
+      const { data: postsAtualizados } = await supabase
+        .from('posts_planejamento')
+        .select('*')
+        .eq('planejamento_id', planejamento.id)
+        .order('data_postagem', { ascending: true });
       
-      toast.success("Post aprovado e salvo automaticamente!");
+      if (postsAtualizados) {
+        setPosts(postsAtualizados);
+      }
+      
+      toast.success("Post aprovado e salvo!");
     } catch (error) {
-      console.error('Erro ao aprovar post:', error);
+      console.error('❌ Erro ao aprovar post:', error);
       toast.error("Erro ao aprovar post");
     } finally {
       setAprovandoPost(null);
