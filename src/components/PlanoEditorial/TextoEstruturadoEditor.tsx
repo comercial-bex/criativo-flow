@@ -97,7 +97,7 @@ export function TextoEstruturadoEditor({
             value={texto}
             onChange={(e) => setTexto(e.target.value)}
             placeholder="Digite o texto estruturado do post..."
-            className="min-h-[400px] font-mono text-sm"
+            className="min-h-[400px] max-h-[500px] overflow-y-auto resize-none font-mono text-sm"
           />
 
           <div className="flex gap-2 justify-end">
