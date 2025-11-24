@@ -19,6 +19,7 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Checkbox } from '@/components/ui/checkbox';
+import { normalizarPost } from '@/utils/normalizarPost';
 
 interface EditarPostModalProps {
   open: boolean;
@@ -41,6 +42,9 @@ export function EditarPostModal({
   onSave,
   onRefresh
 }: EditarPostModalProps) {
+  // ✅ FASE 2: Normalizar post antes de editar
+  const postNormalizado = normalizarPost(post);
+  
   const {
     editedPost,
     updateField,
@@ -49,7 +53,7 @@ export function EditarPostModal({
     hasChanges,
     criarTarefaVinculada
   } = usePostEditor({
-    post,
+    post: postNormalizado,
     onSave,
     autoSave: false
   });
@@ -85,7 +89,9 @@ export function EditarPostModal({
       await criarTarefaVinculada(clienteId, projetoId);
     }
     
+    // ✅ FASE 3: Sincronização - sempre chamar onRefresh após salvar
     if (onRefresh) {
+      console.log('🔄 Sincronizando tabela após salvar...');
       onRefresh();
     }
     
