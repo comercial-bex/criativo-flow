@@ -16,6 +16,8 @@ interface Post {
   formato_postagem: string;
   objetivo_postagem: string;
   descricao?: string;
+  texto_estruturado?: string;
+  tipo_conteudo?: string;
   arquivo_visual_url?: string;
   status_post?: string;
 }
@@ -40,9 +42,13 @@ export const CalendarioEditorial = ({
   const getPostsForDay = (day: Date) => {
     return posts.filter(post => {
       try {
+        // Validar se data_postagem existe e é válida
+        if (!post.data_postagem) return false;
+        
         const postDate = parseISO(post.data_postagem);
         return isSameDay(postDate, day);
-      } catch {
+      } catch (error) {
+        console.warn('Erro ao parsear data do post:', post.id, post.data_postagem);
         return false;
       }
     });
@@ -120,27 +126,34 @@ export const CalendarioEditorial = ({
                         <TooltipTrigger asChild>
                           <div
                             onClick={() => onPostClick?.(post)}
-                            className={`${getCreativeColor(post.formato_postagem)} px-2 py-1 rounded text-xs cursor-pointer hover:opacity-80 transition-opacity truncate`}
+                            className={`${getCreativeColor(post.formato_postagem || 'post')} px-2 py-1 rounded text-xs cursor-pointer hover:opacity-80 transition-opacity truncate`}
                           >
-                            <span className="mr-1">{getCreativeIcon(post.formato_postagem)}</span>
+                            <span className="mr-1">{getCreativeIcon(post.formato_postagem || 'post')}</span>
                             {post.titulo || 'Sem título'}
                           </div>
                         </TooltipTrigger>
                         <TooltipContent className="max-w-xs">
                           <div className="space-y-2">
-                            <p className="font-semibold">{post.titulo}</p>
-                            {post.descricao && (
+                            <p className="font-semibold">{post.titulo || 'Sem título'}</p>
+                            {(post.descricao || post.texto_estruturado) && (
                               <p className="text-sm text-muted-foreground line-clamp-3">
-                                {post.descricao}
+                                {post.descricao || post.texto_estruturado}
                               </p>
                             )}
-                            <div className="flex gap-2">
+                            <div className="flex gap-2 flex-wrap">
                               <Badge className={getStatusColor(post.status_post)} variant="secondary">
                                 {post.status_post || 'a_fazer'}
                               </Badge>
-                              <Badge variant="outline">
-                                {post.objetivo_postagem}
-                              </Badge>
+                              {post.objetivo_postagem && (
+                                <Badge variant="outline">
+                                  {post.objetivo_postagem}
+                                </Badge>
+                              )}
+                              {post.tipo_conteudo && (
+                                <Badge variant="outline">
+                                  {post.tipo_conteudo}
+                                </Badge>
+                              )}
                             </div>
                           </div>
                         </TooltipContent>

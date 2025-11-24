@@ -11,7 +11,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from '@/lib/toast-compat';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { CalendarioEditorial } from "@/components/CalendarioEditorial";
 import { PostPreviewModal } from "@/components/PostPreviewModal";
 import { PostViewModal } from "@/components/PostViewModal";
 import { DataTable } from "@/components/DataTable";
@@ -20,7 +19,7 @@ import { PostsContentView } from "@/components/PostsContentView";
 import { ListaPostsView } from "@/components/ListaPostsView";
 import { TabelaPlanoEditorial } from "@/components/PlanoEditorial/TabelaPlanoEditorial";
 import { ModosVisualizacao } from "@/components/PlanoEditorial/ModosVisualizacao";
-import { CalendarioEditorial as CalendarioView } from "@/components/PlanoEditorial/CalendarioEditorial";
+import { CalendarioEditorial } from "@/components/PlanoEditorial/CalendarioEditorial";
 import { CartaoPlanoEditorial } from "@/components/PlanoEditorial/CartaoPlanoEditorial";
 import { AnalyticsTipoConteudo } from "@/components/PlanoEditorial/AnalyticsTipoConteudo";
 import { DndContext, closestCenter, DragEndEvent, DragStartEvent, DragOverlay, useDroppable } from "@dnd-kit/core";
@@ -2648,7 +2647,7 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
               )}
 
               {modoVisualizacao === 'calendario' && (
-                <CalendarioView
+                <CalendarioEditorial
                   posts={[...posts, ...postsGerados]}
                   currentDate={currentDate}
                   onDateChange={setCurrentDate}
@@ -2657,17 +2656,6 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
               )}
             </CardContent>
           </Card>
-
-            <CalendarioEditorial
-            isOpen={calendarioExpanded}
-            onClose={() => setCalendarioExpanded(false)}
-            posts={posts}
-            postsGerados={postsGerados}
-            onPostClick={onPreviewPost}
-            onPostsUpdate={(updatedPosts) => {
-              setPosts(updatedPosts);
-            }}
-          />
         </TabsContent>
 
         <TabsContent value="datas-comemorativas" className="space-y-4">
