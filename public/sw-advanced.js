@@ -104,12 +104,12 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Determinar estratégia baseada no tipo de recurso
+  // FASE 2: Melhor detecção de chunks dinâmicos
+  // Chunks com hash (formato: Nome-abc123.js) NUNCA devem ser cacheados
   if (matchesPattern(request.url, CACHE_PATTERNS.static)) {
-    // 🆕 Detectar chunks dinâmicos e usar Network-Only
-    if (request.url.match(/\/assets\/js\/[A-Z][a-z]+-[A-Za-z0-9]+\.js$/)) {
-      console.log('[SW] Dynamic chunk detected, using network-only:', request.url);
-      event.respondWith(fetch(request)); // Network-only, sem cache
+    if (request.url.match(/\/assets\/.*-[a-f0-9]{8,}\.js$/)) {
+      console.log('[SW] Dynamic chunk detected (hash pattern), using network-only:', request.url);
+      event.respondWith(fetch(request)); // Network-only puro
       return;
     }
     
