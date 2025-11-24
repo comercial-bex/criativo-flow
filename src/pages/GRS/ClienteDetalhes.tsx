@@ -1,4 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 import { useClientData } from '@/hooks/useClientData';
 import { useClienteOnboarding } from '@/hooks/useClienteOnboarding';
 import { BexCard, BexCardContent, BexCardHeader, BexCardTitle } from '@/components/ui/bex-card';
@@ -6,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Loader2 } from 'lucide-react';
 import {
   User,
   Building2,
@@ -30,10 +33,32 @@ import {
 export default function GRSClienteDetalhes() {
   const { clienteId } = useParams();
   const navigate = useNavigate();
-  const { getClienteById } = useClienteData();
   const { data: onboarding, isLoading: loadingOnboarding } = useClienteOnboarding(clienteId);
 
-  const { getClienteById } = useClientData();
+  // Buscar dados do cliente
+  const { data: cliente, isLoading: loadingCliente } = useQuery({
+    queryKey: ['cliente', clienteId],
+    queryFn: async () => {
+      if (!clienteId) return null;
+      const { data, error } = await supabase
+        .from('clientes')
+        .select('*')
+        .eq('id', clienteId)
+        .maybeSingle();
+      
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!clienteId
+  });
+
+  if (loadingCliente || loadingOnboarding) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   if (!clienteId || !cliente) {
     return (

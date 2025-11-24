@@ -949,76 +949,14 @@ Responda com um texto corrido, bem estruturado e com no máximo 700 palavras.
     }
   };
 
-  // Gerar 3 personas com IA baseado no onboarding, objetivos, posicionamento e frameworks
-  const gerarPersonasComIA = async () => {
-    setGerandoPersonas(true);
 
-    try {
-      const dadosOnboarding = await buscarDadosOnboarding();
-      const dadosObjetivos = await buscarDadosObjetivos();
-      
-      if (!validarDadosCompletos()) {
-        return;
-      }
-
-      // Construir prompt estruturado para gerar 3 personas
-      const frameworksTexto = componentesSelecionados.map((comp: any) => `${comp.nome}: ${comp.descricao}`).join('\n');
-      const especialistasTexto = conteudo.especialistas_selecionados?.map((esp: any) => `${esp.nome}: ${esp.descricao}`).join('\n') || '';
-
-      const prompt = `
-Baseando-se nas informações completas abaixo, gere 3 PERSONAS DISTINTAS para estratégia de marketing digital. Formate a resposta em JSON válido com a estrutura especificada.
-
-**INFORMAÇÕES DA EMPRESA:**
-- Nome: ${dadosOnboarding.nome_empresa}
-- Segmento: ${dadosOnboarding.segmento_atuacao}
-- Produtos/Serviços: ${dadosOnboarding.produtos_servicos}
-- Posicionamento: ${conteudo.posicionamento}
-
-**PÚBLICO-ALVO:**
-- Tipos: ${dadosOnboarding?.publico_alvo?.join(', ') || 'Não informado'}
-- Dores/Problemas: ${dadosOnboarding?.dores_problemas || 'Não informado'}
-- O que valorizam: ${dadosOnboarding?.valorizado || 'Não informado'}
-- Como encontram a empresa: ${dadosOnboarding?.como_encontram?.join(', ') || 'Não informado'}
-- Frequência de compra: ${dadosOnboarding.frequencia_compra}
-
-**ANÁLISE SWOT:**
-- Forças: ${(dadosObjetivos.analise_swot as any)?.forcas || dadosOnboarding.forcas}
-- Fraquezas: ${(dadosObjetivos.analise_swot as any)?.fraquezas || dadosOnboarding.fraquezas}
-- Oportunidades: ${(dadosObjetivos.analise_swot as any)?.oportunidades || dadosOnboarding.oportunidades}
-- Ameaças: ${(dadosObjetivos.analise_swot as any)?.ameacas || dadosOnboarding.ameacas}
-
-**OBJETIVOS ESTRATÉGICOS:**
-${JSON.stringify(dadosObjetivos.objetivos, null, 2)}
-
-**FRAMEWORKS DE CONTEÚDO SELECIONADOS:**
-${frameworksTexto}
-
-**ESPECIALISTAS SELECIONADOS:**
-${especialistasTexto}
-
-Gere 3 personas bem distintas que representem diferentes segmentos do público-alvo. Cada persona deve ser única e abordar diferentes aspectos do mercado.
-
-Formate a resposta em JSON válido com esta estrutura EXATA:
-{
-  "personas": [
-    {
-      "nome": "Nome da Persona",
-      "idade": "Faixa etária",
-      "profissao": "Profissão/Cargo",
-      "resumo": "Breve resumo em 2-3 linhas",
-      "dores": ["dor 1", "dor 2", "dor 3"],
-      "motivacoes": ["motivação 1", "motivação 2", "motivação 3"],
-      "canais_preferidos": ["canal 1", "canal 2", "canal 3"],
-      "comportamento_compra": "Como toma decisões de compra",
-      "objecoes": ["objeção 1", "objeção 2"],
-      "como_ajudar": "Como a empresa pode ajudar esta persona"
   const gerarPersonasComIA = async () => {
     if (!planejamento?.cliente_id) {
       toast.error("Cliente não identificado");
       return;
     }
     
-    const loadingToast = toast.loading("Gerando personas com IA...");
+    toast.loading("Gerando personas com IA...");
     setGerandoPersonas(true);
 
     try {
@@ -1029,7 +967,8 @@ Formate a resposta em JSON válido com esta estrutura EXATA:
         .maybeSingle();
 
       if (!onboarding) {
-        toast.dismiss(loadingToast);
+        setGerandoPersonas(false);
+        toast.dismiss();
         toast.error("Complete o onboarding do cliente antes de gerar personas");
         return;
       }
@@ -1049,13 +988,13 @@ Formate a resposta em JSON válido com esta estrutura EXATA:
         persona: JSON.stringify({ personas: data.content.personas })
       }));
 
-      toast.dismiss(loadingToast);
+      setGerandoPersonas(false);
+      toast.dismiss();
       toast.success("Personas geradas com sucesso!");
     } catch (error: any) {
-      toast.dismiss(loadingToast);
-      toast.error(error.message || "Erro ao gerar personas");
-    } finally {
       setGerandoPersonas(false);
+      toast.dismiss();
+      toast.error(error.message || "Erro ao gerar personas");
     }
   };
 
@@ -3036,56 +2975,61 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
         onAplicarTemplate={async (template: TemplateCampanha) => {
           console.log('🎨 Aplicando template:', template.nome);
           
-          // Calcular datas com base no template
-          const ano = new Date(mesReferencia).getFullYear();
-          const mes = template.mesReferencia;
-          
-          let dataInicio: string;
-          let dataFim: string;
-          
-          if (template.dataFixa) {
-            const [dia] = template.dataFixa.split('/').map(Number);
-            const dataEvento = new Date(ano, mes - 1, dia);
+          try {
+            // Calcular datas com base no template
+            const ano = new Date(mesReferencia).getFullYear();
+            const mes = template.mesReferencia;
             
-            const dataInicioCalc = new Date(dataEvento);
-            dataInicioCalc.setDate(dataInicioCalc.getDate() - template.diasPreCampanha);
-            dataInicio = dataInicioCalc.toISOString().split('T')[0];
+            let dataInicio: string;
+            let dataFim: string;
             
-            const dataFimCalc = new Date(dataEvento);
-            dataFimCalc.setDate(dataFimCalc.getDate() + template.diasPosCampanha);
-            dataFim = dataFimCalc.toISOString().split('T')[0];
-          } else {
-            // Para datas móveis, usar primeiro dia do mês
-            const dataInicioCalc = new Date(ano, mes - 1, 1);
-            dataInicio = dataInicioCalc.toISOString().split('T')[0];
+            if (template.dataFixa) {
+              const [dia] = template.dataFixa.split('/').map(Number);
+              const dataEvento = new Date(ano, mes - 1, dia);
+              
+              const dataInicioCalc = new Date(dataEvento);
+              dataInicioCalc.setDate(dataInicioCalc.getDate() - template.diasPreCampanha);
+              dataInicio = dataInicioCalc.toISOString().split('T')[0];
+              
+              const dataFimCalc = new Date(dataEvento);
+              dataFimCalc.setDate(dataFimCalc.getDate() + template.diasPosCampanha);
+              dataFim = dataFimCalc.toISOString().split('T')[0];
+            } else {
+              // Para datas móveis, usar primeiro dia do mês
+              const dataInicioCalc = new Date(ano, mes - 1, 1);
+              dataInicio = dataInicioCalc.toISOString().split('T')[0];
+              
+              const dataFimCalc = new Date(ano, mes - 1, 15);
+              dataFim = dataFimCalc.toISOString().split('T')[0];
+            }
             
-            const dataFimCalc = new Date(ano, mes - 1, 15);
-            dataFim = dataFimCalc.toISOString().split('T')[0];
-          }
-          
-          const result = await adicionarCampanha({
-            data_comemorativa_id: `template_${template.id}`,
-            nome_campanha: template.nome,
-            data_inicio: dataInicio,
-            data_fim: dataFim,
-            periodo_pre_campanha: template.diasPreCampanha,
-            periodo_pos_campanha: template.diasPosCampanha,
-            objetivos: template.objetivosSugeridos,
-            status: 'planejada',
-            orcamento_sugerido: template.orcamentoSugerido,
-            template_id: template.id,
-            estrutura_posts_sugerida: template.estruturaPosts
-          } as any);
-          
-          if (result.error) {
-            console.error('❌ Erro ao aplicar template:', result.error);
+            const result = await adicionarCampanha({
+              data_comemorativa_id: `template_${template.id}`,
+              nome_campanha: template.nome,
+              data_inicio: dataInicio,
+              data_fim: dataFim,
+              periodo_pre_campanha: template.diasPreCampanha,
+              periodo_pos_campanha: template.diasPosCampanha,
+              objetivos: template.objetivosSugeridos,
+              status: 'planejada',
+              orcamento_sugerido: template.orcamentoSugerido,
+              template_id: template.id,
+              estrutura_posts_sugerida: template.estruturaPosts
+            } as any);
+            
+            if (result.error) {
+              console.error('❌ Erro ao aplicar template:', result.error);
+              toast.error('Erro ao aplicar template');
+              return;
+            }
+            
+            console.log('✅ Template aplicado:', result.data?.id);
+            toast.success(`Template "${template.nome}" aplicado com sucesso!`);
+            refetch();
+          } catch (error) {
+            console.error('❌ Erro ao aplicar template:', error);
             toast.error('Erro ao aplicar template');
-            return;
           }
-          
-          console.log('✅ Template aplicado:', result.data?.id);
-          toast.success(`Template "${template.nome}" aplicado com sucesso!`);
-          refetch();
         }}
       />
     </div>
