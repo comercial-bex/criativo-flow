@@ -17152,6 +17152,7 @@ export type Database = {
         Args: { user_uuid: string }
         Returns: Database["public"]["Enums"]["user_role"]
       }
+      get_users_batch: { Args: { p_user_ids: string[] }; Returns: Json }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["user_role"]
