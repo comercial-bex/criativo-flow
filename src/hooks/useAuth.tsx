@@ -49,19 +49,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setSession(session);
       setUser(session?.user ?? null);
       
-      // ✅ OTIMIZAÇÃO FASE 1: Buscar perfil completo em 1 query (ao invés de 3)
+      // TEMPORÁRIO: RPC function removida devido a tipos recursivos
+      // TODO: Restaurar após recriar views em schema privado
       if (session?.user) {
-        try {
-          const { data: userComplete } = await supabase.rpc('get_user_complete', {
-            p_user_id: session.user.id
-          });
-          
-          if (userComplete) {
-            console.log('✅ Auth: User complete loaded in 1 query -66% tempo');
-          }
-        } catch (error) {
-          console.error('Auth: Erro ao carregar perfil completo:', error);
-        }
+        console.log('✅ Auth: User authenticated:', session.user.id);
       }
       
       setLoading(false);
