@@ -9892,6 +9892,7 @@ export type Database = {
           contexto_estrategico: string | null
           created_at: string
           data_postagem: string
+          expires_at: string | null
           formato_postagem: string
           hashtags: string[] | null
           headline: string | null
@@ -9915,6 +9916,7 @@ export type Database = {
           contexto_estrategico?: string | null
           created_at?: string
           data_postagem: string
+          expires_at?: string | null
           formato_postagem?: string
           hashtags?: string[] | null
           headline?: string | null
@@ -9938,6 +9940,7 @@ export type Database = {
           contexto_estrategico?: string | null
           created_at?: string
           data_postagem?: string
+          expires_at?: string | null
           formato_postagem?: string
           hashtags?: string[] | null
           headline?: string | null
@@ -9952,7 +9955,15 @@ export type Database = {
           titulo?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_posts_temp_planejamento"
+            columns: ["planejamento_id"]
+            isOneToOne: false
+            referencedRelation: "planejamentos"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       posts_planejamento: {
         Row: {
@@ -13275,6 +13286,7 @@ export type Database = {
           numero_protocolo: string | null
           observacoes: string | null
           origem: string | null
+          planejamento_id: string | null
           prazo_executor: string | null
           prioridade: Database["public"]["Enums"]["prioridade_enum"] | null
           produto_id: string | null
@@ -13325,6 +13337,7 @@ export type Database = {
           numero_protocolo?: string | null
           observacoes?: string | null
           origem?: string | null
+          planejamento_id?: string | null
           prazo_executor?: string | null
           prioridade?: Database["public"]["Enums"]["prioridade_enum"] | null
           produto_id?: string | null
@@ -13375,6 +13388,7 @@ export type Database = {
           numero_protocolo?: string | null
           observacoes?: string | null
           origem?: string | null
+          planejamento_id?: string | null
           prazo_executor?: string | null
           prioridade?: Database["public"]["Enums"]["prioridade_enum"] | null
           produto_id?: string | null
@@ -13447,6 +13461,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "vw_calendario_completo"
             referencedColumns: ["responsavel_profile_id"]
+          },
+          {
+            foreignKeyName: "fk_tarefa_planejamento"
+            columns: ["planejamento_id"]
+            isOneToOne: false
+            referencedRelation: "planejamentos"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "fk_tarefa_responsavel"
@@ -16586,6 +16607,7 @@ export type Database = {
           users_with_role: number
         }[]
       }
+      cleanup_expired_temp_posts: { Args: never; Returns: number }
       cleanup_posts_temporarios: {
         Args: never
         Returns: {
