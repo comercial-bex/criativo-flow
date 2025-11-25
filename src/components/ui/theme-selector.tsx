@@ -54,13 +54,32 @@ export function ThemeSelector() {
               onClick={() => setTheme(themeMode)}
               className={cn(
                 "flex items-start gap-3 p-3 cursor-pointer transition-all",
-                "hover:bg-bex/10 hover:text-bex",
-                theme === themeMode && "bg-bex/15 text-bex border-l-2 border-bex"
+                "hover:bg-bex/10",
+                theme === themeMode && "bg-bex/15 border-l-2 border-bex"
               )}
             >
-              <div className="flex-shrink-0 mt-0.5">
-                {getThemeIcon(themeMode)}
+              {/* Preview visual do tema */}
+              <div className="flex-shrink-0 flex gap-1 mt-1">
+                {themeMode === 'light' && (
+                  <div className="flex gap-0.5">
+                    <div className="w-3 h-3 rounded-sm bg-[#4A5D23]" />
+                    <div className="w-3 h-3 rounded-sm bg-white border border-gray-300" />
+                  </div>
+                )}
+                {themeMode === 'dark' && (
+                  <div className="flex gap-0.5">
+                    <div className="w-3 h-3 rounded-sm bg-[#54C43D]" />
+                    <div className="w-3 h-3 rounded-sm bg-[#1E1E1E]" />
+                  </div>
+                )}
+                {themeMode === 'bex-gamer' && (
+                  <div className="flex gap-0.5">
+                    <div className="w-3 h-3 rounded-sm bg-[#00FF41] shadow-[0_0_8px_rgba(0,255,65,0.6)]" />
+                    <div className="w-3 h-3 rounded-sm bg-black" />
+                  </div>
+                )}
               </div>
+              
               <div className="flex-1 space-y-1">
                 <div className="flex items-center gap-2">
                   <span className="font-medium">{preset.icon} {preset.name}</span>
