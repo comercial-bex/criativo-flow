@@ -17147,6 +17147,7 @@ export type Database = {
         Args: { p_projeto_id: string }
         Returns: Json
       }
+      get_user_complete: { Args: { p_user_id: string }; Returns: Json }
       get_user_role: {
         Args: { user_uuid: string }
         Returns: Database["public"]["Enums"]["user_role"]
