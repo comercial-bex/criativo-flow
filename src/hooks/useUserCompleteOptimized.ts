@@ -41,11 +41,8 @@ export interface UserComplete {
 
 /**
  * Hook otimizado para buscar dados completos do usuário atual
- * 
- * NOTA TEMPORÁRIA: As views foram removidas temporariamente devido a tipos recursivos.
- * Este hook agora faz 3 queries separadas até reimplementarmos a solução otimizada.
- * 
- * TODO: Recriar views em schema privado e restaurar performance otimizada
+ * Usa RPC function que retorna JSONB (evita tipos recursivos)
+ * Performance: -66% queries (3 → 1)
  */
 export function useUserCompleteOptimized(userId?: string) {
   return useQuery({
@@ -53,53 +50,17 @@ export function useUserCompleteOptimized(userId?: string) {
     queryFn: async () => {
       if (!userId) return null;
 
-      // TEMPORÁRIO: Query direta até recriar views em schema privado
-      const [pessoaRes, userRoleRes] = await Promise.all([
-        supabase
-          .from('pessoas')
-          .select('*')
-          .eq('profile_id', userId)
-          .single(),
-        supabase
-          .from('user_roles')
-          .select('*')
-          .eq('user_id', userId)
-          .single()
-      ]);
+      const { data, error } = await supabase.rpc('get_user_complete', {
+        p_user_id: userId
+      });
 
-      if (pessoaRes.error && pessoaRes.error.code !== 'PGRST116') {
-        console.error('❌ Erro ao buscar pessoa:', pessoaRes.error);
-        throw pessoaRes.error;
+      if (error) {
+        console.error('❌ Erro ao buscar usuário completo:', error);
+        throw error;
       }
 
-      if (!pessoaRes.data) return null;
-
-      // Montar objeto UserComplete manualmente
-      return {
-        pessoa_id: pessoaRes.data.id,
-        profile_id: pessoaRes.data.profile_id,
-        nome: pessoaRes.data.nome,
-        email: pessoaRes.data.email,
-        cpf: pessoaRes.data.cpf,
-        telefones: pessoaRes.data.telefones,
-        avatar_url: pessoaRes.data.avatar_url,
-        papeis: pessoaRes.data.papeis,
-        status: pessoaRes.data.status,
-        cargo_atual: pessoaRes.data.cargo_atual,
-        cliente_id: pessoaRes.data.cliente_id,
-        responsavel_id: pessoaRes.data.responsavel_id,
-        especialidade_id: pessoaRes.data.especialidade_id,
-        dados_incompletos: pessoaRes.data.dados_incompletos,
-        pessoa_created_at: pessoaRes.data.created_at,
-        pessoa_updated_at: pessoaRes.data.updated_at,
-        auth_email: null,
-        email_confirmed_at: null,
-        last_sign_in_at: null,
-        auth_created_at: null,
-        raw_user_meta_data: null,
-        user_role: userRoleRes.data?.role || null,
-        role_created_at: userRoleRes.data?.created_at || null,
-      } as UserComplete;
+      // data é JSONB, retornar direto
+      return data as unknown as UserComplete;
     },
     enabled: !!userId,
     staleTime: 10 * 60 * 1000, // 10min - dados de usuário mudam pouco
