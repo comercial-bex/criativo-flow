@@ -101,6 +101,18 @@ export function CreatePlanejamentoUnificadoModal({
   const handleSalvar = async () => {
     setLoading(true);
     try {
+      // 🔥 BUSCAR PROJETO ATIVO DO CLIENTE
+      const { data: clienteData } = await supabase
+        .from('clientes')
+        .select('projetos!inner(id)')
+        .eq('id', clienteSelecionado)
+        .eq('projetos.status', 'ativo')
+        .order('projetos.created_at', { ascending: false, foreignTable: 'projetos' })
+        .limit(1)
+        .single();
+
+      const projetoId = clienteData?.projetos?.[0]?.id || null;
+
       if (tipoPlano === 'estrategico' && dadosIA) {
         // Salvar plano estratégico
         const { data: plano, error: planoError } = await createStrategicPlan({
@@ -139,12 +151,13 @@ export function CreatePlanejamentoUnificadoModal({
 
           if (planejamentoError) throw planejamentoError;
 
-          // Gerar posts automaticamente
+          // ✅ Gerar posts automaticamente COM projeto_id
           await gerarPostsAutomaticos(
             planejamento.id,
             assinatura.posts_mensais,
             { missao, visao, valores },
-            clienteSelecionado
+            clienteSelecionado,
+            projetoId
           );
 
           toast.success('🎯 Plano estratégico criado com sucesso!', {
@@ -190,11 +203,13 @@ export function CreatePlanejamentoUnificadoModal({
         }
 
         if (assinatura && gerarPostsAuto) {
+          // ✅ Gerar posts automaticamente COM projeto_id
           await gerarPostsAutomaticos(
             planejamento.id,
             assinatura.posts_mensais,
             undefined,
-            clienteSelecionado
+            clienteSelecionado,
+            projetoId
           );
           
           toast.success('📅 Planejamento mensal criado!', {
