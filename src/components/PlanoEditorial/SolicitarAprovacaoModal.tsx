@@ -39,23 +39,24 @@ export function SolicitarAprovacaoModal({
         return;
       }
 
-      // Preparar dados da aprovação
+      // ✅ FASE 1 P2: Preparar dados da aprovação com post_id
       const aprovacaoData = {
         cliente_id: clienteId,
         projeto_id: projetoId || null,
+        post_id: post.id && !post.id.startsWith('temp-') ? post.id : null, // ✅ NOVO: Relacionamento direto
         tarefa_id: post.tarefa_vinculada_id || null,
-        tipo: post.formato_postagem || 'post', // ✅ FASE 3: Usar formato_postagem
+        tipo: post.formato_postagem || 'post',
         titulo: post.titulo || `Post de ${format(new Date(post.data_postagem), 'dd/MM/yyyy', { locale: ptBR })}`,
         descricao: mensagemAdicional || post.contexto_estrategico || null,
         anexo_url: post.arquivo_visual_url || null,
         legenda: post.texto_estruturado || null,
-        objetivo_postagem: post.tipo_conteudo || post.objetivo_postagem || 'informar', // ✅ FASE 3: Usar tipo_conteudo
-        formato_postagem: post.formato_postagem || 'post', // ✅ FASE 3: Corrigido
+        objetivo_postagem: post.tipo_conteudo || post.objetivo_postagem || 'informar',
+        formato_postagem: post.formato_postagem || 'post',
         hashtags: post.hashtags || null,
         rede_social: post.rede_social || 'instagram',
         status: 'pendente',
         solicitado_por: user.id,
-        trace_id: post.id, // Vincular aprovação ao post original
+        trace_id: post.id, // Manter trace_id para retrocompatibilidade
       };
 
       // Inserir aprovação

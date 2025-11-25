@@ -438,6 +438,7 @@ export type Database = {
           legenda: string | null
           motivo_reprovacao: string | null
           objetivo_postagem: string | null
+          post_id: string | null
           projeto_id: string | null
           rede_social: string | null
           solicitado_por: string
@@ -463,6 +464,7 @@ export type Database = {
           legenda?: string | null
           motivo_reprovacao?: string | null
           objetivo_postagem?: string | null
+          post_id?: string | null
           projeto_id?: string | null
           rede_social?: string | null
           solicitado_por: string
@@ -488,6 +490,7 @@ export type Database = {
           legenda?: string | null
           motivo_reprovacao?: string | null
           objetivo_postagem?: string | null
+          post_id?: string | null
           projeto_id?: string | null
           rede_social?: string | null
           solicitado_por?: string
@@ -602,6 +605,13 @@ export type Database = {
             columns: ["tarefa_id"]
             isOneToOne: false
             referencedRelation: "tarefas_projeto"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_aprovacao_post"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts_planejamento"
             referencedColumns: ["id"]
           },
           {
@@ -9968,6 +9978,7 @@ export type Database = {
           periodo_campanha: string | null
           persona_alvo: string | null
           planejamento_id: string
+          projeto_id: string | null
           rede_social: string | null
           responsavel_id: string | null
           status: Database["public"]["Enums"]["post_status_enum"] | null
@@ -10005,6 +10016,7 @@ export type Database = {
           periodo_campanha?: string | null
           persona_alvo?: string | null
           planejamento_id: string
+          projeto_id?: string | null
           rede_social?: string | null
           responsavel_id?: string | null
           status?: Database["public"]["Enums"]["post_status_enum"] | null
@@ -10042,6 +10054,7 @@ export type Database = {
           periodo_campanha?: string | null
           persona_alvo?: string | null
           planejamento_id?: string
+          projeto_id?: string | null
           rede_social?: string | null
           responsavel_id?: string | null
           status?: Database["public"]["Enums"]["post_status_enum"] | null
@@ -10057,6 +10070,41 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_posts_projeto"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "projetos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_posts_projeto"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "vw_calendario_completo"
+            referencedColumns: ["projeto_id"]
+          },
+          {
+            foreignKeyName: "fk_posts_projeto"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "vw_custos_projeto"
+            referencedColumns: ["projeto_id"]
+          },
+          {
+            foreignKeyName: "fk_posts_projeto"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "vw_dashboard_financeiro_projeto"
+            referencedColumns: ["projeto_id"]
+          },
+          {
+            foreignKeyName: "fk_posts_projeto"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "vw_projeto_lucro"
+            referencedColumns: ["projeto_id"]
+          },
           {
             foreignKeyName: "posts_planejamento_campanha_id_fkey"
             columns: ["campanha_id"]
