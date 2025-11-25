@@ -23,7 +23,7 @@ export async function gerarPostsAutomaticos(
   quantidadePosts: number,
   planoEstrategico?: PlanoEstrategico,
   clienteId?: string,
-  projetoId?: string // ✅ Adicionar parâmetro opcional
+  projetoId?: string // ✅ FASE 1 P1: Parâmetro para vincular posts ao projeto
 ) {
   try {
     console.log('📅 Gerando', quantidadePosts, 'posts automáticos para planejamento', planejamentoId);

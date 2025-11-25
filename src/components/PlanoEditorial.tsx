@@ -1905,6 +1905,7 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
         })
         .map((post: any) => ({
           planejamento_id: planejamento.id,
+          projeto_id: projetoId, // ✅ FASE 1 P1: Adicionar projeto_id
           titulo: post.titulo,
           data_postagem: post.data_postagem,
           formato_postagem: post.formato_postagem || post.tipo_criativo || 'post',
@@ -1981,6 +1982,7 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
 
       const postParaSalvar = {
         planejamento_id: planejamento.id,
+        projeto_id: projetoId, // ✅ FASE 1 P1: Adicionar projeto_id
         titulo: post.titulo,
         data_postagem: post.data_postagem,
         formato_postagem: post.formato_postagem || post.tipo_criativo || 'post',
