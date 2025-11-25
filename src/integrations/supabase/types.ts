@@ -1727,13 +1727,6 @@ export type Database = {
             foreignKeyName: "fk_captacoes_especialista"
             columns: ["especialista_id"]
             isOneToOne: false
-            referencedRelation: "mv_user_cache"
-            referencedColumns: ["profile_id"]
-          },
-          {
-            foreignKeyName: "fk_captacoes_especialista"
-            columns: ["especialista_id"]
-            isOneToOne: false
             referencedRelation: "pessoas"
             referencedColumns: ["profile_id"]
           },
@@ -1757,13 +1750,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "vw_calendario_completo"
             referencedColumns: ["responsavel_profile_id"]
-          },
-          {
-            foreignKeyName: "fk_captacoes_especialista"
-            columns: ["especialista_id"]
-            isOneToOne: false
-            referencedRelation: "vw_user_complete"
-            referencedColumns: ["profile_id"]
           },
         ]
       }
@@ -4667,13 +4653,6 @@ export type Database = {
             foreignKeyName: "eventos_calendario_responsavel_id_fkey"
             columns: ["responsavel_id"]
             isOneToOne: false
-            referencedRelation: "mv_user_cache"
-            referencedColumns: ["profile_id"]
-          },
-          {
-            foreignKeyName: "eventos_calendario_responsavel_id_fkey"
-            columns: ["responsavel_id"]
-            isOneToOne: false
             referencedRelation: "pessoas"
             referencedColumns: ["profile_id"]
           },
@@ -4697,13 +4676,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "vw_calendario_completo"
             referencedColumns: ["responsavel_profile_id"]
-          },
-          {
-            foreignKeyName: "eventos_calendario_responsavel_id_fkey"
-            columns: ["responsavel_id"]
-            isOneToOne: false
-            referencedRelation: "vw_user_complete"
-            referencedColumns: ["profile_id"]
           },
           {
             foreignKeyName: "eventos_calendario_tarefa_id_fkey"
@@ -5442,13 +5414,6 @@ export type Database = {
             foreignKeyName: "financeiro_folha_pessoa_id_fkey"
             columns: ["pessoa_id"]
             isOneToOne: false
-            referencedRelation: "mv_user_cache"
-            referencedColumns: ["pessoa_id"]
-          },
-          {
-            foreignKeyName: "financeiro_folha_pessoa_id_fkey"
-            columns: ["pessoa_id"]
-            isOneToOne: false
             referencedRelation: "pessoas"
             referencedColumns: ["id"]
           },
@@ -5458,13 +5423,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "financeiro_folha_pessoa_id_fkey"
-            columns: ["pessoa_id"]
-            isOneToOne: false
-            referencedRelation: "vw_user_complete"
-            referencedColumns: ["pessoa_id"]
           },
         ]
       }
@@ -5558,13 +5516,6 @@ export type Database = {
             foreignKeyName: "fk_folha_itens_colaborador"
             columns: ["colaborador_id"]
             isOneToOne: false
-            referencedRelation: "mv_user_cache"
-            referencedColumns: ["pessoa_id"]
-          },
-          {
-            foreignKeyName: "fk_folha_itens_colaborador"
-            columns: ["colaborador_id"]
-            isOneToOne: false
             referencedRelation: "pessoas"
             referencedColumns: ["id"]
           },
@@ -5574,13 +5525,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_folha_itens_colaborador"
-            columns: ["colaborador_id"]
-            isOneToOne: false
-            referencedRelation: "vw_user_complete"
-            referencedColumns: ["pessoa_id"]
           },
         ]
       }
@@ -8170,13 +8114,6 @@ export type Database = {
             foreignKeyName: "migracao_clientes_audit_pessoa_id_fkey"
             columns: ["pessoa_id"]
             isOneToOne: false
-            referencedRelation: "mv_user_cache"
-            referencedColumns: ["pessoa_id"]
-          },
-          {
-            foreignKeyName: "migracao_clientes_audit_pessoa_id_fkey"
-            columns: ["pessoa_id"]
-            isOneToOne: false
             referencedRelation: "pessoas"
             referencedColumns: ["id"]
           },
@@ -8186,13 +8123,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "migracao_clientes_audit_pessoa_id_fkey"
-            columns: ["pessoa_id"]
-            isOneToOne: false
-            referencedRelation: "vw_user_complete"
-            referencedColumns: ["pessoa_id"]
           },
         ]
       }
@@ -9110,13 +9040,6 @@ export type Database = {
             foreignKeyName: "fk_pessoa_papeis_pessoa"
             columns: ["pessoa_id"]
             isOneToOne: false
-            referencedRelation: "mv_user_cache"
-            referencedColumns: ["pessoa_id"]
-          },
-          {
-            foreignKeyName: "fk_pessoa_papeis_pessoa"
-            columns: ["pessoa_id"]
-            isOneToOne: false
             referencedRelation: "pessoas"
             referencedColumns: ["id"]
           },
@@ -9126,20 +9049,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_pessoa_papeis_pessoa"
-            columns: ["pessoa_id"]
-            isOneToOne: false
-            referencedRelation: "vw_user_complete"
-            referencedColumns: ["pessoa_id"]
-          },
-          {
-            foreignKeyName: "pessoa_papeis_pessoa_id_fkey"
-            columns: ["pessoa_id"]
-            isOneToOne: false
-            referencedRelation: "mv_user_cache"
-            referencedColumns: ["pessoa_id"]
           },
           {
             foreignKeyName: "pessoa_papeis_pessoa_id_fkey"
@@ -9154,13 +9063,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "pessoa_papeis_pessoa_id_fkey"
-            columns: ["pessoa_id"]
-            isOneToOne: false
-            referencedRelation: "vw_user_complete"
-            referencedColumns: ["pessoa_id"]
           },
         ]
       }
@@ -9569,13 +9471,6 @@ export type Database = {
             foreignKeyName: "planejamentos_responsavel_id_fkey"
             columns: ["responsavel_id"]
             isOneToOne: false
-            referencedRelation: "mv_user_cache"
-            referencedColumns: ["pessoa_id"]
-          },
-          {
-            foreignKeyName: "planejamentos_responsavel_id_fkey"
-            columns: ["responsavel_id"]
-            isOneToOne: false
             referencedRelation: "pessoas"
             referencedColumns: ["id"]
           },
@@ -9585,13 +9480,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "planejamentos_responsavel_id_fkey"
-            columns: ["responsavel_id"]
-            isOneToOne: false
-            referencedRelation: "vw_user_complete"
-            referencedColumns: ["pessoa_id"]
           },
         ]
       }
@@ -11088,13 +10976,6 @@ export type Database = {
             foreignKeyName: "fk_projetos_grs_pessoas"
             columns: ["responsavel_grs_id"]
             isOneToOne: false
-            referencedRelation: "mv_user_cache"
-            referencedColumns: ["profile_id"]
-          },
-          {
-            foreignKeyName: "fk_projetos_grs_pessoas"
-            columns: ["responsavel_grs_id"]
-            isOneToOne: false
             referencedRelation: "pessoas"
             referencedColumns: ["profile_id"]
           },
@@ -11118,13 +10999,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "vw_calendario_completo"
             referencedColumns: ["responsavel_profile_id"]
-          },
-          {
-            foreignKeyName: "fk_projetos_grs_pessoas"
-            columns: ["responsavel_grs_id"]
-            isOneToOne: false
-            referencedRelation: "vw_user_complete"
-            referencedColumns: ["profile_id"]
           },
           {
             foreignKeyName: "projetos_created_by_fkey"
@@ -13104,13 +12978,6 @@ export type Database = {
             foreignKeyName: "subtarefas_responsavel_id_fkey"
             columns: ["responsavel_id"]
             isOneToOne: false
-            referencedRelation: "mv_user_cache"
-            referencedColumns: ["pessoa_id"]
-          },
-          {
-            foreignKeyName: "subtarefas_responsavel_id_fkey"
-            columns: ["responsavel_id"]
-            isOneToOne: false
             referencedRelation: "pessoas"
             referencedColumns: ["id"]
           },
@@ -13120,13 +12987,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "subtarefas_responsavel_id_fkey"
-            columns: ["responsavel_id"]
-            isOneToOne: false
-            referencedRelation: "vw_user_complete"
-            referencedColumns: ["pessoa_id"]
           },
           {
             foreignKeyName: "subtarefas_tarefa_pai_id_fkey"
@@ -13550,13 +13410,6 @@ export type Database = {
             foreignKeyName: "fk_tarefa_executor"
             columns: ["executor_id"]
             isOneToOne: false
-            referencedRelation: "mv_user_cache"
-            referencedColumns: ["profile_id"]
-          },
-          {
-            foreignKeyName: "fk_tarefa_executor"
-            columns: ["executor_id"]
-            isOneToOne: false
             referencedRelation: "pessoas"
             referencedColumns: ["profile_id"]
           },
@@ -13580,20 +13433,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "vw_calendario_completo"
             referencedColumns: ["responsavel_profile_id"]
-          },
-          {
-            foreignKeyName: "fk_tarefa_executor"
-            columns: ["executor_id"]
-            isOneToOne: false
-            referencedRelation: "vw_user_complete"
-            referencedColumns: ["profile_id"]
-          },
-          {
-            foreignKeyName: "fk_tarefa_executor_pessoas"
-            columns: ["executor_id"]
-            isOneToOne: false
-            referencedRelation: "mv_user_cache"
-            referencedColumns: ["profile_id"]
           },
           {
             foreignKeyName: "fk_tarefa_executor_pessoas"
@@ -13622,13 +13461,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "vw_calendario_completo"
             referencedColumns: ["responsavel_profile_id"]
-          },
-          {
-            foreignKeyName: "fk_tarefa_executor_pessoas"
-            columns: ["executor_id"]
-            isOneToOne: false
-            referencedRelation: "vw_user_complete"
-            referencedColumns: ["profile_id"]
           },
           {
             foreignKeyName: "fk_tarefa_planejamento"
@@ -13641,13 +13473,6 @@ export type Database = {
             foreignKeyName: "fk_tarefa_responsavel"
             columns: ["responsavel_id"]
             isOneToOne: false
-            referencedRelation: "mv_user_cache"
-            referencedColumns: ["profile_id"]
-          },
-          {
-            foreignKeyName: "fk_tarefa_responsavel"
-            columns: ["responsavel_id"]
-            isOneToOne: false
             referencedRelation: "pessoas"
             referencedColumns: ["profile_id"]
           },
@@ -13671,20 +13496,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "vw_calendario_completo"
             referencedColumns: ["responsavel_profile_id"]
-          },
-          {
-            foreignKeyName: "fk_tarefa_responsavel"
-            columns: ["responsavel_id"]
-            isOneToOne: false
-            referencedRelation: "vw_user_complete"
-            referencedColumns: ["profile_id"]
-          },
-          {
-            foreignKeyName: "fk_tarefa_responsavel_pessoas"
-            columns: ["responsavel_id"]
-            isOneToOne: false
-            referencedRelation: "mv_user_cache"
-            referencedColumns: ["profile_id"]
           },
           {
             foreignKeyName: "fk_tarefa_responsavel_pessoas"
@@ -13713,13 +13524,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "vw_calendario_completo"
             referencedColumns: ["responsavel_profile_id"]
-          },
-          {
-            foreignKeyName: "fk_tarefa_responsavel_pessoas"
-            columns: ["responsavel_id"]
-            isOneToOne: false
-            referencedRelation: "vw_user_complete"
-            referencedColumns: ["profile_id"]
           },
           {
             foreignKeyName: "tarefa_campanha_id_fkey"
@@ -13944,13 +13748,6 @@ export type Database = {
             foreignKeyName: "tarefa_comentarios_autor_id_fkey"
             columns: ["autor_id"]
             isOneToOne: false
-            referencedRelation: "mv_user_cache"
-            referencedColumns: ["pessoa_id"]
-          },
-          {
-            foreignKeyName: "tarefa_comentarios_autor_id_fkey"
-            columns: ["autor_id"]
-            isOneToOne: false
             referencedRelation: "pessoas"
             referencedColumns: ["id"]
           },
@@ -13960,13 +13757,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "tarefa_comentarios_autor_id_fkey"
-            columns: ["autor_id"]
-            isOneToOne: false
-            referencedRelation: "vw_user_complete"
-            referencedColumns: ["pessoa_id"]
           },
           {
             foreignKeyName: "tarefa_comentarios_tarefa_id_fkey"
@@ -15261,91 +15051,6 @@ export type Database = {
           },
         ]
       }
-      mv_user_cache: {
-        Row: {
-          auth_created_at: string | null
-          auth_email: string | null
-          avatar_url: string | null
-          cargo_atual: string | null
-          cliente_id: string | null
-          cpf: string | null
-          dados_incompletos: boolean | null
-          email: string | null
-          email_confirmed_at: string | null
-          especialidade_id: string | null
-          last_sign_in_at: string | null
-          nome: string | null
-          papeis: string[] | null
-          pessoa_created_at: string | null
-          pessoa_id: string | null
-          pessoa_updated_at: string | null
-          profile_id: string | null
-          raw_user_meta_data: Json | null
-          responsavel_id: string | null
-          role_created_at: string | null
-          status: string | null
-          telefones: string[] | null
-          user_role: Database["public"]["Enums"]["user_role"] | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "pessoas_cliente_id_fkey"
-            columns: ["cliente_id"]
-            isOneToOne: false
-            referencedRelation: "clientes"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "pessoas_cliente_id_fkey"
-            columns: ["cliente_id"]
-            isOneToOne: false
-            referencedRelation: "mv_cliente_timeline"
-            referencedColumns: ["cliente_id"]
-          },
-          {
-            foreignKeyName: "pessoas_cliente_id_fkey"
-            columns: ["cliente_id"]
-            isOneToOne: false
-            referencedRelation: "mv_grs_dashboard_metrics"
-            referencedColumns: ["cliente_id"]
-          },
-          {
-            foreignKeyName: "pessoas_cliente_id_fkey"
-            columns: ["cliente_id"]
-            isOneToOne: false
-            referencedRelation: "vw_calendario_completo"
-            referencedColumns: ["cliente_id"]
-          },
-          {
-            foreignKeyName: "pessoas_cliente_id_fkey"
-            columns: ["cliente_id"]
-            isOneToOne: false
-            referencedRelation: "vw_client_metrics"
-            referencedColumns: ["cliente_id"]
-          },
-          {
-            foreignKeyName: "pessoas_especialidade_id_fkey"
-            columns: ["especialidade_id"]
-            isOneToOne: false
-            referencedRelation: "especialidades"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "pessoas_responsavel_id_fkey"
-            columns: ["responsavel_id"]
-            isOneToOne: false
-            referencedRelation: "profiles_deprecated_backup_2025"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "pessoas_responsavel_id_fkey"
-            columns: ["responsavel_id"]
-            isOneToOne: false
-            referencedRelation: "vw_client_metrics"
-            referencedColumns: ["responsavel_id"]
-          },
-        ]
-      }
       pacotes_compat: {
         Row: {
           ativo: boolean | null
@@ -16221,13 +15926,6 @@ export type Database = {
             foreignKeyName: "fk_tarefa_responsavel"
             columns: ["responsavel_id"]
             isOneToOne: false
-            referencedRelation: "mv_user_cache"
-            referencedColumns: ["profile_id"]
-          },
-          {
-            foreignKeyName: "fk_tarefa_responsavel"
-            columns: ["responsavel_id"]
-            isOneToOne: false
             referencedRelation: "pessoas"
             referencedColumns: ["profile_id"]
           },
@@ -16251,20 +15949,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "vw_calendario_completo"
             referencedColumns: ["responsavel_profile_id"]
-          },
-          {
-            foreignKeyName: "fk_tarefa_responsavel"
-            columns: ["responsavel_id"]
-            isOneToOne: false
-            referencedRelation: "vw_user_complete"
-            referencedColumns: ["profile_id"]
-          },
-          {
-            foreignKeyName: "fk_tarefa_responsavel_pessoas"
-            columns: ["responsavel_id"]
-            isOneToOne: false
-            referencedRelation: "mv_user_cache"
-            referencedColumns: ["profile_id"]
           },
           {
             foreignKeyName: "fk_tarefa_responsavel_pessoas"
@@ -16293,13 +15977,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "vw_calendario_completo"
             referencedColumns: ["responsavel_profile_id"]
-          },
-          {
-            foreignKeyName: "fk_tarefa_responsavel_pessoas"
-            columns: ["responsavel_id"]
-            isOneToOne: false
-            referencedRelation: "vw_user_complete"
-            referencedColumns: ["profile_id"]
           },
           {
             foreignKeyName: "tarefa_cliente_id_fkey"
@@ -16869,91 +16546,6 @@ export type Database = {
           status: string | null
         }
         Relationships: []
-      }
-      vw_user_complete: {
-        Row: {
-          auth_created_at: string | null
-          auth_email: string | null
-          avatar_url: string | null
-          cargo_atual: string | null
-          cliente_id: string | null
-          cpf: string | null
-          dados_incompletos: boolean | null
-          email: string | null
-          email_confirmed_at: string | null
-          especialidade_id: string | null
-          last_sign_in_at: string | null
-          nome: string | null
-          papeis: string[] | null
-          pessoa_created_at: string | null
-          pessoa_id: string | null
-          pessoa_updated_at: string | null
-          profile_id: string | null
-          raw_user_meta_data: Json | null
-          responsavel_id: string | null
-          role_created_at: string | null
-          status: string | null
-          telefones: string[] | null
-          user_role: Database["public"]["Enums"]["user_role"] | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "pessoas_cliente_id_fkey"
-            columns: ["cliente_id"]
-            isOneToOne: false
-            referencedRelation: "clientes"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "pessoas_cliente_id_fkey"
-            columns: ["cliente_id"]
-            isOneToOne: false
-            referencedRelation: "mv_cliente_timeline"
-            referencedColumns: ["cliente_id"]
-          },
-          {
-            foreignKeyName: "pessoas_cliente_id_fkey"
-            columns: ["cliente_id"]
-            isOneToOne: false
-            referencedRelation: "mv_grs_dashboard_metrics"
-            referencedColumns: ["cliente_id"]
-          },
-          {
-            foreignKeyName: "pessoas_cliente_id_fkey"
-            columns: ["cliente_id"]
-            isOneToOne: false
-            referencedRelation: "vw_calendario_completo"
-            referencedColumns: ["cliente_id"]
-          },
-          {
-            foreignKeyName: "pessoas_cliente_id_fkey"
-            columns: ["cliente_id"]
-            isOneToOne: false
-            referencedRelation: "vw_client_metrics"
-            referencedColumns: ["cliente_id"]
-          },
-          {
-            foreignKeyName: "pessoas_especialidade_id_fkey"
-            columns: ["especialidade_id"]
-            isOneToOne: false
-            referencedRelation: "especialidades"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "pessoas_responsavel_id_fkey"
-            columns: ["responsavel_id"]
-            isOneToOne: false
-            referencedRelation: "profiles_deprecated_backup_2025"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "pessoas_responsavel_id_fkey"
-            columns: ["responsavel_id"]
-            isOneToOne: false
-            referencedRelation: "vw_client_metrics"
-            referencedColumns: ["responsavel_id"]
-          },
-        ]
       }
       vw_validacao_calendario_sync: {
         Row: {
@@ -17554,29 +17146,6 @@ export type Database = {
       get_project_financial_summary: {
         Args: { p_projeto_id: string }
         Returns: Json
-      }
-      get_user_complete: {
-        Args: { p_user_id: string }
-        Returns: {
-          auth_email: string
-          avatar_url: string
-          cargo_atual: string
-          cliente_id: string
-          cpf: string
-          dados_incompletos: boolean
-          email: string
-          email_confirmed_at: string
-          especialidade_id: string
-          last_sign_in_at: string
-          nome: string
-          papeis: string[]
-          pessoa_id: string
-          profile_id: string
-          responsavel_id: string
-          status: string
-          telefones: string[]
-          user_role: string
-        }[]
       }
       get_user_role: {
         Args: { user_uuid: string }
