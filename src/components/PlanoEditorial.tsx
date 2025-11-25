@@ -496,14 +496,10 @@ const PlanoEditorial: React.FC<PlanoEditorialProps> = ({
       const total = (count || 0) + postsStorage;
       setPostsPendentes(total);
       
-      console.log(`📦 Posts pendentes encontrados: ${total}`);
-      
       if (total > 0) {
-        console.log('🔄 Iniciando migração automática dos posts pendentes...');
-        // ✅ FASE 3: Migrar automaticamente se houver pendentes ao carregar página
-        setTimeout(async () => {
-          await migrarPostsTemporariosParaDefinitivo();
-        }, 2000); // Aguardar 2s para UI carregar
+        toast.info(`📦 ${total} posts pendentes de migração`, {
+          description: 'Clique em "Sincronizar" para movê-los para o plano'
+        });
       }
     } catch (error) {
       console.error('Erro ao verificar posts pendentes:', error);
@@ -1654,17 +1650,6 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
       setShowPreviewModal(true);
 
       toast.success(`${postsData.length} posts gerados com conteúdo completo!`);
-      
-      // ✅ FASE 3: Salvar posts temporários automaticamente após geração
-      console.log('💾 Salvando posts temporários automaticamente...');
-      await salvarPostsTemporarios();
-      
-      // ✅ FASE 3: Migrar automaticamente após salvar
-      console.log('🔄 Migrando posts para tabela definitiva...');
-      setTimeout(async () => {
-        await migrarPostsTemporariosParaDefinitivo();
-        await verificarPostsPendentes();
-      }, 1000); // Aguardar 1s para garantir que posts foram salvos
 
     } catch (error) {
       console.error('Erro ao gerar conteúdo:', error);
@@ -1908,45 +1893,33 @@ IMPORTANTE: Responda APENAS com o JSON válido, sem comentários ou texto adicio
       
       console.log(`📦 Encontrados ${postsTemp.length} posts para migrar`);
       
-      if (postsTemp.length === 0) {
-        console.log('ℹ️ Nenhum post pendente para migrar');
-        return;
-      }
-      
       // ✅ FASE 1: Validar e mapear posts temporários para formato definitivo
-      const postsValidos = postsTemp.filter((post: any) => {
-        // Validação de campos obrigatórios
-        if (!post.titulo || !post.data_postagem) {
-          console.warn('⚠️ Post inválido (faltam campos obrigatórios):', post);
-          return false;
-        }
-        return true;
-      });
-      
-      console.log(`✅ Posts válidos: ${postsValidos.length} de ${postsTemp.length}`);
-      
-      if (postsValidos.length === 0) {
-        toast.warning('Nenhum post válido para migrar');
-        return;
-      }
-      
-      const postsMigrados = postsValidos.map((post: any) => ({
-        planejamento_id: planejamento.id,
-        titulo: post.titulo,
-        data_postagem: post.data_postagem,
-        formato_postagem: post.formato_postagem || post.tipo_criativo || 'post',
-        tipo_criativo: post.tipo_criativo || 'imagem',
-        tipo_conteudo: post.tipo_conteudo || 'informar',
-        legenda: post.legenda || post.conteudo_completo || post.texto_estruturado || '',
-        objetivo_postagem: post.objetivo_postagem || '',
-        hashtags: Array.isArray(post.hashtags) ? post.hashtags : [],
-        call_to_action: post.call_to_action || '',
-        arquivo_visual_url: post.anexo_url || post.arquivo_visual_url,
-        responsavel_id: post.responsavel_id,
-        contexto_estrategico: post.contexto_estrategico || '',
-        rede_social: post.rede_social || 'instagram',
-        status_post: 'a_fazer' as const
-      }));
+      const postsMigrados = postsTemp
+        .filter((post: any) => {
+          // Validação de campos obrigatórios
+          if (!post.titulo || !post.data_postagem) {
+            console.warn('⚠️ Post inválido (faltam campos obrigatórios):', post);
+            return false;
+          }
+          return true;
+        })
+        .map((post: any) => ({
+          planejamento_id: planejamento.id,
+          titulo: post.titulo,
+          data_postagem: post.data_postagem,
+          formato_postagem: post.formato_postagem || post.tipo_criativo || 'post',
+          tipo_criativo: post.tipo_criativo || 'imagem',
+          tipo_conteudo: post.tipo_conteudo || 'informar',
+          legenda: post.legenda || post.conteudo_completo || post.texto_estruturado || '',
+          objetivo_postagem: post.objetivo_postagem || '',
+          hashtags: Array.isArray(post.hashtags) ? post.hashtags : [],
+          call_to_action: post.call_to_action || '',
+          arquivo_visual_url: post.anexo_url || post.arquivo_visual_url,
+          responsavel_id: post.responsavel_id,
+          contexto_estrategico: post.contexto_estrategico || '',
+          rede_social: post.rede_social || 'instagram',
+          status_post: 'a_fazer' as const
+        }));
       
       // Inserir em posts_planejamento
       const { data: postsInseridos, error: insertError } = await supabase

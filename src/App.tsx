@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
-import { ThemeManagerProvider } from "@/contexts/ThemeManagerContext";
+import { ThemeProvider } from "next-themes";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
 import { useAuth, AuthProvider } from "@/hooks/useAuth";
@@ -273,7 +273,7 @@ function App() {
           },
         }}
       >
-        <ThemeManagerProvider>
+        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false} forcedTheme="dark" disableTransitionOnChange>
           <BexThemeProvider>
             <TooltipProvider>
               {/* FASE 3: Update Notification Banner */}
@@ -1011,7 +1011,7 @@ function App() {
           </BrowserRouter>
         </TooltipProvider>
         </BexThemeProvider>
-      </ThemeManagerProvider>
+      </ThemeProvider>
     </PersistQueryClientProvider>
     </ErrorBoundary>;
 }

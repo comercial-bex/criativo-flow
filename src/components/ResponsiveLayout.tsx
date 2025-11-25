@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { smartToast } from "@/lib/smart-toast";
 import { useState } from "react";
 import { SPACING } from "@/lib/design-tokens";
-import { cn } from "@/lib/utils";
 interface ResponsiveLayoutProps {
   children: React.ReactNode;
   className?: string;
@@ -34,14 +33,14 @@ export function ResponsiveLayout({
     }
   };
   if (isMobile) {
-    return <div className={cn("min-h-screen flex flex-col w-full bg-background", className)}>
+    return <div className={`min-h-screen flex flex-col w-full bg-background ${className || ''}`}>
         {/* Mobile Header - Compacto */}
-        <header className={cn(SPACING.header.padding, SPACING.header.height, "flex items-center justify-between border-b border-bex/20 bg-card/95 backdrop-blur-md sticky top-0 z-50 shadow-lg shadow-bex/10 safe-area-inset-top ios-optimized-fixed")}>
+        <header className="layout-header h-14 flex items-center justify-between border-b border-bex/20 bg-black/95 sticky top-0 z-50 shadow-lg shadow-bex/10 safe-area-inset-top ios-optimized-fixed">
           <GlobalHeader />
         </header>
         
         {/* Mobile Content */}
-        <main className={cn(SPACING.content.padding, "flex-1 overflow-auto bg-muted/20 pb-20 ios-optimized-scroll")}>
+        <main className="layout-content flex-1 overflow-auto bg-muted/20 pb-20 ios-optimized-scroll">
           {children}
         </main>
         
@@ -53,28 +52,24 @@ export function ResponsiveLayout({
       </div>;
   }
   return <SidebarProvider defaultOpen={true}>
-      <div className={cn("min-h-screen w-full bg-background flex", className)}>
+      <div className={`min-h-screen w-full bg-background flex ${className || ''}`}>
         <AppSidebar />
         
         <div className="flex flex-col min-h-screen flex-1 overflow-hidden">
-          <header className={cn(
-            SPACING.header.padding, 
-            isTablet ? SPACING.header.height : SPACING.header.heightDesktop,
-            "flex items-center border-b border-bex/20 bg-card/95 backdrop-blur-md sticky top-0 z-40 shadow-lg shadow-bex/10 safe-area-inset-top ios-optimized-fixed"
-          )}>
-            <div className={cn("flex items-center flex-1", SPACING.header.gap)}>
+          <header className={`layout-header ${isTablet ? 'min-h-14 py-2' : 'min-h-16 py-2'} flex items-center border-b border-bex/20 bg-black/95 sticky top-0 z-40 shadow-lg shadow-bex/10 safe-area-inset-top ios-optimized-fixed`}>
+            <div className={`flex items-center ${SPACING.header.gap} flex-1`}>
               <SidebarTrigger className="hover:bg-bex/10 hover:text-bex p-2 rounded-md transition-all border border-transparent hover:border-bex/30" />
               <GlobalHeader />
             </div>
           </header>
           
-          <main className={cn(SPACING.content.padding, "flex-1 overflow-y-auto bg-muted/20 ios-optimized-scroll")}>
+          <main className="layout-content flex-1 overflow-y-auto bg-muted/20 ios-optimized-scroll">
             {children}
           </main>
           
           {/* Footer com versão e botão de atualização */}
-          <footer className={cn(SPACING.footer.padding, "border-t border-border/50 bg-card/50 backdrop-blur-sm flex items-center justify-between text-xs text-muted-foreground")}>
-            <div className={cn("flex items-center", SPACING.footer.gap)}>
+          <footer className="layout-footer border-t border-border/50 bg-card/50 backdrop-blur-sm flex items-center justify-between text-xs text-muted-foreground">
+            <div className={`flex items-center ${SPACING.footer.gap}`}>
               <span onClick={() => setShowVersion(!showVersion)} className="cursor-pointer hover:text-bex transition-colors">
                 🎮 SISTEMAS BEX v4.0.2
               </span>

@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
-import { SPACING } from "@/lib/design-tokens";
+
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { useUniversalSearch } from "@/hooks/useUniversalSearch";
 import { SearchResults } from "@/components/SearchResults";
@@ -26,7 +26,7 @@ export function GlobalHeader({ className }: GlobalHeaderProps = {}) {
   const isMobile = deviceType === 'mobile';
 
   return (
-    <div className={`flex flex-col w-full ${SPACING.header.gap}`}>
+    <div className="flex flex-col w-full gap-2">
       {/* Breadcrumbs - Desktop/Tablet only */}
       {!isMobile && (
         <Breadcrumbs maxItems={5} className="px-1" />
@@ -36,11 +36,11 @@ export function GlobalHeader({ className }: GlobalHeaderProps = {}) {
       {isMobile ? (
         <>
           {/* Mobile Layout */}
-          <div className={`flex items-center ${SPACING.header.gap} flex-1`}>
+          <div className="flex items-center gap-2 flex-1">
             <h1 className="text-lg font-semibold text-foreground">SISTEMAS BEX</h1>
           </div>
           
-          <div className={`flex items-center ${SPACING.header.gap}`}>
+          <div className="flex items-center gap-2">
             {/* Mobile Search Toggle */}
             <Button
               variant="ghost"
@@ -115,12 +115,12 @@ export function GlobalHeader({ className }: GlobalHeaderProps = {}) {
       ) : (
         <>
           {/* Desktop/Tablet Layout */}
-          <div className={`flex items-center ${SPACING.header.gap}`}>
+          <div className="flex items-center gap-4">
             <div className="relative w-96 group">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-bex group-hover:text-bex-light transition-colors z-10" />
               <Input
                 placeholder="Buscar clientes, projetos, planejamentos..."
-                className="pl-10 relative z-10 bg-card/50 border-bex/30 focus:border-bex focus:ring-2 focus:ring-bex/20 hover:border-bex/50 transition-all backdrop-blur-sm"
+                className="pl-10 relative z-10 bg-black/30 border-bex/30 focus:border-bex focus:ring-2 focus:ring-bex/20 hover:border-bex/50 transition-all"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onFocus={() => setShowResults(true)}
@@ -140,7 +140,7 @@ export function GlobalHeader({ className }: GlobalHeaderProps = {}) {
             </div>
           </div>
 
-          <div className={`flex items-center ${SPACING.header.gap}`}>
+          <div className="flex items-center gap-2">
             <CalendarModal />
             <NotificationDropdown />
             <HelpModal />

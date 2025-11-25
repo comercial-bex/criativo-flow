@@ -9,164 +9,120 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* TEMA CLARO - Verde Militar + Alto Contraste */
+    /* Layout BEX - cores inspiradas no Figma */
     --background: 0 0% 98%;
-    --foreground: 0 0% 10%;
+    --foreground: 0 0% 15%;
+
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 10%;
+    --card-foreground: 0 0% 15%;
+
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 10%;
-    --primary: 85 50% 25%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 85 30% 45%;
-    --secondary-foreground: 0 0% 100%;
-    --muted: 0 0% 94%;
-    --muted-foreground: 0 0% 40%;
-    --accent: 85 30% 45%;
-    --accent-foreground: 0 0% 100%;
-    --destructive: 0 84% 50%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 88%;
-    --input: 0 0% 88%;
-    --ring: 85 50% 25%;
-    --radius: 0.75rem;
+    --popover-foreground: 0 0% 15%;
+
+    /* Verde personalizado BCF125 */
+    --primary: 84 65% 47%;
+    --primary-foreground: 0 0% 15%; /* Texto preto nos botões verdes */
     
-    --bex: 85 50% 25%;
-    --bex-dark: 85 50% 20%;
-    --bex-light: 85 50% 30%;
-    --bex-green: 85 50% 25%;
-    --bex-green-glow: 85 50% 25%;
-    
-    --success: 142 71% 35%;
+    /* Cores customizadas BEX */
+    --bex-green: 84 65% 47%; /* #54C43D - Verde da logo BEX */
+    --bex-green-glow: 84 65% 47%; /* #54C43D with glow */
+    --bex-dark: 0 0% 11%;   /* #1D1D1D */
+
+    --secondary: 0 0% 96%;
+    --secondary-foreground: 0 0% 45%;
+
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 45%;
+
+    --accent: 0 0% 96%;
+    --accent-foreground: 0 0% 15%;
+
+    /* Cores específicas para status (inspiradas no Figma) */
+    --success: 142 71% 45%;
     --success-foreground: 0 0% 98%;
-    --warning: 38 92% 40%;
-    --warning-foreground: 0 0% 98%;
-    --info: 221 83% 45%;
-    --info-foreground: 0 0% 98%;
     
-    --status-red: 0 84% 50%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 98%;
+    
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+    
+    --info: 221 83% 53%;
+    --info-foreground: 0 0% 98%;
+
+    /* Cores para diferentes status de leads/projetos */
+    --status-red: 0 84% 60%;
     --status-orange: 25 95% 53%;
     --status-green: 83 100% 50%;
     --status-blue: 221 83% 53%;
     --status-purple: 262 83% 58%;
-    
-    --badge-success: 142 71% 35%;
-    --badge-warning: 38 92% 40%;
-    --badge-error: 0 84% 50%;
-    --badge-info: 221 83% 45%;
-    
-    --guide-primary: 85 50% 25%;
+
+    --border: 0 0% 91%;
+    --input: 0 0% 91%;
+    --ring: 83 100% 50%;
+
+    --radius: 0.75rem;
+
+    /* Interactive Guide Colors */
+    --guide-primary: 84 65% 47%;
     --guide-overlay: 0 0% 0% / 0.5;
     --guide-tooltip: 0 0% 100%;
     --guide-tooltip-foreground: 0 0% 15%;
-    
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 0 0% 15%;
-    --sidebar-primary: 85 50% 25%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 0 0% 96%;
-    --sidebar-accent-foreground: 0 0% 9%;
-    --sidebar-border: 0 0% 91%;
-    --sidebar-ring: 85 50% 25%;
-  }
 
-  .dark {
-    /* TEMA ESCURO - Cinza Moderno + Verde Neon */
-    --background: 0 0% 7%;
-    --foreground: 0 0% 100%;
-    --card: 0 0% 12%;
-    --card-foreground: 0 0% 100%;
-    --popover: 0 0% 15%;
-    --popover-foreground: 0 0% 95%;
-    --primary: 84 65% 55%;
-    --primary-foreground: 0 0% 0%;
-    --secondary: 0 0% 22%;
-    --secondary-foreground: 0 0% 95%;
-    --muted: 0 0% 20%;
-    --muted-foreground: 0 0% 70%;
-    --accent: 0 0% 22%;
-    --accent-foreground: 0 0% 95%;
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 28%;
-    --input: 0 0% 20%;
-    --ring: 84 65% 55%;
-    
-    --bex: 84 65% 55%;
-    --bex-dark: 84 60% 45%;
-    --bex-light: 84 70% 65%;
-    --bex-green: 84 65% 55%;
-    --bex-green-glow: 84 65% 55%;
-    
-    --badge-success: 142 71% 50%;
-    --badge-warning: 38 92% 55%;
-    --badge-error: 0 84% 60%;
-    --badge-info: 221 83% 60%;
-    
-    --sidebar-background: 0 0% 11%;
+    /* Sidebar customizada BEX */
+    --sidebar-background: 0 0% 11%;        /* #1D1D1D */
     --sidebar-foreground: 0 0% 85%;
-    --sidebar-primary: 84 65% 55%;
+    --sidebar-primary: 84 65% 47%;          /* #54C43D */
     --sidebar-primary-foreground: 0 0% 98%;
     --sidebar-accent: 0 0% 15%;
     --sidebar-accent-foreground: 0 0% 85%;
     --sidebar-border: 0 0% 20%;
-    --sidebar-ring: 84 65% 55%;
+    --sidebar-ring: 84 65% 47%;
+  }
+
+  .dark {
+    --background: 0 0% 5%;        /* #0D0D0D - background escuro elegante */
+    --foreground: 0 0% 100%;       /* branco puro */
+
+    --card: 0 0% 7%;               /* #121212 - cards escuros */
+    --card-foreground: 0 0% 100%;  /* branco puro */
+
+    --popover: 0 0% 15%;
+    --popover-foreground: 0 0% 85%;
+
+    --primary: 84 65% 47%;
+    --primary-foreground: 0 0% 15%; /* Texto preto nos botões verdes */
+
+    --secondary: 0 0% 20%;
+    --secondary-foreground: 0 0% 85%;
+
+    --muted: 0 0% 20%;
+    --muted-foreground: 0 0% 65%;
+
+    --accent: 0 0% 20%;
+    --accent-foreground: 0 0% 85%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 0 0% 25%;
+    --input: 0 0% 25%;
+    --ring: 84 65% 47%;            /* BEX green para focus rings */
     
+    --sidebar-background: 0 0% 11%;        /* #1D1D1D */
+    --sidebar-foreground: 0 0% 85%;
+    --sidebar-primary: 84 65% 47%;          /* #54C43D */
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 0 0% 15%;
+    --sidebar-accent-foreground: 0 0% 85%;
+    --sidebar-border: 0 0% 20%;
+    --sidebar-ring: 84 65% 47%;
+
+    /* Interactive Guide Colors - Dark Mode */
     --guide-tooltip: 0 0% 15%;
     --guide-tooltip-foreground: 0 0% 85%;
   }
-
-  .bex-gamer {
-    /* TEMA BEX GAMER - Preto Total + Neon Matrix */
-    --background: 0 0% 0%;
-    --foreground: 0 0% 100%;
-    --card: 0 0% 4%;
-    --card-foreground: 0 0% 98%;
-    --popover: 0 0% 6%;
-    --popover-foreground: 0 0% 95%;
-    --primary: 120 100% 50%;
-    --primary-foreground: 0 0% 0%;
-    --secondary: 0 0% 10%;
-    --secondary-foreground: 120 100% 50%;
-    --muted: 0 0% 8%;
-    --muted-foreground: 0 0% 64%;
-    --accent: 0 0% 10%;
-    --accent-foreground: 120 100% 50%;
-    --destructive: 0 100% 50%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 120 100% 50%;
-    --input: 0 0% 8%;
-    --ring: 120 100% 50%;
-    
-    --bex: 120 100% 50%;
-    --bex-dark: 120 100% 40%;
-    --bex-light: 120 100% 60%;
-    --bex-green: 120 100% 50%;
-    --bex-green-glow: 120 100% 50%;
-    
-    --gaming-glow: 0 0 20px rgba(0, 255, 65, 0.5);
-    --gaming-glow-strong: 0 0 40px rgba(0, 255, 65, 0.8);
-    --gaming-blur: blur(12px);
-    
-    --badge-success: 142 100% 50%;
-    --badge-warning: 45 100% 50%;
-    --badge-error: 0 100% 50%;
-    --badge-info: 195 100% 50%;
-    
-    --sidebar-background: 0 0% 3%;
-    --sidebar-foreground: 0 0% 90%;
-    --sidebar-primary: 120 100% 50%;
-    --sidebar-primary-foreground: 0 0% 0%;
-    --sidebar-accent: 0 0% 8%;
-    --sidebar-accent-foreground: 120 100% 50%;
-    --sidebar-border: 120 100% 50%;
-    --sidebar-ring: 120 100% 50%;
-    
-    --guide-tooltip: 0 0% 8%;
-    --guide-tooltip-foreground: 0 0% 90%;
-  }
 }
-
 
 /* Sidebar Data Attributes for Responsive Layout */
 [data-sidebar="collapsed"] {
@@ -189,32 +145,6 @@ All colors MUST be HSL.
   top: 0;
   height: 100vh;
   z-index: 40;
-}
-
-
-/* Transições suaves entre temas */
-html {
-  transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-* {
-  transition-property: background-color, border-color, color, fill, stroke;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 200ms;
-}
-
-/* Gaming effects */
-.bex-gamer .card,
-.bex-gamer .dialog-content,
-.bex-gamer .popover-content {
-  backdrop-filter: var(--gaming-blur);
-  box-shadow: var(--gaming-glow);
-}
-
-.bex-gamer .hover-glow:hover,
-.bex-gamer button:hover,
-.bex-gamer .card:hover {
-  box-shadow: var(--gaming-glow-strong);
 }
 
 @layer base {
@@ -373,16 +303,8 @@ html {
     @apply backdrop-blur-md bg-white/5 dark:bg-black/30 border border-bex/20;
   }
   
-  .bex-gamer .glass-bex {
-    @apply backdrop-blur-xl bg-black/40 border-bex/30;
-  }
-  
   .glow-bex {
     @apply shadow-bex-glow;
-  }
-  
-  .bex-gamer .glow-bex {
-    box-shadow: 0 0 40px rgba(84, 196, 61, 0.6);
   }
   
   .hover-lift-bex {
@@ -395,10 +317,6 @@ html {
   
   .border-glow-bex {
     @apply border border-bex/30 shadow-lg shadow-bex/20;
-  }
-  
-  .bex-gamer .border-glow-bex {
-    @apply border-bex/50 shadow-xl shadow-bex/40;
   }
   
   /* === BEX Gaming Typography === */
