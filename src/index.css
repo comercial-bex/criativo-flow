@@ -9,35 +9,32 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Layout BEX - cores inspiradas no Figma */
+    /* TEMA CLARO */
     --background: 0 0% 98%;
-    --foreground: 0 0% 15%;
+    --foreground: 0 0% 9%;
 
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 15%;
+    --card-foreground: 0 0% 9%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 15%;
+    --popover-foreground: 0 0% 9%;
 
-    /* Verde personalizado BCF125 */
     --primary: 84 65% 47%;
-    --primary-foreground: 0 0% 15%; /* Texto preto nos botões verdes */
+    --primary-foreground: 0 0% 9%;
     
-    /* Cores customizadas BEX */
-    --bex-green: 84 65% 47%; /* #54C43D - Verde da logo BEX */
-    --bex-green-glow: 84 65% 47%; /* #54C43D with glow */
-    --bex-dark: 0 0% 11%;   /* #1D1D1D */
+    --bex-green: 84 65% 47%;
+    --bex-green-glow: 84 65% 47%;
+    --bex-dark: 0 0% 11%;
 
     --secondary: 0 0% 96%;
-    --secondary-foreground: 0 0% 45%;
+    --secondary-foreground: 0 0% 9%;
 
     --muted: 0 0% 96%;
     --muted-foreground: 0 0% 45%;
 
     --accent: 0 0% 96%;
-    --accent-foreground: 0 0% 15%;
+    --accent-foreground: 0 0% 9%;
 
-    /* Cores específicas para status (inspiradas no Figma) */
     --success: 142 71% 45%;
     --success-foreground: 0 0% 98%;
     
@@ -50,7 +47,6 @@ All colors MUST be HSL.
     --info: 221 83% 53%;
     --info-foreground: 0 0% 98%;
 
-    /* Cores para diferentes status de leads/projetos */
     --status-red: 0 84% 60%;
     --status-orange: 25 95% 53%;
     --status-green: 83 100% 50%;
@@ -59,39 +55,38 @@ All colors MUST be HSL.
 
     --border: 0 0% 91%;
     --input: 0 0% 91%;
-    --ring: 83 100% 50%;
+    --ring: 84 65% 47%;
 
     --radius: 0.75rem;
 
-    /* Interactive Guide Colors */
     --guide-primary: 84 65% 47%;
     --guide-overlay: 0 0% 0% / 0.5;
     --guide-tooltip: 0 0% 100%;
     --guide-tooltip-foreground: 0 0% 15%;
 
-    /* Sidebar customizada BEX */
-    --sidebar-background: 0 0% 11%;        /* #1D1D1D */
-    --sidebar-foreground: 0 0% 85%;
-    --sidebar-primary: 84 65% 47%;          /* #54C43D */
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 0 0% 15%;
-    --sidebar-accent-foreground: 0 0% 85%;
-    --sidebar-border: 0 0% 20%;
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 0 0% 15%;
+    --sidebar-primary: 84 65% 47%;
+    --sidebar-primary-foreground: 0 0% 9%;
+    --sidebar-accent: 0 0% 96%;
+    --sidebar-accent-foreground: 0 0% 9%;
+    --sidebar-border: 0 0% 91%;
     --sidebar-ring: 84 65% 47%;
   }
 
   .dark {
-    --background: 0 0% 5%;        /* #0D0D0D - background escuro elegante */
-    --foreground: 0 0% 100%;       /* branco puro */
+    /* TEMA ESCURO */
+    --background: 0 0% 5%;
+    --foreground: 0 0% 100%;
 
-    --card: 0 0% 7%;               /* #121212 - cards escuros */
-    --card-foreground: 0 0% 100%;  /* branco puro */
+    --card: 0 0% 7%;
+    --card-foreground: 0 0% 100%;
 
     --popover: 0 0% 15%;
     --popover-foreground: 0 0% 85%;
 
     --primary: 84 65% 47%;
-    --primary-foreground: 0 0% 15%; /* Texto preto nos botões verdes */
+    --primary-foreground: 0 0% 9%;
 
     --secondary: 0 0% 20%;
     --secondary-foreground: 0 0% 85%;
@@ -107,20 +102,66 @@ All colors MUST be HSL.
 
     --border: 0 0% 25%;
     --input: 0 0% 25%;
-    --ring: 84 65% 47%;            /* BEX green para focus rings */
+    --ring: 84 65% 47%;
     
-    --sidebar-background: 0 0% 11%;        /* #1D1D1D */
+    --sidebar-background: 0 0% 11%;
     --sidebar-foreground: 0 0% 85%;
-    --sidebar-primary: 84 65% 47%;          /* #54C43D */
+    --sidebar-primary: 84 65% 47%;
     --sidebar-primary-foreground: 0 0% 98%;
     --sidebar-accent: 0 0% 15%;
     --sidebar-accent-foreground: 0 0% 85%;
     --sidebar-border: 0 0% 20%;
     --sidebar-ring: 84 65% 47%;
 
-    /* Interactive Guide Colors - Dark Mode */
     --guide-tooltip: 0 0% 15%;
     --guide-tooltip-foreground: 0 0% 85%;
+  }
+
+  .bex-gamer {
+    /* TEMA BEX GAMER */
+    --background: 0 0% 0%;
+    --foreground: 0 0% 100%;
+
+    --card: 0 0% 5%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 0 0% 8%;
+    --popover-foreground: 0 0% 90%;
+
+    --primary: 84 65% 47%;
+    --primary-foreground: 0 0% 0%;
+
+    --secondary: 0 0% 12%;
+    --secondary-foreground: 0 0% 90%;
+
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 60%;
+
+    --accent: 0 0% 12%;
+    --accent-foreground: 84 65% 47%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 84 65% 47% / 0.3;
+    --input: 0 0% 15%;
+    --ring: 84 65% 47%;
+    
+    --sidebar-background: 0 0% 3%;
+    --sidebar-foreground: 0 0% 90%;
+    --sidebar-primary: 84 65% 47%;
+    --sidebar-primary-foreground: 0 0% 0%;
+    --sidebar-accent: 0 0% 8%;
+    --sidebar-accent-foreground: 84 65% 47%;
+    --sidebar-border: 84 65% 47% / 0.3;
+    --sidebar-ring: 84 65% 47%;
+
+    --guide-tooltip: 0 0% 8%;
+    --guide-tooltip-foreground: 0 0% 90%;
+    
+    /* Gaming específico */
+    --gaming-glow: 0 0 30px rgba(84, 196, 61, 0.4);
+    --gaming-blur: blur(12px);
   }
 }
 
@@ -145,6 +186,18 @@ All colors MUST be HSL.
   top: 0;
   height: 100vh;
   z-index: 40;
+}
+
+
+/* Transições suaves entre temas */
+html {
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+* {
+  transition-property: background-color, border-color, color, fill, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 200ms;
 }
 
 @layer base {
@@ -303,8 +356,16 @@ All colors MUST be HSL.
     @apply backdrop-blur-md bg-white/5 dark:bg-black/30 border border-bex/20;
   }
   
+  .bex-gamer .glass-bex {
+    @apply backdrop-blur-xl bg-black/40 border-bex/30;
+  }
+  
   .glow-bex {
     @apply shadow-bex-glow;
+  }
+  
+  .bex-gamer .glow-bex {
+    box-shadow: 0 0 40px rgba(84, 196, 61, 0.6);
   }
   
   .hover-lift-bex {
@@ -317,6 +378,10 @@ All colors MUST be HSL.
   
   .border-glow-bex {
     @apply border border-bex/30 shadow-lg shadow-bex/20;
+  }
+  
+  .bex-gamer .border-glow-bex {
+    @apply border-bex/50 shadow-xl shadow-bex/40;
   }
   
   /* === BEX Gaming Typography === */
