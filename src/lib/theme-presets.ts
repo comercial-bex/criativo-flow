@@ -2,37 +2,41 @@ export const themePresets = {
   light: {
     name: 'Claro',
     icon: '☀️',
-    description: 'Tema claro e clean para trabalho diurno',
+    description: 'Tema profissional com verde militar e alto contraste',
     colors: {
       background: '#FAFAFA',
-      foreground: '#171717',
+      foreground: '#1A1A1A',
       card: '#FFFFFF',
-      primary: '#54C43D',
-      accent: '#F4F4F5',
+      primary: '#4A5D23',
+      primaryText: '#FFFFFF',
+      accent: '#6B8E23',
     }
   },
   dark: {
     name: 'Escuro',
     icon: '🌙',
-    description: 'Tema escuro elegante para reduzir fadiga visual',
+    description: 'Tema moderno com cinza elegante e verde vibrante',
     colors: {
-      background: '#0D0D0D',
+      background: '#121212',
       foreground: '#FFFFFF',
-      card: '#121212',
+      card: '#1E1E1E',
       primary: '#54C43D',
-      accent: '#1F1F1F',
+      primaryText: '#000000',
+      accent: '#45A531',
     }
   },
   'bex-gamer': {
     name: 'BEX Gamer',
     icon: '🎮',
-    description: 'Tema gaming premium com efeitos neon e blur',
+    description: 'Tema cyberpunk com neon matrix e efeitos de blur',
     colors: {
       background: '#000000',
       foreground: '#FFFFFF',
-      card: 'rgba(0, 0, 0, 0.6)',
-      primary: '#54C43D',
-      accent: '#1A1A1A',
+      card: 'rgba(10, 10, 10, 0.6)',
+      primary: '#00FF41',
+      primaryText: '#000000',
+      accent: '#54C43D',
+      glow: '0 0 20px rgba(0, 255, 65, 0.5)',
     }
   }
 };

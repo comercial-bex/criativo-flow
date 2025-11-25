@@ -1,4 +1,4 @@
-import { Badge } from "@/components/ui/badge";
+import { AdaptiveBadge } from "@/components/ui/adaptive-badge";
 
 interface StatusBadgeEspecialistaProps {
   status: 'pendente_aprovacao' | 'aprovado' | 'rejeitado' | 'suspenso';
@@ -7,19 +7,19 @@ interface StatusBadgeEspecialistaProps {
 const statusConfig = {
   pendente_aprovacao: {
     label: 'Pendente',
-    className: 'bg-yellow-100 text-yellow-800 hover:bg-yellow-100'
+    variant: 'pending' as const,
   },
   aprovado: {
     label: 'Aprovado',
-    className: 'bg-green-100 text-green-800 hover:bg-green-100'
+    variant: 'success' as const,
   },
   rejeitado: {
     label: 'Rejeitado',
-    className: 'bg-red-100 text-red-800 hover:bg-red-100'
+    variant: 'error' as const,
   },
   suspenso: {
     label: 'Suspenso',
-    className: 'bg-gray-100 text-gray-800 hover:bg-gray-100'
+    variant: 'warning' as const,
   }
 };
 
@@ -27,8 +27,8 @@ export function StatusBadgeEspecialista({ status }: StatusBadgeEspecialistaProps
   const config = statusConfig[status];
   
   return (
-    <Badge className={config.className}>
+    <AdaptiveBadge variant={config.variant}>
       {config.label}
-    </Badge>
+    </AdaptiveBadge>
   );
 }
