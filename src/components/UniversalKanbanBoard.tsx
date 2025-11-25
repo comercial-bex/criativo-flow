@@ -303,6 +303,7 @@ const normalizeStatus = (
       'aprovacao_cliente': 'aprovacao_cliente'
     },
     audiovisual: {
+      'agendado': 'roteiro',
       'backlog': 'roteiro',
       'a_fazer': 'roteiro',
       'em_cadastro': 'roteiro',
