@@ -73,153 +73,73 @@ export function AppSidebar() {
     localStorage.getItem('admin_selected_cliente_id')
   );
 
-  // Módulos fallback (7 hubs principais)
+  // Módulos organizados em 5 categorias principais
   const fallbackModules: Module[] = [
     {
-      id: "inicio",
-      title: "Início",
-      icon: Icons.Home,
+      id: "minha_area",
+      title: "Minha Área",
+      icon: Icons.LayoutDashboard,
       items: [
-        { title: "Meu Resumo", url: "/inicio", icon: Icons.LayoutDashboard },
+        { title: "Dashboard", url: "/inicio", icon: Icons.LayoutDashboard },
+        { title: "Minhas Tarefas", url: "/tarefas", icon: Icons.CheckSquare },
+        { title: "Calendário", url: "/calendario", icon: Icons.CalendarDays },
         { title: "Favoritos", url: "/inicio/favoritos", icon: Icons.Star },
-        { title: "Recentes", url: "/inicio/recentes", icon: Icons.Clock },
       ],
       permissions: ["dashboard"]
     },
     {
-      id: "inteligencia",
-      title: "Inteligência Operacional",
-      icon: Icons.Brain,
+      id: "projetos",
+      title: "Projetos",
+      icon: Icons.Briefcase,
       items: [
-        { title: "Hub de Inteligência", url: "/inteligencia", icon: Icons.Brain },
-        { title: "🔮 Análise Preditiva", url: "/inteligencia/preditiva", icon: Icons.TrendingUp },
-        { title: "Calendário Unificado", url: "/calendario", icon: Icons.CalendarDays },
-        { title: "Análises", url: "/inteligencia/analises", icon: Icons.BarChart3 },
-        { title: "Insights", url: "/inteligencia/insights", icon: Icons.Lightbulb },
-        { title: "Previsões", url: "/inteligencia/previsoes", icon: Icons.TrendingUp },
-        { title: "Métricas", url: "/inteligencia/metricas", icon: Icons.Activity },
+        { title: "Gestão de Projetos", url: "/grs/painel", icon: Icons.Folder },
+        { title: "Planejamentos", url: "/grs/planejamentos", icon: Icons.Calendar },
+        { title: "Roteiro IA", url: "/grs/roteiro-ia", icon: Icons.Film },
+        { title: "Calendário Editorial", url: "/grs/calendario-editorial", icon: Icons.CalendarDays },
+        { title: "Inteligência", url: "/inteligencia", icon: Icons.Brain },
+        { title: "Análise Preditiva", url: "/inteligencia/preditiva", icon: Icons.TrendingUp },
       ],
-      permissions: ["inteligencia", "calendario"]
-    },
-      {
-        id: "operacoes",
-        title: "Operacional (GRS)",
-        icon: Icons.Globe,
-        items: [
-          { title: "🎯 Painel GRS", url: "/grs/painel", icon: Icons.LayoutDashboard },
-          { title: "Visão de Clientes", url: "/grs/dashboard", icon: Icons.Users },
-          { title: "Planejamentos", url: "/grs/planejamentos", icon: Icons.Calendar },
-          { title: "Tarefas", url: "/grs/tarefas", icon: Icons.CheckSquare },
-          { title: "Calendário Editorial", url: "/grs/calendario-editorial", icon: Icons.CalendarDays },
-          { title: "🎬 Roteiro IA", url: "/grs/roteiro-ia", icon: Icons.Film },
-          { title: "Calendário Unificado", url: "/calendario", icon: Icons.CalendarClock },
-          { title: "Relatórios", url: "/grs/relatorios", icon: Icons.FileText },
-          { title: "Clientes (Lista)", url: "/grs/clientes", icon: Icons.Users },
-        ],
-        permissions: ["grs", "projetos"]
-      },
-    {
-      id: "crm",
-      title: "CRM",
-      icon: Icons.Users,
-      items: [
-        { title: "Funil de Vendas", url: "/crm", icon: Icons.Target },
-        { title: "Contatos", url: "/crm/contatos", icon: Icons.Phone },
-        { title: "Histórico", url: "/crm/historico", icon: Icons.History },
-      ],
-      permissions: ["crm"]
+      permissions: ["grs", "projetos", "inteligencia"]
     },
     {
-      id: "financeiro",
-      title: "Contratos & Financeiro",
-      icon: Icons.Building2,
+      id: "producao",
+      title: "Produção",
+      icon: Icons.Layers,
       items: [
-        { title: "Dashboard", url: "/gestao/dashboard", icon: Icons.TrendingUp },
+        { title: "Design", url: "/design/dashboard", icon: Icons.Palette },
+        { title: "Audiovisual", url: "/audiovisual/dashboard", icon: Icons.Video },
+        { title: "Captações", url: "/audiovisual/captacoes", icon: Icons.Camera },
+        { title: "Aprovações", url: "/design/aprovacoes", icon: Icons.Eye },
+        { title: "Biblioteca", url: "/design/biblioteca", icon: Icons.Images },
+      ],
+      permissions: ["design", "audiovisual"]
+    },
+    {
+      id: "comercial",
+      title: "Comercial",
+      icon: Icons.DollarSign,
+      items: [
+        { title: "CRM", url: "/crm", icon: Icons.Target },
         { title: "Clientes", url: "/clientes", icon: Icons.Users },
         { title: "Orçamentos", url: "/administrativo/orcamentos", icon: Icons.Calculator },
         { title: "Propostas", url: "/administrativo/propostas", icon: Icons.FileText },
         { title: "Contratos", url: "/admin/contratos", icon: Icons.FileSignature },
-        { title: "📦 Produtos & Serviços", url: "/admin/produtos", icon: Icons.Package },
-        { 
-          title: "💰 Gestão de Contas", 
-          url: "/financeiro/gestao-contas", 
-          icon: Icons.DollarSign 
-        },
-        { title: "🏦 Caixa & Bancos", url: "/financeiro/caixa-bancos", icon: Icons.Landmark },
-        { 
-          title: "📊 Relatórios Gerenciais", 
-          url: "/financeiro/relatorios", 
-          icon: Icons.TrendingUp 
-        },
-        { title: "🔄 Conciliação", url: "/financeiro/conciliacao", icon: Icons.CheckCircle },
-        { title: "📂 Centros de Custo", url: "/financeiro/centros-custo", icon: Icons.FolderTree },
-        { title: "👥 Fornecedores", url: "/fornecedores", icon: Icons.Users },
-        { title: "Pessoas", url: "/rh/pessoas", icon: Icons.Users },
-        { title: "Folha", url: "/financeiro/folha", icon: Icons.Wallet },
-        { title: "Relatórios", url: "/relatorios", icon: Icons.FileText },
+        { title: "Financeiro", url: "/financeiro/gestao-contas", icon: Icons.Landmark },
+        { title: "Relatórios", url: "/financeiro/relatorios", icon: Icons.TrendingUp },
       ],
-      permissions: ["financeiro", "administrativo", "rh"]
-    },
-    {
-      id: "design",
-      title: "Design / Criativo",
-      icon: Icons.Palette,
-      items: [
-        { title: "🎨 Painel Design", url: "/design/dashboard", icon: Icons.LayoutDashboard },
-        { title: "Minhas Tarefas", url: "/design/minhas-tarefas", icon: Icons.CheckSquare },
-        { title: "Calendário Unificado", url: "/calendario", icon: Icons.Calendar },
-        { title: "Aprovações", url: "/design/aprovacoes", icon: Icons.Eye },
-        { title: "Biblioteca", url: "/design/biblioteca", icon: Icons.Images },
-        { title: "Metas", url: "/design/metas", icon: Icons.Target },
-      ],
-      permissions: ["design"]
-    },
-    {
-      id: "audiovisual",
-      title: "Audiovisual",
-      icon: Icons.Video,
-      items: [
-        { title: "Dashboard", url: "/audiovisual/dashboard", icon: Icons.Video },
-        { title: "Minhas Tarefas", url: "/audiovisual/tarefas", icon: Icons.CheckSquare },
-        { title: "Tarefas Unificadas", url: "/audiovisual/tarefas-unificadas", icon: Icons.KanbanSquare },
-        { title: "Captações", url: "/audiovisual/captacoes", icon: Icons.Camera },
-        { title: "Projetos", url: "/audiovisual/projetos", icon: Icons.Film },
-        { title: "Calendário Unificado", url: "/calendario", icon: Icons.CalendarClock },
-      ],
-      permissions: ["audiovisual"]
+      permissions: ["crm", "financeiro", "administrativo"]
     },
     {
       id: "admin",
       title: "Admin",
-      icon: Icons.Shield,
+      icon: Icons.Settings,
       items: [
-        { title: "Painel", url: "/admin/painel", icon: Icons.Shield },
-        { title: "Notificações", url: "/admin/central-notificacoes", icon: Icons.Bell },
-        { title: "Tarefas", url: "/admin/tarefas", icon: Icons.ClipboardCheck },
+        { title: "Painel Admin", url: "/admin/painel", icon: Icons.Shield },
         { title: "Usuários", url: "/usuarios", icon: Icons.Users2 },
-        { title: "📋 Dashboard Onboarding", url: "/admin/onboarding", icon: Icons.ClipboardCheck },
-        { title: "🎯 Dashboard de Metas", url: "/metas/dashboard", icon: Icons.Target },
-        { title: "📦 Produtos (Config)", url: "/admin/produtos", icon: Icons.Package },
-        { title: "Equipamentos", url: "/inventario", icon: Icons.Package },
-        { title: "Sistema", url: "/admin/system-health", icon: Icons.Settings },
-        { title: "🔌 Monitor de Conexões", url: "/configuracoes/monitor", icon: Icons.Activity },
-        { title: "Relatórios", url: "/relatorios", icon: Icons.FileText },
-        { title: "Homologação", url: "/admin/homologacao-mvp", icon: Icons.ClipboardList },
-        { title: "Logs", url: "/admin/logs", icon: Icons.Activity },
-      ],
-      permissions: [],
-      roles: ["admin"]
-    },
-    {
-      id: "cliente_view",
-      title: "Visão Cliente",
-      icon: Icons.UserCheck,
-      items: [
-        { title: "Painel Principal", url: "/cliente/painel", icon: Icons.LayoutDashboard },
-        { title: "Aprovações", url: "/cliente/painel?tab=approvals", icon: Icons.CheckSquare },
-        { title: "Metas", url: "/cliente/painel?tab=goals", icon: Icons.Target },
-        { title: "Financeiro", url: "/cliente/painel?tab=finance", icon: Icons.DollarSign },
-        { title: "Suporte", url: "/cliente/painel?tab=support", icon: Icons.MessageSquare },
+        { title: "Produtos", url: "/admin/produtos", icon: Icons.Package },
+        { title: "Sistema", url: "/admin/system-health", icon: Icons.Activity },
+        { title: "Monitor", url: "/configuracoes/monitor", icon: Icons.Wifi },
+        { title: "Visão Cliente", url: "/cliente/painel", icon: Icons.UserCheck },
       ],
       permissions: [],
       roles: ["admin"]
