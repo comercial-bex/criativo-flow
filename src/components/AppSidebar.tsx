@@ -124,7 +124,6 @@ export function AppSidebar() {
         { title: "Clientes", url: "/clientes", icon: Icons.Users },
         { title: "Orçamentos", url: "/administrativo/orcamentos", icon: Icons.Calculator },
         { title: "Propostas", url: "/administrativo/propostas", icon: Icons.FileText },
-        { title: "Contratos", url: "/admin/contratos", icon: Icons.FileSignature },
         { title: "Financeiro", url: "/financeiro/gestao-contas", icon: Icons.Landmark },
         { title: "Relatórios", url: "/financeiro/relatorios", icon: Icons.TrendingUp },
       ],
@@ -136,8 +135,11 @@ export function AppSidebar() {
       icon: Icons.Settings,
       items: [
         { title: "Painel Admin", url: "/admin/painel", icon: Icons.Shield },
+        { title: "Tarefas", url: "/admin/tarefas", icon: Icons.CheckSquare },
         { title: "Usuários", url: "/usuarios", icon: Icons.Users2 },
         { title: "Produtos", url: "/admin/produtos", icon: Icons.Package },
+        { title: "Contratos", url: "/admin/contratos", icon: Icons.FileSignature },
+        { title: "Notificações", url: "/admin/notificacoes", icon: Icons.Bell },
         { title: "Sistema", url: "/admin/system-health", icon: Icons.Activity },
         { title: "Monitor", url: "/configuracoes/monitor", icon: Icons.Wifi },
         { title: "Visão Cliente", url: "/cliente/painel", icon: Icons.UserCheck },
@@ -221,36 +223,52 @@ export function AppSidebar() {
 
   const detectCurrentModule = () => {
     const currentPath = location.pathname;
+    const pathSegments = currentPath.split('/').filter(Boolean);
     
-    // Primeiro: tentar match exato com items.url
+    // 1. Match EXATO primeiro (prioridade máxima)
     for (const module of displayModules) {
-      if (module.items.some(item => currentPath.startsWith(item.url))) {
+      if (module.items.some(item => currentPath === item.url)) {
         return module.id;
       }
     }
     
-    // Fallback para rotas dinâmicas (ex: /grs/cliente/{id}/projetos)
-    // Extrair prefixo da rota (ex: "/grs/cliente" de "/grs/cliente/123/projetos")
-    const pathSegments = currentPath.split('/').filter(Boolean);
-    if (pathSegments.length >= 2) {
-      const modulePrefix = `/${pathSegments[0]}/${pathSegments[1]}`; // ex: "/grs/cliente"
-      
-      for (const module of displayModules) {
-        if (module.items.some(item => item.url.startsWith(modulePrefix))) {
-          return module.id;
+    // 2. Match por MAIOR especificidade (mais segmentos = melhor match)
+    let bestMatch: { moduleId: string; segments: number } | null = null;
+    
+    for (const module of displayModules) {
+      for (const item of module.items) {
+        if (currentPath.startsWith(item.url) && item.url !== '/') {
+          const itemSegments = item.url.split('/').filter(Boolean).length;
+          if (!bestMatch || itemSegments > bestMatch.segments) {
+            bestMatch = { moduleId: module.id, segments: itemSegments };
+          }
         }
       }
     }
     
-    // Match por primeiro segmento (ex: "/grs" em "/grs/qualquer-coisa")
-    const firstSegment = `/${pathSegments[0]}`;
-    for (const module of displayModules) {
-      if (module.items.some(item => item.url.startsWith(firstSegment))) {
-        return module.id;
-      }
+    if (bestMatch) return bestMatch.moduleId;
+    
+    // 3. Fallback: Match por prefixo do MÓDULO (não do item)
+    // Mapear rotas para módulos diretamente
+    const routeModuleMap: Record<string, string> = {
+      'admin': 'admin',
+      'grs': 'projetos',
+      'design': 'producao',
+      'audiovisual': 'producao',
+      'financeiro': 'comercial',
+      'crm': 'comercial',
+      'cliente': 'admin',
+      'inteligencia': 'projetos',
+      'configuracoes': 'admin',
+      'usuarios': 'admin',
+    };
+    
+    const firstSegment = pathSegments[0];
+    if (firstSegment && routeModuleMap[firstSegment]) {
+      return routeModuleMap[firstSegment];
     }
     
-    return "inicio";
+    return "minha_area";
   };
 
   // Atualizar módulo selecionado quando a localização, rotas ou role mudarem
