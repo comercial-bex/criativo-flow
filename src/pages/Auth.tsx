@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { useUserRole } from '@/hooks/useUserRole';
+import { getDashboardForRole } from '@/utils/roleRoutes';
 import { Button } from '@/components/ui/button';
 import { PasswordResetModal } from '@/components/PasswordResetModal';
 import { LoginDiagnostic } from '@/components/Auth/LoginDiagnostic';
@@ -16,17 +18,20 @@ export default function Auth() {
   const mountedRef = useRef(true);
   
   const { signIn, user } = useAuth();
+  const { role, loading: roleLoading } = useUserRole();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (user && mountedRef.current) {
-      navigate('/dashboard', { replace: true });
+    if (user && !roleLoading && mountedRef.current) {
+      const dashboardPath = getDashboardForRole(role);
+      console.log('🔀 Auth: Redirecionando para dashboard:', { role, dashboardPath });
+      navigate(dashboardPath, { replace: true });
     }
     return () => {
       mountedRef.current = false;
       setShowPasswordReset(false);
     };
-  }, [user, navigate]);
+  }, [user, role, roleLoading, navigate]);
 
   const getErrorMessage = (error: any): string => {
     const message = error?.message?.toLowerCase() || '';
@@ -60,7 +65,7 @@ export default function Auth() {
         toast.error(getErrorMessage(error));
       } else {
         toast.success('Login realizado com sucesso!');
-        navigate('/dashboard');
+        // O redirecionamento agora é feito pelo useEffect baseado na role
       }
     } catch (error) {
       if (mountedRef.current) {

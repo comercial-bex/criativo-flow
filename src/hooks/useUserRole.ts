@@ -107,6 +107,17 @@ export function useUserRole() {
         const userRole = getPriorityRole(papeis);
         console.log('👤 UserRole: Papeis disponíveis:', papeis, '| Role selecionada:', userRole);
         
+        // ⚠️ VALIDAÇÃO DE CACHE: Detectar e corrigir cache inconsistente
+        const cachedRole = authCache.get<UserRole>(`user_role_${user.id}`);
+        if (cachedRole && cachedRole !== userRole) {
+          console.log('⚠️ UserRole: Cache inconsistente detectado! Invalidando...', { 
+            cachedRole, 
+            calculatedRole: userRole 
+          });
+          authCache.remove(`user_role_${user.id}`);
+        }
+        
+        // Atualizar cache com valor correto
         if (userRole) {
           authCache.set(`user_role_${user.id}`, userRole);
         }
