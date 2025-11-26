@@ -442,6 +442,19 @@ export function CreateTaskModal({
         return setor ? (mapeamento[setor] || null) : null;
       };
 
+      // Definir status inicial baseado no módulo
+      const getStatusInicial = (setor: string | null): string => {
+        const mapeamento: Record<string, string> = {
+          'design': 'briefing',
+          'audiovisual': 'roteiro',
+          'grs': 'em_cadastro',
+          'atendimento': 'backlog'
+        };
+        return setor ? (mapeamento[setor] || defaultStatus) : defaultStatus;
+      };
+
+      const statusInicial = getStatusInicial(formData.setor_responsavel);
+
       // Buscar user_id do usuário logado
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       
@@ -472,7 +485,7 @@ export function CreateTaskModal({
         created_by: user.id,
         responsavel_id: user.id,
         prioridade: formData.prioridade,
-        status: defaultStatus,
+        status: statusInicial,
         prazo_executor: formData.data_prazo?.toISOString(),
         horas_estimadas: formData.horas_estimadas ? parseInt(formData.horas_estimadas) : null,
         origem: taskType,
