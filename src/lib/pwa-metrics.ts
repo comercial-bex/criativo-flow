@@ -155,15 +155,17 @@ export function getPerformanceGrade(metrics: PWAMetrics): {
   cls: 'good' | 'needs-improvement' | 'poor';
   overall: 'good' | 'needs-improvement' | 'poor';
 } {
-  const lcpGrade = !metrics.lcp ? 'poor' :
+  // Se métrica não foi coletada ainda, considerar 'needs-improvement' ao invés de 'poor'
+  // Isso evita score 30% antes das métricas serem coletadas
+  const lcpGrade = !metrics.lcp ? 'needs-improvement' :
     metrics.lcp <= 2500 ? 'good' :
     metrics.lcp <= 4000 ? 'needs-improvement' : 'poor';
 
-  const fidGrade = !metrics.fid ? 'poor' :
+  const fidGrade = !metrics.fid ? 'needs-improvement' :
     metrics.fid <= 100 ? 'good' :
     metrics.fid <= 300 ? 'needs-improvement' : 'poor';
 
-  const clsGrade = !metrics.cls ? 'poor' :
+  const clsGrade = !metrics.cls ? 'needs-improvement' :
     metrics.cls <= 0.1 ? 'good' :
     metrics.cls <= 0.25 ? 'needs-improvement' : 'poor';
 
@@ -171,6 +173,7 @@ export function getPerformanceGrade(metrics: PWAMetrics): {
   const poorCount = grades.filter(g => g === 'poor').length;
   const goodCount = grades.filter(g => g === 'good').length;
 
+  // Melhor cálculo do overall: priorizar métricas coletadas
   const overall = poorCount > 0 ? 'poor' :
     goodCount >= 2 ? 'good' : 'needs-improvement';
 
