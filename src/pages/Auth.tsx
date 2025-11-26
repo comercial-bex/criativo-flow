@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserRole } from '@/hooks/useUserRole';
 import { getDashboardForRole } from '@/utils/roleRoutes';
+import { authCache } from '@/lib/auth-cache';
 import { Button } from '@/components/ui/button';
 import { PasswordResetModal } from '@/components/PasswordResetModal';
 import { LoginDiagnostic } from '@/components/Auth/LoginDiagnostic';
@@ -20,6 +21,14 @@ export default function Auth() {
   const { signIn, user } = useAuth();
   const { role, loading: roleLoading } = useUserRole();
   const navigate = useNavigate();
+
+  // Limpar cache de roles ao carregar a página de login
+  useEffect(() => {
+    if (!user) {
+      console.log('🧹 Auth: Limpando cache de roles ao carregar página de login');
+      authCache.clearRoleCache();
+    }
+  }, [user]);
 
   useEffect(() => {
     if (user && !roleLoading && mountedRef.current) {
@@ -82,13 +91,29 @@ export default function Auth() {
 
   const handleClearCache = async () => {
     try {
+      console.log('🧹 Auth: Iniciando limpeza completa de cache');
+      
+      // Limpar cache de autenticação (incluindo roles)
+      authCache.clear();
+      
+      // Limpar localStorage
+      localStorage.clear();
+      
+      // Limpar sessionStorage
+      sessionStorage.clear();
+      
+      // Limpar cache do navegador
       const keys = await caches.keys();
       await Promise.all(keys.map(k => caches.delete(k)));
+      
+      console.log('✅ Auth: Cache limpo com sucesso');
       toast.success('Cache limpo! Recarregando...');
+      
       setTimeout(() => {
         window.location.href = window.location.origin + '?v=' + Date.now();
       }, 500);
     } catch (error) {
+      console.error('❌ Auth: Erro ao limpar cache:', error);
       toast.error('Erro ao limpar cache');
     }
   };
