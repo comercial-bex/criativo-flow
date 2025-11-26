@@ -12,7 +12,7 @@ import { Plus, Search, Filter } from 'lucide-react';
 import { ModernKanbanCard, type KanbanTask } from './ModernKanbanCard';
 
 // Tipos unificados
-interface UniversalTask {
+export interface UniversalTask {
   id: string;
   titulo: string;
   descricao?: string;
@@ -44,7 +44,7 @@ interface UniversalTask {
   updated_at?: string;
   capa_anexo_id?: string | null;
 }
-interface UniversalColumn {
+export interface UniversalColumn {
   id: string;
   titulo: string;
   cor: string;

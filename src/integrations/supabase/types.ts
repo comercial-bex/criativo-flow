@@ -17423,6 +17423,13 @@ export type Database = {
         | "contato"
         | "oportunidade"
         | "convertido"
+        | "recebidos"
+        | "ajuste_interno"
+        | "alteracao_cliente"
+        | "briefing_recebido"
+        | "planejando_captacao"
+        | "ingest_backup"
+        | "enviado_cliente"
       status_titulo:
         | "pendente"
         | "vencido"
@@ -17495,6 +17502,12 @@ export type Database = {
         | "reels_instagram"
         | "stories_interativo"
         | "criativo_cartela"
+        | "landing_page"
+        | "email_marketing"
+        | "arte_impressa"
+        | "motion_graphics"
+        | "video_depoimento"
+        | "cobertura_evento"
       tipo_titulo: "pagar" | "receber"
       tipo_vinculo_enum: "clt" | "pj" | "estagio" | "freelancer"
       user_role:
@@ -17813,6 +17826,13 @@ export const Constants = {
         "contato",
         "oportunidade",
         "convertido",
+        "recebidos",
+        "ajuste_interno",
+        "alteracao_cliente",
+        "briefing_recebido",
+        "planejando_captacao",
+        "ingest_backup",
+        "enviado_cliente",
       ],
       status_titulo: [
         "pendente",
@@ -17891,6 +17911,12 @@ export const Constants = {
         "reels_instagram",
         "stories_interativo",
         "criativo_cartela",
+        "landing_page",
+        "email_marketing",
+        "arte_impressa",
+        "motion_graphics",
+        "video_depoimento",
+        "cobertura_evento",
       ],
       tipo_titulo: ["pagar", "receber"],
       tipo_vinculo_enum: ["clt", "pj", "estagio", "freelancer"],
