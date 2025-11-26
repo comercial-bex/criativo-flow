@@ -18,19 +18,20 @@ interface CreateClientUserRequest {
 
 // Helper functions
 async function createProfile(supabaseAdmin: any, userId: string, nome: string, email: string, cliente_id: string) {
+  // Criar registro em pessoas (tabela correta)
   const { error } = await supabaseAdmin
-    .from('profiles')
+    .from('pessoas')
     .insert({
-      id: userId,
+      profile_id: userId,
       nome,
       email,
       cliente_id,
-      especialidade: null,
-      status: 'aprovado'
+      status: 'aprovado',
+      papeis: ['cliente']
     });
   
   if (error) throw error;
-  console.log('✅ Perfil criado');
+  console.log('✅ Perfil criado em pessoas');
 }
 
 async function createRole(supabaseAdmin: any, userId: string, role: string) {
@@ -54,7 +55,7 @@ async function upsertRole(supabaseAdmin: any, userId: string, role: string) {
   console.log('✅ Role garantido');
 }
 
-async function createClienteUsuario(supabaseAdmin: any, userId: string, cliente_id: string, role: string) {
+async function createClienteUsuario(supabaseAdmin: any, userId: string, cliente_id: string, role: string, role_cliente?: string) {
   const permissoes = {
     financeiro: { ver: true, editar: true },
     marketing: { ver: true, aprovar: true },
@@ -78,7 +79,7 @@ async function createClienteUsuario(supabaseAdmin: any, userId: string, cliente_
   console.log('✅ Cliente-usuário vinculado');
 }
 
-async function upsertClienteUsuario(supabaseAdmin: any, userId: string, cliente_id: string, role: string) {
+async function upsertClienteUsuario(supabaseAdmin: any, userId: string, cliente_id: string, role: string, role_cliente?: string) {
   const permissoes = {
     financeiro: { ver: true, editar: true },
     marketing: { ver: true, aprovar: true },
@@ -161,11 +162,11 @@ serve(async (req) => {
     if (existingUser) {
       console.log('👤 Usuário já existe no Auth:', existingUser.id);
       
-      // PASSO 2: Verificar se perfil existe
+      // PASSO 2: Verificar se perfil existe em pessoas
       const { data: existingProfile } = await supabaseAdmin
-        .from('profiles')
+        .from('pessoas')
         .select('*')
-        .eq('id', existingUser.id)
+        .eq('profile_id', existingUser.id)
         .maybeSingle();
       
       if (!existingProfile) {
@@ -175,7 +176,7 @@ serve(async (req) => {
           // Criar perfil para usuário órfão
           await createProfile(supabaseAdmin, existingUser.id, nome, email, cliente_id);
           await createRole(supabaseAdmin, existingUser.id, role);
-          await createClienteUsuario(supabaseAdmin, existingUser.id, cliente_id, role);
+          await createClienteUsuario(supabaseAdmin, existingUser.id, cliente_id, role, role_cliente);
           
           // Atualizar senha se fornecida
           if (password) {
@@ -209,16 +210,16 @@ serve(async (req) => {
         console.log('♻️ ATUALIZAÇÃO: Perfil existe, atualizando dados...');
         
         try {
-          // Atualizar perfil existente
+          // Atualizar perfil existente em pessoas
           await supabaseAdmin
-            .from('profiles')
+            .from('pessoas')
             .update({ 
               nome, 
               cliente_id,
               status: 'aprovado',
               updated_at: new Date().toISOString()
             })
-            .eq('id', existingUser.id);
+            .eq('profile_id', existingUser.id);
           
           // Atualizar senha
           if (password) {
@@ -229,7 +230,7 @@ serve(async (req) => {
           
           // Garantir role e cliente_usuarios existem
           await upsertRole(supabaseAdmin, existingUser.id, role);
-          await upsertClienteUsuario(supabaseAdmin, existingUser.id, cliente_id, role);
+          await upsertClienteUsuario(supabaseAdmin, existingUser.id, cliente_id, role, role_cliente);
           
           console.log('✅ Usuário atualizado com sucesso');
           
@@ -282,7 +283,7 @@ serve(async (req) => {
         try {
           await createProfile(supabaseAdmin, userId, nome, email, cliente_id);
           await createRole(supabaseAdmin, userId, role);
-          await createClienteUsuario(supabaseAdmin, userId, cliente_id, role);
+          await createClienteUsuario(supabaseAdmin, userId, cliente_id, role, role_cliente);
           
           console.log('✅ Novo cliente criado com sucesso');
         } catch (error) {
