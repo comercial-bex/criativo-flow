@@ -8,7 +8,7 @@ import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { useUniversalSearch } from "@/hooks/useUniversalSearch";
 import { SearchResults } from "@/components/SearchResults";
-import { NotificationDropdown } from "@/components/NotificationDropdown";
+import { ActivityFeedSheet } from "@/components/ActivityFeedSheet";
 import { CalendarModal } from "@/components/CalendarModal";
 import { HelpModal } from "@/components/HelpModal";
 import { useDeviceType } from "@/hooks/useDeviceType";
@@ -62,7 +62,7 @@ export function GlobalHeader({ className }: GlobalHeaderProps = {}) {
                 <div className="space-y-4 mt-4">
                   <div className="space-y-3">
                     <CalendarModal />
-                    <NotificationDropdown />
+                    <ActivityFeedSheet />
                     <HelpModal />
                     <ThemeToggle />
                   </div>
@@ -142,7 +142,7 @@ export function GlobalHeader({ className }: GlobalHeaderProps = {}) {
 
           <div className="flex items-center gap-2">
             <CalendarModal />
-            <NotificationDropdown />
+            <ActivityFeedSheet />
             <HelpModal />
             <ThemeToggle />
           </div>
