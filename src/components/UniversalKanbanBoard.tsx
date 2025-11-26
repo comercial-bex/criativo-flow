@@ -106,12 +106,12 @@ export const moduleConfigurations = {
     descricao: 'Em análise final'
   }],
   design: [{
-    id: 'briefing',
-    titulo: 'BRIEFING',
+    id: 'recebidos',
+    titulo: 'RECEBIDOS',
     cor: 'bg-blue-500',
-    icon: '📋',
+    icon: '📥',
     ordem: 1,
-    descricao: 'Coletando requisitos'
+    descricao: 'Briefing recebido do GRS'
   }, {
     id: 'em_criacao',
     titulo: 'EM CRIAÇÃO',
@@ -120,62 +120,97 @@ export const moduleConfigurations = {
     ordem: 2,
     descricao: 'Processo criativo'
   }, {
-    id: 'revisao_interna',
-    titulo: 'REVISÃO INTERNA',
+    id: 'ajuste_interno',
+    titulo: 'AJUSTE INTERNO',
     cor: 'bg-yellow-500',
-    icon: '👀',
+    icon: '🔄',
     ordem: 3,
-    descricao: 'Revisão da equipe'
+    descricao: 'Ajustes antes da revisão'
   }, {
-    id: 'aprovacao_cliente',
-    titulo: 'APROVAÇÃO CLIENTE',
+    id: 'revisao_interna',
+    titulo: 'PRONTO P/ REVISÃO BEX',
     cor: 'bg-orange-500',
-    icon: '✅',
+    icon: '👀',
     ordem: 4,
-    descricao: 'Aguardando cliente'
+    descricao: 'Aguardando revisão interna'
+  }, {
+    id: 'alteracao_cliente',
+    titulo: 'EM ALTERAÇÃO (CLIENTE)',
+    cor: 'bg-red-500',
+    icon: '✏️',
+    ordem: 5,
+    descricao: 'Ajustes solicitados pelo cliente'
   }, {
     id: 'entregue',
-    titulo: 'ENTREGUE',
+    titulo: 'FINALIZADO',
     cor: 'bg-green-500',
-    icon: '🚀',
-    ordem: 5,
-    descricao: 'Finalizado'
+    icon: '✅',
+    ordem: 6,
+    descricao: 'Aprovado e finalizado'
   }],
   audiovisual: [{
-    id: 'roteiro',
-    titulo: 'ROTEIRO',
+    id: 'briefing_recebido',
+    titulo: 'BRIEFING RECEBIDO',
     cor: 'bg-blue-500',
-    icon: '📝',
-    ordem: 1,
-    descricao: 'Desenvolvimento do roteiro'
-  }, {
-    id: 'pre_producao',
-    titulo: 'PRÉ-PRODUÇÃO',
-    cor: 'bg-purple-500',
     icon: '📋',
+    ordem: 1,
+    descricao: 'Roteiro já aprovado pelo GRS'
+  }, {
+    id: 'planejando_captacao',
+    titulo: 'PLANEJANDO CAPTAÇÃO',
+    cor: 'bg-indigo-500',
+    icon: '📝',
     ordem: 2,
-    descricao: 'Planejamento da gravação'
+    descricao: 'Preparando equipamentos e roteiro'
   }, {
     id: 'gravacao',
-    titulo: 'GRAVAÇÃO',
+    titulo: 'EM GRAVAÇÃO',
     cor: 'bg-red-500',
     icon: '🎬',
     ordem: 3,
-    descricao: 'Captação do material'
+    descricao: 'Captação em andamento'
+  }, {
+    id: 'ingest_backup',
+    titulo: 'INGEST / BACKUP',
+    cor: 'bg-purple-500',
+    icon: '💾',
+    ordem: 4,
+    descricao: 'Transferindo e organizando arquivos'
   }, {
     id: 'pos_producao',
-    titulo: 'PÓS-PRODUÇÃO',
+    titulo: 'EM EDIÇÃO',
     cor: 'bg-yellow-500',
     icon: '✂️',
-    ordem: 4,
-    descricao: 'Edição e finalização'
+    ordem: 5,
+    descricao: 'Editando vídeo'
+  }, {
+    id: 'revisao_interna',
+    titulo: 'REVISÃO INTERNA',
+    cor: 'bg-orange-500',
+    icon: '👀',
+    ordem: 6,
+    descricao: 'Aguardando revisão da coordenação'
+  }, {
+    id: 'enviado_cliente',
+    titulo: 'ENVIADO AO CLIENTE',
+    cor: 'bg-cyan-500',
+    icon: '📤',
+    ordem: 7,
+    descricao: 'Aguardando aprovação do cliente'
+  }, {
+    id: 'alteracao_cliente',
+    titulo: 'EM ALTERAÇÃO',
+    cor: 'bg-pink-500',
+    icon: '✏️',
+    ordem: 8,
+    descricao: 'Ajustes solicitados'
   }, {
     id: 'entregue',
-    titulo: 'ENTREGUE',
+    titulo: 'FINALIZADO',
     cor: 'bg-green-500',
-    icon: '🚀',
-    ordem: 5,
-    descricao: 'Produto final'
+    icon: '✅',
+    ordem: 9,
+    descricao: 'Arquivo master entregue'
   }],
   crm: [{
     id: 'novo',
