@@ -13660,14 +13660,14 @@ export type Database = {
       fn_registrar_auditoria: {
         Args: {
           p_acao: string
-          p_acao_detalhe?: string
           p_dados_antes?: Json
           p_dados_depois?: Json
-          p_entidade_id: string
-          p_entidade_tipo: string
+          p_detalhe?: string
+          p_registro_id: string
+          p_tabela: string
           p_trace_id?: string
         }
-        Returns: string
+        Returns: undefined
       }
       fn_sugerir_categoria: {
         Args: {
