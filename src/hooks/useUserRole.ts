@@ -16,6 +16,40 @@ export type UserRole =
   | 'fornecedor'
   | null;
 
+// Priorização: papéis operacionais > genéricos
+const ROLE_PRIORITY: string[] = [
+  'admin',
+  'gestor',
+  'grs',
+  'designer',
+  'filmmaker',
+  'audiovisual',
+  'design',
+  'trafego',
+  'financeiro',
+  'atendimento',
+  'cliente',
+  'fornecedor',
+  'especialista',
+  'colaborador'
+];
+
+/**
+ * Seleciona o papel de maior prioridade operacional
+ * Evita que papéis genéricos (colaborador) sobrescrevam papéis específicos (grs, designer)
+ */
+function getPriorityRole(papeis: string[]): UserRole {
+  if (!papeis || papeis.length === 0) return null;
+  
+  for (const role of ROLE_PRIORITY) {
+    if (papeis.includes(role)) {
+      return role as UserRole;
+    }
+  }
+  
+  return papeis[0] as UserRole;
+}
+
 export function useUserRole() {
   const { user, loading: authLoading } = useAuth();
   const [role, setRole] = useState<UserRole>(null);
@@ -68,10 +102,10 @@ export function useUserRole() {
           return;
         }
 
-        // Mapear primeiro papel para role (compatibilidade)
+        // Mapear papel prioritário (evita que papéis genéricos sobrescrevam específicos)
         const papeis = data?.papeis || [];
-        const userRole = (papeis.length > 0 ? papeis[0] : null) as UserRole;
-        console.log('👤 UserRole: Fetched role from papeis:', userRole);
+        const userRole = getPriorityRole(papeis);
+        console.log('👤 UserRole: Papeis disponíveis:', papeis, '| Role selecionada:', userRole);
         
         if (userRole) {
           authCache.set(`user_role_${user.id}`, userRole);

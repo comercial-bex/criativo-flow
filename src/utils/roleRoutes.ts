@@ -12,6 +12,9 @@ export const ROLE_DASHBOARDS: Record<string, string> = {
   'cliente': '/cliente/painel',
   'atendimento': '/dashboard',
   'financeiro': '/financeiro/dashboard',
+  // Aliases para compatibilidade
+  'audiovisual': '/audiovisual/dashboard',
+  'design': '/design/dashboard',
 };
 
 /**
