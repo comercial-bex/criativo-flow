@@ -108,7 +108,7 @@ export function AppSidebar() {
       icon: Icons.Palette,
       items: [
         { title: "Meus Jobs", url: "/design/dashboard", icon: Icons.Palette },
-        { title: "Kanban", url: "/design/minhas-tarefas", icon: Icons.Trello },
+        { title: "Minhas Tarefas", url: "/design/minhas-tarefas", icon: Icons.ListChecks },
         { title: "Aprovações", url: "/design/aprovacoes", icon: Icons.Eye },
         { title: "Biblioteca", url: "/design/biblioteca", icon: Icons.Images },
         { title: "Calendário", url: "/design/calendario", icon: Icons.Calendar },
@@ -121,7 +121,7 @@ export function AppSidebar() {
       icon: Icons.Video,
       items: [
         { title: "Dashboard", url: "/audiovisual/dashboard", icon: Icons.Video },
-        { title: "Kanban", url: "/audiovisual/minhas-tarefas", icon: Icons.Trello },
+        { title: "Minhas Tarefas", url: "/audiovisual/minhas-tarefas", icon: Icons.ListChecks },
         { title: "Agenda Gravações", url: "/audiovisual/captacoes", icon: Icons.Camera },
         { title: "Calendário", url: "/audiovisual/calendario", icon: Icons.Calendar },
       ],
