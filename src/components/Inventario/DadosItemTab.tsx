@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
+import { toast } from '@/lib/toast-compat';
 import { useInventarioCategorias, useInventarioModelos, useCreateInventarioItem, useUpdateInventarioItem } from '@/hooks/useInventario';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -55,6 +56,13 @@ export function DadosItemTab({ itemId, mode = 'create', onSave }: DadosItemTabPr
 
   const loadItemData = async () => {
     setLoading(true);
+    
+    // NOTA: Tabela inventario_itens foi removida - feature desabilitada
+    toast.warning('Funcionalidade de inventário temporariamente desabilitada');
+    setLoading(false);
+    return;
+    
+    /* CÓDIGO DESABILITADO - inventario_itens não existe mais
     const { data } = await supabase
       .from('inventario_itens')
       .select('*, modelo:inventario_modelos(categoria_id)')
@@ -79,6 +87,8 @@ export function DadosItemTab({ itemId, mode = 'create', onSave }: DadosItemTabPr
         setValue('categoria_id', data.modelo.categoria_id);
       }
     }
+    */
+    
     setLoading(false);
   };
 

@@ -94,7 +94,12 @@ export function TimelineTab({ clienteId, projetoId }: TimelineTabProps) {
 
       const { data, error } = await query;
       if (error) throw error;
-      return data as LogAtividade[];
+      
+      // Mapear dados para formato LogAtividade com fallback seguro
+      return (data || []).map(item => ({
+        ...item,
+        profiles: item.profiles || { nome: 'Usuário desconhecido' }
+      })) as LogAtividade[];
     },
   });
 
