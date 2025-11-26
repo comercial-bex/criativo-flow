@@ -203,29 +203,36 @@ serve(async (req) => {
     console.log('✅ Signup: Usuário criado:', userId);
 
     try {
-      // FASE 2: Criar perfil
-      // IMPORTANTE: especialidade e cliente_id são mutuamente exclusivos
-      // - Se é CLIENTE: cliente_id preenchido, especialidade NULL
-      // - Se é ESPECIALISTA: especialidade preenchida, cliente_id NULL
+      // FASE 2: Criar registro em pessoas
+      // IMPORTANTE: cliente_id e especialidade são campos independentes
+      // - CLIENTE: cliente_id preenchido, pode ter papeis=['cliente']
+      // - ESPECIALISTA: especialidade preenchida, papeis=['especialista', 'designer', etc]
+      
+      const papeis = metadata.especialidade 
+        ? ['especialista', metadata.especialidade] 
+        : metadata.cliente_id 
+        ? ['cliente'] 
+        : ['cliente'];
+
       const { error: profileError } = await supabaseAdmin
-        .from('profiles')
+        .from('pessoas')
         .insert({
-          id: userId,
+          profile_id: userId,
           nome: metadata.nome,
           email: email,
-          telefone: metadata.telefone,
-          especialidade: metadata.especialidade || null,
+          telefones: metadata.telefone ? [metadata.telefone] : [],
           cliente_id: metadata.cliente_id || null,
-          status: role === 'admin' ? 'aprovado' : 'pendente_aprovacao',
-          role_requested: metadata.especialidade ? 'especialista' : null
+          papeis: papeis,
+          status: role === 'admin' ? 'aprovado' : 'pendente_aprovacao'
         });
 
       if (profileError) {
         console.error('🔐 Signup: Erro ao criar perfil:', profileError);
         
-        // ROLLBACK: Deletar usuário do Auth
+        // ROLLBACK: Deletar registro pessoas e usuário
+        await supabaseAdmin.from('pessoas').delete().eq('profile_id', userId);
         await supabaseAdmin.auth.admin.deleteUser(userId);
-        console.log('🔄 Signup: Rollback - Usuário deletado do Auth');
+        console.log('🔄 Signup: Rollback - Pessoas e usuário deletados');
 
         return new Response(
           JSON.stringify({ 
@@ -249,10 +256,10 @@ serve(async (req) => {
       if (roleError) {
         console.error('🔐 Signup: Erro ao criar role:', roleError);
         
-        // ROLLBACK: Deletar perfil e usuário
-        await supabaseAdmin.from('profiles').delete().eq('id', userId);
+        // ROLLBACK: Deletar registro de pessoas e usuário
+        await supabaseAdmin.from('pessoas').delete().eq('profile_id', userId);
         await supabaseAdmin.auth.admin.deleteUser(userId);
-        console.log('🔄 Signup: Rollback - Perfil e usuário deletados');
+        console.log('🔄 Signup: Rollback - Registro pessoas e usuário deletados');
 
         return new Response(
           JSON.stringify({ 
@@ -333,7 +340,7 @@ serve(async (req) => {
       
       // ROLLBACK completo
       try {
-        await supabaseAdmin.from('profiles').delete().eq('id', userId);
+        await supabaseAdmin.from('pessoas').delete().eq('profile_id', userId);
         await supabaseAdmin.auth.admin.deleteUser(userId);
         console.log('🔄 Signup: Rollback completo executado');
       } catch (rollbackError) {

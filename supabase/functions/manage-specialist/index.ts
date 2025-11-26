@@ -67,16 +67,31 @@ async function handleUpdateSpecialist(supabase: any, especialistaData: any) {
   console.log('📝 Atualizando especialista:', { id, nome, especialidade, role });
 
   try {
-    // Atualizar perfil do especialista
+    // Atualizar registro do especialista em pessoas
+    // Manter papeis existentes mas garantir que 'especialista' está presente
+    const { data: pessoaAtual } = await supabase
+      .from('pessoas')
+      .select('papeis')
+      .eq('profile_id', id)
+      .single();
+
+    const papeisAtualizados = pessoaAtual?.papeis || ['especialista'];
+    if (!papeisAtualizados.includes('especialista')) {
+      papeisAtualizados.push('especialista');
+    }
+    if (especialidade && !papeisAtualizados.includes(especialidade)) {
+      papeisAtualizados.push(especialidade);
+    }
+
     const { error: profileError } = await supabase
-      .from('profiles')
+      .from('pessoas')
       .update({
         nome,
-        telefone,
-        especialidade,
+        telefones: telefone ? [telefone] : [],
+        papeis: papeisAtualizados,
         updated_at: new Date().toISOString()
       })
-      .eq('id', id);
+      .eq('profile_id', id);
 
     if (profileError) {
       console.error('❌ Erro ao atualizar perfil:', profileError);
