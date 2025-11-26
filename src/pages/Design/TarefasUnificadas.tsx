@@ -9,7 +9,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { useTarefas } from '@/hooks/useTarefas';
-import { 
+import { ActivityFeedCard } from '@/components/ActivityFeedCard';
+import {
   Plus, 
   Palette, 
   Layers, 
@@ -215,6 +216,14 @@ export default function TarefasUnificadasDesign() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Activity Feed */}
+      <ActivityFeedCard 
+        filter="all" 
+        executorArea="Criativo" 
+        title="Atividades da Área Criativa"
+        limit={15}
+      />
 
       {/* Kanban Board */}
       <UniversalKanbanBoard
