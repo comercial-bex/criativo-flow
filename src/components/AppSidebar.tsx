@@ -103,17 +103,29 @@ export function AppSidebar() {
       permissions: ["grs", "projetos", "inteligencia"]
     },
     {
-      id: "producao",
-      title: "Produção",
-      icon: Icons.Layers,
+      id: "design",
+      title: "Design",
+      icon: Icons.Palette,
       items: [
-        { title: "Design", url: "/design/dashboard", icon: Icons.Palette },
-        { title: "Audiovisual", url: "/audiovisual/dashboard", icon: Icons.Video },
-        { title: "Captações", url: "/audiovisual/captacoes", icon: Icons.Camera },
+        { title: "Meus Jobs", url: "/design/dashboard", icon: Icons.Palette },
+        { title: "Kanban", url: "/design/minhas-tarefas", icon: Icons.Trello },
         { title: "Aprovações", url: "/design/aprovacoes", icon: Icons.Eye },
         { title: "Biblioteca", url: "/design/biblioteca", icon: Icons.Images },
+        { title: "Calendário", url: "/design/calendario", icon: Icons.Calendar },
       ],
-      permissions: ["design", "audiovisual"]
+      permissions: ["design"]
+    },
+    {
+      id: "audiovisual",
+      title: "Audiovisual",
+      icon: Icons.Video,
+      items: [
+        { title: "Dashboard", url: "/audiovisual/dashboard", icon: Icons.Video },
+        { title: "Kanban", url: "/audiovisual/minhas-tarefas", icon: Icons.Trello },
+        { title: "Agenda Gravações", url: "/audiovisual/captacoes", icon: Icons.Camera },
+        { title: "Calendário", url: "/audiovisual/calendario", icon: Icons.Calendar },
+      ],
+      permissions: ["audiovisual", "filmmaker"]
     },
     {
       id: "comercial",
@@ -253,8 +265,8 @@ export function AppSidebar() {
     const routeModuleMap: Record<string, string> = {
       'admin': 'admin',
       'grs': 'projetos',
-      'design': 'producao',
-      'audiovisual': 'producao',
+      'design': 'design',
+      'audiovisual': 'audiovisual',
       'financeiro': 'comercial',
       'crm': 'comercial',
       'cliente': 'admin',

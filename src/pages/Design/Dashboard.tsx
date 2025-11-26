@@ -173,13 +173,13 @@ export default function DesignDashboard() {
     <div className="p-6 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
-            <Palette className="h-8 w-8 text-primary" />
-            Dashboard Design
-          </h1>
-          <p className="text-muted-foreground">Visão geral da produção criativa</p>
-        </div>
+      <div>
+        <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
+          <Palette className="h-8 w-8 text-primary" />
+          Meus Jobs
+        </h1>
+        <p className="text-muted-foreground">Suas tarefas de design em um só lugar</p>
+      </div>
         <div className="flex gap-2">
           <TutorialButton onStart={startTutorial} hasSeenTutorial={hasSeenTutorial} />
           <Button asChild variant="outline">
@@ -212,29 +212,29 @@ export default function DesignDashboard() {
       {/* Stats Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4" data-tour="kpis">
         <StatCard
-          title="Tarefas Abertas"
+          title="Tarefas de Hoje"
           value={stats.tarefasAbertas}
-          icon={AlertTriangle}
-          trend="+12% vs. semana passada"
+          icon={Clock}
+          trend="Com prazo para hoje"
           color="primary"
         />
         <StatCard
-          title="Em Produção"
+          title="Em Criação"
           value={stats.tarefasEmAndamento}
-          icon={Clock}
-          trend="3 em revisão"
+          icon={Palette}
+          trend="Jobs em produção"
         />
         <StatCard
-          title="Concluídas"
+          title="Em Revisão"
           value={stats.tarefasConcluidas}
-          icon={CheckCircle2}
-          trend="+8% este mês"
+          icon={Eye}
+          trend="Aguardando aprovação"
         />
         <StatCard
-          title="Projetos Ativos"
-          value={stats.projetosAtivos}
-          icon={Users}
-          trend="5 com alta prioridade"
+          title="Esta Semana"
+          value={stats.proximosDeadlines.length}
+          icon={Calendar}
+          trend="Próximos 7 dias"
         />
       </div>
 
