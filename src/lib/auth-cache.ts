@@ -1,6 +1,6 @@
 // Cache Manager para dados de autenticação
 const CACHE_PREFIX = 'bex_auth_';
-const CACHE_TTL = 15 * 60 * 1000; // 15 minutos
+const CACHE_TTL = 2 * 60 * 1000; // 2 minutos (reduzido para evitar cache desatualizado)
 
 interface CacheData<T> {
   data: T;
@@ -58,6 +58,17 @@ export const authCache = {
       console.log('🧹 Cache: Cleared all auth cache');
     } catch (error) {
       console.error('❌ Cache: Error clearing cache', error);
+    }
+  },
+
+  clearRoleCache(): void {
+    try {
+      Object.keys(localStorage)
+        .filter(key => key.startsWith(`${CACHE_PREFIX}user_role_`))
+        .forEach(key => localStorage.removeItem(key));
+      console.log('🧹 Cache: Cleared all role cache');
+    } catch (error) {
+      console.error('❌ Cache: Error clearing role cache', error);
     }
   },
 };
