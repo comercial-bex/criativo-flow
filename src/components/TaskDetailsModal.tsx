@@ -18,6 +18,8 @@ import { useTaskCover } from '@/hooks/useTaskCover';
 import { TaskActivities } from '@/components/TaskActivities';
 import { TaskActionsSidebar } from '@/components/TaskActionsSidebar';
 import { TaskParticipants } from '@/components/TaskParticipants';
+import { TechnicalSpecsTab } from '@/components/Design/TechnicalSpecsTab';
+import { ProductionSpecsTab } from '@/components/Audiovisual/ProductionSpecsTab';
 import { TaskTimer } from '@/components/TaskTimer';
 import { TaskQuickTimeDialog } from '@/components/TaskQuickTimeDialog';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -555,7 +557,7 @@ export function TaskDetailsModal({ open, onOpenChange, task, onTaskUpdate }: Tas
           <div className="modal-body-2col-main modal-scroll-area">
 
         <Tabs defaultValue="overview" className="w-full">
-          <TabsList className="modal-tabs-gaming grid w-full grid-cols-4">
+          <TabsList className="modal-tabs-gaming grid w-full grid-cols-6">
             <TabsTrigger value="overview" className="modal-tab-trigger-gaming">
               <FileText className="h-3.5 w-3.5 mr-1.5" />
               Visão Geral
@@ -573,6 +575,18 @@ export function TaskDetailsModal({ open, onOpenChange, task, onTaskUpdate }: Tas
                 </BexBadge>
               )}
             </TabsTrigger>
+            {task?.executor_area === 'Criativo' && (
+              <TabsTrigger value="specs" className="modal-tab-trigger-gaming">
+                <Target className="h-3.5 w-3.5 mr-1.5" />
+                Specs Técnicas
+              </TabsTrigger>
+            )}
+            {task?.executor_area === 'Audiovisual' && (
+              <TabsTrigger value="production" className="modal-tab-trigger-gaming">
+                <Target className="h-3.5 w-3.5 mr-1.5" />
+                Produção
+              </TabsTrigger>
+            )}
             <TabsTrigger value="anexos" className="modal-tab-trigger-gaming">
               <Paperclip className="h-3.5 w-3.5 mr-1.5" />
               Anexos
@@ -1007,6 +1021,32 @@ export function TaskDetailsModal({ open, onOpenChange, task, onTaskUpdate }: Tas
               onSetCapa={updateCoverAnexo}
             />
           </TabsContent>
+
+          {/* Specs Técnicas - Apenas para Design/Criativo */}
+          {task?.executor_area === 'Criativo' && (
+            <TabsContent value="specs" className="mt-3">
+              <TechnicalSpecsTab 
+                tarefaId={task.id}
+                onUpdate={async (specs) => {
+                  // O componente salva no banco internamente, apenas atualiza localmente
+                  console.log('✅ Specs técnicas atualizadas:', specs);
+                }}
+              />
+            </TabsContent>
+          )}
+
+          {/* Specs de Produção - Apenas para Audiovisual */}
+          {task?.executor_area === 'Audiovisual' && (
+            <TabsContent value="production" className="mt-3">
+              <ProductionSpecsTab 
+                tarefaId={task.id}
+                onUpdate={async (specs) => {
+                  // O componente salva no banco internamente, apenas atualiza localmente
+                  console.log('✅ Specs de produção atualizadas:', specs);
+                }}
+              />
+            </TabsContent>
+          )}
 
           {/* Subtarefas */}
           <TabsContent value="subtarefas" className="mt-4">
