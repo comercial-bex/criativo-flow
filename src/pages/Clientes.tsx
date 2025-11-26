@@ -83,6 +83,8 @@ function Clientes() {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('created_at');
   const [showForm, setShowForm] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 20; // Paginação: 20 clientes por página
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showOnboardingModal, setShowOnboardingModal] = useState(false);
   const [selectedCliente, setSelectedCliente] = useState<Cliente | null>(null);
@@ -185,6 +187,12 @@ function Clientes() {
     cliente.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     cliente.cnpj_cpf?.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  // Paginação
+  const totalPages = Math.ceil(filteredClientes.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedClientes = filteredClientes.slice(startIndex, endIndex);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -854,7 +862,7 @@ function Clientes() {
       {/* Grid de Clientes ou Lista - Responsive com Virtual Scrolling */}
       {viewMode === 'list' ? (
         <ClientTableView
-          clientes={filteredClientes}
+          clientes={paginatedClientes}
           onEdit={(cliente) => navigate(`/clientes/${cliente.id}/editar`)}
           onDelete={(cliente) => handleDelete(cliente.id)}
           onView={handleViewCliente}
@@ -865,10 +873,10 @@ function Clientes() {
           getAssinaturaPreco={getAssinaturaPreco}
           clienteTemAssinatura={clienteTemAssinatura}
         />
-      ) : shouldUseVirtualScroll(filteredClientes.length) ? (
+      ) : shouldUseVirtualScroll(paginatedClientes.length) ? (
         // Virtual scrolling para listas grandes (50+ items)
         <VirtualizedList
-          items={filteredClientes}
+          items={paginatedClientes}
           height={VIRTUAL_SCROLL_CONFIG.DEFAULT_LIST_HEIGHT}
           rowHeight={isMobile ? VIRTUAL_SCROLL_CONFIG.ROW_HEIGHT_COMFORTABLE : VIRTUAL_SCROLL_CONFIG.ROW_HEIGHT_LARGE}
           renderItem={({ item: cliente, index }) => (
@@ -909,7 +917,7 @@ function Clientes() {
       ) : (
         // Grid tradicional para listas pequenas (<50 items)
         <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'}`}>
-          {filteredClientes.map((cliente) => (
+          {paginatedClientes.map((cliente) => (
             isMobile ? (
               <MobileClientCard
                 key={cliente.id}
@@ -939,6 +947,50 @@ function Clientes() {
               />
             )
           ))}
+        </div>
+      )}
+
+      {/* Controles de Paginação */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between mt-6">
+          <p className="text-sm text-muted-foreground">
+            Mostrando {startIndex + 1}-{Math.min(endIndex, filteredClientes.length)} de {filteredClientes.length} clientes
+          </p>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+            >
+              Anterior
+            </Button>
+            <div className="flex items-center gap-1">
+              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                const page = i + 1;
+                return (
+                  <Button
+                    key={page}
+                    variant={currentPage === page ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setCurrentPage(page)}
+                    className="w-10"
+                  >
+                    {page}
+                  </Button>
+                );
+              })}
+              {totalPages > 5 && <span className="text-muted-foreground px-2">...</span>}
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+            >
+              Próxima
+            </Button>
+          </div>
         </div>
       )}
 
