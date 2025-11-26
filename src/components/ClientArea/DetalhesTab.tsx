@@ -14,8 +14,8 @@ export function DetalhesTab({ clienteId, projetoId }: DetalhesTabProps) {
 
   // RBAC granular
   const canEditProfile = role === 'admin' || role === 'gestor';
-  const canViewVault = role === 'admin' || role === 'gestor';
-  const canViewBrandIdentity = role === 'admin' || role === 'gestor' || role === 'grs';
+  const canViewVault = role === 'admin' || role === 'gestor' || role === 'grs'; // GRS tem acesso ao cofre
+  const canViewBrandIdentity = ['admin', 'gestor', 'grs', 'designer', 'filmmaker'].includes(role || ''); // Produção precisa ver identidade visual
 
   return (
     <div className="p-6 space-y-6">

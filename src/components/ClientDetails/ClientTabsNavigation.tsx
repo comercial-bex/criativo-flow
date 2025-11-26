@@ -20,9 +20,9 @@ interface ClientTabsNavigationProps {
 
 const RBAC_TABS = {
   timeline: ['admin', 'gestor', 'grs', 'atendimento', 'designer', 'filmmaker'],
-  details: ['admin', 'gestor', 'atendimento'],
+  details: ['admin', 'gestor', 'grs', 'designer', 'filmmaker'], // Expandido para produção
   contacts: ['admin', 'gestor'],
-  projects: ['admin', 'gestor'],
+  projects: ['admin', 'gestor', 'grs'], // GRS precisa ver projetos
   files: ['admin', 'gestor', 'grs', 'designer', 'filmmaker'],
   requests: ['admin', 'gestor'],
   contracts: ['admin', 'gestor'],

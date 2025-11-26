@@ -10,6 +10,7 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { SmartRedirect } from "@/components/SmartRedirect";
 import { SpecialistGuard } from "@/components/SpecialistGuard";
 import { DeprecatedRouteRedirect } from "@/components/DeprecatedRouteRedirect";
+import { TasksRedirect } from "@/components/TasksRedirect";
 import { BexThemeProvider } from "@/contexts/BexThemeContext";
 import { BexToastProvider } from "@/components/BexToast";
 import { Suspense, lazy, useEffect } from "react";
@@ -303,6 +304,9 @@ function App() {
                 <Route path="/design" element={<Navigate to="/design/dashboard" replace />} />
                 <Route path="/audiovisual" element={<Navigate to="/audiovisual/dashboard" replace />} />
                 <Route path="/filmmaker" element={<Navigate to="/audiovisual/dashboard" replace />} />
+                
+                {/* Smart redirect for /tarefas based on user role */}
+                <Route path="/tarefas" element={<TasksRedirect />} />
 
                 {/* Unauthorized access */}
                 <Route path="/unauthorized" element={<Unauthorized />} />
