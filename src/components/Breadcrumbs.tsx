@@ -64,8 +64,8 @@ const routeConfig: Record<string, { label: string; icon?: string }> = {
   
   // GRS
   "/grs": { label: "GRS", icon: "Globe" },
-  "/grs/painel": { label: "Painel GRS", icon: "LayoutDashboard" },
-  "/grs/dashboard": { label: "Dashboard", icon: "LayoutDashboard" },
+  "/grs/painel": { label: "Dashboard", icon: "LayoutDashboard" },
+  "/grs/dashboard": { label: "Gestão de Projetos", icon: "Folder" },
   "/grs/planejamentos": { label: "Planejamentos", icon: "Calendar" },
   "/grs/tarefas": { label: "Tarefas", icon: "CheckSquare" },
   "/grs/calendario-editorial": { label: "Calendário Editorial", icon: "CalendarDays" },

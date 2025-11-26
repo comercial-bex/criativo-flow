@@ -92,7 +92,8 @@ export function AppSidebar() {
       title: "Projetos",
       icon: Icons.Briefcase,
       items: [
-        { title: "Gestão de Projetos", url: "/grs/painel", icon: Icons.Folder },
+        { title: "Dashboard", url: "/grs/painel", icon: Icons.LayoutDashboard },
+        { title: "Gestão de Projetos", url: "/grs/dashboard", icon: Icons.Folder },
         { title: "Planejamentos", url: "/grs/planejamentos", icon: Icons.Calendar },
         { title: "Roteiro IA", url: "/grs/roteiro-ia", icon: Icons.Film },
         { title: "Calendário Editorial", url: "/grs/calendario-editorial", icon: Icons.CalendarDays },
