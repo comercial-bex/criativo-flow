@@ -474,6 +474,7 @@ export function UniversalKanbanBoard({
   const [activeTask, setActiveTask] = useState<UniversalTask | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedResponsavel, setSelectedResponsavel] = useState('all');
+  const [selectedCliente, setSelectedCliente] = useState('all');
   const [selectedPrioridade, setSelectedPrioridade] = useState('all');
 
   // Sensors para drag & drop com delay
@@ -491,10 +492,11 @@ export function UniversalKanbanBoard({
     return tasks.filter(task => {
       const matchesSearch = !searchTerm || task.titulo.toLowerCase().includes(searchTerm.toLowerCase()) || task.descricao?.toLowerCase().includes(searchTerm.toLowerCase()) || task.cliente_nome?.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesResponsavel = selectedResponsavel === 'all' || task.responsavel_id === selectedResponsavel;
+      const matchesCliente = selectedCliente === 'all' || task.cliente_id === selectedCliente;
       const matchesPrioridade = selectedPrioridade === 'all' || task.prioridade === selectedPrioridade;
-      return matchesSearch && matchesResponsavel && matchesPrioridade;
+      return matchesSearch && matchesResponsavel && matchesCliente && matchesPrioridade;
     });
-  }, [tasks, searchTerm, selectedResponsavel, selectedPrioridade]);
+  }, [tasks, searchTerm, selectedResponsavel, selectedCliente, selectedPrioridade]);
 
   // Organizar tarefas em colunas
   // Usar configuração padrão se moduleColumns estiver vazio ou não fornecido
@@ -550,7 +552,24 @@ export function UniversalKanbanBoard({
       id: string;
       nome: string;
     }>);
-    return unique;
+    return unique.sort((a, b) => a.nome.localeCompare(b.nome));
+  }, [tasks]);
+
+  // Obter clientes únicos
+  const clientes = useMemo(() => {
+    const unique = tasks.filter(task => task.cliente_nome).reduce((acc, task) => {
+      if (!acc.find(c => c.id === task.cliente_id)) {
+        acc.push({
+          id: task.cliente_id!,
+          nome: task.cliente_nome!
+        });
+      }
+      return acc;
+    }, [] as Array<{
+      id: string;
+      nome: string;
+    }>);
+    return unique.sort((a, b) => a.nome.localeCompare(b.nome));
   }, [tasks]);
 
   // Helper para encontrar coluna de uma tarefa
@@ -613,6 +632,18 @@ export function UniversalKanbanBoard({
                   <SelectItem value="all">Todos os responsáveis</SelectItem>
                   {responsaveis.map(responsavel => <SelectItem key={responsavel.id} value={responsavel.id}>
                       {responsavel.nome}
+                    </SelectItem>)}
+                </SelectContent>
+              </Select>
+
+              <Select value={selectedCliente} onValueChange={setSelectedCliente}>
+                <SelectTrigger className="w-48">
+                  <SelectValue placeholder="Todos os clientes" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos os clientes</SelectItem>
+                  {clientes.map(cliente => <SelectItem key={cliente.id} value={cliente.id}>
+                      {cliente.nome}
                     </SelectItem>)}
                 </SelectContent>
               </Select>
