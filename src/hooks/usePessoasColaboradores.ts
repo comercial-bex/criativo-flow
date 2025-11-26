@@ -83,31 +83,10 @@ export function usePessoasColaboradores() {
       if (error) throw error;
       
       // Buscar veículos separadamente se necessário
-      const colaboradoresComVeiculo = await Promise.all(
-        (data || []).map(async (pessoa) => {
-          let veiculoInfo = null;
-          if (pessoa.veiculo_id) {
-            const { data: veiculo } = await supabase
-              .from('inventario_itens')
-              .select(`
-                id,
-                identificacao_interna,
-                modelo:inventario_modelos!modelo_id(nome)
-              `)
-              .eq('id', pessoa.veiculo_id)
-              .single();
-            
-            if (veiculo) {
-              veiculoInfo = {
-                id: veiculo.id,
-                nome: (veiculo.modelo as any)?.nome || veiculo.identificacao_interna || 'Sem nome',
-                placa: veiculo.identificacao_interna
-              };
-            }
-          }
-          
-          return {
-            id: pessoa.id,
+      // NOTA: inventario_itens foi removida - retornar sem veículo
+      const colaboradoresComVeiculo = (data || []).map((pessoa) => {
+        return {
+          id: pessoa.id,
             nome: pessoa.nome,
             cpf: pessoa.cpf || '',
             email: pessoa.email,
@@ -124,14 +103,13 @@ export function usePessoasColaboradores() {
             unidade_filial: undefined, // Não existe na tabela pessoas
             gestor_imediato_id: undefined, // Não existe na tabela pessoas
             veiculo_id: pessoa.veiculo_id,
-            veiculo: veiculoInfo,
+            veiculo: null, // Inventário desabilitado
             dados_bancarios: pessoa.dados_bancarios as any,
             observacoes: pessoa.observacoes,
             created_at: pessoa.created_at,
             updated_at: pessoa.updated_at,
           } as PessoaColaborador;
-        })
-      );
+        });
       
       return colaboradoresComVeiculo;
     },

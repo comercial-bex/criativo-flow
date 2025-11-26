@@ -57,12 +57,17 @@ export function useHomologacao() {
     toast.loading('🔍 Varrendo sistema...');
     
     try {
-      // 1. Verificar se tabela funcionarios existe
+      // 1. Verificar se tabela funcionarios existe  
+      // NOTA: Tabela funcionarios foi removida - retornar false
+      const tabelaExiste = false;
+      
+      /* CÓDIGO DESABILITADO
       const { data: funcionarios, error: errFunc } = await supabase
         .from('funcionarios')
         .select('id', { count: 'exact', head: true });
       
       const tabelaExiste = !errFunc;
+      */
 
       // 2. Buscar dependências FK pendentes (simulação)
       const dependencias: DependenciaFK[] = [

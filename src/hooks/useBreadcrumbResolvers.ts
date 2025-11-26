@@ -201,9 +201,9 @@ export function useColaboradorResolver(colaboradorId?: string): ResolverResult {
       if (!colaboradorId) return null;
       
       const { data, error } = await supabase
-        .from("profiles")
+        .from("pessoas")
         .select("nome, email")
-        .eq("id", colaboradorId)
+        .eq("profile_id", colaboradorId)
         .single();
 
       if (error) throw error;

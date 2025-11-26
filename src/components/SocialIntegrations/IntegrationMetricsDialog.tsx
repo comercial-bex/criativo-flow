@@ -63,6 +63,12 @@ export function IntegrationMetricsDialog({
   const fetchMetrics = async () => {
     setLoading(true);
     try {
+      // NOTA: Tabela social_metrics_cliente foi removida
+      console.warn('⚠️ social_metrics_cliente não existe mais - feature desabilitada');
+      setMetrics([]);
+      setStats({});
+      
+      /* CÓDIGO DESABILITADO
       const { data, error } = await supabase
         .from('social_metrics_cliente')
         .select('*')
@@ -82,9 +88,10 @@ export function IntegrationMetricsDialog({
         }
       });
       setStats(latestStats);
+      */
     } catch (error) {
       console.error('Erro ao buscar métricas:', error);
-      toast.error('Erro ao carregar métricas');
+      toast.error('Funcionalidade temporariamente desabilitada');
     } finally {
       setLoading(false);
     }
