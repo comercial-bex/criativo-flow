@@ -12,8 +12,10 @@ interface UseTarefasOptions {
   clienteId?: string;
   responsavelId?: string;
   executorId?: string;
+  executorArea?: string | null;
   status?: string[];
   tipo?: string[];
+  includeRelations?: boolean;
 }
 
 export function useTarefas(options: UseTarefasOptions = {}) {
@@ -56,6 +58,13 @@ export function useTarefas(options: UseTarefasOptions = {}) {
       }
       if (options.executorId) {
         query = query.eq('executor_id', options.executorId);
+      }
+      if (options.executorArea !== undefined) {
+        if (options.executorArea === null) {
+          query = query.is('executor_area', null);
+        } else {
+          query = query.eq('executor_area', options.executorArea as any);
+        }
       }
       if (options.status && options.status.length > 0) {
         query = query.in('status', options.status as any);
