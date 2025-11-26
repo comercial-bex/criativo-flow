@@ -2,12 +2,12 @@
  * Hook de Metas de Produtividade - DESABILITADO
  * Tabela produtividade_metas foi removida
  */
-export function useProdutividadeMetas() {
+export function useProdutividadeMetas(_setor?: string) {
   return {
     metas: [],
     loading: false,
-    criarMeta: () => console.warn('⚠️ produtividade_metas removida'),
-    atualizarProgresso: () => console.warn('⚠️ produtividade_metas removida'),
+    criarMeta: (_data: any) => Promise.resolve(),
+    atualizarProgresso: (_id: string, _progresso: number) => Promise.resolve(),
     refresh: () => {},
   };
 }
