@@ -240,9 +240,9 @@ export default function GRSDashboard() {
         <div>
           <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
             <BarChart3 className="h-8 w-8 text-primary" />
-            Clientes & Projetos
+            Dashboard GRS
           </h1>
-          <p className="text-muted-foreground">Gestão completa de clientes e projetos - Visão unificada</p>
+          <p className="text-muted-foreground">Gestão de Relacionamento com o Cliente - Visão geral completa</p>
         </div>
         <div className="flex items-center gap-2">
           <SimpleHelpModal content={helpContent}>

@@ -51,7 +51,6 @@ export default function MinhasTarefasDesign() {
   // Use optimized hooks
   const { data: tarefasData, isLoading } = useTarefas({ 
     executorId: user?.id,
-    executorArea: 'Criativo',
     includeRelations: true 
   });
   const { data: statsData } = useTarefasStats(user?.id);

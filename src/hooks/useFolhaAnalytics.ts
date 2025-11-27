@@ -87,10 +87,6 @@ export function useFolhaAnalytics(mesesRetroativos: number = 6) {
       const hoje = new Date();
       const mesAtual = format(hoje, 'yyyy-MM-01');
       
-      // NOTA: Tabela rh_folha_ponto foi removida - retornar 0
-      return 0;
-      
-      /* CÓDIGO DESABILITADO
       const { data: pontos } = await supabase
         .from('rh_folha_ponto')
         .select('status')
@@ -101,7 +97,6 @@ export function useFolhaAnalytics(mesesRetroativos: number = 6) {
       // Considerar rejeitados como ausências para cálculo
       const ausencias = pontos.filter(p => p.status === 'rejeitado').length;
       return (ausencias / pontos.length) * 100;
-      */
     },
   });
 

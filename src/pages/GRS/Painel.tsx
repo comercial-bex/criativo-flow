@@ -10,7 +10,6 @@ import { TutorialButton } from "@/components/TutorialButton";
 import { EspecialistaSelector } from "@/components/GRS/EspecialistaSelector";
 import { EspecialistaViewHeader } from "@/components/GRS/EspecialistaViewHeader";
 import { EspecialistaDashboardMirror } from "@/components/GRS/EspecialistaDashboardMirror";
-import { ActivityFeedCard } from "@/components/ActivityFeedCard";
 
 export default function PainelGRS() {
   const { user } = useAuth();
@@ -68,7 +67,7 @@ export default function PainelGRS() {
               <TabelaProjetos />
             </div>
             <div data-tour="timeline">
-              <ActivityFeedCard filter="all" title="Atividades Recentes" />
+              <TimelineAtividades />
             </div>
           </div>
         </>

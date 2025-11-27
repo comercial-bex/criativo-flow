@@ -35,7 +35,6 @@ import { useTutorial } from '@/hooks/useTutorial';
 import { TutorialButton } from '@/components/TutorialButton';
 import { useOfflineStorage } from '@/hooks/useOfflineStorage';
 import { CacheIndicator } from '@/components/CacheIndicator';
-import { ActivityFeedCard } from '@/components/ActivityFeedCard';
 
 interface AdminUser {
   id: string;
@@ -202,7 +201,7 @@ export default function AdminPainel() {
 
       {/* Tabs para organizar funcionalidades */}
       <Tabs defaultValue="analytics" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="analytics" className="flex items-center">
             <Brain className="h-4 w-4 mr-2" />
             Analytics IA
@@ -210,10 +209,6 @@ export default function AdminPainel() {
           <TabsTrigger value="users" className="flex items-center">
             <Users className="h-4 w-4 mr-2" />
             Usuários
-          </TabsTrigger>
-          <TabsTrigger value="activity" className="flex items-center">
-            <Activity className="h-4 w-4 mr-2" />
-            Atividades
           </TabsTrigger>
           <TabsTrigger value="system" className="flex items-center">
             <Settings className="h-4 w-4 mr-2" />
@@ -498,11 +493,6 @@ export default function AdminPainel() {
               </CardContent>
             </Card>
           </div>
-        </TabsContent>
-
-        {/* Nova Tab de Atividades */}
-        <TabsContent value="activity">
-          <ActivityFeedCard filter="all" title="Feed Global de Atividades" limit={50} />
         </TabsContent>
       </Tabs>
     </div>

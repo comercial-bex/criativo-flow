@@ -22,8 +22,7 @@ export async function gerarPostsAutomaticos(
   planejamentoId: string,
   quantidadePosts: number,
   planoEstrategico?: PlanoEstrategico,
-  clienteId?: string,
-  projetoId?: string // ✅ FASE 1 P1: Parâmetro para vincular posts ao projeto
+  clienteId?: string
 ) {
   try {
     console.log('📅 Gerando', quantidadePosts, 'posts automáticos para planejamento', planejamentoId);
@@ -89,7 +88,6 @@ export async function gerarPostsAutomaticos(
         status_post: 'rascunho', // ✅ Correto
         rede_social: 'instagram',
         planejamento_id: planejamentoId,
-        projeto_id: projetoId || null, // ✅ Adicionar projeto_id
         objetivo_vinculado_id: objetivoId,
         cliente_id: clienteFinal,
         contexto_estrategico: JSON.stringify({
@@ -105,20 +103,18 @@ export async function gerarPostsAutomaticos(
       posts.push(post);
     }
 
-    // 7. ✅ Inserir posts diretamente em posts_planejamento (NÃO em posts_gerados_temp)
-    console.log('💾 Salvando', posts.length, 'posts em posts_planejamento...');
-    
+    // 7. Inserir posts no banco
     const { data: postsInseridos, error } = await supabase
       .from('posts_planejamento')
       .insert(posts)
       .select();
 
     if (error) {
-      console.error('❌ Erro ao inserir posts:', error);
+      console.error('Erro ao inserir posts:', error);
       throw error;
     }
 
-    console.log('✅', postsInseridos?.length, 'posts gerados e salvos automaticamente');
+    console.log('✅', postsInseridos?.length, 'posts gerados automaticamente');
 
     return {
       success: true,

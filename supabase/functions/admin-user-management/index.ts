@@ -574,7 +574,7 @@ async function handleUpdateUserComplete(
       }),
       { 
         status: 200, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        headers: { 'Content-Type': 'application/json' } 
       }
     );
     

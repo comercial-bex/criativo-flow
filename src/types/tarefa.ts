@@ -13,14 +13,7 @@ export type TipoTarefa =
   | 'datas_comemorativas'
   | 'trafego_pago'
   | 'contrato'
-  | 'outro'
-  // Novos tipos adicionados
-  | 'landing_page'
-  | 'email_marketing'
-  | 'arte_impressa'
-  | 'motion_graphics'
-  | 'video_depoimento'
-  | 'cobertura_evento';
+  | 'outro';
 
 export type PrioridadeTarefa = 'baixa' | 'media' | 'alta' | 'critica';
 
@@ -34,21 +27,7 @@ export type StatusTarefa =
   | 'agendado'
   | 'publicado'
   | 'pausado'
-  | 'cancelado'
-  // Novos status adicionados - Design
-  | 'recebidos'
-  | 'em_criacao'
-  | 'ajuste_interno'
-  | 'revisao_interna'
-  | 'alteracao_cliente'
-  | 'entregue'
-  // Novos status adicionados - Audiovisual
-  | 'briefing_recebido'
-  | 'planejando_captacao'
-  | 'gravacao'
-  | 'ingest_backup'
-  | 'pos_producao'
-  | 'enviado_cliente';
+  | 'cancelado';
 
 export type AreaTarefa = 'GRS' | 'Design' | 'Audiovisual' | 'Social' | 'Midia_Paga' | 'Adm';
 

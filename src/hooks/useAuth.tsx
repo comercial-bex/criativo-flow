@@ -49,17 +49,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setSession(session);
       setUser(session?.user ?? null);
       
-      // ✅ OTIMIZAÇÃO FASE 3: Pré-carregar perfil completo em 1 query
+      // ✅ OTIMIZAÇÃO FASE 1: Buscar perfil completo em 1 query (ao invés de 3)
       if (session?.user) {
         try {
-          const { data } = await supabase.rpc('get_user_complete', {
+          const { data: userComplete } = await supabase.rpc('get_user_complete', {
             p_user_id: session.user.id
           });
-          if (data) {
-            console.log('✅ Auth: Perfil completo carregado (-66% queries)');
+          
+          if (userComplete) {
+            console.log('✅ Auth: User complete loaded in 1 query -66% tempo');
           }
         } catch (error) {
-          console.log('Auth: Perfil será carregado on-demand');
+          console.error('Auth: Erro ao carregar perfil completo:', error);
         }
       }
       

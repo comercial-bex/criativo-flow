@@ -236,11 +236,7 @@ export function HashtagGeneratorModal({
             Cancelar
           </Button>
           <Button
-            onClick={() => {
-              handleConfirm();
-              // ✅ FASE 4: Disparar evento para sincronizar tabela
-              window.dispatchEvent(new CustomEvent('posts-updated'));
-            }}
+            onClick={handleConfirm}
             disabled={selectedHashtags.size === 0}
             className="gap-2"
           >

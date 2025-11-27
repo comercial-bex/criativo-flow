@@ -286,14 +286,6 @@ export function useUpdateTarefa() {
 
   return useMutation({
     mutationFn: async ({ id, updates }: { id: string; updates: any }) => {
-      // Buscar tarefa atual para comparar status
-      const { data: tarefaAtual } = await supabase
-        .from('tarefa')
-        .select('status, titulo')
-        .eq('id', id)
-        .single();
-
-      // Atualizar tarefa
       const { data, error } = await supabase
         .from('tarefa')
         .update(updates)
@@ -302,27 +294,6 @@ export function useUpdateTarefa() {
         .single();
 
       if (error) throw error;
-
-      // Registrar atividade se houver mudança de status
-      if (updates.status && tarefaAtual?.status !== updates.status) {
-        const { data: { user } } = await supabase.auth.getUser();
-        
-        if (user) {
-          const conteudo = `Status de tarefa alterado (Tarefa #${id.substring(0, 8)}) - ${tarefaAtual.titulo}`;
-          
-          await supabase.from('tarefa_atividades').insert({
-            tarefa_id: id,
-            user_id: user.id,
-            tipo_atividade: 'mudanca_status',
-            conteudo,
-            metadata: {
-              status_anterior: tarefaAtual.status,
-              status_novo: updates.status,
-            }
-          });
-        }
-      }
-
       return data as any;
     },
     onMutate: async ({ id, updates }) => {

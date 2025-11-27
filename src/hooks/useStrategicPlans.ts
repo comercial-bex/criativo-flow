@@ -47,14 +47,13 @@ export function useStrategicPlans(clienteId?: string) {
 
       if (plansData && plansData.length > 0) {
         const planIds = plansData.map(p => p.id);
-        // @ts-ignore - Complex view type causes deep instantiation error
         const { data: objectivesData, error: objectivesError } = await supabase
           .from('vw_planos_publicos_itens')
           .select('*')
           .in('plano_id', planIds);
 
         if (objectivesError) throw objectivesError;
-        setObjectives((objectivesData || []) as any as PlanObjective[]);
+        setObjectives((objectivesData || []) as PlanObjective[]);
       }
     } catch (error) {
       console.error('Erro ao carregar planos estratégicos:', error);

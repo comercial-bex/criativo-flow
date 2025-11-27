@@ -67,11 +67,23 @@ export default function FolhaPagamento() {
   const debouncedSearchTerm = useDebounce(filters.searchTerm, PERFORMANCE_CONFIG.DEBOUNCE_SEARCH);
 
   // Carregar veículos via useQuery
-  // Inventário removido - retornar array vazio
   const { data: veiculosData = [] } = useQuery({
     queryKey: ['veiculos-inventario'],
-    queryFn: async () => [],
-    enabled: false,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('inventario_itens')
+        .select(`
+          id,
+          identificacao_interna,
+          modelo:inventario_modelos!modelo_id(modelo, categoria)
+        `)
+        .eq('ativo', true);
+      return (data || []).map((item: any) => ({
+        id: item.id,
+        nome: item.modelo?.modelo || item.identificacao_interna || 'Sem modelo',
+        placa: item.identificacao_interna
+      }));
+    }
   });
   
   const veiculos = veiculosData;

@@ -153,10 +153,10 @@ export default function AudiovisualDashboard() {
         <div>
           <h1 className="text-3xl font-bold flex items-center gap-2">
             {getEspecialidadeIcon()}
-            Audiovisual
+            Dashboard Audiovisual
           </h1>
           <p className="text-muted-foreground">
-            Gravações, edições e entregas
+            Acompanhe seu desempenho e projetos em andamento
           </p>
         </div>
         <div className="flex gap-2">
@@ -172,41 +172,19 @@ export default function AudiovisualDashboard() {
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4" data-tour="kpis-audiovisual">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Próximas Gravações</CardTitle>
-            <Camera className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{captacoes.length}</div>
-            <p className="text-xs text-muted-foreground">
-              próximos 7 dias
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Edições Pendentes</CardTitle>
-            <Edit className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{projetos.length}</div>
-            <p className="text-xs text-muted-foreground">
-              em pós-produção
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Atrasadas</CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Meta Projetos</CardTitle>
+            <Target className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {projetos.filter(p => p.status_review === 'aguardando').length}
+              {metas?.projetos_concluidos || 0}/{metas?.meta_projetos || 0}
             </div>
-            <p className="text-xs text-muted-foreground">
-              captação ou edição
+            <Progress 
+              value={projetosProgress} 
+              className="mt-2"
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              {projetosProgress.toFixed(1)}% da meta
             </p>
           </CardContent>
         </Card>
@@ -214,7 +192,7 @@ export default function AudiovisualDashboard() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Horas Trabalhadas</CardTitle>
-            <CheckCircle className="h-4 w-4 text-muted-foreground" />
+            <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
@@ -225,7 +203,33 @@ export default function AudiovisualDashboard() {
               className="mt-2"
             />
             <p className="text-xs text-muted-foreground mt-1">
-              de {metas?.meta_horas || 0}h
+              de {metas?.meta_horas || 0}h planejadas
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Projetos Ativos</CardTitle>
+            <Edit className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{projetos.length}</div>
+            <p className="text-xs text-muted-foreground">
+              em andamento
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Próximas Captações</CardTitle>
+            <Camera className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{captacoes.length}</div>
+            <p className="text-xs text-muted-foreground">
+              agendadas
             </p>
           </CardContent>
         </Card>

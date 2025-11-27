@@ -41,15 +41,10 @@ export function useGamificacao() {
   const [selos, setSelos] = useState<Selo[]>([]);
   const [historico, setHistorico] = useState<HistoricoPontos[]>([]);
 
-const fetchMeuPerfil = async () => {
+  const fetchMeuPerfil = async () => {
     if (!user?.id) return;
 
     try {
-      // NOTA: Tabela gamificacao_usuarios removida - feature temporariamente desabilitada
-      console.warn('⚠️ Gamificação desabilitada - gamificacao_usuarios não existe');
-      setMeuPerfil(null);
-      
-      /* CÓDIGO DESABILITADO
       const { data, error } = await supabase
         .from('gamificacao_usuarios')
         .select(`
@@ -65,7 +60,6 @@ const fetchMeuPerfil = async () => {
       }
 
       setMeuPerfil(data as any);
-      */
     } catch (error) {
       console.error('Erro ao buscar perfil:', error);
     }
@@ -115,12 +109,6 @@ const fetchMeuPerfil = async () => {
     if (!user?.id) return;
 
     try {
-      // NOTA: Tabela gamificacao_pontos removida
-      console.warn('⚠️ gamificacao_pontos não existe mais');
-      setHistorico([]);
-      return;
-      
-      /* CÓDIGO DESABILITADO
       const { data, error } = await supabase
         .from('gamificacao_pontos')
         .select('*')
@@ -134,7 +122,6 @@ const fetchMeuPerfil = async () => {
       }
 
       setHistorico(data || []);
-      */
     } catch (error) {
       console.error('Erro ao buscar histórico:', error);
     }

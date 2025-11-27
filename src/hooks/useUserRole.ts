@@ -16,40 +16,6 @@ export type UserRole =
   | 'fornecedor'
   | null;
 
-// Priorização: papéis operacionais > genéricos
-const ROLE_PRIORITY: string[] = [
-  'admin',
-  'gestor',
-  'grs',
-  'designer',
-  'filmmaker',
-  'audiovisual',
-  'design',
-  'trafego',
-  'financeiro',
-  'atendimento',
-  'cliente',
-  'fornecedor',
-  'especialista',
-  'colaborador'
-];
-
-/**
- * Seleciona o papel de maior prioridade operacional
- * Evita que papéis genéricos (colaborador) sobrescrevam papéis específicos (grs, designer)
- */
-function getPriorityRole(papeis: string[]): UserRole {
-  if (!papeis || papeis.length === 0) return null;
-  
-  for (const role of ROLE_PRIORITY) {
-    if (papeis.includes(role)) {
-      return role as UserRole;
-    }
-  }
-  
-  return papeis[0] as UserRole;
-}
-
 export function useUserRole() {
   const { user, loading: authLoading } = useAuth();
   const [role, setRole] = useState<UserRole>(null);
@@ -102,22 +68,11 @@ export function useUserRole() {
           return;
         }
 
-        // Mapear papel prioritário (evita que papéis genéricos sobrescrevam específicos)
+        // Mapear primeiro papel para role (compatibilidade)
         const papeis = data?.papeis || [];
-        const userRole = getPriorityRole(papeis);
-        console.log('👤 UserRole: Papeis disponíveis:', papeis, '| Role selecionada:', userRole);
+        const userRole = (papeis.length > 0 ? papeis[0] : null) as UserRole;
+        console.log('👤 UserRole: Fetched role from papeis:', userRole);
         
-        // ⚠️ VALIDAÇÃO DE CACHE: Detectar e corrigir cache inconsistente
-        const cachedRole = authCache.get<UserRole>(`user_role_${user.id}`);
-        if (cachedRole && cachedRole !== userRole) {
-          console.log('⚠️ UserRole: Cache inconsistente detectado! Invalidando...', { 
-            cachedRole, 
-            calculatedRole: userRole 
-          });
-          authCache.remove(`user_role_${user.id}`);
-        }
-        
-        // Atualizar cache com valor correto
         if (userRole) {
           authCache.set(`user_role_${user.id}`, userRole);
         }

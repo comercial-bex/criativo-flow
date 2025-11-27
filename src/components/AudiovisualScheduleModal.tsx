@@ -280,9 +280,9 @@ export function AudiovisualScheduleModal({
             projeto_id: projetoId,
             titulo: `Captação: ${formData.titulo}`,
             descricao: formData.briefing,
-            executor_area: 'Audiovisual',
+            setor_responsavel: 'audiovisual',
             responsavel_id: formData.especialista_id,
-            status: 'roteiro',
+            status: 'agendado',
             prioridade: 'alta',
             prazo_executor: formData.data_captacao.toISOString(),
             observacoes: null

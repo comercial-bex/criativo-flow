@@ -45,16 +45,17 @@ export default function SocialAnalytics() {
   const { clienteId } = useParams<{ clienteId: string }>();
   const [selectedIntegrationId, setSelectedIntegrationId] = useState<string | undefined>();
   
-  // Social integrations - FEATURE DESABILITADA
-  const integrations: any[] = [];
-  const integrationsLoading = false;
-  const aggregatedMetrics: any[] = [];
-  const metricsLoading = false;
-  const dateRange = { start: new Date(), end: new Date() };
-  const setDateRange = (_val: any) => {};
-  const exportToCSV = () => {};
-  const getMetricSummary = () => ({});
-  const summary: Record<string, any> = {};
+  const { integrations, loading: integrationsLoading } = useSocialIntegrations(clienteId);
+  const { 
+    aggregatedMetrics, 
+    loading: metricsLoading, 
+    dateRange, 
+    setDateRange,
+    exportToCSV,
+    getMetricSummary,
+  } = useSocialAnalytics(clienteId, selectedIntegrationId);
+
+  const summary = getMetricSummary();
 
   if (!clienteId) {
     return (
@@ -177,7 +178,7 @@ export default function SocialAnalytics() {
           {/* Summary Cards */}
           {Object.keys(summary).length > 0 && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {Object.entries(summary).slice(0, 4).map(([metricType, stats]: [string, any]) => {
+              {Object.entries(summary).slice(0, 4).map(([metricType, stats]) => {
                 const Icon = metricIcons[metricType as keyof typeof metricIcons] || BarChart3;
                 return (
                   <Card key={metricType}>

@@ -37,28 +37,22 @@ serve(async (req) => {
     console.log('Creating client user:', { email, nome, cliente_id, role });
 
     // Verificar se usuário já existe
-    const { data: existingPessoa } = await supabaseAdmin
-      .from('pessoas')
-      .select('id, profile_id, email, status, papeis')
+    const { data: existingProfile } = await supabaseAdmin
+      .from('profiles')
+      .select('id, email, status')
       .eq('email', email)
       .single();
 
-    if (existingPessoa) {
-      // Atualizar usuário existente - adicionar papel 'cliente' se não tiver
-      const papeis = existingPessoa.papeis || [];
-      if (!papeis.includes('cliente')) {
-        papeis.push('cliente');
-      }
-
+    if (existingProfile) {
+      // Atualizar usuário existente
       const { error: updateError } = await supabaseAdmin
-        .from('pessoas')
+        .from('profiles')
         .update({
           nome,
           cliente_id,
-          papeis,
           status: 'aprovado'
         })
-        .eq('profile_id', existingPessoa.profile_id);
+        .eq('id', existingProfile.id);
 
       if (updateError) throw updateError;
 
@@ -66,7 +60,7 @@ serve(async (req) => {
       await supabaseAdmin
         .from('user_roles')
         .upsert({
-          user_id: existingPessoa.profile_id,
+          user_id: existingProfile.id,
           role: role
         });
 
@@ -75,7 +69,7 @@ serve(async (req) => {
         await supabaseAdmin
           .from('cliente_usuarios')
           .upsert({
-            user_id: existingPessoa.profile_id,
+            user_id: existingProfile.id,
             cliente_id,
             role_cliente: 'gestor',
             permissoes: permissoes,
@@ -85,7 +79,7 @@ serve(async (req) => {
 
       return new Response(JSON.stringify({
         success: true,
-        user_id: existingPessoa.profile_id,
+        user_id: existingProfile.id,
         email,
         message: 'Usuário existente atualizado com sucesso'
       }), {
@@ -110,15 +104,14 @@ serve(async (req) => {
       throw new Error('Falha ao criar usuário');
     }
 
-    // Criar registro em pessoas
+    // Criar perfil
     const { error: profileError } = await supabaseAdmin
-      .from('pessoas')
+      .from('profiles')
       .insert({
-        profile_id: authUser.user.id,
+        id: authUser.user.id,
         email,
         nome,
         cliente_id,
-        papeis: ['cliente'],
         status: 'aprovado'
       });
 

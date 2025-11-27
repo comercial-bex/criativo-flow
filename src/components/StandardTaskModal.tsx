@@ -124,13 +124,7 @@ export function StandardTaskModal({
     datas_comemorativas: '🎉 Data Comemorativa',
     trafego_pago: '📈 Tráfego Pago',
     contrato: '📄 Contrato',
-    outro: '📋 Outro',
-    landing_page: '🌐 Landing Page',
-    email_marketing: '📧 E-mail Marketing',
-    arte_impressa: '🖨️ Arte Impressa',
-    motion_graphics: '🎞️ Motion Graphics',
-    video_depoimento: '🎤 Vídeo Depoimento',
-    cobertura_evento: '📹 Cobertura de Evento'
+    outro: '📋 Outro'
   };
 
   return (

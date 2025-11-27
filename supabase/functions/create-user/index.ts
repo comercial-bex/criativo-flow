@@ -132,22 +132,15 @@ serve(async (req) => {
         // Determine status based on role
         const status = role === 'admin' ? 'aprovado' : 'pendente_aprovacao';
         
-        // Determinar papeis baseado em especialidade ou role
-        const papeis = especialidade 
-          ? ['especialista', especialidade]
-          : role === 'cliente' 
-          ? ['cliente']
-          : ['especialista'];
-        
-        // Create entry in pessoas table
+        // Create profile entry
         const { error: profileError } = await supabaseAdmin
-          .from('pessoas')
+          .from('profiles')
           .insert({
-            profile_id: userId,
+            id: userId,
             nome: nome,
             email: email,
-            telefones: telefone ? [telefone] : [],
-            papeis: papeis,
+            telefone: telefone,
+            especialidade: especialidade,
             status: status
           });
 
@@ -184,10 +177,10 @@ serve(async (req) => {
         if (roleError) {
           console.error('❌ Erro ao inserir role:', roleError);
           
-          // ROLLBACK: Delete pessoas entry and user
-          await supabaseAdmin.from('pessoas').delete().eq('profile_id', userId);
+          // ROLLBACK: Delete profile and user
+          await supabaseAdmin.from('profiles').delete().eq('id', userId);
           await supabaseAdmin.auth.admin.deleteUser(userId);
-          console.log('🔄 Rollback: Registro pessoas e usuário deletados');
+          console.log('🔄 Rollback: Perfil e usuário deletados');
           
           return new Response(
             JSON.stringify({ 

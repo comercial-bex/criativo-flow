@@ -25,7 +25,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { useEspecialistas } from '@/hooks/useEspecialistas';
 import type { TipoTarefa } from '@/types/tarefa';
 import { sanitizeTaskPayload } from '@/utils/tarefaUtils';
-import { getChecklistByType } from '@/utils/checklistTemplates';
 
 interface CreateTaskModalProps {
   open: boolean;
@@ -93,8 +92,7 @@ export function CreateTaskModal({
     // Referências
     referencias_visuais: [] as any[],
     arquivos_complementares: [] as any[],
-    capa_thumbnail: null as File | null,
-    checklist: [] as any[]
+    capa_thumbnail: null as File | null
   });
 
   // Gerar ID do cartão automaticamente
@@ -125,17 +123,6 @@ export function CreateTaskModal({
       setIdCartao(gerarIdCartao(tipoTarefaSelecionado, selectedCliente));
     }
   }, [tipoTarefaSelecionado, selectedCliente]);
-
-  // Auto-popular checklist quando tipo de tarefa mudar
-  useEffect(() => {
-    if (tipoTarefaSelecionado && formData.setor_responsavel) {
-      const checklist = getChecklistByType(tipoTarefaSelecionado, formData.setor_responsavel);
-      if (checklist) {
-        setFormData(prev => ({ ...prev, checklist }));
-        console.log('✅ Checklist automático aplicado:', checklist);
-      }
-    }
-  }, [tipoTarefaSelecionado, formData.setor_responsavel]);
 
   // Pré-preencher modal com defaultData
   useEffect(() => {
@@ -335,8 +322,7 @@ export function CreateTaskModal({
       ambiente: 'cidade',
       referencias_visuais: [],
       arquivos_complementares: [],
-      capa_thumbnail: null,
-      checklist: []
+      capa_thumbnail: null
     });
     // Manter cliente/projeto se foram passados como props (modo "dentro do projeto")
     setSelectedProjeto(projetoId || '');
@@ -456,19 +442,6 @@ export function CreateTaskModal({
         return setor ? (mapeamento[setor] || null) : null;
       };
 
-      // Definir status inicial baseado no módulo
-      const getStatusInicial = (setor: string | null): string => {
-        const mapeamento: Record<string, string> = {
-          'design': 'briefing',
-          'audiovisual': 'roteiro',
-          'grs': 'em_cadastro',
-          'atendimento': 'backlog'
-        };
-        return setor ? (mapeamento[setor] || defaultStatus) : defaultStatus;
-      };
-
-      const statusInicial = getStatusInicial(formData.setor_responsavel);
-
       // Buscar user_id do usuário logado
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       
@@ -499,7 +472,7 @@ export function CreateTaskModal({
         created_by: user.id,
         responsavel_id: user.id,
         prioridade: formData.prioridade,
-        status: statusInicial,
+        status: defaultStatus,
         prazo_executor: formData.data_prazo?.toISOString(),
         horas_estimadas: formData.horas_estimadas ? parseInt(formData.horas_estimadas) : null,
         origem: taskType,
@@ -524,8 +497,7 @@ export function CreateTaskModal({
           metadados: {
             criado_via: 'modal_completo'
           }
-        },
-        checklist: formData.checklist && formData.checklist.length > 0 ? formData.checklist : null
+        }
       };
 
       console.log('📋 Payload antes do sanitize:', taskData);

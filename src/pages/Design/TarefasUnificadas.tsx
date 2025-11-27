@@ -8,9 +8,7 @@ import { CreateTaskModal } from '@/components/CreateTaskModal';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
-import { useTarefas } from '@/hooks/useTarefas';
-import { ActivityFeedCard } from '@/components/ActivityFeedCard';
-import {
+import { 
   Plus, 
   Palette, 
   Layers, 
@@ -51,6 +49,11 @@ interface DesignTask {
 }
 
 export default function TarefasUnificadasDesign() {
+  const [tasks, setTasks] = useState<DesignTask[]>([]);
+  const [clientes, setClientes] = useState<any[]>([]);
+  const [projetos, setProjetos] = useState<any[]>([]);
+  const [profiles, setProfiles] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [selectedTask, setSelectedTask] = useState<DesignTask | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedColumnId, setSelectedColumnId] = useState<string | null>(null);
@@ -58,44 +61,115 @@ export default function TarefasUnificadasDesign() {
   const { user } = useAuth();
   const { toast } = useToast();
 
-  // ✅ Hook otimizado com filtro de área
-  const { tarefas, loading, updateTarefa, refetch } = useTarefas({
-    executorArea: 'Criativo',
-    includeRelations: true
-  });
+  useEffect(() => {
+    fetchData();
+  }, []);
 
-  // Mapear tarefas para formato do componente
-  const tasks: DesignTask[] = (tarefas || []).map(t => ({
-    ...t,
-    prioridade: t.prioridade as 'baixa' | 'media' | 'alta',
-    setor_responsavel: 'design',
-    observacoes: ''
-  }));
+  const fetchData = async () => {
+    try {
+      setLoading(true);
 
+      // Buscar tarefas de Design
+      const { data: tasksData, error: tasksError } = await (supabase
+        .from('tarefa')
+        .select('*, capa_anexo_id')
+        .order('created_at', { ascending: false }) as any);
 
-  const handleTaskMove = async (taskId: string, newStatus: string, observations?: string) => {
-    const task = tasks.find(t => t.id === taskId);
-    if (!task) return;
+      if (tasksError) throw tasksError;
 
-    // Validações específicas do fluxo de design
-    if (newStatus === 'aprovacao_cliente' && task.status !== 'revisao_interna') {
+      // Processar tarefas
+      const processedTasks = tasksData?.map((task: any) => ({
+        ...task,
+        prioridade: task.prioridade as 'baixa' | 'media' | 'alta',
+        setor_responsavel: 'design',
+        observacoes: task.observacoes || ''
+      })) || [];
+
+      setTasks(processedTasks as any);
+
+      // Buscar clientes
+      const { data: clientesData, error: clientesError } = await supabase
+        .from('clientes')
+        .select('id, nome')
+        .eq('status', 'ativo')
+        .order('nome');
+
+      if (clientesError) throw clientesError;
+      setClientes(clientesData || []);
+
+      // Buscar projetos
+      const { data: projetosData, error: projetosError } = await supabase
+        .from('projetos')
+        .select('id, titulo, cliente_id')
+        .order('titulo');
+
+      if (projetosError) throw projetosError;
+      setProjetos(projetosData || []);
+
+      // Buscar designers
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('pessoas')
+        .select('id, nome')
+        .order('nome');
+
+      if (profilesError) throw profilesError;
+      setProfiles(profilesData || []);
+
+    } catch (error) {
+      console.error('Erro ao buscar dados:', error);
       toast({
-        title: "Fluxo inválido",
-        description: "A tarefa deve passar pela revisão interna antes da aprovação do cliente.",
+        title: "Erro",
+        description: "Erro ao carregar dados das tarefas.",
         variant: "destructive",
       });
-      return;
+    } finally {
+      setLoading(false);
     }
+  };
 
-    const updates: any = { status: newStatus as any };
-    if (observations) {
-      updates.kpis = {
-        ...(task as any).kpis,
-        observacoes_gerais: `${task.observacoes || ''}\n${observations}`
-      };
+  const handleTaskMove = async (taskId: string, newStatus: string, observations?: string) => {
+    try {
+      const task = tasks.find(t => t.id === taskId);
+      if (!task) return;
+
+      // Validações específicas do fluxo de design
+      if (newStatus === 'aprovacao_cliente' && task.status !== 'revisao_interna') {
+        toast({
+          title: "Fluxo inválido",
+          description: "A tarefa deve passar pela revisão interna antes da aprovação do cliente.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const { error } = await supabase
+        .from('tarefa')
+        .update({ 
+          status: newStatus as any,
+          observacoes: observations ? `${task.observacoes || ''}\n${observations}` : task.observacoes,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', taskId);
+
+      if (error) throw error;
+
+      setTasks(prev => prev.map(task => 
+        task.id === taskId ? { ...task, status: newStatus } : task
+      ));
+
+      toast({
+        title: "Sucesso",
+        description: "Status da tarefa atualizado!",
+      });
+
+    } catch (error) {
+      console.error('Erro ao mover tarefa:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao atualizar status da tarefa.",
+        variant: "destructive",
+      });
     }
-
-    await updateTarefa(taskId, updates);
   };
 
   const handleTaskCreate = (columnId?: string) => {
@@ -104,7 +178,7 @@ export default function TarefasUnificadasDesign() {
   };
 
   const handleTaskCreated = async () => {
-    await refetch();
+    await fetchData();
     setShowCreateModal(false);
   };
 
@@ -113,14 +187,37 @@ export default function TarefasUnificadasDesign() {
   };
 
   const handleTaskUpdate = async (taskId: string, updates: any) => {
-    const mappedUpdates = { ...updates };
-    if (updates.data_prazo) {
-      mappedUpdates.prazo_executor = updates.data_prazo;
-      delete mappedUpdates.data_prazo;
+    try {
+      const mappedUpdates = { ...updates };
+      if (updates.data_prazo) {
+        mappedUpdates.prazo_executor = updates.data_prazo;
+        delete mappedUpdates.data_prazo;
+      }
+      
+      const { error } = await supabase
+        .from('tarefa')
+        .update({ ...mappedUpdates, updated_at: new Date().toISOString() })
+        .eq('id', taskId);
+
+      if (error) throw error;
+
+      setTasks(prev => prev.map(task => 
+        task.id === taskId ? { ...task, ...updates } : task
+      ));
+
+      toast({
+        title: "Sucesso",
+        description: "Tarefa atualizada com sucesso!",
+      });
+
+    } catch (error) {
+      console.error('Erro ao atualizar tarefa:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao atualizar tarefa.",
+        variant: "destructive",
+      });
     }
-    
-    await updateTarefa(taskId, mappedUpdates);
-    await refetch();
   };
 
   // Estatísticas
@@ -217,14 +314,6 @@ export default function TarefasUnificadasDesign() {
         </Card>
       </div>
 
-      {/* Activity Feed */}
-      <ActivityFeedCard 
-        filter="all" 
-        executorArea="Criativo" 
-        title="Atividades da Área Criativa"
-        limit={15}
-      />
-
       {/* Kanban Board */}
       <UniversalKanbanBoard
         tasks={tasks}
@@ -245,7 +334,7 @@ export default function TarefasUnificadasDesign() {
           task={selectedTask as any}
           onTaskUpdate={async (taskId, updates) => {
             await handleTaskUpdate(taskId, updates);
-            refetch();
+            fetchData();
           }}
         />
       )}

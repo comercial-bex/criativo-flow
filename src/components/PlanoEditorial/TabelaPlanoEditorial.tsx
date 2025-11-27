@@ -73,11 +73,6 @@ export const TabelaPlanoEditorial: React.FC<TabelaPlanoEditorialProps> = ({
   // Usar hook customizado para drag-and-drop
   const { sensors, handleDragEnd } = usePlanoEditorialDragDrop(posts, onPostsChange);
 
-  // ✅ FASE 2: Log de debug para monitorar posts carregados
-  useEffect(() => {
-    console.log('📊 Posts carregados na tabela:', posts.length, posts);
-  }, [posts]);
-
   useEffect(() => {
     if (clienteId) {
       fetchResponsaveis();

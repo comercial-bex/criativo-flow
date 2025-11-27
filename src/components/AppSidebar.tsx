@@ -73,45 +73,104 @@ export function AppSidebar() {
     localStorage.getItem('admin_selected_cliente_id')
   );
 
-  // Módulos organizados em 5 categorias principais
+  // Módulos fallback (7 hubs principais)
   const fallbackModules: Module[] = [
     {
-      id: "minha_area",
-      title: "Minha Área",
-      icon: Icons.LayoutDashboard,
+      id: "inicio",
+      title: "Início",
+      icon: Icons.Home,
       items: [
-        { title: "Dashboard", url: "/inicio", icon: Icons.LayoutDashboard },
-        { title: "Minhas Tarefas", url: "/tarefas", icon: Icons.CheckSquare },
-        { title: "Calendário", url: "/calendario", icon: Icons.CalendarDays },
+        { title: "Meu Resumo", url: "/inicio", icon: Icons.LayoutDashboard },
         { title: "Favoritos", url: "/inicio/favoritos", icon: Icons.Star },
+        { title: "Recentes", url: "/inicio/recentes", icon: Icons.Clock },
       ],
       permissions: ["dashboard"]
     },
     {
-      id: "projetos",
-      title: "Projetos",
-      icon: Icons.Briefcase,
+      id: "inteligencia",
+      title: "Inteligência Operacional",
+      icon: Icons.Brain,
       items: [
-        { title: "Dashboard", url: "/grs/painel", icon: Icons.LayoutDashboard },
-        { title: "Gestão de Projetos", url: "/grs/dashboard", icon: Icons.Folder },
-        { title: "Planejamentos", url: "/grs/planejamentos", icon: Icons.Calendar },
-        { title: "Roteiro IA", url: "/grs/roteiro-ia", icon: Icons.Film },
-        { title: "Calendário Editorial", url: "/grs/calendario-editorial", icon: Icons.CalendarDays },
-        { title: "Inteligência", url: "/inteligencia", icon: Icons.Brain },
-        { title: "Análise Preditiva", url: "/inteligencia/preditiva", icon: Icons.TrendingUp },
+        { title: "Hub de Inteligência", url: "/inteligencia", icon: Icons.Brain },
+        { title: "🔮 Análise Preditiva", url: "/inteligencia/preditiva", icon: Icons.TrendingUp },
+        { title: "Calendário Unificado", url: "/calendario", icon: Icons.CalendarDays },
+        { title: "Análises", url: "/inteligencia/analises", icon: Icons.BarChart3 },
+        { title: "Insights", url: "/inteligencia/insights", icon: Icons.Lightbulb },
+        { title: "Previsões", url: "/inteligencia/previsoes", icon: Icons.TrendingUp },
+        { title: "Métricas", url: "/inteligencia/metricas", icon: Icons.Activity },
       ],
-      permissions: ["grs", "projetos", "inteligencia"]
+      permissions: ["inteligencia", "calendario"]
+    },
+      {
+        id: "operacoes",
+        title: "Operacional (GRS)",
+        icon: Icons.Globe,
+        items: [
+          { title: "🎯 Painel GRS", url: "/grs/painel", icon: Icons.LayoutDashboard },
+          { title: "Visão de Clientes", url: "/grs/dashboard", icon: Icons.Users },
+          { title: "Planejamentos", url: "/grs/planejamentos", icon: Icons.Calendar },
+          { title: "Tarefas", url: "/grs/tarefas", icon: Icons.CheckSquare },
+          { title: "Calendário Editorial", url: "/grs/calendario-editorial", icon: Icons.CalendarDays },
+          { title: "🎬 Roteiro IA", url: "/grs/roteiro-ia", icon: Icons.Film },
+          { title: "Calendário Unificado", url: "/calendario", icon: Icons.CalendarClock },
+          { title: "Relatórios", url: "/grs/relatorios", icon: Icons.FileText },
+          { title: "Clientes (Lista)", url: "/grs/clientes", icon: Icons.Users },
+        ],
+        permissions: ["grs", "projetos"]
+      },
+    {
+      id: "crm",
+      title: "CRM",
+      icon: Icons.Users,
+      items: [
+        { title: "Funil de Vendas", url: "/crm", icon: Icons.Target },
+        { title: "Contatos", url: "/crm/contatos", icon: Icons.Phone },
+        { title: "Histórico", url: "/crm/historico", icon: Icons.History },
+      ],
+      permissions: ["crm"]
+    },
+    {
+      id: "financeiro",
+      title: "Contratos & Financeiro",
+      icon: Icons.Building2,
+      items: [
+        { title: "Dashboard", url: "/gestao/dashboard", icon: Icons.TrendingUp },
+        { title: "Clientes", url: "/clientes", icon: Icons.Users },
+        { title: "Orçamentos", url: "/administrativo/orcamentos", icon: Icons.Calculator },
+        { title: "Propostas", url: "/administrativo/propostas", icon: Icons.FileText },
+        { title: "Contratos", url: "/admin/contratos", icon: Icons.FileSignature },
+        { title: "📦 Produtos & Serviços", url: "/admin/produtos", icon: Icons.Package },
+        { 
+          title: "💰 Gestão de Contas", 
+          url: "/financeiro/gestao-contas", 
+          icon: Icons.DollarSign 
+        },
+        { title: "🏦 Caixa & Bancos", url: "/financeiro/caixa-bancos", icon: Icons.Landmark },
+        { 
+          title: "📊 Relatórios Gerenciais", 
+          url: "/financeiro/relatorios", 
+          icon: Icons.TrendingUp 
+        },
+        { title: "🔄 Conciliação", url: "/financeiro/conciliacao", icon: Icons.CheckCircle },
+        { title: "📂 Centros de Custo", url: "/financeiro/centros-custo", icon: Icons.FolderTree },
+        { title: "👥 Fornecedores", url: "/fornecedores", icon: Icons.Users },
+        { title: "Pessoas", url: "/rh/pessoas", icon: Icons.Users },
+        { title: "Folha", url: "/financeiro/folha", icon: Icons.Wallet },
+        { title: "Relatórios", url: "/relatorios", icon: Icons.FileText },
+      ],
+      permissions: ["financeiro", "administrativo", "rh"]
     },
     {
       id: "design",
-      title: "Design",
+      title: "Design / Criativo",
       icon: Icons.Palette,
       items: [
-        { title: "Meus Jobs", url: "/design/dashboard", icon: Icons.Palette },
-        { title: "Minhas Tarefas", url: "/design/minhas-tarefas", icon: Icons.ListChecks },
+        { title: "🎨 Painel Design", url: "/design/dashboard", icon: Icons.LayoutDashboard },
+        { title: "Minhas Tarefas", url: "/design/minhas-tarefas", icon: Icons.CheckSquare },
+        { title: "Calendário Unificado", url: "/calendario", icon: Icons.Calendar },
         { title: "Aprovações", url: "/design/aprovacoes", icon: Icons.Eye },
         { title: "Biblioteca", url: "/design/biblioteca", icon: Icons.Images },
-        { title: "Calendário", url: "/design/calendario", icon: Icons.Calendar },
+        { title: "Metas", url: "/design/metas", icon: Icons.Target },
       ],
       permissions: ["design"]
     },
@@ -121,40 +180,46 @@ export function AppSidebar() {
       icon: Icons.Video,
       items: [
         { title: "Dashboard", url: "/audiovisual/dashboard", icon: Icons.Video },
-        { title: "Minhas Tarefas", url: "/audiovisual/minhas-tarefas", icon: Icons.ListChecks },
-        { title: "Agenda Gravações", url: "/audiovisual/captacoes", icon: Icons.Camera },
-        { title: "Calendário", url: "/audiovisual/calendario", icon: Icons.Calendar },
+        { title: "Minhas Tarefas", url: "/audiovisual/tarefas", icon: Icons.CheckSquare },
+        { title: "Tarefas Unificadas", url: "/audiovisual/tarefas-unificadas", icon: Icons.KanbanSquare },
+        { title: "Captações", url: "/audiovisual/captacoes", icon: Icons.Camera },
+        { title: "Projetos", url: "/audiovisual/projetos", icon: Icons.Film },
+        { title: "Calendário Unificado", url: "/calendario", icon: Icons.CalendarClock },
       ],
-      permissions: ["audiovisual", "filmmaker"]
-    },
-    {
-      id: "comercial",
-      title: "Comercial",
-      icon: Icons.DollarSign,
-      items: [
-        { title: "CRM", url: "/crm", icon: Icons.Target },
-        { title: "Clientes", url: "/clientes", icon: Icons.Users },
-        { title: "Orçamentos", url: "/administrativo/orcamentos", icon: Icons.Calculator },
-        { title: "Propostas", url: "/administrativo/propostas", icon: Icons.FileText },
-        { title: "Financeiro", url: "/financeiro/gestao-contas", icon: Icons.Landmark },
-        { title: "Relatórios", url: "/financeiro/relatorios", icon: Icons.TrendingUp },
-      ],
-      permissions: ["crm", "financeiro", "administrativo"]
+      permissions: ["audiovisual"]
     },
     {
       id: "admin",
       title: "Admin",
-      icon: Icons.Settings,
+      icon: Icons.Shield,
       items: [
-        { title: "Painel Admin", url: "/admin/painel", icon: Icons.Shield },
-        { title: "Tarefas", url: "/admin/tarefas", icon: Icons.CheckSquare },
+        { title: "Painel", url: "/admin/painel", icon: Icons.Shield },
+        { title: "Notificações", url: "/admin/central-notificacoes", icon: Icons.Bell },
+        { title: "Tarefas", url: "/admin/tarefas", icon: Icons.ClipboardCheck },
         { title: "Usuários", url: "/usuarios", icon: Icons.Users2 },
-        { title: "Produtos", url: "/admin/produtos", icon: Icons.Package },
-        { title: "Contratos", url: "/admin/contratos", icon: Icons.FileSignature },
-        { title: "Notificações", url: "/admin/notificacoes", icon: Icons.Bell },
-        { title: "Sistema", url: "/admin/system-health", icon: Icons.Activity },
-        { title: "Monitor", url: "/configuracoes/monitor", icon: Icons.Wifi },
-        { title: "Visão Cliente", url: "/cliente/painel", icon: Icons.UserCheck },
+        { title: "📋 Dashboard Onboarding", url: "/admin/onboarding", icon: Icons.ClipboardCheck },
+        { title: "🎯 Dashboard de Metas", url: "/metas/dashboard", icon: Icons.Target },
+        { title: "📦 Produtos (Config)", url: "/admin/produtos", icon: Icons.Package },
+        { title: "Equipamentos", url: "/inventario", icon: Icons.Package },
+        { title: "Sistema", url: "/admin/system-health", icon: Icons.Settings },
+        { title: "🔌 Monitor de Conexões", url: "/configuracoes/monitor", icon: Icons.Activity },
+        { title: "Relatórios", url: "/relatorios", icon: Icons.FileText },
+        { title: "Homologação", url: "/admin/homologacao-mvp", icon: Icons.ClipboardList },
+        { title: "Logs", url: "/admin/logs", icon: Icons.Activity },
+      ],
+      permissions: [],
+      roles: ["admin"]
+    },
+    {
+      id: "cliente_view",
+      title: "Visão Cliente",
+      icon: Icons.UserCheck,
+      items: [
+        { title: "Painel Principal", url: "/cliente/painel", icon: Icons.LayoutDashboard },
+        { title: "Aprovações", url: "/cliente/painel?tab=approvals", icon: Icons.CheckSquare },
+        { title: "Metas", url: "/cliente/painel?tab=goals", icon: Icons.Target },
+        { title: "Financeiro", url: "/cliente/painel?tab=finance", icon: Icons.DollarSign },
+        { title: "Suporte", url: "/cliente/painel?tab=support", icon: Icons.MessageSquare },
       ],
       permissions: [],
       roles: ["admin"]
@@ -235,52 +300,36 @@ export function AppSidebar() {
 
   const detectCurrentModule = () => {
     const currentPath = location.pathname;
-    const pathSegments = currentPath.split('/').filter(Boolean);
     
-    // 1. Match EXATO primeiro (prioridade máxima)
+    // Primeiro: tentar match exato com items.url
     for (const module of displayModules) {
-      if (module.items.some(item => currentPath === item.url)) {
+      if (module.items.some(item => currentPath.startsWith(item.url))) {
         return module.id;
       }
     }
     
-    // 2. Match por MAIOR especificidade (mais segmentos = melhor match)
-    let bestMatch: { moduleId: string; segments: number } | null = null;
-    
-    for (const module of displayModules) {
-      for (const item of module.items) {
-        if (currentPath.startsWith(item.url) && item.url !== '/') {
-          const itemSegments = item.url.split('/').filter(Boolean).length;
-          if (!bestMatch || itemSegments > bestMatch.segments) {
-            bestMatch = { moduleId: module.id, segments: itemSegments };
-          }
+    // Fallback para rotas dinâmicas (ex: /grs/cliente/{id}/projetos)
+    // Extrair prefixo da rota (ex: "/grs/cliente" de "/grs/cliente/123/projetos")
+    const pathSegments = currentPath.split('/').filter(Boolean);
+    if (pathSegments.length >= 2) {
+      const modulePrefix = `/${pathSegments[0]}/${pathSegments[1]}`; // ex: "/grs/cliente"
+      
+      for (const module of displayModules) {
+        if (module.items.some(item => item.url.startsWith(modulePrefix))) {
+          return module.id;
         }
       }
     }
     
-    if (bestMatch) return bestMatch.moduleId;
-    
-    // 3. Fallback: Match por prefixo do MÓDULO (não do item)
-    // Mapear rotas para módulos diretamente
-    const routeModuleMap: Record<string, string> = {
-      'admin': 'admin',
-      'grs': 'projetos',
-      'design': 'design',
-      'audiovisual': 'audiovisual',
-      'financeiro': 'comercial',
-      'crm': 'comercial',
-      'cliente': 'admin',
-      'inteligencia': 'projetos',
-      'configuracoes': 'admin',
-      'usuarios': 'admin',
-    };
-    
-    const firstSegment = pathSegments[0];
-    if (firstSegment && routeModuleMap[firstSegment]) {
-      return routeModuleMap[firstSegment];
+    // Match por primeiro segmento (ex: "/grs" em "/grs/qualquer-coisa")
+    const firstSegment = `/${pathSegments[0]}`;
+    for (const module of displayModules) {
+      if (module.items.some(item => item.url.startsWith(firstSegment))) {
+        return module.id;
+      }
     }
     
-    return "minha_area";
+    return "inicio";
   };
 
   // Atualizar módulo selecionado quando a localização, rotas ou role mudarem

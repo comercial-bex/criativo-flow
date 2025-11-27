@@ -68,14 +68,14 @@ export function useSecurityMonitoring() {
         return [];
       }
 
-      // Buscar emails dos usuários da tabela pessoas
+      // Buscar emails dos usuários
       const userIds = [...new Set(data.map(log => log.usuario_id))].filter(Boolean);
-      const { data: pessoas } = await supabase
-        .from('pessoas')
-        .select('profile_id, email')
-        .in('profile_id', userIds);
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, email')
+        .in('id', userIds);
 
-      const profileMap = new Map(pessoas?.map(p => [p.profile_id, p.email]) || []);
+      const profileMap = new Map(profiles?.map(p => [p.id, p.email]) || []);
 
       return (data || []).map(log => ({
         ...log,
@@ -149,16 +149,16 @@ export function useSecurityMonitoring() {
           
           const newEvent = payload.new as SecurityEvent;
           
-          // Buscar pessoa ao invés de profile
-          const { data: pessoa } = await supabase
-            .from('pessoas')
+          // Fetch user details
+          const { data: profile } = await supabase
+            .from('profiles')
             .select('email')
-            .eq('profile_id', newEvent.user_id)
+            .eq('id', newEvent.user_id)
             .single();
 
           const enrichedEvent = {
             ...newEvent,
-            user_email: pessoa?.email || 'Unknown'
+            user_email: profile?.email || 'Unknown'
           };
 
           setRealtimeEvents(prev => [enrichedEvent, ...prev.slice(0, 19)]);
@@ -173,7 +173,7 @@ export function useSecurityMonitoring() {
           } else if (['credenciais_cliente', 'rh_colaboradores'].includes(newEvent.table_name)) {
             toast({
               title: "🔐 Acesso a Dados Sensíveis",
-              description: `${pessoa?.email || 'Usuário'} acessou ${newEvent.table_name}`,
+              description: `${profile?.email || 'Usuário'} acessou ${newEvent.table_name}`,
             });
           }
 

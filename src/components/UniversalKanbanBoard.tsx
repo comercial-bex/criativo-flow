@@ -12,7 +12,7 @@ import { Plus, Search, Filter } from 'lucide-react';
 import { ModernKanbanCard, type KanbanTask } from './ModernKanbanCard';
 
 // Tipos unificados
-export interface UniversalTask {
+interface UniversalTask {
   id: string;
   titulo: string;
   descricao?: string;
@@ -44,7 +44,7 @@ export interface UniversalTask {
   updated_at?: string;
   capa_anexo_id?: string | null;
 }
-export interface UniversalColumn {
+interface UniversalColumn {
   id: string;
   titulo: string;
   cor: string;
@@ -106,12 +106,12 @@ export const moduleConfigurations = {
     descricao: 'Em análise final'
   }],
   design: [{
-    id: 'recebidos',
-    titulo: 'RECEBIDOS',
+    id: 'briefing',
+    titulo: 'BRIEFING',
     cor: 'bg-blue-500',
-    icon: '📥',
+    icon: '📋',
     ordem: 1,
-    descricao: 'Briefing recebido do GRS'
+    descricao: 'Coletando requisitos'
   }, {
     id: 'em_criacao',
     titulo: 'EM CRIAÇÃO',
@@ -120,97 +120,62 @@ export const moduleConfigurations = {
     ordem: 2,
     descricao: 'Processo criativo'
   }, {
-    id: 'ajuste_interno',
-    titulo: 'AJUSTE INTERNO',
-    cor: 'bg-yellow-500',
-    icon: '🔄',
-    ordem: 3,
-    descricao: 'Ajustes antes da revisão'
-  }, {
     id: 'revisao_interna',
-    titulo: 'PRONTO P/ REVISÃO BEX',
-    cor: 'bg-orange-500',
+    titulo: 'REVISÃO INTERNA',
+    cor: 'bg-yellow-500',
     icon: '👀',
-    ordem: 4,
-    descricao: 'Aguardando revisão interna'
+    ordem: 3,
+    descricao: 'Revisão da equipe'
   }, {
-    id: 'alteracao_cliente',
-    titulo: 'EM ALTERAÇÃO (CLIENTE)',
-    cor: 'bg-red-500',
-    icon: '✏️',
-    ordem: 5,
-    descricao: 'Ajustes solicitados pelo cliente'
+    id: 'aprovacao_cliente',
+    titulo: 'APROVAÇÃO CLIENTE',
+    cor: 'bg-orange-500',
+    icon: '✅',
+    ordem: 4,
+    descricao: 'Aguardando cliente'
   }, {
     id: 'entregue',
-    titulo: 'FINALIZADO',
+    titulo: 'ENTREGUE',
     cor: 'bg-green-500',
-    icon: '✅',
-    ordem: 6,
-    descricao: 'Aprovado e finalizado'
+    icon: '🚀',
+    ordem: 5,
+    descricao: 'Finalizado'
   }],
   audiovisual: [{
-    id: 'briefing_recebido',
-    titulo: 'BRIEFING RECEBIDO',
+    id: 'roteiro',
+    titulo: 'ROTEIRO',
     cor: 'bg-blue-500',
-    icon: '📋',
-    ordem: 1,
-    descricao: 'Roteiro já aprovado pelo GRS'
-  }, {
-    id: 'planejando_captacao',
-    titulo: 'PLANEJANDO CAPTAÇÃO',
-    cor: 'bg-indigo-500',
     icon: '📝',
+    ordem: 1,
+    descricao: 'Desenvolvimento do roteiro'
+  }, {
+    id: 'pre_producao',
+    titulo: 'PRÉ-PRODUÇÃO',
+    cor: 'bg-purple-500',
+    icon: '📋',
     ordem: 2,
-    descricao: 'Preparando equipamentos e roteiro'
+    descricao: 'Planejamento da gravação'
   }, {
     id: 'gravacao',
-    titulo: 'EM GRAVAÇÃO',
+    titulo: 'GRAVAÇÃO',
     cor: 'bg-red-500',
     icon: '🎬',
     ordem: 3,
-    descricao: 'Captação em andamento'
-  }, {
-    id: 'ingest_backup',
-    titulo: 'INGEST / BACKUP',
-    cor: 'bg-purple-500',
-    icon: '💾',
-    ordem: 4,
-    descricao: 'Transferindo e organizando arquivos'
+    descricao: 'Captação do material'
   }, {
     id: 'pos_producao',
-    titulo: 'EM EDIÇÃO',
+    titulo: 'PÓS-PRODUÇÃO',
     cor: 'bg-yellow-500',
     icon: '✂️',
-    ordem: 5,
-    descricao: 'Editando vídeo'
-  }, {
-    id: 'revisao_interna',
-    titulo: 'REVISÃO INTERNA',
-    cor: 'bg-orange-500',
-    icon: '👀',
-    ordem: 6,
-    descricao: 'Aguardando revisão da coordenação'
-  }, {
-    id: 'enviado_cliente',
-    titulo: 'ENVIADO AO CLIENTE',
-    cor: 'bg-cyan-500',
-    icon: '📤',
-    ordem: 7,
-    descricao: 'Aguardando aprovação do cliente'
-  }, {
-    id: 'alteracao_cliente',
-    titulo: 'EM ALTERAÇÃO',
-    cor: 'bg-pink-500',
-    icon: '✏️',
-    ordem: 8,
-    descricao: 'Ajustes solicitados'
+    ordem: 4,
+    descricao: 'Edição e finalização'
   }, {
     id: 'entregue',
-    titulo: 'FINALIZADO',
+    titulo: 'ENTREGUE',
     cor: 'bg-green-500',
-    icon: '✅',
-    ordem: 9,
-    descricao: 'Arquivo master entregue'
+    icon: '🚀',
+    ordem: 5,
+    descricao: 'Produto final'
   }],
   crm: [{
     id: 'novo',
@@ -338,7 +303,6 @@ const normalizeStatus = (
       'aprovacao_cliente': 'aprovacao_cliente'
     },
     audiovisual: {
-      'agendado': 'roteiro',
       'backlog': 'roteiro',
       'a_fazer': 'roteiro',
       'em_cadastro': 'roteiro',
@@ -474,7 +438,6 @@ export function UniversalKanbanBoard({
   const [activeTask, setActiveTask] = useState<UniversalTask | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedResponsavel, setSelectedResponsavel] = useState('all');
-  const [selectedCliente, setSelectedCliente] = useState('all');
   const [selectedPrioridade, setSelectedPrioridade] = useState('all');
 
   // Sensors para drag & drop com delay
@@ -492,11 +455,10 @@ export function UniversalKanbanBoard({
     return tasks.filter(task => {
       const matchesSearch = !searchTerm || task.titulo.toLowerCase().includes(searchTerm.toLowerCase()) || task.descricao?.toLowerCase().includes(searchTerm.toLowerCase()) || task.cliente_nome?.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesResponsavel = selectedResponsavel === 'all' || task.responsavel_id === selectedResponsavel;
-      const matchesCliente = selectedCliente === 'all' || task.cliente_id === selectedCliente;
       const matchesPrioridade = selectedPrioridade === 'all' || task.prioridade === selectedPrioridade;
-      return matchesSearch && matchesResponsavel && matchesCliente && matchesPrioridade;
+      return matchesSearch && matchesResponsavel && matchesPrioridade;
     });
-  }, [tasks, searchTerm, selectedResponsavel, selectedCliente, selectedPrioridade]);
+  }, [tasks, searchTerm, selectedResponsavel, selectedPrioridade]);
 
   // Organizar tarefas em colunas
   // Usar configuração padrão se moduleColumns estiver vazio ou não fornecido
@@ -552,24 +514,7 @@ export function UniversalKanbanBoard({
       id: string;
       nome: string;
     }>);
-    return unique.sort((a, b) => a.nome.localeCompare(b.nome));
-  }, [tasks]);
-
-  // Obter clientes únicos
-  const clientes = useMemo(() => {
-    const unique = tasks.filter(task => task.cliente_nome).reduce((acc, task) => {
-      if (!acc.find(c => c.id === task.cliente_id)) {
-        acc.push({
-          id: task.cliente_id!,
-          nome: task.cliente_nome!
-        });
-      }
-      return acc;
-    }, [] as Array<{
-      id: string;
-      nome: string;
-    }>);
-    return unique.sort((a, b) => a.nome.localeCompare(b.nome));
+    return unique;
   }, [tasks]);
 
   // Helper para encontrar coluna de uma tarefa
@@ -632,18 +577,6 @@ export function UniversalKanbanBoard({
                   <SelectItem value="all">Todos os responsáveis</SelectItem>
                   {responsaveis.map(responsavel => <SelectItem key={responsavel.id} value={responsavel.id}>
                       {responsavel.nome}
-                    </SelectItem>)}
-                </SelectContent>
-              </Select>
-
-              <Select value={selectedCliente} onValueChange={setSelectedCliente}>
-                <SelectTrigger className="w-48">
-                  <SelectValue placeholder="Todos os clientes" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos os clientes</SelectItem>
-                  {clientes.map(cliente => <SelectItem key={cliente.id} value={cliente.id}>
-                      {cliente.nome}
                     </SelectItem>)}
                 </SelectContent>
               </Select>
