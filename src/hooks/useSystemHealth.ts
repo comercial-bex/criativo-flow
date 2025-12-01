@@ -8,6 +8,9 @@ interface IntegrityCheck {
   users_with_role: number;
   orphan_auth_users: number;
   orphan_profiles: number;
+  pessoas_sem_role?: number;
+  clientes_sem_onboarding?: number;
+  propostas_sem_cliente?: number;
   integrity_score: number;
 }
 
@@ -22,7 +25,6 @@ interface HealthLog {
 export const useSystemHealth = () => {
   const queryClient = useQueryClient();
 
-  // Verificar integridade
   const { data: integrity, isLoading: integrityLoading, refetch: checkIntegrity } = useQuery({
     queryKey: ['system-integrity'],
     queryFn: async () => {
@@ -30,12 +32,11 @@ export const useSystemHealth = () => {
       if (error) throw error;
       return data?.[0] as IntegrityCheck;
     },
-    staleTime: 3 * 60 * 1000, // 3 min - health check não muda tanto
-    gcTime: 10 * 60 * 1000, // 10 min em cache
-    refetchInterval: 5 * 60 * 1000, // 5 min - reduzido de 1 min
+    staleTime: 3 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    refetchInterval: 5 * 60 * 1000,
   });
 
-  // Buscar logs de saúde
   const { data: healthLogs } = useQuery({
     queryKey: ['health-logs'],
     queryFn: async () => {
@@ -49,7 +50,6 @@ export const useSystemHealth = () => {
     },
   });
 
-  // Sincronizar órfãos automaticamente
   const syncOrphansMutation = useMutation({
     mutationFn: async () => {
       const { data, error } = await supabase.rpc('auto_sync_orphan_users');
@@ -57,10 +57,7 @@ export const useSystemHealth = () => {
       return data as { success: boolean; synced_count: number };
     },
     onSuccess: (data) => {
-      smartToast.success(
-        'Sincronização concluída',
-        `${data.synced_count} usuário(s) sincronizado(s)`
-      );
+      smartToast.success('Sincronização concluída', `${data.synced_count} usuário(s) sincronizado(s)`);
       queryClient.invalidateQueries({ queryKey: ['system-integrity'] });
       queryClient.invalidateQueries({ queryKey: ['health-logs'] });
     },
@@ -69,18 +66,31 @@ export const useSystemHealth = () => {
     },
   });
 
-  // Calcular status geral
+  // Nova mutation para correção completa de integridade
+  const fixIntegrityMutation = useMutation({
+    mutationFn: async () => {
+      const { data, error } = await supabase.functions.invoke('fix-integrity');
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data) => {
+      const results = data.results || {};
+      smartToast.success(
+        'Integridade corrigida',
+        `${results.fase1_roles_synced || 0} roles, ${results.fase2_onboarding_created || 0} onboardings`
+      );
+      queryClient.invalidateQueries({ queryKey: ['system-integrity'] });
+      queryClient.invalidateQueries({ queryKey: ['health-logs'] });
+    },
+    onError: (error: any) => {
+      smartToast.error('Erro na correção', error.message);
+    },
+  });
+
   const getOverallStatus = (): 'healthy' | 'warning' | 'critical' => {
     if (!integrity) return 'warning';
-    
-    if (integrity.orphan_auth_users > 0 || integrity.orphan_profiles > 0) {
-      return 'critical';
-    }
-    
-    if (integrity.integrity_score < 95) {
-      return 'warning';
-    }
-    
+    if (integrity.orphan_auth_users > 0 || integrity.orphan_profiles > 0) return 'critical';
+    if (integrity.integrity_score < 95) return 'warning';
     return 'healthy';
   };
 
@@ -92,5 +102,7 @@ export const useSystemHealth = () => {
     checkIntegrity,
     syncOrphans: syncOrphansMutation.mutate,
     isSyncing: syncOrphansMutation.isPending,
+    fixIntegrity: fixIntegrityMutation.mutate,
+    isFixing: fixIntegrityMutation.isPending,
   };
 };
