@@ -171,8 +171,8 @@ export function useSocialAuth() {
 
     for (const account of accounts) {
       try {
-        const { error: insertError } = await supabase
-          .from('social_integrations_cliente')
+        const { error: insertError } = await (supabase
+          .from('social_integrations_cliente' as any)
           .insert({
             cliente_id: clienteId,
             provider: account.provider,
@@ -181,11 +181,11 @@ export function useSocialAuth() {
             provider_user_id: account.accountId,
             access_token: account.accessToken,
             is_active: true
-          });
+          }) as any);
 
         if (insertError) throw insertError;
 
-        await supabase.from('social_connection_logs').insert({
+        await (supabase.from('social_connection_logs' as any).insert({
           cliente_id: clienteId,
           action: 'connected',
           provider: account.provider,
@@ -194,7 +194,7 @@ export function useSocialAuth() {
             account_name: account.accountName,
             account_type: account.accountType
           }
-        });
+        }) as any);
 
         connectedCount++;
       } catch (error: any) {

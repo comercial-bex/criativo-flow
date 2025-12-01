@@ -39,11 +39,11 @@ export function useFolhaPonto(colaboradorId?: string, competencia?: string) {
   const { data: pontos = [], isLoading } = useQuery({
     queryKey: ['folha-ponto', colaboradorId, competencia],
     queryFn: async () => {
-      let query = supabase
-        .from('rh_folha_ponto')
+      let query = (supabase
+        .from('rh_folha_ponto' as any)
         .select('*', { count: 'exact' })
         .order('competencia', { ascending: false })
-        .range(0, 49); // Paginação: primeiros 50 registros
+        .range(0, 49) as any); // Paginação: primeiros 50 registros
       
       if (colaboradorId) query = query.eq('colaborador_id', colaboradorId);
       if (competencia) query = query.eq('competencia', competencia);
@@ -60,20 +60,20 @@ export function useFolhaPonto(colaboradorId?: string, competencia?: string) {
   const salvarMutation = useMutation({
     mutationFn: async (dados: Partial<FolhaPonto> & { colaborador_id: string; competencia: string }) => {
       if (dados.id) {
-        const { data, error } = await supabase
-          .from('rh_folha_ponto')
+        const { data, error } = await (supabase
+          .from('rh_folha_ponto' as any)
           .update(dados)
           .eq('id', dados.id)
           .select()
-          .single();
+          .single() as any);
         if (error) throw error;
         return data;
       } else {
-        const { data, error } = await supabase
-          .from('rh_folha_ponto')
+        const { data, error } = await (supabase
+          .from('rh_folha_ponto' as any)
           .insert([dados])
           .select()
-          .single();
+          .single() as any);
         if (error) throw error;
         return data;
       }
@@ -90,14 +90,14 @@ export function useFolhaPonto(colaboradorId?: string, competencia?: string) {
   const aprovarGestorMutation = useMutation({
     mutationFn: async (id: string) => {
       const userId = (await supabase.auth.getUser()).data.user?.id;
-      const { error } = await supabase
-        .from('rh_folha_ponto')
+      const { error } = await (supabase
+        .from('rh_folha_ponto' as any)
         .update({
           status: 'aprovado_gestor',
           aprovado_gestor_por: userId,
           aprovado_gestor_em: new Date().toISOString(),
         })
-        .eq('id', id);
+        .eq('id', id) as any);
       
       if (error) throw error;
     },
@@ -113,14 +113,14 @@ export function useFolhaPonto(colaboradorId?: string, competencia?: string) {
   const aprovarRHMutation = useMutation({
     mutationFn: async (id: string) => {
       const userId = (await supabase.auth.getUser()).data.user?.id;
-      const { error } = await supabase
-        .from('rh_folha_ponto')
+      const { error } = await (supabase
+        .from('rh_folha_ponto' as any)
         .update({
           status: 'aprovado_rh',
           aprovado_rh_por: userId,
           aprovado_rh_em: new Date().toISOString(),
         })
-        .eq('id', id);
+        .eq('id', id) as any);
       
       if (error) throw error;
     },
@@ -135,13 +135,13 @@ export function useFolhaPonto(colaboradorId?: string, competencia?: string) {
 
   const rejeitarMutation = useMutation({
     mutationFn: async ({ id, motivo }: { id: string; motivo: string }) => {
-      const { error } = await supabase
-        .from('rh_folha_ponto')
+      const { error } = await (supabase
+        .from('rh_folha_ponto' as any)
         .update({
           status: 'rejeitado',
           rejeitado_motivo: motivo,
         })
-        .eq('id', id);
+        .eq('id', id) as any);
       
       if (error) throw error;
     },

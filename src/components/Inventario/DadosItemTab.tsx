@@ -55,11 +55,11 @@ export function DadosItemTab({ itemId, mode = 'create', onSave }: DadosItemTabPr
 
   const loadItemData = async () => {
     setLoading(true);
-    const { data } = await supabase
-      .from('inventario_itens')
+    const { data } = await (supabase
+      .from('inventario_itens' as any)
       .select('*, modelo:inventario_modelos(categoria_id)')
       .eq('id', itemId)
-      .single();
+      .single() as any);
     
     if (data) {
       // Preencher campos do formulário de forma tipada
@@ -70,13 +70,13 @@ export function DadosItemTab({ itemId, mode = 'create', onSave }: DadosItemTabPr
       ];
       
       fields.forEach(field => {
-        if (data[field]) {
-          setValue(field, data[field] as string);
+        if ((data as any)[field]) {
+          setValue(field, (data as any)[field] as string);
         }
       });
       
-      if (data.modelo?.categoria_id) {
-        setValue('categoria_id', data.modelo.categoria_id);
+      if ((data as any).modelo?.categoria_id) {
+        setValue('categoria_id', (data as any).modelo.categoria_id);
       }
     }
     setLoading(false);

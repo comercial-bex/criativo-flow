@@ -42,7 +42,7 @@ export function EquipamentosSelector({
       return;
     }
 
-    const promises = equipamentos.map(async (item) => {
+    const promises = equipamentos.map(async (item: any) => {
       try {
         const disp = await verificarDisp.mutateAsync({
           itemId: item.id,

@@ -47,13 +47,14 @@ export function useStrategicPlans(clienteId?: string) {
 
       if (plansData && plansData.length > 0) {
         const planIds = plansData.map(p => p.id);
-        const { data: objectivesData, error: objectivesError } = await supabase
+        // @ts-ignore - types.ts desatualizado
+        const result = await supabase
           .from('vw_planos_publicos_itens')
           .select('*')
           .in('plano_id', planIds);
 
-        if (objectivesError) throw objectivesError;
-        setObjectives((objectivesData || []) as PlanObjective[]);
+        if (result.error) throw result.error;
+        setObjectives((result.data as unknown as PlanObjective[]) || []);
       }
     } catch (error) {
       console.error('Erro ao carregar planos estratégicos:', error);

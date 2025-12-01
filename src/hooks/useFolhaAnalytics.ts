@@ -87,15 +87,15 @@ export function useFolhaAnalytics(mesesRetroativos: number = 6) {
       const hoje = new Date();
       const mesAtual = format(hoje, 'yyyy-MM-01');
       
-      const { data: pontos } = await supabase
-        .from('rh_folha_ponto')
+      const { data: pontos } = await (supabase
+        .from('rh_folha_ponto' as any)
         .select('status')
-        .eq('competencia', mesAtual);
+        .eq('competencia', mesAtual) as any);
       
       if (!pontos || pontos.length === 0) return 0;
       
       // Considerar rejeitados como ausências para cálculo
-      const ausencias = pontos.filter(p => p.status === 'rejeitado').length;
+      const ausencias = (pontos as any[]).filter((p: any) => p.status === 'rejeitado').length;
       return (ausencias / pontos.length) * 100;
     },
   });

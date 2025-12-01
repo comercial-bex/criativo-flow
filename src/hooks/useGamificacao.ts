@@ -109,19 +109,19 @@ export function useGamificacao() {
     if (!user?.id) return;
 
     try {
-      const { data, error } = await supabase
-        .from('gamificacao_pontos')
+      const { data, error } = await (supabase
+        .from('gamificacao_pontos' as any)
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
-        .limit(50);
+        .limit(50) as any);
 
       if (error) {
         console.error('Erro ao buscar histórico:', error);
         return;
       }
 
-      setHistorico(data || []);
+      setHistorico((data as HistoricoPontos[]) || []);
     } catch (error) {
       console.error('Erro ao buscar histórico:', error);
     }

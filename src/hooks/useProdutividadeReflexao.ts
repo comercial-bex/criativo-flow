@@ -33,13 +33,13 @@ export function useProdutividadeReflexao(setor: 'grs' | 'design' | 'audiovisual'
     const dataLimite = new Date();
     dataLimite.setDate(dataLimite.getDate() - ultimos_dias);
 
-    const { data, error } = await supabase
-      .from('produtividade_reflexao')
+    const { data, error } = await (supabase
+      .from('produtividade_reflexao' as any)
       .select('*')
       .eq('user_id', user.id)
       .eq('setor', setor)
       .gte('data', dataLimite.toISOString().split('T')[0])
-      .order('data', { ascending: false });
+      .order('data', { ascending: false }) as any);
 
     if (!error && data) {
       setReflexoes(data as Reflexao[]);
@@ -81,34 +81,34 @@ export function useProdutividadeReflexao(setor: 'grs' | 'design' | 'audiovisual'
     const hoje = new Date().toISOString().split('T')[0];
 
     // Verificar se já existe reflexão para hoje
-    const { data: existente } = await supabase
-      .from('produtividade_reflexao')
+    const { data: existente } = await (supabase
+      .from('produtividade_reflexao' as any)
       .select('id')
       .eq('user_id', user.id)
       .eq('setor', setor)
       .eq('data', hoje)
-      .maybeSingle();
+      .maybeSingle() as any);
 
     let error;
 
     if (existente) {
       // Atualizar reflexão existente
-      const result = await supabase
-        .from('produtividade_reflexao')
+      const result = await (supabase
+        .from('produtividade_reflexao' as any)
         .update({ texto: texto.trim(), humor })
-        .eq('id', existente.id);
+        .eq('id', (existente as any).id) as any);
       error = result.error;
     } else {
       // Criar nova reflexão
-      const result = await supabase
-        .from('produtividade_reflexao')
+      const result = await (supabase
+        .from('produtividade_reflexao' as any)
         .insert({
           user_id: user.id,
           setor,
           texto: texto.trim(),
           humor,
           data: hoje
-        });
+        }) as any);
       error = result.error;
     }
 

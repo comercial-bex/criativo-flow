@@ -87,21 +87,21 @@ export function usePessoasColaboradores() {
         (data || []).map(async (pessoa) => {
           let veiculoInfo = null;
           if (pessoa.veiculo_id) {
-            const { data: veiculo } = await supabase
-              .from('inventario_itens')
+            const { data: veiculo } = await (supabase
+              .from('inventario_itens' as any)
               .select(`
                 id,
                 identificacao_interna,
                 modelo:inventario_modelos!modelo_id(nome)
               `)
               .eq('id', pessoa.veiculo_id)
-              .single();
+              .single() as any);
             
             if (veiculo) {
               veiculoInfo = {
-                id: veiculo.id,
-                nome: (veiculo.modelo as any)?.nome || veiculo.identificacao_interna || 'Sem nome',
-                placa: veiculo.identificacao_interna
+                id: (veiculo as any).id,
+                nome: (veiculo as any).modelo?.nome || (veiculo as any).identificacao_interna || 'Sem nome',
+                placa: (veiculo as any).identificacao_interna
               };
             }
           }
