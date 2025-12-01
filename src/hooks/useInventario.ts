@@ -6,8 +6,8 @@ export function useInventarioItens() {
   return useQuery({
     queryKey: ['inventario-itens'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('inventario_itens')
+      const { data, error } = await (supabase
+        .from('inventario_itens' as any)
         .select(`
           *,
           modelo:inventario_modelos(
@@ -18,10 +18,10 @@ export function useInventarioItens() {
           )
         `)
         .eq('ativo', true)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false }) as any);
       
       if (error) throw error;
-      return data || [];
+      return (data as any[]) || [];
     }
   });
 }
@@ -68,11 +68,11 @@ export function useCreateInventarioItem() {
   
   return useMutation({
     mutationFn: async (itemData: any) => {
-      const { data, error } = await supabase
-        .from('inventario_itens')
+      const { data, error } = await (supabase
+        .from('inventario_itens' as any)
         .insert(itemData)
         .select()
-        .single();
+        .single() as any);
       
       if (error) throw error;
       return data;
@@ -92,12 +92,12 @@ export function useUpdateInventarioItem() {
   
   return useMutation({
     mutationFn: async ({ id, ...data }: any) => {
-      const { data: updated, error } = await supabase
-        .from('inventario_itens')
+      const { data: updated, error } = await (supabase
+        .from('inventario_itens' as any)
         .update(data)
         .eq('id', id)
         .select()
-        .single();
+        .single() as any);
       
       if (error) throw error;
       return updated;

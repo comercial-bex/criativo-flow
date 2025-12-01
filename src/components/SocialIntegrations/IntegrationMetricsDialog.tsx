@@ -63,20 +63,20 @@ export function IntegrationMetricsDialog({
   const fetchMetrics = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('social_metrics_cliente')
+      const { data, error } = await (supabase
+        .from('social_metrics_cliente' as any)
         .select('*')
         .eq('integration_id', integrationId)
         .order('metric_date', { ascending: false })
-        .limit(30);
+        .limit(30) as any);
 
       if (error) throw error;
 
-      setMetrics(data || []);
+      setMetrics((data as MetricData[]) || []);
       
       // Calculate latest stats
       const latestStats: Record<string, number> = {};
-      data?.forEach(metric => {
+      (data as MetricData[])?.forEach((metric: MetricData) => {
         if (!latestStats[metric.metric_type]) {
           latestStats[metric.metric_type] = metric.metric_value;
         }

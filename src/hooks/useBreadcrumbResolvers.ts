@@ -200,21 +200,21 @@ export function useColaboradorResolver(colaboradorId?: string): ResolverResult {
     queryFn: async () => {
       if (!colaboradorId) return null;
       
-      const { data, error } = await supabase
-        .from("profiles")
+      const { data, error } = await (supabase
+        .from("pessoas")
         .select("nome, email")
-        .eq("id", colaboradorId)
-        .single();
+        .eq("profile_id", colaboradorId)
+        .single() as any);
 
       if (error) throw error;
-      return data;
+      return data as { nome?: string; email?: string } | null;
     },
     enabled: !!colaboradorId,
     staleTime: 5 * 60 * 1000,
   });
 
   return {
-    label: data?.nome || data?.email || colaboradorId || "",
+    label: (data as any)?.nome || (data as any)?.email || colaboradorId || "",
     isLoading,
   };
 }

@@ -47,12 +47,12 @@ export function useSocialIntegrations(clienteId?: string) {
 
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('social_integrations_cliente')
+      const { data, error } = await (supabase
+        .from('social_integrations_cliente' as any)
         .select('*')
         .eq('cliente_id', targetClienteId)
         .eq('is_active', true)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false }) as any);
 
       if (error) {
         console.error('Erro ao buscar integrações:', error);
@@ -60,7 +60,7 @@ export function useSocialIntegrations(clienteId?: string) {
         return;
       }
 
-      setIntegrations(data || []);
+      setIntegrations((data as SocialIntegration[]) || []);
     } catch (error) {
       console.error('Erro inesperado:', error);
       toast.error('Erro inesperado ao carregar integrações');
@@ -73,15 +73,15 @@ export function useSocialIntegrations(clienteId?: string) {
     if (!user || !targetClienteId) return;
 
     try {
-      let query = supabase
-        .from('social_metrics_cliente')
+      let query = (supabase
+        .from('social_metrics_cliente' as any)
         .select(`
           *,
           social_integrations_cliente!inner(cliente_id, provider, account_name)
         `)
         .eq('cliente_id', targetClienteId)
         .order('metric_date', { ascending: false })
-        .limit(100);
+        .limit(100) as any);
 
       if (integrationId) {
         query = query.eq('integration_id', integrationId);
@@ -94,7 +94,7 @@ export function useSocialIntegrations(clienteId?: string) {
         return;
       }
 
-      setMetrics(data || []);
+      setMetrics((data as SocialMetric[]) || []);
     } catch (error) {
       console.error('Erro inesperado ao buscar métricas:', error);
     }
@@ -104,11 +104,11 @@ export function useSocialIntegrations(clienteId?: string) {
     if (!targetClienteId) return false;
 
     try {
-      const { error } = await supabase
-        .from('social_integrations_cliente')
+      const { error } = await (supabase
+        .from('social_integrations_cliente' as any)
         .update({ is_active: false })
         .eq('id', integrationId)
-        .eq('cliente_id', targetClienteId);
+        .eq('cliente_id', targetClienteId) as any);
 
       if (error) {
         console.error('Erro ao desconectar integração:', error);
@@ -138,8 +138,8 @@ export function useSocialIntegrations(clienteId?: string) {
     if (!targetClienteId || !user) return false;
 
     try {
-      const { error } = await supabase
-        .from('social_integrations_cliente')
+      const { error } = await (supabase
+        .from('social_integrations_cliente' as any)
         .insert({
           cliente_id: targetClienteId,
           provider: provider,
@@ -152,7 +152,7 @@ export function useSocialIntegrations(clienteId?: string) {
           account_data: accountData.account_data || {},
           permissions: accountData.permissions || {},
           connected_by: user.id
-        });
+        }) as any);
 
       if (error) {
         console.error('Erro ao conectar conta:', error);

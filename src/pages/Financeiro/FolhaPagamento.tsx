@@ -70,15 +70,15 @@ export default function FolhaPagamento() {
   const { data: veiculosData = [] } = useQuery({
     queryKey: ['veiculos-inventario'],
     queryFn: async () => {
-      const { data } = await supabase
-        .from('inventario_itens')
+      const { data } = await (supabase
+        .from('inventario_itens' as any)
         .select(`
           id,
           identificacao_interna,
           modelo:inventario_modelos!modelo_id(modelo, categoria)
         `)
-        .eq('ativo', true);
-      return (data || []).map((item: any) => ({
+        .eq('ativo', true) as any);
+      return ((data || []) as any[]).map((item: any) => ({
         id: item.id,
         nome: item.modelo?.modelo || item.identificacao_interna || 'Sem modelo',
         placa: item.identificacao_interna

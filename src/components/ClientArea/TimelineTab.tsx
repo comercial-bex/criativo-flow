@@ -94,7 +94,10 @@ export function TimelineTab({ clienteId, projetoId }: TimelineTabProps) {
 
       const { data, error } = await query;
       if (error) throw error;
-      return data as LogAtividade[];
+      return (data as any[])?.map(item => ({
+        ...item,
+        profiles: item.profiles || null
+      })) as LogAtividade[];
     },
   });
 

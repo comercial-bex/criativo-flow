@@ -24,14 +24,14 @@ export function useProdutividadeInsights(setor: string) {
   const fetchInsights = async () => {
     if (!user) return;
 
-    const { data, error } = await supabase
-      .from('produtividade_insights_foco')
+    const { data, error } = await (supabase
+      .from('produtividade_insights_foco' as any)
       .select('*')
       .eq('user_id', user.id)
       .eq('setor', setor)
       .order('data_analise', { ascending: false })
       .limit(1)
-      .maybeSingle();
+      .maybeSingle() as any);
 
     if (!error && data) {
       setInsights(data as InsightFoco);

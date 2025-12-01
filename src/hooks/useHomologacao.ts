@@ -58,9 +58,9 @@ export function useHomologacao() {
     
     try {
       // 1. Verificar se tabela funcionarios existe
-      const { data: funcionarios, error: errFunc } = await supabase
-        .from('funcionarios')
-        .select('id', { count: 'exact', head: true });
+      const { data: funcionarios, error: errFunc } = await (supabase
+        .from('funcionarios' as any)
+        .select('id', { count: 'exact', head: true }) as any);
       
       const tabelaExiste = !errFunc;
 

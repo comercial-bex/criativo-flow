@@ -36,12 +36,12 @@ export function useProdutividadeMetas(setor: string) {
   const fetchMetas = async () => {
     if (!user) return;
 
-    const { data, error } = await supabase
-      .from('produtividade_metas')
+    const { data, error } = await (supabase
+      .from('produtividade_metas' as any)
       .select('*')
       .eq('user_id', user.id)
       .eq('setor', setor)
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false }) as any);
 
     if (!error && data) {
       setMetas(data as Meta[]);
@@ -70,8 +70,8 @@ export function useProdutividadeMetas(setor: string) {
   const criarMeta = async (meta: { titulo: string; descricao: string; categoria?: string; data_limite?: string }) => {
     if (!user) return null;
 
-    const { data, error } = await supabase
-      .from('produtividade_metas')
+    const { data, error } = await (supabase
+      .from('produtividade_metas' as any)
       .insert([{
         titulo: meta.titulo,
         descricao: meta.descricao,
@@ -81,11 +81,11 @@ export function useProdutividadeMetas(setor: string) {
         setor
       }])
       .select()
-      .single();
+      .single() as any);
 
     if (!error && data) {
       // Avaliar com IA
-      avaliarMetaSMART(data.id, data.titulo, data.descricao);
+      avaliarMetaSMART((data as any).id, (data as any).titulo, (data as any).descricao);
       
       toast({
         title: "Meta criada!",
@@ -104,13 +104,13 @@ export function useProdutividadeMetas(setor: string) {
       });
 
       if (!error && data) {
-        await supabase
-          .from('produtividade_metas')
+        await (supabase
+          .from('produtividade_metas' as any)
           .update({
             qualidade_smart: data.media,
             avaliacao_ia: data
           })
-          .eq('id', metaId);
+          .eq('id', metaId) as any);
       }
     } catch (error) {
       console.error('Erro ao avaliar meta:', error);
@@ -118,10 +118,10 @@ export function useProdutividadeMetas(setor: string) {
   };
 
   const atualizarProgresso = async (metaId: string, progresso: number) => {
-    const { error } = await supabase
-      .from('produtividade_metas')
+    const { error } = await (supabase
+      .from('produtividade_metas' as any)
       .update({ progresso })
-      .eq('id', metaId);
+      .eq('id', metaId) as any);
 
     if (!error) {
       toast({

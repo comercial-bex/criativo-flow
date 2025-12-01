@@ -37,8 +37,8 @@ export function useSocialAnalytics(clienteId?: string, integrationId?: string) {
 
     setLoading(true);
     try {
-      let query = supabase
-        .from('social_metrics_cliente')
+      let query = (supabase
+        .from('social_metrics_cliente' as any)
         .select(`
           *,
           social_integrations_cliente!inner(
@@ -51,7 +51,7 @@ export function useSocialAnalytics(clienteId?: string, integrationId?: string) {
         .eq('social_integrations_cliente.cliente_id', clienteId)
         .gte('metric_date', dateRange.start.toISOString())
         .lte('metric_date', dateRange.end.toISOString())
-        .order('metric_date', { ascending: true });
+        .order('metric_date', { ascending: true }) as any);
 
       // Filter by specific integration if provided
       if (integrationId) {
@@ -66,10 +66,10 @@ export function useSocialAnalytics(clienteId?: string, integrationId?: string) {
         return;
       }
 
-      const formattedData = (data || []).map(item => ({
+      const formattedData = ((data || []) as any[]).map((item: any) => ({
         ...item,
         integration: item.social_integrations_cliente,
-      }));
+      })) as SocialMetricData[];
 
       setMetrics(formattedData);
 
